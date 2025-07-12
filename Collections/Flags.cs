@@ -45,9 +45,9 @@ namespace UTIRLib.Collections
         {
         }
 
-        public Flags(IEnumerable<T> toAddValues, bool inverted) : this(toAddValues,
-                                                                       inverted,
-                                                                       capacity: -1)
+        public Flags(IEnumerable<T> toAddValues, bool inverted = false) : this(toAddValues,
+                                                                               inverted,
+                                                                               capacity: -1)
         {
         }
 

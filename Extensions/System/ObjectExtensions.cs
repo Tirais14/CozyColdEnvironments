@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using UTIRLib.Diagnostics;
 using UTIRLib.Extensions;
 
@@ -59,6 +60,16 @@ namespace UTIRLib
 
             result = default;
             return false;
+        }
+
+        public static bool IsNot<T>(this object obj)
+        {
+            return !obj.Is<T>();
+        }
+
+        public static bool IsNot<TThis, T>(this TThis obj)
+        {
+            return !obj.Is<TThis, T>();
         }
     }
 }
