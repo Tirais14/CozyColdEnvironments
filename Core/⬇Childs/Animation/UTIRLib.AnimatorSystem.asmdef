@@ -1,0 +1,17 @@
+{
+    "name": "UTIRLib.Animation",
+    "rootNamespace": "UTIRLib.Animation",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:cec408dde85aac047a78e88de30b4173"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

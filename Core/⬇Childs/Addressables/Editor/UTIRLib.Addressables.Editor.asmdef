@@ -1,0 +1,30 @@
+{
+    "name": "UTIRLib.Addressables.Editor",
+    "rootNamespace": "UTIRLib.Addressables.Editor",
+    "references": [
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:69448af7b92c7f342b298e06a37122aa",
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:cec408dde85aac047a78e88de30b4173",
+        "GUID:4532f27500707314bb11e2c47b04c2d3"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "USE_ADDRESSABLES"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "2.4.6",
+            "define": "USE_ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}

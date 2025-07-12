@@ -1,0 +1,25 @@
+{
+    "name": "UTIRLib.UI",
+    "rootNamespace": "UTIRLib.UI",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:6546d7765b4165b40850b3667f981c26",
+        "GUID:560b04d1a97f54a4e82edc0cbbb69285",
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:cec408dde85aac047a78e88de30b4173",
+        "GUID:85b85b04efd76f34b82b37eea16f951d",
+        "GUID:b853e7bb75e57af4684198182f859c0e",
+        "GUID:86090fba37b91534998945c10134b783",
+        "GUID:70c5325f05596aa46a0416b206c7ad6e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

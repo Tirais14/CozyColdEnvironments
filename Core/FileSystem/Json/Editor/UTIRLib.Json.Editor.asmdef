@@ -1,0 +1,33 @@
+{
+    "name": "UTIRLib.Json.Editor",
+    "rootNamespace": "UTIRLib.Json.Editor",
+    "references": [
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:69448af7b92c7f342b298e06a37122aa",
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:4c7df73d4e0fd8d4bb725c292de5b205",
+        "GUID:c228f3ca8f6bb594b968cbb82beea483",
+        "GUID:e7ffd46f25022774bb3f18c20a05ea1f",
+        "GUID:791cf1d3abb5b614b9ac260b8b9c8e2b",
+        "GUID:4532f27500707314bb11e2c47b04c2d3",
+        "GUID:328d4da10ba3d4e4687f0897ef311f12",
+        "GUID:a2603e07688ebb14d8f56a8bda21fa91"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "2.4.6",
+            "define": "USE_ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}

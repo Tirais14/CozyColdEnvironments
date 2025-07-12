@@ -1,0 +1,18 @@
+{
+    "name": "UTIRLib.FileSystem.ScriptUtils",
+    "rootNamespace": "UTIRLib.FileSystem.ScriptUtils",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:cec408dde85aac047a78e88de30b4173",
+        "GUID:a2603e07688ebb14d8f56a8bda21fa91"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

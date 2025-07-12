@@ -1,0 +1,22 @@
+{
+    "name": "UTIRLib.TilemapUtilities.EditorExtensions",
+    "rootNamespace": "UTIRLib.TilemapUtilities.EditorExtensions",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:cec408dde85aac047a78e88de30b4173",
+        "GUID:c228f3ca8f6bb594b968cbb82beea483",
+        "GUID:a2603e07688ebb14d8f56a8bda21fa91",
+        "GUID:eda4aa9523136c749891583ccd056539"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

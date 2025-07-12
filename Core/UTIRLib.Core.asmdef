@@ -1,0 +1,16 @@
+{
+    "name": "UTIRLib.Core",
+    "rootNamespace": "UTIRLib",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
