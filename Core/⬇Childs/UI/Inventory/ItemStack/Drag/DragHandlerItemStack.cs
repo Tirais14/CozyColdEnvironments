@@ -12,12 +12,6 @@ namespace UTIRLib.UI
         [GetComponentInParentIfNull]
         protected ItemStackModelBase sourceItemStack = null!;
 
-        protected override void OnAwake()
-        {
-            base.OnAwake();
-            userInterface = GetComponentInParent<UserInterface>();
-        }
-
         public override void OnBeginDrag(PointerEventData eventData)
         {
             base.OnBeginDrag(eventData);

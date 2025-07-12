@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-
 namespace UTIRLib.UI
 {
     [RequireComponent(typeof(Image), typeof(DragItemStackViewModel))]

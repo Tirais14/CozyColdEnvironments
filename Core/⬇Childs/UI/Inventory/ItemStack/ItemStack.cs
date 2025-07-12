@@ -24,27 +24,17 @@ namespace UTIRLib.UI
         public virtual IItemStack Put(IItem item, int quantity = 1)
         {
             if (item.IsNull())
-            {
                 throw new ArgumentNullException(nameof(item));
-            }
             if (quantity == 0)
-            {
                 return empty;
-            }
 
             quantity = Math.Abs(quantity);
             if (IsEmpty)
-            {
                 return SetItem(item, quantity);
-            }
             if (!IsEmpty && Equals(item) && !IsFull)
-            {
                 return AddItem(quantity);
-            }
             else
-            {
                 return ReplaceItem(item, quantity);
-            }
         }
 
         /// <returns>Remaining items or <see cref="ReadOnlyEmptyItemStack"/></returns>
