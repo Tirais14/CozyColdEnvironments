@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Linq;
@@ -9,38 +10,26 @@ namespace UTIRLib.Zenject
 {
     public static class DiContainerExtensions
     {
-        public static IdScopeConcreteIdArgConditionCopyNonLazyBinder? BindFromScene<T>(this DiContainer container,
-            bool optional = false)
+        public static IdScopeConcreteIdArgConditionCopyNonLazyBinder BindFromScene<T>(
+            this DiContainer container,
+            FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)
             where T : Object
         {
-            T? value = Object.FindAnyObjectByType<T>(FindObjectsInactive.Include);
-            if (value != null)
-            {
-                return container.BindInstance(value);
-            }
-            else if (!optional)
-            {
-                throw new ObjectNotFoundException(typeof(T));
-            }
+            T? value = Object.FindAnyObjectByType<T>(findObjectsInactive);
 
-            return null;
+            return value == null ? throw new ObjectNotFoundException(typeof(T)) 
+                            : container.BindInstance(value);
         }
 
         public static IdScopeConcreteIdArgConditionCopyNonLazyBinder? BindFromScene<T, TContract>(
-            this DiContainer container, bool optional = false)
+            this DiContainer container,
+            FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)
             where T : Object
         {
-            TContract? value = Object.FindAnyObjectByType<T>(FindObjectsInactive.Include).IsQ<Object, TContract>();
-            if (value.IsNotDefault())
-            {
-                return container.BindInstance(value);
-            }
-            else if (!optional)
-            {
-                throw new System.Exception($"Error while binding {typeof(T).Name} as {typeof(TContract).Name}.");
-            }
+            TContract? value = Object.FindAnyObjectByType<T>(findObjectsInactive).IsQ<Object, TContract>();
 
-            return null;
+            return value == null ? throw new ObjectNotFoundException(typeof(TContract))
+                            : container.BindInstance(value);
         }
     }
 }

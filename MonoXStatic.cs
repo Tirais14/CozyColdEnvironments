@@ -9,7 +9,7 @@ namespace UTIRLib
     public abstract class MonoXStatic : MonoX
     {
         [MaybeNull]
-        private static Transform parent = CreateDefaultParent();
+        private static Transform parent = null!;
 
         /// <summary>
         /// Parent of any instantiated <see cref="MonoXStatic"/>
@@ -24,14 +24,21 @@ namespace UTIRLib
             }
         }
 
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+
+            if (parent.IsNull())
+                parent = GetDefaultParent();
+        }
+
         protected static T Create<T>()
             where T : Component
         {
             if (TryGetInstance<T>(out var instance))
             {
-                TirLibDebug.Log(
-                    $"Object {typeof(T).Name} wasn't instantiated, because is singleton and already exists.",
-                    true);
+                TirLibDebug.Log($"{typeof(T)} already exists.",
+                                true);
 
                 return instance;
             }
@@ -44,18 +51,19 @@ namespace UTIRLib
 
             Transform thisParent = gameObject.transform;
             while (thisParent.parent != null)
-            {
                 thisParent = thisParent.parent;
-            }
 
             DontDestroyOnLoad(thisParent.gameObject);
 
             return gameObject.AddComponent<T>();
         }
 
-        private static Transform CreateDefaultParent()
+        private static Transform GetDefaultParent()
         {
-            GameObject empty = new("Static"){
+            if (GameObject.Find("_Static") is GameObject go)
+                return go.transform;
+
+            GameObject empty = new("_Static"){
                 isStatic = true
             };
 
@@ -67,15 +75,14 @@ namespace UTIRLib
         private static bool TryGetInstance<T>([NotNullWhen(true)] out T? result)
             where T : Component
         {
-            if (parent != null) result = parent.GetComponentInChildren<MonoXStatic>() as T;
+            if (parent != null)
+                result = parent.GetComponentInChildren<MonoXStatic>() as T;
             else
             {
                 result = FindAnyObjectByType<T>();
 
                 if (result != null && parent != null)
-                {
                     result.transform.parent = parent;
-                }
             }
 
             return result != null;
@@ -87,9 +94,7 @@ namespace UTIRLib
                                                            FindObjectsSortMode.None);
             int instancesCount = instances.Length;
             for (int i = 0; i < instancesCount; i++)
-            {
                 instances[i].transform.parent = parent;
-            }
         }
     }
 
@@ -100,11 +105,10 @@ namespace UTIRLib
 
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         protected static TThis instance {
-            get {
+            get
+            {
                 if (instanceInternal == null)
-                {
                     instanceInternal = Create<TThis>();
-                }
 
                 return instanceInternal;
             }
