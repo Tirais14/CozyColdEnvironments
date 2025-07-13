@@ -10,21 +10,30 @@ namespace UTIRLib
     public static class TypeExtensions
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool Is(this Type a, Type? b)
+        public static bool Is(this Type value, Type? other)
         {
-            if (a == null)
-                throw new ArgumentNullException(nameof(a));
-            if (b == null)
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            if (other == null)
                 return false;
 
-            if (a == b)
+            if (value == other)
                 return true;
 
-            return a.IsAssignableFrom(b);
+            return value.IsAssignableFrom(other);
         }
-        public static bool Is<T>(this Type a)
+        public static bool Is<T>(this Type value)
         {
-            return a.Is(typeof(T));
+            return value.Is(typeof(T));
+        }
+
+        public static bool IsNot(this Type value, Type other)
+        {
+            return !value.Is(other);
+        }
+        public static bool IsNot<T>(this Type value)
+        {
+            return value.IsNot(typeof(T));
         }
 
         /// <exception cref="ArgumentNullException"></exception>
