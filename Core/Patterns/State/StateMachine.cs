@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UTIRLib.Diagnostics;
 
 namespace UTIRLib.Patterns.States
@@ -8,26 +9,26 @@ namespace UTIRLib.Patterns.States
         where T : class, IStateBase
     {
         private readonly IStateMachineSwitchStrategy<T> switchStrategy;
-        private readonly T defaultState;
-        private T previousState;
 
-        protected T playingState;
+        public T DefaultState { get; }
+        public T PreviousState { get; private set; }
+        public T PlayingState { get; private set; }
 
-        public Type PlayingStateType => playingState.GetType();
+        public Type PlayingStateType => PlayingState.GetType();
 
         public StateMachine(IStateMachineSwitchStrategy<T> switchStrategy)
         {
-            defaultState = switchStrategy.DefaultState;
+            DefaultState = switchStrategy.DefaultState;
 
             this.switchStrategy = switchStrategy;
-            playingState = defaultState;
+            PlayingState = DefaultState;
 
-            previousState = defaultState;
+            PreviousState = DefaultState;
         }
 
         public void Execute()
         {
-            playingState = switchStrategy.GetNextState();
+            PlayingState = switchStrategy.GetNextState();
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -36,25 +37,48 @@ namespace UTIRLib.Patterns.States
             if (state.IsNull())
                 throw new ArgumentNullException(nameof(state));
 
-            if (playingState == state)
+            if (PlayingState == state)
                 return;
 
-            previousState = playingState;
+            PreviousState = PlayingState;
 
-            playingState.Exit();
-            playingState = state;
-            playingState.Enter();
+            PlayingState.Exit();
+            PlayingState = state;
+            PlayingState.Enter();
         }
 
-        public void PlayPreviousState() => PlayState(previousState);
+        public void PlayPreviousState() => PlayState(PreviousState);
 
-        public void PlayDefaultState() => PlayState(defaultState);
+        public void PlayDefaultState() => PlayState(DefaultState);
 
         public abstract class SwitchStrategy : IStateMachineSwitchStrategy<T>
         {
-            public abstract T DefaultState { get; }
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+            protected Type selectedStateType => SelectedState.GetType();
+
+            public T DefaultState { get; } = null!;
+            public T PreviousState { get; protected set; } = null!;
+            public T SelectedState { get; protected set; } = null!;
+
+            protected SwitchStrategy(T defaultState)
+            {
+                DefaultState = defaultState;
+                PreviousState = defaultState;
+                SelectedState = defaultState;
+            }
 
             public abstract T GetNextState();
+
+            /// <exception cref="ArgumentNullException"></exception>
+            public void ForceSelectState(T state)
+            {
+                if (state is null)
+                    throw new ArgumentNullException(nameof(state));
+
+                SelectedState = state;
+            }
+
+            public void ResetState() => SelectedState = DefaultState;
         }
     }
 }

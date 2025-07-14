@@ -11,6 +11,6 @@ namespace UTIRLib.UI
         EventSystem EventSystem { get; }
         GraphicRaycaster DefaultRaycaster { get; }
         IPointerHandler PointerHandler { get; }
-        IRaycaster Raycaster { get; }
+        IUIRaycaster Raycaster { get; }
     }
 }

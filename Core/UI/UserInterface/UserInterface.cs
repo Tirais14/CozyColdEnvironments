@@ -31,7 +31,7 @@ namespace UTIRLib.UI
         public IPointerHandler PointerHandler { get; protected set; } = null!;
 
         [RequiredMember]
-        public IRaycaster Raycaster { get; protected set; } = null!;
+        public IUIRaycaster Raycaster { get; protected set; } = null!;
 
         public bool IsOpened => isOpenedProp.Value;
         public IReadOnlyReactiveProperty<bool> IsOpenedProp => isOpenedProp;

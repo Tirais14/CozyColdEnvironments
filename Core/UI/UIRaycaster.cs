@@ -13,7 +13,7 @@ using UTIRLib.UExtensions;
 
 namespace UTIRLib.UI
 {
-    public class UIRaycaster : IRaycaster
+    public class UIRaycaster : IUIRaycaster
     {
         protected readonly IPointerHandler pointerHandler;
         protected readonly PointerEventData eventData;

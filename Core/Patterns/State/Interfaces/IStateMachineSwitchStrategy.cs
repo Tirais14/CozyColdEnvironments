@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+
 namespace UTIRLib.Patterns.States
 {
     /// <summary>
@@ -7,8 +9,14 @@ namespace UTIRLib.Patterns.States
     public interface IStateMachineSwitchStrategy<T>
         where T : IStateBase
     {
+        T PreviousState { get; }
+        T SelectedState { get; }
         T DefaultState { get; }
 
         T GetNextState();
+
+        void ForceSelectState(T state);
+
+        void ResetState();
     }
 }

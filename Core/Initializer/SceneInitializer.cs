@@ -23,11 +23,12 @@ namespace UTIRLib
 
             int initablesCount = initables.Count(x => x.IsNotNull());
             if (initablesCount > 1)
-                throw new InvalidOperationException("Cannot resolve initable to init.");
+                throw new InvalidOperationException("Many instances. Cannot resolve initable to init.");
             else if (initablesCount == 0)
-                throw new InvalidOperationException($"Cannot find initable {typeof(T)}.");
+                throw new InvalidOperationException($"Cannot find initable {typeof(T).GetProccessedName()}.");
 
             initables.First(x => x.IsNotNull()).Init();
+            TirLibDebug.Log($"Inited => {typeof(T).GetProccessedName()}.");
         }
 
         public static void InitAll()

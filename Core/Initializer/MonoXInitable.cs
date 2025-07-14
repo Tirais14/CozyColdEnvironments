@@ -12,6 +12,10 @@ namespace UTIRLib
         /// </summary>
         protected abstract void OnInit();
 
-        void IInitable.Init() => IsInited = true;
+        void IInitable.Init()
+        {
+            OnInit();
+            IsInited = true;
+        }
     }
 }
