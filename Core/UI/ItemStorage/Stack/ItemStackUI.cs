@@ -23,7 +23,7 @@ namespace UTIRLib.UI
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void Add(IItemUI item, int count)
+        public void AddItem(IItemUI item, int count)
         {
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
@@ -37,7 +37,7 @@ namespace UTIRLib.UI
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void PutFrom(IItemStackUI itemStack, int count)
+        public void MoveFrom(IItemStackUI itemStack, int count)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -51,10 +51,10 @@ namespace UTIRLib.UI
             if (taked.IsEmpty)
                 return;
 
-            Add(taked.Item, taked.ItemCount);
+            AddItem(taked.Item, taked.ItemCount);
 
             if (!itemStack.IsEmpty)
-                itemStack.Add(taked.Item, taked.ItemCount);
+                itemStack.AddItem(taked.Item, taked.ItemCount);
         }
 
         /// <exception cref="ArgumentException"></exception>

@@ -18,14 +18,14 @@ namespace UTIRLib.UI
         public IReadOnlyReactiveProperty<IItemUI> ItemProp => itemProp;
         public IReadOnlyReactiveProperty<int> ItemCountProp => itemCountProp;
 
-        public void Add(IItemUI item, int count)
+        public void AddItem(IItemUI item, int count)
         {
-            stack.Add(item, count);
+            stack.AddItem(item, count);
         }
 
-        public void PutFrom(IItemStackUI itemStack, int count)
+        public void MoveFrom(IItemStackUI itemStack, int count)
         {
-            stack.PutFrom(itemStack, count);
+            stack.MoveFrom(itemStack, count);
         }
 
         public IItemStackUI Take(int count)

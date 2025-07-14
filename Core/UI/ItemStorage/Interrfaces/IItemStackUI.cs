@@ -8,9 +8,9 @@ namespace UTIRLib.UI
         bool IsEmpty { get; }
         bool IsFull { get; }
 
-        void Add(IItemUI item, int count);
+        void AddItem(IItemUI item, int count);
 
-        void PutFrom(IItemStackUI itemStack, int count);
+        void MoveFrom(IItemStackUI itemStack, int count);
 
         IItemStackUI Take(int count);
 
