@@ -4,32 +4,40 @@ using UTIRLib.Diagnostics;
 
 namespace UTIRLib.UI
 {
-    public class ItemStackUI : IUIItemStack
+    public class ItemStackUI : IItemStackUI
     {
         public static ItemStackUI Empty => new();
 
-        public IUIItem Item { get; private set; } = new ItemUIEmpty();
+        public IItemUI Item { get; private set; }
         public int ItemCount { get; private set; }
         public bool IsEmpty => ItemCount < 1;
         public bool IsFull => ItemCount >= Item.MaxStackCount;
 
+        public ItemStackUI() => Item = new ItemUIEmpty();
+
+        public ItemStackUI(IItemUI item, int itemCount = 1)
+        {
+            Item = item;
+            ItemCount = itemCount;
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void Add(IUIItem item, int count)
+        public void Add(IItemUI item, int count)
         {
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
             if (count < 1)
                 throw new ArgumentException(nameof(count));
 
-            count = UIItemStackHelper.CalulcateToAddCount(this, count);
+            count = ItemStackUIHelper.CalulcateToAddCount(this, count);
 
             ItemCount += count;
         }
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void PutFrom(IUIItemStack itemStack, int count)
+        public void PutFrom(IItemStackUI itemStack, int count)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -38,7 +46,7 @@ namespace UTIRLib.UI
             if (itemStack.IsEmpty)
                 return;
 
-            IUIItemStack taked = itemStack.Take(count);
+            IItemStackUI taked = itemStack.Take(count);
 
             if (taked.IsEmpty)
                 return;
@@ -50,22 +58,24 @@ namespace UTIRLib.UI
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public IUIItemStack Take(int count)
+        public IItemStackUI Take(int count)
         {
             if (count < 1)
                 throw new ArgumentException(nameof(count));
             if (IsEmpty)
                 return Empty;
 
-            count = UIItemStackHelper.CalculateToTakeCount(this, count);
+            count = ItemStackUIHelper.CalculateToTakeCount(this, count);
 
             if (count < 1)
                 return Empty;
 
             ItemCount -= count;
+
+            return new ItemStackUI(Item, count);
         }
 
-        public IUIItemStack TakeAll()
+        public IItemStackUI TakeAll()
         {
             if (IsEmpty)
                 return Empty;

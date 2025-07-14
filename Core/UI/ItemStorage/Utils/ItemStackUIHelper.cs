@@ -4,10 +4,10 @@ using UTIRLib.Diagnostics;
 #nullable enable
 namespace UTIRLib.UI
 {
-    public static class UIItemStackHelper
+    public static class ItemStackUIHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static int CalculateToTakeCount(IUIItemStack itemStack, int wantedQuantity)
+        public static int CalculateToTakeCount(IItemStackUI itemStack, int wantedQuantity)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -19,7 +19,7 @@ namespace UTIRLib.UI
             return wantedQuantity;
         }
 
-        public static int CalulcateToAddCount(IUIItemStack itemStack, int toAddQuantity)
+        public static int CalulcateToAddCount(IItemStackUI itemStack, int toAddQuantity)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
