@@ -1,0 +1,26 @@
+{
+    "name": "UTIRLib.Core.InspectorSerializer",
+    "rootNamespace": "UTIRLib.InspectorSerializer",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:cec408dde85aac047a78e88de30b4173",
+        "GUID:c228f3ca8f6bb594b968cbb82beea483",
+        "GUID:4c7df73d4e0fd8d4bb725c292de5b205",
+        "GUID:e0c3f2a2e689cff439e4b87ae691eabe",
+        "GUID:a2603e07688ebb14d8f56a8bda21fa91",
+        "GUID:cf687dbe8c05f01469456975cd1c0bbf"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -20,6 +20,11 @@ namespace UTIRLib.UI
         {
             this.model = model;
 
+            Bind();
+        }
+
+        private void Bind()
+        {
             model.Item.Subscribe(x => itemIcon.Value = x.Icon).AddTo(this);
             model.ItemCount.Subscribe(x => itemCount.Value = x.ToString()).AddTo(this);
         }

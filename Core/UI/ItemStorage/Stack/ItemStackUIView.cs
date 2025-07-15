@@ -8,7 +8,7 @@ using UTIRLib.Injector;
 #nullable enable
 namespace UTIRLib.UI
 {
-    [RequireComponent(typeof(Image), typeof(ItemStackUIViewModel))]
+    [RequireComponent(typeof(Image))]
     public class ItemStackUIView : View, IView<IItemStackUIViewModel>
     {
         [GetComponent]

@@ -1,20 +1,17 @@
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using System;
+using UTIRLib.Diagnostics;
 
 #nullable enable
 namespace UTIRLib.UI
 {
     public class ItemStorageUI : MonoX, IItemStorageUI
     {
-        protected IItemSlotUI[] slots = null!;
+        protected readonly List<IItemSlotUI> slots = new();
 
-        [SerializeField]
-        protected GameObject slotPrefab = null!;
-
-        [SerializeField]
-        protected int slotCount;
-
-        public int SlotCount => slotCount;
+        public int SlotCount => slots.Count;
         public IItemSlotUI this[int index] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => slots[index];
@@ -23,14 +20,41 @@ namespace UTIRLib.UI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IItemSlotUI GetItemSlot(int index) => slots[index];
 
-        protected override void OnAwake()
+        protected override void OnStart()
         {
-            base.OnAwake();
+            base.OnStart();
 
-            slots = GetComponentsInChildren<IItemSlotUI>();
+            TryInitSlots();
+        }
 
-            if (slots.IsEmpty())
-                throw new System.Exception("Cannot find any slot in childrens.");
+        /// <exception cref="ArgumentNullException"></exception>
+        public void AddItemSlot(IItemSlotUI itemSlot)
+        {
+            if (itemSlot.IsNull())
+                throw new ArgumentNullException(nameof(itemSlot));
+
+            TryReParentItemSlot(itemSlot);
+
+            slots.Add(itemSlot);
+        }
+
+        public void RemoveItemSlotAt(int index)
+        {
+            slots.RemoveAt(index);
+        }
+
+        private void TryInitSlots()
+        {
+            var foundSlots = GetComponentsInChildren<IItemSlotUI>();
+
+            if (slots.IsNotEmpty())
+                slots.AddRange(foundSlots);
+        }
+
+        private void TryReParentItemSlot(IItemSlotUI itemSlot)
+        {
+            if (itemSlot is Component component)
+                component.transform.parent = transform;
         }
     }
 }

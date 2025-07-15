@@ -13,6 +13,12 @@ namespace UTIRLib
 {
     public static class SceneInitializer
     {
+        public static void Init(IInitable initable)
+        {
+            initable.Init();
+            TirLibDebug.Log($"Inited => {initable.GetType().GetProccessedName()}.");
+        }
+
         /// <exception cref="InvalidOperationException"></exception>
         public static void Init<T>()
             where T : IInitable
@@ -27,8 +33,7 @@ namespace UTIRLib
             else if (initablesCount == 0)
                 throw new InvalidOperationException($"Cannot find initable {typeof(T).GetProccessedName()}.");
 
-            initables.First(x => x.IsNotNull()).Init();
-            TirLibDebug.Log($"Inited => {typeof(T).GetProccessedName()}.");
+            Init(initables.First(x => x.IsNotNull()));
         }
 
         public static void InitAll()

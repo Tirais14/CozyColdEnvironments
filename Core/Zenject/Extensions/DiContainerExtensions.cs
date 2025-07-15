@@ -21,7 +21,7 @@ namespace UTIRLib.Zenject
                             : container.BindInstance(value);
         }
 
-        public static IdScopeConcreteIdArgConditionCopyNonLazyBinder? BindFromScene<T, TContract>(
+        public static IdScopeConcreteIdArgConditionCopyNonLazyBinder BindFromScene<T, TContract>(
             this DiContainer container,
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)
             where T : Object

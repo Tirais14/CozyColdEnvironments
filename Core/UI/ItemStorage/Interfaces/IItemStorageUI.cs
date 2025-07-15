@@ -7,5 +7,9 @@ namespace UTIRLib.UI
         IItemSlotUI this[int index] { get; }
 
         IItemSlotUI GetItemSlot(int index);
+
+        void AddItemSlot(IItemSlotUI itemSlot);
+
+        void RemoveItemSlotAt(int index);
     }
 }
