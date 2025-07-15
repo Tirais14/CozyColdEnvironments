@@ -6,11 +6,11 @@ using UTIRLib.InputSystem;
 
 namespace UTIRLib.UI
 {
-    public interface IUserInterface : IOpenable, IStateNotifier<IUserInterface>
+    public interface IUserInterface : IOpenable
     {
         EventSystem EventSystem { get; }
         GraphicRaycaster DefaultRaycaster { get; }
         IPointerHandler PointerHandler { get; }
-        IUIRaycaster Raycaster { get; }
+        IRaycasterUI Raycaster { get; }
     }
 }

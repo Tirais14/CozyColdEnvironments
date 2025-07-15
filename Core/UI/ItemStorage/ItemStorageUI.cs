@@ -21,7 +21,7 @@ namespace UTIRLib.UI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IItemSlotUI GetItemStack(int index) => slots[index];
+        public IItemSlotUI GetItemSlot(int index) => slots[index];
 
         protected override void OnAwake()
         {

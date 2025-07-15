@@ -13,13 +13,13 @@ using UTIRLib.UExtensions;
 
 namespace UTIRLib.UI
 {
-    public class UIRaycaster : IUIRaycaster
+    public class RaycasterUI : IRaycasterUI
     {
         protected readonly IPointerHandler pointerHandler;
         protected readonly PointerEventData eventData;
         protected readonly GraphicRaycaster graphicRaycaster;
 
-        public UIRaycaster(IPointerHandler pointerHandler, GraphicRaycaster graphicRaycaster, EventSystem eventSystem)
+        public RaycasterUI(IPointerHandler pointerHandler, GraphicRaycaster graphicRaycaster, EventSystem eventSystem)
         {
             this.pointerHandler = pointerHandler;
             this.graphicRaycaster = graphicRaycaster;

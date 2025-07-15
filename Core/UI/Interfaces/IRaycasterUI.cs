@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UTIRLib.UI
 {
-    public interface IUIRaycaster
+    public interface IRaycasterUI
     {
         public bool TryRaycastFirst<T>([NotNullWhen(true)] out T? result, object? exclude = null) where T : class;
 

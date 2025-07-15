@@ -6,6 +6,6 @@ namespace UTIRLib.UI
         int SlotCount { get; }
         IItemSlotUI this[int index] { get; }
 
-        IItemSlotUI GetItemStack(int index);
+        IItemSlotUI GetItemSlot(int index);
     }
 }

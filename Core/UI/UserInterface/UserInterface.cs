@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UTIRLib.Attributes;
-using UTIRLib.Diagnostics;
 using UTIRLib.Injector;
 using UTIRLib.InputSystem;
 
@@ -15,10 +14,6 @@ namespace UTIRLib.UI
     [RequireComponent(typeof(GraphicRaycaster))]
     public abstract class UserInterface : MonoX, IUserInterface
     {
-        protected readonly ReactiveProperty<bool> isOpenedProp = new();
-
-        public event Action<IUserInterface>? OnStateChanged;
-
         [RequiredMember]
         [field: SerializeField]
         public EventSystem EventSystem { get; protected set; } = null!;
@@ -31,28 +26,25 @@ namespace UTIRLib.UI
         public IPointerHandler PointerHandler { get; protected set; } = null!;
 
         [RequiredMember]
-        public IUIRaycaster Raycaster { get; protected set; } = null!;
+        public IRaycasterUI Raycaster { get; protected set; } = null!;
 
-        public bool IsOpened => isOpenedProp.Value;
-        public IReadOnlyReactiveProperty<bool> IsOpenedProp => isOpenedProp;
+        public bool IsOpened { get; private set; }
 
         protected override void OnAwake()
         {
             base.OnAwake();
 
-            Raycaster = new UIRaycaster(PointerHandler, DefaultRaycaster, EventSystem);
+            Raycaster = new RaycasterUI(PointerHandler, DefaultRaycaster, EventSystem);
         }
 
         public virtual void Open()
         {
-            isOpenedProp.Value = true;
-            OnStateChanged?.Invoke(this);
+            IsOpened = true;
         }
 
         public virtual void Close()
         {
-            isOpenedProp.Value = false;
-            OnStateChanged?.Invoke(this);
+            IsOpened = false;
         }
     }
 }
