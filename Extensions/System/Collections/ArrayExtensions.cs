@@ -45,12 +45,6 @@ namespace UTIRLib
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasNullOrEmptyString(this string[] strings)
-        {
-            return strings.Any(x => x.IsNullOrEmpty());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasNullElement<T>(this T[] array) => array.Any(x => x.IsNull());
 
         /// <summary>

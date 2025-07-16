@@ -71,7 +71,7 @@ namespace UTIRLib.Math
             float thirdSubTriangleSquare = CalculateSquareOfTriangle(c, point, a);
 
             return (firstSubTriangleSquare + secondSubTriangleSquare + thirdSubTriangleSquare).
-                EqualsWithEpsilon(triangleSquare);
+                EqualsX(triangleSquare);
         }
 
         public static bool IsPointInTriangle(Vector2 point, Triangle triangle) =>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -186,6 +187,12 @@ namespace UTIRLib
             return !str.IsNullOrWhiteSpace();
         }
         #endregion Diagnsotics
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasNullOrEmptyString(this string[] strings)
+        {
+            return strings.Any(x => x.IsNullOrEmpty());
+        }
 
         private static string JoinToStringSkipEmpty(IEnumerable<string> strings, object separator)
         {

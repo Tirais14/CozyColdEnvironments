@@ -12,7 +12,7 @@ namespace UTIRLib.TwoD
 
         public static Direction2D ToDirection2D(this Vector2 value)
         {
-            if (!value.x.EqualsWithEpsilon(0) && !value.y.EqualsWithEpsilon(0))
+            if (!value.x.EqualsX(0) && !value.y.EqualsX(0))
             {
                 if (value.x > 0 && value.y > 0)
                 {
@@ -31,7 +31,7 @@ namespace UTIRLib.TwoD
                     return Direction2D.LeftDown;
                 }
             }
-            else if (!value.x.EqualsWithEpsilon(0) && value.y.EqualsWithEpsilon(0))
+            else if (!value.x.EqualsX(0) && value.y.EqualsX(0))
             {
                 if (value.x > 0)
                 {
@@ -42,7 +42,7 @@ namespace UTIRLib.TwoD
                     return Direction2D.Left;
                 }
             }
-            else if (!value.y.EqualsWithEpsilon(0) && value.x.EqualsWithEpsilon(0))
+            else if (!value.y.EqualsX(0) && value.x.EqualsX(0))
             {
                 if (value.y > 0)
                 {

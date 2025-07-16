@@ -17,12 +17,12 @@ namespace UTIRLib.TwoD
                 else if (x > 0 && y < 0) { return Direction2D.RightDown; }
                 else if (x < 0 && y < 0) { return Direction2D.LeftDown; }
             }
-            else if (x.NotEqualsWithEpsilon(0) && y.EqualsWithEpsilon(0))
+            else if (x.NotEqualsWithEpsilon(0) && y.EqualsX(0))
             {
                 if (x > 0) { return Direction2D.Right; }
                 else if (x < 0) { return Direction2D.Left; }
             }
-            else if (x.EqualsWithEpsilon(0) && y.NotEqualsWithEpsilon(0))
+            else if (x.EqualsX(0) && y.NotEqualsWithEpsilon(0))
             {
                 if (y > 0) { return Direction2D.Up; }
                 else if (y < 0) { return Direction2D.Down; }

@@ -6,15 +6,18 @@ namespace UTIRLib.Init
     [AttributeUsage(AttributeTargets.Class)]
     public class InitAfterAttribute : InitAttribute
     {
-        public Type Type { get; }
+        public Type[] ObjectTypes { get; }
 
         /// <exception cref="ArgumentException"></exception>
-        public InitAfterAttribute(Type type)
+        public InitAfterAttribute(params Type[] types)
         {
-            if (type.IsNot<IInitable>())
-                throw new ArgumentException($"{type.GetProccessedName()} is not {nameof(IInitable)} type.");
+            for (int i = 0; i < types.Length; i++)
+            {
+                if (types[i].IsNot<IInitable>())
+                    throw new CollectionItemException($"Is not {nameof(IInitable)}.", i);
+            }
 
-            Type = type;
+            ObjectTypes = types;
         }
     }
 }

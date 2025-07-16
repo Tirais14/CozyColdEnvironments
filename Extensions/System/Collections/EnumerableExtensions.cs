@@ -10,6 +10,12 @@ namespace UTIRLib
 {
     public static class EnumerableExtensions
     {
+        public static int CountNotNull<T>(this IEnumerable<T> values)
+            where T : class
+        {
+            return values.Count(x => x.IsNotNull());
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains<T>(this IEnumerable<T> values, IEnumerable<T> toCheckValues)
         {

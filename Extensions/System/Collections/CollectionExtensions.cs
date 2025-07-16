@@ -11,7 +11,10 @@ namespace UTIRLib
     public static class CollectionExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetCountOrZero(this ICollection? collection) => collection?.Count ?? 0;
+        public static int GetCountOrZero(this ICollection? collection)
+        {
+            return collection?.Count ?? 0;
+        }
 
         public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> range)
         {

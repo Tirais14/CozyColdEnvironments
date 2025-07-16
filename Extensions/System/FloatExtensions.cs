@@ -8,7 +8,7 @@ namespace UTIRLib
     public static class FloatExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsWithEpsilon(this float a, float b, float epsilon = 0.0001f)
+        public static bool EqualsX(this float a, float b, float epsilon = 0.0001f)
         {
             return MathF.Abs(a - b) < epsilon;
         }
@@ -16,7 +16,7 @@ namespace UTIRLib
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool NotEqualsWithEpsilon(this float a, float b, float epsilon = 0.0001f)
         {
-            return MathF.Abs(a - b) > epsilon;
+            return !a.EqualsX(b, epsilon);
         }
     }
 }

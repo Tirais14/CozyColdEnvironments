@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UTIRLib.Attributes;
 using UTIRLib.Diagnostics;
 using UTIRLib.Init;
 using UTIRLib.Linq;
@@ -13,14 +14,18 @@ namespace UTIRLib
 {
     public static class SceneInitializer
     {
-        public static void Init(IInitable initable)
+        /// <exception cref="ArgumentException"></exception>
+        public static void InitObject(IInitable initable)
         {
+            if (initable.IsInited)
+                throw new ArgumentException($"{initable.GetProccessedTypeName()} is already inited.");
+
             initable.Init();
             TirLibDebug.Log($"Inited => {initable.GetType().GetProccessedName()}.");
         }
 
         /// <exception cref="InvalidOperationException"></exception>
-        public static void Init<T>()
+        public static void InitObject<T>()
             where T : IInitable
         {
             T[] initables = UnityObjectHelper.FindObjectsByType<T>(
@@ -33,111 +38,148 @@ namespace UTIRLib
             else if (initablesCount == 0)
                 throw new InvalidOperationException($"Cannot find initable {typeof(T).GetProccessedName()}.");
 
-            Init(initables.First(x => x.IsNotNull()));
+            InitObject(initables.First(x => x.IsNotNull()));
         }
 
-        public static void InitAll()
+        public static void InitObjects(IEnumerable<IInitable> initables)
+        {
+            foreach (var item in initables)
+                InitObject(item);
+        }
+
+        public static void InitAllObjects()
         {
             IInitable[] initables =
-            UnityObjectHelper.FindObjectsByType<IInitable>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
+                UnityObjectHelper.FindObjectsByType<IInitable>(FindObjectsInactive.Include);
 
-            InitAttributed(initables);
+            if (initables.IsEmpty())
+            {
+                TirLibDebug.Warning("Nothing to init.");
 
-            IEnumerable<IInitable> basicInitables = initables.Where(
-                x => !x.GetType()
-                     .IsDefined(typeof(InitAttribute),
-                                inherit: true));
+                return;
+            }
 
-            InitBasic(initables);
+            IInitable[] attributedInits = GetAttributedInits(initables);
+
+            Queue<IInitable> queue = CreateInitsQueue(attributedInits);
+
+            var loopPredicate = new LoopPredicate<int>(x => x > 0);
+            IInitable initable;
+            while (loopPredicate.Invoke(queue.Count))
+            {
+                initable = queue.Dequeue();
+
+                InitObject(initable);
+            }
         }
 
-        private static IInitable[] OrderAttributedInitables(
-            IInitable firstInitable,
-            IEnumerable<IInitable> attributed)
+        private static IInitable[] GetAttributedInits(IInitable[] inits)
         {
-            var toProccess = new List<IInitable>(attributed);
-            var proccessed = new List<IInitable>(toProccess.Count + 1) { firstInitable };
+            return inits.Where(x => x.GetType().IsDefined<InitAttribute>(inherit: true))
+                        .ToArray();
+        }
 
-            var loopPredicate = new LoopPredicate(
-                () => proccessed.Count < toProccess.Count + proccessed.Count,
-                throwMessage: $"Cannot resolve next initable. {proccessed[^1].GetProccessedTypeName()}");
+        private static IInitable[] GetFirstInits(IInitable[] inits)
+        {
+            return inits.Where(x => x.GetType().IsDefined<InitFirstAttribute>(inherit: true))
+                        .ToArray();
+        }
 
-            while (loopPredicate.Invoke())
+        private static (IInitable value, InitAfterAttribute attribute)[] GetPredicatedInits(
+            IInitable[] inits)
+        {
+            return inits.Where(x => x.GetType().IsDefined<InitAfterAttribute>(inherit: true))
+                        .Select(x =>
+                        {
+                            var attribute = x.GetType().GetCustomAttribute<InitAfterAttribute>();
+
+                            return (x, attribute);
+                        }).ToArray();
+        }
+
+        private static (IInitable value, InitAfterAttribute attribute)[] ResolvePredicatedInits(
+            IReadOnlyList<(IInitable value, InitAfterAttribute attribute)> toProccess,
+            IReadOnlyList<IInitable> proccessed)
+        {
+            var proccessedTypes = new HashSet<Type>(proccessed.Select(x => x.GetType()));
+
+            return toProccess.Where(x => proccessedTypes.Contains(proccessedTypes))
+                             .ToArray();
+        }
+
+        private static IInitable[] OrderPredicatedInits(
+            (IInitable value, InitAfterAttribute attribute)[] predicated,
+            IInitable comparable)
+        {
+            var toProccess = new List<(IInitable value, InitAfterAttribute attribute)>(predicated);
+            var proccessed = new List<IInitable>(predicated.Length);
+
+            var loopPredicate = new LoopPredicate<int, int, int>(
+                (toProccessCount, proccessedCount, maxCount) => toProccessCount > 0 
+                                                                && 
+                                                                proccessedCount < maxCount);
+
+            (IInitable value, InitAfterAttribute attribute)[] foundValues;
+            while (loopPredicate.Invoke(toProccess.Count,
+                                        proccessed.Count,
+                                        predicated.Length))
             {
-                IInitable? next = toProccess.Find(
-                                  x => GetNextAttributedInitable(x, proccessed[^1]));
+                foundValues = ResolvePredicatedInits(toProccess, proccessed);
 
-                if (next.IsNull())
-                    next = toProccess[0];
+                //Takes last, if not found any
+                if (foundValues.IsEmpty())
+                {
+                    proccessed.Add(toProccess[^1].value);
+                    toProccess.RemoveAt(toProccess.Count - 1);
+                    continue;
+                }
 
-                proccessed.Add(next);
-                toProccess.Remove(next);
-
+                proccessed.AddRange(foundValues.Select(x => x.value).ToArray());
+                toProccess.RemoveRange(foundValues);
             }
 
             return proccessed.ToArray();
         }
 
-        private static bool GetNextAttributedInitable(IInitable initable, IInitable other)
+        private static void EnqueueFirstInits(Queue<IInitable> queue, IInitable[] inits)
         {
-            var otherAttribute = other.GetType().GetCustomAttribute<InitAfterAttribute>();
+            IInitable[] firstInits = GetFirstInits(inits);
 
-            return initable.GetType() == otherAttribute.Type;
+            if (firstInits.CountNotNull() == 0)
+                throw new TirLibException("Not found any first initable.");
+
+            for (int i = 0; i < firstInits.Length; i++)
+                queue.Enqueue(firstInits[i]);
         }
 
-        private static IInitable? GetFirstInitable(IInitable[] initables)
+        private static void EnqueuePredicatedInits(Queue<IInitable> queue,
+                                                   IInitable[] inits)
         {
-            return initables.SingleOrDefault(
-                        x => x.GetType()
-                             .IsDefined(typeof(InitFirstAttribute),
-                                        inherit: true));
+            (IInitable value, InitAfterAttribute attribute)[] predicatedInits =
+                GetPredicatedInits(inits);
+
+            if (predicatedInits.IsEmpty())
+                return;
+
+            IInitable[] orderedPredicatedInits = OrderPredicatedInits(predicatedInits,
+                                                                      queue.Peek());
+
+            for (int i = 0; i < orderedPredicatedInits.Length; i++)
+                queue.Enqueue(orderedPredicatedInits[i]);
         }
 
-        private static IEnumerable<IInitable> FilterByAttribute(IInitable[] initables)
+        private static Queue<IInitable> CreateInitsQueue(IInitable[] attributed)
         {
-            return initables.Where(x => x.GetType().
-                                          IsDefined(typeof(InitAfterAttribute),
-                                                    inherit: true));
-        }
+            if (attributed.IsEmpty()) 
+                return new Queue<IInitable>(0);
 
-        private static void InitAttributed(IInitable[] initables)
-        {
-            IInitable? firstInitable = GetFirstInitable(initables);
-            IEnumerable<IInitable> attributedInitables = FilterByAttribute(initables);
+            var queue = new Queue<IInitable>(attributed.Length);
 
-            if (firstInitable.IsNull())
-            {
-                if (attributedInitables.IsNotEmpty())
-                    throw new InvalidOperationException("Cannot find first initable.");
-                else
-                    return;
-            }
+            EnqueueFirstInits(queue, attributed);
 
-            IInitable[] ordered = OrderAttributedInitables(firstInitable, attributedInitables);
+            EnqueuePredicatedInits(queue, attributed);
 
-            for (int i = 0; i < ordered.Length; i++)
-            {
-                ordered[i].Init();
-
-                TirLibDebug.Log($"Inited: {ordered[i].GetType().GetProccessedName()}.");
-            }
-        }
-
-        private static void InitBasic(IInitable[] initables)
-        {
-            IEnumerable<IInitable> basicInitables = initables.Where(
-                x => !x.GetType()
-                     .IsDefined(typeof(InitAttribute),
-                                inherit: true));
-
-            foreach (var initable in basicInitables)
-            {
-                initable.Init();
-
-                TirLibDebug.Log($"Inited: {initable.GetType().GetProccessedName()}.");
-            }
+            return queue;
         }
     }
 }
