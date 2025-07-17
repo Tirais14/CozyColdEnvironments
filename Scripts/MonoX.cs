@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UTIRLib.ComponentSetter;
@@ -23,33 +23,37 @@ namespace UTIRLib
         protected Transform[] GetChilds()
         {
             if (transform.childCount == 0)
-            {
                 return Array.Empty<Transform>();
-            }
 
             int childCount = transform.childCount;
             var childs = new Transform[childCount];
             for (int i = 0; i < childCount; i++)
-            {
                 childs[i] = transform.GetChild(i);
-            }
 
             return childs;
         }
 
-        protected void DontDestroyOnLoad()
+        protected bool TryLockDestroyOnLoad()
         {
             if (transform.parent == null)
             {
                 DontDestroyOnLoad(this);
+
+                return true;
             }
+
+            return false;
         }
 
-        protected T? AddComponent<T>(Type type) where T : Component =>
-            ComponentHelper.AddComponent<MonoBehaviour, T>(this, type);
+        protected T? AddComponent<T>(Type type) where T : Component
+        {
+            return ComponentHelper.AddComponent<MonoBehaviour, T>(this, type);
+        }
 
-        protected T AddComponent<T>() where T : Component =>
-            ComponentHelper.AddComponent<MonoBehaviour, T>(this);
+        protected T AddComponent<T>() where T : Component
+        {
+            return ComponentHelper.AddComponent<MonoBehaviour, T>(this);
+        }
 
         protected void AddComponent<T>([NotNull] ref T? value) where T : Component =>
             ComponentHelper.AddComponent<MonoBehaviour, T>(this, ref value);
@@ -82,14 +86,12 @@ namespace UTIRLib
             OnStart();
 
             if (onEndFirstFrame is not null)
-            {
-                StartCoroutine(EndOfFirstFrameObserver());
-            }
+                _ = OnEndFirstFrameInvokerAsync();
         }
 
-        private IEnumerator EndOfFirstFrameObserver()
+        private async UniTaskVoid OnEndFirstFrameInvokerAsync()
         {
-            yield return new WaitForEndOfFrame();
+            await UniTask.WaitForEndOfFrame();
             onEndFirstFrame!();
         }
     }
