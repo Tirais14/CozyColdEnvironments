@@ -1,6 +1,6 @@
 using UnityEngine.EventSystems;
 using UTIRLib.Attributes;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 
 #nullable enable
 namespace UTIRLib.UI
@@ -10,7 +10,7 @@ namespace UTIRLib.UI
         IDragHandler,
         IEndDragHandler
     {
-        [GetComponent]
+        [GetSelfAttribute]
         [RequiredMember]
         private IMovable movable = null!;
 

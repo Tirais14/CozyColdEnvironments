@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 using UTIRLib.Utils;
 
 #nullable enable
@@ -70,7 +70,7 @@ namespace UTIRLib
 
         protected void Awake()
         {
-            ComponentInjector.Inject(this); //Sets component fields and props marked by GetComponentAttribute
+            ComponentContainableMemberSetHelper.SetMembers(this); //Sets component fields and props marked by GetComponentAttribute
 
             OnAwake();
 

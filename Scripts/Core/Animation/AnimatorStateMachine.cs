@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using UTIRLib.Extensions;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 using UTIRLib.Patterns.Composite;
 using UTIRLib.Utils;
 
@@ -14,7 +14,7 @@ namespace UTIRLib.Animation
     [RequireComponent(typeof(Animator))]
     public abstract class AnimatorStateMachine : MonoX, IAnimatorStateMachine<AnimatorState>
     {
-        [GetComponent]
+        [GetSelfAttribute]
         protected Animator animator = null!;
 
         protected string?[] playingStateNames = null!;

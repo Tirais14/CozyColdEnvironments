@@ -3,7 +3,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using UTIRLib.Attributes;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 
 #nullable enable
 namespace UTIRLib.UI
@@ -13,7 +13,7 @@ namespace UTIRLib.UI
     {
         private Vector2 defaultLocalPosition;
 
-        [GetComponent]
+        [GetSelfAttribute]
         private Image image = null!;
 
         [Optional]

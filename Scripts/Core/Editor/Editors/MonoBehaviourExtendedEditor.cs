@@ -4,7 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UTIRLib.Attributes;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 
 #nullable enable
 
@@ -82,12 +82,12 @@ namespace UTIRLib.Editor
 
         private static void ProccessGetComponentAttribute(FieldInfo targetField, PropertyField propertyField)
         {
-            if (targetField.GetCustomAttribute(typeof(GetComponentAttribute))
-                is GetComponentAttribute getComponentAttribute)
+            if (targetField.GetCustomAttribute(typeof(GetSelfAttribute))
+                is GetSelfAttribute getComponentAttribute)
             {
                 propertyField.label = getComponentAttribute switch {
                     GetComponentInChildrenAttribute => $"[🧩▼]" + propertyField.label,
-                    GetComponentInParentAttribute => $"[🧩▲]" + propertyField.label,
+                    GetByParentAttribute => $"[🧩▲]" + propertyField.label,
                     _ => $"[🧩]" + propertyField.label,
                 };
             }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UTIRLib.Attributes;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 using UTIRLib.InputSystem;
 
 #nullable enable
@@ -18,7 +18,7 @@ namespace UTIRLib.UI
         [field: SerializeField]
         public EventSystem EventSystem { get; protected set; } = null!;
 
-        [GetComponent]
+        [GetSelfAttribute]
         [field: SerializeField]
         public GraphicRaycaster DefaultRaycaster { get; protected set; } = null!;
 

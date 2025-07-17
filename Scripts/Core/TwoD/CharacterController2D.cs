@@ -1,5 +1,5 @@
 using UnityEngine;
-using UTIRLib.Injector;
+using UTIRLib.ComponentSetter;
 using UTIRLib.Utils;
 
 #nullable enable
@@ -9,10 +9,10 @@ namespace UTIRLib.TwoD
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public sealed class CharacterController2D : MonoX
     {
-        [GetComponent]
+        [GetSelfAttribute]
         private Rigidbody2D rigidbody2DComponent = null!;
 
-        [GetComponent]
+        [GetSelfAttribute]
         private Collider2D collider2DComponent = null!;
 
         public Rigidbody2D Rigidbody2D => rigidbody2DComponent;
