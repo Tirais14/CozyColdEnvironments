@@ -4,7 +4,7 @@ using System;
 namespace UTIRLib
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class GetByParentAttribute : ComponentContainableAttribute
+    public class GetByParentAttribute : ComponentContainableMemberAttribute
     {
     
     }

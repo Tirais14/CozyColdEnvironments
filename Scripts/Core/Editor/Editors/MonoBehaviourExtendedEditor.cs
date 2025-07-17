@@ -82,11 +82,11 @@ namespace UTIRLib.Editor
 
         private static void ProccessGetComponentAttribute(FieldInfo targetField, PropertyField propertyField)
         {
-            if (targetField.GetCustomAttribute(typeof(GetSelfAttribute))
-                is GetSelfAttribute getComponentAttribute)
+            if (targetField.GetCustomAttribute(typeof(ComponentContainableMemberAttribute))
+                is ComponentContainableMemberAttribute attribute)
             {
-                propertyField.label = getComponentAttribute switch {
-                    GetComponentInChildrenAttribute => $"[🧩▼]" + propertyField.label,
+                propertyField.label = attribute switch {
+                    GetByChildrenAttribute => $"[🧩▼]" + propertyField.label,
                     GetByParentAttribute => $"[🧩▲]" + propertyField.label,
                     _ => $"[🧩]" + propertyField.label,
                 };

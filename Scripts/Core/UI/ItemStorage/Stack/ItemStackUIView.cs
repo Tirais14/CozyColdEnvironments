@@ -17,8 +17,8 @@ namespace UTIRLib.UI
         private Image image = null!;
 
         [Optional]
+        [GetByChildren]
         [SerializeField]
-        [GetComponentInChildrenIfNull]
         private TextMeshProUGUI? textComponent;
 
         private IItemStackUIViewModel viewModel = null!;

@@ -17,36 +17,36 @@ namespace UTIRLib.ComponentSetter
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
 
-            (FieldInfo field, ComponentContainableAttribute attribute)[] fields =
+            (FieldInfo field, ComponentContainableMemberAttribute attribute)[] fields =
                 GetAttributedFields(target);
 
             if (fields.IsNotEmpty())
                 SetFields(target, fields);
 
-            (PropertyInfo prop, ComponentContainableAttribute attribute)[] props =
+            (PropertyInfo prop, ComponentContainableMemberAttribute attribute)[] props =
                 GetAttributedProps(target);
 
             if (props.IsNotEmpty())
                 SetProps(target, props);
         }
 
-        private static (FieldInfo, ComponentContainableAttribute)[]GetAttributedFields(
+        private static (FieldInfo, ComponentContainableMemberAttribute)[]GetAttributedFields(
             Component source)
         {
             return source.GetType()
                          .GetFields(BindingFlagsDefault.InstanceAll.ToBindingFlags())
-                         .Where(x => x.IsDefined<ComponentContainableAttribute>())
-                         .Select(x => (x, x.GetCustomAttribute<ComponentContainableAttribute>()))
+                         .Where(x => x.IsDefined<ComponentContainableMemberAttribute>())
+                         .Select(x => (x, x.GetCustomAttribute<ComponentContainableMemberAttribute>()))
                          .ToArray();
         }
 
-        private static (PropertyInfo, ComponentContainableAttribute)[] GetAttributedProps(
+        private static (PropertyInfo, ComponentContainableMemberAttribute)[] GetAttributedProps(
             Component source)
         {
             return source.GetType()
                          .GetProperties(BindingFlagsDefault.InstanceAll.ToBindingFlags())
-                         .Where(x => x.IsDefined<ComponentContainableAttribute>())
-                         .Select(x => (x, x.GetCustomAttribute<ComponentContainableAttribute>()))
+                         .Where(x => x.IsDefined<ComponentContainableMemberAttribute>())
+                         .Select(x => (x, x.GetCustomAttribute<ComponentContainableMemberAttribute>()))
                          .ToArray();
         }
 
@@ -79,6 +79,9 @@ namespace UTIRLib.ComponentSetter
                                      FieldInfo field,
                                      Func<Component, Type, object?> getter)
         {
+            if (field.GetValue(source).IsNotNull())
+                return;
+
             object? foundComponent = getter(source, field.FieldType);
 
             if (foundComponent.IsNull())
@@ -90,7 +93,7 @@ namespace UTIRLib.ComponentSetter
         }
 
         private static void SetFields(Component source,
-            (FieldInfo field, ComponentContainableAttribute attribute)[] fields)
+            (FieldInfo field, ComponentContainableMemberAttribute attribute)[] fields)
         {
             for (int i = 0; i < fields.Length; i++)
             {
@@ -116,6 +119,9 @@ namespace UTIRLib.ComponentSetter
                                               PropertyInfo prop,
                                               Func<Component, Type, object?> getter)
         {
+            if (prop.GetValue(source).IsNotNull())
+                return;
+
             object? foundComponent;
 
             if (prop.PropertyType.Is<Component>())
@@ -132,7 +138,7 @@ namespace UTIRLib.ComponentSetter
         }
 
         private static void SetProps(Component source,
-            (PropertyInfo prop, ComponentContainableAttribute attribute)[] props)
+            (PropertyInfo prop, ComponentContainableMemberAttribute attribute)[] props)
         {
             for (int i = 0; i < props.Length; i++)
             {
