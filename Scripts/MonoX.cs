@@ -9,9 +9,9 @@ using UTIRLib.Utils;
 
 namespace UTIRLib
 {
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class MonoX : MonoBehaviour
     {
-        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         protected event Action? onEndFirstFrame;
 
         protected virtual void OnAwake()
@@ -55,26 +55,49 @@ namespace UTIRLib
             return ComponentHelper.AddComponent<MonoBehaviour, T>(this);
         }
 
-        protected void AddComponent<T>([NotNull] ref T? value) where T : Component =>
+        protected void AddComponent<T>([NotNull] ref T? value) where T : Component
+        {
             ComponentHelper.AddComponent<MonoBehaviour, T>(this, ref value);
+        }
 
-        protected void Message(object message) => Debug.Log(message, this);
+        protected void Message(object message)
+        {
+            Debug.Log(message, this);
+        }
 
-        protected static void MessageFormat(string message, params object[] args) => Debug.LogFormat(message, args);
+        protected void MessageFormat(string message, params object[] args)
+        {
+            Debug.LogFormat(this, message, args);
+        }
 
-        protected void Warning(object message) => Debug.LogWarning(message, this);
+        protected void Warning(object message)
+        {
+            Debug.LogWarning(message, this);
+        }
 
-        protected static void WarningFormat(string message, params object[] args) => Debug.LogWarningFormat(message, args);
+        protected void WarningFormat(string message, params object[] args)
+        {
+            Debug.LogWarningFormat(this, message, args);
+        }
 
-        protected void Error(object message) => Debug.LogError(message, this);
+        protected void Error(object message)
+        {
+            Debug.LogError(message, this);
+        }
 
-        protected static void ErrorFormat(string message, params object[] args) => Debug.LogErrorFormat(message, args);
+        protected void ErrorFormat(string message, params object[] args)
+        {
+            Debug.LogErrorFormat(this, message, args);
+        }
 
-        protected void LogException(Exception exception) => Debug.LogException(exception, this);
+        protected void LogException(Exception exception)
+        {
+            Debug.LogException(exception, this);
+        }
 
         protected void Awake()
         {
-            //Sets component fields and props marked by GetComponentAttribute
+            //Sets component fields and props marked by specical attribute
             ComponentContainableMemberSetHelper.SetMembers(this);
 
             OnAwake();
