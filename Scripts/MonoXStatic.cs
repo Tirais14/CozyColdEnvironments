@@ -8,14 +8,12 @@ namespace UTIRLib
 {
     public abstract class MonoXStatic : MonoX
     {
-        [MaybeNull]
-        private static Transform parent = null!;
+        private static Transform? parent = null!;
 
         /// <summary>
         /// Parent of any instantiated <see cref="MonoXStatic"/>
         /// </summary>
-        [MaybeNull]
-        public static Transform Parent {
+        public static Transform? Parent {
             get => parent;
             set {
                 parent = value;
@@ -101,17 +99,6 @@ namespace UTIRLib
     public abstract class MonoXStatic<TThis> : MonoXStatic
         where TThis : Component
     {
-        private static TThis? instanceInternal;
-
-        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-        protected static TThis instance {
-            get
-            {
-                if (instanceInternal == null)
-                    instanceInternal = Create<TThis>();
-
-                return instanceInternal;
-            }
-        }
+        protected static LazyProperty<TThis> instance = new(Create<TThis>);
     }
 }

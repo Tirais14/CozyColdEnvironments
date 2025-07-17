@@ -125,9 +125,9 @@ namespace UTIRLib.ComponentSetter
             object? foundComponent;
 
             if (prop.PropertyType.Is<Component>())
-                foundComponent = source.GetComponent(prop.PropertyType);
+                foundComponent = getter(source, prop.PropertyType);
             else
-                foundComponent = source.GetAssignedObject(prop.PropertyType);
+                foundComponent = getter(source, prop.PropertyType);
 
             if (foundComponent.IsNull())
                 throw new ObjectNotFoundException(prop.PropertyType);

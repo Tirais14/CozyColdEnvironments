@@ -74,11 +74,13 @@ namespace UTIRLib
 
         protected void Awake()
         {
-            ComponentContainableMemberSetHelper.SetMembers(this); //Sets component fields and props marked by GetComponentAttribute
+            //Sets component fields and props marked by GetComponentAttribute
+            ComponentContainableMemberSetHelper.SetMembers(this);
 
             OnAwake();
 
-            MemberValidator.ValidateInstance(this); //Checks field and props marked by RequiredAttribute
+            //Checks field and props marked by RequiredAttribute
+            MemberValidator.ValidateInstance(this);
         }
 
         protected void Start()
