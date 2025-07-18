@@ -10,7 +10,7 @@ namespace UTIRLib.UI
     {
         EventSystem EventSystem { get; }
         GraphicRaycaster DefaultRaycaster { get; }
-        IPointerHandler PointerHandler { get; }
+        IPointerInput Pointer { get; }
         IRaycasterUI Raycaster { get; }
     }
 }

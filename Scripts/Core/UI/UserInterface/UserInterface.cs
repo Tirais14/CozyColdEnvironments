@@ -23,7 +23,7 @@ namespace UTIRLib.UI
         public GraphicRaycaster DefaultRaycaster { get; protected set; } = null!;
 
         [RequiredMember]
-        public IPointerHandler PointerHandler { get; protected set; } = null!;
+        public IPointerInput Pointer { get; protected set; } = null!;
 
         [RequiredMember]
         public IRaycasterUI Raycaster { get; protected set; } = null!;
@@ -34,7 +34,7 @@ namespace UTIRLib.UI
         {
             base.OnAwake();
 
-            Raycaster = new RaycasterUI(PointerHandler, DefaultRaycaster, EventSystem);
+            Raycaster = new RaycasterUI(Pointer, DefaultRaycaster, EventSystem);
         }
 
         public virtual void Open()

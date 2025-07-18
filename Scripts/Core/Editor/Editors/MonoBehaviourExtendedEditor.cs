@@ -75,8 +75,8 @@ namespace UTIRLib.Editor
         {
             if (targetField.GetCustomAttribute(typeof(OptionalAttribute)) is OptionalAttribute)
             {
-                propertyField.label = "⭕" + propertyField.label;
-                propertyField.style.backgroundColor = new Color(0f, 0f, 1f, 0.05f);
+                propertyField.label += "?";
+                //propertyField.style.backgroundColor = new Color(0f, 0f, 1f, 0.05f);
             }
         }
 

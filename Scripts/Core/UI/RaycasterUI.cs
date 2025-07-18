@@ -15,13 +15,15 @@ namespace UTIRLib.UI
 {
     public class RaycasterUI : IRaycasterUI
     {
-        protected readonly IPointerHandler pointerHandler;
+        protected readonly IPointerInput pointer;
         protected readonly PointerEventData eventData;
         protected readonly GraphicRaycaster graphicRaycaster;
 
-        public RaycasterUI(IPointerHandler pointerHandler, GraphicRaycaster graphicRaycaster, EventSystem eventSystem)
+        public RaycasterUI(IPointerInput pointer,
+                           GraphicRaycaster graphicRaycaster,
+                           EventSystem eventSystem)
         {
-            this.pointerHandler = pointerHandler;
+            this.pointer = pointer;
             this.graphicRaycaster = graphicRaycaster;
             eventData = new PointerEventData(eventSystem);
         }
@@ -40,7 +42,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return TryRaycastFirst(pointerHandler.PointerPosition, out result, exclude);
+            return TryRaycastFirst(pointer.Value, out result, exclude);
         }
 
         public bool TryRaycastFirst(Type targetType,
@@ -59,7 +61,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return TryRaycastFirst(targetType, pointerHandler.PointerPosition, out result, exclude);
+            return TryRaycastFirst(targetType, pointer.Value, out result, exclude);
         }
 
         public bool TryRaycast<T>(Vector2 position, out T[] results, object? exclude = null)
@@ -73,7 +75,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return TryRaycast(pointerHandler.PointerPosition, out results, exclude);
+            return TryRaycast(pointer.Value, out results, exclude);
         }
 
         public bool TryRaycast(Type targetType, Vector2 position, out object[] results, object? exclude = null)
@@ -87,7 +89,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return TryRaycast(targetType, pointerHandler.PointerPosition, out results, exclude);
+            return TryRaycast(targetType, pointer.Value, out results, exclude);
         }
 
         public T? RaycastFirst<T>(Vector2 position, object? exclude = null)
@@ -101,7 +103,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return RaycastFirst<T>(pointerHandler.PointerPosition, exclude);
+            return RaycastFirst<T>(pointer.Value, exclude);
         }
 
         public object? RaycastFirst(Type targetType, Vector2 position, object? exclude = null)
@@ -113,7 +115,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return RaycastFirst(targetType, pointerHandler.PointerPosition, exclude);
+            return RaycastFirst(targetType, pointer.Value, exclude);
         }
 
         public T[] Raycast<T>(Vector2 position, object? exclude = null)
@@ -127,7 +129,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return Raycast(typeof(T), pointerHandler.PointerPosition, exclude).Cast<T>().ToArray();
+            return Raycast(typeof(T), pointer.Value, exclude).Cast<T>().ToArray();
         }
 
         public object[] Raycast(Type targetType, Vector2 position, object? exclude = null)
@@ -139,7 +141,7 @@ namespace UTIRLib.UI
         {
             TirLibDebug.Log("Using pointer handler position.", this, true);
 
-            return Raycast(targetType, pointerHandler.PointerPosition, exclude);
+            return Raycast(targetType, pointer.Value, exclude);
         }
 
         protected RaycastResult[] GetRaycastResults(Vector2 position)

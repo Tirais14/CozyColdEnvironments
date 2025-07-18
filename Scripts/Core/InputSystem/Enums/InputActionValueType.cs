@@ -1,29 +1,23 @@
-using System;
 using UnityEngine;
+using UTIRLib.Attributes.Metadata;
 
 #nullable enable
-
 namespace UTIRLib.InputSystem
 {
-    public enum InputActionValueType
+    public enum InputActionValueType : byte
     {
         None,
-        Button,
-        Vector2,
-        Vector3,
-        Quaternion
-    }
 
-    public static class InputActionValueTypeExtension
-    {
-        public static Type? ToSystemType(this InputActionValueType inputActionValueType) =>
-            inputActionValueType switch {
-                InputActionValueType.None => null,
-                InputActionValueType.Button => typeof(bool),
-                InputActionValueType.Vector2 => typeof(Vector2),
-                InputActionValueType.Vector3 => typeof(Vector3),
-                InputActionValueType.Quaternion => typeof(Quaternion),
-                _ => null,
-            };
+        [MetaType(typeof(bool))]
+        Button,
+
+        [MetaType(typeof(Vector2))]
+        Vector2,
+
+        [MetaType(typeof(Vector3))]
+        Vector3,
+
+        [MetaType(typeof(Quaternion))]
+        Quternion
     }
 }
