@@ -3,6 +3,9 @@ using System;
 #nullable enable
 namespace UTIRLib.Init
 {
+    /// <summary>
+    /// Call <see cref="IInitable.Init"/> only after initialization this types.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class InitAfterAttribute : InitAttribute
     {

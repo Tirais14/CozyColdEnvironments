@@ -1,11 +1,11 @@
 using System;
+using UTIRLib.Disposables;
 
 #nullable enable
 namespace UTIRLib.UI
 {
     public interface IViewModel : IDisposable
     {
-        void BindDisposable(IDisposable disposable);
     }
     public interface IViewModel<out T> : IViewModel
     {
