@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
 using UnityEngine.InputSystem;
-using UTIRLib;
 using UTIRLib.Diagnostics;
 
 #nullable enable
@@ -9,6 +10,44 @@ namespace UTIRLib.InputSystem
 {
     public static class InputActionFactory
     {
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public static IInputAction Create(Type inputValueType,
+                                          InputActionMap actionMap,
+                                          string actionName)
+        {
+            if (inputValueType == null)
+                throw new ArgumentNullException(nameof(inputValueType));
+            if (inputValueType.IsNotAny(typeof(bool),
+                                        typeof(Vector2),
+                                        typeof(Vector3),
+                                        typeof(Quaternion)))
+                throw new ArgumentException($"Input value type cannot be {inputValueType.GetName()}.");
+
+            MethodInfo createMethod = typeof(InputActionFactory).GetMethod(
+                nameof(Create),
+                genericParameterCount: 1,
+                BindingFlagsDefault.StaticPublic.ToBindingFlags(),
+                binder: null,
+                new Type[] { typeof(InputActionMap), typeof(string) },
+                Array.Empty<ParameterModifier>())
+                    .MakeGenericMethod(inputValueType);
+
+            return (IInputAction)createMethod.Invoke(obj: null,
+                new object[] { actionMap, actionName });
+
+        }
+        public static IInputAction Create(Type inputValueType,
+                                          InputActionAsset inputActions,
+                                          string actionMapName,
+                                          string actionName)
+        {
+            InputActionMap actionMap = inputActions.FindActionMap(actionMapName,
+                                                                  throwIfNotFound: true);
+
+            return Create(inputValueType, actionMap, actionName);
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="StringArgumentException"></exception>
         public static IInputAction<T> Create<T>(InputActionMap actionMap,
@@ -46,49 +85,6 @@ namespace UTIRLib.InputSystem
                                                            throwIfNotFound: true);
 
             return Create<T>(actionMap, actionName);
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public static IReadOnlyDictionary<string, IInputAction<T>> Create<T>(
-            InputActionMap actionMap,
-            params string[] actionNames)
-            where T : struct
-        {
-            if (actionMap is null)
-                throw new ArgumentNullException(nameof(actionMap));
-            if (actionNames.IsEmpty())
-                return new Dictionary<string, IInputAction<T>>(0);
-
-            var inputs = new Dictionary<string, IInputAction<T>>(actionNames.Length);
-
-            IInputAction<T> input;
-            for (int i = 0; i < actionNames.Length; i++)
-            {
-                input = Create<T>(actionMap, actionNames[i]);
-
-                inputs.Add(actionNames[i], input);
-            }
-
-            return inputs;
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
-        public static IReadOnlyDictionary<string, IInputAction<T>> Create<T>(
-            InputActionAsset inputActions,
-            string actionMapName,
-            params string[] actionNames)
-            where T : struct
-        {
-            if (inputActions == null)
-                throw new ArgumentNullException(nameof(inputActions));
-            if (actionMapName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(actionMapName), actionMapName);
-
-            InputActionMap actionMap = inputActions.FindActionMap(actionMapName,
-                                                                  throwIfNotFound: true);
-
-            return Create<T>(actionMap, actionNames);
         }
     }
 }

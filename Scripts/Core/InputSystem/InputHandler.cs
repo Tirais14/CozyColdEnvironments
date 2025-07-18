@@ -1,28 +1,89 @@
 #nullable enable
 using System;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UTIRLib.Attributes.Metadata;
+using UTIRLib.Disposables;
 using UTIRLib.Init;
 
 namespace UTIRLib.InputSystem
 {
-    [Obsolete]
-    public class InputHandler : MonoXInitable, IInputHandler, IInitable
+    public class InputHandler : MonoXInitable, IInputHandler, IInitable, IDisposableContainer
     {
-        [SerializeField]
-        private InputActionAsset _inputs;
+        private readonly DisposableCollection disposables = new();
+        protected InputActionMap actionMap = null!;
 
         [SerializeField]
-        private InputItem[] _inputItems;
+        protected InputActionAsset inputs;
 
         [SerializeField]
-        private string _mapName;
+        [Tooltip("It's name must be setted in field after input action name.")]
+        protected string actionPropertyNamePostfix = "Input";
+
+        [SerializeField]
+        protected string actionMapName;
+
+        [SerializeField]
+        protected InputHandlerItem[] inputActionsToInit;
 
         protected override void OnInit()
         {
-            InputActionMap actionMap = _inputs.FindActionMap(_mapName, throwIfNotFound: true);
+            actionMap = inputs.FindActionMap(actionMapName, throwIfNotFound: true);
 
+            InitInputActionProperties();
+        }
 
+        public void Dispose()
+        {
+            disposables.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        private PropertyInfo GetInputActionProperty(string actionName)
+        {
+            string propName = actionName + actionPropertyNamePostfix;
+
+            return GetType()
+                   .GetProperty(propName,
+                                BindingFlagsDefault.InstanceAll.ToBindingFlags())
+                   ??
+                   throw new Exception($"Cannot find property {propName}.");
+        }
+
+        private void SetInputActionProperty(PropertyInfo prop,
+                                            Type inputValueType,
+                                            string actionName)
+        {
+            IInputAction input = InputActionFactory.Create(inputValueType,
+                                                           actionMap,
+                                                           actionName);
+
+            prop.SetValue(this, input);
+        }
+
+        private void AddToDisposables(PropertyInfo prop)
+        {
+            disposables.Add((IInputAction)prop.GetValue(this));
+        }
+
+        private void InitInputActionProperties()
+        {
+            PropertyInfo prop;
+
+            foreach (var toInit in inputActionsToInit)
+            {
+                prop = GetInputActionProperty(toInit.ActionName);
+
+                if (prop.PropertyType.IsNot<IInputAction>())
+                    throw new InvalidOperationException($"Property is not {nameof(IInputAction)} type.");
+
+                SetInputActionProperty(prop,
+                                       toInit.ValueType.GetMetaType(),
+                                       toInit.ActionName);
+
+                AddToDisposables(prop);
+            }
         }
     }
 }

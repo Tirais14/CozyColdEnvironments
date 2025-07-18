@@ -51,6 +51,11 @@ namespace UTIRLib
             return false;
         }
 
+        public static bool IsNotAny(this Type value, params Type?[] types)
+        {
+            return !value.IsAny(types);
+        }
+
         public static string GetName(this Type? type,
             TypeNameAttributes attributes = TypeNameAttributes.Default)
         {
