@@ -9,10 +9,10 @@ namespace UTIRLib.TwoD
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public sealed class CharacterController2D : MonoX
     {
-        [GetSelfAttribute]
+        [GetBySelfAttribute]
         private Rigidbody2D rigidbody2DComponent = null!;
 
-        [GetSelfAttribute]
+        [GetBySelfAttribute]
         private Collider2D collider2DComponent = null!;
 
         public Rigidbody2D Rigidbody2D => rigidbody2DComponent;

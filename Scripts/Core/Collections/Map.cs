@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.UExtensions;
+using UTIRLib.UnityExtensions;
 
 #nullable enable
 

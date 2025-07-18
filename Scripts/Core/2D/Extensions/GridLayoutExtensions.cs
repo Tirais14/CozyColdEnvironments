@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UTIRLib.UExtensions;
+using UTIRLib.UnityExtensions;
 
 #nullable enable
 

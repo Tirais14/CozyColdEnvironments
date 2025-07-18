@@ -69,7 +69,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
             WriteWithWhitespace(AccessModifier);
             WriteWithWhitespace(ModifierFlags);
 
-            WriteWithWhitespace(ReturnType?.GetProccessedName() ?? "void");
+            WriteWithWhitespace(ReturnType?.GetName() ?? "void");
 
             Write('(');
             Write(DefineArguments);

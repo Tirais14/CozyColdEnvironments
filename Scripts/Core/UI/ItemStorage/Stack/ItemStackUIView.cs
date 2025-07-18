@@ -13,7 +13,7 @@ namespace UTIRLib.UI
     {
         private Vector2 defaultLocalPosition;
 
-        [GetSelfAttribute]
+        [GetBySelfAttribute]
         private Image image = null!;
 
         [Optional]

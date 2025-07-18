@@ -21,7 +21,7 @@ namespace UTIRLib
                 throw new TirLibException($"{initable.GetProccessedTypeName()} is already inited.");
 
             initable.Init();
-            TirLibDebug.Log($"Inited => {initable.GetType().GetProccessedName()}.");
+            TirLibDebug.Log($"Inited => {initable.GetType().GetName()}.");
         }
 
         /// <exception cref="TirLibException"></exception>
@@ -33,7 +33,7 @@ namespace UTIRLib
                                                 .ToArray();
 
             if (initables.CountNotDefault() == 0)
-                throw new TirLibException($"Cannot find any {typeof(T).GetProccessedName()}.");
+                throw new TirLibException($"Cannot find any {typeof(T).GetName()}.");
 
             for (int i = 0; i < initables.Length; i++)
                 InitObject(initables[i]);

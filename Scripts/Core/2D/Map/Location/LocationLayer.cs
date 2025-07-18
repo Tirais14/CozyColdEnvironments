@@ -15,7 +15,7 @@ namespace UTIRLib.TwoD.Map
     {
         private Map<ILocationCell> cellMap = null!;
 
-        [GetSelf]
+        [GetBySelf]
         private Tilemap tilemap = null!;
 
         public BoundsInt Bounds => Parent.Bounds;

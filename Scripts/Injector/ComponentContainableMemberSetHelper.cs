@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UTIRLib.Diagnostics;
-using UTIRLib.UExtensions;
+using UTIRLib.UnityExtensions;
 
 #nullable enable
 
@@ -99,7 +99,7 @@ namespace UTIRLib.ComponentSetter
             {
                 switch (fields[i].attribute)
                 {
-                    case GetSelfAttribute:
+                    case GetBySelfAttribute:
                         SetField(source, fields[i].field, SelfGetter);
                         break;
                     case GetByParentAttribute:
@@ -144,7 +144,7 @@ namespace UTIRLib.ComponentSetter
             {
                 switch (props[i].attribute)
                 {
-                    case GetSelfAttribute:
+                    case GetBySelfAttribute:
                         SetProp(source, props[i].prop, SelfGetter);
                         break;
                     case GetByParentAttribute:

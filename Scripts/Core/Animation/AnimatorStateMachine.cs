@@ -14,7 +14,7 @@ namespace UTIRLib.Animation
     [RequireComponent(typeof(Animator))]
     public abstract class AnimatorStateMachine : MonoX, IAnimatorStateMachine<AnimatorState>
     {
-        [GetSelfAttribute]
+        [GetBySelfAttribute]
         protected Animator animator = null!;
 
         protected string?[] playingStateNames = null!;

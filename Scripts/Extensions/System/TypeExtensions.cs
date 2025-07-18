@@ -20,7 +20,7 @@ namespace UTIRLib
             if (value == other)
                 return true;
 
-            return value.IsAssignableFrom(other);
+            return other.IsAssignableFrom(value);
         }
         public static bool Is<T>(this Type value)
         {
@@ -51,7 +51,7 @@ namespace UTIRLib
             return false;
         }
 
-        public static string GetProccessedName(this Type? type,
+        public static string GetName(this Type? type,
             TypeNameAttributes attributes = TypeNameAttributes.Default)
         {
             if (type == null) return "null";
@@ -117,7 +117,7 @@ namespace UTIRLib
             else if (type.Is<bool>())
                 return "bool";
             else if (type.Is<Array>())
-                return $"{type.GetProccessedName(TypeNameAttributes.Default | ~TypeNameAttributes.ShortName)}[]";
+                return $"{type.GetName(TypeNameAttributes.Default | ~TypeNameAttributes.ShortName)}[]";
 
             throw new Exception($"Invalid type {type.Name}.");
         }

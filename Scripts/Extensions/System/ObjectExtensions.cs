@@ -22,7 +22,7 @@ namespace UTIRLib
         {
             Type? type = obj?.GetType();
 
-            return type.GetProccessedName();
+            return type.GetName();
         }
 
         public static bool Is<T>(this object? obj)

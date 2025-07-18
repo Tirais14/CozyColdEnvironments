@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.UExtensions
+namespace UTIRLib.UnityExtensions
 {
     [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "<Pending>")]
     public static class VectorExtensions

@@ -18,7 +18,7 @@ namespace UTIRLib.UI
         [field: SerializeField]
         public EventSystem EventSystem { get; protected set; } = null!;
 
-        [GetSelfAttribute]
+        [GetBySelfAttribute]
         [field: SerializeField]
         public GraphicRaycaster DefaultRaycaster { get; protected set; } = null!;
 

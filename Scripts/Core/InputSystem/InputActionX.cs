@@ -10,6 +10,8 @@ namespace UTIRLib.InputSystem
         protected readonly InputAction inputAction;
         protected bool disposedValue;
 
+        public bool IsButtonPressed => inputAction.IsPressed();
+
         public event Action<CallbackContext>? OnPerformed;
 
         public void Dispose()

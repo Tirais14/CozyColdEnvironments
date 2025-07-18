@@ -67,7 +67,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
                 if (i != 0)
                     resultBuilder.Append(", ");
 
-                resultBuilder.Append(ParentTypes[i].GetProccessedName());
+                resultBuilder.Append(ParentTypes[i].GetName());
             }
 
             result = resultBuilder.ToString();

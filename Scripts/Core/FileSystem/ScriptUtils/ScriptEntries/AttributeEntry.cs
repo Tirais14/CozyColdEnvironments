@@ -48,7 +48,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
         {
             Write('[');
 
-            Write(AttributeType.GetProccessedName().Delete(nameof(Attribute)));
+            Write(AttributeType.GetName().Delete(nameof(Attribute)));
 
             string attributeArgsValue = AttributeArgsToString();
             if (attributeArgsValue.IsNotNullOrEmpty())

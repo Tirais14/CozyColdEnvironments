@@ -10,7 +10,7 @@ namespace UTIRLib.UI
         IDragHandler,
         IEndDragHandler
     {
-        [GetSelfAttribute]
+        [GetBySelfAttribute]
         [RequiredMember]
         private IMovable movable = null!;
 

@@ -11,12 +11,12 @@ namespace UTIRLib
         }
 
         public EnumNotFlagsException(Type type)
-            : base($"Type {type.GetProccessedName()} is not enum flag.")
+            : base($"Type {type.GetName()} is not enum flag.")
         {
         }
 
         public EnumNotFlagsException(Type type, string message)
-            : base($"Type {type.GetProccessedName()} is not enum flag. " + message)
+            : base($"Type {type.GetName()} is not enum flag. " + message)
         {
         }
     }

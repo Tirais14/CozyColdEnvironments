@@ -6,6 +6,8 @@ namespace UTIRLib.InputSystem
 {
     public interface IInputAction : IDisposable
     {
+        bool IsButtonPressed { get; }
+
         event Action<CallbackContext> OnPerformed;
     }
     public interface IInputAction<T> : IInputAction

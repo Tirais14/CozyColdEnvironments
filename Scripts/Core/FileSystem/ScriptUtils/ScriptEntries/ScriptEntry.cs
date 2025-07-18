@@ -175,7 +175,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
                     toProccessString = true;
                     break;
                 case Type type:
-                    toAppend = type.GetProccessedName();
+                    toAppend = type.GetName();
                     toProccessString = true;
                     break;
                 case IEnumerable<AttributeEntry> attributes:

@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.UExtensions
+namespace UTIRLib.UnityExtensions
 {
     public static class ComponentExtensions
     {

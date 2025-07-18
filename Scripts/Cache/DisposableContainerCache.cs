@@ -20,7 +20,10 @@ namespace UTIRLib.Disposables
                 return field;
 
             field = type.GetFields(BindingFlagsDefault.InstanceAll.ToBindingFlags())
-                        .Single(x => x.FieldType.Is<IDisposableCollection>());
+                        .SingleOrDefault(x => x.FieldType.Is<IDisposableCollection>());
+
+            if (field == null)
+                throw new InvalidOperationException(type.GetName() + $": not contains field with type - {nameof(IDisposableCollection)}.");
 
             collectionFields.Add(type, field);
 
