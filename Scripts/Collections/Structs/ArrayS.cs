@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace UTIRLib.Collections
 {
+    [Obsolete]
     public readonly struct ArrayS<T> : IList<T>, ICloneable, IEquatable<ArrayS<T>>
     {
         public static ArrayS<T> Empty => new();

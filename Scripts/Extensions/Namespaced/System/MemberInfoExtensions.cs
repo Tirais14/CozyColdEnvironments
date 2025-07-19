@@ -7,7 +7,8 @@ namespace UTIRLib.Attributes.Metadata
 {
     public static class MemberInfoExtensions
     {
-        public static MetadataAttribute[] GetMetadata(this MemberInfo member, bool throwIfNotFound = true)
+        public static MetadataAttribute[] GetMetadata(this MemberInfo member,
+                                                      bool throwIfNotFound = true)
         {
             var attributes = member.GetCustomAttributes<MetadataAttribute>().ToArray();
 

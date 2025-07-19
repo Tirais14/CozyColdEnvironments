@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 
 #nullable enable
 namespace UTIRLib.Collections
 {
+    [Obsolete]
     public static class ArrFactory
     {
         public static ArrayS<T> Create<T>(IEnumerable<T>? values)
