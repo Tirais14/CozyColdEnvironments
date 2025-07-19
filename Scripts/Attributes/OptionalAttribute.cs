@@ -4,7 +4,10 @@ using System;
 
 namespace UTIRLib.Attributes
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, 
+        AllowMultiple = false,
+        Inherited = true
+        )]
     public class OptionalAttribute : Attribute
     {
     }

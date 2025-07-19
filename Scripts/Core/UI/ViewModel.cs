@@ -8,10 +8,17 @@ using UTIRLib.Disposables;
 #nullable enable
 namespace UTIRLib.UI
 {
-    public abstract class ViewModel : IViewModel, IDisposableContainer
+    public abstract class ViewModel<T> : IViewModel, IDisposableContainer
     {
         private readonly DisposableCollection disposables = new();
         private bool disposedValue;
+
+        protected T model;
+
+        protected ViewModel(T model)
+        {
+            this.model = model;
+        }
 
         public void Dispose()
         {

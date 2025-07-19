@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 #nullable enable
 
@@ -7,16 +8,34 @@ namespace UTIRLib
 {
     public static class FloatExtensions
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsX(this float a, float b, float epsilon = 0.0001f)
+        public const float FIRST_EPSILON = 1e-5f;
+        public const float SECOND_EPSILON = 1e-6f;
+
+        public static bool NearlyEquals(this float value,
+                                             float other,
+                                             float? customEpsilon = null)
         {
-            return MathF.Abs(a - b) < epsilon;
+            float epsilon;
+
+            if (customEpsilon.HasValue)
+                epsilon = customEpsilon.Value;
+            else
+            {
+                if (Mathf.Abs(value) > 1)
+                    epsilon = SECOND_EPSILON;
+                else
+                    epsilon = FIRST_EPSILON;
+            }
+
+            return Mathf.Abs(value - other) < epsilon;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool NotEqualsWithEpsilon(this float a, float b, float epsilon = 0.0001f)
+        public static bool NotNearlyEquals(this float value,
+                                                float other,
+                                                float? customEpsilon = null)
         {
-            return !a.EqualsX(b, epsilon);
+            return !value.NearlyEquals(other, customEpsilon);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using UTIRLib.TypeConvert;
 
 #nullable enable
 
@@ -18,7 +18,7 @@ namespace UTIRLib.DB
         public TDatabase this[TDatabaseKey databaseKey] => GetDatabase(databaseKey);
 
         public void AddDatabase(object databaseKey, IDatabase database) =>
-            dbs.Add(databaseKey.Convert<TDatabaseKey>() ?? throw new NullReferenceException(),
+            dbs.Add(databaseKey.ChangeType<TDatabaseKey>() ?? throw new NullReferenceException(),
             database as TDatabase ?? throw new NullReferenceException());
 
         public void AddDatabase(IValuePair<object, IDatabase> keyAndDatabasePair) =>

@@ -7,12 +7,15 @@ namespace UTIRLib.InputSystem
 {
     public class InputActionX : IInputAction
     {
-        protected readonly InputAction inputAction;
         protected bool disposedValue;
+
+        protected readonly InputAction inputAction;
 
         public bool IsButtonPressed => inputAction.IsPressed();
 
+        public event Action<CallbackContext>? OnStarted;
         public event Action<CallbackContext>? OnPerformed;
+        public event Action<CallbackContext>? OnCanceled;
 
         public void Dispose()
         {
@@ -27,17 +30,23 @@ namespace UTIRLib.InputSystem
         {
             this.inputAction = inputAction;
 
-            this.inputAction.performed += OnPerformedEvent;
+            this.inputAction.started += StartedEvent;
+            this.inputAction.performed += PerformedEvent;
+            this.inputAction.canceled += CanceledEvent;
         }
 
         protected virtual void DisposeManaged()
         {
-            inputAction.performed -= OnPerformedEvent;
+            inputAction.started -= StartedEvent;
+            inputAction.performed -= PerformedEvent;
+            inputAction.canceled -= CanceledEvent;
         }
 
         protected virtual void DisposeOther()
         {
+            OnStarted = null;
             OnPerformed = null;
+            OnCanceled = null;
         }
 
         private void Dispose(bool disposing)
@@ -53,9 +62,19 @@ namespace UTIRLib.InputSystem
             }
         }
 
-        private void OnPerformedEvent(CallbackContext context)
+        private void StartedEvent(CallbackContext context)
+        {
+            OnStarted?.Invoke(context);
+        }
+
+        private void PerformedEvent(CallbackContext context)
         {
             OnPerformed?.Invoke(context);
+        }
+
+        private void CanceledEvent(CallbackContext context)
+        {
+            OnCanceled?.Invoke(context);
         }
 
         public static explicit operator InputAction(InputActionX inputActionX)
@@ -78,13 +97,15 @@ namespace UTIRLib.InputSystem
             }
         }
 
-        public event Action<T>? OnPerformedValue;
+        public event Action<T>? ValueOnStarted;
+        public event Action<T>? ValueOnPerformed;
+        public event Action<T>? ValueOnCanceled;
 
         public InputActionX(InputAction inputAction) : base(inputAction)
         {
-            base.inputAction.performed += SetValue;
-            
-            base.inputAction.performed += PerformedValueEvent;
+            inputAction.started += ValueStartedEvent;
+            inputAction.performed += ValuePerformedEvent;
+            inputAction.canceled += ValueCanceledEvent;
         }
 
         protected virtual T ReadValue(CallbackContext context)
@@ -96,26 +117,39 @@ namespace UTIRLib.InputSystem
         {
             base.DisposeManaged();
 
-            inputAction.performed -= SetValue;
-
-            inputAction.performed -= PerformedValueEvent;
+            inputAction.started -= ValueStartedEvent;
+            inputAction.performed -= ValuePerformedEvent;
+            inputAction.canceled -= ValueCanceledEvent;
         }
 
         protected override void DisposeOther()
         {
             base.DisposeOther();
 
-            OnPerformedValue = null;
+            ValueOnStarted = null;
+            ValueOnPerformed = null;
+            ValueOnCanceled = null;
         }
 
-        private void SetValue(CallbackContext context)
+        private void ValueStartedEvent(CallbackContext context)
         {
             value = ReadValue(context);
+
+            ValueOnStarted?.Invoke(value);
         }
 
-        private void PerformedValueEvent(CallbackContext context)
+        private void ValuePerformedEvent(CallbackContext context)
         {
-            OnPerformedValue?.Invoke(ReadValue(context));
+            value = ReadValue(context);
+
+            ValueOnPerformed?.Invoke(value);
+        }
+
+        private void ValueCanceledEvent(CallbackContext context)
+        {
+            value = ReadValue(context);
+
+            ValueOnCanceled?.Invoke(value);
         }
     }
 }

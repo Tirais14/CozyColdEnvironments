@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace UTIRLib.FileSystem.ScriptUtils
 {
-    public struct DefaultValueConverter : IConverter<string?>
+    public struct DefaultValueConverter : ITypeConverter<string?>
     {
         public readonly string? Convert(object? value)
         {
@@ -33,6 +33,6 @@ namespace UTIRLib.FileSystem.ScriptUtils
             return false;
         }
 
-        readonly object? IConverter.Convert(object? value) => Convert(value);
+        readonly object? ITypeConverter.Convert(object? value) => Convert(value);
     }
 }

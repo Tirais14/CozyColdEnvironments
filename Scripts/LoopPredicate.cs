@@ -7,7 +7,7 @@ namespace UTIRLib
     /// <summary>
     /// Use this for while cycle for preventing endless loop
     /// </summary>
-    public class LoopPredicate : LoopPredicateBase
+    public class LoopPredicate : ALoopPredicate
     {
         private readonly Func<bool> predicate;
 
@@ -25,7 +25,7 @@ namespace UTIRLib
         }
     }
 
-    public class LoopPredicate<T0> : LoopPredicateBase
+    public class LoopPredicate<T0> : ALoopPredicate
     {
         private readonly Predicate<T0> predicate;
 
@@ -43,7 +43,7 @@ namespace UTIRLib
         }
     }
 
-    public class LoopPredicate<T0, T1> : LoopPredicateBase
+    public class LoopPredicate<T0, T1> : ALoopPredicate
     {
         private readonly Func<T0, T1, bool> predicate;
 
@@ -61,7 +61,7 @@ namespace UTIRLib
         }
     }
 
-    public class LoopPredicate<T0, T1, T2> : LoopPredicateBase
+    public class LoopPredicate<T0, T1, T2> : ALoopPredicate
     {
         private readonly Func<T0, T1, T2, bool> predicate;
 

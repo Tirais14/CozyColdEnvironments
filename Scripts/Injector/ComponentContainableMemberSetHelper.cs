@@ -74,6 +74,14 @@ namespace UTIRLib.ComponentSetter
                 return source.GetAssignedObjectInChildren(getType);
         }
 
+        private static bool IsTypeValid(Type type)
+        {
+            if (!type.IsInterface && type.IsNot<Component>())
+                return false;
+
+            return true;
+        }
+
         /// <exception cref="ObjectNotFoundException"></exception>
         private static void SetField(Component source,
                                      FieldInfo field,
@@ -81,6 +89,12 @@ namespace UTIRLib.ComponentSetter
         {
             if (field.GetValue(source).IsNotNull())
                 return;
+            if (!IsTypeValid(field.FieldType))
+            {
+                TirLibDebug.Error($"{field.FieldType.GetName()} is not interface and not component.", source, isExtraInfo: false);
+
+                return;
+            }
 
             object? foundComponent = getter(source, field.FieldType);
 
@@ -121,6 +135,12 @@ namespace UTIRLib.ComponentSetter
         {
             if (prop.GetValue(source).IsNotNull())
                 return;
+            if (!IsTypeValid(prop.PropertyType))
+            {
+                TirLibDebug.Error($"{prop.PropertyType.GetName()} is not interface and not component.", source, isExtraInfo: false);
+
+                return;
+            }
 
             object? foundComponent;
 

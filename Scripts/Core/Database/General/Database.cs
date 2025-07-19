@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using UTIRLib.TypeConvert;
 using UTIRLib.Linq;
 
 #nullable enable
@@ -215,7 +215,7 @@ namespace UTIRLib.DB
             return WhereInternal(keyFilter, objectFilter: null);
         }
 
-        public T[] FindValuesT<T>() => FindValues((obj) => obj is T).Convert<T[]>() ?? Array.Empty<T>();
+        public T[] FindValuesT<T>() => FindValues((obj) => obj is T).ChangeType<T[]>() ?? Array.Empty<T>();
 
         public bool TryFindValues(Predicate<TValue> objectFilter, [NotNullWhen(true)] out TValue[] values)
         {

@@ -1,27 +1,24 @@
-using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using UTIRLib.Attributes;
-using UTIRLib.ComponentSetter;
 
+#pragma warning disable IDE0044
 #nullable enable
 namespace UTIRLib.UI
 {
     [RequireComponent(typeof(Image))]
-    public class ItemStackUIView : View, IView<IItemStackUIViewModel>, IMovable
+    public class ItemStackUIView : View<IItemStackUIViewModel>, IView<IItemStackUIViewModel>, IMovable
     {
         private Vector2 defaultLocalPosition;
 
-        [GetBySelfAttribute]
+        [GetBySelf]
         private Image image = null!;
 
         [Optional]
         [GetByChildren]
         [SerializeField]
-        private TextMeshProUGUI? textComponent;
-
-        private IItemStackUIViewModel viewModel = null!;
+        private TextView? textComponent;
 
         IItemStackUIViewModel IView<IItemStackUIViewModel>.ViewModel => viewModel;
         Vector2 IMovable.Position {
@@ -46,7 +43,7 @@ namespace UTIRLib.UI
             viewModel.ItemIcon.Subscribe(x => image.sprite = x).AddTo(this);
 
             if (textComponent != null)
-                viewModel.ItemCount.Subscribe(x => textComponent.text = x).AddTo(this);
+                viewModel.ItemCount.Subscribe(x => textComponent.Text = x).AddTo(this);
         }
 
         private void OnDestroy() => viewModel.Dispose();

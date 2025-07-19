@@ -3,14 +3,14 @@ using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
-namespace UTIRLib.Extensions
+namespace UTIRLib.TypeConvert
 {
     public static class ObjectExtensions
     {
         /// <summary>
         /// Same as the <see cref="Convert.ChangeType(object, Type)"/>
         /// </summary>
-        public static object Convert(this object obj, Type conversionType)
+        public static object ChangeType(this object obj, Type conversionType)
         {
             return System.Convert.ChangeType(obj, conversionType);
         }
@@ -18,7 +18,7 @@ namespace UTIRLib.Extensions
         /// <summary>
         /// Same as the <see cref="Convert.ChangeType(object, Type)"/>
         /// </summary>
-        public static T Convert<T>(this object obj)
+        public static T ChangeType<T>(this object obj)
         {
             return (T)System.Convert.ChangeType(obj, typeof(T));
         }
@@ -26,11 +26,13 @@ namespace UTIRLib.Extensions
         /// <summary>
         /// Same as the <see cref="Convert.ChangeType(object, Type)"/> but in <see langword="try"/>-<see langword="catch"/>
         /// </summary>
-        public static bool TryConvert(this object? obj, Type conversionType, [NotNullWhen(true)] out object? result)
+        public static bool TryChangeType(this object? obj,
+                                         Type conversionType,
+                                         [NotNullWhen(true)] out object? result)
         {
             try
             {
-                result = System.Convert.ChangeType(obj, conversionType);
+                result = Convert.ChangeType(obj, conversionType);
                 return true;
             }
             catch (Exception)

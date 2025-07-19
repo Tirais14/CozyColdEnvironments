@@ -7,17 +7,17 @@ namespace UTIRLib
 {
     public static class TirLib
     {
-        public readonly static LazyProperty<Sprite> ColorSprite = new(() =>
+        public readonly static Lazy<Sprite> ColorSprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/ColorSprite");
         });
 
-        public readonly static LazyProperty<Sprite> DummySprite = new(() =>
+        public readonly static Lazy<Sprite> DummySprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/DummySprite");
         });
 
-        public readonly static LazyProperty<Sprite> ErrorSprite = new(() =>
+        public readonly static Lazy<Sprite> ErrorSprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/ErrorSprite");
         });

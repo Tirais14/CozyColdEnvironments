@@ -1,20 +1,25 @@
 using System;
+using System.Linq;
 using System.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Attributes.Metadata
 {
     public static class MemberInfoExtensions
     {
-        public static bool IsDefined<T>(this MemberInfo value)
-            where T : Attribute
+        public static MetadataAttribute[] GetMetadata(this MemberInfo member, bool throwIfNotFound = true)
         {
-            return value.IsDefined(typeof(T));
-        }
-        public static bool IsDefined<T>(this MemberInfo value, bool inherit)
-            where T : Attribute
-        {
-            return value.IsDefined(typeof(T), inherit);
+            var attributes = member.GetCustomAttributes<MetadataAttribute>().ToArray();
+
+            if (attributes.IsNullOrEmpty())
+            {
+                if (throwIfNotFound)
+                    throw new MetadataAttributeNotFoundException(member);
+                else
+                    return Array.Empty<MetadataAttribute>();
+            }
+
+            return attributes;
         }
     }
 }

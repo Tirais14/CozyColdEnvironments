@@ -10,19 +10,19 @@ namespace UTIRLib.TwoD
         {
             float x = vector2.normalized.x;
             float y = vector2.normalized.y;
-            if (x.NotEqualsWithEpsilon(0) && y.NotEqualsWithEpsilon(0))
+            if (x.NotNearlyEquals(0) && y.NotNearlyEquals(0))
             {
                 if (x > 0 && y > 0) { return Direction2D.RightUp; }
                 else if (x < 0 && y > 0) { return Direction2D.LeftUp; }
                 else if (x > 0 && y < 0) { return Direction2D.RightDown; }
                 else if (x < 0 && y < 0) { return Direction2D.LeftDown; }
             }
-            else if (x.NotEqualsWithEpsilon(0) && y.EqualsX(0))
+            else if (x.NotNearlyEquals(0) && y.NearlyEquals(0))
             {
                 if (x > 0) { return Direction2D.Right; }
                 else if (x < 0) { return Direction2D.Left; }
             }
-            else if (x.EqualsX(0) && y.NotEqualsWithEpsilon(0))
+            else if (x.NearlyEquals(0) && y.NotNearlyEquals(0))
             {
                 if (y > 0) { return Direction2D.Up; }
                 else if (y < 0) { return Direction2D.Down; }

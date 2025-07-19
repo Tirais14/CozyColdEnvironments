@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using UTIRLib.Extensions;
+using UTIRLib.TypeConvert;
 
 #nullable enable
 
@@ -78,9 +78,9 @@ namespace UTIRLib.Utils
             }
             if (source.TryGetComponent(type, out var foundComponent))
             {
-                return foundComponent.Convert<T>();
+                return foundComponent.ChangeType<T>();
             }
-            else return source.gameObject.AddComponent(type).Convert<T>();
+            else return source.gameObject.AddComponent(type).ChangeType<T>();
         }
 
         /// <summary>

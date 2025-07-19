@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UTIRLib.TwoD
 {
-    public interface ICompositeCollider : ISwitchable
+    public interface ICompositeCollider : IStateSwitchable
     {
         public int Complexity { get; }
 

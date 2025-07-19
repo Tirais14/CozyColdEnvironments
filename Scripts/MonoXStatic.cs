@@ -26,7 +26,7 @@ namespace UTIRLib
         {
             base.OnAwake();
 
-            if (parent.IsNull())
+            if (parent == null)
                 parent = GetDefaultParent();
         }
 
@@ -99,6 +99,6 @@ namespace UTIRLib
     public abstract class MonoXStatic<TThis> : MonoXStatic
         where TThis : Component
     {
-        protected static LazyProperty<TThis> instance = new(Create<TThis>);
+        protected static Lazy<TThis> instance = new(Create<TThis>);
     }
 }

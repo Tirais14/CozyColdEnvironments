@@ -20,7 +20,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
         public bool HasAttributes => Attributes.IsNotNullOrEmpty();
         public UsingEntry[] Usings { get; set; } = Array.Empty<UsingEntry>();
         public bool HasUsings => Usings.IsNotNullOrEmpty();
-        public IConverter<string> ValueConverter { get; set; } = new DefaultValueConverter();
+        public ITypeConverter<string> ValueConverter { get; set; } = new DefaultValueConverter();
 
         /// <exception cref="ArgumentNullException"></exception>
         public void AddUsings(IEnumerable<UsingEntry> usings)

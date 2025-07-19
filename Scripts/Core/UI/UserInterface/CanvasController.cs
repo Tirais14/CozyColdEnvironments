@@ -11,10 +11,10 @@ namespace UTIRLib.UI
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
     public sealed class CanvasController : MonoX, ICanvasController
     {
-        [RequiredMember]
+        [RequiredProperty]
         public IPointerInput Pointer { get; private set; } = null!;
 
-        [RequiredMember]
+        [RequiredProperty]
         public IRaycasterUI Raycaster { get; private set; } = null!;
 
         protected override void OnAwake()

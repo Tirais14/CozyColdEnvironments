@@ -2,6 +2,7 @@ using UnityEngine.EventSystems;
 using UTIRLib.Attributes;
 using UTIRLib.ComponentSetter;
 
+#pragma warning disable IDE0044
 #nullable enable
 namespace UTIRLib.UI
 {
@@ -10,8 +11,8 @@ namespace UTIRLib.UI
         IDragHandler,
         IEndDragHandler
     {
-        [GetBySelfAttribute]
-        [RequiredMember]
+        [GetBySelf]
+        [RequiredField]
         private IMovable movable = null!;
 
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)

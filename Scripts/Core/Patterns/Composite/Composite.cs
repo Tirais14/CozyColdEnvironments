@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using UTIRLib.TypeConvert;
 
 #nullable enable
 
@@ -17,7 +17,7 @@ namespace UTIRLib.Patterns.Composite
 
         public Composite(T[] childs) => AddRange(childs);
 
-        public void Add(object value) => Add(value.Convert<T>()!);
+        public void Add(object value) => Add(value.ChangeType<T>()!);
 
         /// <exception cref="ArgumentException"></exception>
         public void Add(T value)
@@ -44,7 +44,7 @@ namespace UTIRLib.Patterns.Composite
             childsCount = childs.Count;
         }
 
-        public void AddRange(params object[] values) => AddRange(values.Convert<T[]>()!);
+        public void AddRange(params object[] values) => AddRange(values.ChangeType<T[]>()!);
 
         public void AddRange(params T[] values)
         {
@@ -54,7 +54,7 @@ namespace UTIRLib.Patterns.Composite
             }
         }
 
-        public void RemoveRange(params object?[] values) => RemoveRange(values.Convert<T[]>()!);
+        public void RemoveRange(params object?[] values) => RemoveRange(values.ChangeType<T[]>()!);
 
         public void RemoveRange(params T?[] values)
         {

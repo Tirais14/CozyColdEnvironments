@@ -1,14 +1,16 @@
-using UnityEngine;
-
 #nullable enable
 
 namespace UTIRLib
 {
-    public sealed class GameObjectDestroyLocker : MonoBehaviour
+    public sealed class GameObjectDestroyLocker : MonoX
     {
-        private void Awake()
+        protected override void OnAwake()
         {
-            DontDestroyOnLoad(gameObject);
+            base.OnAwake();
+
+            if (transform.parent == null)
+                DontDestroyOnLoad(gameObject);
+
             Destroy(this);
         }
     }

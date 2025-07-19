@@ -27,6 +27,8 @@ namespace UTIRLib.Disposables
 
             collectionFields.Add(type, field);
 
+            collectionFields.TrimExcess();
+
             return field;
         }
     }
