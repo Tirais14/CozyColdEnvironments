@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Attributes;
 using UTIRLib.Diagnostics;
 using UTIRLib.Init;
 using UTIRLib.Linq;

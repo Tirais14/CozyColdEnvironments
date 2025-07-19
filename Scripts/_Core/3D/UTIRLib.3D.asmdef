@@ -1,5 +1,5 @@
 {
-    "name": "UTIRLib.ThreeD",
+    "name": "UTIRLib.3D",
     "rootNamespace": "UTIRLib",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
