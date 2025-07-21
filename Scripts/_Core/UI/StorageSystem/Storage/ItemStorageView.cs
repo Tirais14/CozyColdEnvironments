@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UTIRLib.Reflection;
 
-namespace UTIRLib.UI
+namespace UTIRLib.UI.StorageSystem
 {
     public class ItemStorageView<TViewModel, TStorage> : View<TViewModel>
         where TViewModel : ItemStorageViewModel<TStorage>

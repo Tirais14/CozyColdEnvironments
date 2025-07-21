@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using UTIRLib.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace UTIRLib.UI.StorageSystem
 {
     public class ItemStorageUI : IItemStorageUI
     {

@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.UI
+namespace UTIRLib.UI.StorageSystem
 {
     public class ItemStorageViewModel<T> : ViewModel<T>
         where T : ItemStorageUI

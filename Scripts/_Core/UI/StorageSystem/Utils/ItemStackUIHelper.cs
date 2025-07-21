@@ -2,7 +2,7 @@ using System;
 using UTIRLib.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace UTIRLib.UI.StorageSystem
 {
     public static class ItemStackUIHelper
     {
