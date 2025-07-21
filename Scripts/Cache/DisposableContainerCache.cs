@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UTIRLib.Reflection.Types;
 
 #nullable enable
 namespace UTIRLib.Disposables
@@ -19,8 +20,9 @@ namespace UTIRLib.Disposables
             if (collectionFields.TryGetValue(type, out FieldInfo field))
                 return field;
 
-            field = type.GetFields(BindingFlagsDefault.InstanceAll.ToBindingFlags())
-                        .SingleOrDefault(x => x.FieldType.Is<IDisposableCollection>());
+            FieldInfo[] typeFields = type.ForceGetFields(BindingFlagsDefault.InstanceAll);
+
+            field = typeFields.SingleOrDefault(x => x.FieldType.Is<IDisposableCollection>());
 
             if (field == null)
                 throw new InvalidOperationException(type.GetName() + $": not contains field with type - {nameof(IDisposableCollection)}.");

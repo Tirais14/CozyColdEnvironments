@@ -110,10 +110,15 @@ namespace UTIRLib
             var toProccess = new List<(IInitable value, InitAfterAttribute attribute)>(predicated);
             var proccessed = new List<IInitable>(predicated.Length);
 
-            var loopPredicate = new LoopPredicate<int, int, int>(
-                (toProccessCount, proccessedCount, maxCount) => toProccessCount > 0 
-                                                                && 
-                                                                proccessedCount < maxCount);
+            var loopPredicate = new LoopPredicate<int, int, int>
+            {
+                Predicate = (toProccessCount, proccessedCount, maxCount) =>
+                {
+                    return toProccessCount > 0
+                           &&
+                           proccessedCount < maxCount;
+                }
+            };
 
             (IInitable value, InitAfterAttribute attribute)[] foundValues;
             while (loopPredicate.Invoke(toProccess.Count,

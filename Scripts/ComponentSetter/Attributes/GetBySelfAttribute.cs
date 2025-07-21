@@ -12,7 +12,7 @@ namespace UTIRLib
         Inherited = true, 
         AllowMultiple = false
         )]
-    public class GetBySelfAttribute : ComponentContainableMemberAttribute
+    public class GetBySelfAttribute : GetComponentAttribute
     {
     
     }

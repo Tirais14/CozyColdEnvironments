@@ -3,9 +3,11 @@ namespace UTIRLib.UI
 {
     public interface IView
     {
+        IViewModel GetViewModel();
     }
     public interface IView<out T> : IView
+        where T : IViewModel
     {
-        T ViewModel { get; }
+        new T GetViewModel();
     }
 }

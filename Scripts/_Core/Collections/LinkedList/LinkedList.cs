@@ -148,7 +148,7 @@ namespace UTIRLib.Collections
             Enumerator enumerator = new(this);
             while (enumerator.MoveNext())
             {
-                if (EqualityComparer<T>.Default.Equals(enumerator.Current.Value!, item))
+                if (EqualityComparer<T>.Default.Equals(enumerator.Current.Value!, item!))
                 {
                     enumerator.Previous!.NextNode = enumerator.Next;
                     return true;

@@ -1,18 +1,20 @@
-using System;
-using System.Collections.Generic;
-using UniRx;
-using Unity.XR.OpenVR;
-using UTIRLib.Diagnostics;
-using UTIRLib.Disposables;
-
 #nullable enable
+#pragma warning disable S3881
 namespace UTIRLib.UI
 {
-    public abstract class ViewModel<T> : IViewModel, IDisposableContainer
+    public abstract class ViewModel : ViewModelBase, IViewModel
     {
-        private readonly DisposableCollection disposables = new();
-        private bool disposedValue;
+        protected object model;
 
+        protected ViewModel(object model)
+        {
+            this.model = model;
+        }
+
+        public object GetModel() => model;
+    }
+    public abstract class ViewModel<T> : ViewModelBase, IViewModel<T>
+    {
         protected T model;
 
         protected ViewModel(T model)
@@ -20,31 +22,7 @@ namespace UTIRLib.UI
             this.model = model;
         }
 
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void DisposeManaged()
-        {
-            disposables.Dispose();
-        }
-
-        protected virtual void DisposeOther() { }
-
-        private void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                    DisposeManaged();
-
-                DisposeOther();
-
-                disposedValue = true;
-            }
-        }
+        public T GetModel() => model;
+        object IViewModel.GetModel() => model!;
     }
 }

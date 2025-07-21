@@ -46,7 +46,7 @@ namespace UTIRLib.InputSystem
 
             return GetType()
                    .GetProperty(propName,
-                                BindingFlagsDefault.InstanceAll.ToBindingFlags())
+                                BindingFlagsDefault.InstanceAll)
                    ??
                    throw new Exception($"Cannot find property {propName}.");
         }

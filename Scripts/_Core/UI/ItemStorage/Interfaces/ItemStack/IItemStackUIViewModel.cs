@@ -4,7 +4,7 @@ using UnityEngine;
 #nullable enable
 namespace UTIRLib.UI
 {
-    public interface IItemStackUIViewModel : IViewModel, IViewModel<IItemStackUIReactive>
+    public interface IItemStackUIViewModel : IViewModel<IItemStackUIReactive>
     {
         IReadOnlyReactiveProperty<Sprite?> ItemIcon { get; }
         IReadOnlyReactiveProperty<string> ItemCount { get; }

@@ -19,10 +19,10 @@ namespace UTIRLib.Utils
 
             Type instanceType = instance.GetType();
 
-            FieldInfo[] fields = instanceType.GetFields(BindingFlagsDefault.InstanceAll.ToBindingFlags());
+            FieldInfo[] fields = instanceType.GetFields(BindingFlagsDefault.InstanceAll);
             Validate(fields, instance);
 
-            PropertyInfo[] properties = instanceType.GetProperties(BindingFlagsDefault.InstanceAll.ToBindingFlags());
+            PropertyInfo[] properties = instanceType.GetProperties(BindingFlagsDefault.InstanceAll);
             Validate(properties, instance);
         }
 

@@ -1,5 +1,5 @@
 {
-    "name": "UTIRLib.TwoD",
+    "name": "UTIRLib.2D",
     "rootNamespace": "UTIRLib.TwoD",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",

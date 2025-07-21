@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-
 namespace UTIRLib
 {
     public abstract class ALoopPredicate
@@ -11,11 +9,19 @@ namespace UTIRLib
         /// Default = 100000
         /// </summary>
         public int IterationsLimit { get; set; } = 100000;
-        public Exception Exception { get; set; } = new ExceptionPlaceholder("Endless cycle prevented.");
+        public string? ExceptionMessage { get; set; }
 
         protected bool MoveNext()
         {
             return iterations++ < IterationsLimit;
+        }
+
+        protected EndlessLoopException GetException()
+        {
+            if (ExceptionMessage.IsNullOrWhiteSpace())
+                return new EndlessLoopException(iterations);
+            else
+                return new EndlessLoopException(iterations, ExceptionMessage);
         }
     }
 }

@@ -23,6 +23,7 @@ namespace UTIRLib.Disposables
         {
             return value.AddTo<IDisposable>(collection);
         }
+
         /// <exception cref="ArgumentNullException"></exception>
         public static T AddTo<T>(this T value,
                                  IDisposableContainer container)

@@ -6,15 +6,13 @@ using UTIRLib.Disposables;
 namespace UTIRLib.UI
 {
     public class ItemStackUIViewModel : ViewModel<IItemStackUIReactive>, 
-        IItemStackUIViewModel,
-        IViewModel<IItemStackUIReactive>
+        IItemStackUIViewModel
     {
         private readonly ReactiveProperty<Sprite?> itemIcon = new();
         private readonly ReactiveProperty<string> itemCount = new();
 
         public IReadOnlyReactiveProperty<Sprite?> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
-        IItemStackUIReactive IViewModel<IItemStackUIReactive>.Model => model;
 
         public ItemStackUIViewModel(IItemStackUIReactive model) : base(model)
         {

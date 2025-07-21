@@ -1,14 +1,14 @@
 using System;
-using UTIRLib.Disposables;
 
 #nullable enable
 namespace UTIRLib.UI
 {
     public interface IViewModel : IDisposable
     {
+        object GetModel();
     }
     public interface IViewModel<out T> : IViewModel
     {
-        T Model { get; } 
+        new T GetModel();
     }
 }

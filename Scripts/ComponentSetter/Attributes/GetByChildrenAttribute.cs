@@ -7,7 +7,7 @@ namespace UTIRLib
     /// Same as <see cref="UnityEngine.Component.GetComponentInChildren"/>
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class GetByChildrenAttribute : ComponentContainableMemberAttribute
+    public class GetByChildrenAttribute : GetComponentAttribute
     {
         
     }

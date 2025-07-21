@@ -57,7 +57,7 @@ namespace UTIRLib.Editor
         private FieldInfo? GetTargetField(string fieldName) =>
             target.
             GetType().
-            GetField(fieldName, BindingFlagsDefault.InstanceAll.ToBindingFlags());
+            GetField(fieldName, BindingFlagsDefault.InstanceAll);
 
         private static bool IsCoreComponentSerializedProperty(string propertyName) => propertyName == "m_Script";
 
@@ -82,8 +82,8 @@ namespace UTIRLib.Editor
 
         private static void ProccessGetComponentAttribute(FieldInfo targetField, PropertyField propertyField)
         {
-            if (targetField.GetCustomAttribute(typeof(ComponentContainableMemberAttribute))
-                is ComponentContainableMemberAttribute attribute)
+            if (targetField.GetCustomAttribute(typeof(GetComponentAttribute))
+                is GetComponentAttribute attribute)
             {
                 propertyField.label = attribute switch {
                     GetByChildrenAttribute => $"[🧩▼]" + propertyField.label,

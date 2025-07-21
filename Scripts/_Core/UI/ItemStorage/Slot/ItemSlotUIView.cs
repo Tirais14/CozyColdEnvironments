@@ -12,9 +12,9 @@ namespace UTIRLib.UI
             var itemStackView = GetComponentInChildren<IView<IItemStackUIViewModel>>();
 
             if (itemStackView.IsNull())
-                throw new ObjectNotFoundException(typeof(IView<IItemStackUIViewModel>));
+                throw new ObjectNotFoundException(typeof(IView));
 
-            IItemStackUI itemStack = itemStackView.ViewModel.Model;
+            IItemStackUI itemStack = itemStackView.GetViewModel().GetModel();
 
             var itemSlot = new ItemSlotUI(itemStack);
 

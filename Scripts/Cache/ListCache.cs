@@ -17,7 +17,7 @@ namespace UTIRLib
                 throw new ArgumentNullException(nameof(target));
 
             arrayField ??= target.GetType()
-                                 .GetFields(BindingFlagsDefault.InstanceNonPublic.ToBindingFlags())
+                                 .GetFields(BindingFlagsDefault.InstanceNonPublic)
                                  .Where(x => x.FieldType.Is<T[]>())
                                  .Single();
 

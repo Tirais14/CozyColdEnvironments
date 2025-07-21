@@ -1,24 +1,17 @@
-using System;
 using System.Reflection;
 
 namespace UTIRLib
 {
-    public enum BindingFlagsDefault
+    public static class BindingFlagsDefault
     {
-        InstancePublic = BindingFlags.Instance | BindingFlags.Public,
-        InstanceNonPublic = BindingFlags.Instance | BindingFlags.NonPublic,
-        InstanceAll = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-        StaticPublic = BindingFlags.Static | BindingFlags.Public,
-        StaticNonPublic = BindingFlags.Static | BindingFlags.NonPublic,
-        StaticAll = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
-        AllPublic = InstancePublic | StaticPublic,
-        AllNonPublic = InstanceNonPublic | StaticNonPublic,
-        All = AllPublic | AllNonPublic
-    }
-
-    public static class BindingFlagsDefaultExtensions
-    {
-        public static BindingFlags ToBindingFlags(this BindingFlagsDefault bindingFlagsDefault) =>
-            (BindingFlags)Enum.ToObject(typeof(BindingFlags), (int)bindingFlagsDefault);
+        public const BindingFlags InstancePublic = BindingFlags.Instance | BindingFlags.Public;
+        public const BindingFlags InstanceNonPublic = BindingFlags.Instance | BindingFlags.NonPublic;
+        public const BindingFlags InstanceAll = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        public const BindingFlags StaticPublic = BindingFlags.Static | BindingFlags.Public;
+        public const BindingFlags StaticNonPublic = BindingFlags.Static | BindingFlags.NonPublic;
+        public const BindingFlags StaticAll = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        public const BindingFlags AllPublic = InstancePublic | StaticPublic;
+        public const BindingFlags AllNonPublic = InstanceNonPublic | StaticNonPublic;
+        public const BindingFlags All = AllPublic | AllNonPublic;
     }
 }

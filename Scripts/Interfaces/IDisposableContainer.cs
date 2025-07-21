@@ -16,7 +16,8 @@ namespace UTIRLib.Disposables
             if (disposable.IsNull())
                 throw new ArgumentNullException(nameof(disposable));
 
-            FieldInfo field = DisposableContainerCache.GetCollectionField(GetType());
+            Type reflectedType = GetType();
+            FieldInfo field = DisposableContainerCache.GetCollectionField(reflectedType);
 
             var collection = (IDisposableCollection)field.GetValue(this);
 

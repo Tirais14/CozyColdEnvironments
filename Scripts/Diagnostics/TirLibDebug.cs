@@ -1,14 +1,12 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UTIRLib.Collections;
 using Object = UnityEngine.Object;
 
 #nullable enable
-
+#pragma warning disable S3887
 namespace UTIRLib.Diagnostics
 {
-    [SuppressMessage("Minor Bug", "S3887:Mutable, non-private fields should not be \"readonly\"", Justification = "<Pending>")]
     public static class TirLibDebug
     {
         public static readonly Flags<Type> debugTypes = new(inverted: true);

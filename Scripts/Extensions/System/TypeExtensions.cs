@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 using System.Text;
-using UTIRLib.Utils;
+using UTIRLib.Reflection;
 
 #nullable enable
 
@@ -77,13 +77,6 @@ namespace UTIRLib
             else return type.Name;
         }
 
-        public static T[] GetAllMembers<T>(this Type type,
-                                           BindingFlags bindingFlags = BindingFlags.Default)
-            where T : MemberInfo
-        {
-            return TypeHelper.GetAllMembers<T>(type, bindingFlags);
-        }
-
         private static string ProccessGenericArguments(Type type)
         {
             Type[] argumentTypes = type.GetGenericArguments();
@@ -125,6 +118,41 @@ namespace UTIRLib
                 return $"{type.GetName(TypeNameAttributes.Default | ~TypeNameAttributes.ShortName)}[]";
 
             throw new Exception($"Invalid type {type.Name}.");
+        }
+    }
+}
+namespace UTIRLib.Reflection.Types
+{
+    public static class TypeExtensions
+    {
+        public static MemberInfo[] ForceGetMembers(this Type value,
+            BindingFlags bindingFlags = BindingFlags.Default)
+        {
+            return TypeHelper.ForceGetMembers(value, bindingFlags);
+        }
+
+        public static FieldInfo[] ForceGetFields(this Type value,
+            BindingFlags bindingFlags = BindingFlags.Default)
+        {
+            return TypeHelper.ForceGetMembers<FieldInfo>(value, bindingFlags);
+        }
+
+        public static PropertyInfo[] ForceGetProperties(this Type value,
+            BindingFlags bindingFlags = BindingFlags.Default)
+        {
+            return TypeHelper.ForceGetMembers<PropertyInfo>(value, bindingFlags);
+        }
+
+        public static MethodInfo[] ForceGetMethods(this Type value,
+            BindingFlags bindingFlags = BindingFlags.Default)
+        {
+            return TypeHelper.ForceGetMembers<MethodInfo>(value, bindingFlags);
+        }
+
+        public static ConstructorInfo[] ForceGetConstructors(this Type value,
+            BindingFlags bindingFlags = BindingFlags.Default)
+        {
+            return TypeHelper.ForceGetMembers<ConstructorInfo>(value, bindingFlags);
         }
     }
 }

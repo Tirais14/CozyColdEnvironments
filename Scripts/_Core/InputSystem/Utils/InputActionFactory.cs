@@ -27,7 +27,7 @@ namespace UTIRLib.InputSystem
             MethodInfo createMethod = typeof(InputActionFactory).GetMethod(
                 nameof(Create),
                 genericParameterCount: 1,
-                BindingFlagsDefault.StaticPublic.ToBindingFlags(),
+                BindingFlagsDefault.StaticPublic,
                 binder: null,
                 new Type[] { typeof(InputActionMap), typeof(string) },
                 Array.Empty<ParameterModifier>())

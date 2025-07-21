@@ -12,15 +12,12 @@ namespace UTIRLib.Controllers.FirstPerson
         {
             this.transform = transform;
         }
-
-        public readonly void Move(Vector3 inputValue, float speed)
+        public readonly void Move(Vector3 direction, float speed)
         {
-            if (inputValue == Vector3.zero)
+            if (direction == Vector3.zero)
                 return;
             if (speed <= 0)
                 throw new System.ArgumentException(nameof(speed));
-
-            Vector3 direction = transform.rotation * inputValue;
 
             transform.position += direction * speed;
         }

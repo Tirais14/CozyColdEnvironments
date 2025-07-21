@@ -1,7 +1,6 @@
 using System;
 
 #nullable enable
-
 namespace UTIRLib
 {
     /// <summary>
@@ -9,7 +8,7 @@ namespace UTIRLib
     /// </summary>
     public class LoopPredicate : ALoopPredicate
     {
-        private readonly Func<bool> predicate;
+        public Func<bool> predicate;
 
         public LoopPredicate(Func<bool> predicate)
         {
@@ -18,26 +17,26 @@ namespace UTIRLib
 
         public bool Invoke()
         {
-            if (MoveNext())
-                throw Exception;
+            if (!MoveNext())
+                throw GetException();
 
             return predicate();
         }
     }
 
-    public class LoopPredicate<T0> : ALoopPredicate
+    public class LoopPredicate<T> : ALoopPredicate
     {
-        private readonly Predicate<T0> predicate;
+        private readonly Predicate<T> predicate;
 
-        public LoopPredicate(Predicate<T0> predicate)
+        public LoopPredicate(Predicate<T> predicate)
         {
             this.predicate = predicate;
         }
 
-        public bool Invoke(T0 value)
+        public bool Invoke(T value)
         {
-            if (MoveNext())
-                throw Exception;
+            if (!MoveNext())
+                throw GetException();
 
             return predicate(value);
         }
@@ -45,37 +44,33 @@ namespace UTIRLib
 
     public class LoopPredicate<T0, T1> : ALoopPredicate
     {
-        private readonly Func<T0, T1, bool> predicate;
-
-        public LoopPredicate(Func<T0, T1, bool> predicate)
-        {
-            this.predicate = predicate;
-        }
+        public Func<T0, T1, bool> Predicate { get; set; } = null!;
 
         public bool Invoke(T0 value, T1 value1)
         {
-            if (MoveNext())
-                throw Exception;
+            if (Predicate is null)
+                throw new Exception($"{nameof(Predicate)} not setted.");
 
-            return predicate(value, value1);
+            if (!MoveNext())
+                throw GetException();
+
+            return Predicate(value, value1);
         }
     }
 
     public class LoopPredicate<T0, T1, T2> : ALoopPredicate
     {
-        private readonly Func<T0, T1, T2, bool> predicate;
-
-        public LoopPredicate(Func<T0, T1, T2, bool> predicate)
-        {
-            this.predicate = predicate;
-        }
+        public Func<T0, T1, T2, bool> Predicate { get; set; } = null!;
 
         public bool Invoke(T0 value, T1 value1, T2 value2)
         {
-            if (MoveNext())
-                throw Exception;
+            if (Predicate is null)
+                throw new Exception($"{nameof(Predicate)} not setted.");
 
-            return predicate(value, value1, value2);
+            if (!MoveNext())
+                throw GetException();
+
+            return Predicate(value, value1, value2);
         }
     }
 }

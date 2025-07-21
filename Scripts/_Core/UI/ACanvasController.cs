@@ -9,13 +9,13 @@ using UTIRLib.InputSystem;
 namespace UTIRLib.UI
 {
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
-    public sealed class CanvasController : MonoX, ICanvasController
+    public abstract class ACanvasController : MonoX, ICanvasController
     {
-        [RequiredProperty]
-        public IPointerInput Pointer { get; private set; } = null!;
+        [field: RequiredField]
+        public IPointerInput Pointer { get; protected set; } = null!;
 
-        [RequiredProperty]
-        public IRaycasterUI Raycaster { get; private set; } = null!;
+        [field: RequiredField]
+        public IRaycasterUI Raycaster { get; protected set; } = null!;
 
         protected override void OnAwake()
         {

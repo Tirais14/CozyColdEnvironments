@@ -9,7 +9,7 @@ using UTIRLib.Utils;
 
 namespace UTIRLib.Extensions
 {
-    public static class EnumExtensions
+    public unsafe static class EnumExtensions
     {
         public static FieldInfo GetFieldInfo(this Enum value)
         {
@@ -25,13 +25,13 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToByte(value);
         }
-        public static byte ToByte<T>(this T value)
+        public unsafe static byte ToByte<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, byte>(ref value);
         }
 
-        public static sbyte ToSbyte<T>(this T value)
+        public unsafe static sbyte ToSbyte<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, sbyte>(ref value);
@@ -41,7 +41,7 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToInt16(value);
         }
-        public static short ToShort<T>(this T value)
+        public unsafe static short ToShort<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, short>(ref value);
@@ -51,7 +51,7 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToUInt16(value);
         }
-        public static ushort ToUshort<T>(this T value)
+        public unsafe static ushort ToUshort<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, ushort>(ref value);
@@ -61,7 +61,7 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToInt32(value);
         }
-        public static int ToInt<T>(this T value)
+        public unsafe static int ToInt<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, int>(ref value);
@@ -71,7 +71,7 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToUInt32(value);
         }
-        public static uint ToUint<T>(this T value)
+        public unsafe static uint ToUint<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, uint>(ref value);
@@ -81,7 +81,7 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToInt64(value);
         }
-        public static long ToLong<T>(this T value)
+        public unsafe static long ToLong<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, long>(ref value);
@@ -91,10 +91,17 @@ namespace UTIRLib.Extensions
         {
             return Convert.ToUInt64(value);
         }
-        public static ulong ToUlong<T>(this T value)
+        public unsafe static ulong ToUlong<T>(this T value)
             where T : unmanaged, Enum
         {
             return UnsafeUtility.As<T, ulong>(ref value);
+        }
+
+        public unsafe static T As<TValue, T>(this TValue value)
+            where TValue : unmanaged, Enum
+            where T : unmanaged, Enum
+        {
+            return UnsafeUtility.As<TValue, T>(ref value);
         }
 
         #region Flags

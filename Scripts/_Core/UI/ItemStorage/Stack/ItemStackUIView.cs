@@ -8,7 +8,7 @@ using UTIRLib.Attributes;
 namespace UTIRLib.UI
 {
     [RequireComponent(typeof(Image))]
-    public class ItemStackUIView : View<IItemStackUIViewModel>, IView<IItemStackUIViewModel>, IMovable
+    public class ItemStackUIView : View<IItemStackUIViewModel>, IMovable
     {
         private Vector2 defaultLocalPosition;
 
@@ -20,7 +20,6 @@ namespace UTIRLib.UI
         [SerializeField]
         private TextView? textComponent;
 
-        IItemStackUIViewModel IView<IItemStackUIViewModel>.ViewModel => viewModel;
         Vector2 IMovable.Position {
             get => transform.position;
             set => transform.position = value;

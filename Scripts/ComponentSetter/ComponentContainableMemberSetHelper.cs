@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection.Types;
 using UTIRLib.UnityExtensions;
 
 #nullable enable
@@ -17,37 +18,39 @@ namespace UTIRLib.ComponentSetter
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
 
-            (FieldInfo field, ComponentContainableMemberAttribute attribute)[] fields =
+            (FieldInfo field, GetComponentAttribute attribute)[] fields =
                 GetAttributedFields(target);
 
             if (fields.IsNotEmpty())
                 SetFields(target, fields);
 
-            (PropertyInfo prop, ComponentContainableMemberAttribute attribute)[] props =
+            (PropertyInfo prop, GetComponentAttribute attribute)[] props =
                 GetAttributedProps(target);
 
             if (props.IsNotEmpty())
                 SetProps(target, props);
         }
 
-        private static (FieldInfo, ComponentContainableMemberAttribute)[]GetAttributedFields(
+        private static (FieldInfo, GetComponentAttribute)[]GetAttributedFields(
             Component source)
         {
-            return source.GetType()
-                         .GetFields(BindingFlagsDefault.InstanceAll.ToBindingFlags())
-                         .Where(x => x.IsDefined<ComponentContainableMemberAttribute>())
-                         .Select(x => (x, x.GetCustomAttribute<ComponentContainableMemberAttribute>()))
+            FieldInfo[] fields = source.GetType()
+                                       .ForceGetFields(BindingFlagsDefault.InstanceAll);
+
+            return fields.Where(x => x.IsDefined<GetComponentAttribute>())
+                         .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>()))
                          .ToArray();
         }
 
-        private static (PropertyInfo, ComponentContainableMemberAttribute)[] GetAttributedProps(
+        private static (PropertyInfo, GetComponentAttribute)[] GetAttributedProps(
             Component source)
         {
-            return source.GetType()
-                         .GetProperties(BindingFlagsDefault.InstanceAll.ToBindingFlags())
-                         .Where(x => x.IsDefined<ComponentContainableMemberAttribute>())
-                         .Select(x => (x, x.GetCustomAttribute<ComponentContainableMemberAttribute>()))
-                         .ToArray();
+            PropertyInfo[] props = source.GetType()
+                .ForceGetProperties(BindingFlagsDefault.InstanceAll);
+
+            return props.Where(x => x.IsDefined<GetComponentAttribute>())
+                        .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>()))
+                        .ToArray();
         }
 
         private static object? SelfGetter(Component source, Type getType)
@@ -102,12 +105,10 @@ namespace UTIRLib.ComponentSetter
                 throw new ObjectNotFoundException(field.FieldType);
 
             field.SetValue(source, foundComponent);
-
-            return;
         }
 
         private static void SetFields(Component source,
-            (FieldInfo field, ComponentContainableMemberAttribute attribute)[] fields)
+            (FieldInfo field, GetComponentAttribute attribute)[] fields)
         {
             for (int i = 0; i < fields.Length; i++)
             {
@@ -153,12 +154,10 @@ namespace UTIRLib.ComponentSetter
                 throw new ObjectNotFoundException(prop.PropertyType);
 
             prop.SetValue(source, foundComponent);
-
-            return;
         }
 
         private static void SetProps(Component source,
-            (PropertyInfo prop, ComponentContainableMemberAttribute attribute)[] props)
+            (PropertyInfo prop, GetComponentAttribute attribute)[] props)
         {
             for (int i = 0; i < props.Length; i++)
             {
