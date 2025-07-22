@@ -9,7 +9,7 @@ namespace UTIRLib.Reflection
     public static class TypeExtensions
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool Is(this Type value, Type? other)
+        public static bool IsType(this Type value, Type? other)
         {
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
@@ -21,22 +21,22 @@ namespace UTIRLib.Reflection
 
             return other.IsAssignableFrom(value);
         }
-        public static bool Is<T>(this Type value)
+        public static bool IsType<T>(this Type value)
         {
-            return value.Is(typeof(T));
+            return value.IsType(typeof(T));
         }
 
-        public static bool IsNot(this Type value, Type other)
+        public static bool IsNotType(this Type value, Type other)
         {
-            return !value.Is(other);
+            return !value.IsType(other);
         }
-        public static bool IsNot<T>(this Type value)
+        public static bool IsNotType<T>(this Type value)
         {
-            return value.IsNot(typeof(T));
+            return value.IsNotType(typeof(T));
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool IsAny(this Type a, params Type?[] types)
+        public static bool IsAnyType(this Type a, params Type?[] types)
         {
             if (a == null)
                 throw new ArgumentNullException(nameof(a));
@@ -50,9 +50,9 @@ namespace UTIRLib.Reflection
             return false;
         }
 
-        public static bool IsNotAny(this Type value, params Type?[] types)
+        public static bool IsNotAnyType(this Type value, params Type?[] types)
         {
-            return !value.IsAny(types);
+            return !value.IsAnyType(types);
         }
 
         public static string GetName(this Type? type,
@@ -123,27 +123,27 @@ namespace UTIRLib.Reflection
 
         private static string ToShortName(Type type)
         {
-            if (type.Is<byte>())
+            if (type.IsType<byte>())
                 return "byte";
-            else if (type.Is<sbyte>())
+            else if (type.IsType<sbyte>())
                 return "sbyte";
-            else if (type.Is<short>())
+            else if (type.IsType<short>())
                 return "short";
-            else if (type.Is<ushort>())
+            else if (type.IsType<ushort>())
                 return "ushort";
-            else if (type.Is<int>())
+            else if (type.IsType<int>())
                 return "int";
-            else if (type.Is<uint>())
+            else if (type.IsType<uint>())
                 return "uint";
-            else if (type.Is<long>())
+            else if (type.IsType<long>())
                 return "long";
-            else if (type.Is<ulong>())
+            else if (type.IsType<ulong>())
                 return "ulong";
-            else if (type.Is<string>())
+            else if (type.IsType<string>())
                 return "string";
-            else if (type.Is<bool>())
+            else if (type.IsType<bool>())
                 return "bool";
-            else if (type.Is<Array>())
+            else if (type.IsType<Array>())
                 return $"{type.GetName(TypeNameAttributes.Default | ~TypeNameAttributes.ShortName)}[]";
 
             throw new Exception($"Invalid type {type.Name}.");

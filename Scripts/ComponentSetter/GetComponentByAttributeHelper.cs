@@ -5,6 +5,7 @@ using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 using UTIRLib.Unity.Extensions;
+using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
 
@@ -55,7 +56,7 @@ namespace UTIRLib.ComponentSetter
 
         private static object? SelfGetter(Component source, Type getType)
         {
-            if (getType.Is<Component>())
+            if (getType.IsType<Component>())
                 return source.GetComponent(getType);
             else
                 return source.GetAssignedObject(getType);
@@ -63,7 +64,7 @@ namespace UTIRLib.ComponentSetter
 
         private static object? ByParentGetter(Component source, Type getType)
         {
-            if (getType.Is<Component>())
+            if (getType.IsType<Component>())
                 return source.GetComponentInParent(getType);
             else
                 return source.GetAssignedObjectInParent(getType);
@@ -71,7 +72,7 @@ namespace UTIRLib.ComponentSetter
 
         private static object? ByChildrenGetter(Component source, Type getType)
         {
-            if (getType.Is<Component>())
+            if (getType.IsType<Component>())
                 return source.GetComponentInChildren(getType);
             else
                 return source.GetAssignedObjectInChildren(getType);

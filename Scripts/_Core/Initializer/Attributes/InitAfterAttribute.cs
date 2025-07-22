@@ -1,4 +1,5 @@
 using System;
+using UTIRLib.Reflection;
 
 #nullable enable
 namespace UTIRLib.Init
@@ -16,8 +17,8 @@ namespace UTIRLib.Init
         {
             for (int i = 0; i < types.Length; i++)
             {
-                if (types[i].IsNot<IInitable>())
-                    throw new CollectionItemException($"Is not {nameof(IInitable)}.", i);
+                if (types[i].IsNotType<IInitable>())
+                    throw new CollectionItemException($"{types[i].GetName()} is not {nameof(IInitable)}.", i);
             }
 
             ObjectTypes = types;

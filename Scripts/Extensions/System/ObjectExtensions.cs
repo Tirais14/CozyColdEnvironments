@@ -24,7 +24,13 @@ namespace UTIRLib
 
             return type.GetName();
         }
+    }
+}
 
+namespace UTIRLib.Unity.TypeMatching
+{
+    public static class ObjectExtensions
+    {
         public static bool Is<T>(this object? obj)
         {
             if (obj.IsNotNull() && obj is T)

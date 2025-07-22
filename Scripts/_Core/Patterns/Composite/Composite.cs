@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UTIRLib.Diagnostics;
 using UTIRLib.Extensions;
+using UTIRLib.Linq;
+using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
 
@@ -32,14 +34,12 @@ namespace UTIRLib.Patterns.Composite
             childsCount = childs.Count;
         }
 
-        public void Remove(object? value) => Remove(value.Is<T>()!);
+        public void Remove(object? value) => Remove(value.IsQ<T>()!);
 
         public void Remove(T? value)
         {
             if (value.IsDefault())
-            {
                 return;
-            }
 
             childs.Remove(value);
             childsCount = childs.Count;

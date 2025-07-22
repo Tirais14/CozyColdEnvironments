@@ -18,7 +18,7 @@ namespace UTIRLib.InputSystem
         {
             if (inputValueType == null)
                 throw new ArgumentNullException(nameof(inputValueType));
-            if (inputValueType.IsNotAny(typeof(bool),
+            if (inputValueType.IsNotAnyType(typeof(bool),
                                         typeof(Vector2),
                                         typeof(Vector3),
                                         typeof(Quaternion)))

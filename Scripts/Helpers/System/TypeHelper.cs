@@ -49,7 +49,7 @@ namespace UTIRLib.Reflection
         {
             if (type == null) return false;
 
-            return type.IsAny(typeof(byte),
+            return type.IsAnyType(typeof(byte),
                               typeof(sbyte),
                               typeof(short),
                               typeof(ushort),

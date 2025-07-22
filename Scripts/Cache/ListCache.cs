@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UTIRLib.Reflection;
 
 #nullable enable
 #pragma warning disable S2743
@@ -18,7 +19,7 @@ namespace UTIRLib
 
             arrayField ??= target.GetType()
                                  .GetFields(BindingFlagsDefault.InstanceNonPublic)
-                                 .Single(x => x.FieldType.Is<T[]>());
+                                 .Single(x => x.FieldType.IsType<T[]>());
 
             return (T[])arrayField.GetValue(target);
         }

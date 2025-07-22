@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using UTIRLib.Diagnostics;
 using UTIRLib.Linq;
+using UTIRLib.Reflection;
 
 #nullable enable
 
@@ -14,7 +15,7 @@ namespace UTIRLib.Utils
         /// <exception cref="MemberNotFoundException"></exception>
         public static FieldInfo GetFieldInfo(Type enumType, string name)
         {
-            if (!enumType.IsEnum && !enumType.Is<Enum>())
+            if (!enumType.IsEnum && !enumType.IsType<Enum>())
                 throw new ArgumentException($"{enumType.Name} is not enum.");
 
             FieldInfo field = enumType.GetField(name) ??

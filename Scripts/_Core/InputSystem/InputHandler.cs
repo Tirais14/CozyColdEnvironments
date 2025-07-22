@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using UTIRLib.Attributes.Metadata;
 using UTIRLib.Disposables;
 using UTIRLib.Init;
+using UTIRLib.Reflection;
 
 namespace UTIRLib.InputSystem
 {
@@ -75,7 +76,7 @@ namespace UTIRLib.InputSystem
             {
                 prop = GetInputActionProperty(toInit.ActionName);
 
-                if (prop.PropertyType.IsNot<IInputAction>())
+                if (prop.PropertyType.IsNotType<IInputAction>())
                     throw new InvalidOperationException($"Property is not {nameof(IInputAction)} type.");
 
                 SetInputActionProperty(prop,
