@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.EnumFlags
+namespace UTIRLib.Options
 {
     public static class EnumFlagsOptions
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UTIRLib.Attributes.Metadata;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection;
 using static UTIRLib.FileSystem.ScriptUtils.Syntax;
 
 #nullable enable

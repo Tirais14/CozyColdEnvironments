@@ -1,8 +1,9 @@
 using System;
+using System.Linq;
 using System.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Reflection
 {
     public static class MemberInfoExtensions
     {
@@ -15,6 +16,28 @@ namespace UTIRLib
             where T : Attribute
         {
             return value.IsDefined(typeof(T), inherit);
+        }
+    }
+}
+
+namespace UTIRLib.Attributes.Metadata
+{
+    public static class MemberInfoExtensions
+    {
+        public static MetadataAttribute[] GetMetadata(this MemberInfo member,
+                                                      bool throwIfNotFound = true)
+        {
+            var attributes = member.GetCustomAttributes<MetadataAttribute>().ToArray();
+
+            if (attributes.IsNullOrEmpty())
+            {
+                if (throwIfNotFound)
+                    throw new MetadataAttributeNotFoundException(member);
+                else
+                    return Array.Empty<MetadataAttribute>();
+            }
+
+            return attributes;
         }
     }
 }

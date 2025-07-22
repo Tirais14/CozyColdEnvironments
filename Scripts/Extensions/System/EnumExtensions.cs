@@ -1,26 +1,15 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
-using UTIRLib.EnumFlags;
 using UTIRLib.Utils;
 
-namespace UTIRLib.Extensions
+namespace UTIRLib
 {
     public unsafe static class EnumExtensions
     {
-        public static FieldInfo GetFieldInfo(this Enum value)
-        {
-            return EnumHelper.GetFieldInfo(value);
-        }
-        public static FieldInfo GetFieldInfo<T>(this T enumValue)
-            where T : Enum
-        {
-            return EnumHelper.GetFieldInfo(enumValue);
-        }
-
         public static byte ToByte(this Enum value)
         {
             return Convert.ToByte(value);
@@ -103,36 +92,108 @@ namespace UTIRLib.Extensions
         {
             return UnsafeUtility.As<TValue, T>(ref value);
         }
+    }
+}
 
-        #region Flags
-        /// <exception cref="EnumNotFlagsException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static bool HasFlags(this Enum value, params Enum[] flags)
+namespace UTIRLib.Reflection
+{
+    public static class EnumExtensions
+    {
+        public static FieldInfo GetFieldInfo(this Enum value)
         {
-            if (!value.IsFlags())
-                throw new EnumNotFlagsException(value.GetType());
-            if (flags is null)
-                throw new ArgumentNullException(nameof(flags));
-            if (flags.IsEmpty())
-                return false;
+            return EnumHelper.GetFieldInfo(value);
+        }
+        public static FieldInfo GetFieldInfo<T>(this T enumValue)
+            where T : Enum
+        {
+            return EnumHelper.GetFieldInfo(enumValue);
+        }
+    }
+}
 
-            for (int i = 0; i < flags.Length; i++)
+namespace UTIRLib.Attributes.Metadata
+{
+    using UTIRLib.Diagnostics;
+    using UTIRLib.Options;
+    using UTIRLib.Reflection;
+
+    public static class EnumExtensions
+    {
+        public static string GetMetaString<T>(this T value)
+            where T : Enum
+        {
+            return value.GetFieldInfo()
+                        .GetMetadata()
+                        .Single<MetaStringAttribute>().Value;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns><see cref="MetaStringAttribute"/> or <see cref="Enum.ToString()"/> value</returns>
+        public static string TryGetMetaString<T>(this T value, out bool success)
+            where T : Enum
+        {
+            string? data = value.GetFieldInfo()
+                                .GetMetadata(throwIfNotFound: false)
+                                .Single<MetaStringAttribute>().Value;
+
+            if (data is null)
             {
-                if (!value.HasFlag(flags[i]))
-                    return false;
+                success = false;
+                return value.ToString();
             }
 
-            return true;
+            success = true;
+            return data;
         }
-        public static bool HasFlags(this Enum value, IEnumerable<Enum> flags)
+        public static string TryGetMetaString<T>(this T value)
+            where T : Enum
         {
-            return value.HasFlags(flags.ToArray());
-        }
-        public static bool HasFlags(this Enum value, Enum flags)
-        {
-            return value.HasFlags(flags.ToArrayByFlags());
+            return value.TryGetMetaString(out _);
         }
 
-        #endregion Flags
+        public static Type GetMetaType<T>(this T value)
+            where T : Enum
+        {
+            return value.GetFieldInfo()
+                        .GetMetadata()
+                        .Single<MetaTypeAttribute>().Value;
+        }
+        public static bool TryGetMetaType<T>(this T value, [NotNullWhen(true)] out Type? data)
+            where T : Enum
+        {
+            data = value.GetFieldInfo()
+                        .GetMetadata(throwIfNotFound: false)
+                        .Single<MetaTypeAttribute>().Value;
+
+            return data != null;
+        }
+
+        public static string[] GetMetaStringByFlags(this Enum value,
+                                                    bool useDefaultStringsIfNotFound = false)
+        {
+            if (!value.IsFlags())
+            {
+                if (EnumFlagsOptions.ThrowNotFlagsException)
+                    throw new EnumNotFlagsException(value.GetType());
+                else
+                    return Array.Empty<string>();
+            }
+
+            Enum[] enumValues = value.ToArrayByFlags();
+            List<string> results = new(enumValues.Length);
+            string enumString;
+            for (int i = 0; i < enumValues.Length; i++)
+            {
+                enumString = value.TryGetMetaString(out bool success);
+
+                if (success || !success && useDefaultStringsIfNotFound)
+                    results.Add(enumString);
+            }
+
+            return results.ToArray();
+        }
     }
 }

@@ -3,14 +3,14 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UTIRLib.Diagnostics;
-using UTIRLib.Reflection.Types;
-using UTIRLib.UnityExtensions;
+using UTIRLib.Reflection;
+using UTIRLib.Unity.Extensions;
 
 #nullable enable
 
 namespace UTIRLib.ComponentSetter
 {
-    public static class ComponentContainableMemberSetHelper
+    public static class GetComponentByAttributeHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
         public static void SetMembers(Component target)

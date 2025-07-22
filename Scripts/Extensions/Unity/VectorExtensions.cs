@@ -2,11 +2,11 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib
+#pragma warning disable S2094
+namespace UTIRLib.Unity
 {
-    public static class VectorExtensions
+    public static class Vector2Extensions
     {
-        #region Vector2
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2Int FloorToInt(this Vector2 vector)
         {
@@ -23,17 +23,19 @@ namespace UTIRLib
         {
             return new Vector3(value.x, value.y, z);
         }
-        #endregion Vector2
+    }
 
-        #region Vector2Int
+    public static class Vector2IntExtensions
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3Int ToVector3(this Vector2Int vector2Int, int z = 0)
         {
             return new Vector3Int(vector2Int.x, vector2Int.y, z);
         }
-        #endregion Vector2Int
+    }
 
-        #region Vector3
+    public static class Vector3Extensions
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3Int FloorToInt(this Vector3 vector)
         {
@@ -48,15 +50,41 @@ namespace UTIRLib
                                   Mathf.RoundToInt(vector.y),
                                   Mathf.RoundToInt(vector.z));
         }
+    }
 
-        #endregion Vector3
-
-        #region Vector3Int
+    public static class Vector3IntExtensions
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2Int ToVector2(this Vector3Int vector3Int)
         {
             return new(vector3Int.x, vector3Int.y);
         }
-        #endregion Vector3Int
+    }
+}
+
+namespace UTIRLib.Unity.Extensions
+{
+    public static class Vector2Extensions
+    {
+        //TOFILL
+    }
+
+    public static class Vector2IntExtensions
+    {
+        //TOFILL
+    }
+
+    public static class Vector3Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 GetDirectionRelative(this Vector3 position, Vector3 target)
+        {
+            return (target - position).normalized;
+        }
+    }
+
+    public static class Vector3IntExtensions
+    {
+        //TOFILL
     }
 }

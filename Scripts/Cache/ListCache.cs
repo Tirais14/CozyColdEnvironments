@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 
 #nullable enable
+#pragma warning disable S2743
 namespace UTIRLib
 {
     public static class ListCache<T>
@@ -18,8 +18,7 @@ namespace UTIRLib
 
             arrayField ??= target.GetType()
                                  .GetFields(BindingFlagsDefault.InstanceNonPublic)
-                                 .Where(x => x.FieldType.Is<T[]>())
-                                 .Single();
+                                 .Single(x => x.FieldType.Is<T[]>());
 
             return (T[])arrayField.GetValue(target);
         }

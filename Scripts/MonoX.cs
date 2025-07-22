@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UTIRLib.ComponentSetter;
+using UTIRLib.Unity;
 using UTIRLib.Utils;
 
 #nullable enable
@@ -20,17 +21,72 @@ namespace UTIRLib
         protected virtual void OnStart()
         { }
 
-        protected Transform[] GetChilds()
+        public bool TryGetComponentInChildren(Type type,
+            bool includeInactive,
+            [NotNullWhen(true)] out Component? result)
         {
-            if (transform.childCount == 0)
-                return Array.Empty<Transform>();
+            return ComponentGetComponentExtensions.TryGetComponentInChildren(
+                this,
+                type,
+                includeInactive,
+                out result);
+        }
+        public bool TryGetComponentInChildren(Type type,
+            [NotNullWhen(true)] out Component? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInChildren(
+                this,
+                type,
+                out result);
+        }
 
-            int childCount = transform.childCount;
-            var childs = new Transform[childCount];
-            for (int i = 0; i < childCount; i++)
-                childs[i] = transform.GetChild(i);
+        public bool TryGetComponentInChildren<T>(bool includeInactive,
+            [NotNullWhen(true)] out T? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInChildren(
+                this,
+                includeInactive,
+                out result);
+        }
+        public bool TryGetComponentInChildren<T>([NotNullWhen(true)] out T? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInChildren(
+                this,
+                out result);
+        }
 
-            return childs;
+        public bool TryGetComponentInParent(Type type,
+            bool includeInactive,
+            [NotNullWhen(true)] out Component? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInParent(
+                this,
+                type,
+                includeInactive,
+                out result);
+        }
+        public bool TryGetComponentInParent(Type type,
+            [NotNullWhen(true)] out Component? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInParent(
+                this,
+                type,
+                out result);
+        }
+
+        public bool TryGetComponentInParent<T>(bool includeInactive,
+            [NotNullWhen(true)] out T? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInParent(
+                this,
+                includeInactive,
+                out result);
+        }
+        public bool TryGetComponentInParent<T>([NotNullWhen(true)] out T? result)
+        {
+            return ComponentGetComponentExtensions.TryGetComponentInParent(
+                this,
+                out result);
         }
 
         protected bool TryLockDestroyOnLoad()
@@ -43,21 +99,6 @@ namespace UTIRLib
             }
 
             return false;
-        }
-
-        protected T? AddComponent<T>(Type type) where T : Component
-        {
-            return ComponentHelper.AddComponent<MonoBehaviour, T>(this, type);
-        }
-
-        protected T AddComponent<T>() where T : Component
-        {
-            return ComponentHelper.AddComponent<MonoBehaviour, T>(this);
-        }
-
-        protected void AddComponent<T>([NotNull] ref T? value) where T : Component
-        {
-            ComponentHelper.AddComponent<MonoBehaviour, T>(this, ref value);
         }
 
         protected void Message(object message)
@@ -98,7 +139,7 @@ namespace UTIRLib
         protected void Awake()
         {
             //Sets component fields and props marked by specical attribute
-            ComponentContainableMemberSetHelper.SetMembers(this);
+            GetComponentByAttributeHelper.SetMembers(this);
 
             OnAwake();
 

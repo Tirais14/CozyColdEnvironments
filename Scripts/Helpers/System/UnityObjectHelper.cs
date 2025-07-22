@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UTIRLib.Linq;
-using UTIRLib.UnityExtensions;
+using UTIRLib.Unity.Extensions;
 using Object = UnityEngine.Object;
 
 #nullable enable

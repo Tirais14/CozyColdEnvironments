@@ -6,6 +6,7 @@ using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Init;
 using UTIRLib.Linq;
+using UTIRLib.Reflection;
 using UTIRLib.Utils;
 
 #nullable enable

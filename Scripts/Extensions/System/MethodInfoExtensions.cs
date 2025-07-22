@@ -4,7 +4,7 @@ using UTIRLib.Diagnostics;
 
 #nullable enable
 
-namespace UTIRLib.Extensions
+namespace UTIRLib.Reflection
 {
     public static class MethodInfoExtensions
     {

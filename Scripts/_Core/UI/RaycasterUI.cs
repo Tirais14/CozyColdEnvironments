@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UTIRLib.Diagnostics;
 using UTIRLib.InputSystem;
-using UTIRLib.UnityExtensions;
+using UTIRLib.Unity.Extensions;
 
 #nullable enable
 

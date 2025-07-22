@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Diagnostics;
+using UTIRLib.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Diagnostics
 {
     public class EnumNotFlagsException : TirLibException
     {

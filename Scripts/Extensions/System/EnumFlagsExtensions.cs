@@ -1,26 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
 using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using UTIRLib.Reflection;
 using UTIRLib.Utils;
-using static UTIRLib.EnumFlags.EnumFlagsOptions;
 
 #nullable enable
-namespace UTIRLib.EnumFlags
+namespace UTIRLib
 {
+    using static Options.EnumFlagsOptions;
     public static class EnumFlagsExtensions
     {
         public static bool IsFlags(this Enum value)
         {
-            return value.GetType().IsDefined(typeof(FlagsAttribute));
+            return value.GetType().IsDefined<FlagsAttribute>();
         }
         public static bool IsFlags<T>(this T value)
             where T : Enum
         {
-            return value.GetType().IsDefined(typeof(FlagsAttribute));
+            return value.GetType().IsDefined<FlagsAttribute>();
         }
 
         public static Enum[] ToArrayByFlags(this Enum value, string? exceptByName = "None")
@@ -309,7 +308,8 @@ namespace UTIRLib.EnumFlags
                     return value;
             }
 
-            return UnsafeUtility.SizeOf<T>() switch {
+            return UnsafeUtility.SizeOf<T>() switch
+            {
                 1 => SetFlagByteInternal(value, flag, isToSet),
                 2 => SetFlagInt16Internal(value, flag, isToSet),
                 4 => SetFlagInt32Internal(value, flag, isToSet),
@@ -364,6 +364,34 @@ namespace UTIRLib.EnumFlags
                 valueByte &= ~flagByte;
 
             return UnsafeUtility.As<ulong, T>(ref valueByte);
+        }
+
+        /// <exception cref="EnumNotFlagsException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool HasFlags(this Enum value, params Enum[] flags)
+        {
+            if (!value.IsFlags())
+                throw new EnumNotFlagsException(value.GetType());
+            if (flags is null)
+                throw new ArgumentNullException(nameof(flags));
+            if (flags.IsEmpty())
+                return false;
+
+            for (int i = 0; i < flags.Length; i++)
+            {
+                if (!value.HasFlag(flags[i]))
+                    return false;
+            }
+
+            return true;
+        }
+        public static bool HasFlags(this Enum value, IEnumerable<Enum> flags)
+        {
+            return value.HasFlags(flags.ToArray());
+        }
+        public static bool HasFlags(this Enum value, Enum flags)
+        {
+            return value.HasFlags(flags.ToArrayByFlags());
         }
     }
 }

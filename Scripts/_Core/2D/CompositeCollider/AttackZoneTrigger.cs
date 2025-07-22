@@ -1,6 +1,7 @@
 using System.Linq;
 using UnityEngine;
 using UTIRLib.Diagnostics;
+using UTIRLib.Unity;
 using UTIRLib.Utils;
 
 namespace UTIRLib.TwoD
@@ -32,8 +33,13 @@ namespace UTIRLib.TwoD
                 colliders[i].IfNotNull((trigger) => trigger.SetPath(0, triggerShape));
         }
 
-        protected void AddCollider(Direction2D direction) => colliders[(int)direction] = transform.Find(direction).
-            IfNotNullQ((triggerObjTransform) => triggerObjTransform.GetComponent<PolygonCollider2D>());
+        protected void AddCollider(Direction2D direction)
+        {
+            colliders[(int)direction] = transform.Find(direction)
+                                                 .IfNotNullQ(
+                (triggerObjTransform) =>
+                triggerObjTransform.GetComponent<PolygonCollider2D>());
+        }
 
         protected void AddColliders()
         {

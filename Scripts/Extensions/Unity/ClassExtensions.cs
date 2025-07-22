@@ -1,11 +1,27 @@
 using System;
+using UnityEngine;
+using UTIRLib.Diagnostics;
+using Object = UnityEngine.Object;
 
 #nullable enable
-
 namespace UTIRLib.Diagnostics
 {
-    public static class ClassQueries
+    public static class ClassExtensions
     {
+        public static T ThrowIfNotFound<T>(this T? obj)
+            where T : Object
+        {
+            if (obj == null)
+            {
+                if (typeof(Component).IsAssignableFrom(typeof(T)))
+                    throw new ComponentNotFoundException(typeof(T));
+                else
+                    throw new ObjectNotFoundException(typeof(T));
+            }
+
+            return obj;
+        }
+
         public static TObj ThrowIfNull<TObj, TException>(this TObj? obj, TException exception)
          where TObj : class
          where TException : Exception

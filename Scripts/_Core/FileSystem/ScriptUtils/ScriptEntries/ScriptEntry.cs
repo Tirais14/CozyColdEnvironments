@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UTIRLib.Attributes.Metadata;
-using UTIRLib.EnumFlags;
+using UTIRLib.Reflection;
 
 namespace UTIRLib.FileSystem.ScriptUtils
 {

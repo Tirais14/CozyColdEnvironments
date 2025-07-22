@@ -1,5 +1,6 @@
 using System;
 using UTIRLib.Attributes.Metadata;
+using UTIRLib.Reflection;
 using static UTIRLib.FileSystem.ScriptUtils.Syntax;
 
 #nullable enable

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Reflection.Types;
+using UTIRLib.Reflection;
 
 #nullable enable
 namespace UTIRLib.Disposables

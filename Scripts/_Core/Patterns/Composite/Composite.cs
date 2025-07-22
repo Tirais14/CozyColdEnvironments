@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UTIRLib.Diagnostics;
-using UTIRLib.TypeConvert;
+using UTIRLib.Extensions;
 
 #nullable enable
 
 namespace UTIRLib.Patterns.Composite
 {
+    [Obsolete]
     public class Composite<T> : ReadOnlyComposite<T>, IComposite<T>
     {
         protected new readonly List<T> childs = new();

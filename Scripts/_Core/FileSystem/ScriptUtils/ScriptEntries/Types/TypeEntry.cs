@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Text;
+using UTIRLib.Reflection;
 using static UTIRLib.FileSystem.ScriptUtils.Syntax;
 
 namespace UTIRLib.FileSystem.ScriptUtils

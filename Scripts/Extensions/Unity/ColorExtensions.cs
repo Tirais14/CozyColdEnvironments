@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib
+namespace UTIRLib.Unity
 {
     public static class ColorExtensions
     {

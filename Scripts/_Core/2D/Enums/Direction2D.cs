@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
-using UTIRLib.Extensions;
-using UTIRLib.UnityExtensions;
+using UTIRLib.Unity;
 
 namespace UTIRLib.TwoD
 {
