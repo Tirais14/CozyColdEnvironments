@@ -81,25 +81,29 @@ namespace UTIRLib.Unity.Extensions
         }
 
         public static object? GetAssignedObjectInChildren(this Component value,
-                                                          Type targetType)
+                                                          Type targetType,
+                                                          bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectInChildren(targetType);
+            return value.gameObject.GetAssignedObjectInChildren(targetType, includeInactive);
         }
 
-        public static T? GetAssignedObjectInChildren<T>(this Component value)
+        public static T? GetAssignedObjectInChildren<T>(this Component value,
+                                                        bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectInChildren<T>();
+            return value.gameObject.GetAssignedObjectInChildren<T>(includeInactive);
         }
 
         public static object? GetAssignedObjectInParent(this Component value,
-                                                        Type targetType)
+                                                        Type targetType,
+                                                        bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectInParent(targetType);
+            return value.gameObject.GetAssignedObjectInParent(targetType, includeInactive);
         }
 
-        public static T? GetAssignedObjectInParent<T>(this Component value)
+        public static T? GetAssignedObjectInParent<T>(this Component value,
+                                                      bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectInParent<T>();
+            return value.gameObject.GetAssignedObjectInParent<T>(includeInactive);
         }
 
         public static object[] GetAssignedObjects(this Component value,
@@ -114,25 +118,29 @@ namespace UTIRLib.Unity.Extensions
         }
 
         public static object[] GetAssignedObjectsInChildren(this Component value,
-                                                            Type targetType)
+                                                            Type targetType,
+                                                            bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectsInChildren(targetType);
+            return value.gameObject.GetAssignedObjectsInChildren(targetType, includeInactive);
         }
 
-        public static T[] GetAssignedObjectsInChildren<T>(this Component value)
+        public static T[] GetAssignedObjectsInChildren<T>(this Component value,
+                                                          bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectsInChildren<T>();
+            return value.gameObject.GetAssignedObjectsInChildren<T>(includeInactive);
         }
 
         public static object[] GetAssignedObjectsInParent(this Component value,
-                                                          Type targetType)
+                                                          Type targetType,
+                                                          bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectsInParent(targetType);
+            return value.gameObject.GetAssignedObjectsInParent(targetType, includeInactive);
         }
 
-        public static T[] GetAssignedObjectsInParent<T>(this Component value)
+        public static T[] GetAssignedObjectsInParent<T>(this Component value,
+                                                        bool includeInactive = false)
         {
-            return value.gameObject.GetAssignedObjectsInParent<T>();
+            return value.gameObject.GetAssignedObjectsInParent<T>(includeInactive);
         }
 
         public static bool TryGetAssignedObject(this Component value,
@@ -150,11 +158,28 @@ namespace UTIRLib.Unity.Extensions
 
         public static bool TryGetAssignedObjectInChildren(this Component value,
             Type targetType,
+            bool includeInactive,
             [NotNullWhen(true)] out object? result)
         {
-            return value.gameObject.TryGetAssignedObjectInChildren(targetType, out result);
+            return value.gameObject.TryGetAssignedObjectInChildren(targetType,
+                                                                   includeInactive,
+                                                                   out result);
+        }
+        public static bool TryGetAssignedObjectInChildren(this Component value,
+            Type targetType,
+            [NotNullWhen(true)] out object? result)
+        {
+            return value.gameObject.TryGetAssignedObjectInChildren(targetType,
+                                                                   out result);
         }
 
+        public static bool TryGetAssignedObjectInChildren<T>(this Component value,
+            bool includeInactive,
+            [NotNullWhen(true)] out T? result)
+        {
+            return value.gameObject.TryGetAssignedObjectInChildren(includeInactive,
+                                                                   out result);
+        }
         public static bool TryGetAssignedObjectInChildren<T>(this Component value,
             [NotNullWhen(true)] out T? result)
         {
@@ -163,11 +188,28 @@ namespace UTIRLib.Unity.Extensions
 
         public static bool TryGetAssignedObjectInParent(this Component value,
             Type targetType,
+            bool includeInactive,
             [NotNullWhen(true)] out object? result)
         {
-            return value.gameObject.TryGetAssignedObjectInParent(targetType, out result);
+            return value.gameObject.TryGetAssignedObjectInParent(targetType,
+                                                                 includeInactive,
+                                                                 out result);
+        }
+        public static bool TryGetAssignedObjectInParent(this Component value,
+            Type targetType,
+            [NotNullWhen(true)] out object? result)
+        {
+            return value.gameObject.TryGetAssignedObjectInParent(targetType,
+                                                                 out result);
         }
 
+        public static bool TryGetAssignedObjectInParent<T>(this Component value,
+            bool includeInactive,
+            [NotNullWhen(true)] out T? result)
+        {
+            return value.gameObject.TryGetAssignedObjectInParent(includeInactive,
+                                                                 out result);
+        }
         public static bool TryGetAssignedObjectInParent<T>(this Component value,
             [NotNullWhen(true)] out T? result)
         {
@@ -189,11 +231,29 @@ namespace UTIRLib.Unity.Extensions
 
         public static bool TryGetAssignedObjectsInChildren(this Component value,
                                                            Type targetType,
+                                                           bool includeInactive,
                                                            out object[] results)
         {
-            return value.gameObject.TryGetAssignedObjectsInChildren(targetType, out results);
+            return value.gameObject.TryGetAssignedObjectsInChildren(targetType,
+                                                                    includeInactive,
+                                                                    out results);
+        }
+        public static bool TryGetAssignedObjectsInChildren(this Component value,
+                                                           Type targetType,
+                                                           out object[] results)
+        {
+            return value.gameObject.TryGetAssignedObjectsInChildren(targetType,
+                                                                    out results);
         }
 
+
+        public static bool TryGetAssignedObjectsInChildren<T>(this Component value,
+                                                              bool includeInactive,
+                                                              out T[] results)
+        {
+            return value.gameObject.TryGetAssignedObjectsInChildren(includeInactive,
+                                                                    out results);
+        }
         public static bool TryGetAssignedObjectsInChildren<T>(this Component value,
                                                               out T[] results)
         {
@@ -202,11 +262,28 @@ namespace UTIRLib.Unity.Extensions
 
         public static bool TryGetAssignedObjectsInParent(this Component value,
                                                          Type targetType,
+                                                         bool includeInactive,
                                                          out object[] results)
         {
-            return value.gameObject.TryGetAssignedObjectsInParent(targetType, out results);
+            return value.gameObject.TryGetAssignedObjectsInParent(targetType,
+                                                                  includeInactive,
+                                                                  out results);
+        }
+        public static bool TryGetAssignedObjectsInParent(this Component value,
+                                                         Type targetType,
+                                                         out object[] results)
+        {
+            return value.gameObject.TryGetAssignedObjectsInParent(targetType,
+                                                                  out results);
         }
 
+        public static bool TryGetAssignedObjectsInParent<T>(this Component value,
+                                                            bool includeInactive,
+                                                            out T[] results)
+        {
+            return value.gameObject.TryGetAssignedObjectsInParent(includeInactive,
+                                                                  out results);
+        }
         public static bool TryGetAssignedObjectsInParent<T>(this Component value,
                                                             out T[] results)
         {

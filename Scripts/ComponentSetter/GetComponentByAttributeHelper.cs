@@ -80,7 +80,7 @@ namespace UTIRLib.ComponentSetter
 
         private static bool IsTypeValid(Type type)
         {
-            if (!type.IsInterface && type.IsNot<Component>())
+            if (!type.IsInterface && type.IsNotType<Component>())
                 return false;
 
             return true;

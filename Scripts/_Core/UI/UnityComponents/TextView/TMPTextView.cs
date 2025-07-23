@@ -1,6 +1,7 @@
 using TMPro;
 
 #pragma warning disable IDE0044
+#pragma warning disable S101
 #nullable enable
 namespace UTIRLib.UI
 {

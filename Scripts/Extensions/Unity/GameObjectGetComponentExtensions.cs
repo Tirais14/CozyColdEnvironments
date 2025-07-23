@@ -40,7 +40,7 @@ namespace UTIRLib.Unity
         {
             result = value.GetComponentInChildren<T>(includeInactive);
 
-            return result != null;
+            return result.IsNotNull();
         }
 
         public static bool TryGetComponentInChildren<T>(this GameObject value,
@@ -77,7 +77,7 @@ namespace UTIRLib.Unity
         {
             result = value.GetComponentInParent<T>(includeInactive);
 
-            return result != null;
+            return result.IsNotNull();
         }
         public static bool TryGetComponentInParent<T>(this GameObject value,
             [NotNullWhen(true)] out T? result)
@@ -92,193 +92,271 @@ namespace UTIRLib.Unity.Extensions
 {
     public static class GameObjectGetComponentExtensions
     {
-        public static object? GetAssignedObject(this GameObject gameObject,
+        public static object? GetAssignedObject(this GameObject value,
                                                 Type targetType)
         {
-            return GetAssignedObjectsInternal(gameObject,
+            return GetAssignedObjectsInternal(value,
                                               targetType,
+                                              includeInactive: false,
+                                              FindMode.Self,
                                               onlyFirst: true).FirstOrDefault();
         }
 
-        public static T? GetAssignedObject<T>(this GameObject gameObject)
+        public static T? GetAssignedObject<T>(this GameObject value)
         {
-            return (T?)GetAssignedObject(gameObject, typeof(T));
+            return (T?)value.GetAssignedObject(typeof(T));
         }
 
-        public static object? GetAssignedObjectInChildren(this GameObject gameObject,
-                                                          Type targetType)
+        public static object? GetAssignedObjectInChildren(this GameObject value,
+                                                          Type targetType,
+                                                          bool includeInactive = false)
         {
-            return GetAssignedObjectsInternal(gameObject,
+            return GetAssignedObjectsInternal(value,
                                               targetType,
+                                              includeInactive,
                                               FindMode.InChilds,
                                               onlyFirst: true).FirstOrDefault();
         }
 
-        public static T? GetAssignedObjectInChildren<T>(this GameObject gameObject)
+        public static T? GetAssignedObjectInChildren<T>(this GameObject value,
+                                                        bool includeInactive = false)
         {
-            return (T?)GetAssignedObject(gameObject,
-                                         typeof(T));
+            return (T?)value.GetAssignedObjectInChildren(typeof(T), includeInactive);
         }
 
-        public static object? GetAssignedObjectInParent(this GameObject gameObject,
-                                                        Type targetType)
+        public static object? GetAssignedObjectInParent(this GameObject value,
+                                                        Type targetType,
+                                                        bool includeInactive = false)
         {
-            return GetAssignedObjectsInternal(gameObject,
+            return GetAssignedObjectsInternal(value,
                                               targetType,
+                                              includeInactive,
                                               FindMode.InParents,
                                               onlyFirst: true).FirstOrDefault();
         }
 
-        public static T? GetAssignedObjectInParent<T>(this GameObject gameObject)
+        public static T? GetAssignedObjectInParent<T>(this GameObject value,
+                                                      bool includeInactive = false)
         {
-            return (T?)GetAssignedObject(gameObject, typeof(T));
+            return (T?)value.GetAssignedObjectInParent(typeof(T), includeInactive);
         }
 
         public static object[] GetAssignedObjects(this GameObject gameObject,
                                                   Type targetType)
         {
-            return GetAssignedObjectsInternal(gameObject, targetType);
-        }
-
-        public static T[] GetAssignedObjects<T>(this GameObject gameObject)
-        {
-            return GetAssignedObjects(gameObject,
-                                      typeof(T)).Cast<T>()
-                                                .ToArray();
-        }
-
-        public static object[] GetAssignedObjectsInChildren(this GameObject gameObject,
-                                                            Type targetType)
-        {
             return GetAssignedObjectsInternal(gameObject,
                                               targetType,
-                                              FindMode.InChilds);
+                                              includeInactive: false,
+                                              FindMode.Self,
+                                              onlyFirst: false);
         }
 
-        public static T[] GetAssignedObjectsInChildren<T>(this GameObject gameObject)
+        public static T[] GetAssignedObjects<T>(this GameObject value)
         {
-            return GetAssignedObjects(gameObject,
-                                      typeof(T)).Cast<T>()
-                                                .ToArray();
+            return value.GetAssignedObjects(typeof(T))
+                        .Cast<T>()
+                        .ToArray();
         }
 
-        public static object[] GetAssignedObjectsInParent(this GameObject gameObject,
-                                                          Type targetType)
+        public static object[] GetAssignedObjectsInChildren(this GameObject value,
+                                                            Type targetType,
+                                                            bool includeInactive = false)
         {
-            return GetAssignedObjectsInternal(gameObject,
+            return GetAssignedObjectsInternal(value,
                                               targetType,
-                                              FindMode.InParents);
+                                              includeInactive,
+                                              FindMode.InChilds,
+                                              onlyFirst: false);
         }
 
-        public static T[] GetAssignedObjectsInParent<T>(this GameObject gameObject)
+        public static T[] GetAssignedObjectsInChildren<T>(this GameObject value,
+                                                          bool includeInactive = false)
         {
-            return GetAssignedObjects(gameObject,
-                                      typeof(T)).Cast<T>()
-                                                .ToArray();
+            return value.GetAssignedObjectsInChildren(typeof(T))
+                        .Cast<T>()
+                        .ToArray();
         }
 
-        public static bool TryGetAssignedObject(this GameObject gameObject,
+        public static object[] GetAssignedObjectsInParent(this GameObject value,
+                                                          Type targetType,
+                                                          bool includeInactive = false)
+        {
+            return GetAssignedObjectsInternal(value,
+                                              targetType,
+                                              includeInactive,
+                                              FindMode.InParents,
+                                              onlyFirst: false);
+        }
+
+        public static T[] GetAssignedObjectsInParent<T>(this GameObject value,
+                                                        bool includeInactive = false)
+        {
+            return value.GetAssignedObjectsInParent(typeof(T))
+                        .Cast<T>()
+                        .ToArray();
+        }
+
+        public static bool TryGetAssignedObject(this GameObject value,
                                                 Type targetType,
                                                 [NotNullWhen(true)] out object? result)
         {
-            result = GetAssignedObject(gameObject, targetType);
+            result = GetAssignedObject(value, targetType);
 
             return result.IsNotNull();
         }
 
-        public static bool TryGetAssignedObject<T>(this GameObject gameObject,
+        public static bool TryGetAssignedObject<T>(this GameObject value,
                                                    [NotNullWhen(true)] out T? result)
         {
-            result = GetAssignedObject<T>(gameObject);
+            result = GetAssignedObject<T>(value);
 
             return result.IsNotNull();
         }
 
-        public static bool TryGetAssignedObjectInChildren(this GameObject gameObject,
+        public static bool TryGetAssignedObjectInChildren(this GameObject value,
+            Type targetType,
+            bool includeInactive,
+            [NotNullWhen(true)] out object? result)
+        {
+            result = value.GetAssignedObjectInChildren(targetType, includeInactive);
+
+            return result.IsNotNull();
+        }
+        public static bool TryGetAssignedObjectInChildren(this GameObject value,
             Type targetType,
             [NotNullWhen(true)] out object? result)
         {
-            result = GetAssignedObjectInChildren(gameObject,
-                                                 targetType);
-
-            return result.IsNotNull();
+            return value.TryGetAssignedObjectInChildren(targetType,
+                                                        includeInactive: false,
+                                                        out result);
         }
 
-        public static bool TryGetAssignedObjectInChildren<T>(this GameObject gameObject,
+        public static bool TryGetAssignedObjectInChildren<T>(this GameObject value,
+            bool includeInactive,
             [NotNullWhen(true)] out T? result)
         {
-            result = GetAssignedObjectInChildren<T>(gameObject);
+            result = value.GetAssignedObjectInChildren<T>(includeInactive);
 
             return result.IsNotNull();
         }
+        public static bool TryGetAssignedObjectInChildren<T>(this GameObject value,
+            [NotNullWhen(true)] out T? result)
+        {
+            return value.TryGetAssignedObjectInChildren(includeInactive: false, out result);
+        }
 
-        public static bool TryGetAssignedObjectInParent(this GameObject gameObject,
+        public static bool TryGetAssignedObjectInParent(this GameObject value,
+            Type targetType,
+            bool includeInactive,
+            [NotNullWhen(true)] out object? result)
+        {
+            result = value.GetAssignedObjectInParent(targetType, includeInactive);
+
+            return result.IsNotNull();
+        }
+        public static bool TryGetAssignedObjectInParent(this GameObject value,
             Type targetType,
             [NotNullWhen(true)] out object? result)
         {
-            result = GetAssignedObjectInParent(gameObject,
-                                               targetType);
-
-            return result.IsNotNull();
+            return value.TryGetAssignedObjectInParent(targetType,
+                                                      includeInactive: false,
+                                                      out result);
         }
 
-        public static bool TryGetAssignedObjectInParent<T>(this GameObject gameObject,
+        public static bool TryGetAssignedObjectInParent<T>(this GameObject value,
+            bool includeInactive,
             [NotNullWhen(true)] out T? result)
         {
-            result = GetAssignedObjectInParent<T>(gameObject);
+            result = value.GetAssignedObjectInParent<T>(includeInactive);
 
             return result.IsNotNull();
         }
+        public static bool TryGetAssignedObjectInParent<T>(this GameObject value,
+            [NotNullWhen(true)] out T? result)
+        {
+            return value.TryGetAssignedObjectInParent(includeInactive: false, out result);
+        }
 
-        public static bool TryGetAssignedObjects(this GameObject gameObject,
+        public static bool TryGetAssignedObjects(this GameObject value,
             Type targetType,
             out object[] results)
         {
-            results = GetAssignedObjects(gameObject, targetType);
+            results = value.GetAssignedObjects(targetType);
 
             return results.Length > 0;
         }
 
-        public static bool TryGetAssignedObjects<T>(this GameObject gameObject,
+        public static bool TryGetAssignedObjects<T>(this GameObject value,
                                                     out T[] results)
         {
-            results = GetAssignedObjects<T>(gameObject);
+            results = value.GetAssignedObjects<T>();
 
             return results.Length > 0;
         }
 
-        public static bool TryGetAssignedObjectsInChildren(this GameObject gameObject,
+        public static bool TryGetAssignedObjectsInChildren(this GameObject value,
+                                                           Type targetType,
+                                                           bool includeInactive,
+                                                           out object[] results)
+        {
+            results = value.GetAssignedObjectsInChildren(targetType, includeInactive);
+
+            return results.Length > 0;
+        }
+        public static bool TryGetAssignedObjectsInChildren(this GameObject value,
                                                            Type targetType,
                                                            out object[] results)
         {
-            results = GetAssignedObjectsInChildren(gameObject, targetType);
-
-            return results.Length > 0;
+            return value.TryGetAssignedObjectsInChildren(targetType,
+                                                         includeInactive: false,
+                                                         out results);
         }
 
-        public static bool TryGetAssignedObjectsInChildren<T>(this GameObject gameObject,
+        public static bool TryGetAssignedObjectsInChildren<T>(this GameObject value,
+                                                              bool includeInactive,
                                                               out T[] results)
         {
-            results = GetAssignedObjectsInChildren<T>(gameObject);
+            results = value.GetAssignedObjectsInChildren<T>(includeInactive);
 
             return results.Length > 0;
         }
+        public static bool TryGetAssignedObjectsInChildren<T>(this GameObject value,
+                                                              out T[] results)
+        {
+            return value.TryGetAssignedObjectsInChildren(includeInactive: false,
+                                                         out results);
+        }
 
-        public static bool TryGetAssignedObjectsInParent(this GameObject gameObject,
+        public static bool TryGetAssignedObjectsInParent(this GameObject value,
+                                                         Type targetType,
+                                                         bool includeInactive,
+                                                         out object[] results)
+        {
+            results = value.GetAssignedObjectsInParent(targetType, includeInactive);
+
+            return results.Length > 0;
+        }
+        public static bool TryGetAssignedObjectsInParent(this GameObject value,
                                                          Type targetType,
                                                          out object[] results)
         {
-            results = GetAssignedObjectsInParent(gameObject, targetType);
+            return value.TryGetAssignedObjectsInParent(targetType,
+                                                       includeInactive: false,
+                                                       out results);
+        }
+
+        public static bool TryGetAssignedObjectsInParent<T>(this GameObject value,
+                                                            bool includeInactive,
+                                                            out T[] results)
+        {
+            results = value.GetAssignedObjectsInParent<T>(includeInactive);
 
             return results.Length > 0;
         }
-
-        public static bool TryGetAssignedObjectsInParent<T>(this GameObject gameObject,
+        public static bool TryGetAssignedObjectsInParent<T>(this GameObject value,
                                                             out T[] results)
         {
-            results = GetAssignedObjectsInParent<T>(gameObject);
-
-            return results.Length > 0;
+            return value.TryGetAssignedObjectsInParent(includeInactive: false, out results);
         }
 
         private enum FindMode
@@ -290,12 +368,17 @@ namespace UTIRLib.Unity.Extensions
 
         private static object[] GetAssignedObjectsInternal(this GameObject gameObject,
                                                            Type targetType,
-                                                           FindMode findMode = FindMode.Self,
-                                                           bool onlyFirst = false)
+                                                           bool includeInactive, 
+                                                           FindMode findMode,
+                                                           bool onlyFirst)
         {
             Component[] gameObjectComponents = findMode switch {
-                FindMode.InChilds => gameObject.GetComponentsInChildren(typeof(Component)),
-                FindMode.InParents => gameObject.GetComponentsInParent(typeof(Component)),
+                FindMode.InChilds => gameObject.GetComponentsInChildren(typeof(Component),
+                                                                        includeInactive),
+
+                FindMode.InParents => gameObject.GetComponentsInParent(typeof(Component),
+                                                                       includeInactive),
+
                 _ => gameObject.GetComponents(typeof(Component)),
             };
 

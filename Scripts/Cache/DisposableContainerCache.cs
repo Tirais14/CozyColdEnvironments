@@ -23,7 +23,7 @@ namespace UTIRLib.Disposables
 
             FieldInfo[] typeFields = type.ForceGetFields(BindingFlagsDefault.InstanceAll);
 
-            field = typeFields.SingleOrDefault(x => x.FieldType.Is<IDisposableCollection>());
+            field = typeFields.SingleOrDefault(x => x.FieldType.IsType<IDisposableCollection>());
 
             if (field == null)
                 throw new InvalidOperationException(type.GetName() + $": not contains field with type - {nameof(IDisposableCollection)}.");

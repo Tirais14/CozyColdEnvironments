@@ -127,7 +127,7 @@ namespace UTIRLib.FileSystem
             return obj is FSPath path && Equals(path);
         }
 
-        public readonly override string ToString() => value;
+        public readonly override string ToString() => value ?? string.Empty;
 
         public static FSPath operator +(FSPath a, string b)
         {

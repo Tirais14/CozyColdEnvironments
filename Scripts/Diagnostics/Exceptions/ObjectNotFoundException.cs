@@ -1,4 +1,5 @@
 using System;
+using UTIRLib.Reflection;
 
 #nullable enable
 
@@ -14,7 +15,7 @@ namespace UTIRLib.Diagnostics
         {
         }
 
-        public ObjectNotFoundException(Type objType) : base("Unity object {0} not found.", objType)
+        public ObjectNotFoundException(Type objType) : base($"Unity object {objType.GetName()} not found.")
         {
         }
     }
