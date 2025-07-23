@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -126,7 +127,10 @@ namespace UTIRLib.Diagnostics
     public static class ObjectExtensions
     {
         /// <summary>Checks for unity or system <see langword="null"/></summary>
-        public static bool IsNull<T>([NotNullWhen(false)] this T? obj) => new NullValidator<T>(obj).AnyNull;
+        public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
+        {
+            return new NullValidator<T>(obj).AnyNull;
+        }
 
         /// <summary>Checks for unity or system <see langword="null"/></summary>
         public static bool IsNull<T>([NotNullWhen(false)] this T? obj, out NullValidator<T> validationResult)
@@ -137,15 +141,59 @@ namespace UTIRLib.Diagnostics
         }
 
         /// <summary>Inverted</summary>
-        public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj) => !new NullValidator<T>(obj);
+        public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj)
+        {
+            return !new NullValidator<T>(obj).AnyNull;
+        }
 
         /// <summary>
         /// Also checks for unity null
         /// </summary>
-        public static bool IsDefault<T>([NotNullWhen(false)] this T obj) =>
-            EqualityComparer<T>.Default.Equals(obj, default!) || obj.IsNull();
+        public static bool IsDefault<T>([NotNullWhen(false)] this T obj,
+            IsDefaultOption option = IsDefaultOption.None)
+        {
+            if (obj.IsNull())
+                return true;
+
+            T defaultValue = default!;
+            if (EqualityComparer<T>.Default.Equals(obj, defaultValue))
+                return true;
+
+            if (obj is string str)
+            {
+                return option switch
+                {
+                    IsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
+                    IsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
+                    _ => throw new InvalidOperationException(),
+                };
+            }
+
+            return false;
+        }
+        public static bool IsDefault<T>([NotNullWhen(false)] this T obj,
+            object[] customDefaultValues,
+            IsDefaultOption option = IsDefaultOption.None)
+        {
+            if (obj.IsDefault(option))
+                return true;
+            else if (customDefaultValues.Contains(obj))
+                return true;
+
+            return false;
+        }
 
         /// <summary>Inverted</summary>
-        public static bool IsNotDefault<T>([NotNullWhen(true)] this T obj) => !obj.IsDefault();
+        public static bool IsNotDefault<T>([NotNullWhen(true)] this T obj,
+            IsDefaultOption option = IsDefaultOption.None)
+        {
+            return !obj.IsDefault(option);
+        }
+        public static bool IsNotDefault<T>([NotNullWhen(true)] this T obj,
+            object[] customDefaultValues,
+            IsDefaultOption option = IsDefaultOption.None)
+        {
+            return !obj.IsDefault(customDefaultValues, option);
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace UTIRLib.Reflection.Diagnostics
         {
         }
 
-        public ConstructorNotFoundException(TypeInstanceFactory.Parameters parameters)
+        public ConstructorNotFoundException(TypeMemberParameters parameters)
             : base($"Constructor not found. Parameters: {parameters}")
         {
         }

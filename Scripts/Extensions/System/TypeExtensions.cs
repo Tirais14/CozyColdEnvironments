@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using UTIRLib.Diagnostics;
 
 #nullable enable
 
@@ -113,8 +115,7 @@ namespace UTIRLib.Reflection
             StringBuilder sb = new();
             sb.Append('<');
 
-            for (int i = 0; i < argumentTypes.Length; i++)
-                sb.AppendJoin(", ", argumentTypes[i].Name);
+            sb.AppendJoin(", ", argumentTypes.Select(x => x.GetName()));
 
             sb.Append('>');
 

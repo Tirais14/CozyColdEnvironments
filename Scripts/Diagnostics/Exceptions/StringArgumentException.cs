@@ -13,7 +13,7 @@ namespace UTIRLib.Diagnostics
         }
 
         public StringArgumentException(string paramName, string? value)
-            : base($"String: {WrongStringException.Resolve(value)}. {GetParamNameMsg(paramName)}")
+            : base($"String: {StringException.Resolve(value)}. {GetParamNameMsg(paramName)}")
         {
         }
     }

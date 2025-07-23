@@ -15,7 +15,7 @@ namespace UTIRLib.UI.StorageSystem
 
             IItemSlotUI[] slots = GetComponentsInChildren<IItemSlotUI>();
 
-            var createParams = new TypeInstanceFactory.Parameters
+            var createParams = new TypeMemberParameters
             {
                 BindingFlags = BindingFlagsDefault.InstanceAll
             };

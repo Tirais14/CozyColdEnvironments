@@ -24,7 +24,5 @@ namespace UTIRLib.Diagnostics
                 isUnityNull = false;
             }
         }
-
-        public static implicit operator bool(NullValidator<T> nullValidationResult) => nullValidationResult.AnyNull;
     }
 }

@@ -2,13 +2,13 @@
 
 namespace UTIRLib.Diagnostics
 {
-    public sealed class WrongStringException : TirLibException
+    public sealed class StringException : TirLibException
     {
-        public WrongStringException()
+        public StringException()
         {
         }
 
-        public WrongStringException(string? value) : base($"String: {Resolve(value)}.")
+        public StringException(string? value) : base($"String: {Resolve(value)}.")
         {
         }
 

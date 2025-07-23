@@ -9,17 +9,9 @@ namespace UTIRLib.Reflection
 {
     public static class TypeInstanceFactory
     {
-        public record Parameters
-        {
-            public BindingFlags BindingFlags { get; set; } = BindingFlags.Default;
-            public CallingConventions CallingConvention { get; set; } = CallingConventions.Standard;
-            public ParameterModifier[] ParameterModifiers { get; set; } = Array.Empty<ParameterModifier>();
-            public Binder? Binder { get; set; } = null;
-        }
-
         /// <exception cref="ArgumentNullException"></exception>
         public static object Create(Type type,
-                                    Parameters parameters,
+                                    TypeMemberParameters parameters,
                                     params KeyValuePair<Type, object>[] args)
         {
             if (parameters is null)
@@ -39,7 +31,7 @@ namespace UTIRLib.Reflection
             object[] ctorArgs = args.Select(x => x.Value).ToArray();
             return ctor.Invoke(ctorArgs);
         }
-        public static T Create<T>(Parameters parameters,
+        public static T Create<T>(TypeMemberParameters parameters,
                                   params KeyValuePair<Type, object>[] args)
         {
             return (T)Create(typeof(T), parameters, args);

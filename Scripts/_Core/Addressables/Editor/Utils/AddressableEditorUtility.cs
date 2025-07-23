@@ -30,7 +30,7 @@ namespace UTIRLib.Addressables
             return labelStringBuilder.ToString();
         }
 
-        /// <exception cref="WrongStringException"></exception>
+        /// <exception cref="StringException"></exception>
         public static AddressableAssetGroup GetAddressableAssetGroup(string groupName,
             StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
         {

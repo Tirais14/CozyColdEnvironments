@@ -155,7 +155,7 @@ namespace UTIRLib.Utils
             return name.Delete(GetPostfix(name));
         }
 
-        /// <exception cref="WrongStringException"></exception>
+        /// <exception cref="StringException"></exception>
         public static string GetWord(string name)
         {
             if (name.IsNullOrEmpty())
@@ -172,7 +172,7 @@ namespace UTIRLib.Utils
             else return RemovePrefix(name);
         }
 
-        /// <exception cref="WrongStringException"></exception>
+        /// <exception cref="StringException"></exception>
         public static string ToPrefix(string str)
         {
             if (string.IsNullOrEmpty(str))
@@ -183,7 +183,7 @@ namespace UTIRLib.Utils
             return str + Separator;
         }
 
-        /// <exception cref="WrongStringException"></exception>
+        /// <exception cref="StringException"></exception>
         public static string ToPostfix(string str)
         {
             if (string.IsNullOrEmpty(str))
