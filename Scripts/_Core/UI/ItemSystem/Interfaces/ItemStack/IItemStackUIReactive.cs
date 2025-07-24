@@ -1,7 +1,7 @@
 using UniRx;
 
 #nullable enable
-namespace UTIRLib.UI.StorageSystem
+namespace UTIRLib.UI.ItemSystem
 {
     public interface IItemStackUIReactive : IItemStackUI
     {

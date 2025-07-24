@@ -7,7 +7,7 @@ using UTIRLib.Reflection.Diagnostics;
 #nullable enable
 namespace UTIRLib.Reflection
 {
-    public static class TypeInstanceFactory
+    public static class InstanceFactory
     {
         /// <exception cref="ArgumentNullException"></exception>
         public static object Create(Type type,

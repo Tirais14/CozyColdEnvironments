@@ -1,10 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
+using UTIRLib.Reflection;
 
 #nullable enable
 namespace UTIRLib.Unity.Serialization
 {
-    public interface ISerializerWrapper<T>
+    public interface IUnitySerialized
+    {
+        public bool IsDefault => ObjectValidator.IsDefaultByFields(this);
+    }
+    public interface IUnitySerialized<T> : IUnitySerialized
     {
         T Value { get; }
     }
@@ -12,7 +17,7 @@ namespace UTIRLib.Unity.Serialization
     public static class ISerializerWrapperExtensions
     {
         public static T[] AsValueArray<TWrapper, T>(this IEnumerable<TWrapper> wrappers)
-            where TWrapper : ISerializerWrapper<T>
+            where TWrapper : IUnitySerialized<T>
         {
             return wrappers.Select(x => x.Value).ToArray();
         }

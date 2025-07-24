@@ -5,7 +5,7 @@ using UTIRLib.Attributes;
 
 #pragma warning disable IDE0044
 #nullable enable
-namespace UTIRLib.UI.StorageSystem
+namespace UTIRLib.UI.ItemSystem
 {
     [RequireComponent(typeof(Image))]
     public class ItemStackUIView : View<IItemStackUIViewModel>, IMovable

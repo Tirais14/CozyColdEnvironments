@@ -3,7 +3,8 @@
     "rootNamespace": "UTIRLib.Unity.Serialization",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
-        "GUID:cec408dde85aac047a78e88de30b4173"
+        "GUID:cec408dde85aac047a78e88de30b4173",
+        "GUID:c228f3ca8f6bb594b968cbb82beea483"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

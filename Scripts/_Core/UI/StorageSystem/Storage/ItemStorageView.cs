@@ -20,10 +20,10 @@ namespace UTIRLib.UI.StorageSystem
                 BindingFlags = BindingFlagsDefault.InstanceAll
             };
 
-            var storage = TypeInstanceFactory.Create<TStorage>(createParams,
+            var storage = InstanceFactory.Create<TStorage>(createParams,
                 new KeyValuePair<Type, object>(typeof(IItemSlotUI[]), slots));
 
-            viewModel = TypeInstanceFactory.Create<TViewModel>(createParams,
+            viewModel = InstanceFactory.Create<TViewModel>(createParams,
                 new KeyValuePair<Type, object>(typeof(TStorage), storage));
         }
     }

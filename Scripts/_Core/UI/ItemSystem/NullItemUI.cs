@@ -1,7 +1,8 @@
 #nullable enable
 using UnityEngine;
+using UTIRLib.UI.StorageSystem;
 
-namespace UTIRLib.UI.StorageSystem
+namespace UTIRLib.UI.ItemSystem
 {
     public class NullItemUI : IItemUI
     {

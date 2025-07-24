@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using static UTIRLib.LoopHelper;
 
 #nullable enable
 namespace UTIRLib
 {
     public static class LoopHelper
     {
-        public delegate T MoveNext<T>(T current, Stack<T> toProccess);
+        public delegate LoopIteration<T[]> MoveNext<T>(T current);
 
         /// <summary>
         /// Same as the recursion loop, but use heap memory
@@ -20,15 +19,23 @@ namespace UTIRLib
                 throw new ArgumentNullException(nameof(moveNext));
 
             var toProccess = new Stack<T>();
+            toProccess.Push(first);
+
             var results = new Queue<T>();
 
-            T current = first;
+            LoopIteration<T[]> iteration;
             var loopPredicate = new LoopPredicate(() => toProccess.Count > 0);
             while (loopPredicate.Invoke())
             {
-                current = moveNext(current, toProccess);
+                iteration = moveNext(toProccess.Pop());
 
-                results.Enqueue(current);
+                if (iteration.Keyword == LoopKeyword.Break)
+                    break;
+                else if (iteration.Keyword == LoopKeyword.Continue)
+                    continue;
+
+                for (int i = 0; i < iteration.Value.Length; i++)
+                    results.Enqueue(iteration.Value[i]);
             }
 
             return results;

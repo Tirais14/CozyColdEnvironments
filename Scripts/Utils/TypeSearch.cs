@@ -80,10 +80,13 @@ namespace UTIRLib.Utils
                                     bool ignoreCase = false,
                                     bool byFullName = false)
         {
-            if (!TryFindType(assembly, typeNamePart, out Type? result, ignoreCase, byFullName))
-            {
+            if (!TryFindType(assembly,
+                             typeNamePart,
+                             out Type? result,
+                             ignoreCase,
+                             byFullName
+                             ))
                 throw new TypeNotFoundException(typeNamePart);
-            }
 
             return result;
         }

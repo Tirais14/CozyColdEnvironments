@@ -1,5 +1,7 @@
+using Codice.Client.BaseCommands.BranchExplorer;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UTIRLib.Diagnostics;
 
@@ -8,7 +10,9 @@ namespace UTIRLib.Reflection
 {
     public static class ObjectValidator
     {
-        public static bool IsDefaultByFields<T>(T obj,
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static bool IsDefaultByFields(object obj,
             IReadOnlyDictionary<Type, object[]>? customDefaultValuesCollection = null,
             IsDefaultOption isDefaultOption = IsDefaultOption.None)
         {
@@ -37,24 +41,45 @@ namespace UTIRLib.Reflection
             return true;
         }
 
-        //public static bool IsFieldValueDefault(string fieldName,
-        //                                     object obj,
-        //                                     object? value,
-        //                                     BindingFlags bindingFlags)
-        //{
-        //    if (fieldName.IsNullOrWhiteSpace())
-        //        throw new StringArgumentException(nameof(fieldName), fieldName);
-        //    if (obj.IsNull())
-        //        throw new ArgumentNullException(nameof(obj));
+        public static bool IsDefaultByTypeFieldsAndFieldsValues(object obj,
+            IReadOnlyDictionary<Type, object[]>? customDefaultValuesCollection = null,
+            IsDefaultOption isDefaultOption = IsDefaultOption.None)
+        {
+            if (obj.IsNull())
+                throw new ArgumentNullException(nameof(obj));
 
-        //    FieldInfo? field = obj.GetType().GetField(fieldName, bindingFlags);
+            object?[] allFieldValues = TypeHelper.GetFieldValuesByTypeAndFieldValues(obj,
+                BindingFlagsDefault.InstanceAll);
 
-        //    if (field is null)
-        //        return false;
+            if (allFieldValues.IsEmpty())
+                throw new Exception("Cannot find any field value.");
 
-        //    object fieldValue = field.GetValue(obj);
+            foreach (var fieldValue in allFieldValues)
+            {
+                if (fieldValue.IsNotDefault(isDefaultOption))
+                {
+                    if (IsCustomDefaultValue(fieldValue, customDefaultValuesCollection))
+                        continue;
 
-        //    return Equals(fieldValue, value);
-        //}
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsCustomDefaultValue(object fieldValue,
+            IReadOnlyDictionary<Type, object[]>? customDefaultValuesCollection)
+        {
+            if (customDefaultValuesCollection is null)
+                return false;
+
+            return customDefaultValuesCollection is not null
+                   &&
+                   customDefaultValuesCollection.TryGetValue(fieldValue.GetType(),
+                   out object?[] customDefaultValues)
+                   &&
+                   customDefaultValues.Any(x => Equals(fieldValue, x));
+        }
     }
 }

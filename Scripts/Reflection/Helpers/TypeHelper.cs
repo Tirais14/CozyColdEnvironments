@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.UI;
+using UTIRLib.Diagnostics;
 
 #nullable enable
 
@@ -9,6 +11,87 @@ namespace UTIRLib.Reflection
 {
     public static class TypeHelper
     {
+        /// <exception cref="ArgumentNullException"></exception>
+        public static object?[] GetFieldValues(object target,
+                                               BindingFlags bindingFlags = BindingFlagsDefault.InstanceAll)
+        {
+            if (target.IsNull())
+                throw new ArgumentNullException(nameof(target));
+
+            return target.GetType()
+                         .ForceGetFields(bindingFlags)
+                         .Select(x => x.GetValue(target))
+                         .ToArray();
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public static object?[] GetFieldValuesByTypeAndFieldValues(
+            object target,
+            BindingFlags bindingFlags = BindingFlagsDefault.InstanceAll)
+        {
+            object?[] targetFields = GetFieldValues(target, bindingFlags);
+
+            if (targetFields.IsEmpty())
+                return Array.Empty<object>();
+
+            var results = new List<object?>();
+            Queue<object?> collected;
+
+            int targetFieldCount = targetFields.Length;
+            for (int i = 0; i < targetFieldCount; i++)
+            {
+                collected = LoopHelper.Collect(targetFields[i], (current) =>
+                {
+                    if (current is null)
+                        return LoopIteration<object?[]>.Void();
+
+                    object?[] fieldValues = GetFieldValues(current, bindingFlags);
+
+                    if (fieldValues.IsNullOrEmpty())
+                        return LoopIteration.Continue(fieldValues);
+                    else
+                        return LoopIteration.Complete(fieldValues);
+                });
+
+                results.AddRange(collected);
+            }
+
+            return results.ToArray();
+        }
+
+        public static FieldInfo[] GetFieldsByTypeAndNestedFieldTypes(Type type,
+            BindingFlags bindingFlags = BindingFlagsDefault.InstanceAll)
+        {
+            FieldInfo[] objFields = type.ForceGetFields(bindingFlags);
+
+            if (objFields.IsEmpty())
+                return Array.Empty<FieldInfo>();
+
+            int objFieldCount = objFields.Length;
+            var results = new List<FieldInfo>();
+            Queue<FieldInfo> collected;
+
+            for (int i = 0; i < objFieldCount; i++)
+            {
+                collected = LoopHelper.Collect(objFields[i], (current) =>
+                {
+                    FieldInfo[] tempFields = current.FieldType.ForceGetFields(bindingFlags);
+
+                    if (tempFields.IsEmpty())
+                        return LoopIteration<FieldInfo[]>.Void();
+
+                    if (tempFields.IsNullOrEmpty())
+                        return LoopIteration.Continue(tempFields);
+                    else
+                        return LoopIteration.Complete(tempFields);
+                });
+
+                results.AddRange(collected);
+            }
+
+            return results.ToArray();
+        }
+
         /// <exception cref="TypeNotFoundException"></exception>
         public static Type GetTypeBySpecialName(string shortName, bool throwOnError = true)
         {

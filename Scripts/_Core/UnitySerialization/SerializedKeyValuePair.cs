@@ -9,7 +9,7 @@ namespace UTIRLib
 {
     [Serializable]
     public struct SerializedKeyValuePair<TKey, TValue> :
-        ISerializerWrapper<KeyValuePair<TKey, TValue>>
+        IUnitySerialized<KeyValuePair<TKey, TValue>>
     {
         [SerializeField]
         private TKey key;

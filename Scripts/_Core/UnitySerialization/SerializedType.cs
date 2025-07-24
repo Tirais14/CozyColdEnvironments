@@ -7,11 +7,15 @@ using UTIRLib.Utils;
 namespace UTIRLib.Unity.Serialization
 {
     [Serializable]
-    public struct SerializedType : ISerializerWrapper<Type>
+    public struct SerializedType : IUnitySerialized<Type>
     {
-        [SerializeField]
-        public string typeName;
         private Type? value;
+
+        [SerializeField]
+        private SerializedAssemblies assemblies;
+
+        [SerializeField]
+        private string typeName;
 
         public Type Value {
             get
@@ -30,11 +34,6 @@ namespace UTIRLib.Unity.Serialization
             this.typeName = typeName;
             FindTypeByName();
         }
-
-        //public readonly override int GetHashCode()
-        //{
-        //    return HashCode.Combine(typeName);
-        //}
 
         public readonly override string ToString() => typeName ?? string.Empty;
 

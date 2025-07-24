@@ -13,7 +13,7 @@ namespace UTIRLib
 {
     [Serializable]
     public sealed class SerializedDictionary<TKey, TValue> :
-        ISerializerWrapper<Dictionary<TKey, TValue>>,
+        IUnitySerialized<Dictionary<TKey, TValue>>,
         ISerializationCallbackReceiver
     {
         private IDictionary<TKey, TValue> serializedCollection = new Dictionary<TKey, TValue>();
@@ -47,12 +47,16 @@ namespace UTIRLib
 
         private static bool IsDefault<T>(T key)
         {
-            return ObjectValidator.IsDefaultByFields(key,
+            if (key.IsDefault(IsDefaultOption.IncludeWhitespaceOrEmptyString))
+                return true;
+
+            return ObjectValidator.IsDefaultByTypeFieldsAndFieldsValues(key,
                 isDefaultOption: IsDefaultOption.IncludeWhitespaceOrEmptyString);
         }
 
         private void TryAddEmptySerializedItem()
         {
+
             if (!serializedCollection.Keys.Any(x => IsDefault(x))
                 && 
                 !serializedItems.Any(x => IsDefault(x.Value.Key)))
@@ -63,21 +67,11 @@ namespace UTIRLib
             }
         }
 
-        //private void TryTrimSerializedItems()
-        //{
-        //    if (serializedItems.IsEmpty())
-        //        return;
-
-        //    if (serializedItems.Count(x => x.IsDefault()) > 1)
-        //        serializedItems = serializedItems[..^2];
-        //}
-
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
             serializedItems = serializedCollection.ToSeralizedPairs();
 
             TryAddEmptySerializedItem();
-            //TryTrimSerializedItems();
         }
 
         public static implicit operator Dictionary<TKey, TValue>(SerializedDictionary<TKey, TValue> srdDictionary)

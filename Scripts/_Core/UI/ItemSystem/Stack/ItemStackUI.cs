@@ -2,8 +2,9 @@
 using System;
 using UniRx;
 using UTIRLib.Diagnostics;
+using UTIRLib.UI.StorageSystem;
 
-namespace UTIRLib.UI.StorageSystem
+namespace UTIRLib.UI.ItemSystem
 {
     public class ItemStackUI : IItemStackUI
     {
