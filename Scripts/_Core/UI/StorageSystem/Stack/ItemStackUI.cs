@@ -1,24 +1,37 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using UniRx;
 using UTIRLib.Diagnostics;
 using UTIRLib.UI.StorageSystem;
 
-namespace UTIRLib.UI.ItemSystem
+namespace UTIRLib.UI.StorageSystem
 {
     public class ItemStackUI : IItemStackUI
     {
-        public static ItemStackUI Empty => new();
+        public static ItemStackUI Empty => new(1);
 
-        public IItemUI Item { get; private set; }
+        public IItemUI Item { get; private set; } = new NullItemUI();
         public int ItemCount { get; private set; }
+        public int MaxItemCount { get; private set; }
         public bool IsEmpty => ItemCount < 1;
-        public bool IsFull => ItemCount >= Item.MaxStackCount;
+        public bool IsFull => ItemCount >= MaxItemCount;
 
-        public ItemStackUI() => Item = new NullItemUI();
-
-        public ItemStackUI(IItemUI item, int itemCount = 1)
+        public ItemStackUI(int maxItemCount) 
         {
+            if (maxItemCount < 1)
+                throw new ArgumentException($"{nameof(MaxItemCount)} cannot be {maxItemCount}.");
+
+            MaxItemCount = maxItemCount;
+        }
+
+        public ItemStackUI(int maxItemCount, IItemUI item, int itemCount = 1)
+            : 
+            this(maxItemCount)
+        {
+            if (itemCount < 1)
+                throw new ArgumentException($"Item count cannot be {itemCount}.");
+
             Item = item;
             ItemCount = itemCount;
         }
@@ -74,7 +87,7 @@ namespace UTIRLib.UI.ItemSystem
 
             ItemCount -= count;
 
-            return new ItemStackUI(Item, count);
+            return new ItemStackUI(count, Item, count);
         }
 
         public IItemStackUI TakeAll()

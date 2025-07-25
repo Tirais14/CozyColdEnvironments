@@ -2,7 +2,7 @@ using UniRx;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.UI.ItemSystem
+namespace UTIRLib.UI.StorageSystem
 {
     public interface IItemStackUIViewModel : IViewModel<IItemStackUIReactive>
     {

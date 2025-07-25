@@ -2,9 +2,9 @@ using System;
 using System.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Reflection
 {
-    public class TypeMemberParameters
+    public record TypeMemberParameters
     {
         public BindingFlags BindingFlags { get; set; } = BindingFlags.Default;
         public CallingConventions CallingConvention { get; set; } = CallingConventions.Standard;

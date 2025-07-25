@@ -15,16 +15,29 @@ namespace UTIRLib.UI.StorageSystem
 
             IItemSlotUI[] slots = GetComponentsInChildren<IItemSlotUI>();
 
-            var createParams = new TypeMemberParameters
+            var createParams = new ConstructorParameters
             {
-                BindingFlags = BindingFlagsDefault.InstanceAll
+                BindingFlags = BindingFlagsDefault.InstanceAll,
             };
 
-            var storage = InstanceFactory.Create<TStorage>(createParams,
-                new KeyValuePair<Type, object>(typeof(IItemSlotUI[]), slots));
+            var storage = InstanceFactory.Create<TStorage>(
+                createParams with
+                {
+                    ArgumentsData = new KeyValuePair<Type, object>[]
+                    {
+                        new(typeof(IItemSlotUI[]), slots)
+                    } 
+                },
+                cacheResults: false);
 
-            viewModel = InstanceFactory.Create<TViewModel>(createParams,
-                new KeyValuePair<Type, object>(typeof(TStorage), storage));
+            viewModel = InstanceFactory.Create<TViewModel>(createParams with
+            {
+                ArgumentsData = new KeyValuePair<Type, object>[] 
+                {
+                    new(typeof(TStorage), storage) 
+                }
+            },
+            cacheResults: false);
         }
     }
 

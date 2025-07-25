@@ -1,3 +1,4 @@
+using System;
 using UTIRLib.Diagnostics;
 
 #nullable enable
@@ -9,8 +10,8 @@ namespace UTIRLib.Reflection.Diagnostics
         {
         }
 
-        public ConstructorNotFoundException(TypeMemberParameters parameters)
-            : base($"Constructor not found. Parameters: {parameters}")
+        public ConstructorNotFoundException(Type type, ConstructorParameters parameters)
+            : base($"Constructor not found in type {type.GetName()}. Parameters: {parameters}")
         {
         }
     }

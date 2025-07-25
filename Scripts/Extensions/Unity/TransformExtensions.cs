@@ -32,16 +32,12 @@ namespace UTIRLib.Unity
 
             var childs = new List<Transform>(value.childCount);
 
-            LoopHelper.Collect(value.transform.GetChild(0), (child, toProccess) =>
+            LoopHelper.Collect(value.transform.GetChild(0), (child) =>
             {
-                if (child.childCount > 1)
-                {
-                    Transform[] temp = child.GetChilds()[1..^1];
-                    for (int i = 0; i < temp.Length; i++)
-                        toProccess.Push(temp[i]);
-                }
+                if (child.childCount == 0)
+                    return LoopIteration<Transform[]>.Void();
 
-                return child.GetChild(0);
+                return LoopIteration.Complete(child.GetChilds());
             });
 
             return childs.ToArray();
@@ -61,31 +57,9 @@ namespace UTIRLib.Unity
             return null;
         }
 
-        public static Transform? FindParent<T>(this Transform transform, T name)
-            where T : Enum
-        {
-            return transform.FindParent(name.ToString());
-        }
-
-        public static Transform? Find<T>(this Transform transform, T name)
-            where T : Enum
-        {
-            return transform.Find(name.ToString());
-        }
-
         public static bool TryFindParent(this Transform transform, string n, [NotNullWhen(true)] out Transform? result)
         {
             result = transform.FindParent(n);
-
-            return result != null;
-        }
-
-        public static bool TryFindParent<T>(this Transform transform,
-                                            T name,
-                                            [NotNullWhen(true)] out Transform? result)
-            where T : Enum
-        {
-            result = transform.FindParent(name);
 
             return result != null;
         }
@@ -95,16 +69,6 @@ namespace UTIRLib.Unity
                                    [NotNullWhen(true)] out Transform? result)
         {
             result = transform.Find(n);
-
-            return result != null;
-        }
-
-        public static bool TryFind<T>(this Transform transform,
-                                      T name,
-                                      [NotNullWhen(true)] out Transform? result)
-            where T : Enum
-        {
-            result = transform.Find(name);
 
             return result != null;
         }

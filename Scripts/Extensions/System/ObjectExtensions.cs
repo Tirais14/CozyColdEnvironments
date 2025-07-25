@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.Cached;
 
 #nullable enable
 namespace UTIRLib
@@ -149,14 +150,15 @@ namespace UTIRLib.Diagnostics
         /// <summary>
         /// Also checks for unity null
         /// </summary>
-        public static bool IsDefault<T>([NotNullWhen(false)] this T obj,
+        public static bool IsDefault([NotNullWhen(false)] this object? obj,
             IsDefaultOption option = IsDefaultOption.None)
         {
             if (obj.IsNull())
                 return true;
 
-            T defaultValue = default!;
-            if (EqualityComparer<T>.Default.Equals(obj, defaultValue))
+            object? defaultValue = TypeCache.GetDefaultValue(obj.GetType());
+
+            if (obj.Equals(defaultValue))
                 return true;
 
             if (obj is string str)
@@ -171,7 +173,7 @@ namespace UTIRLib.Diagnostics
 
             return false;
         }
-        public static bool IsDefault<T>([NotNullWhen(false)] this T obj,
+        public static bool IsDefault([NotNullWhen(false)] this object? obj,
             object[] customDefaultValues,
             IsDefaultOption option = IsDefaultOption.None)
         {
@@ -184,12 +186,12 @@ namespace UTIRLib.Diagnostics
         }
 
         /// <summary>Inverted</summary>
-        public static bool IsNotDefault<T>([NotNullWhen(true)] this T obj,
+        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
             IsDefaultOption option = IsDefaultOption.None)
         {
             return !obj.IsDefault(option);
         }
-        public static bool IsNotDefault<T>([NotNullWhen(true)] this T obj,
+        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
             object[] customDefaultValues,
             IsDefaultOption option = IsDefaultOption.None)
         {

@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Utils;
 
 #nullable enable
+#pragma warning disable S1117
 namespace UTIRLib.Unity.Serialization
 {
     [Serializable]
@@ -12,10 +14,13 @@ namespace UTIRLib.Unity.Serialization
         private Type? value;
 
         [SerializeField]
-        private SerializedAssemblies assemblies;
+        private string namespacePart;
 
         [SerializeField]
         private string typeName;
+
+        [SerializeField]
+        private bool isNamespacedFullName;
 
         public Type Value {
             get
@@ -29,9 +34,11 @@ namespace UTIRLib.Unity.Serialization
             }
         }
 
-        public SerializedType(string typeName) : this()
+        public SerializedType(string typeName, string? namespacePart = null) : this()
         {
+            this.namespacePart = namespacePart ?? string.Empty;
             this.typeName = typeName;
+
             FindTypeByName();
         }
 
@@ -42,7 +49,12 @@ namespace UTIRLib.Unity.Serialization
             if (typeName.IsNullOrEmpty())
                 throw new StringException(typeName);
 
-            value = TypeSearch.FindTypeInAppDomain(typeName, ignoreCase: false);
+            value = TypeSearch.FindTypeInAppDomain(new TypeSearchingParameters
+            {
+                NamepsacePart = namespacePart,
+                TypeName = typeName,
+                SearchByFullName = isNamespacedFullName
+            });
         }
 
         public static implicit operator Type(SerializedType value)

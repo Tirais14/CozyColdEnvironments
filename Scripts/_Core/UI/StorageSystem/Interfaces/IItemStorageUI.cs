@@ -11,5 +11,11 @@ namespace UTIRLib.UI.StorageSystem
         void AddItemSlot(IItemSlotUI itemSlot);
 
         void RemoveItemSlotAt(int index);
+
+        void AddItem(IItemUI item, int count);
+
+        IItemSlotUI GetEmptySlot();
+
+        IItemSlotUI GetSuitableSlot();
     }
 }

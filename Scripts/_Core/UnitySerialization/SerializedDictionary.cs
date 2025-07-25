@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 using UTIRLib.Unity.Serialization;
 
 #nullable enable
-#pragma warning disable S1155
 namespace UTIRLib
 {
     [Serializable]
@@ -16,12 +14,12 @@ namespace UTIRLib
         IUnitySerialized<Dictionary<TKey, TValue>>,
         ISerializationCallbackReceiver
     {
-        private IDictionary<TKey, TValue> serializedCollection = new Dictionary<TKey, TValue>();
+        private Dictionary<TKey, TValue> serializedCollection = new();
 
         [SerializeField]
         private SerializedKeyValuePair<TKey, TValue>[] serializedItems = null!;
 
-        public Dictionary<TKey, TValue> Value => (Dictionary<TKey, TValue>)serializedCollection;
+        public Dictionary<TKey, TValue> Value => serializedCollection;
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
@@ -40,23 +38,19 @@ namespace UTIRLib
                 validItems.Add(serialized);
             }
 
-            serializedCollection = tempCollection;
+            serializedCollection = (Dictionary<TKey, TValue>)tempCollection;
 
             serializedItems = validItems.ToArray();
         }
 
         private static bool IsDefault<T>(T key)
         {
-            if (key.IsDefault(IsDefaultOption.IncludeWhitespaceOrEmptyString))
-                return true;
-
             return ObjectValidator.IsDefaultByTypeFieldsAndFieldsValues(key,
                 isDefaultOption: IsDefaultOption.IncludeWhitespaceOrEmptyString);
         }
 
         private void TryAddEmptySerializedItem()
         {
-
             if (!serializedCollection.Keys.Any(x => IsDefault(x))
                 && 
                 !serializedItems.Any(x => IsDefault(x.Value.Key)))

@@ -1,31 +1,29 @@
 using UnityEngine.EventSystems;
 using UTIRLib.Attributes;
-using UTIRLib.ComponentSetter;
 
 #pragma warning disable IDE0044
 #nullable enable
 namespace UTIRLib.UI
 {
-    public class DragHandler : MonoX,
+    public abstract class ADragHandler : MonoX,
         IBeginDragHandler,
         IDragHandler,
         IEndDragHandler
     {
-        [GetBySelf]
         [RequiredField]
         private IMovable movable = null!;
 
-        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
+        public virtual void OnBeginDrag(PointerEventData eventData)
         {
             movable.Position = eventData.pressPosition;
         }
 
-        void IDragHandler.OnDrag(PointerEventData eventData)
+        public virtual void OnDrag(PointerEventData eventData)
         {
             movable.Position = eventData.position;
         }
 
-        void IEndDragHandler.OnEndDrag(PointerEventData _)
+        public virtual void OnEndDrag(PointerEventData eventData)
         {
             movable.ResetPosition();
         }

@@ -5,7 +5,7 @@ using UTIRLib.Attributes;
 
 #pragma warning disable IDE0044
 #nullable enable
-namespace UTIRLib.UI.ItemSystem
+namespace UTIRLib.UI.StorageSystem
 {
     [RequireComponent(typeof(Image))]
     public class ItemStackUIView : View<IItemStackUIViewModel>, IMovable
@@ -29,8 +29,7 @@ namespace UTIRLib.UI.ItemSystem
         {
             base.OnAwake();
 
-            var itemStack = new ItemStackUIReactive();
-            viewModel = new ItemStackUIViewModel(itemStack);
+            viewModel = StorageSystemServiceLocator.ItemStackViewModelFactory.Create();
         }
 
         protected override void OnStart()

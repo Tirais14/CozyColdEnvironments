@@ -41,28 +41,31 @@ namespace UTIRLib.Reflection
             return true;
         }
 
-        public static bool IsDefaultByTypeFieldsAndFieldsValues(object obj,
+        public static bool IsDefaultByTypeFieldsAndFieldsValues(object? obj,
             IReadOnlyDictionary<Type, object[]>? customDefaultValuesCollection = null,
             IsDefaultOption isDefaultOption = IsDefaultOption.None)
         {
-            if (obj.IsNull())
-                throw new ArgumentNullException(nameof(obj));
+            if (obj.IsDefault(isDefaultOption))
+                return true;
 
-            object?[] allFieldValues = TypeHelper.GetFieldValuesByTypeAndFieldValues(obj,
+            object?[] allFieldValues = Special.TypeHelper.GetFieldValuesByTypeAndFieldValues(obj,
                 BindingFlagsDefault.InstanceAll);
 
             if (allFieldValues.IsEmpty())
-                throw new Exception("Cannot find any field value.");
+                return false;
 
             foreach (var fieldValue in allFieldValues)
             {
-                if (fieldValue.IsNotDefault(isDefaultOption))
-                {
-                    if (IsCustomDefaultValue(fieldValue, customDefaultValuesCollection))
-                        continue;
+                if (fieldValue.IsDefault(isDefaultOption))
+                    continue;
 
-                    return false;
-                }
+                if (!TypeHelper.IsPrimitiveType(fieldValue.GetType()))
+                    continue;
+
+                if (IsCustomDefaultValue(fieldValue, customDefaultValuesCollection))
+                    continue;
+
+                return false;
             }
 
             return true;

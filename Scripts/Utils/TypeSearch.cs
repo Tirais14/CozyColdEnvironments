@@ -1,124 +1,125 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using UTIRLib.Reflection;
 
 namespace UTIRLib.Utils
 {
     public static class TypeSearch
     {
-        public static bool TryFindTypeInAppDomain(string typeNamePart,
-                                                  [NotNullWhen(true)] out Type? result,
-                                                  bool ignoreCase = false,
-                                                  bool byFullName = false)
+        /// <exception cref="TypeNotFoundException"></exception>
+        public static Type FindTypeInAppDomain(TypeSearchingParameters parameters,
+                                               bool throwIfNotFound = true)
         {
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            if (parameters is null)
+                throw new ArgumentNullException(nameof(parameters));
 
+            Assembly[] assemblies = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies();
             int assembliesCount = assemblies.Length;
             for (int i = 0; i < assembliesCount; i++)
-                if (TryFindType(assemblies[i], typeNamePart, out result, ignoreCase, byFullName))
-                    return true;
-
-            result = null;
-            return false;
-        }
-
-        /// <exception cref="TypeNotFoundException"></exception>
-        public static Type FindTypeInAppDomain(string typeNamePart,
-                                               bool ignoreCase = false,
-                                               bool byFullName = false)
-        {
-            if (!TryFindTypeInAppDomain(typeNamePart, out Type? result, ignoreCase, byFullName))
             {
-                throw new TypeNotFoundException(typeNamePart);
+                if (TryFindType(assemblies[i], parameters, out Type? type))
+                    return type;
             }
 
-            return result;
+            if (throwIfNotFound)
+                throw new TypeNotFoundException(parameters);
+
+            return null!;
         }
 
-        public static bool TryFindType(Assembly assembly,
-                                       string typeNamePart,
-                                       [NotNullWhen(true)] out Type? result,
-                                       bool ignoreCase = false,
-                                       bool byFullName = false)
+        public static bool TryFindTypeInAppDomain(TypeSearchingParameters parameters,
+                                                  out Type? result)
         {
+            result = FindTypeInAppDomain(parameters, throwIfNotFound: false);
+
+            return result != null;
+        }
+
+        public static Type FindType(Assembly assembly,
+                                    TypeSearchingParameters parameters,
+                                    bool throwIfNotFound = true)
+        {
+            if (assembly is null)
+                throw new ArgumentNullException(nameof(assembly));
+            if (parameters is null)
+                throw new ArgumentNullException(nameof(parameters));
+
             Type[] types = assembly.GetTypes();
 
-            StringComparison stringComparison = ignoreCase ? StringComparison.InvariantCultureIgnoreCase
-                                                           : StringComparison.InvariantCulture;
+            StringComparison stringComparison = parameters.IgnoreCase 
+                ?
+                StringComparison.InvariantCultureIgnoreCase
+                :
+                StringComparison.InvariantCulture;
 
-            if (types.Length > 299)
+            Type? result;
+
+            if (parameters.SearchByFullName)
             {
-                result = ParallelSearch(types, typeNamePart, stringComparison, byFullName);
-
-                return result != null;
+                string fullTypeName = parameters.FullTypeName;
+                result = types.SingleOrDefault(x => x.FullName.Equals(fullTypeName,
+                                                                      stringComparison));
             }
             else
             {
-                string typeName;
-                int typesCount = types.Length;
-                for (int i = 0; i < typesCount; i++)
-                {
+                string namespacePart = parameters.NamepsacePart;
+                string typeNamePart = parameters.TypeName;
 
-                    typeName = byFullName ? types[i].FullName : types[i].Name;
-                    if (typeName.Contains(typeNamePart, stringComparison))
-                    {
-                        result = types[i];
-                        return true;
-                    }
-                }
+                result = types.SingleOrDefault(x =>
+                {
+                    return x.Namespace.Contains(namespacePart, stringComparison)
+                           &&
+                           x.GetName().Contains(typeNamePart, stringComparison);
+                });
             }
 
-            result = null;
-            return false;
+            if (result == null && throwIfNotFound)
+                throw new TypeNotFoundException(parameters);
+
+            return result!;
         }
 
-        /// <exception cref="TypeNotFoundException"></exception>
-        public static Type FindType(Assembly assembly,
-                                    string typeNamePart,
-                                    bool ignoreCase = false,
-                                    bool byFullName = false)
+        public static bool TryFindType(Assembly assembly,
+                                       TypeSearchingParameters parameters,
+                                       [NotNullWhen(true)] out Type? result)
         {
-            if (!TryFindType(assembly,
-                             typeNamePart,
-                             out Type? result,
-                             ignoreCase,
-                             byFullName
-                             ))
-                throw new TypeNotFoundException(typeNamePart);
+            result = FindType(assembly, parameters, throwIfNotFound: false);
 
-            return result;
+            return result != null;
         }
 
-        private static Type? ParallelSearch(Type[] types,
-                                            string typeNamePart,
-                                            StringComparison stringComparison,
-                                            bool byFullName)
-        {
-            bool isFound = false;
-            object lockObject = new();
-            Type? result = null;
+        //private static Type? ParallelSearch(Type[] types,
+        //                                    string typeNamePart,
+        //                                    StringComparison stringComparison,
+        //                                    bool byFullName)
+        //{
+        //    bool isFound = false;
+        //    object lockObject = new();
+        //    Type? result = null;
 
-            int typesCount = types.Length;
-            Parallel.For(0, typesCount, (i, state) =>
-            {
-                string typeName = byFullName ? types[i].FullName : types[i].Name;
-                if (typeName.Contains(typeNamePart, stringComparison))
-                {
-                    lock (lockObject)
-                    {
-                        if (!isFound)
-                        {
-                            isFound = true;
-                            result = types[i];
-                            state.Stop();
-                        }
-                    }
-                }
-            });
+        //    int typesCount = types.Length;
+        //    Parallel.For(0, typesCount, (i, state) =>
+        //    {
+        //        string typeName = byFullName ? types[i].FullName : types[i].Name;
+        //        if (typeName.Contains(typeNamePart, stringComparison))
+        //        {
+        //            lock (lockObject)
+        //            {
+        //                if (!isFound)
+        //                {
+        //                    isFound = true;
+        //                    result = types[i];
+        //                    state.Stop();
+        //                }
+        //            }
+        //        }
+        //    });
 
-            return result;
-        }
+        //    return result;
+        //}
     }
 }

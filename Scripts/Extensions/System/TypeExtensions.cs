@@ -64,7 +64,7 @@ namespace UTIRLib.Reflection
 
             if (attributes.HasFlag(TypeNameAttributes.ShortName)
                 &&
-                TypeHelper.HasSpecialName(type)
+                TypeHelper.IsPrimitiveType(type)
                 )
                 return ToShortName(type);
 

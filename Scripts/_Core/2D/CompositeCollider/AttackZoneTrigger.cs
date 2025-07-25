@@ -35,7 +35,7 @@ namespace UTIRLib.TwoD
 
         protected void AddCollider(Direction2D direction)
         {
-            colliders[(int)direction] = transform.Find(direction)
+            colliders[(int)direction] = transform.Find(direction.ToString())
                                                  .IfNotNullQ(
                 (triggerObjTransform) =>
                 triggerObjTransform.GetComponent<PolygonCollider2D>());

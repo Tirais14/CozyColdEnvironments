@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
@@ -30,24 +28,12 @@ namespace UTIRLib.Unity
             return null;
         }
 
-        public static GameObject? FindParent<T>(this GameObject value, T name)
-            where T : Enum
-        {
-            return value.FindParent(name.ToString());
-        }
-
         public static GameObject? Find(this GameObject value, string n)
         {
             if (value.transform.TryFind(n, out Transform? child))
                 return child.gameObject;
 
             return null;
-        }
-
-        public static GameObject? Find<T>(this GameObject value, T name)
-            where T : Enum
-        {
-            return value.Find(name.ToString());
         }
 
         public static bool TryFindParent(this GameObject value,
@@ -59,31 +45,11 @@ namespace UTIRLib.Unity
             return result != null;
         }
 
-        public static bool TryFindParent<T>(this GameObject value,
-                                            T name,
-                                            [NotNullWhen(true)] out GameObject? result)
-            where T : Enum
-        {
-            result = value.FindParent(name);
-
-            return result != null;
-        }
-
         public static bool TryFind(this GameObject value,
                                    string n,
                                    [NotNullWhen(true)] out GameObject? result)
         {
             result = value.Find(n);
-
-            return result != null;
-        }
-
-        public static bool TryFind<T>(this GameObject value,
-                                      T name,
-                                      [NotNullWhen(true)] out GameObject? result)
-            where T : Enum
-        {
-            result = value.Find(name);
 
             return result != null;
         }

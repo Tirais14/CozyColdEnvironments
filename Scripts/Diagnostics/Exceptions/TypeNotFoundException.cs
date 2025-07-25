@@ -1,3 +1,4 @@
+using System;
 using UTIRLib.Diagnostics;
 using UTIRLib.Extensions;
 
@@ -7,6 +8,11 @@ namespace UTIRLib
     public class TypeNotFoundException : TirLibException
     {
         public TypeNotFoundException()
+        {
+        }
+
+        public TypeNotFoundException(TypeSearchingParameters parameters) 
+            : base($"Parameters: {parameters}.")
         {
         }
 

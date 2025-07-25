@@ -110,7 +110,7 @@ namespace UTIRLib.Diagnostics
             string message = exception.ToString();
             message = message[(exception.GetTypeName().Length + 1)..];
 
-            LogInternal(LogType.Error, message, context, assertCondition: false, isExtraInfo: false);
+            LogInternal(LogType.Error, message, context, assertCondition: null, isExtraInfo: false);
         }
         public static void Error(Exception exception)
         {

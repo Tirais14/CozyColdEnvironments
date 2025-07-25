@@ -1,6 +1,5 @@
 using System;
 using UTIRLib.Diagnostics;
-using UTIRLib.UI.ItemSystem;
 
 #nullable enable
 namespace UTIRLib.UI.StorageSystem
@@ -28,7 +27,7 @@ namespace UTIRLib.UI.StorageSystem
                 throw new ArgumentException($"{nameof(toAddQuantity)} cannot be less than zero.");
             if (itemStack.IsFull)
                 return 0;
-            if (toAddQuantity > itemStack.Item.MaxStackCount)
+            if (toAddQuantity > itemStack.MaxItemCount)
                 return toAddQuantity;
 
             return toAddQuantity;

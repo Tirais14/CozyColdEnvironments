@@ -3,7 +3,7 @@ using UnityEngine;
 using UTIRLib.Disposables;
 
 #nullable enable
-namespace UTIRLib.UI.ItemSystem
+namespace UTIRLib.UI.StorageSystem
 {
     public class ItemStackUIViewModel : ViewModel<IItemStackUIReactive>, 
         IItemStackUIViewModel

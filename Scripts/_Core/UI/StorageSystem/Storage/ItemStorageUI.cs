@@ -37,5 +37,22 @@ namespace UTIRLib.UI.StorageSystem
         {
             slots.RemoveAt(index);
         }
+
+        public void AddItem(IItemUI item, int count)
+        {
+            var itemStack = new ItemStackUI(int.MaxValue, item, count);
+
+            throw new NotImplementedException();
+        }
+
+        public IItemSlotUI GetEmptySlot()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IItemSlotUI GetSuitableSlot()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
