@@ -1,48 +1,20 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using UTIRLib.Reflection;
+using UTIRLib.Unity.Extensions;
 
 namespace UTIRLib.UI.StorageSystem
 {
-    public class ItemStorageView<TViewModel, TStorage> : View<TViewModel>
-        where TViewModel : ItemStorageViewModel<TStorage>
-        where TStorage : ItemStorageUI
+    public class ItemStorageView<TViewModel, TStorage> : AView<TViewModel>
+        where TViewModel : IViewModel<TStorage>
+        where TStorage : IItemStorageUI
     {
         protected override void OnAwake()
         {
             base.OnAwake();
 
-            IItemSlotUI[] slots = GetComponentsInChildren<IItemSlotUI>();
+            IItemSlotUI[] slots = this.GetAssignedObjectsInChildren<IItemSlotUI>();
 
-            var createParams = new ConstructorParameters
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-            };
 
-            var storage = InstanceFactory.Create<TStorage>(
-                createParams with
-                {
-                    ArgumentsData = new KeyValuePair<Type, object>[]
-                    {
-                        new(typeof(IItemSlotUI[]), slots)
-                    } 
-                },
-                cacheResults: false);
-
-            viewModel = InstanceFactory.Create<TViewModel>(createParams with
-            {
-                ArgumentsData = new KeyValuePair<Type, object>[] 
-                {
-                    new(typeof(TStorage), storage) 
-                }
-            },
-            cacheResults: false);
+            viewModel = (TViewModel)StorageSystemServiceLocator.ItemStorageViewModelFactory.Create(slots);
         }
-    }
-
-    public class ItemStorageView : ItemStorageView<ItemStorageViewModel, ItemStorageUI>
-    {
-
     }
 }

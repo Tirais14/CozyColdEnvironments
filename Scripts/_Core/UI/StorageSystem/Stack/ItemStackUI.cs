@@ -52,7 +52,7 @@ namespace UTIRLib.UI.StorageSystem
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void MoveFrom(IItemStackUI itemStack, int count)
+        public void AddItem(IItemStackUI itemStack, int count)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));

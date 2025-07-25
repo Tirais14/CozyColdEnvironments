@@ -11,7 +11,7 @@ namespace UTIRLib.UI.StorageSystem
 
         void AddItem(IItemUI item, int count);
 
-        void MoveFrom(IItemStackUI itemStack, int count);
+        void AddItem(IItemStackUI itemStack, int count);
 
         IItemStackUI Take(int count);
 

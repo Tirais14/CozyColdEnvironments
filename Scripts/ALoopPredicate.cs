@@ -3,12 +3,12 @@ namespace UTIRLib
 {
     public abstract class ALoopPredicate
     {
-        private int iterations;
+        private ulong iterations;
 
         /// <summary>
         /// Default = 100000
         /// </summary>
-        public int IterationsLimit { get; set; } = 100000;
+        public ulong IterationsLimit { get; set; } = LoopChecker.ITERATIONS_LIMIT_DEFAULT;
         public string? ExceptionMessage { get; set; }
 
         protected bool MoveNext()

@@ -33,9 +33,9 @@ namespace UTIRLib.UI.StorageSystem
             itemStack.AddItem(item, count);
         }
 
-        public void MoveFrom(IItemStackUI itemStack, int count)
+        public void AddItem(IItemStackUI itemStack, int count)
         {
-            this.itemStack.MoveFrom(itemStack, count);
+            this.itemStack.AddItem(itemStack, count);
         }
 
         public IItemStackUI Take(int count)

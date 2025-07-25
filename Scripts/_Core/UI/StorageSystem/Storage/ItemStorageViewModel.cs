@@ -2,15 +2,15 @@
 namespace UTIRLib.UI.StorageSystem
 {
     public class ItemStorageViewModel<T> : ViewModel<T>
-        where T : ItemStorageUI
+        where T : IItemStorageUI
     {
         public ItemStorageViewModel(T model) : base(model)
         {
         }
     }
-    public class ItemStorageViewModel : ItemStorageViewModel<ItemStorageUI>
+    public class ItemStorageViewModel : ItemStorageViewModel<IItemStorageUI>
     {
-        public ItemStorageViewModel(ItemStorageUI model) : base(model)
+        public ItemStorageViewModel(IItemStorageUI model) : base(model)
         {
         }
     }

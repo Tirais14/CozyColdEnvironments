@@ -1,14 +1,14 @@
 #nullable enable
 namespace UTIRLib.UI
 {
-    public abstract class View : MonoX, IView
+    public abstract class AView : MonoX, IView
     {
         protected IViewModel viewModel;
 
         public IViewModel GetViewModel() => viewModel;
     }
 
-    public abstract class View<T> : MonoX, IView<T>
+    public abstract class AView<T> : MonoX, IView<T>
         where T : IViewModel
     {
         protected T viewModel;

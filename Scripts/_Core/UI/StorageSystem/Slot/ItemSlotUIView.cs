@@ -3,7 +3,7 @@ using UTIRLib.Diagnostics;
 #nullable enable
 namespace UTIRLib.UI.StorageSystem
 {
-    public class ItemSlotUIView : View
+    public class ItemSlotUIView : AView
     {
         protected override void OnAwake()
         {

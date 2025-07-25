@@ -1,4 +1,6 @@
 #nullable enable
+using System.Diagnostics.CodeAnalysis;
+
 namespace UTIRLib.UI.StorageSystem
 {
     public interface IItemStorageUI
@@ -12,10 +14,16 @@ namespace UTIRLib.UI.StorageSystem
 
         void RemoveItemSlotAt(int index);
 
-        void AddItem(IItemUI item, int count);
+        void AddItem(IItemStackUI itemStack);
 
-        IItemSlotUI GetEmptySlot();
+        bool HasItemStack(IItemStackUI itemStack);
 
-        IItemSlotUI GetSuitableSlot();
+        IItemSlotUI? GetEmptySlot();
+
+        bool TryGetEmptySlot([NotNullWhen(true)] out IItemSlotUI? result);
+
+        IItemSlotUI? GetSuitableSlot(IItemUI item);
+
+        bool TryGetSuitableSlot(IItemUI item, [NotNullWhen(true)] out IItemSlotUI? result);
     }
 }

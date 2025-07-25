@@ -8,7 +8,7 @@ using UTIRLib.Attributes;
 namespace UTIRLib.UI.StorageSystem
 {
     [RequireComponent(typeof(Image))]
-    public class ItemStackUIView : View<IItemStackUIViewModel>, IMovable
+    public class ItemStackUIView : AView<IItemStackUIViewModel>, IMovable
     {
         private Vector2 defaultLocalPosition;
 
