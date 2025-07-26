@@ -5,6 +5,6 @@ namespace UTIRLib.UI
 {
     public interface IOpenableReactive : IOpenable
     {
-        new IReadOnlyReactiveProperty<bool> IsOpened { get; }
+        new IReadOnlyReactiveProperty<bool> IsOpenedReactive { get; }
     }
 }

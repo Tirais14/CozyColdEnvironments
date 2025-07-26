@@ -41,15 +41,24 @@ namespace UTIRLib
             return moveNext(Current);
         }
 
-        public readonly void Reset()
+        public readonly void ForEach(Action<T> action)
         {
-        }
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
 
-        public readonly void Dispose()
-        {
+            foreach (var item in this)
+                action(item);
         }
 
         public readonly Collection<T> GetEnumerator() => this;
+
+        readonly void IEnumerator.Reset()
+        {
+        }
+
+        readonly void IDisposable.Dispose()
+        {
+        }
 
         readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 

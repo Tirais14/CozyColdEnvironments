@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,10 +8,17 @@ namespace UTIRLib
     public readonly struct EmptyEnumerator<T> : IEnumerator<T>
     {
         public T Current => default!;
+
         object IEnumerator.Current => Current!;
 
-        public bool MoveNext() => false;
-        public void Reset() { }
-        public void Dispose() { }
+        readonly public bool MoveNext() => false;
+
+        readonly void IEnumerator.Reset()
+        {
+        }
+
+        readonly void IDisposable.Dispose()
+        { 
+        }
     }
 }
