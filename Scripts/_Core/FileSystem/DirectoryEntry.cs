@@ -75,12 +75,12 @@ namespace UTIRLib.FileSystem
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.Error(new FileNameException(Name), this);
+                TirLibDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
             Directory.CreateDirectory(Path);
-            TirLibDebug.Log($"Directory created: \"{Path}\"", this, isExtraInfo: true);
+            TirLibDebug.PrintLog($"Directory created: \"{Path}\"", this);
             return true;
         }
 

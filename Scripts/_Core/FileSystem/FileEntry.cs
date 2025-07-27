@@ -55,12 +55,12 @@ namespace UTIRLib.FileSystem
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.Error($"{nameof(FileEntry)}: content is null.");
+                TirLibDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.Error(new FileNameException(Name), this);
+                TirLibDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
@@ -81,12 +81,12 @@ namespace UTIRLib.FileSystem
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.Warning($"{nameof(FileEntry)}: Nothing to save.");
+                TirLibDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.Error(new FileNameException(Name), this);
+                TirLibDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
@@ -260,12 +260,12 @@ namespace UTIRLib.FileSystem
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.Error(new FileNameException(Name), this);
+                TirLibDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
             File.Create(Path);
-            TirLibDebug.Log($"File created: \"{Path}\"", this, isExtraInfo: true);
+            TirLibDebug.PrintLog($"File created: \"{Path}\"", this);
             return true;
         }
         #endregion Default
@@ -320,7 +320,7 @@ namespace UTIRLib.FileSystem
                 case string[] lines:
                     return lines;
                 default:
-                    TirLibDebug.Error($"{customContent?.GetProccessedTypeName()} type doesn't supported.");
+                    TirLibDebug.PrintError($"{customContent?.GetProccessedTypeName()} type doesn't supported.");
                     return Array.Empty<string>();
             }
         }

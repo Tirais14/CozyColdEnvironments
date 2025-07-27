@@ -1,5 +1,7 @@
 using System;
 using System.Reflection;
+using System.Security.Cryptography;
+using UTIRLib.Reflection;
 
 #nullable enable
 namespace UTIRLib.Diagnostics
@@ -15,22 +17,33 @@ namespace UTIRLib.Diagnostics
         }
 
         public MemberNotFoundException(Type targetType, MemberType memberType)
-            : base($"Target Type: {targetType.Name}, {memberType}.")
+            :
+            base($"Reflected type = {targetType.GetName()}, member type = {memberType}.")
         {
         }
 
         public MemberNotFoundException(Type targetType,
                                        MemberType memberType,
                                        string memberName)
-            : base($"Target Type: {targetType.Name}, {memberType}: {memberName}.")
+            :
+            base($"Reflected type = {targetType.GetName()}, member type = {memberType}, member name = {memberName}.")
         {
         }
 
         public MemberNotFoundException(Type targetType,
                                        MemberType memberType,
-                                       string memberName,
-                                       BindingFlags bindingFlags)
-            : base($"Target Type: {targetType.Name}, {memberType}: {memberName}, bindingFlags: {bindingFlags}.")
+                                       TypeMemberParameters parameters)
+            :
+            base($"Reflected type = {targetType.GetName()}, member type = {memberType}, parameters = {parameters}.")
+        {
+        }
+
+        public MemberNotFoundException(Type targetType,
+                                       MemberType memberType,
+                                       TypeMemberParameters parameters,
+                                       string message)
+            :
+            base($"Reflected type = {targetType.GetName()}, member type = {memberType}, parameters = {parameters}. {message.TrimEnd('.')}.")
         {
         }
     }

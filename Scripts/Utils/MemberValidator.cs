@@ -46,7 +46,7 @@ namespace UTIRLib.Utils
                 {
                     fieldValue = field.GetValue(instance);
 
-                    TirLibDebug.Assert(fieldValue.IsNull(),
+                    TirLibDebug.AssertError(fieldValue.IsNull(),
                         $"Field: {field.Name} in type: {instance.GetTypeName()} not setted but required.",
                         instance);
                 }
@@ -68,7 +68,7 @@ namespace UTIRLib.Utils
                 {
                     propertyValue = property.GetValue(instance);
 
-                    TirLibDebug.Assert(propertyValue.IsNull(),
+                    TirLibDebug.AssertError(propertyValue.IsNull(),
                         $"Property: {property.Name} in type: {instance.GetTypeName()} not setted but required.",
                         instance);
                 }

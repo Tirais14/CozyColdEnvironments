@@ -63,7 +63,7 @@ namespace UTIRLib.Editor
 
         protected void Abort(string? message = null)
         {
-            TirLibDebug.Log($"{windowType.GetName()}: Proccess aborted. {message}", this);
+            TirLibDebug.PrintLog($"{windowType.GetName()}: Proccess aborted. {message}", this);
         }
 
         protected bool TryAbortByDirectoryPath(string path)

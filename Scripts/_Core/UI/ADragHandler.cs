@@ -5,13 +5,13 @@ using UTIRLib.Attributes;
 #nullable enable
 namespace UTIRLib.UI
 {
-    public abstract class ADragHandler : MonoX,
+    public abstract class ADragHandler<T> : MonoX,
         IBeginDragHandler,
         IDragHandler,
         IEndDragHandler
+        where T : IMovable
     {
-        [RequiredField]
-        private IMovable movable = null!;
+        protected T movable;
 
         public virtual void OnBeginDrag(PointerEventData eventData)
         {

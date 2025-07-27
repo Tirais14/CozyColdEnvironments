@@ -3,11 +3,12 @@ using UniRx;
 #nullable enable
 namespace UTIRLib.UI.ItemStorage
 {
-    public class ItemStorageViewModel : AViewModel<ItemStorageReactive>
+    public class ItemStorageViewModel<T> : AViewModel<T>
+        where T : IItemStorageReactive
     {
         public IReadOnlyReactiveProperty<bool> IsOpenedView => model.IsOpenedReactive;
 
-        public ItemStorageViewModel(ItemStorageReactive model) : base(model)
+        public ItemStorageViewModel(T model) : base(model)
         {
         }
     }

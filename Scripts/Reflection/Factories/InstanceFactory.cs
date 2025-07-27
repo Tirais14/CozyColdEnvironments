@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using UTIRLib.Diagnostics;
 using UTIRLib.Reflection.Cached;
 using UTIRLib.Reflection.Diagnostics;
 
@@ -29,7 +31,9 @@ namespace UTIRLib.Reflection
                                            constructorParams.Signature,
                                            constructorParams.ParameterModifiers)
                     ??
-                    throw new ConstructorNotFoundException(type, constructorParams);
+                    throw new MemberNotFoundException(type,
+                                                      MemberType.Constructor,
+                                                      constructorParams);
             }
 
             object?[] ctorArgs = constructorParams.Arguments;
@@ -40,6 +44,43 @@ namespace UTIRLib.Reflection
                                   bool cacheResults)
         {
             return (T)Create(typeof(T), constructorParams, cacheResults);
+        }
+
+        public static bool TryCreate(Type type,
+                                     ConstructorParameters constructorParameters,
+                                     bool cacheResult,
+                                     [NotNullWhen(true)] out object? result)
+        {
+            try
+            {
+                result = Create(type, constructorParameters, cacheResult);
+
+                return result is not null;
+            }
+            catch (MemberNotFoundException)
+            {
+                result = null;
+
+                return false;
+            }
+        }
+
+        public static bool TryCreate<T>(ConstructorParameters constructorParameters,
+                                        bool cacheResult,
+                                        [NotNullWhen(true)] out T? result)
+        {
+            try
+            {
+                result = Create<T>(constructorParameters, cacheResult);
+
+                return result is not null;
+            }
+            catch (MemberNotFoundException)
+            {
+                result = default;
+
+                return false;
+            }
         }
     }
 }

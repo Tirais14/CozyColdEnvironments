@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection;
 
 namespace UTIRLib.GameSystems.Storage
 {
@@ -11,10 +12,10 @@ namespace UTIRLib.GameSystems.Storage
         public IItem Item { get; private set; } = new NullItem();
         public int ItemCount { get; private set; }
         public int MaxItemCount { get; private set; }
-        public bool IsEmpty => ItemCount < 1;
+        public bool IsEmpty => ItemCount < 1 || Item is NullItem;
         public bool IsFull => ItemCount >= MaxItemCount;
 
-        public ItemStack(int maxItemCount) 
+        public ItemStack(int maxItemCount = int.MaxValue) 
         {
             if (maxItemCount < 1)
                 throw new ArgumentException($"{nameof(MaxItemCount)} cannot be {maxItemCount}.");
@@ -22,9 +23,11 @@ namespace UTIRLib.GameSystems.Storage
             MaxItemCount = maxItemCount;
         }
 
-        public ItemStack(int maxItemCount, IItem item, int itemCount = 1)
+        public ItemStack(IItem item,
+                         int itemCount = 1,
+                         int maxItemCount = int.MaxValue)
             : 
-            this(maxItemCount)
+            this(Math.Max(itemCount, maxItemCount))
         {
             if (itemCount < 1)
                 throw new ArgumentException($"Item count cannot be {itemCount}.");
@@ -37,6 +40,8 @@ namespace UTIRLib.GameSystems.Storage
         /// <exception cref="ArgumentException"></exception>
         public virtual void AddItem(IItem item, int count)
         {
+            if (!IsEmpty && !Item.Equals(item))
+                throw new Exception($"{GetType().GetName()} is not empty.");
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
             if (count < 1)
@@ -44,6 +49,7 @@ namespace UTIRLib.GameSystems.Storage
 
             count = ItemStackHelper.CalulcateToAddCount(this, count);
 
+            Item = item;
             ItemCount += count;
         }
 
@@ -84,7 +90,7 @@ namespace UTIRLib.GameSystems.Storage
 
             ItemCount -= count;
 
-            return new ItemStack(count, Item, count);
+            return new ItemStack(Item, count, count);
         }
 
         public virtual IItemStack TakeAll()
@@ -93,6 +99,12 @@ namespace UTIRLib.GameSystems.Storage
                 return Empty;
 
             return Take(ItemCount);
+        }
+
+        public void Clear()
+        {
+            Item = new NullItem();
+            ItemCount = 0;
         }
     }
 }

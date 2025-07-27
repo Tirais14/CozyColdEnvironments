@@ -9,5 +9,7 @@ namespace UTIRLib.UI
         where T : IViewModel
     {
         new T GetViewModel();
+
+        IViewModel IView.GetViewModel() => GetViewModel();
     }
 }

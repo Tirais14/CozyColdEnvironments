@@ -21,7 +21,7 @@ namespace UTIRLib
                 throw new TirLibException($"{initable.GetProccessedTypeName()} is already inited.");
 
             initable.Init();
-            TirLibDebug.Log($"Inited => {initable.GetType().GetName()}.");
+            TirLibDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
 
         /// <exception cref="TirLibException"></exception>
@@ -52,7 +52,7 @@ namespace UTIRLib
 
             if (inits.IsEmpty())
             {
-                TirLibDebug.Warning("Nothing to init.");
+                TirLibDebug.PrintWarning("Nothing to init.");
 
                 return;
             }

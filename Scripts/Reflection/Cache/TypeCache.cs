@@ -10,7 +10,7 @@ namespace UTIRLib.Reflection.Cached
     {
         private readonly static Dictionary<Type, object> defaultValuesCollection = new();
 
-        private readonly static Dictionary<MemberCacheKey, ConstructorInfo> constructorsCollection = new();
+        private readonly static Dictionary<ConstructrorKey, ConstructorInfo> constructorsCollection = new();
 
         public static object? GetDefaultValue(Type type)
         {
@@ -34,8 +34,9 @@ namespace UTIRLib.Reflection.Cached
             if (constructorParams == null)
                 throw new ArgumentNullException(nameof(constructorParams));
 
-            if (constructorsCollection.TryGetValue(new MemberCacheKey(type, constructorParams),
-                                              out ConstructorInfo constructor)
+            if (constructorsCollection.TryGetValue(new ConstructrorKey(type,
+                        constructorParams.ArgumentsData.Signature),
+                    out ConstructorInfo constructor)
                 )
                 return constructor;
 
@@ -45,9 +46,11 @@ namespace UTIRLib.Reflection.Cached
                                               constructorParams.Signature,
                                               constructorParams.ParameterModifiers) 
                 ??
-                throw new MemberNotFoundException(type, MemberType.Undefined);
+                throw new MemberNotFoundException(type, MemberType.Constructor, constructorParams);
 
-            constructorsCollection.Add(new MemberCacheKey(type, constructorParams), constructor);
+            constructorsCollection.Add(new ConstructrorKey(type,
+                    constructorParams.ArgumentsData.Signature),
+                constructor);
 
             return constructor;
         }

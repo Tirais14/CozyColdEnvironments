@@ -29,7 +29,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
 
         protected override void BuildString()
         {
-            TirLibDebug.Assert(NamespaceName.IsNullOrEmpty(), "Trying to create namespace without name.", this);
+            TirLibDebug.AssertError(NamespaceName.IsNullOrEmpty(), "Trying to create namespace without name.", this);
 
             WriteLine($"namespace {NamespaceName}");
 

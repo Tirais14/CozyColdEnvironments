@@ -68,7 +68,7 @@ namespace UTIRLib.Json.Editor
             if (fileTypesToCreateField.value.HasFlag(FileTypes.Const))
             {
                 if (constFileName.value.IsNullOrWhiteSpace())
-                    TirLibDebug.Warning("Specify the const file name.", this);
+                    TirLibDebug.PrintWarning("Specify the const file name.", this);
                 else
                 {
                     CreateClassFile();
@@ -81,7 +81,7 @@ namespace UTIRLib.Json.Editor
             if (fileTypesToCreateField.value.HasFlag(FileTypes.Enum))
             {
                 if (enumFileName.value.IsNullOrWhiteSpace())
-                    TirLibDebug.Warning("Specify the enum file name.", this);
+                    TirLibDebug.PrintWarning("Specify the enum file name.", this);
                 else
                 {
                     CreateEnumFile();

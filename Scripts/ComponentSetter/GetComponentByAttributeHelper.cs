@@ -95,7 +95,7 @@ namespace UTIRLib.ComponentSetter
                 return;
             if (!IsTypeValid(field.FieldType))
             {
-                TirLibDebug.Error($"{field.FieldType.GetName()} is not interface and not component.", source, isExtraInfo: false);
+                TirLibDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
 
                 return;
             }
@@ -139,7 +139,7 @@ namespace UTIRLib.ComponentSetter
                 return;
             if (!IsTypeValid(prop.PropertyType))
             {
-                TirLibDebug.Error($"{prop.PropertyType.GetName()} is not interface and not component.", source, isExtraInfo: false);
+                TirLibDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
 
                 return;
             }

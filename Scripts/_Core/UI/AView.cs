@@ -1,24 +1,22 @@
 #nullable enable
+using UniRx;
 using UTIRLib.Attributes;
 
 namespace UTIRLib.UI
 {
-    public abstract class AView : MonoX, IView
-    {
-        [RequiredField]
-        protected IViewModel viewModel;
-
-        public IViewModel GetViewModel() => viewModel;
-    }
-
     public abstract class AView<T> : MonoX, IView<T>
         where T : IViewModel
     {
         [RequiredField]
         protected T viewModel;
 
-        public T GetViewModel() => viewModel;
+        protected override void OnAwake()
+        {
+            base.OnAwake();
 
-        IViewModel IView.GetViewModel() => viewModel;
+            onEndFirstFrame += () => viewModel.AddTo(this);
+        }
+
+        public T GetViewModel() => viewModel;
     }
 }

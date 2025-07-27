@@ -16,5 +16,7 @@ namespace UTIRLib.GameSystems.Storage
         IItemStack Take(int count);
 
         IItemStack TakeAll();
+
+        void Clear();
     }
 }

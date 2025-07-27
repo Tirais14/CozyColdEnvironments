@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UTIRLib.Diagnostics;
 
@@ -55,9 +56,31 @@ namespace UTIRLib.GameSystems.Storage
             return false;
         }
 
+        public bool HasItem(IItem item, int count = 1)
+        {
+            IEnumerable<IItemStack> filteredStack = slots.Select(x => x.ItemStack)
+                                                         .Where(x => !x.IsEmpty)
+                                                         .Where(x => x.Item.Equals(item));
+            int totalCount = 0;
+            foreach (var stack in filteredStack)
+            {
+                totalCount += stack.ItemCount;
+
+                if (totalCount >= count)
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public void AddItem(IItemStack itemStack)
         {
+            if (itemStack.IsNull())
+                throw new ArgumentNullException(nameof(itemStack));
+            if (slots.IsEmpty())
+                throw new ArgumentException("Storage doesn't contain any slot.");
             if (HasItemStack(itemStack))
                 throw new ArgumentException("Cannot add items to storage from itself item stack.");
             if (itemStack.IsEmpty)
@@ -70,6 +93,19 @@ namespace UTIRLib.GameSystems.Storage
 
             foreach (var slot in suitableSlots)
                 slot.ItemStack.AddItem(itemStack, itemStack.ItemCount);
+        }
+        
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddItem(IItem item, int count)
+        {
+            if (item.IsNull())
+                throw new ArgumentNullException(nameof(item));
+            if (count < 1)
+                throw new ArgumentException(nameof(count));
+
+            var itemStack = new ItemStack(item, count);
+            AddItem(itemStack);
         }
 
         public IItemSlot? GetEmptySlot()

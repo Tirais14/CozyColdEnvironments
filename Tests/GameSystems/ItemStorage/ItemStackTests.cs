@@ -1,0 +1,45 @@
+using NUnit.Framework;
+using UnityEngine;
+using UTIRLib.GameSystems.Storage;
+
+#nullable enable
+namespace UTIRLib.Tests.GameSystems.Storage
+{
+    public class ItemStackTests
+    {
+        private ItemStack itemStack = null!;
+
+        [SetUp]
+        public void Setup()
+        {
+            itemStack = new ItemStack();
+        }
+
+        [Test]
+        public void AddItems()
+        {
+            var toSetItem = new TestItem();
+            int toAddCount = 100;
+            itemStack.AddItem(toSetItem, toAddCount);
+
+            Assert.AreEqual(toSetItem, itemStack.Item, nameof(itemStack.Item));
+            Assert.AreEqual(toAddCount, itemStack.ItemCount, nameof(itemStack.ItemCount));
+            Assert.False(itemStack.IsEmpty, nameof(itemStack.IsEmpty));
+        }
+
+        [Test]
+        public void Clear()
+        {
+            itemStack.AddItem(new TestItem(), 100);
+            itemStack.Clear();
+
+            Assert.True(itemStack.IsEmpty, nameof(itemStack.IsEmpty));
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            itemStack = null!;
+        }
+    }
+}

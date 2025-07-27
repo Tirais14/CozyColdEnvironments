@@ -40,12 +40,12 @@ namespace UTIRLib.FileSystem.ScriptUtils
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.Error($"{nameof(FileEntry)}: content is null.");
+                TirLibDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.Error(new FileNameException(Name), this);
+                TirLibDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
@@ -64,12 +64,12 @@ namespace UTIRLib.FileSystem.ScriptUtils
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.Error($"{nameof(FileEntry)}: content is null.");
+                TirLibDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.Error(new FileNameException(Name), this);
+                TirLibDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 

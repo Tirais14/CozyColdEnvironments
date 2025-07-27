@@ -12,17 +12,17 @@ namespace UTIRLib.UI.ItemStorage
         public IReadOnlyReactiveProperty<IItem> ItemReactive => itemReactive;
         public IReadOnlyReactiveProperty<int> ItemCountReactive => itemCountReactive;
 
-        public ItemStackReactive(int maxItemCount) : base(maxItemCount)
+        public ItemStackReactive(int maxItemCount = int.MaxValue) : base(maxItemCount)
         {
         }
 
-        public ItemStackReactive(int maxItemCount,
-                                 IItem item,
-                                 int itemCount = 1)
+        public ItemStackReactive(IItem item,
+                                 int itemCount = 1,
+                                 int maxItemCount = int.MaxValue)
             :
-            base(maxItemCount,
-                 item,
-                 itemCount)
+            base(item,
+                 itemCount,
+                 maxItemCount)
         {
         }
 

@@ -14,7 +14,11 @@ namespace UTIRLib.GameSystems.Storage
 
         void RemoveItemSlotAt(int index);
 
+        void AddItem(IItem item, int count);
+
         void AddItem(IItemStack itemStack);
+
+        bool HasItem(IItem item, int count = 1);
 
         bool HasItemStack(IItemStack itemStack);
 

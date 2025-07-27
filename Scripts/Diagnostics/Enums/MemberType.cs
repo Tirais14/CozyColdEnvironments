@@ -6,6 +6,7 @@ namespace UTIRLib.Diagnostics
         Undefined,
         Field,
         Property,
-        Method
+        Method,
+        Constructor
     }
 }

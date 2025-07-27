@@ -35,7 +35,7 @@ namespace UTIRLib
         {
             if (TryGetInstance<T>(out var instance))
             {
-                TirLibDebug.Log($"{typeof(T)} already exists.",
+                TirLibDebug.PrintLog($"{typeof(T)} already exists.",
                                 true);
 
                 return instance;
@@ -99,6 +99,6 @@ namespace UTIRLib
     public abstract class MonoXStatic<TThis> : MonoXStatic
         where TThis : Component
     {
-        protected static Lazy<TThis> instance = new(Create<TThis>);
+        protected static LazyX<TThis> instance = new(Create<TThis>);
     }
 }

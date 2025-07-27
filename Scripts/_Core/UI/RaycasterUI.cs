@@ -40,7 +40,7 @@ namespace UTIRLib.UI
         public bool TryRaycastFirst<T>([NotNullWhen(true)] out T? result, object? exclude = null)
              where T : class
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return TryRaycastFirst(pointer.Value, out result, exclude);
         }
@@ -59,7 +59,7 @@ namespace UTIRLib.UI
                                     [NotNullWhen(true)] out object? result,
                                     object? exclude = null)
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return TryRaycastFirst(targetType, pointer.Value, out result, exclude);
         }
@@ -73,7 +73,7 @@ namespace UTIRLib.UI
 
         public bool TryRaycast<T>(out T[] results, object? exclude = null)
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return TryRaycast(pointer.Value, out results, exclude);
         }
@@ -87,7 +87,7 @@ namespace UTIRLib.UI
 
         public bool TryRaycast(Type targetType, out object[] results, object? exclude = null)
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return TryRaycast(targetType, pointer.Value, out results, exclude);
         }
@@ -101,7 +101,7 @@ namespace UTIRLib.UI
         public T? RaycastFirst<T>(object? exclude = null)
             where T : class
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return RaycastFirst<T>(pointer.Value, exclude);
         }
@@ -113,7 +113,7 @@ namespace UTIRLib.UI
 
         public object? RaycastFirst(Type targetType, object? exclude = null)
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return RaycastFirst(targetType, pointer.Value, exclude);
         }
@@ -127,7 +127,7 @@ namespace UTIRLib.UI
         public T[] Raycast<T>(object? exclude = null)
             where T : class
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return Raycast(typeof(T), pointer.Value, exclude).Cast<T>().ToArray();
         }
@@ -139,7 +139,7 @@ namespace UTIRLib.UI
 
         public object[] Raycast(Type targetType, object? exclude = null)
         {
-            TirLibDebug.Log("Using pointer handler position.", this, true);
+            TirLibDebug.PrintLog("Using pointer handler position.", this);
 
             return Raycast(targetType, pointer.Value, exclude);
         }
@@ -152,7 +152,7 @@ namespace UTIRLib.UI
             graphicRaycaster.Raycast(eventData, results);
 
 #if UNITY_EDITOR
-            if (TirLibDebug.DrawEnabled)
+            if (TirLibDebug.Logger.IsEnabled)
             {
                 GizmosDrawer.onDrawGizmos += () => Gizmos.DrawSphere(position, 1f);
             }
@@ -197,27 +197,27 @@ namespace UTIRLib.UI
                 {
                     foundObject = GetComponentFrom(targetType, raycastResults[i]);
 
-                    TirLibDebug.Log("Seeking object is unity component.", this, true);
+                    TirLibDebug.PrintLog("Seeking object is unity component.", this);
                 }
                 else
                 {
                     foundObject = GetObjectFrom(targetType, raycastResults[i]);
 
-                    TirLibDebug.Log("Seeking object is other class.", this, true);
+                    TirLibDebug.PrintLog("Seeking object is other class.", this);
                 }
 
                 if (foundObject.IsNull()) continue;
 
                 if (hasExclude && foundObject.Equals(exclude))
                 {
-                    TirLibDebug.Log($"Object {foundObject.GetTypeName()} skipped by exclude parameter.", this, true);
+                    TirLibDebug.PrintLog($"Object {foundObject.GetTypeName()} skipped by exclude parameter.", this);
 
                     continue;
                 }
 
                 if (onlyFirst)
                 {
-                    TirLibDebug.Log("Raycast success.", this);
+                    TirLibDebug.PrintLog("Raycast success.", this);
 
                     return foundObject;
                 }
@@ -226,7 +226,7 @@ namespace UTIRLib.UI
 
             if (results != null)
             {
-                TirLibDebug.Log("Raycast success.", this);
+                TirLibDebug.PrintLog("Raycast success.", this);
             }
 
             return results?.ToArray() ?? Array.Empty<object>();
@@ -236,7 +236,7 @@ namespace UTIRLib.UI
         {
             eventData.position = position;
 
-            TirLibDebug.Log($"Raycast position: {position}.", this, true);
+            TirLibDebug.PrintLog($"Raycast position: {position}.", this);
         }
     }
 }
