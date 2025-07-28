@@ -63,6 +63,8 @@ namespace UTIRLib.GameSystems.Storage
                 throw new ArgumentException(nameof(count));
             if (itemStack.IsEmpty)
                 return;
+            if (ReferenceEquals(itemStack, this))
+                throw new InvalidOperationException("Couldn't be added items by itself.");
 
             IItemStack taked = itemStack.Take(count);
 
@@ -90,7 +92,12 @@ namespace UTIRLib.GameSystems.Storage
 
             ItemCount -= count;
 
-            return new ItemStack(Item, count, count);
+            var taked = new ItemStack(Item, count, count);
+
+            if (ItemCount <= 0)
+                Clear();
+
+            return taked;
         }
 
         public virtual IItemStack TakeAll()

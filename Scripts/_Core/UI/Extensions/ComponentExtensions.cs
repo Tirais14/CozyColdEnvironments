@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UTIRLib.Linq;
-using UTIRLib.Unity.Extensions;
 
 #nullable enable
 namespace UTIRLib.UI.MVVM

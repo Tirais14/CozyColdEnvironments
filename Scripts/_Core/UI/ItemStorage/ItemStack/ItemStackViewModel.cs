@@ -44,6 +44,10 @@ namespace UTIRLib.UI.ItemStorage
             if (!model.IsEmpty && !model.Item.Equals(itemStack.Item))
                 return;
 
+            if (ReferenceEquals(model, itemStack))
+                return;
+
+            //TODO: Replace this to swap stacks
             if (model.IsFull)
                 return;
 

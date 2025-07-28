@@ -1,5 +1,4 @@
 using UnityEngine.EventSystems;
-using UTIRLib.Attributes;
 
 #pragma warning disable IDE0044
 #nullable enable
@@ -12,6 +11,10 @@ namespace UTIRLib.UI
         where T : IMovable
     {
         protected T movable;
+        protected bool isDragging;
+
+        [GetByParent]
+        protected ACanvasController canvasController = null!;
 
         public virtual void OnBeginDrag(PointerEventData eventData)
         {
@@ -25,6 +28,11 @@ namespace UTIRLib.UI
 
         public virtual void OnEndDrag(PointerEventData eventData)
         {
+            if (isDragging
+                && 
+                canvasController.Raycaster.TryRaycastFirst<IDropHandler>(out var dropHandler))
+                dropHandler.OnDrop(eventData);
+
             movable.ResetPosition();
         }
     }
