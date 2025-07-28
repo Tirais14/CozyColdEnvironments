@@ -3,17 +3,21 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection.Cached;
-using UTIRLib.Reflection.Diagnostics;
 
 #nullable enable
 namespace UTIRLib.Reflection
 {
     public static class InstanceFactory
     {
+        private readonly static ConstructorParameters defaultConstructorParams = new()
+        { 
+            BindingFlags = BindingFlagsDefault.InstancePublic
+        };
+
         /// <exception cref="ArgumentNullException"></exception>
         public static object Create(Type type,
                                     ConstructorParameters constructorParams,
-                                    bool cacheResults)
+                                    bool cacheResults = false)
         {
             if (constructorParams is null)
                 throw new ArgumentNullException(nameof(constructorParams));
@@ -40,16 +44,32 @@ namespace UTIRLib.Reflection
             return ctor.Invoke(ctorArgs);
         }
 
+        public static object Create(Type type,
+                                    InvokableArguments arguments,
+                                    bool cacheResults = false)
+        {
+            return Create(type,
+                          defaultConstructorParams with { ArgumentsData = arguments },
+                          cacheResults);
+        }
+
         public static T Create<T>(ConstructorParameters constructorParams,
-                                  bool cacheResults)
+                                  bool cacheResults = false)
         {
             return (T)Create(typeof(T), constructorParams, cacheResults);
         }
 
+        public static T Create<T>(InvokableArguments arguments, bool cacheResults = false)
+        {
+            return Create<T>(
+                defaultConstructorParams with { ArgumentsData = arguments },
+                cacheResults);
+        }
+
         public static bool TryCreate(Type type,
                                      ConstructorParameters constructorParameters,
-                                     bool cacheResult,
-                                     [NotNullWhen(true)] out object? result)
+                                     [NotNullWhen(true)] out object? result,
+                                     bool cacheResult = false)
         {
             try
             {
@@ -65,9 +85,20 @@ namespace UTIRLib.Reflection
             }
         }
 
+        public static bool TryCreate(Type type,
+                                       InvokableArguments arguments,
+                                       [NotNullWhen(true)] out object? result,
+                                       bool cacheResult = false)
+        {
+            return TryCreate(type,
+                             defaultConstructorParams with { ArgumentsData = arguments },
+                             out result,
+                             cacheResult);
+        }
+
         public static bool TryCreate<T>(ConstructorParameters constructorParameters,
-                                        bool cacheResult,
-                                        [NotNullWhen(true)] out T? result)
+                                        [NotNullWhen(true)] out T? result,
+                                        bool cacheResult = false)
         {
             try
             {
@@ -81,6 +112,15 @@ namespace UTIRLib.Reflection
 
                 return false;
             }
+        }
+
+        public static bool TryCreate<T>(InvokableArguments arguments,
+                                        [NotNullWhen(true)] out T? result,
+                                        bool cacheResult = false)
+        {
+            return TryCreate(defaultConstructorParams with { ArgumentsData = arguments },
+                             out result,
+                             cacheResult);
         }
     }
 }

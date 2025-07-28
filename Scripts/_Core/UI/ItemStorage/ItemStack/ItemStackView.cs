@@ -1,10 +1,11 @@
 using UniRx;
 using UTIRLib.Reflection;
+using UTIRLib.UI.MVVM;
 
 #nullable enable
 namespace UTIRLib.UI.ItemStorage
 {
-    public class ItemStackView<TViewModel, TModel>  : AViewLazy<TViewModel>
+    public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>
         where TViewModel : IViewModel<TModel>
         where TModel : IItemStackReactive
     {
@@ -12,34 +13,23 @@ namespace UTIRLib.UI.ItemStorage
         {
             TModel model = CreateModel();
 
-            var creationParams = new ConstructorParameters
-            {
-                BindingFlags = BindingFlagsDefault.InstancePublic,
-                ArgumentsData = InvokableArguments.Create(model)
-            };
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
+                InvokableArguments.Create(model),
+                cacheResults: true);
 
-            return InstanceFactory.Create<TViewModel>(creationParams,
-                                                      cacheResults: true);
+            viewModel.AddTo(this);
+
+            return viewModel;
         }
 
-        private TModel CreateModel()
+        private static TModel CreateModel()
         {
-            var creationParams = new ConstructorParameters
-            {
-                BindingFlags = BindingFlagsDefault.InstancePublic,
-                ArgumentsData = InvokableArguments.Create(int.MaxValue)
-            };
-
-            if (!InstanceFactory.TryCreate<TModel>(creationParams,
-                                                   cacheResult: true,
-                                                   out var model))
-            {
-                model = InstanceFactory.Create<TModel>(creationParams with
-                {
-                    ArgumentsData = InvokableArguments.Empty
-                },
-                cacheResults: true);
-            }
+            if (!InstanceFactory.TryCreate<TModel>(InvokableArguments.Create(int.MaxValue),
+                                                   out var model,
+                                                   cacheResult: true)
+                )
+                model = InstanceFactory.Create<TModel>(InvokableArguments.Empty,
+                                                       cacheResults: true);
 
             return model;
         }

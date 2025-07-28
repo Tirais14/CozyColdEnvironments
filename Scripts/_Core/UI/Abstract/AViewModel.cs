@@ -1,17 +1,6 @@
 #nullable enable
-namespace UTIRLib.UI
+namespace UTIRLib.UI.MVVM
 {
-    public abstract class AViewModel : DisposableContainer, IViewModel
-    {
-        protected object model;
-
-        protected AViewModel(object model)
-        {
-            this.model = model;
-        }
-
-        public object GetModel() => model;
-    }
     public abstract class AViewModel<T> : DisposableContainer, IViewModel<T>
     {
         protected T model;

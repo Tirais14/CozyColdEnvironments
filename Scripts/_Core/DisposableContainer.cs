@@ -3,7 +3,7 @@ using UTIRLib.Disposables;
 
 #pragma warning disable S3881
 #nullable enable
-namespace UTIRLib.UI
+namespace UTIRLib
 {
     public class DisposableContainer : IDisposableContainer
     {

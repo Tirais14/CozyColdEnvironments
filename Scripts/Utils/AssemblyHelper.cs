@@ -16,9 +16,9 @@ namespace UTIRLib
             if (partialName.IsNullOrWhiteSpace())
                 throw new StringArgumentException(nameof(partialName), partialName);
 
-            Assembly[] assemblies = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies();
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies().Concat(AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()).Distinct().ToArray();
 
-            assemblies = assemblies.Where(x => x.FullName.Contains(partialName))
+            assemblies = assemblies.Where(x => x.GetName().Name.Contains(partialName))
                                    .ToArray();
 
             if (throwIfNotFound && assemblies.IsEmpty())
@@ -32,9 +32,9 @@ namespace UTIRLib
             if (fullName.IsNullOrWhiteSpace())
                 throw new StringArgumentException(nameof(fullName), fullName);
 
-            Assembly[] assemblies = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies();
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies().Concat(AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()).Distinct().ToArray();
 
-            Assembly? assembly = assemblies.SingleOrDefault(x => x.FullName == fullName);
+            Assembly? assembly = assemblies.SingleOrDefault(x => x.GetName().Name == fullName);
 
             if (throwIfNotFound && assembly is null)
                 throw new Exception($"Assembly {fullName} not found.");

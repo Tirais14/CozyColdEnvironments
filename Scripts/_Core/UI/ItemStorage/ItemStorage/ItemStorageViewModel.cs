@@ -1,4 +1,5 @@
 using UniRx;
+using UTIRLib.UI.MVVM;
 
 #nullable enable
 namespace UTIRLib.UI.ItemStorage

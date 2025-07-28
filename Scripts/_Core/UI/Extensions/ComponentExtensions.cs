@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UTIRLib.Linq;
 using UTIRLib.Unity.Extensions;
 using UTIRLib.Unity.TypeMatching;
 
@@ -12,7 +14,13 @@ namespace UTIRLib.UI.MVVM
         public static T[] GetAssignedViewModels<T>(this Component value)
             where T : IViewModel
         {
-            var views = value.GetAssignedObjects<IView>();
+            IView[] views;
+            if (value is IView self)
+                views = value.GetAssignedObjects<IView>()
+                             .Where(x => !x.Equals(self))
+                             .ToArray();
+            else
+                views = value.GetAssignedObjects<IView>();
 
             return FindViewModels<T>(views);
         }
@@ -20,7 +28,13 @@ namespace UTIRLib.UI.MVVM
         public static T? GetAssignedViewModel<T>(this Component value)
             where T : IViewModel
         {
-            var views = value.GetAssignedObjects<IView>();
+            IView[] views;
+            if (value is IView self)
+                views = value.GetAssignedObjects<IView>()
+                             .Where(x => !x.Equals(self))
+                             .ToArray();
+            else
+                views = value.GetAssignedObjects<IView>();
 
             return FindViewModel<T>(views);
         }
@@ -41,19 +55,31 @@ namespace UTIRLib.UI.MVVM
 
         /// <exception cref="ArgumentNullException"></exception>
         public static T[] GetAssignedViewModelsInChildren<T>(this Component value,
-                                                     bool includeInactive = false)
+                                                             bool includeInactive = false)
             where T : IViewModel
         {
-            var views = value.GetAssignedObjectsInChildren<IView>(includeInactive);
+            IView[] views;
+            if (value is IView self)
+                views = value.GetAssignedObjectsInChildren<IView>(includeInactive)
+                             .Where(x => !x.Equals(self))
+                             .ToArray();
+            else
+                views = value.GetAssignedObjects<IView>();
 
             return FindViewModels<T>(views);
         }
 
         public static T? GetAssignedViewModelInChildren<T>(this Component value,
-                                                   bool includeInactive = false)
+                                                           bool includeInactive = false)
             where T : IViewModel
         {
-            var views = value.GetAssignedObjectsInChildren<IView>(includeInactive);
+            IView[] views;
+            if (value is IView self)
+                views = value.GetAssignedObjectsInChildren<IView>(includeInactive)
+                             .Where(x => !x.Equals(self))
+                             .ToArray();
+            else
+                views = value.GetAssignedObjects<IView>();
 
             return FindViewModel<T>(views);
         }

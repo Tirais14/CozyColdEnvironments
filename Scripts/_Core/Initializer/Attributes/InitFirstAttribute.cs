@@ -1,8 +1,7 @@
 using System;
-using UTIRLib.Init;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Init
 {
     /// <summary>
     /// Marks type to init in first order. Uses as entry point to initializing scene by attributes. Maybe any amount on the scene.

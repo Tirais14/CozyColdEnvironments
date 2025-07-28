@@ -1,6 +1,7 @@
 using UniRx;
 using UnityEngine;
 using UTIRLib.Disposables;
+using UTIRLib.UI.MVVM;
 
 namespace UTIRLib.UI.ItemStorage
 {
