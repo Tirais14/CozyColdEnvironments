@@ -1,11 +1,16 @@
+using System.Xml;
 using UniRx;
+using UnityEngine.EventSystems;
+using UTIRLib.GameSystems.Storage;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
+using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
 namespace UTIRLib.UI.ItemStorage
 {
-    public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>
+    public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>,
+        IDropHandler
         where TViewModel : IViewModel<TModel>
         where TModel : IItemStackReactive
     {
@@ -32,6 +37,19 @@ namespace UTIRLib.UI.ItemStorage
                                                        cacheResults: true);
 
             return model;
+        }
+
+        void IDropHandler.OnDrop(PointerEventData eventData)
+        {
+            if (eventData.pointerDrag.GetAssignedModel<IItemStack>()
+                .IsNot<IItemStack>(out var itemStack)
+                )
+                return;
+
+            if (itemStack.IsEmpty)
+                return;
+
+
         }
     }
 }

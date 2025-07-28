@@ -70,14 +70,24 @@ namespace UTIRLib.Unity.TypeMatching
             return false;
         }
 
-        public static bool IsNot<T>(this object obj)
+        public static bool IsNot<T>(this object? obj)
         {
             return !obj.Is<T>();
         }
 
-        public static bool IsNot<TThis, T>(this TThis obj)
+        public static bool IsNot<TThis, T>(this TThis? obj)
         {
             return !obj.Is<TThis, T>();
+        }
+
+        public static bool IsNot<T>(this object? obj, [NotNullWhen(false)] out T? result)
+        {
+            return !obj.Is(out result);
+        }
+
+        public static bool IsNot<TThis, T>(this TThis? obj, [NotNullWhen(false)] out T? result)
+        {
+            return !obj.Is(out result);
         }
     }
 }

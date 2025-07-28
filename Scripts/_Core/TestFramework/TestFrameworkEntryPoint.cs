@@ -10,7 +10,7 @@ using UTIRLib.Reflection;
 namespace UTIRLib.TestFramework
 {
     [DefaultExecutionOrder(-2)]
-    public class MonoTestsEntryPoint : MonoX
+    public class TestFrameworkEntryPoint : MonoX
     {
         private Assembly testsAssembly = null!;
         private AMonoTest[] monoTests = null!;
@@ -32,7 +32,7 @@ namespace UTIRLib.TestFramework
 
             CreateTestClasses();
 
-            monoTests = GetComponents<AMonoTest>();
+            monoTests = GetComponents<AMonoTest>().Where(x => x.IsEnabled).ToArray();
         }
 
         protected override void OnStart()
@@ -93,7 +93,10 @@ namespace UTIRLib.TestFramework
             {
                 MethodInfo[] methods = testMethods[monoTests[i]];
                 foreach (var method in methods)
+                {
                     StartCoroutine((IEnumerator)method.Invoke(monoTests[i]));
+                    Debug.Log($"{monoTests[i].GetType().GetName()}.{method.Name}({method.GetParameters().Select(x => x.ParameterType.GetName()).JoinStrings(", ")}) started.");
+                }
             }
         }
     }
