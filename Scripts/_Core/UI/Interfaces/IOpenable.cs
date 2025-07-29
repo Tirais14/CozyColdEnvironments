@@ -1,3 +1,4 @@
+#nullable enable
 namespace UTIRLib.UI
 {
     public interface IOpenable
@@ -7,5 +8,7 @@ namespace UTIRLib.UI
         void Open();
 
         void Close();
+
+        bool SwitchOpenableState();
     }
 }

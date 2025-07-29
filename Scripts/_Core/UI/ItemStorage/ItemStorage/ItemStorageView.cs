@@ -7,9 +7,16 @@ using UTIRLib.UI.MVVM;
 namespace UTIRLib.UI.ItemStorage
 {
     public class ItemStorageView<TViewModel, TModel> : AView<TViewModel>
-        where TViewModel : IViewModel<TModel>
+        where TViewModel : IItemStorageViewModel<TModel>
         where TModel : IItemStorageReactive
     {
+        protected override void OnStart()
+        {
+            base.OnStart();
+
+            viewModel.IsOpenedView.Subscribe(x => gameObject.SetActive(x)).AddTo(this);
+        }
+
         protected override TViewModel CreateViewModel()
         {
             TModel model = CreateModel();

@@ -19,17 +19,21 @@ namespace UTIRLib
 
         protected virtual void DisposeManaged()
         {
-            disposables.Dispose();
         }
 
-        protected virtual void DisposeOther() { }
+        protected virtual void DisposeOther()
+        { 
+        }
 
         private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
+                {
+                    disposables.Dispose();
                     DisposeManaged();
+                }
 
                 DisposeOther();
 

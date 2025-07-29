@@ -1,6 +1,7 @@
 using UnityEngine;
 
 #nullable enable
+#pragma warning disable S2234
 namespace UTIRLib.Controllers.FirstPerson
 {
     public struct FirstPersonCameraRotationController : IRotationController
@@ -17,30 +18,32 @@ namespace UTIRLib.Controllers.FirstPerson
         }
 
         /// <exception cref="System.ArgumentException"></exception>
-        public readonly void Rotate(Vector3 delta, float speed)
+        public readonly void Rotate(Vector3 angles, float speed)
         {
-            if (delta == Vector3.zero)
+            if (angles == Vector3.zero)
                 return;
             if (speed <= 0f)
                 throw new System.ArgumentException(nameof(speed));
 
-            delta = SwapAxis(delta);
+            angles = SwapAxis(angles);
 
             if (!inverseVertical)
-                delta = Inverse(delta);
+                angles = InverseVertical(angles);
 
-            delta = delta * speed;
-            Quaternion target = Quaternion.Euler(0f, delta.y, 0f) * (transform.rotation * Quaternion.Euler(delta.x, 0f, 0f));
+            angles *= speed;
+            Quaternion target = Quaternion.Euler(0f,
+                angles.y,
+                0f) * (transform.rotation * Quaternion.Euler(angles.x, 0f, 0f));
 
             transform.rotation = target;
         }
 
-        private readonly Vector2 SwapAxis(Vector2 delta)
+        private static Vector2 SwapAxis(Vector2 delta)
         {
             return new Vector2(delta.y, delta.x);
         }
 
-        private readonly Vector2 Inverse(Vector2 delta)
+        private static Vector2 InverseVertical(Vector2 delta)
         {
             delta.x *= -1;
 

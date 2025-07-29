@@ -9,8 +9,9 @@ using UTIRLib.Unity.TypeMatching;
 
 namespace UTIRLib.UI.ItemStorage
 {
-    public class ItemStackViewModel : AViewModel<ItemStackReactive>,
-        IItemStackViewModel<ItemStackReactive>
+    public class ItemStackViewModel<T> : AViewModel<T>,
+        IItemStackViewModel<T>
+        where T : IItemStackReactive
     {
         private readonly ReactiveProperty<string> itemCountView = new();
         private readonly ReactiveProperty<Sprite> itemIcon = new();
@@ -18,7 +19,7 @@ namespace UTIRLib.UI.ItemStorage
         public IReadOnlyReactiveProperty<string> ItemCountView => itemCountView;
         public IReadOnlyReactiveProperty<Sprite> ItemIconView => itemIcon;
 
-        public ItemStackViewModel(ItemStackReactive model) : base(model)
+        public ItemStackViewModel(T model) : base(model)
         {
             model.ItemCountReactive.Subscribe(x => itemCountView.Value = x.ToString())
                                    .AddTo(this);
@@ -44,7 +45,7 @@ namespace UTIRLib.UI.ItemStorage
             if (!model.IsEmpty && !model.Item.Equals(itemStack.Item))
                 return;
 
-            if (ReferenceEquals(model, itemStack))
+            if (model.Equals(itemStack))
                 return;
 
             //TODO: Replace this to swap stacks

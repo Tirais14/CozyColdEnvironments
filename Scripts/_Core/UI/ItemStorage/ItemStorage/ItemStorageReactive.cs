@@ -18,5 +18,12 @@ namespace UTIRLib.UI.ItemStorage
         public void Close() => isOpenedReactive.Value = false;
 
         public void Open() => isOpenedReactive.Value = true;
+
+        public bool SwitchOpenableState()
+        {
+            isOpenedReactive.Value = !IsOpened;
+
+            return IsOpened;
+        }
     }
 }
