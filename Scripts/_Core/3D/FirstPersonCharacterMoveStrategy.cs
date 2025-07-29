@@ -16,9 +16,9 @@ namespace UTIRLib
         public float MoveSpeed { get; private set; }
 
         public FirstPersonCharacterMoveStrategy(Rigidbody rigidbody,
-                                        Camera fpCamera,
-                                        IInputAction<Vector2> inputAction,
-                                        float moveSpeed)
+                                                Camera fpCamera,
+                                                IInputAction<Vector2> inputAction,
+                                                float moveSpeed)
         {
             this.rigidbody = rigidbody;
             this.fpCamera = fpCamera;
@@ -68,7 +68,7 @@ namespace UTIRLib
         public void SetMoveSpeed(float newMoveSpeed)
         {
             if (newMoveSpeed <= 0f)
-                throw new System.ArgumentException(newMoveSpeed.ToString(),
+                throw new ArgumentException(newMoveSpeed.ToString(),
                                                    nameof(newMoveSpeed));
 
             MoveSpeed = newMoveSpeed;

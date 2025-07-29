@@ -11,11 +11,11 @@ namespace UTIRLib
 
         public float RotationSpeed { get; private set; }
 
-        public FirstPersonCameraRotationStrategy(Transform cameraTransform,
+        public FirstPersonCameraRotationStrategy(Camera camera,
                                                  IInputAction<Vector2> inputAction,
                                                  float rotationSpeed)
         {
-            transform = cameraTransform;
+            transform = camera.transform;
             this.inputAction = inputAction;
             RotationSpeed = rotationSpeed;
         }

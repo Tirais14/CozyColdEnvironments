@@ -1,32 +1,29 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
 using UTIRLib.Attributes.Metadata;
 using UTIRLib.Disposables;
-using UTIRLib.Init;
 using UTIRLib.Reflection;
 
+#pragma warning disable S3881
 namespace UTIRLib.InputSystem
 {
-    public class InputHandler : MonoXInitable, IInputHandler, IInitable, IDisposableContainer
+    public class InputHandler : MonoXInitable, IInputHandler, IDisposableContainer
     {
         private readonly DisposableCollection disposables = new();
+
         protected InputActionMap actionMap = null!;
 
         [SerializeField]
         protected InputActionAsset inputs;
 
         [SerializeField]
-        [Tooltip("It's name must be setted in field after input action name.")]
-        protected string actionPropertyNamePostfix = "Input";
-
-        [SerializeField]
         protected string actionMapName;
-
-        [SerializeField]
-        protected InputHandlerItem[] inputActionsToInit;
 
         protected override void OnInit()
         {
@@ -41,49 +38,34 @@ namespace UTIRLib.InputSystem
             GC.SuppressFinalize(this);
         }
 
-        private PropertyInfo GetInputActionProperty(string actionName)
-        {
-            string propName = actionName + actionPropertyNamePostfix;
-
-            return GetType()
-                   .GetProperty(propName,
-                                BindingFlagsDefault.InstanceAll)
-                   ??
-                   throw new Exception($"Cannot find property {propName}.");
-        }
-
-        private void SetInputActionProperty(PropertyInfo prop,
-                                            Type inputValueType,
-                                            string actionName)
-        {
-            IInputAction input = InputActionFactory.Create(inputValueType,
-                                                           actionMap,
-                                                           actionName);
-
-            prop.SetValue(this, input);
-        }
-
-        private void AddToDisposables(PropertyInfo prop)
-        {
-            disposables.Add((IInputAction)prop.GetValue(this));
-        }
-
         private void InitInputActionProperties()
         {
-            PropertyInfo prop;
+            PropertyInfo[] inputProps = GetType().GetProperties(BindingFlagsDefault.InstancePublic)
+                                                 .Where(x => x.PropertyType.IsType<IInputAction>())
+                                                 .ToArray();
 
-            foreach (var toInit in inputActionsToInit)
+            if (inputProps.Length != actionMap.actions.Count)
+                throw new Exception("The number of properties does not match input actions count.");
+
+            Dictionary<string, PropertyInfo> propsByName = inputProps.ToDictionary(x => x.Name);
+
+            ReadOnlyArray<InputAction> inputActions = actionMap.actions;
+
+            Type inputValueType;
+            IInputAction createInputAction;
+            foreach (var inputAction in inputActions)
             {
-                prop = GetInputActionProperty(toInit.ActionName);
+                inputValueType = inputAction.GetInputValueType();
 
-                if (prop.PropertyType.IsNotType<IInputAction>())
-                    throw new InvalidOperationException($"Property is not {nameof(IInputAction)} type.");
+                createInputAction = InputActionFactory.Create(inputValueType,
+                                                              actionMap,
+                                                              inputAction.name);
 
-                SetInputActionProperty(prop,
-                                       toInit.ValueType.GetMetaType(),
-                                       toInit.ActionName);
+                if (!propsByName.TryGetValue(inputAction.name, out PropertyInfo prop))
+                    throw new KeyNotFoundException($"Input {inputAction.name} not found.");
 
-                AddToDisposables(prop);
+                prop.SetValue(this, createInputAction);
+                disposables.Add(createInputAction);
             }
         }
     }
