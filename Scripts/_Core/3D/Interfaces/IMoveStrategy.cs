@@ -1,0 +1,12 @@
+#nullable enable
+namespace UTIRLib
+{
+    public interface IMoveStrategy 
+    {
+        float MoveSpeed { get; }
+
+        void SetMoveSpeed(float newMoveSpeed);
+
+        void Move(float deltaTime);
+    }
+}
