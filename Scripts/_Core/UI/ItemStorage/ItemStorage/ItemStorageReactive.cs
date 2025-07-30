@@ -4,14 +4,17 @@ using UTIRLib.GameSystems.Storage;
 #nullable enable
 namespace UTIRLib.UI.ItemStorage
 {
-    public class ItemStorageReactive : GameSystems.Storage.ItemStorage, IItemStorageReactive
+    public class ItemStorageReactive<T> : ItemStorage<T>,
+        IItemStorageReactive<T>
+        where T : IItemSlot
+
     {
         private readonly ReactiveProperty<bool> isOpenedReactive = new();
 
         public bool IsOpened => isOpenedReactive.Value;
         public IReadOnlyReactiveProperty<bool> IsOpenedReactive => isOpenedReactive;
 
-        public ItemStorageReactive(IItemSlot[] slots) : base(slots)
+        public ItemStorageReactive(T[] slots) : base(slots)
         {
         }
 

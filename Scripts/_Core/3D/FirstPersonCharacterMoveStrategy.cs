@@ -9,7 +9,7 @@ namespace UTIRLib
 {
     public class FirstPersonCharacterMoveStrategy : IMoveStrategy
     {
-        private readonly Rigidbody rigidbody;
+        private readonly Rigidbody rb;
         private readonly Camera fpCamera;
         private readonly IInputAction<Vector2> inputAction;
 
@@ -20,7 +20,7 @@ namespace UTIRLib
                                                 IInputAction<Vector2> inputAction,
                                                 float moveSpeed)
         {
-            this.rigidbody = rigidbody;
+            this.rb = rigidbody;
             this.fpCamera = fpCamera;
             this.inputAction = inputAction;
             MoveSpeed = moveSpeed;
@@ -34,13 +34,16 @@ namespace UTIRLib
                                                    nameof(deltaTime));
 
             if (inputAction.Value == Vector2.zero)
+            {
+                rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
                 return;
+            }
 
             Direction2D inputDirection = inputAction.Value.ToDirection2D();
 
             Vector3 cameraDirection = fpCamera.transform.forward.Q()
-                                                                 .SetY(0)
-                                                                 .Normalize();
+                                                                .SetY(0)
+                                                                .Normalize();
 
             var vectorRotation = inputDirection switch
             {
@@ -55,13 +58,11 @@ namespace UTIRLib
                 _ => throw new InvalidOperationException(inputDirection.ToString()),
             };
 
-            Vector3 targetVelocity = deltaTime * MoveSpeed * cameraDirection;
+            Vector3 delta = (deltaTime * MoveSpeed * (vectorRotation * cameraDirection))
+                .Q()
+                .SetY(rb.linearVelocity.y);
 
-            targetVelocity = vectorRotation * targetVelocity;
-
-            targetVelocity.y = rigidbody.linearVelocity.y;
-
-            rigidbody.linearVelocity = targetVelocity;
+            rb.linearVelocity = delta;
         }
 
         /// <exception cref="System.ArgumentException"></exception>

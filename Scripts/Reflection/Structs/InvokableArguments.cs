@@ -32,25 +32,14 @@ namespace UTIRLib.Reflection
                 this.argumentValues = argumentValues;
         }
 
-        public InvokableArguments(Type[] signature, object?[] argumentValues)
-            :
-            this(new InvokableSignature(signature), argumentValues)
-        {
-        }
-
         public InvokableArguments(InvokableSignature signature)
             :
             this(signature, new object[signature.Count])
         {
         }
 
-        public InvokableArguments(params Type[] signature)
-            :
-            this(new InvokableSignature(signature))
-        {
-        }
-
-        public InvokableArguments(object[] argumentValues)
+        public InvokableArguments(object[] argumentValues,
+                                  bool allowTypeInheritance = false)
             :
             this(new InvokableSignature(argumentValues.Select(x =>
             {
@@ -58,30 +47,34 @@ namespace UTIRLib.Reflection
                     throw new CollectionArgumentException();
 
                 return x.GetType();
-            })),
-                argumentValues)
+            }),
+                allowTypeInheritance),
+                    argumentValues)
         {
         }
 
-        public static InvokableArguments Create(object value)
+        public static InvokableArguments Create(object value,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] { value };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
-                                                object value1)
+                                                object value1,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] { 
                 value0,
                 value1 
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
-                                                object value2)
+                                                object value2,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] {
                 value0,
@@ -89,12 +82,13 @@ namespace UTIRLib.Reflection
                 value2 
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
                                                 object value2,
-                                                object value3)
+                                                object value3,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] {
                 value0,
@@ -103,13 +97,14 @@ namespace UTIRLib.Reflection
                 value3 
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
                                                 object value2,
                                                 object value3,
-                                                object value4)
+                                                object value4,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] 
             {
@@ -120,14 +115,15 @@ namespace UTIRLib.Reflection
                 value4 
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
                                                 object value2,
                                                 object value3,
                                                 object value4,
-                                                object value5)
+                                                object value5,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] 
             {
@@ -139,7 +135,7 @@ namespace UTIRLib.Reflection
                 value5
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
@@ -147,7 +143,8 @@ namespace UTIRLib.Reflection
                                                 object value3,
                                                 object value4,
                                                 object value5,
-                                                object value6)
+                                                object value6,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[] 
             {
@@ -160,7 +157,7 @@ namespace UTIRLib.Reflection
                 value6 
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
@@ -169,7 +166,8 @@ namespace UTIRLib.Reflection
                                                 object value4,
                                                 object value5,
                                                 object value6,
-                                                object value7)
+                                                object value7,
+                                                bool allowTypeInheritance = false)
         {
             var args = new object[]
             {
@@ -183,7 +181,7 @@ namespace UTIRLib.Reflection
                 value7
             };
 
-            return new InvokableArguments(args);
+            return new InvokableArguments(args, allowTypeInheritance);
         }
 
         public bool Equals(InvokableArguments other)

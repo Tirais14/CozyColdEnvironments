@@ -28,6 +28,10 @@ namespace UTIRLib
                                                    nameof(deltaTime));
 
             Vector3 angles = deltaTime * RotationSpeed * inputAction.Value;
+
+            //Swap axis
+            angles.Set(angles.y * -1, angles.x, angles.z);
+
             Quaternion targetRotation = Quaternion.Euler(0f, angles.y, 0f) * (transform.rotation * Quaternion.Euler(angles.x, 0f, 0f));
 
             transform.rotation = targetRotation;

@@ -4,11 +4,38 @@ using System.Reflection;
 using System.Text;
 
 #nullable enable
-
 namespace UTIRLib.Reflection
 {
     public static class TypeExtensions
     {
+        public static ConstructorInfo? GetConstructor(this Type type,
+            InvokableSignature signature,
+            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
+        {
+            if (type.GetConstructor(bindingFlags,
+                                    Type.DefaultBinder,
+                                    (Type[])signature,
+                                    Array.Empty<ParameterModifier>()) is ConstructorInfo found
+                                    )
+                return found;
+
+            ConstructorInfo[] constructors = type.GetConstructors(bindingFlags);
+
+            return constructors.SingleOrDefault(x =>
+            {
+                Type[] parameterTypes = x.GetParameters()
+                                         .Select(x => x.ParameterType)
+                                         .ToArray();
+
+                if (parameterTypes.IsEmpty() && signature.IsEmpty())
+                    return true;
+                if (parameterTypes.IsEmpty())
+                    return false;
+
+                return signature == parameterTypes;
+            });
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         public static bool IsType(this Type value, Type? other)
         {

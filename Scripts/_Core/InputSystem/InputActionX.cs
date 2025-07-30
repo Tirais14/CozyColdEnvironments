@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
+#pragma warning disable S3881
 namespace UTIRLib.InputSystem
 {
     public class InputActionX : IInputAction
@@ -13,18 +14,14 @@ namespace UTIRLib.InputSystem
 
         public bool IsButtonPressed => inputAction.IsPressed();
 
-        public event Action<CallbackContext>? OnStarted;
-        public event Action<CallbackContext>? OnPerformed;
-        public event Action<CallbackContext>? OnCanceled;
+        private Action<CallbackContext>? OnStarted;
+        private Action? OnStartedBasic;
 
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+        private Action<CallbackContext>? OnPerformed;
+        private Action? OnPerformedBasic;
 
-        public InputAction AsUnityInputAction() => inputAction;
+        private Action<CallbackContext>? OnCanceled;
+        private Action? OnCanceledBasic;
 
         public InputActionX(InputAction inputAction)
         {
@@ -34,6 +31,206 @@ namespace UTIRLib.InputSystem
             this.inputAction.performed += PerformedEvent;
             this.inputAction.canceled += CanceledEvent;
         }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription SubscribeOnStarted(Action<CallbackContext> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnStarted += action;
+
+            return new InputActionSubscription(this,
+                                               action,
+                                               InputActionSubscriptionType.OnStarted);
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription SubscribeOnStarted(Action action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnStartedBasic += action;
+
+            return new InputActionSubscription(this,
+                                               action,
+                                               InputActionSubscriptionType.OnStarted);
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription SubscribeOnPerformed(Action<CallbackContext> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnPerformed += action;
+
+            return new InputActionSubscription(this,
+                                               action,
+                                               InputActionSubscriptionType.OnPerformed);
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription SubscribeOnPerformed(Action action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnPerformedBasic += action;
+
+            return new InputActionSubscription(this,
+                                               action,
+                                               InputActionSubscriptionType.OnPerformed);
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription SubscribeOnCanceled(Action<CallbackContext> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnCanceled += action;
+
+            return new InputActionSubscription(this,
+                                               action,
+                                               InputActionSubscriptionType.OnCanceled);
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription SubscribeOnCanceled(Action action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnCanceledBasic += action;
+
+            return new InputActionSubscription(this,
+                                               action,
+                                               InputActionSubscriptionType.OnCanceled);
+        }
+
+        public InputActionSubscription Subscribe(
+            Action<CallbackContext> action,
+            InputActionSubscriptionType subscriptionType)
+        {
+            return subscriptionType switch
+            {
+                InputActionSubscriptionType.OnStarted => SubscribeOnStarted(action),
+                InputActionSubscriptionType.OnPerformed => SubscribeOnPerformed(action),
+                InputActionSubscriptionType.OnCanceled => SubscribeOnCanceled(action),
+                _ => throw new InvalidOperationException(subscriptionType.ToString()),
+            };
+        }
+
+        public InputActionSubscription Subscribe(Action action, InputActionSubscriptionType subscriptionType)
+        {
+            return subscriptionType switch
+            {
+                InputActionSubscriptionType.OnStarted => SubscribeOnStarted(action),
+                InputActionSubscriptionType.OnPerformed => SubscribeOnPerformed(action),
+                InputActionSubscriptionType.OnCanceled => SubscribeOnCanceled(action),
+                _ => throw new InvalidOperationException(subscriptionType.ToString()),
+            };
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnStarted(Action<CallbackContext> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnStarted -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnStarted(Action action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnStartedBasic -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnPerformed(Action<CallbackContext> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnPerformed -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnPerformed(Action action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnPerformedBasic -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnCanceled(Action<CallbackContext> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnCanceled -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnCanceled(Action action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            OnCanceledBasic -= action;
+        }
+
+        public void Unsubscribe(Action<CallbackContext> action,
+                                InputActionSubscriptionType subscriptionType)
+        {
+            switch (subscriptionType)
+            {
+                case InputActionSubscriptionType.OnStarted:
+                    UnsubscribeOnStarted(action);
+                    break;
+                case InputActionSubscriptionType.OnPerformed:
+                    UnsubscribeOnPerformed(action);
+                    break;
+                case InputActionSubscriptionType.OnCanceled:
+                    UnsubscribeOnCanceled(action);
+                    break;
+                default:
+                    throw new InvalidOperationException(subscriptionType.ToString());
+            }
+        }
+
+        public void Unsubscribe(Action action,
+                                InputActionSubscriptionType subscriptionType)
+        {
+            switch (subscriptionType)
+            {
+                case InputActionSubscriptionType.OnStarted:
+                    UnsubscribeOnStarted(action);
+                    break;
+                case InputActionSubscriptionType.OnPerformed:
+                    UnsubscribeOnPerformed(action);
+                    break;
+                case InputActionSubscriptionType.OnCanceled:
+                    UnsubscribeOnCanceled(action);
+                    break;
+                default:
+                    throw new InvalidOperationException(subscriptionType.ToString());
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public InputAction AsUnityInputAction() => inputAction;
 
         protected virtual void DisposeManaged()
         {
@@ -65,16 +262,22 @@ namespace UTIRLib.InputSystem
         private void StartedEvent(CallbackContext context)
         {
             OnStarted?.Invoke(context);
+
+            OnStartedBasic?.Invoke();
         }
 
         private void PerformedEvent(CallbackContext context)
         {
             OnPerformed?.Invoke(context);
+
+            OnPerformedBasic?.Invoke();
         }
 
         private void CanceledEvent(CallbackContext context)
         {
             OnCanceled?.Invoke(context);
+
+            OnCanceledBasic?.Invoke();
         }
 
         public static explicit operator InputAction(InputActionX inputActionX)
@@ -97,15 +300,112 @@ namespace UTIRLib.InputSystem
             }
         }
 
-        public event Action<T>? ValueOnStarted;
-        public event Action<T>? ValueOnPerformed;
-        public event Action<T>? ValueOnCanceled;
+        private Action<T>? ValueOnStarted;
+        private Action<T>? ValueOnPerformed;
+        private Action<T>? ValueOnCanceled;
 
         public InputActionX(InputAction inputAction) : base(inputAction)
         {
             inputAction.started += ValueStartedEvent;
             inputAction.performed += ValuePerformedEvent;
             inputAction.canceled += ValueCanceledEvent;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription<T> SubscribeOnStarted(Action<T> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            ValueOnStarted += action;
+
+            return new InputActionSubscription<T>(this,
+                                                  action,
+                                                  InputActionSubscriptionType.OnStarted);
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription<T> SubscribeOnPerformed(Action<T> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            ValueOnPerformed += action;
+
+            return new InputActionSubscription<T>(this,
+                                                  action,
+                                                  InputActionSubscriptionType.OnPerformed);
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionSubscription<T> SubscribeOnCanceled(Action<T> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            ValueOnCanceled += action;
+
+            return new InputActionSubscription<T>(this,
+                                                  action,
+                                                  InputActionSubscriptionType.OnCanceled);
+        }
+
+        public InputActionSubscription<T> Subscribe(Action<T> action,
+            InputActionSubscriptionType subscriptionType)
+        {
+            return subscriptionType switch
+            {
+                InputActionSubscriptionType.OnStarted => SubscribeOnStarted(action),
+                InputActionSubscriptionType.OnPerformed => SubscribeOnPerformed(action),
+                InputActionSubscriptionType.OnCanceled => SubscribeOnCanceled(action),
+                _ => throw new InvalidOperationException(subscriptionType.ToString()),
+            };
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnStarted(Action<T> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            ValueOnStarted -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnPerformed(Action<T> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            ValueOnPerformed -= action;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnsubscribeOnCanceled(Action<T> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            ValueOnCanceled -= action;
+        }
+
+        public void Unsubscribe(Action<T> action,
+                                InputActionSubscriptionType subscriptionType)
+        {
+            switch (subscriptionType)
+            {
+                case InputActionSubscriptionType.OnStarted:
+                    UnsubscribeOnStarted(action);
+                    break;
+                case InputActionSubscriptionType.OnPerformed:
+                    UnsubscribeOnPerformed(action);
+                    break;
+                case InputActionSubscriptionType.OnCanceled:
+                    UnsubscribeOnCanceled(action);
+                    break;
+                default:
+                    throw new InvalidOperationException(subscriptionType.ToString());
+            }
         }
 
         protected virtual T ReadValue(CallbackContext context)

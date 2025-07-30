@@ -8,27 +8,28 @@ using UTIRLib.Diagnostics;
 #nullable enable
 namespace UTIRLib.GameSystems.Storage
 {
-    public class ItemStorage : IItemStorage
+    public class ItemStorage<T> : IItemStorage<T>
+        where T : IItemSlot
     {
-        protected readonly List<IItemSlot> slots;
+        protected readonly List<T> slots;
 
         public int SlotCount => slots.Count;
 
-        public IItemSlot this[int index] {
+        public T this[int index] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => slots[index];
         }
 
-        public ItemStorage(IItemSlot[] slots)
+        public ItemStorage(T[] slots)
         {
-            this.slots = new List<IItemSlot>(slots);
+            this.slots = new List<T>(slots);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IItemSlot GetItemSlot(int index) => slots[index];
+        public T GetItemSlot(int index) => slots[index];
 
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddItemSlot(IItemSlot itemSlot)
+        public void AddItemSlot(T itemSlot)
         {
             if (itemSlot.IsNull())
                 throw new ArgumentNullException(nameof(itemSlot));
@@ -108,12 +109,12 @@ namespace UTIRLib.GameSystems.Storage
             AddItem(itemStack);
         }
 
-        public IItemSlot? GetEmptySlot()
+        public T? GetEmptySlot()
         {
             return slots.Find(x => x.ItemStack.IsEmpty);
         }
 
-        public bool TryGetEmptySlot([NotNullWhen(true)] out IItemSlot? result)
+        public bool TryGetEmptySlot([NotNullWhen(true)] out T? result)
         {
             result = GetEmptySlot();
 
@@ -124,12 +125,12 @@ namespace UTIRLib.GameSystems.Storage
         /// Searchs not full slot with item or empty slot
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
-        public IItemSlot? GetSuitableSlot(IItem item)
+        public T? GetSuitableSlot(IItem item)
         {
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
 
-            IItemSlot? empty = null;
+            T? empty = default;
 
             IItemStack itemStack;
             int slotsCount = slots.Count;   
@@ -151,7 +152,7 @@ namespace UTIRLib.GameSystems.Storage
         /// Searchs not full slot with item or empty slot
         /// </summary>
         public bool TryGetSuitableSlot(IItem item,
-                                       [NotNullWhen(true)] out IItemSlot? result)
+                                       [NotNullWhen(true)] out T? result)
         {
             result = GetSuitableSlot(item);
 

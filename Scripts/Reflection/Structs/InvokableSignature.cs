@@ -8,9 +8,14 @@ using System.Text;
 #nullable enable
 namespace UTIRLib.Reflection
 {
-    public readonly struct InvokableSignature : IEnumerable<Type>, IEquatable<InvokableSignature>
+    public readonly struct InvokableSignature :
+        IEnumerable<Type>, 
+        IEquatable<InvokableSignature>,
+        IEquatable<Type[]>
     {
         private readonly Type[] types;
+
+        public readonly bool AllowInheritance;
 
         public readonly ReadOnlySpan<Type> Types => new(types);
         public readonly int Count {
@@ -22,30 +27,55 @@ namespace UTIRLib.Reflection
             get => types[index];
         }
 
-        public InvokableSignature(params Type[] types)
+        public InvokableSignature(bool allowInheritance, params Type[] types)
         {
+            AllowInheritance = allowInheritance;
             this.types = types;
         }
 
-        public InvokableSignature(IEnumerable<Type> types)
+        public InvokableSignature(params Type[] types)
             :
-            this(types.ToArray())
+            this(allowInheritance: false, types)
         {
         }
 
-        public bool Equals(InvokableSignature other)
+        public InvokableSignature(IEnumerable<Type> types, bool allowInheritance = false)
+            :
+            this(allowInheritance, types.ToArray())
         {
-            if (other.types.Length != types.Length)
+        }
+
+        public bool Equals(Type[] other)
+        {
+            if (other.IsEmpty() && types.IsEmpty())
+                return true;
+
+            if (other.Length != types.Length)
                 return false;
 
-            Type[] otherTypes = other.types;
-            for (int i = 0; i < Types.Length; i++)
+            if (AllowInheritance)
             {
-                if (types[i] != otherTypes[i])
-                    return false;
+                for (int i = 0; i < other.Length; i++)
+                {
+                    if (types[i].IsNotType(other[i]))
+                        return false;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < other.Length; i++)
+                {
+                    if (types[i] != other[i])
+                        return false;
+                }
             }
 
+
             return true;
+        }
+        public bool Equals(InvokableSignature other)
+        {
+            return Equals(other.types);
         }
 
         public override bool Equals(object obj)
@@ -79,6 +109,16 @@ namespace UTIRLib.Reflection
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        public static bool operator ==(InvokableSignature a, Type[] b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(InvokableSignature a, Type[] b)
+        {
+            return !a.Equals(b);
+        }
+
         public static bool operator ==(InvokableSignature a, InvokableSignature b)
         {
             return a.Equals(b);
@@ -87,6 +127,11 @@ namespace UTIRLib.Reflection
         public static bool operator !=(InvokableSignature a, InvokableSignature b)
         {
             return !a.Equals(b);
+        }
+
+        public static explicit operator Type[](InvokableSignature signatiure)
+        {
+            return signatiure.Types.ToArray();
         }
     }
 }
