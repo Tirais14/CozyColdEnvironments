@@ -199,4 +199,11 @@ namespace UTIRLib.GameSystems.Storage
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
+
+    public class ItemStorage : ItemStorage<IItemSlot>
+    {
+        public ItemStorage(IItemSlot[] slots) : base(slots)
+        {
+        }
+    }
 }

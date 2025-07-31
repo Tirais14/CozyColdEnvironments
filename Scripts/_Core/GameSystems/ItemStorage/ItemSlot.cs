@@ -1,13 +1,20 @@
 #nullable enable
 namespace UTIRLib.GameSystems.Storage
 {
-    public class ItemSlot : IItemSlot
+    public class ItemSlot<T> : IItemSlot<T>
+        where T : IItemStack
     {
-        public IItemStack ItemStack { get; private set; }
+        public T ItemStack { get; private set; }
 
-        public ItemSlot(IItemStack itemStack)
+        public ItemSlot(T itemStack)
         {
             ItemStack = itemStack;
+        }
+    }
+    public class ItemSlot : ItemSlot<IItemStack>
+    {
+        public ItemSlot(IItemStack itemStack) : base(itemStack)
+        {
         }
     }
 }

@@ -7,7 +7,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
 {
     public class ItemStorageTests
     {
-        private ItemStorage<ItemSlot> itemStorage = null!;
+        private ItemStorage itemStorage = null!;
 
         [SetUp]
         public void Setup()
@@ -16,7 +16,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
 
             slots.Fill(new ItemSlot(new ItemStack<IItem>()));
 
-            itemStorage = new ItemStorage<ItemSlot>(slots);
+            itemStorage = new ItemStorage(slots);
         }
 
         [Test]

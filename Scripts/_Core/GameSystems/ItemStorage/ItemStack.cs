@@ -1,5 +1,4 @@
 #nullable enable
-using PlasticGui.WorkspaceWindow.Merge;
 using System;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
@@ -119,6 +118,22 @@ namespace UTIRLib.GameSystems.Storage
         {
             Item = InstanceFactory.Create<T>(InvokableArguments.Create(new NullItem(), InvokableArguments.CreationSettings.AllowSignatureTypesInheritance), cacheConstructor: true);
             ItemCount = 0;
+        }
+    }
+    public class ItemStack : ItemStack<IItem>
+    {
+        public ItemStack(int maxItemCount = int.MaxValue)
+            :
+            base(maxItemCount)
+        {
+        }
+
+        public ItemStack(IItem item,
+                         int itemCount = 1,
+                         int maxItemCount = int.MaxValue)
+            :
+            base(item, itemCount, maxItemCount)
+        {
         }
     }
 }

@@ -65,4 +65,20 @@ namespace UTIRLib.UI.ItemStorage
             itemCountReactive.Value = ItemCount;
         }
     }
+    public class ItemStackReactive : ItemStackReactive<IItem> 
+    {
+        public ItemStackReactive(int maxItemCount = int.MaxValue) : base(maxItemCount)
+        {
+        }
+
+        public ItemStackReactive(IItem item,
+                                 int itemCount = 1,
+                                 int maxItemCount = int.MaxValue)
+            :
+            base(item,
+                 itemCount,
+                 maxItemCount)
+        {
+        }
+    }
 }
