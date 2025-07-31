@@ -5,4 +5,11 @@ namespace UTIRLib.GameSystems.Storage
     {
         IItemStack ItemStack { get; }
     }
+    public interface IItemSlot<T> : IItemSlot
+        where T : IItemStack
+    {
+        new T ItemStack { get; }
+
+        IItemStack IItemSlot.ItemStack => ItemStack;
+    }
 }

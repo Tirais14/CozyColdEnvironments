@@ -7,12 +7,12 @@ namespace UTIRLib.Tests.GameSystems.Storage
 {
     public class ItemStackTests
     {
-        private ItemStack itemStack = null!;
+        private ItemStack<IItem> itemStack = null!;
 
         [SetUp]
         public void Setup()
         {
-            itemStack = new ItemStack();
+            itemStack = new ItemStack<IItem>();
         }
 
         [Test]

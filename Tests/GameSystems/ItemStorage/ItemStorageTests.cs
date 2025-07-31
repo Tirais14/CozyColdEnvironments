@@ -14,7 +14,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
         {
             var slots = new ItemSlot[10];
 
-            slots.Fill(new ItemSlot(new ItemStack()));
+            slots.Fill(new ItemSlot(new ItemStack<IItem>()));
 
             itemStorage = new ItemStorage<ItemSlot>(slots);
         }

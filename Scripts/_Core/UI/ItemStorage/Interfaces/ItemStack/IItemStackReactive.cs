@@ -9,4 +9,8 @@ namespace UTIRLib.UI.ItemStorage
         IReadOnlyReactiveProperty<IItem> ItemReactive { get; }
         IReadOnlyReactiveProperty<int> ItemCountReactive { get; }
     }
+    public interface IItemStackReactive<T> : IItemStackReactive, IItemStack<T>
+        where T : IItem
+    {
+    }
 }

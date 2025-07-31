@@ -35,11 +35,6 @@ namespace UTIRLib.UI.ItemStorage
 
         private TModel CreateModel()
         {
-            Type[] modelGenericArguments = TypeHelper.CollectGenericArgumentsFromBaseClasses(typeof(TModel));
-
-            if (modelGenericArguments.IsEmpty())
-                throw new Exception("Not found generic arguments.");
-
             IItemSlot[] slotsUntyped = this.GetAssignedModelsInChildren<IItemSlot>();
 
             InvokableArguments creationArguments;
@@ -50,6 +45,11 @@ namespace UTIRLib.UI.ItemStorage
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
             else
             {
+                Type[] modelGenericArguments = TypeHelper.CollectGenericArgumentsFromBaseClasses(typeof(TModel));
+
+                if (modelGenericArguments.IsEmpty())
+                    throw new Exception("Not found generic arguments.");
+
                 Type? slotType = modelGenericArguments.First(x => x.IsType<IItemSlot>());
                 Type slotsArrayType = slotType.MakeArrayType();
 
@@ -61,14 +61,8 @@ namespace UTIRLib.UI.ItemStorage
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
             }
 
-            if (!InstanceFactory.TryCreate<TModel>(creationArguments,
-                                                   out var model,
-                                                   cacheConstructor: true)
-                ) 
-                model = InstanceFactory.Create<TModel>(InvokableArguments.Empty,
-                                                       cacheConstructor: true);
-
-            return model;
+            return InstanceFactory.Create<TModel>(creationArguments,
+                                                  cacheConstructor: true);
         }
     }
 }

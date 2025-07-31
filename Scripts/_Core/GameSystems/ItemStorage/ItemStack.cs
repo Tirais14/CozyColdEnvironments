@@ -1,15 +1,17 @@
 #nullable enable
+using PlasticGui.WorkspaceWindow.Merge;
 using System;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 
 namespace UTIRLib.GameSystems.Storage
 {
-    public class ItemStack : IItemStack
+    public class ItemStack<T> : IItemStack<T>
+        where T : IItem
     {
-        public static ItemStack Empty => new(1);
+        public static ItemStack<T> Empty => new(1);
 
-        public IItem Item { get; private set; } = new NullItem();
+        public T Item { get; private set; } = InstanceFactory.Create<T>(InvokableArguments.Create(new NullItem(), InvokableArguments.CreationSettings.AllowSignatureTypesInheritance), cacheConstructor: true);
         public int ItemCount { get; private set; }
         public int MaxItemCount { get; private set; }
         public bool IsEmpty => ItemCount < 1 || Item is NullItem;
@@ -23,7 +25,7 @@ namespace UTIRLib.GameSystems.Storage
             MaxItemCount = maxItemCount;
         }
 
-        public ItemStack(IItem item,
+        public ItemStack(T item,
                          int itemCount = 1,
                          int maxItemCount = int.MaxValue)
             : 
@@ -38,24 +40,29 @@ namespace UTIRLib.GameSystems.Storage
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public virtual void AddItem(IItem item, int count)
+        public virtual IItemStack<T> AddItem(T item, int count)
         {
             if (!IsEmpty && !Item.Equals(item))
-                throw new Exception($"{GetType().GetName()} is not empty.");
+                throw new Exception($"{GetType().GetName()} is not empty and items not equals.");
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
             if (count < 1)
                 throw new ArgumentException(nameof(count));
 
-            count = ItemStackHelper.CalulcateToAddCount(this, count);
+            int toAddCount = ItemStackHelper.CalulcateToAddCount(this, count);
 
             Item = item;
-            ItemCount += count;
+            ItemCount += toAddCount;
+
+            if (toAddCount < count)
+                return new ItemStack<T>(item, count - toAddCount);
+
+            return Empty;
         }
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public virtual void AddItem(IItemStack itemStack, int count)
+        public virtual void AddItem(IItemStack<T> itemStack, int count)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -66,7 +73,7 @@ namespace UTIRLib.GameSystems.Storage
             if (ReferenceEquals(itemStack, this))
                 throw new InvalidOperationException("Couldn't be added items by itself.");
 
-            IItemStack taked = itemStack.Take(count);
+            IItemStack<T> taked = itemStack.Take(count);
 
             if (taked.IsEmpty)
                 return;
@@ -78,7 +85,7 @@ namespace UTIRLib.GameSystems.Storage
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public virtual IItemStack Take(int count)
+        public virtual IItemStack<T> Take(int count)
         {
             if (count < 1)
                 throw new ArgumentException(nameof(count));
@@ -92,7 +99,7 @@ namespace UTIRLib.GameSystems.Storage
 
             ItemCount -= count;
 
-            var taked = new ItemStack(Item, count, count);
+            var taked = new ItemStack<T>(Item, count, count);
 
             if (ItemCount <= 0)
                 Clear();
@@ -100,7 +107,7 @@ namespace UTIRLib.GameSystems.Storage
             return taked;
         }
 
-        public virtual IItemStack TakeAll()
+        public virtual IItemStack<T> TakeAll()
         {
             if (IsEmpty)
                 return Empty;
@@ -110,7 +117,7 @@ namespace UTIRLib.GameSystems.Storage
 
         public void Clear()
         {
-            Item = new NullItem();
+            Item = InstanceFactory.Create<T>(InvokableArguments.Create(new NullItem(), InvokableArguments.CreationSettings.AllowSignatureTypesInheritance), cacheConstructor: true);
             ItemCount = 0;
         }
     }

@@ -4,7 +4,8 @@ using UTIRLib.GameSystems.Storage;
 #nullable enable
 namespace UTIRLib.UI.ItemStorage
 {
-    public class ItemStackReactive : ItemStack, IItemStackReactive
+    public class ItemStackReactive<T> : ItemStack<T>, IItemStackReactive
+        where T : IItem
     {
         private readonly ReactiveProperty<IItem> itemReactive = new(new NullItem());
         private readonly ReactiveProperty<int> itemCountReactive = new();
@@ -16,7 +17,7 @@ namespace UTIRLib.UI.ItemStorage
         {
         }
 
-        public ItemStackReactive(IItem item,
+        public ItemStackReactive(T item,
                                  int itemCount = 1,
                                  int maxItemCount = int.MaxValue)
             :
@@ -26,31 +27,33 @@ namespace UTIRLib.UI.ItemStorage
         {
         }
 
-        public override void AddItem(IItem item, int count)
+        public override IItemStack<T> AddItem(T item, int count)
         {
-            base.AddItem(item, count);
+            IItemStack<T> rest = base.AddItem(item, count);
 
             UpdateInfo();
+
+            return rest;
         }
 
-        public override void AddItem(IItemStack itemStack, int count)
+        public override void AddItem(IItemStack<T> itemStack, int count)
         {
             base.AddItem(itemStack, count);
 
             UpdateInfo();
         }
 
-        public override IItemStack Take(int count)
+        public override IItemStack<T> Take(int count)
         {
-            IItemStack temp = base.Take(count);
+            IItemStack<T> temp = base.Take(count);
             UpdateInfo();
 
             return temp;
         }
 
-        public override IItemStack TakeAll()
+        public override IItemStack<T> TakeAll()
         {
-            IItemStack temp = base.TakeAll();
+            IItemStack<T> temp = base.TakeAll();
             UpdateInfo();
 
             return temp;

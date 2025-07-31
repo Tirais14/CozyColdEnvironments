@@ -1,9 +1,13 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection;
+using UTIRLib.Reflection.Cached;
 
 #nullable enable
 namespace UTIRLib.GameSystems.Storage
@@ -15,9 +19,9 @@ namespace UTIRLib.GameSystems.Storage
 
         public int SlotCount => slots.Count;
 
-        public T this[int index] {
+        public T this[int id] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => slots[index];
+            get => slots[id];
         }
 
         public ItemStorage(T[] slots)
@@ -26,7 +30,7 @@ namespace UTIRLib.GameSystems.Storage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetItemSlot(int index) => slots[index];
+        public T GetSlot(int id) => slots[id];
 
         /// <exception cref="ArgumentNullException"></exception>
         public void AddItemSlot(T itemSlot)
@@ -37,12 +41,12 @@ namespace UTIRLib.GameSystems.Storage
             slots.Add(itemSlot);
         }
 
-        public void RemoveItemSlotAt(int index)
+        public void RemoveSlot(int id)
         {
-            slots.RemoveAt(index);
+            slots.RemoveAt(id);
         }
 
-        public bool HasItemStack(IItemStack? itemStack)
+        public bool Contains(IItemStack? itemStack)
         {
             if (itemStack.IsNull())
                 return false;
@@ -55,6 +59,11 @@ namespace UTIRLib.GameSystems.Storage
             }
 
             return false;
+        }
+
+        public bool Contains(T slot)
+        {
+            return slots.Contains(slot);
         }
 
         public bool HasItem(IItem item, int count = 1)
@@ -74,6 +83,22 @@ namespace UTIRLib.GameSystems.Storage
             return false;
         }
 
+        public bool CanHold(IItem item)
+        {
+            if (item.IsNull())
+                throw new ArgumentNullException(nameof(item));
+            if (slots.IsEmpty())
+                throw new InvalidOperationException("Item cannot be validated in empty storage.");
+
+            if (slots.Find(x => x.ItemStack.IsEmpty) is T notEmptySlot)
+                return item.GetType().IsType(notEmptySlot.ItemStack.Item.GetType());
+
+            FieldInfo itemStackField = TypeCache.GetField(typeof(T), nameof(IItemSlot.ItemStack));
+            FieldInfo itemField = TypeCache.GetField(itemStackField.FieldType, nameof(IItemStack.Item));
+
+            return itemField.FieldType.IsType(item.GetType());
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public void AddItem(IItemStack itemStack)
@@ -82,7 +107,7 @@ namespace UTIRLib.GameSystems.Storage
                 throw new ArgumentNullException(nameof(itemStack));
             if (slots.IsEmpty())
                 throw new ArgumentException("Storage doesn't contain any slot.");
-            if (HasItemStack(itemStack))
+            if (Contains(itemStack))
                 throw new ArgumentException("Cannot add items to storage from itself item stack.");
             if (itemStack.IsEmpty)
                 return;
@@ -98,15 +123,26 @@ namespace UTIRLib.GameSystems.Storage
         
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void AddItem(IItem item, int count)
+        public IItemStack AddItem(IItem item, int count)
         {
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
             if (count < 1)
                 throw new ArgumentException(nameof(count));
 
-            var itemStack = new ItemStack(item, count);
+            var itemStack = new ItemStack<IItem>(item, count);
             AddItem(itemStack);
+
+            return itemStack;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public int GetSlotId(T slot)
+        {
+            if (slot.IsNull())
+                throw new ArgumentNullException(nameof(slot));
+
+            return slots.IndexOf(slot);
         }
 
         public T? GetEmptySlot()
@@ -158,5 +194,9 @@ namespace UTIRLib.GameSystems.Storage
 
             return result.IsNotNull();
         }
+
+        public IEnumerator<T> GetEnumerator() => slots.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -25,7 +25,11 @@ namespace UTIRLib.Reflection
                 throw new ArgumentNullException(nameof(type));
 
             ConstructorInfo? ctor;
-            if (cacheConstructor)
+            if (TypeCache.IsConstructorCached(type,
+                                              constructorParams.Signature)
+                ||
+                cacheConstructor
+                )
                 ctor = TypeCache.GetConstructor(type, constructorParams);
             else
                 ctor = type.GetConstructor(constructorParams, throwIfNotFound: true);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor;
 using UTIRLib.Diagnostics;
 
 #nullable enable
@@ -10,7 +11,9 @@ namespace UTIRLib.Reflection.Cached
     {
         private readonly static Dictionary<Type, object> defaultValuesCollection = new();
 
-        private readonly static Dictionary<ConstructrorKey, ConstructorInfo> constructorsCollection = new();
+        private readonly static Dictionary<ConstructrorKey, ConstructorInfo> constructorsCache = new();
+
+        private readonly static Dictionary<FieldKey, FieldInfo> fieldsCache = new();
 
         public static object? GetDefaultValue(Type type)
         {
@@ -34,7 +37,7 @@ namespace UTIRLib.Reflection.Cached
             if (constructorParams == null)
                 throw new ArgumentNullException(nameof(constructorParams));
 
-            if (constructorsCollection.TryGetValue(new ConstructrorKey(type,
+            if (constructorsCache.TryGetValue(new ConstructrorKey(type,
                         constructorParams.ArgumentsData.Signature),
                     out ConstructorInfo constructor)
                 )
@@ -42,11 +45,105 @@ namespace UTIRLib.Reflection.Cached
 
             constructor = type.GetConstructor(constructorParams, throwIfNotFound: true);
 
-            constructorsCollection.Add(new ConstructrorKey(type,
+            constructorsCache.Add(new ConstructrorKey(type,
                     constructorParams.ArgumentsData.Signature),
                 constructor);
 
             return constructor;
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool IsConstructorCached(Type type,
+                                               InvokableSignature signature)
+        {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+
+            var constructrorKey = new ConstructrorKey(type, signature);
+
+            return constructorsCache.ContainsKey(constructrorKey);
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="StringArgumentException"></exception>
+        public static FieldInfo GetField(Type type,
+                                         string name,
+                                         BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
+        {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+            if (name.IsNullOrEmpty())
+                throw new StringArgumentException(nameof(name), name);
+
+            var key = new FieldKey(type, name);
+
+            if (fieldsCache.TryGetValue(key, out FieldInfo field))
+                return field;
+
+            field = type.GetField(name, bindingFlags)
+                ?? 
+                throw new MemberNotFoundException(type, MemberType.Field, name);
+
+            fieldsCache.Add(key, field);
+
+            return field;
+        }
+
+        public readonly struct ConstructrorKey : IEquatable<ConstructrorKey>
+        {
+            public readonly Type ReflectedType { get; }
+            public readonly InvokableSignature Signature { get; }
+
+            public ConstructrorKey(Type type, InvokableSignature signature)
+            {
+                ReflectedType = type;
+                Signature = signature;
+            }
+
+            public bool Equals(ConstructrorKey other)
+            {
+                return other.ReflectedType == ReflectedType && other.Signature == Signature;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is InvokableArguments typed && Equals(typed);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(ReflectedType, Signature);
+            }
+        }
+
+        public readonly struct FieldKey : IEquatable<FieldKey>
+        {
+            public readonly Type ReflectedType { get; }
+
+            public readonly string Name { get; }
+
+            public FieldKey(Type reflectedType, string name)
+            {
+                ReflectedType = reflectedType;
+                Name = name;
+            }
+
+            public bool Equals(FieldKey other)
+            {
+                return other.ReflectedType == ReflectedType 
+                       &&
+                       other.Name == Name;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is FieldKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(ReflectedType, Name);
+            }
         }
     }
 }
