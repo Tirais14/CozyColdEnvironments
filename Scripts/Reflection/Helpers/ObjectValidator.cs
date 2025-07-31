@@ -59,7 +59,7 @@ namespace UTIRLib.Reflection
                 if (fieldValue.IsDefault(isDefaultOption))
                     continue;
 
-                if (!TypeHelper.IsPrimitiveType(fieldValue.GetType()))
+                if (!fieldValue.GetType().IsPrimitiveType())
                     continue;
 
                 if (IsCustomDefaultValue(fieldValue, customDefaultValuesCollection))

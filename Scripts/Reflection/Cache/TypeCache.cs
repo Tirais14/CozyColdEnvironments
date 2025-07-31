@@ -40,13 +40,7 @@ namespace UTIRLib.Reflection.Cached
                 )
                 return constructor;
 
-            constructor = type.GetConstructor(constructorParams.BindingFlags,
-                                              constructorParams.Binder,
-                                              constructorParams.CallingConvention,
-                                              constructorParams.Signature,
-                                              constructorParams.ParameterModifiers) 
-                ??
-                throw new MemberNotFoundException(type, MemberType.Constructor, constructorParams);
+            constructor = type.GetConstructor(constructorParams, throwIfNotFound: true);
 
             constructorsCollection.Add(new ConstructrorKey(type,
                     constructorParams.ArgumentsData.Signature),

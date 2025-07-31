@@ -11,6 +11,24 @@ namespace UTIRLib.Reflection
     public static class TypeHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
+        public static Type[] CollectGenericArgumentsFromBaseClasses(Type fromType)
+        {
+            if (fromType is null)
+                throw new ArgumentNullException(nameof(fromType));
+
+            Type[] baseTypes = fromType.CollectBaseTypes().ToArray();
+
+            return baseTypes.Aggregate(new List<Type>(), (list, x) =>
+            {
+                Type[] genericArguments = x.GetGenericArguments();
+                if (genericArguments.IsNotEmpty())
+                    list.AddRange(genericArguments);
+
+                return list;
+            }).ToArray();
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
         public static object?[] GetFieldValues(object target,
             BindingFlags bindingFlags = BindingFlagsDefault.InstanceAll)
         {
@@ -59,37 +77,31 @@ namespace UTIRLib.Reflection
             }
         }
 
-        public static bool IsPrimitiveType(Type? type)
-        {
-            if (type == null) return false;
-
-            return type.IsPrimitive || type.IsAnyType(typeof(decimal), typeof(string));
-        }
-
         public static MemberInfo[] ForceGetMembers(Type type,
             BindingFlags bindingFlags = BindingFlags.Default)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            var toProccess = new List<Type>{ type };
-
-            var predicate = new LoopPredicate(() => true);
-            while (predicate.Invoke())
+            Queue<Type> baseTypes = LoopHelper.Collect(type, (x, loopState) =>
             {
-                type = type.BaseType;
+                Type? next = x.BaseType;
 
-                if (type == typeof(object) || type == null)
-                    break;
+                if (next is null || next == typeof(object))
+                {
+                    loopState.Value = LoopKeyword.Break;
+                    return null;
+                }
 
-                toProccess.Add(type);
-            }
+                return next!;
+            });
 
             bindingFlags |= BindingFlags.DeclaredOnly;
             var members = new List<MemberInfo>();
-            int toProccessCount = toProccess.Count;
-            for (int i = 0; i < toProccessCount; i++)
-                members.AddRange(toProccess[i].GetMembers(bindingFlags));
+
+            var loopPredicate = new LoopPredicate(() => baseTypes.Count > 0);
+            while (loopPredicate.Invoke())
+                members.AddRange(baseTypes.Dequeue().GetMembers(bindingFlags));
 
             return members.ToArray();
         }
@@ -152,14 +164,12 @@ namespace UTIRLib.Reflection.Special
                 collected = LoopHelper.Collect(targetFieldValues[i], (current) =>
                 {
                     if (current is null)
-                        return LoopIteration<object?[]>.Void();
+                        return Array.Empty<object?>();
 
-                    object?[] fieldValues = Reflection.TypeHelper.GetFieldValues(current, bindingFlags);
+                    object?[] fieldValues = Reflection.TypeHelper.GetFieldValues(current,
+                                                                                 bindingFlags);
 
-                    if (fieldValues.IsNullOrEmpty())
-                        return LoopIteration.Continue(fieldValues);
-                    else
-                        return LoopIteration.Complete(fieldValues);
+                    return fieldValues;
                 });
 
                 results.AddRange(collected);
@@ -186,13 +196,7 @@ namespace UTIRLib.Reflection.Special
                 {
                     FieldInfo[] tempFields = current.FieldType.ForceGetFields(bindingFlags);
 
-                    if (tempFields.IsEmpty())
-                        return LoopIteration<FieldInfo[]>.Void();
-
-                    if (tempFields.IsNullOrEmpty())
-                        return LoopIteration.Continue(tempFields);
-                    else
-                        return LoopIteration.Complete(tempFields);
+                    return tempFields;
                 });
 
                 results.AddRange(collected);

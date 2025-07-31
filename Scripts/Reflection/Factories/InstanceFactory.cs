@@ -17,7 +17,7 @@ namespace UTIRLib.Reflection
         /// <exception cref="ArgumentNullException"></exception>
         public static object Create(Type type,
                                     ConstructorParameters constructorParams,
-                                    bool cacheResults = false)
+                                    bool cacheConstructor = false)
         {
             if (constructorParams is null)
                 throw new ArgumentNullException(nameof(constructorParams));
@@ -25,20 +25,10 @@ namespace UTIRLib.Reflection
                 throw new ArgumentNullException(nameof(type));
 
             ConstructorInfo? ctor;
-            if (cacheResults)
+            if (cacheConstructor)
                 ctor = TypeCache.GetConstructor(type, constructorParams);
             else
-            {
-                ctor = type.GetConstructor(constructorParams.BindingFlags,
-                                           constructorParams.Binder,
-                                           constructorParams.CallingConvention,
-                                           constructorParams.Signature,
-                                           constructorParams.ParameterModifiers)
-                    ??
-                    throw new MemberNotFoundException(type,
-                                                      MemberType.Constructor,
-                                                      constructorParams);
-            }
+                ctor = type.GetConstructor(constructorParams, throwIfNotFound: true);
 
             object?[] ctorArgs = constructorParams.Arguments;
             return ctor.Invoke(ctorArgs);
@@ -46,34 +36,34 @@ namespace UTIRLib.Reflection
 
         public static object Create(Type type,
                                     InvokableArguments arguments,
-                                    bool cacheResults = false)
+                                    bool cacheConstructor = false)
         {
             return Create(type,
                           defaultConstructorParams with { ArgumentsData = arguments },
-                          cacheResults);
+                          cacheConstructor);
         }
 
         public static T Create<T>(ConstructorParameters constructorParams,
-                                  bool cacheResults = false)
+                                  bool cacheConstructor = false)
         {
-            return (T)Create(typeof(T), constructorParams, cacheResults);
+            return (T)Create(typeof(T), constructorParams, cacheConstructor);
         }
 
-        public static T Create<T>(InvokableArguments arguments, bool cacheResults = false)
+        public static T Create<T>(InvokableArguments arguments, bool cacheConstructor = false)
         {
             return Create<T>(
                 defaultConstructorParams with { ArgumentsData = arguments },
-                cacheResults);
+                cacheConstructor);
         }
 
         public static bool TryCreate(Type type,
                                      ConstructorParameters constructorParameters,
                                      [NotNullWhen(true)] out object? result,
-                                     bool cacheResult = false)
+                                     bool cacheConstructor = false)
         {
             try
             {
-                result = Create(type, constructorParameters, cacheResult);
+                result = Create(type, constructorParameters, cacheConstructor);
 
                 return result is not null;
             }
@@ -88,21 +78,21 @@ namespace UTIRLib.Reflection
         public static bool TryCreate(Type type,
                                        InvokableArguments arguments,
                                        [NotNullWhen(true)] out object? result,
-                                       bool cacheResult = false)
+                                       bool cacheConstructor = false)
         {
             return TryCreate(type,
                              defaultConstructorParams with { ArgumentsData = arguments },
                              out result,
-                             cacheResult);
+                             cacheConstructor);
         }
 
         public static bool TryCreate<T>(ConstructorParameters constructorParameters,
                                         [NotNullWhen(true)] out T? result,
-                                        bool cacheResult = false)
+                                        bool cacheConstructor = false)
         {
             try
             {
-                result = Create<T>(constructorParameters, cacheResult);
+                result = Create<T>(constructorParameters, cacheConstructor);
 
                 return result is not null;
             }
@@ -116,11 +106,11 @@ namespace UTIRLib.Reflection
 
         public static bool TryCreate<T>(InvokableArguments arguments,
                                         [NotNullWhen(true)] out T? result,
-                                        bool cacheResult = false)
+                                        bool cacheConstructor = false)
         {
             return TryCreate(defaultConstructorParams with { ArgumentsData = arguments },
                              out result,
-                             cacheResult);
+                             cacheConstructor);
         }
     }
 }

@@ -6,14 +6,13 @@ namespace UTIRLib
 {
     public static class LoopHelper
     {
-        public delegate LoopIteration<T[]> MoveNext<T>(T current);
+        public delegate T?[] MoveNext<T>(T current, LoopState loopState);
 
         /// <summary>
         /// Same as the recursion loop, but use heap memory
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Queue<T> Collect<T>(T first,
-                                          MoveNext<T> moveNext)
+        public static Queue<T> Collect<T>(T first, MoveNext<T> moveNext)
         {
             if (moveNext is null)
                 throw new ArgumentNullException(nameof(moveNext));
@@ -23,22 +22,63 @@ namespace UTIRLib
 
             var results = new Queue<T>();
 
-            LoopIteration<T[]> iteration;
+            var loopState = new LoopState();
+            T?[] nextValues;
+            T? current;
             var loopPredicate = new LoopPredicate(() => toProccess.Count > 0);
             while (loopPredicate.Invoke())
             {
-                iteration = moveNext(toProccess.Pop());
-
-                if (iteration.Keyword == LoopKeyword.Break)
-                    break;
-                else if (iteration.Keyword == LoopKeyword.Continue)
+                current = toProccess.Pop();
+                if (current is null)
                     continue;
 
-                for (int i = 0; i < iteration.Value.Length; i++)
-                    results.Enqueue(iteration.Value[i]);
+                nextValues = moveNext(current, loopState);
+                results.Enqueue(current);
+
+                if (loopState.Value == LoopKeyword.Break)
+                {
+                    loopState.Reset();
+                    break;
+                }
+                else if (loopState.Value == LoopKeyword.Continue)
+                {
+                    loopState.Reset();
+                    continue;
+                }
+
+                int nextValuesCount = nextValues.Length;
+                for (int i = 0; i < nextValuesCount; i++)
+                {
+                    if (nextValues[i] is not null)
+                        toProccess.Push(nextValues[i]!);
+                }
             }
 
             return results;
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public static Queue<T> Collect<T>(T first, Func<T, LoopState, T?> moveNext)
+        {
+            if (moveNext is null)
+                throw new ArgumentNullException(nameof(moveNext));
+
+            return Collect(first, (x, loopState) => new T?[] { moveNext(x, loopState) });
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public static Queue<T> Collect<T>(T first, Func<T, T?[]> moveNext)
+        {
+            if (moveNext is null)
+                throw new ArgumentNullException(nameof(moveNext));
+
+            return Collect(first, (x, _) => moveNext(x));
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public static Queue<T> Collect<T>(T first, Func<T, T?> moveNext)
+        {
+            if (moveNext is null)
+                throw new ArgumentNullException(nameof(moveNext));
+
+            return Collect(first, (x, _) => new T?[] { moveNext(x) });
         }
     }
 }

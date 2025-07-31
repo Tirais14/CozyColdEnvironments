@@ -30,17 +30,8 @@ namespace UTIRLib.Unity
             if (value.childCount == 0)
                 return Array.Empty<Transform>();
 
-            var childs = new List<Transform>(value.childCount);
-
-            LoopHelper.Collect(value.transform.GetChild(0), (child) =>
-            {
-                if (child.childCount == 0)
-                    return LoopIteration<Transform[]>.Void();
-
-                return LoopIteration.Complete(child.GetChilds());
-            });
-
-            return childs.ToArray();
+            return LoopHelper.Collect(value.transform.GetChild(0), (x) => x.GetChilds())
+                             .ToArray();
         }
 
         public static Transform? FindParent(this Transform transform, string n)

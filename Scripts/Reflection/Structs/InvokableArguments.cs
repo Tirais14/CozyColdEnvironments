@@ -2,13 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UTIRLib.Diagnostics;
 
 #nullable enable
+#pragma warning disable S2346
 namespace UTIRLib.Reflection
 {
     public readonly struct InvokableArguments : IEquatable<InvokableArguments>
     {
+        [Flags]
+        public enum CreationSettings
+        {
+            Default,
+            AllowSignatureTypesInheritance,
+            CastTypesToItType = 2,
+            CastArraysToElementType = 4,
+        }
+
         public static InvokableArguments Empty => new(Array.Empty<object>());
 
         private readonly InvokableSignature signature;
@@ -18,7 +27,9 @@ namespace UTIRLib.Reflection
         public IReadOnlyList<object?> ArgumentValues => argumentValues;
 
 
-        public InvokableArguments(InvokableSignature signature, object?[] argumentValues)
+        public InvokableArguments(InvokableSignature signature,
+                                  object?[] argumentValues,
+                                  bool allowSignatureTypesInheritance = false)
         {
             this.signature = signature;
 
@@ -39,42 +50,49 @@ namespace UTIRLib.Reflection
         }
 
         public InvokableArguments(object[] argumentValues,
-                                  bool allowTypeInheritance = false)
-            :
-            this(new InvokableSignature(argumentValues.Select(x =>
-            {
-                if (x is null)
-                    throw new CollectionArgumentException();
-
-                return x.GetType();
-            }),
-                allowTypeInheritance),
-                    argumentValues)
+            CreationSettings creationSettings = CreationSettings.Default)
         {
+            var castedArgs = new object[argumentValues.Length];
+            for (int i = 0; i < argumentValues.Length; i++)
+            {
+                if (creationSettings.IsFlagSetted(CreationSettings.CastArraysToElementType)
+                    &&
+                    argumentValues[i] is Array arr
+                    )
+                    castedArgs[i] = ArrayHelper.CastToElementType(arr);
+                else if (creationSettings.IsFlagSetted(CreationSettings.CastTypesToItType))
+                    castedArgs[i] = Convert.ChangeType(argumentValues[i],
+                                                       argumentValues[i].GetType());
+                else
+                    castedArgs[i] = argumentValues[i];
+            }
+
+            signature = InvokableSignature.Create(argumentValues);
+            this.argumentValues = castedArgs;
         }
 
         public static InvokableArguments Create(object value,
-                                                bool allowTypeInheritance = false)
+            CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] { value };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] { 
                 value0,
                 value1 
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
                                                 object value2,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] {
                 value0,
@@ -82,13 +100,13 @@ namespace UTIRLib.Reflection
                 value2 
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
                                                 object value2,
                                                 object value3,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] {
                 value0,
@@ -97,14 +115,14 @@ namespace UTIRLib.Reflection
                 value3 
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
                                                 object value2,
                                                 object value3,
                                                 object value4,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] 
             {
@@ -115,7 +133,7 @@ namespace UTIRLib.Reflection
                 value4 
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
@@ -123,7 +141,7 @@ namespace UTIRLib.Reflection
                                                 object value3,
                                                 object value4,
                                                 object value5,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] 
             {
@@ -135,7 +153,7 @@ namespace UTIRLib.Reflection
                 value5
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
@@ -144,7 +162,7 @@ namespace UTIRLib.Reflection
                                                 object value4,
                                                 object value5,
                                                 object value6,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[] 
             {
@@ -157,7 +175,7 @@ namespace UTIRLib.Reflection
                 value6 
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
         public static InvokableArguments Create(object value0,
                                                 object value1,
@@ -167,7 +185,7 @@ namespace UTIRLib.Reflection
                                                 object value5,
                                                 object value6,
                                                 object value7,
-                                                bool allowTypeInheritance = false)
+                                                CreationSettings creationSettings = CreationSettings.Default)
         {
             var args = new object[]
             {
@@ -181,7 +199,7 @@ namespace UTIRLib.Reflection
                 value7
             };
 
-            return new InvokableArguments(args, allowTypeInheritance);
+            return new InvokableArguments(args, creationSettings);
         }
 
         public bool Equals(InvokableArguments other)
@@ -230,7 +248,6 @@ namespace UTIRLib.Reflection
 
             return sb.ToString();
         }
-
 
         public static bool operator ==(InvokableArguments left, InvokableArguments right)
         {

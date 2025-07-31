@@ -1,51 +1,125 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using UTIRLib.Diagnostics;
 
 #nullable enable
 namespace UTIRLib.Reflection
 {
     public static class TypeExtensions
     {
-        public static ConstructorInfo? GetConstructor(this Type type,
-            InvokableSignature signature,
-            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
+        public static Queue<Type> CollectBaseTypes(this Type value)
         {
-            if (type.GetConstructor(bindingFlags,
-                                    Type.DefaultBinder,
-                                    (Type[])signature,
-                                    Array.Empty<ParameterModifier>()) is ConstructorInfo found
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
+            return LoopHelper.Collect(value.BaseType, x => x.BaseType);
+        }
+
+        /// <summary>
+        /// Extends default method and now includes types <see cref="string"/>, <see cref="decimal"/>
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsPrimitiveType(this Type? type)
+        {
+            if (type == null)
+                return false;
+
+            return type.IsPrimitive || type.IsAnyType(typeof(decimal), typeof(string));
+        }
+
+        /// <summary>
+        /// Extended version
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="constructorParameters"></param>
+        /// <returns></returns>
+        public static ConstructorInfo GetConstructor(this Type type,
+            ConstructorParameters constructorParameters,
+            bool throwIfNotFound = false)
+        {
+            if (type.GetConstructor(constructorParameters.BindingFlags,
+                                    constructorParameters.Binder,
+                                    constructorParameters.CallingConventions,
+                                    (Type[])constructorParameters.Signature,
+                                    constructorParameters.ParameterModifiers
+                                    )
+                is ConstructorInfo found
                                     )
                 return found;
 
-            ConstructorInfo[] constructors = type.GetConstructors(bindingFlags);
+            ConstructorInfo[] constructors = type.GetConstructors(
+                constructorParameters.BindingFlags);
 
-            return constructors.SingleOrDefault(x =>
+            found = constructors.SingleOrDefault(x =>
             {
-                Type[] parameterTypes = x.GetParameters()
-                                         .Select(x => x.ParameterType)
-                                         .ToArray();
+                ParameterInfo[] parameters = x.GetParameters();
 
-                if (parameterTypes.IsEmpty() && signature.IsEmpty())
-                    return true;
-                if (parameterTypes.IsEmpty())
+                if (parameters.Length != constructorParameters.Signature.Count)
                     return false;
 
-                return signature == parameterTypes;
+                if (constructorParameters.ParameterModifiers.IsNotNullOrEmpty()
+                    &&
+                    !constructorParameters.ParameterModifiers[0].Equals(parameters.GetParameterModifier())
+                    )
+                    return false;
+
+                Type[] parametersTypes = parameters.Select(x => x.ParameterType).ToArray();
+
+                return constructorParameters.Signature == parametersTypes;
             });
+
+            if (throwIfNotFound && found is null)
+                throw new MemberNotFoundException(type,
+                                                  MemberType.Constructor,
+                                                  constructorParameters);
+
+            return found;
         }
 
+        public static bool IsPrimitiveNumber(this Type value)
+        {
+            return value.IsPrimitive
+                   &&
+                   value == typeof(byte)
+                   ||
+                   value == typeof(sbyte)
+                   ||
+                   value == typeof(short)
+                   ||
+                   value == typeof(ushort)
+                   ||
+                   value == typeof(int)
+                   ||
+                   value == typeof(uint)
+                   ||
+                   value == typeof(long)
+                   ||
+                   value == typeof(ulong);
+        }
+
+        /// <summary>
+        /// Correctly compares primitive number values
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="other"></param>
+        /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static bool IsType(this Type value, Type? other)
         {
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
             if (other == null)
-                return false;
+                throw new ArgumentNullException(nameof(other));
 
             if (value == other)
                 return true;
+
+            if (other.IsPrimitiveNumber() && value.IsPrimitiveNumber())
+                return IsPrimitiveNumberValueAssignable(other, value);
 
             return other.IsAssignableFrom(value);
         }
@@ -90,7 +164,7 @@ namespace UTIRLib.Reflection
 
             if (attributes.HasFlag(TypeNameAttributes.ShortName)
                 &&
-                TypeHelper.IsPrimitiveType(type)
+                type.IsPrimitiveType()
                 )
                 return ToShortName(type);
 
@@ -105,31 +179,31 @@ namespace UTIRLib.Reflection
         }
 
         public static MemberInfo[] ForceGetMembers(this Type value,
-            BindingFlags bindingFlags = BindingFlags.Default)
+            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers(value, bindingFlags);
         }
 
         public static FieldInfo[] ForceGetFields(this Type value,
-            BindingFlags bindingFlags = BindingFlags.Default)
+            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers<FieldInfo>(value, bindingFlags);
         }
 
         public static PropertyInfo[] ForceGetProperties(this Type value,
-            BindingFlags bindingFlags = BindingFlags.Default)
+            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers<PropertyInfo>(value, bindingFlags);
         }
 
         public static MethodInfo[] ForceGetMethods(this Type value,
-            BindingFlags bindingFlags = BindingFlags.Default)
+            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers<MethodInfo>(value, bindingFlags);
         }
 
         public static ConstructorInfo[] ForceGetConstructors(this Type value,
-            BindingFlags bindingFlags = BindingFlags.Default)
+            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers<ConstructorInfo>(value, bindingFlags);
         }
@@ -139,6 +213,7 @@ namespace UTIRLib.Reflection
             Type[] argumentTypes = type.GetGenericArguments();
 
             StringBuilder sb = new();
+
             sb.Append('<');
 
             sb.AppendJoin(", ", argumentTypes.Select(x => x.GetName()));
@@ -146,6 +221,54 @@ namespace UTIRLib.Reflection
             sb.Append('>');
 
             return type.Name[..^2] + sb.ToString();
+        }
+
+        private static bool IsPrimitiveNumberValueAssignable(Type to, Type from)
+        {
+            if (to == typeof(int) || to == typeof(uint))
+            {
+                if (from == typeof(byte)
+                    ||
+                    from == typeof(sbyte)
+                    ||
+                    from == typeof(short)
+                    ||
+                    from == typeof(ushort)
+                    )
+                    return true;
+
+                return false;
+            }
+            else if (to == typeof(long) || to == typeof(ulong))
+            {
+                if (from == typeof(byte)
+                    ||
+                    from == typeof(sbyte)
+                    ||
+                    from == typeof(short)
+                    ||
+                    from == typeof(ushort)
+                    ||
+                    from == typeof(int)
+                    ||
+                    from == typeof(uint)
+                     )
+                    return true;
+
+                return false;
+            }
+            else if (to == typeof(short) || to == typeof(ushort))
+            {
+                if (from == typeof(byte)
+                    ||
+                    from == typeof(sbyte)
+                    )
+                    return true;
+
+                return false;
+            }
+
+            return false;
         }
 
         private static string ToShortName(Type type)

@@ -45,6 +45,11 @@ namespace UTIRLib.Reflection
         {
         }
 
+        public static InvokableSignature Create(object[] args, bool allowInheritance = false)
+        {
+            return ProcessArguments(args, allowInheritance);
+        }
+
         public bool Equals(Type[] other)
         {
             if (other.IsEmpty() && types.IsEmpty())
@@ -106,6 +111,35 @@ namespace UTIRLib.Reflection
         }
 
         public IEnumerator<Type> GetEnumerator() => types.GetEnumeratorT();
+
+        private static void ProcessArray(in Array arr, in List<Type> signature)
+        {
+            foreach (var item in arr)
+            {
+                if (item is not null)
+                {
+                    signature.Add(item.GetType().MakeArrayType());
+                    return;
+                }
+            }
+
+            signature.Add(arr.GetType());
+        }
+
+        private static InvokableSignature ProcessArguments(object[] args,
+                                                           bool allowTypeInheritance)
+        {
+            var signature = new List<Type>(args.Length);
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] is Array arr)
+                    ProcessArray(arr, signature);
+                else
+                    signature.Add(args[i].GetType());
+            }
+
+            return new InvokableSignature(signature, allowTypeInheritance);
+        }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

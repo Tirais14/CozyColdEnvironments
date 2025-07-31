@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UniRx;
 using UTIRLib.GameSystems.Storage;
 using UTIRLib.Reflection;
@@ -22,8 +24,9 @@ namespace UTIRLib.UI.ItemStorage
             TModel model = CreateModel();
 
             TViewModel viewModel = InstanceFactory.Create<TViewModel>(
-                InvokableArguments.Create(model),
-                cacheResults: true);
+                InvokableArguments.Create(model,
+                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
+                cacheConstructor: true);
 
             viewModel.AddTo(this);
 
@@ -32,14 +35,38 @@ namespace UTIRLib.UI.ItemStorage
 
         private TModel CreateModel()
         {
-            IItemSlot[] slots = this.GetAssignedModelsInChildren<IItemSlot>();
+            Type[] modelGenericArguments = TypeHelper.CollectGenericArgumentsFromBaseClasses(typeof(TModel));
 
-            if (!InstanceFactory.TryCreate<TModel>(InvokableArguments.Create(slots),
+            if (modelGenericArguments.IsEmpty())
+                throw new Exception("Not found generic arguments.");
+
+            IItemSlot[] slotsUntyped = this.GetAssignedModelsInChildren<IItemSlot>();
+
+            InvokableArguments creationArguments;
+            if (slotsUntyped.IsNotEmpty())
+                creationArguments = InvokableArguments.Create(slotsUntyped,
+                    InvokableArguments.CreationSettings.CastArraysToElementType 
+                    | 
+                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
+            else
+            {
+                Type? slotType = modelGenericArguments.First(x => x.IsType<IItemSlot>());
+                Type slotsArrayType = slotType.MakeArrayType();
+
+                Array slotsTyped = Array.CreateInstance(slotsArrayType, 0);
+
+                creationArguments = InvokableArguments.Create(slotsTyped,
+                    InvokableArguments.CreationSettings.CastArraysToElementType
+                    |
+                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
+            }
+
+            if (!InstanceFactory.TryCreate<TModel>(creationArguments,
                                                    out var model,
-                                                   cacheResult: true)
+                                                   cacheConstructor: true)
                 ) 
                 model = InstanceFactory.Create<TModel>(InvokableArguments.Empty,
-                                                       cacheResults: true);
+                                                       cacheConstructor: true);
 
             return model;
         }

@@ -10,12 +10,12 @@ namespace UTIRLib.Reflection
             get => new(Signature, Arguments);
             set
             {
-                Signature = value.Signature.ToArray();
+                Signature = new InvokableSignature(value.Signature.ToArray());
                 Arguments = value.ArgumentValues.ToArray();
             }
         }
 
-        public Type[] Signature { get; private set; } = Array.Empty<Type>();
+        public InvokableSignature Signature { get; private set; }
         public object?[] Arguments { get; private set; } = Array.Empty<object?>();
     }
 }
