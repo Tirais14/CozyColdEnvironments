@@ -5,6 +5,6 @@ namespace UTIRLib.UI
 {
     public interface ISelectableReactive : ISelectable
     {
-        IReadOnlyReactiveProperty<bool> IsSelectedProp { get; }
+        IReadOnlyReactiveProperty<bool> IsSelectedReactive { get; }
     }
 }

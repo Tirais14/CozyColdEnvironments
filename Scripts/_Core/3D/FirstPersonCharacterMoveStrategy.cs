@@ -20,7 +20,7 @@ namespace UTIRLib
                                                 IInputAction<Vector2> inputAction,
                                                 float moveSpeed)
         {
-            this.rb = rigidbody;
+            rb = rigidbody;
             this.fpCamera = fpCamera;
             this.inputAction = inputAction;
             MoveSpeed = moveSpeed;

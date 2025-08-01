@@ -124,7 +124,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                 );
 
             foreach (var slot in suitableSlots)
-                slot.ItemStack.AddItem(itemStack, itemStack.ItemCount);
+                slot.ItemStack.AddItemFrom(itemStack, itemStack.ItemCount);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -188,7 +188,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                         continue;
                 }
 
-                if (itemStack.IfNotNull(x => x.Equals(item), false) && !itemStack.IsFull)
+                if (itemStack.Item.Equals(item) && !itemStack.IsFull)
                     return slots[i];
             }
 

@@ -55,7 +55,7 @@ namespace UTIRLib.UI.ItemStorageSystem
             if (model.IsFull)
                 return;
 
-            model.AddItem(itemStack, itemStack.ItemCount);
+            model.AddItemFrom(itemStack, itemStack.ItemCount);
         }
     }
 }

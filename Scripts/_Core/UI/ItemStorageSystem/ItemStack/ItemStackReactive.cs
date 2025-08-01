@@ -40,9 +40,14 @@ namespace UTIRLib.UI.ItemStorageSystem
             return temp;
         }
 
-        public void AddItem(IItemStack itemStack, int count)
+        public void AddItemFrom(IItemStack itemStack, int count)
         {
-            stack.Take(count);
+            stack.AddItemFrom(itemStack, count);
+            UpdateInfo();
+        }
+        public void AddItemFrom(IItemStack itemStack)
+        {
+            stack.AddItemFrom(itemStack);
             UpdateInfo();
         }
 
@@ -111,9 +116,15 @@ namespace UTIRLib.UI.ItemStorageSystem
             return rest;
         }
 
-        public void AddItem(IItemStack<T> itemStack, int count)
+        public void AddItemFrom(IItemStack<T> itemStack, int count)
         {
-            stack.AddItem(itemStack, count);
+            stack.AddItemFrom(itemStack, count);
+
+            UpdateInfo();
+        }
+        public void AddItemFrom(IItemStack<T> itemStack)
+        {
+            stack.AddItemFrom(itemStack);
 
             UpdateInfo();
         }

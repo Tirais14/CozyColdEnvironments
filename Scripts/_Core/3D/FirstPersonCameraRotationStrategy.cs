@@ -9,6 +9,9 @@ namespace UTIRLib
         private readonly Transform transform;
         private readonly IInputAction<Vector2> inputAction;
 
+        private float verticalAngle = 0f;
+        private float horizontalAngle = 0f;
+
         public float RotationSpeed { get; private set; }
 
         public FirstPersonCameraRotationStrategy(Camera camera,
@@ -18,6 +21,8 @@ namespace UTIRLib
             transform = camera.transform;
             this.inputAction = inputAction;
             RotationSpeed = rotationSpeed;
+
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         /// <exception cref="System.ArgumentException"></exception>
@@ -27,14 +32,22 @@ namespace UTIRLib
                 throw new System.ArgumentException(deltaTime.ToString(),
                                                    nameof(deltaTime));
 
-            Vector3 angles = deltaTime * RotationSpeed * inputAction.Value;
+            float inputX = inputAction.Value.x * deltaTime * RotationSpeed;
+            float inputY = inputAction.Value.y * deltaTime * RotationSpeed;
 
-            //Swap axis
-            angles.Set(angles.y * -1, angles.x, angles.z);
+            verticalAngle -= inputY;
+            verticalAngle = Mathf.Clamp(verticalAngle, -90f, 90f);
 
-            Quaternion targetRotation = Quaternion.Euler(0f, angles.y, 0f) * (transform.rotation * Quaternion.Euler(angles.x, 0f, 0f));
+            horizontalAngle += inputX;
 
-            transform.rotation = targetRotation;
+            transform.localRotation = Quaternion.Euler(verticalAngle, horizontalAngle, 0f);
+
+            ////Swap axis
+            //angles.Set(angles.y * -1, angles.x, angles.z);
+
+            //Quaternion targetRotation = Quaternion.Euler(0f, angles.y, 0f) * (transform.rotation * Quaternion.Euler(angles.x, 0f, 0f));
+
+            //transform.rotation = targetRotation;
         }
 
         /// <exception cref="System.ArgumentException"></exception>

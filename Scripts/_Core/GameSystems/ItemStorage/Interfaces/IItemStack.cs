@@ -15,7 +15,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         IItemStack AddItem(IStorageItem item, int count);
 
-        void AddItem(IItemStack itemStack, int count);
+        void AddItemFrom(IItemStack itemStack, int count);
+
+        void AddItemFrom(IItemStack itemStack);
 
         IItemStack Take(int count);
 
@@ -33,7 +35,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         IItemStack<T> AddItem(T item, int count);
 
-        void AddItem(IItemStack<T> itemStack, int count);
+        void AddItemFrom(IItemStack<T> itemStack, int count);
+
+        void AddItemFrom(IItemStack<T> itemStack);
 
         new IItemStack<T> Take(int count);
 
@@ -47,24 +51,26 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return AddItem(typed, count);
         }
 
-        void IItemStack.AddItem(IItemStack itemStack, int count)
+        void IItemStack.AddItemFrom(IItemStack itemStack, int count)
         {
             if (itemStack.IsNull())
                 throw new System.ArgumentNullException(nameof(itemStack));
             if (itemStack.IsEmpty)
-            {
-                Debug.LogWarning("Try to move items from empty item stack. This is incorrect behavior.");
-                return;
-            }
+                throw new System.Exception("Nothing to add from item stack.");
             if (itemStack.Item is not T typedItem)
                 throw new System.InvalidOperationException($"Cannot add item from {itemStack?.GetType().GetName()}.");
 
             var temp = new ItemStack<T>(typedItem, itemStack.ItemCount);
 
-            AddItem(temp, count);
+            AddItemFrom(temp, count);
 
             if (!temp.IsEmpty)
                 itemStack.AddItem(temp.Item!, temp.ItemCount);
+        }
+
+        void IItemStack.AddItemFrom(IItemStack itemStack)
+        {
+            AddItemFrom(itemStack, itemStack.ItemCount);
         }
 
         IItemStack IItemStack.Take(int count)

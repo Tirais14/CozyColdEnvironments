@@ -60,7 +60,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void AddItem(IItemStack itemStack, int count)
+        public void AddItemFrom(IItemStack itemStack, int count)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -81,6 +81,10 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (!itemStack.IsEmpty)
                 itemStack.AddItem(taked.Item!, taked.ItemCount);
         }
+        public void AddItemFrom(IItemStack itemStack)
+        {
+            AddItemFrom(itemStack, itemStack.ItemCount);
+        }
 
         /// <exception cref="ArgumentException"></exception>
         public IItemStack Take(int count)
@@ -88,7 +92,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (count < 1)
                 throw new ArgumentException(nameof(count));
             if (IsEmpty)
-                return Empty;
+                throw new Exception($"{GetType().GetName()} is empty.");
 
             count = ItemStackHelper.CalculateToTakeCount(this, count);
 
@@ -147,9 +151,13 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return new ItemStack<T>((T)nonTyped.Item, nonTyped.ItemCount);
         }
 
-        public void AddItem(IItemStack<T> itemStack, int count)
+        public void AddItemFrom(IItemStack<T> itemStack, int count)
         {
-            stack.AddItem(itemStack, count);
+            stack.AddItemFrom(itemStack, count);
+        }
+        public void AddItemFrom(IItemStack<T> itemStack)
+        {
+            stack.AddItemFrom(itemStack);
         }
 
         public void Clear() => stack.Clear();
