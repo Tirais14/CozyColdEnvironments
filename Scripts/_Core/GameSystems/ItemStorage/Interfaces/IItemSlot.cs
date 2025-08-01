@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.GameSystems.Storage
+namespace UTIRLib.GameSystems.ItemStorageSystem
 {
     public interface IItemSlot
     {

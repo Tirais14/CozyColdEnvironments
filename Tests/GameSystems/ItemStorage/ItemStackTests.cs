@@ -1,18 +1,17 @@
 using NUnit.Framework;
-using UnityEngine;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace UTIRLib.Tests.GameSystems.Storage
 {
     public class ItemStackTests
     {
-        private ItemStack<IItem> itemStack = null!;
+        private ItemStack itemStack = null!;
 
         [SetUp]
         public void Setup()
         {
-            itemStack = new ItemStack<IItem>();
+            itemStack = new ItemStack();
         }
 
         [Test]

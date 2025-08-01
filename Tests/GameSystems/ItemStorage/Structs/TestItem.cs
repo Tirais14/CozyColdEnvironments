@@ -1,10 +1,10 @@
 using UnityEngine;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace UTIRLib.Tests.GameSystems.Storage
 {
-    public struct TestItem : IItem
+    public struct TestItem : IStorageItem
     {
         public readonly string Name => "TestItem";
         public readonly int ID => 1;

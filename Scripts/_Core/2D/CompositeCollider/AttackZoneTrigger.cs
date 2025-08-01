@@ -2,6 +2,7 @@ using System.Linq;
 using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Unity;
+using UTIRLib.Unity.Extensions;
 using UTIRLib.Utils;
 
 namespace UTIRLib.TwoD
@@ -36,8 +37,7 @@ namespace UTIRLib.TwoD
         protected void AddCollider(Direction2D direction)
         {
             colliders[(int)direction] = transform.Find(direction.ToString())
-                                                 .IfNotNullQ(
-                (triggerObjTransform) =>
+                                                 .IfNotNull((triggerObjTransform) =>
                 triggerObjTransform.GetComponent<PolygonCollider2D>());
         }
 
@@ -55,13 +55,13 @@ namespace UTIRLib.TwoD
         protected void ConvertCollidersToTriggers()
         {
             for (int i = 0; i < colliders.Length; i++)
-                colliders[i].IfNotNullQ((collider) => collider.isTrigger = true);
+                colliders[i].IfNotNull((collider) => collider.isTrigger = true);
         }
 
         protected void DisableTriggers()
         {
             for (int i = 0; i < complexity; i++)
-                colliders[i].IfNotNullQ((trigger) => trigger.enabled = false);
+                colliders[i].IfNotNull((trigger) => trigger.enabled = false);
         }
     }
 }

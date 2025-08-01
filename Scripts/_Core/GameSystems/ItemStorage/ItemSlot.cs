@@ -1,6 +1,15 @@
 #nullable enable
-namespace UTIRLib.GameSystems.Storage
+namespace UTIRLib.GameSystems.ItemStorageSystem
 {
+    public class ItemSlot : IItemSlot
+    {
+        public IItemStack ItemStack { get; private set; }
+
+        public ItemSlot(IItemStack itemStack)
+        {
+            ItemStack = itemStack;
+        }
+    }
     public class ItemSlot<T> : IItemSlot<T>
         where T : IItemStack
     {
@@ -9,12 +18,6 @@ namespace UTIRLib.GameSystems.Storage
         public ItemSlot(T itemStack)
         {
             ItemStack = itemStack;
-        }
-    }
-    public class ItemSlot : ItemSlot<IItemStack>
-    {
-        public ItemSlot(IItemStack itemStack) : base(itemStack)
-        {
         }
     }
 }

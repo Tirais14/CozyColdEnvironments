@@ -1,7 +1,9 @@
+using Codice.Client.BaseCommands;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UTIRLib.Diagnostics;
+using UTIRLib.Unity.Extensions;
 using UTIRLib.Utils;
 
 #nullable enable
@@ -22,7 +24,7 @@ namespace UTIRLib.TwoD
 
         public void Activate(int index)
         {
-            activeCollider.IfNotNullQ((trigger) => trigger.enabled = false);
+            activeCollider.IfNotNull((trigger) => { trigger.enabled = false; });
             activeCollider = colliders[index];
             Enable();
         }
@@ -46,8 +48,8 @@ namespace UTIRLib.TwoD
             return Collider2DHelper.TryGetOverlaps(activeCollider, overlaps, results, contactFilter, excludeObjs);
         }
 
-        public void Enable() => activeCollider.IfNotNullQ((collider) => collider.enabled = true);
+        public void Enable() => activeCollider.IfNotNull((collider) => collider.enabled = true);
 
-        public void Disable() => activeCollider.IfNotNullQ((collider) => collider.enabled = false);
+        public void Disable() => activeCollider.IfNotNull((collider) => collider.enabled = false);
     }
 }

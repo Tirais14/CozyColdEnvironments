@@ -1,20 +1,38 @@
-using System.Xml;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UTIRLib.GameSystems.Storage;
+using UnityEngine.UI;
+using UTIRLib.Attributes;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
-using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
+    [RequireComponent(typeof(Image))]
     public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>,
         IDropHandler
         where TViewModel : IItemStackViewModel<TModel>
         where TModel : IItemStackReactive
     {
+        [GetBySelf]
+        protected Image image;
+
+        [Optional]
+        [GetByChildren]
+        [SerializeField]
+        protected ATextView? textView;
+
+        protected override void OnStart()
+        {
+            base.OnStart();
+
+            if (textView != null)
+                viewModel.CounterView.Subscribe(x => textView.Text = x).AddTo(this);
+
+            viewModel.IconView.Subscribe(x => image.sprite = x).AddTo(this);
+        }
+
         protected override TViewModel CreateViewModel()
         {
             TModel model = CreateModel();
@@ -31,15 +49,9 @@ namespace UTIRLib.UI.ItemStorage
 
         private static TModel CreateModel()
         {
-            if (!InstanceFactory.TryCreate<TModel>(InvokableArguments.Create(int.MaxValue,
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                                                   out var model,
-                                                   cacheConstructor: true)
-                )
-                model = InstanceFactory.Create<TModel>(InvokableArguments.Empty,
-                                                       cacheConstructor: true);
-
-            return model;
+            return InstanceFactory.Create<TModel>(InvokableArguments.Create(int.MaxValue,
+                InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
+                                                   cacheConstructor: true);
         }
 
         void IDropHandler.OnDrop(PointerEventData eventData)

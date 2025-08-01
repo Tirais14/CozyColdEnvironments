@@ -1,12 +1,12 @@
 using UniRx;
 using UTIRLib.Diagnostics;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
 using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemSlotView<TViewModel, TModel> : AView<TViewModel>
         where TViewModel : IViewModel<TModel>
@@ -28,20 +28,14 @@ namespace UTIRLib.UI.ItemStorage
 
         private TModel CreateModel()
         {
-            if (!this.GetAssignedModelInChidlren<IItemStack>()
+            if (!this.GetAssignedModelInChildren<IItemStack>()
                      .Is<IItemStack>(out var itemStack)
                      )
                 throw new ObjectNotFoundException(typeof(IItemStack));
 
-            if (!InstanceFactory.TryCreate<TModel>(InvokableArguments.Create(itemStack,
+            return InstanceFactory.Create<TModel>(InvokableArguments.Create(itemStack,
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                                                  out var model,
-                                                  cacheConstructor: true)
-                )
-                model = InstanceFactory.Create<TModel>(InvokableArguments.Empty,
-                                                       cacheConstructor: true);
-
-            return model;
+                                                  cacheConstructor: true);
         }
     }
 }

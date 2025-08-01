@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using System;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace UTIRLib.Tests.GameSystems.Storage
@@ -14,7 +14,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
         {
             var slots = new ItemSlot[10];
 
-            slots.Fill(new ItemSlot(new ItemStack<IItem>()));
+            slots.Fill(new ItemSlot(new ItemStack()));
 
             itemStorage = new ItemStorage(slots);
         }

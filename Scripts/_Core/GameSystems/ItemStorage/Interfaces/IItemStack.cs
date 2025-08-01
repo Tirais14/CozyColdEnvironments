@@ -1,17 +1,19 @@
 #nullable enable
+using UnityEngine;
+using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 
-namespace UTIRLib.GameSystems.Storage
+namespace UTIRLib.GameSystems.ItemStorageSystem
 {
     public interface IItemStack
     {
-        IItem Item { get; }
+        IStorageItem Item { get; }
         int ItemCount { get; }
         int MaxItemCount { get; }
         bool IsEmpty { get; }
         bool IsFull { get; }
 
-        IItemStack AddItem(IItem item, int count);
+        IItemStack AddItem(IStorageItem item, int count);
 
         void AddItem(IItemStack itemStack, int count);
 
@@ -23,11 +25,11 @@ namespace UTIRLib.GameSystems.Storage
     }
 
     public interface IItemStack<T> : IItemStack
-        where T : IItem
+        where T : IStorageItem, new()
     {
         new T Item { get; }
 
-        IItem IItemStack.Item => Item;
+        IStorageItem IItemStack.Item => Item;
 
         IItemStack<T> AddItem(T item, int count);
 
@@ -37,7 +39,7 @@ namespace UTIRLib.GameSystems.Storage
 
         new IItemStack<T> TakeAll();
 
-        IItemStack IItemStack.AddItem(IItem item, int count)
+        IItemStack IItemStack.AddItem(IStorageItem item, int count)
         {
             if (item is not T typed)
                 throw new System.InvalidOperationException($"Cannot add item {item?.GetType().GetName()}.");
@@ -47,10 +49,22 @@ namespace UTIRLib.GameSystems.Storage
 
         void IItemStack.AddItem(IItemStack itemStack, int count)
         {
-            if (itemStack is not IItemStack<T> typed)
+            if (itemStack.IsNull())
+                throw new System.ArgumentNullException(nameof(itemStack));
+            if (itemStack.IsEmpty)
+            {
+                Debug.LogWarning("Try to move items from empty item stack. This is incorrect behavior.");
+                return;
+            }
+            if (itemStack.Item is not T typedItem)
                 throw new System.InvalidOperationException($"Cannot add item from {itemStack?.GetType().GetName()}.");
 
-            AddItem(typed, count);
+            var temp = new ItemStack<T>(typedItem, itemStack.ItemCount);
+
+            AddItem(temp, count);
+
+            if (!temp.IsEmpty)
+                itemStack.AddItem(temp.Item!, temp.ItemCount);
         }
 
         IItemStack IItemStack.Take(int count)

@@ -67,7 +67,8 @@ namespace UTIRLib.Reflection
                     castedArgs[i] = argumentValues[i];
             }
 
-            signature = InvokableSignature.Create(argumentValues);
+            signature = InvokableSignature.Create(castedArgs,
+                                                  creationSettings.IsFlagSetted(CreationSettings.AllowSignatureTypesInheritance));
             this.argumentValues = castedArgs;
         }
 
@@ -244,7 +245,7 @@ namespace UTIRLib.Reflection
             if (argumentValues.IsEmpty())
                 sb.Append("empty");
             else
-                sb.AppendJoin(", ", signature.Select(x => x.GetName()));
+                sb.AppendJoin(Environment.NewLine, argumentValues.Select(x => x?.ToString()));
 
             return sb.ToString();
         }

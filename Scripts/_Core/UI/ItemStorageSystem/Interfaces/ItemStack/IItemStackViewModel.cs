@@ -1,6 +1,7 @@
+using UniRx;
+using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
-using UTIRLib.UI.ItemStorage;
+using UTIRLib.UI.ItemStorageSystem;
 
 #nullable enable
 namespace UTIRLib.UI
@@ -8,6 +9,9 @@ namespace UTIRLib.UI
     public interface IItemStackViewModel<T> : IViewModel<T>
         where T : IItemStackReactive
     {
+        IReadOnlyReactiveProperty<string> CounterView { get; } 
+        IReadOnlyReactiveProperty<Sprite?> IconView { get; }
+
         void OnViewDrop(PointerEventData eventData);
     }
 }

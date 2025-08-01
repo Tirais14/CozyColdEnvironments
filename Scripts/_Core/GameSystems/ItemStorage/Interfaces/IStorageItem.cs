@@ -1,9 +1,9 @@
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.GameSystems.Storage
+namespace UTIRLib.GameSystems.ItemStorageSystem
 {
-    public interface IItem
+    public interface IStorageItem
     {
         string Name { get; }
         int ID { get; }

@@ -3,28 +3,31 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UTIRLib.Disposables;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.UI.MVVM;
+using UTIRLib.Unity.Extensions;
 using UTIRLib.Unity.TypeMatching;
 
-namespace UTIRLib.UI.ItemStorage
+#nullable enable
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemStackViewModel<T> : AViewModel<T>,
         IItemStackViewModel<T>
         where T : IItemStackReactive
     {
-        private readonly ReactiveProperty<string> itemCountView = new();
-        private readonly ReactiveProperty<Sprite> itemIcon = new();
+        private readonly ReactiveProperty<string> counterView = new();
+        private readonly ReactiveProperty<Sprite?> iconView = new();
 
-        public IReadOnlyReactiveProperty<string> ItemCountView => itemCountView;
-        public IReadOnlyReactiveProperty<Sprite> ItemIconView => itemIcon;
+        public IReadOnlyReactiveProperty<string> CounterView => counterView;
+        public IReadOnlyReactiveProperty<Sprite?> IconView => iconView;
 
         public ItemStackViewModel(T model) : base(model)
         {
-            model.ItemCountReactive.Subscribe(x => itemCountView.Value = x.ToString())
+            model.ItemCountReactive.Subscribe(x => counterView.Value = x.ToString())
                                    .AddTo(this);
 
-            model.ItemReactive.Subscribe(x => itemIcon.Value = x.Icon)
+            model.ItemReactive.Subscribe(x => iconView.Value = x.IfNotNull(x => x.Icon)
+                                                                .IfNull(TirLib.ErrorSprite))
                               .AddTo(this);
         }
 
@@ -42,7 +45,7 @@ namespace UTIRLib.UI.ItemStorage
             if (itemStack.IsEmpty)
                 return;
 
-            if (!model.IsEmpty && !model.Item.Equals(itemStack.Item))
+            if (!model.IsEmpty && !model.Item!.Equals(itemStack.Item))
                 return;
 
             if (model.Equals(itemStack))

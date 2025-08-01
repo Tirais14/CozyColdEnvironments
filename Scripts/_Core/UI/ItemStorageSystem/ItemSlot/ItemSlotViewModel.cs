@@ -1,8 +1,8 @@
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.UI.MVVM;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemSlotViewModel<T> : AViewModel<T>
         where T : IItemSlot

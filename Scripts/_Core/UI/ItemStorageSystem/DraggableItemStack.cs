@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     [RequireComponent(typeof(Image))]
     public class DraggableItemStack : MonoX, IMovable, IStateToggleable

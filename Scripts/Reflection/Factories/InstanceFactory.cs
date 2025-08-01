@@ -19,10 +19,12 @@ namespace UTIRLib.Reflection
                                     ConstructorParameters constructorParams,
                                     bool cacheConstructor = false)
         {
-            if (constructorParams is null)
-                throw new ArgumentNullException(nameof(constructorParams));
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
+            if (type.IsInterface)
+                throw new ArgumentException($"Type {type.GetName()} is interface and not allowed to create.");
+            if (constructorParams is null)
+                throw new ArgumentNullException(nameof(constructorParams));
 
             ConstructorInfo? ctor;
             if (TypeCache.IsConstructorCached(type,

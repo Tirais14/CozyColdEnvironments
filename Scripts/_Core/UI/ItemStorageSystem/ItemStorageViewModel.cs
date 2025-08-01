@@ -2,7 +2,7 @@ using UniRx;
 using UTIRLib.UI.MVVM;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemStorageViewModel<T> : AViewModel<T>, IItemStorageViewModel<T>
         where T : IItemStorageReactive

@@ -1,7 +1,7 @@
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public interface IItemStorageReactive : IItemStorage, IOpenableReactive
     {

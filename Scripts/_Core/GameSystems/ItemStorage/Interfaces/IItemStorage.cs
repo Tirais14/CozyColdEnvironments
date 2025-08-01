@@ -2,23 +2,21 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace UTIRLib.GameSystems.Storage
+namespace UTIRLib.GameSystems.ItemStorageSystem
 {
-    public interface IItemStorage
+    public interface IItemStorage : IReadOnlyList<IItemSlot>
     {
         int SlotCount { get; }
-
-        IItemSlot this[int id] { get; }
 
         IItemSlot GetSlot(int id);
 
         void RemoveSlot(int id);
 
-        IItemStack AddItem(IItem item, int count);
+        IItemStack AddItem(IStorageItem item, int count);
 
         void AddItem(IItemStack itemStack);
 
-        bool HasItem(IItem item, int count = 1);
+        bool HasItem(IStorageItem item, int count = 1);
 
         int GetSlotId(IItemSlot slot);
 
@@ -26,23 +24,22 @@ namespace UTIRLib.GameSystems.Storage
 
         bool Contains(IItemSlot slot);
 
-        bool CanHold(IItem item);
+        bool CanHold(IStorageItem item);
 
         IItemSlot? GetEmptySlot();
 
         bool TryGetEmptySlot([NotNullWhen(true)] out IItemSlot? result);
 
-        IItemSlot? GetSuitableSlot(IItem item);
+        IItemSlot? GetSuitableSlot(IStorageItem item);
 
-        bool TryGetSuitableSlot(IItem item, [NotNullWhen(true)] out IItemSlot? result);
+        bool TryGetSuitableSlot(IStorageItem item, [NotNullWhen(true)] out IItemSlot? result);
     }
-    public interface IItemStorage<T> : IItemStorage, IReadOnlyList<T>
+    public interface IItemStorage<T> : IItemStorage
         where T : IItemSlot
     {
         new T this[int id] { get; }
 
-        IItemSlot IItemStorage.this[int id] => this[id];
-        int IReadOnlyCollection<T>.Count => SlotCount;
+        IItemSlot IReadOnlyList<IItemSlot>.this[int index] => this[index];
 
         new T GetSlot(int id);
 
@@ -56,9 +53,9 @@ namespace UTIRLib.GameSystems.Storage
 
         bool TryGetEmptySlot([NotNullWhen(true)] out T? result);
 
-        new T? GetSuitableSlot(IItem item);
+        new T? GetSuitableSlot(IStorageItem item);
 
-        bool TryGetSuitableSlot(IItem item, [NotNullWhen(true)] out T? result);
+        bool TryGetSuitableSlot(IStorageItem item, [NotNullWhen(true)] out T? result);
 
         IItemSlot IItemStorage.GetSlot(int id) => GetSlot(id);
 
@@ -82,9 +79,9 @@ namespace UTIRLib.GameSystems.Storage
             return TryGetEmptySlot(out result);
         }
 
-        IItemSlot? IItemStorage.GetSuitableSlot(IItem item) => GetSuitableSlot(item);
+        IItemSlot? IItemStorage.GetSuitableSlot(IStorageItem item) => GetSuitableSlot(item);
 
-        bool IItemStorage.TryGetSuitableSlot(IItem item,
+        bool IItemStorage.TryGetSuitableSlot(IStorageItem item,
             [NotNullWhen(true)] out IItemSlot? result)
         {
             return TryGetSuitableSlot(item, out result);

@@ -1,5 +1,5 @@
 using UniRx;
-using UTIRLib.UI.ItemStorage;
+using UTIRLib.UI.ItemStorageSystem;
 
 #nullable enable
 namespace UTIRLib.UI

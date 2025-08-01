@@ -13,6 +13,8 @@ namespace UTIRLib.Reflection
         IEquatable<InvokableSignature>,
         IEquatable<Type[]>
     {
+        public static InvokableSignature Empty => new(Type.EmptyTypes);
+
         private readonly Type[] types;
 
         public readonly bool AllowInheritance;
@@ -100,12 +102,12 @@ namespace UTIRLib.Reflection
 
         public override string ToString()
         {
-            var sb = new StringBuilder($"{nameof(InvokableSignature)}: ");
+            var sb = new StringBuilder($"{nameof(InvokableSignature)}: {nameof(AllowInheritance)} = {AllowInheritance}, ");
 
             if (types.IsEmpty())
                 sb.Append("empty");
             else
-                sb.AppendJoin(", ", types.Select(x => x.GetName()));
+                sb.AppendJoin(Environment.NewLine, types.Select(x => x.GetName()));
 
             return sb.ToString();
         }

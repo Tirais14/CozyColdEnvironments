@@ -1,16 +1,16 @@
 #nullable enable
 using UniRx;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public interface IItemStackReactive : IItemStack
     {
-        IReadOnlyReactiveProperty<IItem> ItemReactive { get; }
+        IReadOnlyReactiveProperty<IStorageItem> ItemReactive { get; }
         IReadOnlyReactiveProperty<int> ItemCountReactive { get; }
     }
     public interface IItemStackReactive<T> : IItemStackReactive, IItemStack<T>
-        where T : IItem
+        where T : IStorageItem, new()
     {
     }
 }

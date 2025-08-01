@@ -24,7 +24,7 @@ namespace UTIRLib.UI.MVVM
         {
             if (value is IView self)
                 return value.gameObject.GetAssignedViews<T>()
-                                       .SingleOrDefault(x => !x.Equals(self));
+                                       .FirstOrDefault(x => !x.Equals(self));
 
             return value.gameObject.GetAssignedView<T>();
         }
@@ -47,7 +47,7 @@ namespace UTIRLib.UI.MVVM
         {
             if (value is IView self)
                 return value.gameObject.GetAssignedViewsInChildren<T>(includeInactive)
-                                       .SingleOrDefault(x => !x.Equals(self));
+                                       .FirstOrDefault(x => !x.Equals(self));
 
             return value.gameObject.GetAssignedViewInChildren<T>(includeInactive);
         }
@@ -109,7 +109,7 @@ namespace UTIRLib.UI.MVVM
             return GameObjectExtensions.FindModels<T>(viewModels);
         }
 
-        public static T? GetAssignedModelInChidlren<T>(this Component value,
+        public static T? GetAssignedModelInChildren<T>(this Component value,
                                                        bool includeInactive = false)
         {
             IViewModel[] viewModels = value.GetAssignedViewModelsInChildren<IViewModel>(includeInactive);

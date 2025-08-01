@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
 using UniRx;
-using UTIRLib.GameSystems.Storage;
+using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorage
+namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemStorageView<TViewModel, TModel> : AView<TViewModel>
         where TViewModel : IItemStorageViewModel<TModel>
@@ -48,7 +48,17 @@ namespace UTIRLib.UI.ItemStorage
                 Type[] modelGenericArguments = TypeHelper.CollectGenericArgumentsFromBaseClasses(typeof(TModel));
 
                 if (modelGenericArguments.IsEmpty())
-                    throw new Exception("Not found generic arguments.");
+                {
+                    creationArguments = InvokableArguments.Create(typeof(IItemSlot[]),
+                        InvokableArguments.CreationSettings.CastArraysToElementType
+                        |
+                        InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
+
+                    if (!InstanceFactory.TryCreate<TModel>(creationArguments, out var model))
+                        throw new Exception("Generic arguments not found.");
+
+                    return model;
+                }
 
                 Type? slotType = modelGenericArguments.First(x => x.IsType<IItemSlot>());
                 Type slotsArrayType = slotType.MakeArrayType();
