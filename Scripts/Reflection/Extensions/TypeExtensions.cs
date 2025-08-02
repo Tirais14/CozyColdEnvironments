@@ -293,6 +293,10 @@ namespace UTIRLib.Reflection
                 return "string";
             else if (type.IsType<bool>())
                 return "bool";
+            else if (type.IsType<float>())
+                return "float";
+            else if (type.IsType<double>())
+                return "double";
             else if (type.IsType<Array>())
                 return $"{type.GetName(TypeNameAttributes.Default | ~TypeNameAttributes.ShortName)}[]";
 

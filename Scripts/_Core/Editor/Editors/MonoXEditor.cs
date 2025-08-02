@@ -12,7 +12,7 @@ namespace UTIRLib.Editor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(MonoX), editorForChildClasses: true)]
-    public class MonoBehaviourExtendedEditor : UnityEditor.Editor
+    public class MonoXEditor : UnityEditor.Editor
     {
         private VisualElement root = null!;
 
@@ -30,13 +30,13 @@ namespace UTIRLib.Editor
                 enterChildren = false;
 
                 if (IsCoreComponentSerializedProperty(prop.name))
-                {
                     SetupCoreComponentSerializedProperty(prop);
-                }
 
-                if (GetTargetField(prop.name) is not FieldInfo targetField) continue;
+                if (GetTargetField(prop.name) is not FieldInfo targetField)
+                    continue;
 
-                if (IsNotVisibleField(targetField)) continue;
+                if (IsNotVisibleField(targetField))
+                    continue;
 
                 PropertyField propertyField = new(prop){
                     label = prop.displayName
@@ -68,8 +68,14 @@ namespace UTIRLib.Editor
             root.Add(scriptField);
         }
 
-        private static bool IsNotVisibleField(FieldInfo targetField) => targetField.IsDefined(typeof(HideInInspector))
-                || !targetField.IsDefined(typeof(SerializeField));
+        private static bool IsNotVisibleField(FieldInfo targetField)
+        {
+            return targetField.IsDefined(typeof(HideInInspector))
+                   ||
+                   !targetField.IsPublic
+                   &&
+                   !targetField.IsDefined(typeof(SerializeField));
+        }
 
         private static void ProccessOptionalAttribute(FieldInfo targetField, PropertyField propertyField)
         {

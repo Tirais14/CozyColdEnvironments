@@ -19,9 +19,11 @@ namespace UTIRLib.InputSystem
             if (inputValueType == null)
                 throw new ArgumentNullException(nameof(inputValueType));
             if (inputValueType.IsNotAnyType(typeof(bool),
-                                        typeof(Vector2),
-                                        typeof(Vector3),
-                                        typeof(Quaternion)))
+                                            typeof(float),
+                                            typeof(double),
+                                            typeof(Vector2),
+                                            typeof(Vector3),
+                                            typeof(Quaternion)))
                 throw new ArgumentException($"Input value type cannot be {inputValueType.GetName()}.");
 
             MethodInfo createMethod = typeof(InputActionFactory).GetMethod(
