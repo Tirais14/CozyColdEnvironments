@@ -8,5 +8,6 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         string Name { get; }
         int ID { get; }
         Sprite Icon { get; }
+        int MaxStackCount { get; }
     }
 }

@@ -47,7 +47,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (count < 1)
                 throw new ArgumentException(nameof(count));
 
-            int toAddCount = ItemStackHelper.CalulcateToAddCount(this, count);
+            int toAddCount = ItemStackHelper.CalulcateAddItemCount(this, count);
 
             Item = item;
             ItemCount += toAddCount;
@@ -71,7 +71,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (ReferenceEquals(itemStack, this))
                 throw new InvalidOperationException("Couldn't be added items by itself.");
 
-            IItemStack taked = itemStack.Take(count);
+            IItemStack taked = itemStack.TakeItem(count);
 
             if (taked.IsEmpty)
                 return;
@@ -87,14 +87,14 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public IItemStack Take(int count)
+        public IItemStack TakeItem(int count)
         {
             if (count < 1)
                 throw new ArgumentException(nameof(count));
             if (IsEmpty)
                 throw new Exception($"{GetType().GetName()} is empty.");
 
-            count = ItemStackHelper.CalculateToTakeCount(this, count);
+            count = ItemStackHelper.CalculateTakeItemCount(this, count);
 
             if (count < 1)
                 return Empty;
@@ -109,12 +109,12 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return taked;
         }
 
-        public IItemStack TakeAll()
+        public IItemStack TakeItemAll()
         {
             if (IsEmpty)
                 return Empty;
 
-            return Take(ItemCount);
+            return TakeItem(ItemCount);
         }
 
         public void Clear()
@@ -162,16 +162,16 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         public void Clear() => stack.Clear();
 
-        public IItemStack<T> Take(int count)
+        public IItemStack<T> TakeItem(int count)
         {
-            IItemStack nonTyped = stack.Take(count);
+            IItemStack nonTyped = stack.TakeItem(count);
 
             return new ItemStack<T>((T)nonTyped.Item, nonTyped.ItemCount);
         }
 
-        public virtual IItemStack<T> TakeAll()
+        public virtual IItemStack<T> TakeItemAll()
         {
-            return Take(ItemCount);
+            return TakeItem(ItemCount);
         }
     }
 }

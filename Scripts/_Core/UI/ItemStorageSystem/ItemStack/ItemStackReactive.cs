@@ -51,17 +51,17 @@ namespace UTIRLib.UI.ItemStorageSystem
             UpdateInfo();
         }
 
-        public IItemStack Take(int count)
+        public IItemStack TakeItem(int count)
         {
-            IItemStack temp = stack.Take(count);
+            IItemStack temp = stack.TakeItem(count);
             UpdateInfo();
 
             return temp;
         }
 
-        public IItemStack TakeAll()
+        public IItemStack TakeItemAll()
         {
-            IItemStack temp = stack.TakeAll();
+            IItemStack temp = stack.TakeItemAll();
             UpdateInfo();
 
             return temp;
@@ -129,17 +129,17 @@ namespace UTIRLib.UI.ItemStorageSystem
             UpdateInfo();
         }
 
-        public IItemStack<T> Take(int count)
+        public IItemStack<T> TakeItem(int count)
         {
-            IItemStack<T> temp = stack.Take(count);
+            IItemStack<T> temp = stack.TakeItem(count);
             UpdateInfo();
 
             return temp;
         }
 
-        public IItemStack<T> TakeAll()
+        public IItemStack<T> TakeItemAll()
         {
-            IItemStack<T> temp = stack.TakeAll();
+            IItemStack<T> temp = stack.TakeItemAll();
             UpdateInfo();
 
             return temp;

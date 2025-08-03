@@ -7,7 +7,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
     public static class ItemStackHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static int CalculateToTakeCount(IItemStack itemStack, int wantedQuantity)
+        public static int CalculateTakeItemCount(IItemStack itemStack, int wantedQuantity)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -19,7 +19,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return wantedQuantity;
         }
 
-        public static int CalulcateToAddCount(IItemStack itemStack, int toAddQuantity)
+        public static int CalulcateAddItemCount(IItemStack itemStack, int toAddQuantity)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -27,10 +27,10 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                 throw new ArgumentException($"{nameof(toAddQuantity)} cannot be less than zero.");
             if (itemStack.IsFull)
                 return 0;
-            if (toAddQuantity > itemStack.MaxItemCount)
-                return toAddQuantity;
 
-            return toAddQuantity;
+            int restSize = itemStack.ItemCount - itemStack.MaxItemCount;
+
+            return Math.Min(restSize, toAddQuantity);
         }
     }
 }

@@ -19,9 +19,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         void AddItemFrom(IItemStack itemStack);
 
-        IItemStack Take(int count);
+        IItemStack TakeItem(int count);
 
-        IItemStack TakeAll();
+        IItemStack TakeItemAll();
 
         void Clear();
     }
@@ -39,9 +39,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         void AddItemFrom(IItemStack<T> itemStack);
 
-        new IItemStack<T> Take(int count);
+        new IItemStack<T> TakeItem(int count);
 
-        new IItemStack<T> TakeAll();
+        new IItemStack<T> TakeItemAll();
 
         IItemStack IItemStack.AddItem(IStorageItem item, int count)
         {
@@ -73,14 +73,14 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             AddItemFrom(itemStack, itemStack.ItemCount);
         }
 
-        IItemStack IItemStack.Take(int count)
+        IItemStack IItemStack.TakeItem(int count)
         {
-            return Take(count);
+            return TakeItem(count);
         }
 
-        IItemStack IItemStack.TakeAll()
+        IItemStack IItemStack.TakeItemAll()
         {
-            return TakeAll();
+            return TakeItemAll();
         }
     }
 }

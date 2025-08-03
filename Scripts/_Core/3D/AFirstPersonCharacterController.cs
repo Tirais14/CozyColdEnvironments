@@ -12,6 +12,7 @@ namespace UTIRLib
         protected Rigidbody rb = null!;
         protected IMoveStrategy moveStrategy = null!;
         protected IRotationStrategy cameraRotationStrategy = null!;
+        protected IRotationStrategy bodyRotationStrategy = null!;
 
         public float MoveSpeed {
             get => moveStrategy.MoveSpeed;

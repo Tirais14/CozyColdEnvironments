@@ -9,5 +9,6 @@ namespace UTIRLib.Tests.GameSystems.Storage
         public readonly string Name => "TestItem";
         public readonly int ID => 1;
         public readonly Sprite Icon => TirLib.DummySprite;
+        public readonly int MaxStackCount => 0;
     }
 }
