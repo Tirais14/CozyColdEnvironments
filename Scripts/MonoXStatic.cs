@@ -2,7 +2,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using UTIRLib.Diagnostics;
 
 namespace UTIRLib
 {
@@ -35,8 +34,7 @@ namespace UTIRLib
         {
             if (TryGetInstance<T>(out var instance))
             {
-                TirLibDebug.PrintLog($"{typeof(T)} already exists.",
-                                true);
+                TirLibDebug.PrintLog($"{typeof(T)} already exists.");
 
                 return instance;
             }

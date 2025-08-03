@@ -65,6 +65,9 @@ namespace UTIRLib
             {
                 initable = queue.Dequeue();
 
+                if (initable.IsInited)
+                    continue;
+
                 InitObject(initable);
             }
         }
@@ -75,13 +78,13 @@ namespace UTIRLib
                         .ToArray();
         }
 
-        private static (IInitable value, InitAfterAttribute attribute)[] GetPredicatedInits(
+        private static (IInitable value, InitAfterTypeAttribute attribute)[] GetAfterTypeInits(
             IInitable[] inits)
         {
-            return inits.Where(x => x.GetType().IsDefined<InitAfterAttribute>(inherit: true))
+            return inits.Where(x => x.GetType().IsDefined<InitAfterTypeAttribute>(inherit: true))
                         .Select(x =>
                         {
-                            var attribute = x.GetType().GetCustomAttribute<InitAfterAttribute>();
+                            var attribute = x.GetType().GetCustomAttribute<InitAfterTypeAttribute>();
 
                             return (x, attribute);
                         }).ToArray();
@@ -93,9 +96,9 @@ namespace UTIRLib
                         .ToArray();
         }
 
-        private static(IInitable value, InitAfterAttribute attribute)[] 
-            ResolvePredicatedInits(
-            IReadOnlyList<(IInitable value, InitAfterAttribute attribute)> toProccess,
+        private static(IInitable value, InitAfterTypeAttribute attribute)[] 
+            ResolveAfterTypeInits(
+            IReadOnlyList<(IInitable value, InitAfterTypeAttribute attribute)> toProccess,
             IReadOnlyList<IInitable> proccessed
             )
         {
@@ -105,10 +108,10 @@ namespace UTIRLib
                              .ToArray();
         }
 
-        private static IInitable[] OrderPredicatedInits(
-            (IInitable value, InitAfterAttribute attribute)[] predicated)
+        private static IInitable[] OrderAfterTypeInits(
+            (IInitable value, InitAfterTypeAttribute attribute)[] predicated)
         {
-            var toProccess = new List<(IInitable value, InitAfterAttribute attribute)>(predicated);
+            var toProccess = new List<(IInitable value, InitAfterTypeAttribute attribute)>(predicated);
             var proccessed = new List<IInitable>(predicated.Length);
 
             var loopPredicate = new LoopPredicate<int, int, int>
@@ -121,12 +124,12 @@ namespace UTIRLib
                 }
             };
 
-            (IInitable value, InitAfterAttribute attribute)[] foundValues;
+            (IInitable value, InitAfterTypeAttribute attribute)[] foundValues;
             while (loopPredicate.Invoke(toProccess.Count,
                                         proccessed.Count,
                                         predicated.Length))
             {
-                foundValues = ResolvePredicatedInits(toProccess, proccessed);
+                foundValues = ResolveAfterTypeInits(toProccess, proccessed);
 
                 //Takes last, if not found any
                 if (foundValues.IsEmpty())
@@ -155,16 +158,16 @@ namespace UTIRLib
                 queue.Enqueue(firstInits[i]);
         }
 
-        private static void EnqueuePredicatedInits(Queue<IInitable> queue,
+        private static void EnqueueAfterTypeInits(Queue<IInitable> queue,
                                                    IInitable[] inits)
         {
-            (IInitable value, InitAfterAttribute attribute)[] predicatedInits =
-                GetPredicatedInits(inits);
+            (IInitable value, InitAfterTypeAttribute attribute)[] predicatedInits =
+                GetAfterTypeInits(inits);
 
             if (predicatedInits.IsEmpty())
                 return;
 
-            IInitable[] orderedPredicatedInits = OrderPredicatedInits(predicatedInits);
+            IInitable[] orderedPredicatedInits = OrderAfterTypeInits(predicatedInits);
 
             for (int i = 0; i < orderedPredicatedInits.Length; i++)
                 queue.Enqueue(orderedPredicatedInits[i]);
@@ -190,7 +193,7 @@ namespace UTIRLib
             {
                 EnqueueFirstInits(queue, inits);
 
-                EnqueuePredicatedInits(queue, inits);
+                EnqueueAfterTypeInits(queue, inits);
             }
 
             EnqueueOtherInits(queue, inits);

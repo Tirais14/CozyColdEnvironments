@@ -13,10 +13,6 @@ namespace UTIRLib
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class MonoX : MonoBehaviour
     {
-        private LazyX<Transform> transformInternal;
-
-        new protected Transform transform => transformInternal.Value;
-
         protected event Action? onEndFirstFrame;
 
         protected virtual void OnAwake()
@@ -142,8 +138,6 @@ namespace UTIRLib
 
         protected void Awake()
         {
-            transformInternal = new LazyX<Transform>(() => base.transform);
-
             //Sets component fields and props marked by specical attribute
             GetComponentByAttributeHelper.SetMembers(this);
 

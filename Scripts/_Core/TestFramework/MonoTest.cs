@@ -7,7 +7,7 @@ using UTIRLib.Reflection;
 
 namespace UTIRLib.TestFramework
 {
-    public abstract class AMonoTest : MonoX
+    public abstract class MonoTest : MonoX
     {
         protected Type thisType;
 

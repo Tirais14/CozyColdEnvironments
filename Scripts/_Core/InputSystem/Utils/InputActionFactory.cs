@@ -21,6 +21,7 @@ namespace UTIRLib.InputSystem
             if (inputValueType.IsNotAnyType(typeof(bool),
                                             typeof(float),
                                             typeof(double),
+                                            typeof(int),
                                             typeof(Vector2),
                                             typeof(Vector3),
                                             typeof(Quaternion)))

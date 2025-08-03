@@ -8,12 +8,12 @@ namespace UTIRLib.Init
     /// Call <see cref="IInitable.Init"/> only after initialization this types.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class InitAfterAttribute : InitAttribute
+    public class InitAfterTypeAttribute : InitAttribute
     {
         public Type[] ObjectTypes { get; }
 
         /// <exception cref="ArgumentException"></exception>
-        public InitAfterAttribute(params Type[] types)
+        public InitAfterTypeAttribute(params Type[] types)
         {
             for (int i = 0; i < types.Length; i++)
             {

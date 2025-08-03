@@ -15,9 +15,11 @@ namespace UTIRLib.InputSystem
 
             return value.expectedControlType switch
             {
+                "Axis" => typeof(float),
                 "Double" => typeof(double),
                 "Vector2" => typeof(Vector2),
                 "Vector3" => typeof(Vector3),
+                "Integer" => typeof(int),
                 "Quaternion" => typeof(Quaternion),
                 _ => null,
             };

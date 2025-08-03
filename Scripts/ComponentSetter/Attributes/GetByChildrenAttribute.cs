@@ -1,4 +1,5 @@
 using System;
+using UTIRLib.Diagnostics;
 
 #nullable enable
 namespace UTIRLib
@@ -9,6 +10,12 @@ namespace UTIRLib
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class GetByChildrenAttribute : GetComponentAttribute
     {
-        
+        public string? GameObejctName { get; }
+        public bool HasGameObjectName => GameObejctName.IsNotNull();
+
+        public GetByChildrenAttribute(string? gameObejctName = null)
+        {
+            GameObejctName = gameObejctName;
+        }
     }
 }

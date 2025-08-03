@@ -4,6 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
+using UTIRLib.Unity;
 using UTIRLib.Unity.Extensions;
 using UTIRLib.Unity.TypeMatching;
 
@@ -54,7 +55,9 @@ namespace UTIRLib.ComponentSetter
                         .ToArray();
         }
 
-        private static object? SelfGetter(Component source, Type getType)
+        private static object? SelfGetter(Component source,
+                                          Type getType,
+                                          GetComponentAttribute _)
         {
             if (getType.IsType<Component>())
                 return source.GetComponent(getType);
@@ -62,7 +65,9 @@ namespace UTIRLib.ComponentSetter
                 return source.GetAssignedObject(getType);
         }
 
-        private static object? ByParentGetter(Component source, Type getType)
+        private static object? ByParentGetter(Component source,
+                                              Type getType,
+                                              GetComponentAttribute _)
         {
             if (getType.IsType<Component>())
                 return source.GetComponentInParent(getType);
@@ -70,8 +75,38 @@ namespace UTIRLib.ComponentSetter
                 return source.GetAssignedObjectInParent(getType);
         }
 
-        private static object? ByChildrenGetter(Component source, Type getType)
+        private static object? ByChildrenGameObjectGetter(Component source,
+                                                          Type getType,
+                                                          GetByChildrenAttribute attribute)
         {
+            if (getType.IsType<Component>())
+            {
+                GameObject? go = source.gameObject.Find(attribute.GameObejctName!);
+
+                if (go.IsNull())
+                    throw new ObjectNotFoundException(typeof(GameObject));
+
+                return go.GetComponent(getType);
+            }
+            else
+            {
+                GameObject? go = source.gameObject.Find(attribute.GameObejctName!);
+
+                if (go.IsNull())
+                    throw new ObjectNotFoundException(typeof(GameObject));
+
+                return go.GetAssignedObject(getType);
+            }
+        }
+
+        private static object? ByChildrenGetter(Component source,
+                                                Type getType,
+                                                GetComponentAttribute attribute)
+        {
+            var typedAttribute = (GetByChildrenAttribute)attribute;
+            if (typedAttribute.HasGameObjectName)
+                return ByChildrenGameObjectGetter(source, getType, typedAttribute);
+
             if (getType.IsType<Component>())
                 return source.GetComponentInChildren(getType);
             else
@@ -88,19 +123,22 @@ namespace UTIRLib.ComponentSetter
 
         /// <exception cref="ObjectNotFoundException"></exception>
         private static void SetField(Component source,
-                                     FieldInfo field,
-                                     Func<Component, Type, object?> getter)
+            FieldInfo field,
+            GetComponentAttribute attribute,
+            Func<Component, Type, GetComponentAttribute, object?> getter)
         {
             if (field.GetValue(source).IsNotNull())
+            {
+                TirLibDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
                 return;
+            }
             if (!IsTypeValid(field.FieldType))
             {
                 TirLibDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
-
                 return;
             }
 
-            object? foundComponent = getter(source, field.FieldType);
+            object? foundComponent = getter(source, field.FieldType, attribute);
 
             if (foundComponent.IsNull())
                 throw new ObjectNotFoundException(field.FieldType);
@@ -116,13 +154,13 @@ namespace UTIRLib.ComponentSetter
                 switch (fields[i].attribute)
                 {
                     case GetBySelfAttribute:
-                        SetField(source, fields[i].field, SelfGetter);
+                        SetField(source, fields[i].field, attribute: null!, SelfGetter);
                         break;
                     case GetByParentAttribute:
-                        SetField(source, fields[i].field, ByParentGetter);
+                        SetField(source, fields[i].field, attribute: null!, ByParentGetter);
                         break;
                     case GetByChildrenAttribute:
-                        SetField(source, fields[i].field, ByChildrenGetter);
+                        SetField(source, fields[i].field, fields[i].attribute, ByChildrenGetter);
                         break;
                     default:
                         break;
@@ -132,24 +170,21 @@ namespace UTIRLib.ComponentSetter
 
         /// <exception cref="ObjectNotFoundException"></exception>
         private static void SetProp(Component source,
-                                              PropertyInfo prop,
-                                              Func<Component, Type, object?> getter)
+            PropertyInfo prop,
+            GetComponentAttribute attribute,
+            Func<Component, Type, GetComponentAttribute, object?> getter)
         {
             if (prop.GetValue(source).IsNotNull())
                 return;
             if (!IsTypeValid(prop.PropertyType))
             {
                 TirLibDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
-
                 return;
             }
 
             object? foundComponent;
 
-            if (prop.PropertyType.Is<Component>())
-                foundComponent = getter(source, prop.PropertyType);
-            else
-                foundComponent = getter(source, prop.PropertyType);
+            foundComponent = getter(source, prop.PropertyType, attribute);
 
             if (foundComponent.IsNull())
                 throw new ObjectNotFoundException(prop.PropertyType);
@@ -165,13 +200,13 @@ namespace UTIRLib.ComponentSetter
                 switch (props[i].attribute)
                 {
                     case GetBySelfAttribute:
-                        SetProp(source, props[i].prop, SelfGetter);
+                        SetProp(source, props[i].prop, attribute: null!, SelfGetter);
                         break;
                     case GetByParentAttribute:
-                        SetProp(source, props[i].prop, ByParentGetter);
+                        SetProp(source, props[i].prop, attribute: null!, ByParentGetter);
                         break;
                     case GetByChildrenAttribute:
-                        SetProp(source, props[i].prop, ByChildrenGetter);
+                        SetProp(source, props[i].prop, props[i].attribute, ByChildrenGetter);
                         break;
                     default:
                         break;

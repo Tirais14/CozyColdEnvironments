@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Diagnostics
+namespace UTIRLib.Reflection
 {
     public enum MemberType
     {
@@ -7,6 +7,7 @@ namespace UTIRLib.Diagnostics
         Field,
         Property,
         Method,
+        Event,
         Constructor
     }
 }

@@ -13,7 +13,7 @@ namespace UTIRLib.TestFramework
     public class TestFrameworkEntryPoint : MonoX
     {
         private Assembly testsAssembly = null!;
-        private AMonoTest[] monoTests = null!;
+        private MonoTest[] monoTests = null!;
 
         [SerializeField]
         private string testsAssemblyName;
@@ -32,7 +32,7 @@ namespace UTIRLib.TestFramework
 
             CreateTestClasses();
 
-            monoTests = GetComponents<AMonoTest>().Where(x => x.IsEnabled).ToArray();
+            monoTests = GetComponents<MonoTest>().Where(x => x.IsEnabled).ToArray();
         }
 
         protected override void OnStart()
@@ -57,7 +57,7 @@ namespace UTIRLib.TestFramework
         private void CreateTestClasses()
         {
             Type[] testsTypes = testsAssembly.GetTypes()
-                                 .Where(x => x.IsType<AMonoTest>()
+                                 .Where(x => x.IsType<MonoTest>()
                                         &&
                                         !x.IsAbstract)
                                  .ToArray();
@@ -69,7 +69,7 @@ namespace UTIRLib.TestFramework
 
         private void RunMonoTests()
         {
-            Dictionary<AMonoTest, MethodInfo[]> testMethods = monoTests.Aggregate(new Dictionary<AMonoTest, MethodInfo[]>(), (collection, x) =>
+            Dictionary<MonoTest, MethodInfo[]> testMethods = monoTests.Aggregate(new Dictionary<MonoTest, MethodInfo[]>(), (collection, x) =>
             {
                 MethodInfo[] methods = x.GetType()
                                         .GetMethods(BindingFlagsDefault.InstanceAll)
