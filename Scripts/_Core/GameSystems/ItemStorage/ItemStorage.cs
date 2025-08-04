@@ -3,13 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Reflection.Cached;
-using UTIRLib.Unity.Extensions;
 
 #nullable enable
 namespace UTIRLib.GameSystems.ItemStorageSystem
@@ -19,13 +15,12 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         protected readonly List<IItemSlot> slots;
 
         public int SlotCount => slots.Count;
-
-        int IReadOnlyCollection<IItemSlot>.Count => slots.Count;
-
         public IItemSlot this[int id] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => slots[id];
         }
+
+        int IReadOnlyCollection<IItemSlot>.Count => slots.Count;
 
         public ItemStorage(IItemSlot[] slots)
         {
@@ -44,10 +39,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             slots.Add(itemSlot);
         }
 
-        public void RemoveSlot(int id)
-        {
-            slots.RemoveAt(id);
-        }
+        public void RemoveSlot(int id) => slots.RemoveAt(id);
 
         public bool Contains(IItemStack? itemStack)
         {
@@ -57,25 +49,20 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             int slotsCount = slots.Count;
             for (int i = 0; i < slotsCount; i++)
             {
-                if (slots[i].ItemStack.Equals(itemStack))
+                if (slots[i].Contains(itemStack))
                     return true;
             }
 
             return false;
         }
 
-        public bool Contains(IItemSlot slot)
-        {
-            return slots.Contains(slot);
-        }
+        public bool Contains(IItemSlot slot) => slots.Contains(slot);
 
-        public bool HasItem(IStorageItem item, int count = 1)
+        public bool Contains(IStorageItem item, int count = 1)
         {
-            IEnumerable<IItemStack> filteredStack = slots.Select(x => x.ItemStack)
-                                                         .Where(x => !x.IsEmpty)
-                                                         .Where(x => x.Item!.Equals(item));
+            IEnumerable<IItemSlot> slotsWithItem = slots.Where(x => x.HasItem && x.IsSameItem(item));
             int totalCount = 0;
-            foreach (var stack in filteredStack)
+            foreach (var stack in slotsWithItem)
             {
                 totalCount += stack.ItemCount;
 
@@ -93,18 +80,12 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (slots.IsEmpty())
                 throw new InvalidOperationException("Item cannot be validated in empty storage.");
 
-            if (slots.Find(x => !x.ItemStack.IsEmpty) is IItemSlot notEmptySlot)
-                return item.GetType().IsType(notEmptySlot.ItemStack.Item!.GetType());
-
-            FieldInfo itemStackField = TypeCache.GetField(typeof(IItemSlot), nameof(IItemSlot.ItemStack));
-            FieldInfo itemField = TypeCache.GetField(itemStackField.FieldType, nameof(IItemStack.Item));
-
-            return itemField.FieldType.IsType(item.GetType());
+            return slots[0].CanHold(item);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void AddItem(IItemStack itemStack)
+        public void AddItemFrom(IItemStack itemStack)
         {
             if (itemStack.IsNull())
                 throw new ArgumentNullException(nameof(itemStack));
@@ -112,19 +93,19 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                 throw new ArgumentException("Storage doesn't contain any slot.");
             if (Contains(itemStack))
                 throw new ArgumentException("Cannot add items to storage from itself item stack.");
-            if (itemStack.IsEmpty)
+            if (!itemStack.HasItem)
             {
                 Debug.LogWarning("Try to move items from empty item stack.");
                 return;
             }
 
             var suitableSlots = new Collection<IItemSlot>(
-                x => x.IsNotNull() && !itemStack.IsEmpty,
+                x => x.IsNotNull() && itemStack.HasItem,
                 () => GetSuitableSlot(itemStack.Item)
                 );
 
             foreach (var slot in suitableSlots)
-                slot.ItemStack.AddItemFrom(itemStack, itemStack.ItemCount);
+                slot.AddItemFrom(itemStack, itemStack.ItemCount);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -137,7 +118,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                 throw new ArgumentException(nameof(count));
 
             var itemStack = new ItemStack(item, count);
-            AddItem(itemStack);
+            AddItemFrom(itemStack);
 
             return itemStack;
         }
@@ -153,7 +134,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         public IItemSlot? GetEmptySlot()
         {
-            return slots.Find(x => x.ItemStack.IsEmpty);
+            return slots.Find(x => !x.HasItem);
         }
 
         public bool TryGetEmptySlot([NotNullWhen(true)] out IItemSlot? result)
@@ -174,13 +155,13 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
             IItemSlot? empty = default;
 
-            IItemStack itemStack;
+            IItemSlot itemSlot;
             int slotsCount = slots.Count;
             for (int i = 0; i < slotsCount; i++)
             {
-                itemStack = slots[i].ItemStack;
+                itemSlot = slots[i];
 
-                if (itemStack.IsEmpty)
+                if (!itemSlot.HasItem)
                 {
                     if (empty.IsNull())
                         empty = slots[i];
@@ -188,7 +169,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                         continue;
                 }
 
-                if (itemStack.Item.Equals(item) && !itemStack.IsFull)
+                if (itemSlot.IsSameItem(item) && !itemSlot.IsContainerFull)
                     return slots[i];
             }
 
@@ -217,7 +198,6 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         protected readonly ItemStorage storage;
 
         public T this[int id] => (T)storage[id];
-
         public int SlotCount => storage.SlotCount;
 
         int IReadOnlyCollection<IItemSlot>.Count => storage.SlotCount;
@@ -232,26 +212,11 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return storage.AddItem(item, count);
         }
 
-        public void AddItem(IItemStack itemStack)
-        {
-            storage.AddItem(itemStack);
-        }
+        public void AddItemFrom(IItemStack itemStack) => storage.AddItemFrom(itemStack);
 
-        public void AddItemSlot(T itemSlot)
-        {
-            storage.AddItemSlot(itemSlot);
-        }
+        public void AddItemSlot(T itemSlot) => storage.AddItemSlot(itemSlot);
 
-        public bool CanHold(IStorageItem item)
-        {
-            if (item.IsNull())
-                throw new ArgumentNullException(nameof(item));
-
-            FieldInfo itemStackField = TypeCache.GetField(typeof(T), nameof(IItemSlot.ItemStack));
-            FieldInfo itemField = TypeCache.GetField(itemStackField.FieldType, nameof(IItemStack.Item));
-
-            return itemField.FieldType.IsType(item.GetType());
-        }
+        public bool CanHold(IStorageItem item) => storage.CanHold(item);
 
         public bool Contains(T slot) => storage.Contains(slot);
 
@@ -265,9 +230,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         public T? GetSuitableSlot(IStorageItem item) => (T?)storage.GetSuitableSlot(item);
 
-        public bool HasItem(IStorageItem item, int count = 1)
+        public bool Contains(IStorageItem item, int count = 1)
         {
-            return storage.HasItem(item, count);
+            return storage.Contains(item, count);
         }
 
         public void RemoveSlot(int id) => storage.RemoveSlot(id);
@@ -291,14 +256,8 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return success;
         }
 
-        public IEnumerator<IItemSlot> GetEnumerator()
-        {
-            return storage.GetEnumerator();
-        }
+        public IEnumerator<IItemSlot> GetEnumerator() => storage.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

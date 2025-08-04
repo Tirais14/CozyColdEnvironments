@@ -14,8 +14,8 @@ namespace UTIRLib.UI.ItemStorageSystem
         public IStorageItem Item => stack.Item;
         public int ItemCount => stack.ItemCount;
         public int MaxItemCount => stack.MaxItemCount;
-        public bool IsEmpty => stack.IsEmpty;
-        public bool IsFull => stack.IsFull;
+        public bool HasItem => stack.HasItem;
+        public bool IsContainerFull => stack.IsContainerFull;
 
         public IReadOnlyReactiveProperty<IStorageItem> ItemReactive => itemReactive;
         public IReadOnlyReactiveProperty<int> ItemCountReactive => itemCountReactive;
@@ -67,6 +67,12 @@ namespace UTIRLib.UI.ItemStorageSystem
             return temp;
         }
 
+        public bool CanHold(IStorageItem item) => stack.CanHold(item);
+
+        public bool Contains(IStorageItem item) => stack.Contains(item);
+
+        public bool IsSameItem(IStorageItem item) => stack.IsSameItem(item);
+
         public void Clear()
         {
             stack.Clear();
@@ -89,8 +95,8 @@ namespace UTIRLib.UI.ItemStorageSystem
         public T Item => stack.Item;
         public int ItemCount => stack.ItemCount;
         public int MaxItemCount => stack.MaxItemCount;
-        public bool IsEmpty => stack.IsEmpty;
-        public bool IsFull => stack.IsFull;
+        public bool HasItem => stack.HasItem;
+        public bool IsContainerFull => stack.IsContainerFull;
 
         public IReadOnlyReactiveProperty<IStorageItem> ItemReactive => itemReactive;
         public IReadOnlyReactiveProperty<int> ItemCountReactive => itemCountReactive;
@@ -145,7 +151,17 @@ namespace UTIRLib.UI.ItemStorageSystem
             return temp;
         }
 
-        public void Clear() => stack.Clear();
+        public bool CanHold(T item) => stack.CanHold(item);
+
+        public bool Contains(T item) => stack.Contains(item);
+
+        public bool IsSameItem(T item) => stack.IsSameItem(item);
+
+        public void Clear()
+        {
+            stack.Clear();
+            UpdateInfo();
+        }
 
         private void UpdateInfo()
         {

@@ -12,8 +12,8 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public IStorageItem Item { get; private set; } = new StorageItem();
         public int ItemCount { get; private set; }
         public int MaxItemCount { get; private set; }
-        public bool IsEmpty => ItemCount < 1 || Item.IsNull();
-        public bool IsFull => ItemCount >= MaxItemCount;
+        public bool HasItem => Item.IsNotNull() && ItemCount > 0;
+        public bool IsContainerFull => ItemCount >= MaxItemCount;
 
         public ItemStack(int maxItemCount = int.MaxValue)
         {
@@ -40,14 +40,14 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         /// <exception cref="ArgumentException"></exception>
         public IItemStack AddItem(IStorageItem item, int count)
         {
-            if (!IsEmpty && !Item!.Equals(item))
-                throw new Exception($"{GetType().GetName()} is not empty and items not equals.");
+            if (!IsSameItem(item))
+                throw new Exception($"Is not same item.");
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
             if (count < 1)
                 throw new ArgumentException(nameof(count));
 
-            int toAddCount = ItemStackHelper.CalulcateAddItemCount(this, count);
+            int toAddCount = ItemContainerHelper.CalulcateAddItemCount(this, count);
 
             Item = item;
             ItemCount += toAddCount;
@@ -66,20 +66,17 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                 throw new ArgumentNullException(nameof(itemStack));
             if (count < 1)
                 throw new ArgumentException(nameof(count));
-            if (itemStack.IsEmpty)
+            if (!itemStack.HasItem)
                 return;
             if (ReferenceEquals(itemStack, this))
                 throw new InvalidOperationException("Couldn't be added items by itself.");
 
             IItemStack taked = itemStack.TakeItem(count);
 
-            if (taked.IsEmpty)
+            if (!taked.HasItem)
                 return;
 
-            AddItem(taked.Item!, taked.ItemCount);
-
-            if (!itemStack.IsEmpty)
-                itemStack.AddItem(taked.Item!, taked.ItemCount);
+            AddItem(taked.Item, taked.ItemCount);
         }
         public void AddItemFrom(IItemStack itemStack)
         {
@@ -91,10 +88,10 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         {
             if (count < 1)
                 throw new ArgumentException(nameof(count));
-            if (IsEmpty)
+            if (!HasItem)
                 throw new Exception($"{GetType().GetName()} is empty.");
 
-            count = ItemStackHelper.CalculateTakeItemCount(this, count);
+            count = ItemContainerHelper.CalculateTakeItemCount(this, count);
 
             if (count < 1)
                 return Empty;
@@ -111,10 +108,34 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         public IItemStack TakeItemAll()
         {
-            if (IsEmpty)
+            if (!HasItem)
                 return Empty;
 
             return TakeItem(ItemCount);
+        }
+
+        public bool Contains(IStorageItem item)
+        {
+            if (item.IsNull())
+                throw new ArgumentNullException(nameof(item));
+
+            return Item.Equals(item);
+        }
+
+        public bool CanHold(IStorageItem item)
+        {
+            if (item.IsNull())
+                throw new ArgumentNullException(nameof(item));
+
+            return true;
+        }
+
+        public bool IsSameItem(IStorageItem item)
+        {
+            if (item.IsNull())
+                throw new ArgumentNullException(nameof(item));
+
+            return Item.IsNotNull() && Item.Equals(item);
         }
 
         public void Clear()
@@ -131,8 +152,8 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public T Item => (T)stack.Item;
         public int ItemCount => stack.ItemCount;
         public int MaxItemCount => stack.MaxItemCount;
-        public bool IsEmpty => stack.IsEmpty;
-        public bool IsFull => stack.IsFull;
+        public bool HasItem => stack.HasItem;
+        public bool IsContainerFull => stack.IsContainerFull;
 
         public ItemStack(int maxItemCount = int.MaxValue)
         {
@@ -160,8 +181,6 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             stack.AddItemFrom(itemStack);
         }
 
-        public void Clear() => stack.Clear();
-
         public IItemStack<T> TakeItem(int count)
         {
             IItemStack nonTyped = stack.TakeItem(count);
@@ -169,9 +188,20 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return new ItemStack<T>((T)nonTyped.Item, nonTyped.ItemCount);
         }
 
-        public virtual IItemStack<T> TakeItemAll()
+        public virtual IItemStack<T> TakeItemAll() => TakeItem(ItemCount);
+
+        public bool Contains(T item) => stack.Contains(item);
+
+        public bool CanHold(T item) => stack.CanHold(item);
+
+        public bool IsSameItem(T item)
         {
-            return TakeItem(ItemCount);
+            if (item.IsNull())
+                throw new ArgumentNullException(nameof(item));
+
+            return Item.IsNotNull() && Item.Equals(item);
         }
+
+        public void Clear() => stack.Clear();
     }
 }

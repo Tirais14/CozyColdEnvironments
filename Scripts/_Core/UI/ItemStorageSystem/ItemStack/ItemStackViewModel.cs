@@ -42,17 +42,17 @@ namespace UTIRLib.UI.ItemStorageSystem
                 )
                 return;
 
-            if (itemStack.IsEmpty)
+            if (!itemStack.HasItem)
                 return;
 
-            if (!model.IsEmpty && !model.Item!.Equals(itemStack.Item))
+            if (model.HasItem && !model.IsSameItem(itemStack.Item))
                 return;
 
             if (model.Equals(itemStack))
                 return;
 
             //TODO: Replace this to swap stacks
-            if (model.IsFull)
+            if (model.IsContainerFull)
                 return;
 
             model.AddItemFrom(itemStack, itemStack.ItemCount);

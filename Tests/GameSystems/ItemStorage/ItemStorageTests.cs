@@ -37,7 +37,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
                 itemStorage.AddItem(item, count);
 
 
-            Assert.True(itemStorage.HasItem(item, count));
+            Assert.True(itemStorage.Contains(item, count));
         }
 
         [TearDown]

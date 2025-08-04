@@ -23,7 +23,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
 
             Assert.AreEqual(toSetItem, itemStack.Item, nameof(itemStack.Item));
             Assert.AreEqual(toAddCount, itemStack.ItemCount, nameof(itemStack.ItemCount));
-            Assert.False(itemStack.IsEmpty, nameof(itemStack.IsEmpty));
+            Assert.False(!itemStack.HasItem);
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace UTIRLib.Tests.GameSystems.Storage
             itemStack.AddItem(new TestItem(), 100);
             itemStack.Clear();
 
-            Assert.True(itemStack.IsEmpty, nameof(itemStack.IsEmpty));
+            Assert.True(!itemStack.HasItem);
         }
 
         [TearDown]

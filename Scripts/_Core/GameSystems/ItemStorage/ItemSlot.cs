@@ -6,113 +6,140 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 {
     public class ItemSlot : IItemSlot
     {
-        public IItemStack ItemStack { get; private set; }
-        public int CapacityLimit { get; set; }
-        public bool HasCapacityLimit => CapacityLimit > 0;
-        public bool IsEmpty => ItemStack.IsEmpty;
-        public bool IsFull {
+        private readonly IItemStack itemStack;
+        private int capacityLimit;
+
+        public IStorageItem Item => itemStack.Item;
+        public int CapacityLimit {
+            get => capacityLimit;
+            set
+            {
+                if (value > itemStack.MaxItemCount)
+                {
+                    TirLibDebug.PrintWarning($"Capacity limit > {nameof(itemStack)}.{nameof(itemStack.MaxItemCount)}");
+                    capacityLimit = itemStack.MaxItemCount;
+                    return;
+                }
+
+                capacityLimit = value;
+            }
+        }
+        public bool HasCapacityLimit => capacityLimit > 0;
+        public int MaxItemCount {
+            get
+            {
+                if (!HasCapacityLimit)
+                    return itemStack.MaxItemCount;
+
+                return capacityLimit;
+            }
+        }
+        public bool HasItem => itemStack.HasItem;
+        public bool IsContainerFull {
             get
             {
                 if (HasCapacityLimit)
-                    return ItemStack.ItemCount >= CapacityLimit;
+                    return itemStack.ItemCount >= CapacityLimit;
 
-                return ItemStack.IsFull;
+                return itemStack.IsContainerFull;
             }
         }
-        public int ItemCount => ItemStack.ItemCount;
+        public int ItemCount => itemStack.ItemCount;
 
         public ItemSlot(IItemStack itemStack, int capacityLimit = 0)
         {
-            ItemStack = itemStack;
+            this.itemStack = itemStack;
             CapacityLimit = capacityLimit;
         }
 
         public IItemStack AddItem(IStorageItem item, int count)
         {
-            count = ItemSlotHelper.CalculateAddItemCount(this, count);
+            count = ItemContainerHelper.CalulcateAddItemCount(this, count);
 
-            return ItemStack.AddItem(item, count);
+            return itemStack.AddItem(item, count);
         }
 
         public void AddItemFrom(IItemStack itemStack, int count)
         {
-            count = ItemSlotHelper.CalculateAddItemCount(this, count);
+            count = ItemContainerHelper.CalulcateAddItemCount(this, count);
 
-            ItemStack.AddItemFrom(itemStack, count);
+            this.itemStack.AddItemFrom(itemStack, count);
         }
-
         public void AddItemFrom(IItemStack itemStack)
         {
-            ItemStack.AddItemFrom(itemStack);
+            this.itemStack.AddItemFrom(itemStack);
         }
 
-        public IItemStack TakeItem(int count) => ItemStack.TakeItem(count);
+        public IItemStack TakeItem(int count) => itemStack.TakeItem(count);
 
         public IItemStack TakeItemAll() => TakeItem(ItemCount);
 
-        /// <exception cref="ArgumentNullException"></exception>
-        public bool IsSameItem(IStorageItem item)
+        public bool Contains(IStorageItem item) => itemStack.Contains(item);
+        public bool Contains(IItemStack itemStack)
         {
-            if (item.IsNull())
-                throw new ArgumentNullException(nameof(item));
+            if (itemStack.IsNull())
+                throw new ArgumentNullException(nameof(itemStack));
 
-            return ItemStack.Item.Equals(item);
+            return this.itemStack.Equals(itemStack);
         }
+
+        public bool CanHold(IStorageItem item) => itemStack.CanHold(item);
+
+        public bool IsSameItem(IStorageItem item) => itemStack.IsSameItem(item);
+
+        public void Clear() => itemStack.Clear();
     }
     public class ItemSlot<T> : IItemSlot<T>
         where T : IItemStack
     {
-        public T ItemStack { get; private set; }
-        public int CapacityLimit { get; set; }
-        public bool HasCapacityLimit => CapacityLimit > 0;
-        public bool IsEmpty => ItemStack.IsEmpty;
-        public bool IsFull {
-            get
-            {
-                if (HasCapacityLimit)
-                    return ItemStack.ItemCount >= CapacityLimit;
+        private readonly ItemSlot itemSlot;
 
-                return ItemStack.IsFull;
-            }
+        public IStorageItem Item => itemSlot.Item;
+        public int CapacityLimit {
+            get => itemSlot.CapacityLimit;
+            set => itemSlot.CapacityLimit = value;
         }
-        public int ItemCount => ItemStack.ItemCount;
+        public bool HasCapacityLimit => itemSlot.HasCapacityLimit;
+        public int MaxItemCount => itemSlot.MaxItemCount;
+        public bool HasItem => itemSlot.HasItem;
+        public bool IsContainerFull => itemSlot.IsContainerFull;
+        public int ItemCount => itemSlot.ItemCount;
 
         public ItemSlot(T itemStack, int capacityLimit = 0)
         {
-            ItemStack = itemStack;
+            itemSlot = new ItemSlot(itemStack, capacityLimit);
             CapacityLimit = capacityLimit;
         }
 
         public T AddItem(IStorageItem item, int count)
         {
-            count = ItemSlotHelper.CalculateAddItemCount(this, count);
-
-            return (T)ItemStack.AddItem(item, count);
+            return (T)itemSlot.AddItem(item, count);
         }
 
         public void AddItemFrom(T itemStack, int count)
         {
-            count = ItemSlotHelper.CalculateAddItemCount(this, count);
-
-            ItemStack.AddItemFrom(itemStack, count);
+            itemSlot.AddItemFrom(itemStack, count);
         }
-
         public void AddItemFrom(T itemStack)
         {
-            ItemStack.AddItemFrom(itemStack);
+            itemSlot.AddItemFrom(itemStack);
         }
 
-        public T TakeItem(int count) => (T)ItemStack.TakeItem(count);
+        public T TakeItem(int count) => (T)itemSlot.TakeItem(count);
 
-        public T TakeItemAll() => TakeItem(ItemCount);
+        public T TakeItemAll() => (T)itemSlot.TakeItemAll();
+
+        public bool Contains(T itemStack) => itemSlot.Contains(itemStack);
+        public bool Contains(IStorageItem item) => itemSlot.Contains(item);
+
+        public bool CanHold(IStorageItem item) => itemSlot.CanHold(item);
 
         /// <exception cref="ArgumentNullException"></exception>
         public bool IsSameItem(IStorageItem item)
         {
-            if (item.IsNull())
-                throw new ArgumentNullException(nameof(item));
-
-            return ItemStack.Item.Equals(item);
+            return itemSlot.IsSameItem(item);
         }
+
+        public void Clear() => itemSlot.Clear();
     }
 }

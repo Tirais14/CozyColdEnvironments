@@ -1,18 +1,11 @@
 #nullable enable
-using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 
 namespace UTIRLib.GameSystems.ItemStorageSystem
 {
-    public interface IItemStack
+    public interface IItemStack : IItemContainerInfo
     {
-        IStorageItem Item { get; }
-        int ItemCount { get; }
-        int MaxItemCount { get; }
-        bool IsEmpty { get; }
-        bool IsFull { get; }
-
         IItemStack AddItem(IStorageItem item, int count);
 
         void AddItemFrom(IItemStack itemStack, int count);
@@ -26,12 +19,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         void Clear();
     }
 
-    public interface IItemStack<T> : IItemStack
+    public interface IItemStack<T> : IItemStack, IItemContainerInfo<T>
         where T : IStorageItem, new()
     {
-        new T Item { get; }
-
-        IStorageItem IItemStack.Item => Item;
 
         IItemStack<T> AddItem(T item, int count);
 
@@ -55,7 +45,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         {
             if (itemStack.IsNull())
                 throw new System.ArgumentNullException(nameof(itemStack));
-            if (itemStack.IsEmpty)
+            if (!itemStack.HasItem)
                 throw new System.Exception("Nothing to add from item stack.");
             if (itemStack.Item is not T typedItem)
                 throw new System.InvalidOperationException($"Cannot add item from {itemStack?.GetType().GetName()}.");
@@ -64,7 +54,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
             AddItemFrom(temp, count);
 
-            if (!temp.IsEmpty)
+            if (temp.HasItem)
                 itemStack.AddItem(temp.Item!, temp.ItemCount);
         }
 

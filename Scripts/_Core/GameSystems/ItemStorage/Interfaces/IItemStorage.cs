@@ -14,9 +14,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         IItemStack AddItem(IStorageItem item, int count);
 
-        void AddItem(IItemStack itemStack);
+        void AddItemFrom(IItemStack itemStack);
 
-        bool HasItem(IStorageItem item, int count = 1);
+        bool Contains(IStorageItem item, int count = 1);
 
         int GetSlotId(IItemSlot slot);
 
