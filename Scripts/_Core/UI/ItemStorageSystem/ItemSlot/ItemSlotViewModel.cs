@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.EventSystems;
+using UTIRLib.GameSystems;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.UI.MVVM;
 using UTIRLib.Unity.TypeMatching;
@@ -20,25 +21,25 @@ namespace UTIRLib.UI.ItemStorageSystem
             if (eventData is null)
                 throw new ArgumentNullException(nameof(eventData));
 
-            if (eventData.pointerDrag.GetAssignedModel<IItemStack>()
-                .IsNot<IItemStack>(out var itemStack)
+            if (eventData.pointerDrag.GetAssignedModel<IItemContainer>()
+                .IsNot<IItemContainer>(out var itemContainer)
                 )
                 return;
 
-            if (!itemStack.HasItem)
+            if (!itemContainer.HasItem)
                 return;
 
-            if (model.HasItem && !model.IsSameItem(itemStack.Item))
+            if (model.HasItem && !model.IsSameItem(itemContainer.Item))
                 return;
 
-            if (model.Equals(itemStack))
+            if (model.Equals(itemContainer))
                 return;
 
             //TODO: Replace this to swap stacks
             if (model.IsContainerFull)
                 return;
 
-            model.AddItemFrom(itemStack, itemStack.ItemCount);
+            model.AddItemFrom(itemContainer);
         }
     }
 }

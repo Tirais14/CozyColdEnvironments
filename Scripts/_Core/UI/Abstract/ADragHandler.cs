@@ -12,9 +12,7 @@ namespace UTIRLib.UI
         IEndDragHandler
         where T : UnityEngine.Component
     {
-        [GetBySelf]
         protected T dragItem;
-
         protected Transform dragItemTransform;
         protected Vector3 beforeDragPosition;
         protected ICanvasRaycaster raycaster;
@@ -27,14 +25,16 @@ namespace UTIRLib.UI
             base.OnAwake();
 
             dragItemTransform = dragItem.transform;
+
             var canvasController = GetComponentInParent<ACanvasController>();
-            raycaster = canvasController.CanvasRaycaster;
+            raycaster = canvasController.RaycasterCanvas;
             pointerInput = canvasController.Pointer;
         }
 
         public virtual void OnBeginDrag(PointerEventData eventData)
         {
             beforeDragPosition = dragItemTransform.localPosition;
+            eventData.pointerDrag = dragItem.gameObject;
         }
 
         public virtual void OnDrag(PointerEventData eventData)
@@ -47,11 +47,8 @@ namespace UTIRLib.UI
 
         public virtual void OnEndDrag(PointerEventData eventData)
         {
-            if (isDragging)
+            if (!isDragging)
                 return;
-
-            if (raycaster.TryRaycastAny<IDropHandler>(pointerInput.Value, out var dropHandler))
-                dropHandler.OnDrop(eventData);
 
             dragItemTransform.localPosition = beforeDragPosition;
         }
