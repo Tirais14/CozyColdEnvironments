@@ -10,8 +10,7 @@ using UTIRLib.UI.MVVM;
 namespace UTIRLib.UI.ItemStorageSystem
 {
     [RequireComponent(typeof(Image))]
-    public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>,
-        IDropHandler
+    public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>
         where TViewModel : IItemStackViewModel<TModel>
         where TModel : IItemStackReactive
     {
@@ -52,11 +51,6 @@ namespace UTIRLib.UI.ItemStorageSystem
             return InstanceFactory.Create<TModel>(InvokableArguments.Create(int.MaxValue,
                 InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
                                                    cacheConstructor: true);
-        }
-
-        void IDropHandler.OnDrop(PointerEventData eventData)
-        {
-            viewModel.OnViewDrop(eventData);
         }
     }
 }

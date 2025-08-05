@@ -30,32 +30,5 @@ namespace UTIRLib.UI.ItemStorageSystem
                                                                 .IfNull(TirLib.ErrorSprite))
                               .AddTo(this);
         }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public void OnViewDrop(PointerEventData eventData)
-        {
-            if (eventData is null)
-                throw new ArgumentNullException(nameof(eventData));
-
-            if (eventData.pointerDrag.GetAssignedModel<IItemStack>()
-                .IsNot<IItemStack>(out var itemStack)
-                )
-                return;
-
-            if (!itemStack.HasItem)
-                return;
-
-            if (model.HasItem && !model.IsSameItem(itemStack.Item))
-                return;
-
-            if (model.Equals(itemStack))
-                return;
-
-            //TODO: Replace this to swap stacks
-            if (model.IsContainerFull)
-                return;
-
-            model.AddItemFrom(itemStack, itemStack.ItemCount);
-        }
     }
 }

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -71,7 +72,7 @@ namespace UTIRLib.UI
 
         public bool TryRaycastAny(Type type,
                                   Vector2 position,
-                                  out object? result,
+                                  [NotNullWhen(true)] out object? result,
                                   object? exclude = null)
         {
             result = RaycastAny(type, position, exclude);
@@ -80,7 +81,7 @@ namespace UTIRLib.UI
         }
 
         public bool TryRaycastAny<T>(Vector2 position,
-                                     out T? result,
+                                     [NotNullWhen(true)] out T? result,
                                      T? exclude = default)
         {
             result = RaycastAny(position, exclude);

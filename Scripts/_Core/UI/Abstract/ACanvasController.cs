@@ -17,6 +17,8 @@ namespace UTIRLib.UI
         [field: RequiredField]
         public ICanvasRaycaster CanvasRaycaster { get; protected set; } = null!;
 
+        public Vector2 PointerPosition => Pointer.Value;
+
         protected override void OnAwake()
         {
             base.OnAwake();

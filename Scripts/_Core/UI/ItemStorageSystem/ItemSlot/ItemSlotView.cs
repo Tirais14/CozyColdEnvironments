@@ -1,4 +1,5 @@
 using UniRx;
+using UnityEngine.EventSystems;
 using UTIRLib.Diagnostics;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
@@ -8,8 +9,9 @@ using UTIRLib.Unity.TypeMatching;
 #nullable enable
 namespace UTIRLib.UI.ItemStorageSystem
 {
-    public class ItemSlotView<TViewModel, TModel> : AView<TViewModel>
-        where TViewModel : IViewModel<TModel>
+    public class ItemSlotView<TViewModel, TModel> : AView<TViewModel>,
+        IDropHandler
+        where TViewModel : IItemSlotViewModel<TModel>
         where TModel : IItemSlot
     {
         protected override TViewModel CreateViewModel()
@@ -36,6 +38,11 @@ namespace UTIRLib.UI.ItemStorageSystem
             return InstanceFactory.Create<TModel>(InvokableArguments.Create(itemStack,
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
                                                   cacheConstructor: true);
+        }
+
+        void IDropHandler.OnDrop(PointerEventData eventData)
+        {
+            viewModel.OnViewDrop(eventData);
         }
     }
 }

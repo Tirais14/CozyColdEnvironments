@@ -142,9 +142,6 @@ namespace UTIRLib
             GetComponentByAttributeHelper.SetMembers(this);
 
             OnAwake();
-
-            //Checks field and props marked by RequiredAttribute
-            MemberValidator.ValidateInstance(this);
         }
 
         protected void Start()
@@ -153,6 +150,9 @@ namespace UTIRLib
 
             if (onEndFirstFrame is not null)
                 _ = OnEndFirstFrameInvokerAsync();
+
+            //Checks field and props marked by RequiredAttribute
+            MemberValidator.ValidateInstance(this);
         }
 
         private async UniTaskVoid OnEndFirstFrameInvokerAsync()

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,10 +18,10 @@ namespace UTIRLib.UI
 
         bool TryRaycastAny(Type type,
                            Vector2 position,
-                           out object? result,
+                           [NotNullWhen(true)] out object? result,
                            object? exclude = null);
         bool TryRaycastAny<T>(Vector2 position,
-                              out T? result,
+                              [NotNullWhen(true)] out T? result,
                               T? exclude = default);
     }
 }
