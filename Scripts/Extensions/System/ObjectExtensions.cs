@@ -12,19 +12,13 @@ namespace UTIRLib
     public static class ObjectExtensions
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static string GetTypeName<T>(this T obj)
+        public static string GetTypeName<T>(this T? obj,
+            TypeNameAttributes attributes = TypeNameAttributes.Default)
         {
             if (obj is null)
                 throw new ArgumentNullException(nameof(obj));
 
-            return obj.GetType().Name;
-        }
-
-        public static string GetProccessedTypeName<T>(this T? obj)
-        {
-            Type? type = obj?.GetType();
-
-            return type.GetName();
+            return obj.GetType().GetName(attributes);
         }
     }
 }

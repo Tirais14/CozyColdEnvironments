@@ -52,27 +52,27 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             CapacityLimit = capacityLimit;
         }
 
-        public IItemStack AddItem(IStorageItem item, int count)
+        public IItemContainer AddItem(IStorageItem item, int count)
         {
             count = ItemContainerHelper.CalulcateAddItemCount(this, count);
 
             return itemStack.AddItem(item, count);
         }
 
-        public void AddItemFrom(IItemStack itemStack, int count)
+        public void AddItemFrom(IItemContainer itemContainer, int count)
         {
             count = ItemContainerHelper.CalulcateAddItemCount(this, count);
 
-            this.itemStack.AddItemFrom(itemStack, count);
+            itemStack.AddItemFrom(itemContainer, count);
         }
-        public void AddItemFrom(IItemStack itemStack)
+        public void AddItemFrom(IItemContainer itemContainer)
         {
-            this.itemStack.AddItemFrom(itemStack);
+            itemStack.AddItemFrom(itemContainer);
         }
 
-        public IItemStack TakeItem(int count) => itemStack.TakeItem(count);
+        public IItemContainer TakeItem(int count) => itemStack.TakeItem(count);
 
-        public IItemStack TakeItemAll() => TakeItem(ItemCount);
+        public IItemContainer TakeItemAll() => TakeItem(ItemCount);
 
         public bool Contains(IStorageItem item) => itemStack.Contains(item);
         public bool Contains(IItemStack itemStack)
@@ -116,13 +116,13 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return (T)itemSlot.AddItem(item, count);
         }
 
-        public void AddItemFrom(T itemStack, int count)
+        public void AddItemFrom(T itemContainer, int count)
         {
-            itemSlot.AddItemFrom(itemStack, count);
+            itemSlot.AddItemFrom(itemContainer, count);
         }
-        public void AddItemFrom(T itemStack)
+        public void AddItemFrom(T itemContainer)
         {
-            itemSlot.AddItemFrom(itemStack);
+            itemSlot.AddItemFrom(itemContainer);
         }
 
         public T TakeItem(int count) => (T)itemSlot.TakeItem(count);

@@ -32,36 +32,36 @@ namespace UTIRLib.UI.ItemStorageSystem
             stack = new ItemStack(item, itemCount, maxItemCount);
         }
 
-        public IItemStack AddItem(IStorageItem item, int count)
+        public IItemContainer AddItem(IStorageItem item, int count)
         {
-            IItemStack temp = stack.AddItem(item, count);
+            IItemContainer temp = stack.AddItem(item, count);
             UpdateInfo();
 
             return temp;
         }
 
-        public void AddItemFrom(IItemStack itemStack, int count)
+        public void AddItemFrom(IItemContainer itemContainer, int count)
         {
-            stack.AddItemFrom(itemStack, count);
+            stack.AddItemFrom(itemContainer, count);
             UpdateInfo();
         }
-        public void AddItemFrom(IItemStack itemStack)
+        public void AddItemFrom(IItemContainer itemContainer)
         {
-            stack.AddItemFrom(itemStack);
+            stack.AddItemFrom(itemContainer);
             UpdateInfo();
         }
 
-        public IItemStack TakeItem(int count)
+        public IItemContainer TakeItem(int count)
         {
-            IItemStack temp = stack.TakeItem(count);
+            IItemContainer temp = stack.TakeItem(count);
             UpdateInfo();
 
             return temp;
         }
 
-        public IItemStack TakeItemAll()
+        public IItemContainer TakeItemAll()
         {
-            IItemStack temp = stack.TakeItemAll();
+            IItemContainer temp = stack.TakeItemAll();
             UpdateInfo();
 
             return temp;

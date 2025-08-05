@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection;
 
 #nullable enable
 
@@ -372,6 +373,30 @@ namespace UTIRLib.Unity.Extensions
                                                            FindMode findMode,
                                                            bool onlyFirst)
         {
+            if (targetType.IsType<Component>())
+            {
+                if (onlyFirst)
+                {
+                    return findMode switch
+                    {
+                        FindMode.Self => new object[] { gameObject.GetComponent(targetType) },
+                        FindMode.InChilds => new object[] { gameObject.GetComponentInChildren(targetType) },
+                        FindMode.InParents => new object[] { gameObject.GetComponentInParent(targetType) },
+                        _ => throw new InvalidOperationException(findMode.ToString()),
+                    };
+                }
+                else
+                {
+                    return findMode switch
+                    {
+                        FindMode.Self => gameObject.GetComponents(targetType),
+                        FindMode.InChilds => gameObject.GetComponentsInChildren(targetType),
+                        FindMode.InParents => gameObject.GetComponentsInParent(targetType),
+                        _ => throw new InvalidOperationException(findMode.ToString()),
+                    };
+                }
+            }
+
             Component[] gameObjectComponents = findMode switch {
                 FindMode.InChilds => gameObject.GetComponentsInChildren(typeof(Component),
                                                                         includeInactive),

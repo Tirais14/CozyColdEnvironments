@@ -30,7 +30,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (itemCointainer.IsContainerFull)
                 return 0;
 
-            int restSize = itemCointainer.ItemCount - itemCointainer.MaxItemCount;
+            int restSize = itemCointainer.MaxItemCount - itemCointainer.ItemCount;
 
             return Math.Min(restSize, addCount);
         }

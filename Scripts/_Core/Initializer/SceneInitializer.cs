@@ -18,7 +18,7 @@ namespace UTIRLib
         public static void InitObject(IInitable initable)
         {
             if (initable.IsInited)
-                throw new TirLibException($"{initable.GetProccessedTypeName()} is already inited.");
+                throw new TirLibException($"{initable.GetTypeName()} is already inited.");
 
             initable.Init();
             TirLibDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");

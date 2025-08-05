@@ -15,15 +15,14 @@ namespace UTIRLib.UI
         public IPointerInput Pointer { get; protected set; } = null!;
 
         [field: RequiredField]
-        public IRaycasterUI Raycaster { get; protected set; } = null!;
+        public ICanvasRaycaster CanvasRaycaster { get; protected set; } = null!;
 
         protected override void OnAwake()
         {
             base.OnAwake();
 
-            Raycaster = new RaycasterUI(Pointer,
-                                        GetComponent<GraphicRaycaster>(),
-                                        EventSystem.current);
+            CanvasRaycaster = new CanvasRaycaster(EventSystem.current,
+                                        GetComponent<GraphicRaycaster>());
         }
     }
 }

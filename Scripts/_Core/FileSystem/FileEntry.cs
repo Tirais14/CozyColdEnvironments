@@ -320,7 +320,7 @@ namespace UTIRLib.FileSystem
                 case string[] lines:
                     return lines;
                 default:
-                    TirLibDebug.PrintError($"{customContent?.GetProccessedTypeName()} type doesn't supported.");
+                    TirLibDebug.PrintError($"{customContent?.GetTypeName()} type doesn't supported.");
                     return Array.Empty<string>();
             }
         }

@@ -7,6 +7,6 @@ namespace UTIRLib.UI
     public interface ICanvasController
     {
         IPointerInput Pointer { get; }
-        IRaycasterUI Raycaster { get; }
+        ICanvasRaycaster CanvasRaycaster { get; }
     }
 }

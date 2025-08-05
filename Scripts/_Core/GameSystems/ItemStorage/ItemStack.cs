@@ -38,7 +38,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public IItemStack AddItem(IStorageItem item, int count)
+        public IItemContainer AddItem(IStorageItem item, int count)
         {
             if (!IsSameItem(item))
                 throw new Exception($"Is not same item.");
@@ -60,31 +60,31 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void AddItemFrom(IItemStack itemStack, int count)
+        public void AddItemFrom(IItemContainer itemContainer, int count)
         {
-            if (itemStack.IsNull())
-                throw new ArgumentNullException(nameof(itemStack));
+            if (itemContainer.IsNull())
+                throw new ArgumentNullException(nameof(itemContainer));
             if (count < 1)
                 throw new ArgumentException(nameof(count));
-            if (!itemStack.HasItem)
+            if (!itemContainer.HasItem)
                 return;
-            if (ReferenceEquals(itemStack, this))
+            if (ReferenceEquals(itemContainer, this))
                 throw new InvalidOperationException("Couldn't be added items by itself.");
 
-            IItemStack taked = itemStack.TakeItem(count);
+            IItemContainer taked = itemContainer.TakeItem(count);
 
             if (!taked.HasItem)
                 return;
 
             AddItem(taked.Item, taked.ItemCount);
         }
-        public void AddItemFrom(IItemStack itemStack)
+        public void AddItemFrom(IItemContainer itemContainer)
         {
-            AddItemFrom(itemStack, itemStack.ItemCount);
+            AddItemFrom(itemContainer, itemContainer.ItemCount);
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public IItemStack TakeItem(int count)
+        public IItemContainer TakeItem(int count)
         {
             if (count < 1)
                 throw new ArgumentException(nameof(count));
@@ -106,7 +106,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             return taked;
         }
 
-        public IItemStack TakeItemAll()
+        public IItemContainer TakeItemAll()
         {
             if (!HasItem)
                 return Empty;
@@ -155,6 +155,8 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public bool HasItem => stack.HasItem;
         public bool IsContainerFull => stack.IsContainerFull;
 
+        IStorageItem IItemContainerInfo.Item => Item;
+
         public ItemStack(int maxItemCount = int.MaxValue)
         {
             stack = new ItemStack(maxItemCount);
@@ -167,7 +169,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         public IItemStack<T> AddItem(T item, int count)
         {
-            IItemStack nonTyped = stack.AddItem(item, count);
+            IItemContainer nonTyped = stack.AddItem(item, count);
 
             return new ItemStack<T>((T)nonTyped.Item, nonTyped.ItemCount);
         }
@@ -183,7 +185,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         public IItemStack<T> TakeItem(int count)
         {
-            IItemStack nonTyped = stack.TakeItem(count);
+            IItemContainer nonTyped = stack.TakeItem(count);
 
             return new ItemStack<T>((T)nonTyped.Item, nonTyped.ItemCount);
         }

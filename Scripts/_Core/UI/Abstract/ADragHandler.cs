@@ -30,7 +30,7 @@ namespace UTIRLib.UI
         {
             if (isDragging
                 && 
-                canvasController.Raycaster.TryRaycastFirst<IDropHandler>(out var dropHandler))
+                canvasController.CanvasRaycaster.TryRaycastFirst<IDropHandler>(out var dropHandler))
                 dropHandler.OnDrop(eventData);
 
             movable.ResetPosition();
