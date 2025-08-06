@@ -10,6 +10,81 @@ namespace UTIRLib.Reflection
 {
     public static class TypeExtensions
     {
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool IsMatch(this Type value,
+                                   ParameterInfo parameter,
+                                   bool allowInheritance = false)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+            if (parameter is null)
+                throw new ArgumentNullException(nameof(parameter));
+
+            if (value == parameter.ParameterType)
+                return true;
+
+            if (allowInheritance && value.IsType(parameter.ParameterType))
+                return true;
+
+            return false;
+        }
+
+        public static bool IsMatch(this Type[] values,
+                                   ParameterInfo[] parameters,
+                                   bool allowInheritance = false,
+                                   bool ignoreDefaultValues = false)
+        {
+            if (values is null)
+                throw new ArgumentNullException(nameof(values));
+            if (parameters is null)
+                throw new ArgumentNullException(nameof(parameters));
+
+            if (values.IsEmpty() && parameters.IsEmpty())
+                return true;
+
+            if (values.IsEmpty())
+                return false;
+
+            if (ignoreDefaultValues)
+                parameters = parameters.Where(x => !x.HasDefaultValue).ToArray();
+
+            if (values.Length != parameters.Length)
+                return false;
+
+            int count = values.Length;
+            if (allowInheritance)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    if (values[i].IsNotType(parameters[i].ParameterType))
+                        return false;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    if (values[i] != parameters[i].ParameterType)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool IsMatch(this IEnumerable<Type> values,
+                                   ParameterInfo[] parameters,
+                                   bool allowInheritance = false,
+                                   bool ignoreDefaultValues = false)
+        {
+            if (values is null)
+                throw new ArgumentNullException(nameof(values));
+
+            return values.ToArray().IsMatch(parameters,
+                                            allowInheritance,
+                                            ignoreDefaultValues);
+        }
+
         public static Queue<Type> CollectBaseTypes(this Type value)
         {
             if (value is null)
@@ -54,12 +129,9 @@ namespace UTIRLib.Reflection
             ConstructorInfo[] constructors = type.GetConstructors(
                 constructorParameters.BindingFlags);
 
-            found = constructors.SingleOrDefault(x =>
+            found = constructors.FirstOrDefault(x =>
             {
                 ParameterInfo[] parameters = x.GetParameters();
-
-                if (parameters.Length != constructorParameters.Signature.Count)
-                    return false;
 
                 if (constructorParameters.ParameterModifiers.IsNotNullOrEmpty()
                     &&
@@ -67,9 +139,32 @@ namespace UTIRLib.Reflection
                     )
                     return false;
 
-                Type[] parametersTypes = parameters.Select(x => x.ParameterType).ToArray();
+                InvokableSignature signature = constructorParameters.Signature;
+                Type[] paramTypes = parameters.Select(x => x.ParameterType).ToArray();
 
-                return constructorParameters.Signature == parametersTypes;
+                return signature == paramTypes;
+
+                //This for filter default params, cause bugs
+                //bool result = signature.IsMatch(parameters,
+                //                                signature.AllowInheritance,
+                //                                ignoreDefaultValues: true);
+
+
+                //if (result && constructorParameters.Arguments.Length < parameters.Length)
+                //{
+                //    var newArgs = new object[parameters.Length];
+                //    for (int i = 0; i < newArgs.Length; i++)
+                //        newArgs[i] = parameters[i].DefaultValue;
+
+                //    constructorParameters.Arguments.CopyTo(newArgs, 0);
+
+                //    signature = new InvokableSignature(parameters.Select(x => x.ParameterType));
+
+                //    constructorParameters.Arguments = newArgs;
+                //    constructorParameters.Signature = signature;
+                //}
+
+                //return result;
             });
 
             if (throwIfNotFound && found is null)

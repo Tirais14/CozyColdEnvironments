@@ -46,10 +46,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         }
         public int ItemCount => itemStack.ItemCount;
 
-        public ItemSlot(IItemStack itemStack, int capacityLimit = 0)
+        public ItemSlot(IItemStack itemStack)
         {
             this.itemStack = itemStack;
-            CapacityLimit = capacityLimit;
         }
 
         public IItemContainer AddItem(IStorageItem item, int count)
@@ -116,10 +115,9 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public bool IsContainerFull => itemSlot.IsContainerFull;
         public int ItemCount => itemSlot.ItemCount;
 
-        public ItemSlot(T itemStack, int capacityLimit = 0)
+        public ItemSlot(T itemStack)
         {
-            itemSlot = new ItemSlot(itemStack, capacityLimit);
-            CapacityLimit = capacityLimit;
+            itemSlot = new ItemSlot(itemStack);
         }
 
         public T AddItem(IStorageItem item, int count)

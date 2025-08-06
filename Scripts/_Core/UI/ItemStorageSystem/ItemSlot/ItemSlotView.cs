@@ -37,7 +37,7 @@ namespace UTIRLib.UI.ItemStorageSystem
 
             return InstanceFactory.Create<TModel>(InvokableArguments.Create(itemStack,
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                                                  cacheConstructor: true);
+                    cacheConstructor: true);
         }
 
         void IDropHandler.OnDrop(PointerEventData eventData)

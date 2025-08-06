@@ -52,8 +52,11 @@ namespace UTIRLib.Reflection
             return ProcessArguments(args, allowInheritance);
         }
 
-        public bool Equals(Type[] other)
+        public bool Equals(Type[]? other)
         {
+            if (other is null)
+                return false;
+
             if (other.IsEmpty() && types.IsEmpty())
                 return true;
 

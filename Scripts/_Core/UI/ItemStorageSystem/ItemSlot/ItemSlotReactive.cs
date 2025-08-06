@@ -12,9 +12,9 @@ namespace UTIRLib.UI
         private readonly ReactiveProperty<IStorageItem> itemReactive = new();
         private readonly ReactiveProperty<int> itemCountReactive = new();
 
-        public ItemSlotReactive(IItemStack itemStack, int capacityLimit = 0)
+        public ItemSlotReactive(IItemStack itemStack)
         {
-            slot = new ItemSlot(itemStack, capacityLimit);
+            slot = new ItemSlot(itemStack);
         }
 
         public int CapacityLimit { 
@@ -111,9 +111,9 @@ namespace UTIRLib.UI
         private readonly ReactiveProperty<IStorageItem> itemReactive = new();
         private readonly ReactiveProperty<int> itemCountReactive = new();
 
-        public ItemSlotReactive(T itemStack, int capacityLimit = 0)
+        public ItemSlotReactive(T itemStack)
         {
-            slot = new ItemSlot<T>(itemStack, capacityLimit);
+            slot = new ItemSlot<T>(itemStack);
         }
 
         public int CapacityLimit {

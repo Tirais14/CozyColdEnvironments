@@ -13,7 +13,12 @@ using UTIRLib.Reflection;
 #pragma warning disable S3881
 namespace UTIRLib.InputSystem
 {
-    public class InputHandler : MonoXInitable, IInputHandler, IDisposableContainer
+    public class InputHandler 
+        :
+        MonoXInitable,
+        IInputHandler,
+        IDisposableContainer,
+        IStateSwitchable
     {
         private readonly DisposableCollection disposables = new();
 
@@ -25,12 +30,18 @@ namespace UTIRLib.InputSystem
         [SerializeField]
         protected string actionMapName;
 
+        public bool IsEnabled => actionMap.enabled;
+
         protected override void OnInit()
         {
             actionMap = inputs.FindActionMap(actionMapName, throwIfNotFound: true);
 
             InitInputActionProperties();
         }
+
+        public void Enable() => actionMap.Enable();
+
+        public void Disable() => actionMap.Disable();
 
         public void Dispose()
         {
