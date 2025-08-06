@@ -1,8 +1,8 @@
 using UniRx;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UTIRLib.Attributes;
+using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
 
@@ -12,7 +12,7 @@ namespace UTIRLib.UI.ItemStorageSystem
     [RequireComponent(typeof(Image))]
     public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>
         where TViewModel : IItemStackViewModel<TModel>
-        where TModel : IItemStackReactive
+        where TModel : IItemStack, IItemContainerReactive
     {
         [GetBySelf]
         protected Image image;

@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+
 namespace UTIRLib.GameSystems.ItemStorageSystem
 {
     public interface IItemSlot : IItemContainer

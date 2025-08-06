@@ -9,7 +9,7 @@ using UTIRLib.Unity.TypeMatching;
 namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemSlotViewModel<T> : AViewModel<T>, IItemSlotViewModel<T>
-        where T : IItemSlot
+        where T : IItemSlot, IItemContainerReactive
     {
         public ItemSlotViewModel(T model) : base(model)
         {

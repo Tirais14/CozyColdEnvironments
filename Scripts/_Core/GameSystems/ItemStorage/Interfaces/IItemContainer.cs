@@ -1,4 +1,5 @@
 using System;
+using Unity.Collections.LowLevel.Unsafe;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
 
@@ -12,6 +13,8 @@ namespace UTIRLib.GameSystems
         void AddItemFrom(IItemContainer itemContainer, int count);
 
         void AddItemFrom(IItemContainer itemContainer);
+
+        void CopyItemFrom(IItemContainer itemContainer);
 
         IItemContainer TakeItem(int count);
 
@@ -27,6 +30,8 @@ namespace UTIRLib.GameSystems
         void AddItemFrom(TContainer itemContainer, int count);
 
         void AddItemFrom(TContainer itemContainer);
+
+        void CopyItemFrom(TContainer itemContainer);
 
         new TContainer TakeItem(int count);
 
@@ -47,6 +52,15 @@ namespace UTIRLib.GameSystems
                 throw new ArgumentException($"Expected {typeof(TContainer).GetName()}");
 
             AddItemFrom(typed, count);
+        }
+
+        /// <exception cref="ArgumentException"></exception>
+        void IItemContainer.CopyItemFrom(IItemContainer itemContainer)
+        {
+            if (itemContainer is not TContainer typed)
+                throw new ArgumentException($"Expected {typeof(TContainer).GetName()}");
+
+            CopyItemFrom(typed);
         }
 
         /// <exception cref="ArgumentException"></exception>

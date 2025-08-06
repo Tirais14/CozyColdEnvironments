@@ -20,9 +20,9 @@ namespace UTIRLib.UI
 
         protected abstract bool isDragging { get; set; }
 
-        protected override void OnAwake()
+        protected override void OnStart()
         {
-            base.OnAwake();
+            base.OnStart();
 
             dragItemTransform = dragItem.transform;
 
@@ -31,26 +31,29 @@ namespace UTIRLib.UI
             pointerInput = canvasController.Pointer;
         }
 
-        public virtual void OnBeginDrag(PointerEventData eventData)
+        public abstract void OnBeginDrag(PointerEventData eventData);
+
+        public abstract void OnDrag(PointerEventData eventData);
+
+        public abstract void OnEndDrag(PointerEventData eventData);
+
+        protected void BeginDrag(PointerEventData eventData)
         {
+            isDragging = true;
+
             beforeDragPosition = dragItemTransform.localPosition;
             eventData.pointerDrag = dragItem.gameObject;
         }
 
-        public virtual void OnDrag(PointerEventData eventData)
+        protected void FollowPointer(PointerEventData eventData)
         {
-            if (!isDragging)
-                return;
-
             dragItemTransform.position = eventData.position;
         }
 
-        public virtual void OnEndDrag(PointerEventData eventData)
+        protected void EndDrag()
         {
-            if (!isDragging)
-                return;
-
             dragItemTransform.localPosition = beforeDragPosition;
+            isDragging = false;
         }
     }
 }

@@ -9,6 +9,8 @@ namespace UTIRLib.GameSystems
 {
     public class StorageItem : IStorageItem, IEquatable<IStorageItem>, IEqualityComparer<IStorageItem>
     {
+        public readonly static StorageItem Null = new();
+
         public string Name { get; } = "NullItem";
         public int ID { get; } = int.MinValue;
         public Sprite Icon { get; } = TirLib.ErrorSprite;

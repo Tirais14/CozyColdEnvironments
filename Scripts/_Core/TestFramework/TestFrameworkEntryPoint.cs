@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 
 #nullable enable
@@ -77,7 +78,7 @@ namespace UTIRLib.TestFramework
                                         {
                                             if (y.IsDefined<MonoTestAttribute>()
                                                 &&
-                                                y.ReturnType == typeof(IEnumerator)
+                                                y.ReturnType.IsAnyType(typeof(void), typeof(IEnumerator))
                                                 )
                                                 list.Add(y);
 
@@ -92,9 +93,14 @@ namespace UTIRLib.TestFramework
             for (int i = 0; i < monoTests.Length; i++)
             {
                 MethodInfo[] methods = testMethods[monoTests[i]];
+                object? routine;
                 foreach (var method in methods)
                 {
-                    StartCoroutine((IEnumerator)method.Invoke(monoTests[i]));
+                    routine = method.Invoke(monoTests[i]);
+
+                    if (routine.IsNotNull())
+                        StartCoroutine((IEnumerator)routine);
+
                     Debug.Log($"{monoTests[i].GetType().GetName()}.{method.Name}({method.GetParameters().Select(x => x.ParameterType.GetName()).JoinStrings(", ")}) started.");
                 }
             }

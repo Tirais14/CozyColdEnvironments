@@ -70,6 +70,17 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             itemStack.AddItemFrom(itemContainer);
         }
 
+        /// <exception cref="ArgumentNullException"></exception>
+        public void CopyItemFrom(IItemContainer itemContainer)
+        {
+            if (itemContainer.IsNull())
+                throw new ArgumentNullException(nameof(itemContainer));
+            if (!itemContainer.HasItem)
+                return;
+
+            AddItem(itemContainer.Item, itemContainer.ItemCount);
+        }
+
         public IItemContainer TakeItem(int count) => itemStack.TakeItem(count);
 
         public IItemContainer TakeItemAll() => TakeItem(ItemCount);
@@ -123,6 +134,11 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public void AddItemFrom(T itemContainer)
         {
             itemSlot.AddItemFrom(itemContainer);
+        }
+
+        public void CopyItemFrom(T itemContainer)
+        {
+            itemSlot.CopyItemFrom(itemContainer);
         }
 
         public T TakeItem(int count) => (T)itemSlot.TakeItem(count);

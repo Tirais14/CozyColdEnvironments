@@ -1,19 +1,16 @@
-using System;
 using UniRx;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UTIRLib.Disposables;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.UI.MVVM;
 using UTIRLib.Unity.Extensions;
-using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
 namespace UTIRLib.UI.ItemStorageSystem
 {
     public class ItemStackViewModel<T> : AViewModel<T>,
         IItemStackViewModel<T>
-        where T : IItemStackReactive
+        where T : IItemStack, IItemContainerReactive
     {
         private readonly ReactiveProperty<string> counterView = new();
         private readonly ReactiveProperty<Sprite?> iconView = new();

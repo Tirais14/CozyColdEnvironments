@@ -12,7 +12,11 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public IStorageItem Item { get; private set; } = new StorageItem();
         public int ItemCount { get; private set; }
         public int MaxItemCount { get; private set; }
-        public bool HasItem => Item.IsNotNull() && ItemCount > 0;
+        public bool HasItem => Item.IsNotNull()
+                               && 
+                               ItemCount > 0
+                               &&
+                               !Item.Equals(StorageItem.Null);
         public bool IsContainerFull => ItemCount >= MaxItemCount;
 
         public ItemStack(int maxItemCount = int.MaxValue)
@@ -83,6 +87,17 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             AddItemFrom(itemContainer, itemContainer.ItemCount);
         }
 
+        /// <exception cref="ArgumentNullException"></exception>
+        public void CopyItemFrom(IItemContainer itemContainer)
+        {
+            if (itemContainer.IsNull())
+                throw new ArgumentNullException(nameof(itemContainer));
+            if (!itemContainer.HasItem)
+                return;
+
+            AddItem(itemContainer.Item, itemContainer.ItemCount);
+        }
+
         /// <exception cref="ArgumentException"></exception>
         public IItemContainer TakeItem(int count)
         {
@@ -135,7 +150,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
             if (item.IsNull())
                 throw new ArgumentNullException(nameof(item));
 
-            return Item.IsNotNull() && Item.Equals(item);
+            return !HasItem || HasItem && Item.Equals(item);
         }
 
         public void Clear()
@@ -181,6 +196,11 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public void AddItemFrom(IItemStack<T> itemStack)
         {
             stack.AddItemFrom(itemStack);
+        }
+
+        public void CopyItemFrom(IItemStack<T> itemStack)
+        {
+            stack.CopyItemFrom(itemStack);
         }
 
         public IItemStack<T> TakeItem(int count)

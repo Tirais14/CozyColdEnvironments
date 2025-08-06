@@ -6,13 +6,14 @@ using UnityEngine;
 namespace UTIRLib
 {
     [RequireComponent(typeof(Rigidbody))]
-    public abstract class AFirstPersonCharacterController : MonoX
+    public abstract class AFirstPersonCharacterController : WorldObject
     {
-        [GetBySelf]
-        protected Rigidbody rb = null!;
         protected IMoveStrategy moveStrategy = null!;
         protected IRotationStrategy cameraRotationStrategy = null!;
         protected IRotationStrategy bodyRotationStrategy = null!;
+
+        [GetBySelf]
+        protected Rigidbody rb = null!;
 
         public float MoveSpeed {
             get => moveStrategy.MoveSpeed;

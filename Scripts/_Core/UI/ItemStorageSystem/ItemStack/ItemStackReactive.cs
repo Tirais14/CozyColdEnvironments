@@ -5,7 +5,7 @@ using UTIRLib.GameSystems.ItemStorageSystem;
 #nullable enable
 namespace UTIRLib.UI.ItemStorageSystem
 {
-    public class ItemStackReactive : IItemStackReactive
+    public class ItemStackReactive : IItemStack, IItemContainerReactive
     {
         private readonly ItemStack stack;
         private readonly ReactiveProperty<IStorageItem> itemReactive = new(new StorageItem());
@@ -51,6 +51,12 @@ namespace UTIRLib.UI.ItemStorageSystem
             UpdateInfo();
         }
 
+        public void CopyItemFrom(IItemContainer itemContainer)
+        {
+            stack.CopyItemFrom(itemContainer);
+            UpdateInfo();
+        }
+
         public IItemContainer TakeItem(int count)
         {
             IItemContainer temp = stack.TakeItem(count);
@@ -85,7 +91,7 @@ namespace UTIRLib.UI.ItemStorageSystem
             itemCountReactive.Value = stack.ItemCount;
         }
     }
-    public class ItemStackReactive<T> : IItemStackReactive<T>
+    public class ItemStackReactive<T> : IItemStack<T>, IItemContainerReactive<IItemStack<T>, T>
         where T : IStorageItem, new()
     {
         private readonly ItemStack<T> stack;
@@ -131,6 +137,13 @@ namespace UTIRLib.UI.ItemStorageSystem
         public void AddItemFrom(IItemStack<T> itemStack)
         {
             stack.AddItemFrom(itemStack);
+
+            UpdateInfo();
+        }
+
+        public void CopyItemFrom(IItemStack<T> itemStack)
+        {
+            stack.CopyItemFrom(itemStack);
 
             UpdateInfo();
         }
