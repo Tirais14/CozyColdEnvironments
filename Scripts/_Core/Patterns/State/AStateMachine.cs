@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UTIRLib.Diagnostics;
+using UTIRLib.Patterns.Factory;
 
 namespace UTIRLib.Patterns.States
 {
@@ -9,12 +10,23 @@ namespace UTIRLib.Patterns.States
         protected IState defaultState;
         protected IState playingState;
 
+        public bool IsDefaultState => IsPlaying(defaultState);
+
         protected override void OnStart()
         {
             base.OnStart();
 
             playingState = defaultState;
             playingState.Enter();
+        }
+
+        public abstract IState GetNextState();
+
+        public bool IsPlaying(IState state) => playingState.Equals(state);
+
+        protected void CreateStatesByFactory(IFactory<Type, IState>? factory = null)
+        {
+            StateMachineHelper.CreateStatesByFactory(this, factory);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -28,11 +40,10 @@ namespace UTIRLib.Patterns.States
             playingState.Enter();
         }
 
-        protected abstract IState GetNextState();
-
         private void Update()
         {
             SetState(GetNextState());
+
             playingState.OnUpdate();
         }
 
