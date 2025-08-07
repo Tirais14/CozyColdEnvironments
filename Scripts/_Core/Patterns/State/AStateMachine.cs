@@ -1,12 +1,18 @@
 #nullable enable
 using System;
-using UTIRLib.Diagnostics;
+using System.Linq;
+using UnityEditor;
+using UTIRLib.Disposables;
 using UTIRLib.Patterns.Factory;
+using UTIRLib.Reflection;
 
 namespace UTIRLib.Patterns.States
 {
-    public abstract class AStateMachine : MonoX
+    public abstract class AStateMachine : MonoX, IDisposableContainer
     {
+        private bool disposedValue;
+
+        protected readonly DisposableCollection disposables = new();
         protected IState defaultState;
         protected IState playingState;
 
@@ -24,9 +30,24 @@ namespace UTIRLib.Patterns.States
 
         public bool IsPlaying(IState state) => playingState.Equals(state);
 
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         protected void CreateStatesByFactory(IFactory<Type, IState>? factory = null)
         {
             StateMachineHelper.CreateStatesByFactory(this, factory);
+
+            GetType().ForceGetFields(BindingFlagsDefault.InstanceAll)
+                      .Where(x => x.FieldType.IsType<IState>()).Select(x =>
+                      {
+                          if (x.GetValue(this) is IDisposable disposable)
+                              disposables.Add(disposable);
+
+                          return x;
+                      });
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -40,6 +61,17 @@ namespace UTIRLib.Patterns.States
             playingState.Enter();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                    disposables.Dispose();
+
+                disposedValue = true;
+            }
+        }
+
         private void Update()
         {
             SetState(GetNextState());
@@ -50,5 +82,7 @@ namespace UTIRLib.Patterns.States
         private void FixedUpdate() => playingState.OnFixedUpdate();
 
         private void LateUpdate() => playingState.OnLateUpdate();
+
+        private void OnDestroy() => Dispose();
     }
 }

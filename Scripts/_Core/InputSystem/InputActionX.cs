@@ -8,12 +8,6 @@ namespace UTIRLib.InputSystem
 {
     public class InputActionX : IInputAction
     {
-        protected bool disposedValue;
-
-        protected readonly InputAction inputAction;
-
-        public bool IsButtonPressed => inputAction.IsPressed();
-
         private Action<CallbackContext>? OnStarted;
         private Action? OnStartedBasic;
 
@@ -22,6 +16,13 @@ namespace UTIRLib.InputSystem
 
         private Action<CallbackContext>? OnCanceled;
         private Action? OnCanceledBasic;
+
+        protected bool disposedValue;
+
+        protected readonly InputAction inputAction;
+
+        public bool IsButtonPressed => inputAction.IsPressed();
+        public bool IsEnabled => inputAction.enabled;
 
         public InputActionX(InputAction inputAction)
         {
@@ -232,6 +233,10 @@ namespace UTIRLib.InputSystem
 
         public InputAction AsUnityInputAction() => inputAction;
 
+        public void Enable() => inputAction.Enable();
+
+        public void Disable() => inputAction.Disable();
+
         protected virtual void DisposeManaged()
         {
             inputAction.started -= StartedEvent;
@@ -290,6 +295,10 @@ namespace UTIRLib.InputSystem
     {
         private T value;
 
+        private Action<T>? ValueOnStarted;
+        private Action<T>? ValueOnPerformed;
+        private Action<T>? ValueOnCanceled;
+
         public T Value {
             get
             {
@@ -299,10 +308,6 @@ namespace UTIRLib.InputSystem
                 return value;
             }
         }
-
-        private Action<T>? ValueOnStarted;
-        private Action<T>? ValueOnPerformed;
-        private Action<T>? ValueOnCanceled;
 
         public InputActionX(InputAction inputAction) : base(inputAction)
         {
