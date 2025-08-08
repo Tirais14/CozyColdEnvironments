@@ -29,6 +29,7 @@ namespace UTIRLib.UI
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
 
+            raycastResults.Clear();
             pointerEventData.position = position;
             GraphicRaycaster.Raycast(pointerEventData, raycastResults);
 
@@ -51,6 +52,7 @@ namespace UTIRLib.UI
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
 
+            raycastResults.Clear();
             pointerEventData.position = position;
             GraphicRaycaster.Raycast(pointerEventData, raycastResults);
 

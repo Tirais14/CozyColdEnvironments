@@ -6,7 +6,10 @@ using UTIRLib.UI.ItemStorageSystem;
 #nullable enable
 namespace UTIRLib.UI
 {
-    public class ItemSlotReactive : IItemSlot, IItemContainerReactive
+    public class ItemSlotReactive 
+        :
+        IItemSlot,
+        IItemContainerReactive
     {
         private readonly ItemSlot slot;
         private readonly ReactiveProperty<IStorageItem> itemReactive = new();

@@ -29,21 +29,21 @@ namespace UTIRLib.Unity.TypeMatching
     {
         public static bool Is<T>(this object? obj)
         {
-            if (obj.IsNotNull() && obj is T)
+            if (obj is T && obj.IsNotNull())
                 return true;
 
             return false;
         }
         public static bool Is<TThis, T>(this TThis? obj)
         {
-            if (obj.IsNotNull() && obj is T)
+            if (obj is T && obj.IsNotNull())
                 return true;
 
             return false;
         }
         public static bool Is<T>(this object? obj, [NotNullWhen(true)] out T? result)
         {
-            if (obj.IsNotNull() && obj is T typedObj)
+            if (obj is T typedObj && obj.IsNotNull())
             {
                 result = typedObj;
                 return true;
@@ -54,7 +54,7 @@ namespace UTIRLib.Unity.TypeMatching
         }
         public static bool Is<TThis, T>(this TThis? obj, [NotNullWhen(true)] out T? result)
         {
-            if (obj.IsNotNull() && obj is T typedObj)
+            if (obj is T typedObj && obj.IsNotNull())
             {
                 result = typedObj;
                 return true;

@@ -8,15 +8,18 @@ using UTIRLib.Unity.TypeMatching;
 #nullable enable
 namespace UTIRLib.UI.ItemStorageSystem
 {
-    public class ItemSlotViewModel<T> : AViewModel<T>, IItemSlotViewModel<T>
+    public class ItemSlotViewModel<T> 
+        :
+        AViewModel<T>,
+        IItemSlotViewModel<T>
+
         where T : IItemSlot, IItemContainerReactive
     {
         public ItemSlotViewModel(T model) : base(model)
         {
         }
 
-        /// <exception cref="ArgumentNullException"></exception>
-        public void OnViewDrop(PointerEventData eventData)
+        public void OnDrop(PointerEventData eventData)
         {
             if (eventData is null)
                 throw new ArgumentNullException(nameof(eventData));

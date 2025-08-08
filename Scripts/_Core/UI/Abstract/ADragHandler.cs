@@ -1,59 +1,76 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UTIRLib.Attributes;
+using UTIRLib.Diagnostics;
 using UTIRLib.InputSystem;
+using UTIRLib.Unity.Extensions;
 
 #nullable enable
-#pragma warning disable IDE1006
 namespace UTIRLib.UI
 {
     public abstract class ADragHandler<T> : MonoX,
         IBeginDragHandler,
-        IDragHandler,
-        IEndDragHandler
-        where T : UnityEngine.Component
+        IDragHandler
+        where T : Component, IDraggable
     {
-        protected T dragItem;
-        protected Transform dragItemTransform;
-        protected Vector3 beforeDragPosition;
+        protected T draggable;
+
+        [RequiredField]
         protected ICanvasRaycaster raycaster;
+
+        [RequiredField]
         protected IPointerInput pointerInput;
 
-        protected abstract bool isDragging { get; set; }
+        protected virtual bool CanBeginDrag => true;
 
         protected override void OnStart()
         {
             base.OnStart();
 
-            dragItemTransform = dragItem.transform;
+            var canvasController = this.GetAssignedObjectInParent<ICanvasController>()
+                                       .ThrowIfNull(new ObjectNotFoundException(typeof(ICanvasController)));
 
-            var canvasController = GetComponentInParent<ACanvasController>();
             raycaster = canvasController.RaycasterCanvas;
             pointerInput = canvasController.Pointer;
+
+            onEndFirstFrame += () => draggable.gameObject.SetActive(false);
+            draggable.OnEndDragEvent += EndDrag;
         }
 
-        public abstract void OnBeginDrag(PointerEventData eventData);
-
-        public abstract void OnDrag(PointerEventData eventData);
-
-        public abstract void OnEndDrag(PointerEventData eventData);
-
-        protected void BeginDrag(PointerEventData eventData)
+        protected virtual void BeginDrag(PointerEventData eventData)
         {
-            isDragging = true;
-
-            beforeDragPosition = dragItemTransform.localPosition;
-            eventData.pointerDrag = dragItem.gameObject;
+            draggable.gameObject.SetActive(true);
+            eventData.pointerDrag = draggable.gameObject;
         }
 
-        protected void FollowPointer(PointerEventData eventData)
+        protected virtual void EndDrag(PointerEventData eventData)
         {
-            dragItemTransform.position = eventData.position;
+            draggable.gameObject.SetActive(false);
+
+            IDropHandler[] dropHandlers = raycaster.Raycast<IDropHandler>(eventData.position);
+
+            if (dropHandlers.IsEmpty())
+                return;
+
+            if (dropHandlers.Length > 1)
+                throw new System.Exception("Cannot resolve drop handler to execute.");
+
+            dropHandlers[0].OnDrop(eventData);
         }
 
-        protected void EndDrag()
+        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
-            dragItemTransform.localPosition = beforeDragPosition;
-            isDragging = false;
+            if (!CanBeginDrag)
+            {
+                eventData.pointerDrag = null;
+                return;
+            }
+
+            BeginDrag(eventData);
+        }
+
+        void IDragHandler.OnDrag(PointerEventData eventData)
+        {
         }
     }
 }
