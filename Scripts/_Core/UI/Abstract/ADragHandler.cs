@@ -11,6 +11,7 @@ namespace UTIRLib.UI
     public abstract class ADragHandler<T> : MonoX,
         IBeginDragHandler,
         IDragHandler
+
         where T : Component, IDraggable
     {
         protected T draggable;
@@ -34,6 +35,7 @@ namespace UTIRLib.UI
             pointerInput = canvasController.Pointer;
 
             onEndFirstFrame += () => draggable.gameObject.SetActive(false);
+
             draggable.OnEndDragEvent += EndDrag;
         }
 

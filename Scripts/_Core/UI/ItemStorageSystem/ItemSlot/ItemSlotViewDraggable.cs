@@ -16,7 +16,18 @@ namespace UTIRLib.UI.ItemStorageSystem
     {
         new protected Transform transform;
 
-        public event Action<PointerEventData> OnEndDragEvent = null!;
+        private Action<PointerEventData>? onEndDragEvent;
+
+        public event Action<PointerEventData> OnEndDragEvent {
+            add
+            {
+                if (onEndDragEvent.IsInInvocationList(value))
+                    return;
+
+                onEndDragEvent += value;
+            }
+            remove => onEndDragEvent -= value;
+        }
 
         protected override void OnAwake()
         {
@@ -32,11 +43,11 @@ namespace UTIRLib.UI.ItemStorageSystem
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
-            if (OnEndDragEvent is null)
+            if (onEndDragEvent is null)
                 throw new NullReferenceException($"{nameof(OnEndDragEvent)} not setted.");
 
             Debug.Log("Dragged");
-            OnEndDragEvent(eventData);
+            onEndDragEvent(eventData);
         }
     }
 }

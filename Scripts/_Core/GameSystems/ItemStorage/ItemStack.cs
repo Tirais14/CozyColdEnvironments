@@ -12,11 +12,7 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
         public IStorageItem Item { get; private set; } = new StorageItem();
         public int ItemCount { get; private set; }
         public int MaxItemCount { get; private set; }
-        public bool HasItem => Item.IsNotNull()
-                               && 
-                               ItemCount > 0
-                               &&
-                               !Item.Equals(StorageItem.Null);
+        public bool HasItem => Item.IsNotNull() && ItemCount > 0;
         public bool IsContainerFull => ItemCount >= MaxItemCount;
 
         public ItemStack(int maxItemCount = int.MaxValue)

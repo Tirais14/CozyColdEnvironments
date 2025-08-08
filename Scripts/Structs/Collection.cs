@@ -36,9 +36,13 @@ namespace UTIRLib
             if (iterations >= iterationsLimit)
                 throw new EndlessLoopException(iterations);
 
+            bool moveNextValue = moveNext(Current);
+            if (!moveNextValue)
+                return false;
+
             Current = getNext()!;
 
-            return moveNext(Current);
+            return moveNextValue;
         }
 
         public readonly void ForEach(Action<T> action)

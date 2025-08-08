@@ -99,13 +99,19 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
                 return;
             }
 
-            var suitableSlots = new Collection<IItemSlot>(
-                x => x.IsNotNull() && itemStack.HasItem,
-                () => GetSuitableSlot(itemStack.Item)
-                );
+            var loopPredicate = new LoopPredicate<IItemSlot?>(
+                (x) => x.IsNotNull() && itemStack.HasItem);
 
-            foreach (var slot in suitableSlots)
-                slot.AddItemFrom(itemStack, itemStack.ItemCount);
+            IItemSlot? currentSlot = GetSuitableSlot(itemStack.Item);
+            while (loopPredicate.Invoke(currentSlot))
+            {
+                currentSlot!.AddItemFrom(itemStack);
+
+                if (!itemStack.HasItem)
+                    break;
+
+                currentSlot = GetSuitableSlot(itemStack.Item);
+            }
         }
 
         /// <exception cref="ArgumentNullException"></exception>

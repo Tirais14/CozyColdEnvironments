@@ -5,9 +5,13 @@ using UTIRLib.Diagnostics;
 using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
+#pragma warning disable S4035
 namespace UTIRLib.GameSystems
 {
-    public class StorageItem : IStorageItem, IEquatable<IStorageItem>, IEqualityComparer<IStorageItem>
+    public class StorageItem 
+        :
+        IStorageItem,
+        IEquatable<IStorageItem>
     {
         public readonly static StorageItem Null = new();
 
@@ -28,37 +32,23 @@ namespace UTIRLib.GameSystems
             MaxStackCount = maxStackCount;
         }
 
-        public bool Equals(IStorageItem other)
+        public bool Equals(IStorageItem? other)
         {
-            if (other.IsNull())
-                return false;
+            other ??= Null;
 
             return ID == other.ID;
         }
 
-        public bool Equals(IStorageItem x, IStorageItem y)
+        public override bool Equals(object? obj)
         {
-            if (x.IsNull() && y.IsNull())
-                return true;
-            if (x.IsNull())
-                return false;
+            obj ??= Null;
 
-            return x.ID == y.ID;
-        }
-
-        public override bool Equals(object obj)
-        {
             return obj is IStorageItem typed && Equals(typed);
         }
 
         public override int GetHashCode() => ID.GetHashCode();
 
-        public int GetHashCode(IStorageItem obj)
-        {
-            return obj.ID.GetHashCode();
-        }
-
-        public static bool operator ==(StorageItem left, StorageItem right)
+        public static bool operator ==(StorageItem left, StorageItem? right)
         {
             if (left.IsNull() && right.IsNull())
                 return true;
@@ -68,7 +58,7 @@ namespace UTIRLib.GameSystems
             return left.Equals(right);
         }
 
-        public static bool operator !=(StorageItem left, StorageItem right)
+        public static bool operator !=(StorageItem left, StorageItem? right)
         {
             if (left.IsNull() && right.IsNull())
                 return false;
