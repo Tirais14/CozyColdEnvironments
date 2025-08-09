@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UTIRLib.Unity;
 
-namespace UTIRLib.TwoD
+namespace UTIRLib
 {
     [Flags]
     public enum Direction2D

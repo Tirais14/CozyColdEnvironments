@@ -1,4 +1,4 @@
-namespace UTIRLib.TwoD
+namespace UTIRLib
 {
     public enum Relative2DPosition
     {
