@@ -3,14 +3,24 @@ namespace UTIRLib.Patterns.States
 {
     public interface IState
     {
-        void Enter();
+        void Enter()
+        {
+        }
 
-        void OnUpdate();
+        void Tick()
+        {
+        }
 
-        void OnFixedUpdate();
+        void FixedTick()
+        { 
+        }
 
-        void OnLateUpdate();
+        void LateTick()
+        {
+        }
 
-        void Exit();
+        void Exit() 
+        {
+        }
     }
 }
