@@ -64,8 +64,11 @@ namespace UTIRLib.InputSystem
 
             InputAction input = actionMap.FindAction(actionName, throwIfNotFound: true);
 
-            if (typeof(T) == typeof(bool))
-                return (new ButtonInputAction(input) as IInputAction<T>)!;
+            Type inputValueType = typeof(T);
+            if (inputValueType == typeof(bool))
+                return (IInputAction<T>)new ButtonInputAction(input);
+            else if (inputValueType == typeof(Vector2))
+                return (IInputAction<T>)new Vector2InputAction(input);
 
             return new InputActionX<T>(input);
         }
