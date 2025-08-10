@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
-using UnityEngine.Analytics;
 using UTIRLib.Unity.Extensions;
 using UTIRLib.Vectors.Linq;
 
@@ -15,11 +13,12 @@ namespace UTIRLib
         private const int MAX_RAYCAST_HITS = 3;
         private const float RAYCAST_SURFACE_OFFSET = 10f;
 
+        private readonly ReactiveProperty<bool> isMovingReactive = new();
         private readonly ReactiveProperty<bool> isOnSurfaceReactive = new();
         private readonly ReactiveProperty<bool> isJumpingReactive = new();
 
         private float moveSpeed = 1000f;
-        private float jumpForce = 3f;
+        private float jumpForce = 12f;
         private RaycastHit surfaceHit;
 
         new protected Transform transform { get; private set; } = null!;
@@ -33,16 +32,27 @@ namespace UTIRLib
 
         protected Transform characterCameraTransform { get; private set; } = null!;
 
+        public bool IsMoving {
+            get => isMovingReactive.Value;
+            protected set => isMovingReactive.Value = value;
+        }
+
+        public IReadOnlyReactiveProperty<bool> IsMovingReactive => isMovingReactive;
+
         public bool IsOnSurface {
             get => isOnSurfaceReactive.Value;
             protected set => isOnSurfaceReactive.Value = value;
         }
+
         public IReadOnlyReactiveProperty<bool> IsOnSurfaceReactive => isOnSurfaceReactive;
+
         public bool IsJumping {
             get => isJumpingReactive.Value;
             protected set => isJumpingReactive.Value = value;
         }
+
         public IReadOnlyReactiveProperty<bool> IsJumpingReactive => isJumpingReactive;
+
         public float MoveSpeed {
             get => moveSpeed;
             set
@@ -78,6 +88,7 @@ namespace UTIRLib
             base.OnStart();
 
             characterCameraTransform = characterCamera.transform;
+            BindReactiveProps();
         }
 
         public void Jump(bool inputValue)
@@ -91,6 +102,10 @@ namespace UTIRLib
 
         public void Move(Direction2D direction2D)
         {
+            if (!IsOnSurface)
+                return;
+
+            IsMoving = true;
             Vector3 direction = GetMoveDirection(direction2D);
 
             Vector3 velocity = Time.fixedDeltaTime * MoveSpeed * direction;
@@ -120,6 +135,18 @@ namespace UTIRLib
             };
         }
 
+        private void BindReactiveProps()
+        {
+            isOnSurfaceReactive.Subscribe(x =>
+            {
+                if (!x)
+                    return;
+
+                IsJumping = false;
+
+            }).AddTo(this);
+        }
+
         private Vector3 GetMoveDirection(Direction2D direction2D)
         {
             if (direction2D == Direction2D.None)
@@ -138,7 +165,7 @@ namespace UTIRLib
             if (!Physics.Raycast(raycastOrigin,
                                  Vector3.down,
                                  out RaycastHit hit,
-                                 10000f,
+                                 Mathf.Infinity,
                                  SurfaceMask,
                                  QueryTriggerInteraction.Ignore))
             {
@@ -148,14 +175,13 @@ namespace UTIRLib
 
             TirLibDebug.AssertError(hit.transform == transform, "Collide with self.");
 
-            IsOnSurface = Mathf.Approximately(hit.distance, RAYCAST_SURFACE_OFFSET);
+            IsOnSurface = hit.distance.NearlyEquals(RAYCAST_SURFACE_OFFSET, 1f);
             surfaceHit = hit;
         }
 
         private void SnapToSurface()
         {
-            Vector3 position = transform.position;
-            rigidBody.AddForce(Vector3.down, ForceMode.VelocityChange);
+            rigidBody.MovePosition(rigidBody.position.Q().SetY(Mathf.Lerp(rigidBody.position.y, surfaceHit.point.y, 0.01f)));
         }
 
         private void Update()
@@ -163,9 +189,9 @@ namespace UTIRLib
             IsOnSufaceObserver();
         }
 
-        private void LateUpdate()
+        private void FixedUpdate()
         {
-            if (!IsOnSurface && !IsJumping)
+            if (IsMoving)
                 SnapToSurface();
         }
     }
