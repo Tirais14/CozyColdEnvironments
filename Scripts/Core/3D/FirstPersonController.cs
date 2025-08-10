@@ -1,3 +1,4 @@
+using System;
 using UniRx;
 using UnityEngine;
 using UTIRLib.Unity.Extensions;
@@ -181,7 +182,8 @@ namespace UTIRLib
 
         private void SnapToSurface()
         {
-            rigidBody.MovePosition(rigidBody.position.Q().SetY(Mathf.Lerp(rigidBody.position.y, surfaceHit.point.y, 0.01f)));
+            float lerpedY = Mathf.Lerp(rigidBody.position.y, surfaceHit.point.y, 0.01f);
+            rigidBody.MovePosition(rigidBody.position.Q().SetY(lerpedY));
         }
 
         private void Update()
