@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UTIRLib.Diagnostics;
+using static UTIRLib.BindingFlagsDefault;
 
 #nullable enable
 namespace UTIRLib.Reflection
@@ -274,7 +275,7 @@ namespace UTIRLib.Reflection
         }
 
         public static MemberInfo[] ForceGetMembers(this Type value,
-            BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
+                                                   BindingFlags bindingFlags = InstancePublic)
         {
             return TypeHelper.ForceGetMembers(value, bindingFlags);
         }
@@ -301,6 +302,81 @@ namespace UTIRLib.Reflection
             BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers<ConstructorInfo>(value, bindingFlags);
+        }
+
+        public static FieldInfo? GetField(this Type value,
+                                          Type fieldType,
+                                          BindingFlags bindingFlags = InstancePublic)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+            if (fieldType is null)
+                throw new ArgumentNullException(nameof(fieldType));
+
+            return value.GetFields(fieldType, bindingFlags).FirstOrDefault();
+        }
+        public static FieldInfo? GetField<T>(this Type value,
+                                             BindingFlags bindingFlags = InstancePublic)
+        {
+            return value.GetField(typeof(T), bindingFlags);
+        }
+
+        public static FieldInfo[] GetFields(this Type value,
+                                            Type fieldType,
+                                            BindingFlags bindingFlags = InstancePublic)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+            if (fieldType is null)
+                throw new ArgumentNullException(nameof(fieldType));
+
+            return value.ForceGetFields(bindingFlags)
+                        .Where(x => x.FieldType.IsType(fieldType))
+                        .ToArray();
+        }
+        public static FieldInfo[] GetFields<T>(this Type value,
+                                               BindingFlags bindingFlags = InstancePublic)
+        {
+            return value.GetFields(typeof(T), bindingFlags);
+        }
+
+        public static PropertyInfo? GetProperty(this Type value,
+            Type propertyType,
+            BindingFlags bindingFlags = InstancePublic,
+            bool onlyWithSetter = false)
+        {
+            return value.GetProperties(propertyType,
+                                       bindingFlags,
+                                       onlyWithSetter).FirstOrDefault();
+        }
+        public static PropertyInfo? GetProperty<T>(this Type value,
+            BindingFlags bindingFlags = InstancePublic,
+            bool onlyWithSetter = false)
+        {
+            return value.GetProperties(typeof(T),
+                                       bindingFlags,
+                                       onlyWithSetter).FirstOrDefault();
+        }
+
+        public static PropertyInfo[] GetProperties(this Type value,
+            Type propertyType,
+            BindingFlags bindingFlags = InstancePublic,
+            bool onlyWithSetter = false)
+        {
+            IEnumerable<PropertyInfo> props = value.ForceGetProperties(bindingFlags)
+                                                   .Where(x => x.PropertyType.IsType(propertyType))
+                                                   .ToArray();
+
+            if (onlyWithSetter)
+                return props.Where(x => x.SetMethod is not null).ToArray();
+
+            return props.ToArray();
+        }
+        public static PropertyInfo[] GetProperties<T>(this Type value,
+            BindingFlags bindingFlags = InstancePublic,
+            bool onlyWithSetter = false)
+        {
+            return value.GetProperties(typeof(T), bindingFlags, onlyWithSetter);
         }
 
         private static string ProccessGenericArguments(Type type)

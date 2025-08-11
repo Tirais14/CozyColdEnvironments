@@ -1,9 +1,9 @@
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Unity
 {
-    public class WorldObject : MonoX, IHasBody
+    public class WorldObject : MonoX, IHasGameObjectBody
     {
         public static bool WarningsEnabled;
 

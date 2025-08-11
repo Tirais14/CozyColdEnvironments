@@ -1,6 +1,7 @@
 using System;
 using UniRx;
 using UnityEngine;
+using UTIRLib.Unity;
 using UTIRLib.Unity.Extensions;
 using UTIRLib.Vectors.Linq;
 
@@ -9,7 +10,7 @@ using UTIRLib.Vectors.Linq;
 namespace UTIRLib
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class FirstPersonController : WorldObject
+    public class FirstPersonController : GameModel
     {
         private const int MAX_RAYCAST_HITS = 3;
         private const float RAYCAST_SURFACE_OFFSET = 10f;

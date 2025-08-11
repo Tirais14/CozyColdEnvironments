@@ -1,24 +1,48 @@
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Unity.Extensions
+namespace UTIRLib.Unity.Special
 {
     public static class ComponentExtensions
     {
-        ///// <exception cref="System.ArgumentNullException"></exception>
-        //public static Transform? GetOverridedTransform(this Component component)
-        //{
-        //    if (component == null)
-        //        throw new System.ArgumentNullException(nameof(component));
+        /// <returns>Overrided or default <see cref="Transform"/></returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public static Transform GetTransform(this Component value)
+        {
+            if (value == null)
+                throw new System.ArgumentNullException(nameof(value));
 
-        //    GameObject[] childs = component.gameObject.GetAllChilds();
+            return value.gameObject.GetTransform();
+        }
 
-        //    int count = childs.Length;
-        //    GameObject child;
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        child = childs[i];
-        //    }
-        //}
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public static Transform? GetOverridedTransform(this Component value,
+                                                       bool throwIfNotFound = false)
+        {
+            if (value == null)
+                throw new System.ArgumentNullException(nameof(value));
+
+            return value.gameObject.GetOverridedTransform(throwIfNotFound);
+        }
+
+        /// <returns>Overrided or default <see cref="GameObject"/></returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public static GameObject GetGameObject(this Component value)
+        {
+            if (value == null)
+                throw new System.ArgumentNullException(nameof(value));
+
+            return value.gameObject.GetGameObject();
+        }
+
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public static GameObject? GetOverridedGameObject(this Component value,
+                                                         bool throwIfNotFound = false)
+        {
+            if (value == null)
+                throw new System.ArgumentNullException(nameof(value));
+
+            return value.gameObject.GetOverridedGameObject(throwIfNotFound);
+        }
     }
 }
