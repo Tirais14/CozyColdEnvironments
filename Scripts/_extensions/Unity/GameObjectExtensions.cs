@@ -55,3 +55,6 @@ namespace UTIRLib.Unity
         }
     }
 }
+namespace UTIRLib.Unity.Extensions
+{
+}

@@ -5,6 +5,11 @@ namespace UTIRLib
 {
     public static class TirLib
     {
+        public static class Tags 
+        {
+            public const string TRANSFORM_OVERRIDE = "TransformOverride";
+        }
+
         public readonly static LazyX<Sprite> ColorSprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/ColorSprite");
