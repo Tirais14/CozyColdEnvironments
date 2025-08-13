@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -16,14 +17,16 @@ namespace UTIRLib.Patterns.States
     {
         public static bool HelperWarningsEnabled = true;
 
-        private bool disposedValue;
+        private readonly DisposableCollection disposables = new();
 
-        protected readonly DisposableCollection disposables = new();
+        private bool disposedValue;
+        private Dictionary<Type, Action>? forceStopableStates;
+        private IState playingState = null!;
+
         protected bool autoCreateStatesByFactory = true;
         protected IState defaultState;
-        protected IState playingState;
 
-        public bool IsDefaultState => IsPlaying(defaultState);
+        public bool IsDefaultState => IsExecuting(defaultState);
 
         protected override void OnStart()
         {
@@ -43,7 +46,46 @@ namespace UTIRLib.Patterns.States
 
         public abstract IState GetNextState();
 
-        public bool IsPlaying(IState state) => playingState.Equals(state);
+        public bool IsExecuting(IState state) => playingState.Equals(state);
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void ForceStopState(IState state)
+        {
+            if (state.IsNull())
+                throw new ArgumentNullException(nameof(state));
+            if (!IsForceStopable(state))
+                throw new ArgumentException($"{state.GetTypeName()} is not force stopable state.");
+
+            forceStopableStates![state.GetType()].Invoke();
+        }
+
+        public bool IsForceStopable(IState? state)
+        {
+            if (state.IsNull() || forceStopableStates is null)
+                return false;
+
+            return forceStopableStates.ContainsKey(state.GetType());
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        protected void BindForceStopable(IState state, Action action)
+        {
+            if (state.IsNull())
+                throw new ArgumentNullException(nameof(state));
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            forceStopableStates ??= new Dictionary<Type, Action>(1);
+
+            Type stateType = state.GetType();
+            if (forceStopableStates.ContainsKey(stateType))
+            {
+                forceStopableStates[stateType] += action;
+                return;
+            }
+
+            forceStopableStates.Add(stateType, action);
+        }
 
         protected void CreateStatesByFactory(IFactory<Type, IState>? factory = null)
         {
