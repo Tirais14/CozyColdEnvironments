@@ -1,18 +1,15 @@
 using System;
 using UnityEngine;
 using UTIRLib.Diagnostics;
+using UTIRLib.Unity.Extensions;
 
 #nullable enable
 #pragma warning disable IDE1006
 namespace UTIRLib.Unity
 {
-    [Serializable]
-    [DisallowMultipleComponent]
     public class GameModel : MonoX
     {
-        [field: SerializeField]
-        new public GameObject gameObject { get; private set; } = null!;
-        new public Transform transform { get; private set; } = null!;
+
         public Transform Anchor { get; private set; } = null!;
         public GameModelBody Body { get; private set; } = null!;
 
@@ -20,19 +17,14 @@ namespace UTIRLib.Unity
         {
             base.OnAwake();
 
-            gameObject = base.gameObject;
-            transform = base.transform;
-        }
-
-        protected override void OnStart()
-        {
-            base.OnStart();
-
             Anchor = transform.Find("Anchor");
             Body = GetComponentInChildren<GameModelBody>();
 
             if (Body == null)
                 throw new ObjectNotFoundException(typeof(GameModelBody));
+
+            if (Anchor == null)
+                Anchor = transform;
         }
 
         public static GameModel Create(string name, params Type[] components)

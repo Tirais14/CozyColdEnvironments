@@ -1,6 +1,22 @@
 using UnityEngine;
+using System;
 
 #nullable enable
+namespace UTIRLib.Unity
+{
+    public static class ComponentExtensions
+    {
+        /// <exception cref="ArgumentNullException"></exception>
+        public static ComponentCache GetCache(this Component value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return new ComponentCache(value.transform, value.gameObject);
+        }
+    }
+}
+
 namespace UTIRLib.Unity.Special
 {
     public static class ComponentExtensions

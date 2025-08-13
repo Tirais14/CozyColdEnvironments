@@ -10,11 +10,14 @@ namespace UTIRLib
     public class GameModelBody : MonoX
     {
         private Collider? m_Collider;
+        private Rigidbody? m_RigidBody;
 
         [GetBySelf]
-        new public MeshRenderer renderer { get; private set; } = null!;
+        public MeshRenderer meshRenderer { get; private set; } = null!;
 
-#nullable disable
+        [GetBySelf]
+        public MeshFilter meshFilter { get; private set; } = null!;
+
         new public Collider collider {
             get
             {
@@ -24,19 +27,20 @@ namespace UTIRLib
                 return m_Collider;
             }
         }
-#nullable enable
-        public bool HasCollider => m_Collider != null;
 
-        new public GameObject gameObject { get; private set; } = null!;
-        new public Transform transform { get; private set; } = null!;
+        public bool HasCollider => collider != null;
 
-        protected override void OnAwake()
-        {
-            base.OnAwake();
+        new public Rigidbody rigidbody {
+            get
+            {
+                if (m_RigidBody == null)
+                    m_RigidBody = GetComponent<Rigidbody>();
 
-            gameObject = base.gameObject;
-            transform = base.transform;
+                return m_RigidBody;
+            }
         }
+
+        public bool HasRigidBody => rigidbody != null;
 
         public static GameModelBody Create(Transform? parent = null)
         {

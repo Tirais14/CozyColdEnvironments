@@ -43,9 +43,9 @@ namespace UTIRLib.TwoD
                 return;
             }
 
-            Vector2 direction = VectorHelper.GetDirection(Position, targetPosition);
+            Vector2 direction = Vector2Helper.GetDirection(Position, targetPosition);
             Vector2 offset = direction * speed;
-            float sqrDistance = VectorHelper.SqrDistance(Position, targetPosition);
+            float sqrDistance = Vector2Helper.SqrDistance(Position, targetPosition);
             if (offset.sqrMagnitude >= sqrDistance) { Rigidbody2D.MovePosition(targetPosition); }
             else { Rigidbody2D.MovePosition(Position + offset); }
         }

@@ -23,8 +23,6 @@ namespace UTIRLib
         private float jumpForce = 12f;
         private RaycastHit surfaceHit;
 
-        new protected Transform transform { get; private set; } = null!;
-
         [GetBySelf]
         protected Rigidbody rigidBody { get; private set; } = null!;
 
@@ -77,13 +75,6 @@ namespace UTIRLib
         }
         [field: SerializeField]
         public LayerMask SurfaceMask { get; set; }
-
-        protected override void OnAwake()
-        {
-            base.OnAwake();
-
-            transform = base.transform;
-        }
 
         protected override void OnStart()
         {

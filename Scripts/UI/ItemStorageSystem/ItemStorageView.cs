@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
+using UTIRLib.Unity;
 
 #nullable enable
 namespace UTIRLib.UI.ItemStorageSystem
@@ -12,11 +14,20 @@ namespace UTIRLib.UI.ItemStorageSystem
         where TViewModel : IItemStorageViewModel<TModel>
         where TModel : IItemStorageReactive
     {
+        public ComponentCache Cache { get; private set; } = null!;
+
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+
+            Cache = this.GetCache();
+        }
+
         protected override void OnStart()
         {
             base.OnStart();
 
-            viewModel.IsOpenedView.Subscribe(x => gameObject.SetActive(x)).AddTo(this);
+            viewModel.IsOpenedView.Subscribe(x => Cache.gameObject.SetActive(x)).AddTo(this);
         }
 
         protected override TViewModel CreateViewModel()
