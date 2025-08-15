@@ -1,21 +1,34 @@
 #nullable enable
-using UTIRLib.Diagnostics;
 using System;
 using System.Collections.Generic;
+using UTIRLib.Diagnostics;
+using UTIRLib.Disposables;
 
+#pragma warning disable S3881
 namespace UTIRLib.AlternativeTicker
 {
     public class FixedTicker : MonoX, IFixedTicker
     {
         private readonly List<IFixedTickable> tickables = new();
 
+        private void FixedUpdate()
+        {
+            int count = tickables.Count;
+            for (int i = 0; i < count; i++)
+                tickables[i].FixedTick();
+        }
+
+        private void OnDestroy() => ((IDisposable)this).Dispose();
+
         /// <exception cref="ArgumentNullException"></exception>
-        public void Register(IFixedTickable tickable)
+        public IDisposable Register(IFixedTickable tickable)
         {
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable)); 
 
             tickables.Add(tickable);
+
+            return Subscription.Create(this, tickable, (x, y) => x.Unregister(y));
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -27,15 +40,12 @@ namespace UTIRLib.AlternativeTicker
             tickables.Remove(tickable); 
         }
 
-        public void UnregisterAll() => throw new System.NotImplementedException();
+        public void UnregisterAll() => tickables.Clear();
 
-        public void Dispose() => throw new System.NotImplementedException();
-
-        private void FixedUpdate()
+        void IDisposable.Dispose()
         {
-            int count = tickables.Count;
-            for (int i = 0; i < count; i++)
-                tickables[i].FixedTick();
+            UnregisterAll();
+            GC.SuppressFinalize(this);
         }
     }
 }

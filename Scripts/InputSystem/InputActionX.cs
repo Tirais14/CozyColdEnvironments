@@ -2,6 +2,7 @@ using System;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 using UnityEngine;
+using UnityEngine.VFX;
 
 #nullable enable
 #pragma warning disable S3881
@@ -9,17 +10,17 @@ namespace UTIRLib.InputSystem
 {
     public class InputActionX : IInputAction
     {
-        private Action<CallbackContext>? OnStarted;
-        private Action? OnStartedBasic;
-
-        private Action<CallbackContext>? OnPerformed;
-        private Action? OnPerformedBasic;
-
-        private Action<CallbackContext>? OnCanceled;
-        private Action? OnCanceledBasic;
-
         protected readonly InputAction inputAction;
         protected bool disposedValue;
+
+        protected Action<CallbackContext>? OnStarted;
+        protected Action? OnStartedBasic;
+
+        protected Action<CallbackContext>? OnPerformed;
+        protected Action? OnPerformedBasic;
+
+        protected Action<CallbackContext>? OnCanceled;
+        protected Action? OnCanceledBasic;
 
         public bool IsButtonPressed => inputAction.IsPressed();
         public bool IsEnabled => inputAction.enabled;
@@ -295,9 +296,9 @@ namespace UTIRLib.InputSystem
     {
         private T value;
 
-        private Action<T>? ValueOnStarted;
-        private Action<T>? ValueOnPerformed;
-        private Action<T>? ValueOnCanceled;
+        protected Action<T>? ValueOnStarted;
+        protected Action<T>? ValueOnPerformed;
+        protected Action<T>? ValueOnCanceled;
 
         public T Value {
             get

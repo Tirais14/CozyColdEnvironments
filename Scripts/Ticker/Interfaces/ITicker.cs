@@ -5,7 +5,7 @@ namespace UTIRLib.AlternativeTicker
 {
     public interface ITicker : ITickerBase
     {
-        void Register(ITickable tickable);
+        IDisposable Register(ITickable tickable);
 
         void Unregister(ITickable tickable);
     }

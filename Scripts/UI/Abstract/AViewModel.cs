@@ -1,4 +1,6 @@
 #nullable enable
+using UTIRLib.Disposables;
+
 namespace UTIRLib.UI.MVVM
 {
     public abstract class AViewModel<T> : DisposableContainer, IViewModel<T>

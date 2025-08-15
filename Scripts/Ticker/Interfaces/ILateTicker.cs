@@ -1,9 +1,11 @@
 #nullable enable
+using System;
+
 namespace UTIRLib.AlternativeTicker
 {
     public interface ILateTicker : ITickerBase
     {
-        void Register(ILateTickable tickable);
+        IDisposable Register(ILateTickable tickable);
 
         void Unregister(ILateTickable tickable);
     }

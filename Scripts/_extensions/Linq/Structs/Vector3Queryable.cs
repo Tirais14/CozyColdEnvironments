@@ -33,6 +33,48 @@ namespace UTIRLib.Vectors.Linq
             return this;
         }
 
+        public Vector3Queryable AddX(float value)
+        {
+            vector.x += value;
+
+            return this;
+        }
+
+        public Vector3Queryable AddY(float value)
+        {
+            vector.y += value;
+
+            return this;
+        }
+
+        public Vector3Queryable AddZ(float value)
+        {
+            vector.z += value;
+
+            return this;
+        }
+
+        public Vector3Queryable ReduceX(float value)
+        {
+            vector.x -= value;
+
+            return this;
+        }
+
+        public Vector3Queryable ReduceY(float value)
+        {
+            vector.y -= value;
+
+            return this;
+        }
+
+        public Vector3Queryable ReduceZ(float value)
+        {
+            vector.z -= value;
+
+            return this;
+        }
+
         public Vector3Queryable Normalize()
         {
             vector.Normalize();
