@@ -57,5 +57,19 @@ namespace UTIRLib
         {
             return !left.Equals(right);
         }
+
+        public static SecondCounter operator +(SecondCounter left, float right)
+        {
+            left.Add(right);
+
+            return left;
+        }
+
+        public static SecondCounter operator +(SecondCounter left, SecondCounter right)
+        {
+            left.Add(right.value);
+
+            return left;
+        }
     }
 }

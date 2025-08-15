@@ -5,7 +5,7 @@ using UTIRLib.Diagnostics;
 using UTIRLib.Disposables;
 
 #pragma warning disable S3881
-namespace UTIRLib.AlternativeTicker
+namespace UTIRLib.Tickables
 {
     public class FixedTicker : MonoX, IFixedTicker
     {
@@ -24,8 +24,9 @@ namespace UTIRLib.AlternativeTicker
         public IDisposable Register(IFixedTickable tickable)
         {
             if (tickable.IsNull())
-                throw new ArgumentNullException(nameof(tickable)); 
+                throw new ArgumentNullException(nameof(tickable));
 
+            tickable.OnRegister();
             tickables.Add(tickable);
 
             return Subscription.Create(this, tickable, (x, y) => x.Unregister(y));
@@ -37,6 +38,7 @@ namespace UTIRLib.AlternativeTicker
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable));
 
+            tickable.OnUnregister();
             tickables.Remove(tickable); 
         }
 

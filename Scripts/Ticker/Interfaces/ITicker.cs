@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib.AlternativeTicker
+namespace UTIRLib.Tickables
 {
     public interface ITicker : ITickerBase
     {

@@ -5,7 +5,7 @@ using UTIRLib.Disposables;
 
 #nullable enable
 #pragma warning disable S3881
-namespace UTIRLib.AlternativeTicker
+namespace UTIRLib.Tickables
 {
     public class LateTicker : MonoX, ILateTicker
     {
@@ -26,6 +26,7 @@ namespace UTIRLib.AlternativeTicker
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable));
 
+            tickable.OnRegister();
             tickables.Add(tickable);
 
             return Subscription.Create(this, tickable, (x, y) => x.Unregister(y));
@@ -37,6 +38,7 @@ namespace UTIRLib.AlternativeTicker
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable));
 
+            tickable.OnUnregister();
             tickables.Remove(tickable);
         }
 

@@ -1,8 +1,8 @@
 #nullable enable
-namespace UTIRLib.AlternativeTicker
+namespace UTIRLib.Tickables
 {
     public interface ITickable : ITickableBase
     {
-        void Tick();
+        void DoTick();
     }
 }

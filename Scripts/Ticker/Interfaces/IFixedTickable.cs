@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.AlternativeTicker
+namespace UTIRLib.Tickables
 {
     public interface IFixedTickable : ITickableBase
     {
