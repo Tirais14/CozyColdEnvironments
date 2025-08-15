@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
@@ -9,6 +8,30 @@ namespace UTIRLib.Unity
 {
     public static class TransformExtensions
     {
+        public static Vector3 GetBackward(this Transform value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return value.forward * -1;
+        }
+
+        public static Vector3 GetLeft(this Transform value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return value.right * -1;
+        }
+
+        public static Vector3 GetDown(this Transform value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return value.up * -1;
+        }
+
         public static Transform[] GetChilds(this Transform value)
         {
             if (value.childCount == 0)

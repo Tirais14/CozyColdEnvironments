@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
+using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3881
@@ -17,9 +18,8 @@ namespace UTIRLib.InputSystem
         private Action<CallbackContext>? OnCanceled;
         private Action? OnCanceledBasic;
 
-        protected bool disposedValue;
-
         protected readonly InputAction inputAction;
+        protected bool disposedValue;
 
         public bool IsButtonPressed => inputAction.IsPressed();
         public bool IsEnabled => inputAction.enabled;

@@ -15,7 +15,7 @@ namespace UTIRLib.InputSystem
 {
     public class InputHandler 
         :
-        MonoXInitable,
+        MonoX,
         IInputHandler,
         IDisposableContainer,
         IStateSwitchable
@@ -32,8 +32,9 @@ namespace UTIRLib.InputSystem
 
         public bool IsEnabled => actionMap.enabled;
 
-        protected override void OnInit()
+        protected override void OnAwake()
         {
+            base.OnAwake();
             actionMap = inputs.FindActionMap(actionMapName, throwIfNotFound: true);
 
             InitInputActionProperties();
