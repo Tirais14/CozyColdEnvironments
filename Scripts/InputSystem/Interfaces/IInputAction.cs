@@ -20,7 +20,7 @@ namespace UTIRLib.InputSystem
         InputActionSubscription Subscribe(Action<CallbackContext> action,
                                           InputActionSubscriptionType subscriptionType);
         InputActionSubscription Subscribe(Action action,
-                                         InputActionSubscriptionType subscriptionType);
+                                          InputActionSubscriptionType subscriptionType);
 
         void UnsubscribeOnStarted(Action<CallbackContext> action);
         void UnsubscribeOnStarted(Action action);

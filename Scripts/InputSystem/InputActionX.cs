@@ -237,6 +237,27 @@ namespace UTIRLib.InputSystem
 
         public void Disable() => inputAction.Disable();
 
+        protected virtual void StartedEvent(CallbackContext context)
+        {
+            OnStarted?.Invoke(context);
+
+            OnStartedBasic?.Invoke();
+        }
+
+        protected virtual void PerformedEvent(CallbackContext context)
+        {
+            OnPerformed?.Invoke(context);
+
+            OnPerformedBasic?.Invoke();
+        }
+
+        protected virtual void CanceledEvent(CallbackContext context)
+        {
+            OnCanceled?.Invoke(context);
+
+            OnCanceledBasic?.Invoke();
+        }
+
         protected virtual void DisposeManaged()
         {
             inputAction.started -= StartedEvent;
@@ -262,27 +283,6 @@ namespace UTIRLib.InputSystem
 
                 disposedValue = true;
             }
-        }
-
-        private void StartedEvent(CallbackContext context)
-        {
-            OnStarted?.Invoke(context);
-
-            OnStartedBasic?.Invoke();
-        }
-
-        private void PerformedEvent(CallbackContext context)
-        {
-            OnPerformed?.Invoke(context);
-
-            OnPerformedBasic?.Invoke();
-        }
-
-        private void CanceledEvent(CallbackContext context)
-        {
-            OnCanceled?.Invoke(context);
-
-            OnCanceledBasic?.Invoke();
         }
 
         public static explicit operator InputAction(InputActionX inputActionX)
@@ -418,6 +418,27 @@ namespace UTIRLib.InputSystem
             return context.ReadValue<T>();
         }
 
+        protected virtual void ValueStartedEvent(CallbackContext context)
+        {
+            value = ReadValue(context);
+
+            ValueOnStarted?.Invoke(value);
+        }
+
+        protected virtual void ValuePerformedEvent(CallbackContext context)
+        {
+            value = ReadValue(context);
+
+            ValueOnPerformed?.Invoke(value);
+        }
+
+        protected virtual void ValueCanceledEvent(CallbackContext context)
+        {
+            value = ReadValue(context);
+
+            ValueOnCanceled?.Invoke(value);
+        }
+
         protected override void DisposeManaged()
         {
             base.DisposeManaged();
@@ -434,27 +455,6 @@ namespace UTIRLib.InputSystem
             ValueOnStarted = null;
             ValueOnPerformed = null;
             ValueOnCanceled = null;
-        }
-
-        private void ValueStartedEvent(CallbackContext context)
-        {
-            value = ReadValue(context);
-
-            ValueOnStarted?.Invoke(value);
-        }
-
-        private void ValuePerformedEvent(CallbackContext context)
-        {
-            value = ReadValue(context);
-
-            ValueOnPerformed?.Invoke(value);
-        }
-
-        private void ValueCanceledEvent(CallbackContext context)
-        {
-            value = ReadValue(context);
-
-            ValueOnCanceled?.Invoke(value);
         }
     }
 }
