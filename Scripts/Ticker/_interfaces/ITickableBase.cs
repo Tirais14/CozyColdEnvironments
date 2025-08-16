@@ -1,14 +1,31 @@
 #nullable enable
+using System.Reflection;
+using UTIRLib.Diagnostics;
+using UTIRLib.Reflection.Cached;
+
 namespace UTIRLib.Tickables
 {
     public interface ITickableBase : IStateToggleable
     {
         void OnRegister(ITickerBase ticker)
         {
+            FieldInfo? tickerField = TypeCache.GetField(typeof(ITickerBase),
+                                                        typeof(ITickerBase),
+                                                        BindingFlagsDefault.InstanceAll,
+                                                        throwIfNotFound: false);
+
+            if (tickerField is not null && tickerField.GetValue(this).IsNull())
+                tickerField.SetValue(this, ticker);
         }
 
         void OnUnregister(ITickerBase ticker)
         {
+            FieldInfo? tickerField = TypeCache.GetField(typeof(ITickerBase),
+                                                        typeof(ITickerBase),
+                                                        BindingFlagsDefault.InstanceAll,
+                                                        throwIfNotFound: false);
+
+            tickerField?.SetValue(this, null);
         }
     }
     public interface ITickableBase<in T> : ITickableBase
@@ -16,10 +33,23 @@ namespace UTIRLib.Tickables
     {
         void OnRegister(T ticker)
         {
+            FieldInfo? tickerField = TypeCache.GetField(typeof(ITickerBase),
+                                                        typeof(ITickerBase),
+                                                        BindingFlagsDefault.InstanceAll,
+                                                        throwIfNotFound: false);
+
+            if (tickerField is not null && tickerField.GetValue(this).IsNull())
+                tickerField.SetValue(this, ticker);
         }
 
         void OnUnregister(T ticker)
         {
+            FieldInfo? tickerField = TypeCache.GetField(typeof(ITickerBase),
+                                                        typeof(ITickerBase),
+                                                        BindingFlagsDefault.InstanceAll,
+                                                        throwIfNotFound: false);
+
+            tickerField?.SetValue(this, null);
         }
 
         void ITickableBase.OnRegister(ITickerBase ticker)

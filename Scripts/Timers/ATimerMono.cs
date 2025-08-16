@@ -21,8 +21,8 @@ namespace UTIRLib.Timers
         public float TargetValue => timer.TargetValue;
         public bool TargetValueReached => timer.TargetValueReached;
         public event Action<ITimer> OnTargetReached {
-            add => ((ITimer)timer).OnTargetReached += value;
-            remove => ((ITimer)timer).OnTargetReached -= value;
+            add => timer.OnTargetReached += value;
+            remove => timer.OnTargetReached -= value;
         }
     }
 }

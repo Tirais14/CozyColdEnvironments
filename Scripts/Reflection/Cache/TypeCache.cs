@@ -68,7 +68,8 @@ namespace UTIRLib.Reflection.Cached
         /// <exception cref="StringArgumentException"></exception>
         public static FieldInfo GetField(Type type,
                                          string name,
-                                         BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
+                                         BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic,
+                                         bool throwIfNotFound = true)
         {
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
@@ -77,12 +78,49 @@ namespace UTIRLib.Reflection.Cached
 
             var key = new FieldKey(type, name);
 
-            if (fieldsCache.TryGetValue(key, out FieldInfo field))
+            if (fieldsCache.TryGetValue(key, out FieldInfo? field))
                 return field;
 
-            field = type.GetField(name, bindingFlags)
-                ?? 
-                throw new MemberNotFoundException(type, MemberType.Field, name);
+            field = type.GetField(name, bindingFlags);
+
+            if (field is null)
+            {
+                if (throwIfNotFound)
+                    throw new MemberNotFoundException(type, MemberType.Field, name);
+                else
+                    return null!;
+            }
+
+            fieldsCache.Add(key, field);
+
+            return field;
+        }
+        /// <exception cref="ArgumentNullException"></exception>
+        public static FieldInfo GetField(Type type,
+                                         Type fieldType,
+                                         BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic,
+                                         bool throwIfNotFound = true)
+        {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+            if (fieldType is null)
+                throw new ArgumentNullException(nameof(fieldType));
+
+
+            var key = new FieldKey(type, fieldType);
+
+            if (fieldsCache.TryGetValue(key, out FieldInfo? field))
+                return field;
+
+            field = type.GetField(fieldType, bindingFlags);
+
+            if (field is null)
+            {
+                if (throwIfNotFound)
+                    throw new MemberNotFoundException(type, MemberType.Field);
+                else
+                    return null!;
+            }
 
             fieldsCache.Add(key, field);
 
@@ -120,19 +158,30 @@ namespace UTIRLib.Reflection.Cached
         {
             public readonly Type ReflectedType { get; }
 
-            public readonly string Name { get; }
+            public readonly string? Name { get; }
+            public readonly Type? FieldType { get; }
 
             public FieldKey(Type reflectedType, string name)
             {
                 ReflectedType = reflectedType;
                 Name = name;
+                FieldType = null;
+            }
+
+            public FieldKey(Type reflectedType, Type fieldType)
+            {
+                ReflectedType = reflectedType;
+                FieldType = fieldType;
+                Name = null;
             }
 
             public bool Equals(FieldKey other)
             {
                 return other.ReflectedType == ReflectedType 
                        &&
-                       other.Name == Name;
+                       other.Name == Name
+                       &&
+                       other.FieldType == FieldType;
             }
 
             public override bool Equals(object obj)
@@ -142,7 +191,7 @@ namespace UTIRLib.Reflection.Cached
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(ReflectedType, Name);
+                return HashCode.Combine(ReflectedType, Name, FieldType);
             }
         }
     }

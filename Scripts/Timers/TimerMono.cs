@@ -7,6 +7,9 @@ namespace UTIRLib.Timers
     {
         private void Update()
         {
+            if (!IsEnabled)
+                return;
+
             timer.AddSeconds(Time.deltaTime);
         }
     }
