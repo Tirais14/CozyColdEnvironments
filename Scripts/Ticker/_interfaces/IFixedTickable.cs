@@ -3,6 +3,6 @@ namespace UTIRLib.Tickables
 {
     public interface IFixedTickable : ITickableBase
     {
-        void FixedTick();
+        void DoFixedTick();
     }
 }

@@ -2,36 +2,42 @@ using System;
 
 #nullable enable
 #pragma warning disable S2328
-namespace UTIRLib
+namespace UTIRLib.Timers
 {
-    public sealed class TimerManual : IEquatable<TimerManual>
+    public sealed class TimerManual : ITimer, IEquatable<TimerManual>
     {
-        private readonly float targetValue;
-        private float value;
+        private float seconds;
 
-        public event Action<TimerManual>? OnTargetReached;
+        public event Action<ITimer>? OnTargetReached;
 
-        public float Value => value;
-        public float TargetValue => targetValue;
-        public bool TargetValueReached => targetValue > 0 && value >= targetValue;
+        public float Seconds => seconds;
+        public float TargetValue { get; set; }
+        public bool TargetValueReached => TargetValue > 0 && seconds >= TargetValue;
 
-        public TimerManual(float startValue,
-                           float targetValue = 0f)
+        public TimerManual(float seconds)
         {
-            value = startValue;
-            this.targetValue = targetValue;
+            this.seconds = seconds;
+        }
+
+        public TimerManual() : this(seconds: 0)
+        {
         }
 
         /// <exception cref="ArgumentException"></exception>
         public void AddSeconds(float seconds)
         {
-            if (seconds <= 0)
+            if (seconds < 0)
                 throw new ArgumentException(nameof(seconds));
 
-            value += seconds;
+            this.seconds += seconds;
 
             if (TargetValueReached)
                 OnTargetReached?.Invoke(this);
+        }
+
+        public void Reset()
+        {
+            seconds = 0f;
         }
 
         public bool Equals(TimerManual? other)
@@ -39,9 +45,9 @@ namespace UTIRLib
             if (other is null)
                 return false;
 
-            return value.NearlyEquals(other.value)
-                   && 
-                   targetValue.NearlyEquals(other.targetValue);
+            return seconds.NearlyEquals(other.seconds)
+                   &&
+                   TargetValue.NearlyEquals(other.TargetValue);
         }
 
         public override bool Equals(object? obj)
@@ -51,15 +57,20 @@ namespace UTIRLib
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(value, targetValue);
+            return HashCode.Combine(seconds, TargetValue);
         }
 
-        public static explicit operator float(TimerManual? secondCounter)
+        public static explicit operator float(TimerManual? timer)
         {
-            if (secondCounter is null)
+            if (timer is null)
                 return -1f;
 
-            return secondCounter.value;
+            return timer.seconds;
+        }
+
+        public static implicit operator bool(TimerManual timer)
+        {
+            return timer is not null && timer.TargetValueReached;
         }
 
         public static bool operator ==(TimerManual? left, TimerManual? right)

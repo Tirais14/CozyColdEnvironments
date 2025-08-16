@@ -1,8 +1,7 @@
-namespace UTIRLib.Patterns.Command
-{
 #nullable enable
-
-    public interface ICommand
+namespace UTIRLib.Patterns.Commands
+{
+    public interface ICommandX
     {
         void Execute();
 

@@ -3,6 +3,6 @@ namespace UTIRLib.Tickables
 {
     public interface ILateTickable : ITickableBase
     {
-        void LateTick();
+        void DoLateTick();
     }
 }
