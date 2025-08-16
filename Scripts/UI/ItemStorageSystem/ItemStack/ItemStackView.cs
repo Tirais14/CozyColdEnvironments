@@ -39,7 +39,7 @@ namespace UTIRLib.UI.ItemStorageSystem
             TViewModel viewModel = InstanceFactory.Create<TViewModel>(
                 InvokableArguments.Create(model,
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                cacheConstructor: true);
+                 parameters: InstanceCreationParameters.CacheConstructor);
 
             viewModel.AddTo(this);
 
@@ -49,8 +49,8 @@ namespace UTIRLib.UI.ItemStorageSystem
         private static TModel CreateModel()
         {
             return InstanceFactory.Create<TModel>(InvokableArguments.Create(int.MaxValue,
-                InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                                                   cacheConstructor: true);
+                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
+                parameters: InstanceCreationParameters.CacheConstructor);
         }
     }
 }

@@ -2,10 +2,12 @@ using System;
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using UTIRLib.Diagnostics;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
 using UTIRLib.UI.MVVM;
 using UTIRLib.Unity;
+using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
 namespace UTIRLib.UI.ItemStorageSystem
@@ -37,7 +39,7 @@ namespace UTIRLib.UI.ItemStorageSystem
             TViewModel viewModel = InstanceFactory.Create<TViewModel>(
                 InvokableArguments.Create(model,
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                cacheConstructor: true);
+                parameters: InstanceCreationParameters.CacheConstructor);
 
             viewModel.AddTo(this);
 
@@ -65,7 +67,11 @@ namespace UTIRLib.UI.ItemStorageSystem
                         |
                         InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
 
-                    if (!InstanceFactory.TryCreate<TModel>(creationArguments, out var model))
+                    if (InstanceFactory.Create<TModel>(
+                        creationArguments,
+                        parameters: InstanceCreationParameters.None)
+                                       .IsNot<TModel>(out var model)
+                            )
                         throw new Exception("Generic arguments not found.");
 
                     return model;
@@ -82,8 +88,9 @@ namespace UTIRLib.UI.ItemStorageSystem
                     InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
             }
 
-            return InstanceFactory.Create<TModel>(creationArguments,
-                                                  cacheConstructor: true);
+            return InstanceFactory.Create<TModel>(
+                creationArguments,
+                parameters: InstanceCreationParameters.CacheConstructor);
         }
     }
 }

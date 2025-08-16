@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Reflection
 {
     public record TypeSearchingParameters
     {

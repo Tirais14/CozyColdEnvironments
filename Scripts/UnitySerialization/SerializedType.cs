@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection;
 using UTIRLib.Utils;
 
 #nullable enable
