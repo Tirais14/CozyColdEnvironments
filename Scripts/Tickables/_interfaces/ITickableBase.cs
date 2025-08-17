@@ -7,6 +7,13 @@ namespace UTIRLib.Tickables
 {
     public interface ITickableBase : IStateToggleable
     {
+        bool IsTickableEnabled { get; set; }
+
+        bool IStateToggleable.IsEnabled {
+            get => IsEnabled;
+            set => IsEnabled = value;
+        }
+
         void OnRegister(ITickerBase ticker)
         {
             FieldInfo? tickerField = TypeCache.GetField(typeof(ITickerBase),

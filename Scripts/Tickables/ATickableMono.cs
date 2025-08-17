@@ -11,7 +11,7 @@ namespace UTIRLib.Tickables
         ITickableBase
     {
         private ITickerBase? m_Ticker;
-        private bool isEnabled;
+        private bool isTickableEnabled;
 
         protected ITickerBase ticker {
             get
@@ -23,11 +23,11 @@ namespace UTIRLib.Tickables
             }
         }
 
-        public bool IsEnabled {
-            get => isEnabled && enabled;
+        public bool IsTickableEnabled {
+            get => isTickableEnabled && enabled;
             set
             {
-                isEnabled = value;
+                isTickableEnabled = value;
                 enabled = value;
             }
         }

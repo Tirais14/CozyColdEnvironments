@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UTIRLib.Diagnostics;
-using UTIRLib.Unity.Extensions;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -45,6 +44,22 @@ namespace UTIRLib.Unity
                 throw new ArgumentException($"Cannot find {nameof(GameModel)}.");
 
             return gameModel;
+        }
+
+        /// <summary>
+        /// Replaces gameObject pinned to <see cref="GameModelBody"/>
+        /// </summary>
+        /// <param name="modelBody"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void ReplaceModelBody(GameModelBody modelBody)
+        {
+            if (modelBody == null)
+                throw new ArgumentNullException(nameof(modelBody));
+
+            Destroy(Body.gameObject);
+            Body = modelBody;
+
+            modelBody.gameObject.transform.parent = Anchor;
         }
     }
 }

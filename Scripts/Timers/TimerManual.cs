@@ -7,12 +7,14 @@ namespace UTIRLib.Timers
     public sealed class TimerManual : ITimer, IEquatable<TimerManual>
     {
         private float seconds;
+        private bool targetReachedCallbackInvoked;
 
-        public event Action<ITimer>? OnTargetReached;
+        public event Action? OnTargetReached;
 
         public float Seconds => seconds;
         public float TargetValue { get; set; }
         public bool TargetValueReached => TargetValue > 0 && seconds >= TargetValue;
+        bool ITimer.IsExecuting => true;
 
         public TimerManual(float seconds)
         {
@@ -31,13 +33,19 @@ namespace UTIRLib.Timers
 
             this.seconds += seconds;
 
-            if (TargetValueReached)
-                OnTargetReached?.Invoke(this);
+            if (TargetValueReached && !targetReachedCallbackInvoked)
+            {
+                OnTargetReached?.Invoke();
+                targetReachedCallbackInvoked = true;
+            }
         }
 
-        public void Reset()
+        public ITimer ResetTimer()
         {
             seconds = 0f;
+            targetReachedCallbackInvoked = false;
+
+            return this;
         }
 
         public bool Equals(TimerManual? other)
@@ -101,5 +109,9 @@ namespace UTIRLib.Timers
             left.AddSeconds(right);
             return left;
         }
+
+        ITimer ITimer.StartTimer() => this;
+
+        ITimer ITimer.StopTimer() => this;
     }
 }

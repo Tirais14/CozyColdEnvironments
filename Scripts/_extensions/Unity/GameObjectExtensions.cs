@@ -8,6 +8,17 @@ namespace UTIRLib.Unity
 {
     public static class GameObjectExtensions
     {
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public static void ApplySettings(this GameObject value, GameObjectSettings settings)
+        {
+            if (value == null)
+                throw new System.ArgumentNullException(nameof(value));
+            if (settings == null)
+                throw new System.ArgumentNullException(nameof(settings));
+
+            settings.ApplyTo(value);
+        }
+
         public static GameObject[] GetChilds(this GameObject value) 
         {
             return value.transform.GetChilds().Select(x => x.gameObject).ToArray();
