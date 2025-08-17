@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.Editor
+namespace UTIRLib.UnityEditor
 {
     public class AssetInfo<T> where T : Object
     {

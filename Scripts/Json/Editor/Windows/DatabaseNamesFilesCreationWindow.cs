@@ -7,7 +7,7 @@ using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using UTIRLib.Diagnostics;
-using UTIRLib.Editor;
+using UTIRLib.UnityEditor;
 using UTIRLib.FileSystem;
 using UTIRLib.FileSystem.ScriptUtils;
 

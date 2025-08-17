@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace UTIRLib.Editor
+namespace UTIRLib.UnityEditor
 {
     public static class EditorHelper
     {

@@ -9,7 +9,7 @@ using UTIRLib.FileSystem;
 
 #nullable enable
 
-namespace UTIRLib.Editor
+namespace UTIRLib.UnityEditor
 {
     public abstract class TirLibEditorWindow : EditorWindow
     {

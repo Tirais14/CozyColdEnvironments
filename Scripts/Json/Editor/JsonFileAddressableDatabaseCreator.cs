@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.FileSystem.Json.Editor
+namespace UTIRLib.FileSystem.Json.UnityEditor
 {
     public static class JsonFileAddressableDatabaseCreator
     {

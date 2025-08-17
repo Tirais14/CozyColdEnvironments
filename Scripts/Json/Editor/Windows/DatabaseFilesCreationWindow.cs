@@ -3,12 +3,12 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine.UIElements;
-using UTIRLib.Addressables;
-using UTIRLib.Editor;
+using UTIRLib.AddressableAssets;
+using UTIRLib.UnityEditor;
 
 #nullable enable
 
-namespace UTIRLib.FileSystem.Json.Editor
+namespace UTIRLib.FileSystem.Json.UnityEditor
 {
     public abstract class DatabaseFilesCreationWindow : TirLibEditorWindow
     {

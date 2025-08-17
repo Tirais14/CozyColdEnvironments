@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace UTIRLib.Addressables
+namespace UTIRLib.AddressableAssets
 {
     public static class AddressableEditorUtility
     {

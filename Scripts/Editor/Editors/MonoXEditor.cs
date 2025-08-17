@@ -8,11 +8,11 @@ using UTIRLib.ComponentSetter;
 
 #nullable enable
 
-namespace UTIRLib.Editor
+namespace UTIRLib.UnityEditor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(MonoX), editorForChildClasses: true)]
-    public class MonoXEditor : UnityEditor.Editor
+    public class MonoXEditor : global::UnityEditor.Editor
     {
         private VisualElement root = null!;
 

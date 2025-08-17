@@ -27,6 +27,15 @@ namespace UTIRLib
 
         public bool HasBodyMaterials => BodyMaterials != null;
 
+        public GameModelSettings(GameObjectSettings bodySettings,
+                                 Mesh? bodyMesh,
+                                 Material[]? bodyMaterials)
+        {
+            this.bodySettings = bodySettings;
+            BodyMesh = bodyMesh;
+            BodyMaterials = bodyMaterials;
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         public void ApplyTo(GameModel component)
         {

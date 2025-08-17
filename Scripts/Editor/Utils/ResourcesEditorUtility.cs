@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.Editor
+namespace UTIRLib.UnityEditor
 {
     public static class ResourcesEditorUtility
     {
