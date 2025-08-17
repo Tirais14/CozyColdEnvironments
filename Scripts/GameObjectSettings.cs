@@ -7,7 +7,10 @@ using UnityEngine;
 namespace UTIRLib
 {
     [Serializable]
-    public sealed class GameObjectSettings : IEquatable<GameObjectSettings>
+    public sealed record GameObjectSettings 
+        : 
+        IGameObjectSettings, 
+        IEquatable<GameObjectSettings>
     {
         [Min(1E-06f)]
         [SerializeField]
@@ -33,43 +36,6 @@ namespace UTIRLib
                 return;
 
             gameObject.transform.localScale *= scale;
-        }
-
-        public bool Equals(GameObjectSettings? other)
-        {
-            if (other is null)
-                return false;
-
-            return scale == other.scale;
-        }
-        public override bool Equals(object obj)
-        {
-            return obj is GameObjectSettings typed && Equals(typed);
-        }
-
-        public override int GetHashCode()
-        {
-            return scale.GetHashCode();
-        }
-
-        public static bool operator ==(GameObjectSettings? left, GameObjectSettings? right)
-        {
-            if (left is null && right is null)
-                return true;
-            if (left is null)
-                return false;
-
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(GameObjectSettings? left, GameObjectSettings? right)
-        {
-            if (left is null && right is null)
-                return false;
-            if (left is null)
-                return true;
-
-            return !left.Equals(right);
         }
     }
 }
