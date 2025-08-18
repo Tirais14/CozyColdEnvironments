@@ -1,12 +1,18 @@
+using Codice.Client.BaseCommands;
+using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Android;
 using UTIRLib.Diagnostics;
-using UTIRLib.Init;
+using UTIRLib.Initables;
 using UTIRLib.Linq;
 using UTIRLib.Reflection;
+using UTIRLib.Unity.TypeMatching;
 using UTIRLib.Utils;
 
 #nullable enable
@@ -14,6 +20,8 @@ namespace UTIRLib
 {
     public static class SceneInitializer
     {
+        public static AsyncTaskRegistry TaskRegistry { get; } = new();
+
         /// <exception cref="TirLibException"></exception>
         public static void InitObject(IInitable initable)
         {
@@ -23,52 +31,66 @@ namespace UTIRLib
             initable.Init();
             TirLibDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
-
         /// <exception cref="TirLibException"></exception>
-        public static void InitObjects<T>()
-            where T : IInitable
+        public static async UniTask InitObjectAsync(IInitableAsync initableAsync)
         {
-            T[] initables = UnityObjectHelper.FindObjectsByType<T>(
-                    FindObjectsInactive.Include).Where(x => x.IsNotNull())
-                                                .ToArray();
+            if (initableAsync.IsInited)
+                throw new TirLibException($"{initableAsync.GetTypeName()} is already inited.");
 
-            if (initables.CountNotDefault() == 0)
-                throw new TirLibException($"Cannot find any {typeof(T).GetName()}.");
-
-            for (int i = 0; i < initables.Length; i++)
-                InitObject(initables[i]);
+            await initableAsync.Init();
+            TirLibDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
         }
 
-        public static void InitObjects(IEnumerable<IInitable> initables)
-        {
-            foreach (var item in initables)
-                InitObject(item);
-        }
+        ///// <exception cref="TirLibException"></exception>
+        //public static void InitObjects<T>()
+        //    where T : IInitable
+        //{
+        //    T[] initables = UnityObjectHelper.FindObjectsByType<T>(
+        //            FindObjectsInactive.Include).Where(x => x.IsNotNull())
+        //                                        .ToArray();
 
-        public static void InitAllObjects()
+        //    if (initables.CountNotDefault() == 0)
+        //        throw new TirLibException($"Cannot find any {typeof(T).GetName()}.");
+
+        //    for (int i = 0; i < initables.Length; i++)
+        //        InitObject(initables[i]);
+        //}
+
+        //public static void InitObjects(IEnumerable<IInitable> initables)
+        //{
+        //    foreach (var item in initables)
+        //        InitObject(item);
+        //}
+
+        public static void InitAllObjects(
+            FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)
         {
+            var allInitables = new ConcurrentDictionary<Type, IInitableBase>();
+
             IInitable[] inits =
-                UnityObjectHelper.FindObjectsByType<IInitable>(FindObjectsInactive.Include);
+                UnityObjectHelper.FindObjectsByType<IInitable>(findObjectsInactive);
+            IInitableAsync[] initsAsync =
+                UnityObjectHelper.FindObjectsByType<IInitableAsync>(findObjectsInactive);
 
-            if (inits.IsEmpty())
+            AddToAllInitables(inits, allInitables);
+            AddToAllInitables(initsAsync, allInitables);
+
+            if (inits.Length > 0)
+                DoInitInitables(inits);
+
+            if (initsAsync.Length > 0)
+                DoInitInitablesAsync(initsAsync, allInitables);
+        }
+
+        private static void AddToAllInitables(IReadOnlyList<IInitableBase> inits,
+            ConcurrentDictionary<Type, IInitableBase> allInitables)
+        {
+            IInitableBase initable;
+            int count = inits.Count;
+            for (int i = 0; i < count; i++)
             {
-                TirLibDebug.PrintWarning("Nothing to init.");
-
-                return;
-            }
-
-            Queue<IInitable> queue = CreateInitsQueue(inits);
-
-            var loopPredicate = new LoopPredicate<int>(x => x > 0);
-            IInitable initable;
-            while (loopPredicate.Invoke(queue.Count))
-            {
-                initable = queue.Dequeue();
-
-                if (initable.IsInited)
-                    continue;
-
-                InitObject(initable);
+                initable = inits[i];
+                allInitables.TryAdd(initable.GetType(), initable);
             }
         }
 
@@ -199,6 +221,173 @@ namespace UTIRLib
             EnqueueOtherInits(queue, inits);
 
             return queue;
+        }
+
+        private static void DoInitInitables(IInitable[] inits)
+        {
+            Queue<IInitable> queue = CreateInitsQueue(inits);
+            IInitable initable;
+            var loopPredicate = new LoopPredicate<int>(x => x > 0);
+            while (loopPredicate.Invoke(queue.Count))
+            {
+                initable = queue.Dequeue();
+
+                if (initable.IsInited)
+                    continue;
+
+                InitObject(initable);
+            }
+        }
+
+        private static IInitableAsync[] GetInitsAsyncFirst(
+            List<IInitableAsync> initablesAsync)
+        {
+            var initablesFirstAsync = new List<IInitableAsync>(initablesAsync.Count);
+
+            IInitableAsync initableAsync;
+            int count = initablesAsync.Count;
+            for (int i = 0; i < count; i++)
+            {
+                initableAsync = initablesAsync[i];
+                if (!initableAsync.IsInited
+                    &&
+                    initableAsync.GetType().IsDefined<InitAsyncFirstAttribute>())
+                {
+                    initablesFirstAsync.Add(initableAsync);
+                    initablesAsync.RemoveAt(i);
+                }
+            }
+
+            return initablesFirstAsync.ToArray();
+        } 
+
+        private static (IInitableAsync initableAsync, InitAsyncAfterTypeAttribute attribute)[]
+            GetInitsAsyncAfterType(List<IInitableAsync> initablesAsync)
+        {
+            var initablesFirstAsync = new List<(IInitableAsync initableAsync, InitAsyncAfterTypeAttribute attribute)>(initablesAsync.Count);
+
+            IInitableAsync initableAsync;
+            int count = initablesAsync.Count;
+            for (int i = 0; i < count; i++)
+            {
+                initableAsync = initablesAsync[i];
+                if (!initableAsync.IsInited
+                    &&
+                    initableAsync.GetType()
+                    .GetCustomAttribute<InitAsyncAfterTypeAttribute>()
+                    .Is<InitAsyncAfterTypeAttribute>(out var attribute))
+                {
+                    initablesFirstAsync.Add((initablesAsync[i], attribute));
+                    initablesAsync.RemoveAt(i);
+                }
+            }
+
+            return initablesFirstAsync.ToArray();
+        }
+
+        private static IInitableAsync[] GetOtherInitsAsync(
+            List<IInitableAsync> initablesAsync)
+        {
+            return initablesAsync.Where(x => !x.IsInited).ToArray();
+        }
+
+        private static async UniTask StartInitsAsyncFirst(
+            IInitableAsync[] initablesAsyncFirst)
+        {
+            int count = initablesAsyncFirst.Length;
+            for (int i = 0; i < count; i++)
+                await InitObjectAsync(initablesAsyncFirst[i]);
+        }
+
+        /// <exception cref="ArgumentException"></exception>
+        private static async UniTask InitAfterTypeAsync(
+            IInitableAsync initableAsyncMain, Type[] types,
+            ConcurrentDictionary<Type, IInitableBase> allInitablesAsync)
+        {
+            try
+            {
+                if (allInitablesAsync.IsEmpty())
+                    throw new ArgumentException("Cannot be empty");
+
+                //Checks for types and move to specified array for performance
+                int observableInitablesIdx = 0;
+                var observableInitables = new IInitableBase[types.Length];
+                for (int i = 0; i < types.Length; i++)
+                {
+                    if (!allInitablesAsync.TryGetValue(types[i], out IInitableBase? temp))
+                        throw new ArgumentException($"Cannot find type {types[i].GetName()}.");
+
+                    observableInitables[observableInitablesIdx++] = temp;
+                }
+
+                while (!initableAsyncMain.IsInited)
+                {
+                    if (observableInitables.Any(x => !x.IsInited))
+                        await UniTask.Yield();
+                    else
+                    {
+                        await InitObjectAsync(initableAsyncMain);
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TirLibDebug.PrintException(ex);
+            }
+        }
+
+        private static void StartInitsAsyncAfterType(
+            (IInitableAsync initable, InitAsyncAfterTypeAttribute attribute)[] initablesAfterTypeAsync,
+            ConcurrentDictionary<Type, IInitableBase> allInitablesAsync)
+        {
+            try
+            {
+                (IInitableAsync initable, InitAsyncAfterTypeAttribute attribute) item;
+                int count = initablesAfterTypeAsync.Length;
+                for (int i = 0; i < count; i++)
+                {
+                    item = initablesAfterTypeAsync[i];
+                    UniTask.RunOnThreadPool(
+                        () => InitAfterTypeAsync(item.initable,
+                                                 item.attribute.InitableTypes,
+                                                 allInitablesAsync)).Forget();
+                }
+            }
+            catch (Exception ex)
+            {
+                TirLibDebug.PrintException(ex);
+            }
+        }
+
+        private static async UniTask StartInitsAsyncOther(
+            IInitableAsync[] otherInitablesAsync)
+        {
+            try
+            {
+                int count = otherInitablesAsync.Length;
+                for (int i = 0; i < count; i++)
+                    await InitObjectAsync(otherInitablesAsync[i]);
+            }
+            catch (Exception ex)
+            {
+                TirLibDebug.PrintException(ex);
+            }
+        }
+
+        private static async UniTask DoInitInitablesAsync(IInitableAsync[] initsAsync,
+            ConcurrentDictionary<Type, IInitableBase> allInitables)
+        {
+            List<IInitableAsync> initsAsyncList = initsAsync.ToList();
+
+            IInitableAsync[] initsAsyncFirst = GetInitsAsyncFirst(initsAsyncList);
+            (IInitableAsync initableAsync, InitAsyncAfterTypeAttribute attribute)[] initsAsyncAfterType
+                = GetInitsAsyncAfterType(initsAsyncList);
+            IInitableAsync[] initsAsyncOther = GetOtherInitsAsync(initsAsyncList);
+
+            await StartInitsAsyncFirst(initsAsyncFirst);
+            StartInitsAsyncAfterType(initsAsyncAfterType, allInitables);
+            await StartInitsAsyncOther(initsAsyncOther);
         }
     }
 }

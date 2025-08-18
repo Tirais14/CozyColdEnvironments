@@ -97,6 +97,8 @@ namespace UTIRLib
     public abstract class MonoXStatic<TThis> : MonoXStatic
         where TThis : Component
     {
-        protected static LazyX<TThis> instance = new(Create<TThis>);
+        private static LazyX<TThis> m_Instance = new(Create<TThis>);
+
+        protected static TThis Instance => m_Instance.Value;
     }
 }

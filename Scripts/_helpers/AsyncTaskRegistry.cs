@@ -1,0 +1,80 @@
+using Cysharp.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+#nullable enable
+namespace UTIRLib
+{
+    public sealed class AsyncTaskRegistry : IAsyncTaskRegistry
+    {
+        private readonly List<UniTask> tasks = new();
+        private readonly object lockObject = new();
+        private bool isTaskTracking;
+
+        public event Action? OnTasksCompleted;
+
+        public int TaskCount => tasks.Count;
+
+        /// <exception cref="ArgumentException"></exception>
+        public void RegisterTask(UniTask task)
+        {
+            if (task.Equals(default(UniTask)))
+                throw new ArgumentException(nameof(task));
+
+            tasks.Add(task);
+
+            if (!isTaskTracking)
+            {
+                UniTask.RunOnThreadPool(TrackTasks).Forget();
+                isTaskTracking = true;
+            }
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void RegisterTask(Task task)
+        {
+            if (task is null)
+                throw new ArgumentNullException(nameof(task));
+
+            RegisterTask(task.AsUniTask());
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public void RegisterTask(Func<bool> waitUntilFalse)
+        {
+            if (waitUntilFalse is null)
+                throw new ArgumentNullException(nameof(waitUntilFalse));
+
+            RegisterTask(UniTask.RunOnThreadPool(waitUntilFalse));
+        }
+
+        private void TrackTasks()
+        {
+            while (tasks.Count > 0)
+            {
+                UniTask task;
+                int count = tasks.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    task = tasks[i];
+                    if (task.Status == UniTaskStatus.Succeeded ||
+                        task.Status == UniTaskStatus.Faulted ||
+                        task.Status == UniTaskStatus.Canceled
+                        )
+                    {
+                        tasks.RemoveAt(i);
+                        count--;
+                    }
+                }
+            }
+
+            lock (lockObject)
+            {
+                isTaskTracking = false;
+            }
+
+            OnTasksCompleted?.Invoke();
+        }
+    }
+}

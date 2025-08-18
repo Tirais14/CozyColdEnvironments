@@ -10,7 +10,7 @@ namespace UTIRLib.Reflection.Diagnostics
         {
         }
 
-        public ConstructorNotFoundException(Type type, ConstructorParameters parameters)
+        public ConstructorNotFoundException(Type type, ConstructorBindings parameters)
             : base($"Constructor not found in type {type.GetName()}. Parameters: {parameters}")
         {
         }

@@ -30,7 +30,7 @@ namespace UTIRLib.Reflection.Cached
         }
 
         public static ConstructorInfo GetConstructor(Type type,
-                                                     ConstructorParameters constructorParams)
+                                                     ConstructorBindings constructorParams)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));

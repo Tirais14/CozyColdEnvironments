@@ -1,4 +1,4 @@
-using UTIRLib.Init;
+using UTIRLib.Initables;
 
 #nullable enable
 namespace UTIRLib

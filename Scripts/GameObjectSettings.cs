@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace UTIRLib
         [SerializeField]
         private float scale;
 
+        [JsonIgnore]
         public float Scale => scale;
 
         public GameObjectSettings(float scale)

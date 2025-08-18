@@ -32,7 +32,7 @@ namespace UTIRLib.Diagnostics
 
         public MemberNotFoundException(Type targetType,
                                        MemberType memberType,
-                                       TypeMemberParameters parameters)
+                                       MemberBindings parameters)
             :
             base($"Reflected type = {targetType.GetName()}, member type = {memberType}, parameters = {parameters}.")
         {
@@ -40,7 +40,7 @@ namespace UTIRLib.Diagnostics
 
         public MemberNotFoundException(Type targetType,
                                        MemberType memberType,
-                                       TypeMemberParameters parameters,
+                                       MemberBindings parameters,
                                        string message)
             :
             base($"Reflected type = {targetType.GetName()}, member type = {memberType}, parameters = {parameters}. {message.TrimEnd('.')}.")

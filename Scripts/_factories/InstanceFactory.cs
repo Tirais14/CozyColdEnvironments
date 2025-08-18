@@ -8,14 +8,14 @@ namespace UTIRLib
 {
     public static class InstanceFactory
     {
-        private readonly static ConstructorParameters defaultConstructorParams = new()
+        private readonly static ConstructorBindings defaultConstructorParams = new()
         { 
             BindingFlags = BindingFlagsDefault.InstancePublic
         };
 
         /// <exception cref="ArgumentNullException"></exception>
         public static object Create(Type type,
-                                    ConstructorParameters constructorParams,
+                                    ConstructorBindings constructorParams,
                                     InstanceCreationParameters parameters = InstanceCreationParameters.Default)
         {
             if (type == null)
@@ -69,7 +69,7 @@ namespace UTIRLib
                           parameters: InstanceCreationParameters.Default);
         }
 
-        public static T Create<T>(ConstructorParameters constructorParams,
+        public static T Create<T>(ConstructorBindings constructorParams,
                                   InstanceCreationParameters parameters = InstanceCreationParameters.Default)
         {
             return (T)Create(typeof(T), constructorParams, parameters);

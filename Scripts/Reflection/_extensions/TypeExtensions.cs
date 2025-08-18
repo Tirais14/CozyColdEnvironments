@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -114,7 +115,7 @@ namespace UTIRLib.Reflection
         /// <param name="constructorParameters"></param>
         /// <returns></returns>
         public static ConstructorInfo GetConstructor(this Type type,
-            ConstructorParameters constructorParameters,
+            ConstructorBindings constructorParameters,
             bool throwIfNotFound = false)
         {
             if (type.GetConstructor(constructorParameters.BindingFlags,
@@ -302,6 +303,36 @@ namespace UTIRLib.Reflection
             BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic)
         {
             return TypeHelper.ForceGetMembers<ConstructorInfo>(value, bindingFlags);
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public static MethodInfo? GetMethod(this Type value,
+                                            MethodBindings bindings,
+                                            bool throwIfNotFound = false)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+            if (bindings is null)
+                throw new ArgumentNullException(nameof(bindings));
+
+            MethodInfo? method = value.GetMethod(bindings.MethodName,
+                                                bindings.BindingFlags,
+                                                bindings.Binder,
+                                                (Type[])bindings.ArgumentsData.Signature,
+                                                bindings.ParameterModifiers);
+
+            if (method is null)
+            {
+                if (throwIfNotFound)
+                    throw new MemberNotFoundException(value, MemberType.Method, bindings);
+                else
+                    return method;
+            }
+
+            if (bindings.HasGenericArguments)
+                method = method.MakeGenericMethod(bindings.GenericArguments);
+
+            return method;
         }
 
         public static FieldInfo? GetField(this Type value,
