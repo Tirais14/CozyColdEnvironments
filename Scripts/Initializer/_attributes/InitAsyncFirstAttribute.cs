@@ -1,5 +1,6 @@
 using System;
 
+#nullable enable
 namespace UTIRLib.Initables
 {
     [AttributeUsage(AttributeTargets.Class)]

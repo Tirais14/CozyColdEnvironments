@@ -12,6 +12,7 @@ using UTIRLib.Diagnostics;
 using UTIRLib.Initables;
 using UTIRLib.Linq;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.Cached;
 using UTIRLib.Unity.TypeMatching;
 using UTIRLib.Utils;
 
@@ -29,16 +30,27 @@ namespace UTIRLib
                 throw new TirLibException($"{initable.GetTypeName()} is already inited.");
 
             initable.Init();
+            SetInited(initable);
+
             TirLibDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
         /// <exception cref="TirLibException"></exception>
         public static async UniTask InitObjectAsync(IInitableAsync initableAsync)
         {
-            if (initableAsync.IsInited)
-                throw new TirLibException($"{initableAsync.GetTypeName()} is already inited.");
+            try
+            {
+                if (initableAsync.IsInited)
+                    throw new TirLibException($"{initableAsync.GetTypeName()} is already inited.");
 
-            await initableAsync.Init();
-            TirLibDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
+                await initableAsync.InitAsync();
+                SetInited(initableAsync);
+
+                TirLibDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
+            }
+            catch (Exception ex)
+            {
+                TirLibDebug.PrintException(ex);
+            }
         }
 
         ///// <exception cref="TirLibException"></exception>
@@ -62,15 +74,26 @@ namespace UTIRLib
         //        InitObject(item);
         //}
 
-        public static void InitAllObjects(
+        public static async UniTask InitAllObjects(
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)
         {
             var allInitables = new ConcurrentDictionary<Type, IInitableBase>();
 
             IInitable[] inits =
-                UnityObjectHelper.FindObjectsByType<IInitable>(findObjectsInactive);
+                UnityObjectHelper.FindObjectsByType<IInitable>(findObjectsInactive)
+                .Where(x => x.GetType().IsDefinedAny(inherit: true,
+                                                     typeof(InitAttribute),
+                                                     typeof(InitFirstAttribute),
+                                                     typeof(InitAfterTypeAttribute))
+                                                     ).ToArray();
+
             IInitableAsync[] initsAsync =
-                UnityObjectHelper.FindObjectsByType<IInitableAsync>(findObjectsInactive);
+                UnityObjectHelper.FindObjectsByType<IInitableAsync>(findObjectsInactive)
+                .Where(x => x.GetType().IsDefinedAny(inherit: true,
+                                                     typeof(InitAsyncAttribute),
+                                                     typeof(InitAsyncFirstAttribute),
+                                                     typeof(InitAsyncAfterTypeAttribute))
+                                                     ).ToArray();
 
             AddToAllInitables(inits, allInitables);
             AddToAllInitables(initsAsync, allInitables);
@@ -79,7 +102,29 @@ namespace UTIRLib
                 DoInitInitables(inits);
 
             if (initsAsync.Length > 0)
-                DoInitInitablesAsync(initsAsync, allInitables);
+                await DoInitInitablesAsync(initsAsync, allInitables);
+        }
+
+        /// <exception cref="InvalidOperationException"></exception>
+        private static void SetInited(IInitableBase initable)
+        {
+            PropertyInfo[] props = initable.GetType().ForceGetProperties(BindingFlagsDefault.All);
+
+            if (props.IsEmpty())
+                throw new Exception("Cannot find any property.");
+
+            PropertyInfo? isInitedProp = props.FirstOrDefault(
+                x => x.Name == nameof(IInitableBase.IsInited)
+                &&
+                x.PropertyType == typeof(bool)
+                ) 
+                ?? 
+                throw new MemberNotFoundException(initable.GetType(), MemberType.Property);
+
+            if (isInitedProp.SetMethod is null)
+                throw new InvalidOperationException("Not found SetMethod.");
+
+            isInitedProp.SetValue(initable, true);
         }
 
         private static void AddToAllInitables(IReadOnlyList<IInitableBase> inits,

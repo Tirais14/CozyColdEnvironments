@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 #nullable enable
 namespace UTIRLib
@@ -15,6 +16,7 @@ namespace UTIRLib
         public event Action? OnTasksCompleted;
 
         public int TaskCount => tasks.Count;
+        public bool HasTasks => isTaskTracking || tasks.IsNotEmpty();
 
         /// <exception cref="ArgumentException"></exception>
         public void RegisterTask(UniTask task)
@@ -48,6 +50,13 @@ namespace UTIRLib
 
             RegisterTask(UniTask.RunOnThreadPool(waitUntilFalse));
         }
+
+#if USE_ADDRESSABLES
+        public void RegisterTask(AsyncOperationHandle handle)
+        {
+            RegisterTask(handle.Task);
+        }
+#endif
 
         private void TrackTasks()
         {

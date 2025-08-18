@@ -9,7 +9,7 @@ namespace UTIRLib.Initables
 
         protected abstract UniTask OnInit();
 
-        async UniTask IInitableAsync.Init()
+        async UniTask IInitableAsync.InitAsync()
         {
             await OnInit();
         }

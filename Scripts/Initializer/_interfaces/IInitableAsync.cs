@@ -5,6 +5,6 @@ namespace UTIRLib.Initables
 {
     public interface IInitableAsync : IInitableBase
     {
-        UniTask Init();
+        UniTask InitAsync();
     }
 }

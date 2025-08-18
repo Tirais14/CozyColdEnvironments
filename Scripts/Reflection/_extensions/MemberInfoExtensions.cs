@@ -17,6 +17,18 @@ namespace UTIRLib.Reflection
         {
             return value.IsDefined(typeof(T), inherit);
         }
+
+        public static bool IsDefinedAny(this MemberInfo value,
+                                        params Type[] attributeTypes)
+        {
+            return attributeTypes.Any(x => value.IsDefined(x));
+        }
+        public static bool IsDefinedAny(this MemberInfo value,
+                                        bool inherit,
+                                        params Type[] attributeTypes)
+        {
+            return attributeTypes.Any(x => value.IsDefined(x, inherit));
+        }
     }
 }
 
