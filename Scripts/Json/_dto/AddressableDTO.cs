@@ -23,18 +23,17 @@ namespace UTIRLib.Json.DTO
         [JsonIgnore]
         public AsyncOperationHandle LoadHandle { get; protected set; }
         [JsonIgnore]
-        public Object? Asset {
+        public Object Asset {
             get
             {
-                if (LoadHandle.IsDefault()
-                    ||
-                    LoadHandle.IsDone
-                    )
-                    return null;
+                if (!IsAssetLoaded)
+                    throw new InvalidOperationException($"Asset not loaded.");
 
                 return (Object)LoadHandle.Result;
             }
         }
+        [JsonIgnore]
+        public bool IsAssetLoaded => LoadHandle.IsNotDefault() && LoadHandle.IsDone;
         [JsonIgnore]
         public bool HasAssetPath => AssetPath.IsNotNullOrEmpty();
         [JsonIgnore]
@@ -54,6 +53,9 @@ namespace UTIRLib.Json.DTO
 
         public AsyncOperationHandle StartAssetLoading()
         {
+            if (IsAssetLoaded)
+                throw new InvalidOperationException("Asset already loaded.");
+
             LoadHandle = MethodInvoker.Invoke<AsyncOperationHandle>(typeof(Addressables),
                 new MethodBindings
             {
@@ -89,6 +91,9 @@ namespace UTIRLib.Json.DTO
 
         new public AsyncOperationHandle<T> StartAssetLoading()
         {
+            if (IsAssetLoaded)
+                throw new InvalidOperationException("Asset already loaded.");
+
             LoadHandle = Addressables.LoadAssetAsync<T>(Key);
 
             return LoadHandle;

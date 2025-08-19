@@ -13,6 +13,7 @@ using UTIRLib.Unity.TypeMatching;
 using UTIRLib.Utils;
 
 #nullable enable
+#pragma warning disable S127
 namespace UTIRLib
 {
     public static class SceneInitializer
@@ -107,7 +108,7 @@ namespace UTIRLib
         /// <exception cref="InvalidOperationException"></exception>
         private static void SetInited(IInitableBase initable)
         {
-            PropertyInfo[] props = initable.GetType().ForceGetProperties(BindingFlagsDefault.All);
+            PropertyInfo[] props = initable.GetType().ForceGetProperties(BindingFlagsDefault.InstanceAll);
 
             if (props.IsEmpty())
                 throw new Exception("Cannot find any property.");
@@ -286,23 +287,23 @@ namespace UTIRLib
         private static IInitableAsync[] GetInitsAsyncFirst(
             List<IInitableAsync> initablesAsync)
         {
-            var initablesFirstAsync = new List<IInitableAsync>(initablesAsync.Count);
+            var results = new List<IInitableAsync>(initablesAsync.Count);
 
             IInitableAsync initableAsync;
-            int count = initablesAsync.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < initablesAsync.Count;)
             {
                 initableAsync = initablesAsync[i];
                 if (!initableAsync.IsInited
                     &&
                     initableAsync.GetType().IsDefined<InitAsyncFirstAttribute>())
                 {
-                    initablesFirstAsync.Add(initableAsync);
+                    results.Add(initableAsync);
                     initablesAsync.RemoveAt(i);
                 }
+                else i++;
             }
 
-            return initablesFirstAsync.ToArray();
+            return results.ToArray();
         } 
 
         private static (IInitableAsync initableAsync, InitAsyncAfterTypeAttribute attribute)[]
@@ -311,8 +312,7 @@ namespace UTIRLib
             var initablesFirstAsync = new List<(IInitableAsync initableAsync, InitAsyncAfterTypeAttribute attribute)>(initablesAsync.Count);
 
             IInitableAsync initableAsync;
-            int count = initablesAsync.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < initablesAsync.Count;)
             {
                 initableAsync = initablesAsync[i];
                 if (!initableAsync.IsInited
@@ -324,6 +324,7 @@ namespace UTIRLib
                     initablesFirstAsync.Add((initablesAsync[i], attribute));
                     initablesAsync.RemoveAt(i);
                 }
+                else i++;
             }
 
             return initablesFirstAsync.ToArray();

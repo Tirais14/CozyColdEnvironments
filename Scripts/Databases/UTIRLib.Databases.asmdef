@@ -1,10 +1,12 @@
 {
-    "name": "UTIRLib.AddressableAssets",
-    "rootNamespace": "UTIRLib.AddressableAssets",
+    "name": "UTIRLib.Databases",
+    "rootNamespace": "UTIRLib.Databases",
     "references": [
         "GUID:9e24947de15b9834991c9d8411ea37cf",
         "GUID:84651a3751eca9349aac36a66bba901b",
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:4c7df73d4e0fd8d4bb725c292de5b205",
+        "GUID:4532f27500707314bb11e2c47b04c2d3",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
         "GUID:5c01796d064528144a599661eaab93a6",
         "GUID:593a5b492d29ac6448b1ebf7f035ef33"
@@ -15,15 +17,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": false,
-    "defineConstraints": [
-        "USE_ADDRESSABLES"
-    ],
-    "versionDefines": [
-        {
-            "name": "com.unity.addressables",
-            "expression": "2.4.6",
-            "define": "USE_ADDRESSABLES"
-        }
-    ],
+    "defineConstraints": [],
+    "versionDefines": [],
     "noEngineReferences": false
 }

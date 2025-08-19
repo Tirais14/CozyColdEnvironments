@@ -15,6 +15,7 @@ namespace UTIRLib
     {
         [Min(1E-06f)]
         [SerializeField]
+        [JsonProperty("scale")]
         private float scale;
 
         [JsonIgnore]

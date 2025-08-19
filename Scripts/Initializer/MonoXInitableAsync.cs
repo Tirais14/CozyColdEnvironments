@@ -7,11 +7,11 @@ namespace UTIRLib.Initables
     {
         public bool IsInited { get; private set; }
 
-        protected abstract UniTask OnInit();
+        protected abstract UniTask OnInitAsync();
 
         async UniTask IInitableAsync.InitAsync()
         {
-            await OnInit();
+            await OnInitAsync();
         }
     }
 }
