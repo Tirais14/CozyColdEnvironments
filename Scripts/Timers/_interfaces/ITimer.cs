@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace UTIRLib.Timers
 {
-    public interface ITimer : IStateSwitchable
+    public interface ITimer
     {
         event Action OnTargetReached;
 
@@ -12,16 +12,10 @@ namespace UTIRLib.Timers
         bool TargetValueReached { get; }
         bool IsExecuting { get; }
 
-        bool IStateSwitchable.IsEnabled => IsExecuting;
-
         ITimer StartTimer();
 
         ITimer StopTimer();
 
         ITimer ResetTimer();
-
-        void IStateSwitchable.Enable() => StartTimer();
-
-        void IStateSwitchable.Disable() => StopTimer();
     }
 }

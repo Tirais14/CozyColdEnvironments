@@ -101,15 +101,6 @@ namespace UTIRLib.Timers
             return !left.Equals(right);
         }
 
-        public static TimerManual operator +(TimerManual left, float right)
-        {
-            if (left is null)
-                return new TimerManual(right);
-
-            left.AddSeconds(right);
-            return left;
-        }
-
         ITimer ITimer.StartTimer() => this;
 
         ITimer ITimer.StopTimer() => this;

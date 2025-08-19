@@ -1,18 +1,14 @@
-using Codice.Client.BaseCommands;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Android;
 using UTIRLib.Diagnostics;
 using UTIRLib.Initables;
 using UTIRLib.Linq;
 using UTIRLib.Reflection;
-using UTIRLib.Reflection.Cached;
 using UTIRLib.Unity.TypeMatching;
 using UTIRLib.Utils;
 
@@ -42,7 +38,10 @@ namespace UTIRLib
                 if (initableAsync.IsInited)
                     throw new TirLibException($"{initableAsync.GetTypeName()} is already inited.");
 
-                await initableAsync.InitAsync();
+                var task = initableAsync.InitAsync();
+                TaskRegistry.RegisterTask(task);
+                await task;
+
                 SetInited(initableAsync);
 
                 TirLibDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
@@ -394,9 +393,11 @@ namespace UTIRLib
                 {
                     item = initablesAfterTypeAsync[i];
                     UniTask.RunOnThreadPool(
-                        () => InitAfterTypeAsync(item.initable,
-                                                 item.attribute.InitableTypes,
-                                                 allInitablesAsync)).Forget();
+                        () => InitAfterTypeAsync(
+                            item.initable,
+                            item.attribute.InitableTypes,
+                            allInitablesAsync))
+                                .Forget(ex => TirLibDebug.PrintException(ex));
                 }
             }
             catch (Exception ex)

@@ -43,12 +43,12 @@ namespace UTIRLib
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public void RegisterTask(Func<bool> waitUntilFalse)
+        public void RegisterTask(Func<bool> waitWhileFalse)
         {
-            if (waitUntilFalse is null)
-                throw new ArgumentNullException(nameof(waitUntilFalse));
+            if (waitWhileFalse is null)
+                throw new ArgumentNullException(nameof(waitWhileFalse));
 
-            RegisterTask(UniTask.RunOnThreadPool(waitUntilFalse));
+            RegisterTask(UniTask.RunOnThreadPool(waitWhileFalse));
         }
 
 #if USE_ADDRESSABLES
