@@ -1,7 +1,9 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.LowLevel;
 using UTIRLib.AddressableAssets.Databases;
+using UTIRLib.Reflection;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -27,7 +29,7 @@ namespace UTIRLib.Json.AddressableAssets.Databases
             {
                 deserialized = JsonConvert.DeserializeObject<TItem>(
                     textAssets[i].text,
-                    JsonSerializedSettingsProvider.Converters)!;
+                    JsonSerializedSettingsProvider.GetSettings())!;
 
                 values.Add(GetItemID(deserialized), deserialized);
 

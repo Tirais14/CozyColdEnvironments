@@ -12,6 +12,16 @@ namespace UTIRLib
 {
     public static class StringExtensions
     {
+        public static string TrimFirst(this string value)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+            if (value.IsEmpty())
+                return string.Empty;
+
+            return value.TrimStart(value[0]);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string JoinStrings(this IEnumerable<string> strings,
                                           char joinSeparator,

@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 using UTIRLib.Unity;
@@ -13,18 +14,24 @@ namespace UTIRLib
         IEquatable<GameModelSettings>
     {
         [SerializeField]
+        [JsonProperty("bodySettings")]
         private GameObjectSettings bodySettings = null!;
 
+        [JsonIgnore]
         public float Scale => bodySettings.Scale;
 
         [field: SerializeField]
+        [JsonProperty("overrideBodyMesh")]
         public Mesh? BodyMesh { get; private set; } = null;
 
+        [JsonIgnore]
         public bool HasBodyMesh => BodyMesh != null;
 
         [field: SerializeField]
+        [JsonProperty("overrideBodyMaterials")]
         public Material[]? BodyMaterials { get; private set; } = null;
 
+        [JsonIgnore]
         public bool HasBodyMaterials => BodyMaterials != null;
 
         public GameModelSettings(GameObjectSettings bodySettings,

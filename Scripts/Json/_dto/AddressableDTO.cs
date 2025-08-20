@@ -77,7 +77,7 @@ namespace UTIRLib.Json.DTO
         where T : Object
     {
         [JsonIgnore]
-        new public T? Asset => (T?)base.Asset;
+        new public T Asset => (T)base.Asset;
         [JsonIgnore]
         new public AsyncOperationHandle<T> LoadHandle {
             get => base.LoadHandle.Convert<T>();

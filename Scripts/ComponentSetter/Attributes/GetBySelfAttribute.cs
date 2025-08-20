@@ -4,7 +4,7 @@ using System;
 namespace UTIRLib
 {
     /// <summary>
-    /// Same as <see cref="UnityEngine.Component.GetComponent"/>
+    /// Same as <see cref="UnityEngine.Component.GetComponent"/>. Calls in <see cref="MonoX.Awake"/>
     /// </summary>
     [AttributeUsage(AttributeTargets.Field 
                     | 
