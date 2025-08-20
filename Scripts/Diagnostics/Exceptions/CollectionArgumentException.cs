@@ -10,12 +10,18 @@ namespace UTIRLib.Diagnostics
         {
         }
 
-        public CollectionArgumentException(string paramName) : base(GetParamNameMsg(paramName))
+        public CollectionArgumentException(string paramName)
+            :
+            base(ConstructMessage(typeof(CollectionArgumentException),
+                                  paramName))
         {
         }
 
         public CollectionArgumentException(string paramName, IEnumerable? collection)
-            : base($"Collection: {WrongCollectionException.Resolve(collection)}. {GetParamNameMsg(paramName)}")
+            :
+            base(ConstructMessage(typeof(CollectionArgumentException),
+                                  paramName,
+                                  collection))
         {
         }
     }

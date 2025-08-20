@@ -7,7 +7,7 @@ namespace UTIRLib
 {
     public static class MemberInfoHelper
     {
-        /// <exception cref="WrongCollectionException"></exception>
+        /// <exception cref="CollectionException"></exception>
         public static object[] ResolveArguments(Type[]? memberArgumentTypes, object[] args, bool throwWhenMissing = true)
         {
             if (memberArgumentTypes.IsNull())
@@ -26,7 +26,7 @@ namespace UTIRLib
             return resolvedArgs;
         }
 
-        /// <exception cref="WrongCollectionException"></exception>
+        /// <exception cref="CollectionException"></exception>
         public static object[] ResolveArguments(ParameterInfo[]? memberParameters, object[] args, bool throwWhenMissing = true)
         {
             if (memberParameters.IsNull())

@@ -1,20 +1,22 @@
-using UTIRLib.Diagnostics;
-
 #nullable enable
-namespace UTIRLib
+
+namespace UTIRLib.Diagnostics
 {
     public class CollectionItemException : TirLibException
     {
-        public CollectionItemException()
+        public CollectionItemException() : base()
         {
         }
 
-        public CollectionItemException(string message) : base(message)
+        public CollectionItemException(object? item)
+            :
+            base(ConstructMessage(typeof(CollectionItemException), item))
         {
         }
 
-        public CollectionItemException(string message, int index) 
-            : base(message + $" Index = {index}.")
+        public CollectionItemException(object item, object position)
+            :
+            base(ConstructMessage(typeof(CollectionItemException), item, position))
         {
         }
     }

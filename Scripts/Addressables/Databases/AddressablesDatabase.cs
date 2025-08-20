@@ -53,7 +53,7 @@ namespace UTIRLib.AddressableAssets.Databases
             try
             {
                 if (addressablesTags.IsNullOrEmpty())
-                    throw new WrongCollectionException($"{nameof(addressablesTags)} cannot be null or empty.");
+                    throw new CollectionException($"{nameof(addressablesTags)} cannot be null or empty.");
 
                 loadHandle = await AddressableLoader.LoadAssetsByTagsAsync<T>(addressablesTags);
                 return loadHandle.Result;

@@ -1,9 +1,8 @@
-using UTIRLib.Diagnostics;
 using UTIRLib.Extensions;
 using UTIRLib.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Diagnostics
 {
     public class TypeNotFoundException : TirLibException
     {

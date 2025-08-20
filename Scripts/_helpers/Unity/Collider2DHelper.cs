@@ -39,7 +39,7 @@ namespace UTIRLib.Utils
         {
             if (excludeObjs.HasNullElement())
             {
-                throw new WrongCollectionItemException();
+                throw new Diagnostics.CollectionItemException();
             }
             if (overlaps == null)
             {

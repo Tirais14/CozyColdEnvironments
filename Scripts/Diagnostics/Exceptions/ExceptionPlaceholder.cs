@@ -1,11 +1,10 @@
+using System;
 using UTIRLib.Diagnostics;
 
 #nullable enable
 namespace UTIRLib
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [Obsolete("Use LogicException instead.")]
     public class ExceptionPlaceholder : TirLibException
     {
         public ExceptionPlaceholder()
