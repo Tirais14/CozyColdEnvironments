@@ -1,9 +1,5 @@
-using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
-
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Diagnostics
 {
     public class AddressablesLoadException : TirLibException
     {
@@ -11,9 +7,9 @@ namespace UTIRLib
         {
         }
 
-        public AddressablesLoadException(object key)
+        public AddressablesLoadException(object assetKey)
             : 
-            base($"Asset {key.ToString().WrapByDoubleQuotes()} load failed.")
+            base(ConstructMessage(typeof(AddressablesLoadException), assetKey))
         {
         }
     }

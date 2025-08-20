@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
+using UnityEngine.UIElements;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 
@@ -20,24 +21,21 @@ namespace UTIRLib.AddressableAssets
             if (tags.IsNullOrEmpty())
                 throw new CollectionArgumentException(nameof(tags), tags);
 
-            var locations = new List<IResourceLocation>(tags.Length);
-            AsyncOperationHandle<IList<IResourceLocation>> handle;
-            for (int i = 0; i < tags.Length; i++)
+            var handle = Addressables.LoadResourceLocationsAsync(tags,
+                Addressables.MergeMode.Intersection);
+
+            await handle;
+            if (handle.Status != AsyncOperationStatus.Succeeded
+                ||
+                !handle.IsValid())
             {
-                handle = Addressables.LoadResourceLocationsAsync(tags[i]);
-
-                await handle;
-                if (handle.Status != AsyncOperationStatus.Succeeded)
-                {
-                    handle.Release();
-                    continue;
-                }
-
-                if (assetType is not null)
-                    locations.AddRange(handle.Result.Where(x => x.ResourceType.IsType(assetType)));
-                else
-                    locations.AddRange(handle.Result);
+                handle.Release();
+                return Addressables.ResourceManager.CreateCompletedOperation(
+                    (IList<IResourceLocation>)Array.Empty<IResourceLocation>(),
+                    string.Empty);
             }
+
+            IList<IResourceLocation> locations = handle.Result;
 
             //distinct without equality comparer
             var locationsFilterd = locations.GroupBy(x => (x.PrimaryKey, x.ResourceType))

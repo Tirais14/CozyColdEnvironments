@@ -9,7 +9,7 @@ namespace UTIRLib.Json.AddressableAssets.Databases
 {
     public abstract class JsonAddressablesDatabase<TId, TItem> : TextAddressablesDatabase
     {
-        private Dictionary<TId, TItem> values = null!;
+        private readonly Dictionary<TId, TItem> values = new();
 
         protected IReadOnlyDictionary<TId, TItem> db => values;
 
@@ -20,8 +20,6 @@ namespace UTIRLib.Json.AddressableAssets.Databases
                 TirLibDebug.PrintWarning("Not loaded any textAsset.");
                 return;
             }
-
-            values = new Dictionary<TId, TItem>(textAssets.Count);
 
             TItem deserialized;
             int count = textAssets.Count;
@@ -36,6 +34,8 @@ namespace UTIRLib.Json.AddressableAssets.Databases
                 if (deserialized is null)
                     TirLibDebug.PrintError("Database cannot contain null items.");
             }
+
+            values.TrimExcess();
         }
 
         protected abstract TId GetItemID(TItem item);

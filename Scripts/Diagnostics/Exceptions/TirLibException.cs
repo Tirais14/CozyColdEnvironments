@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.Analytics;
+using UTIRLib.Diagnostics.Internal;
+using UTIRLib.Reflection;
 
 #nullable enable
 
@@ -48,7 +50,7 @@ namespace UTIRLib.Diagnostics
             return converted.JoinStrings(", ");
         }
 
-        protected static string DefineParameterValue(object value)
+        protected static string DefineParameterValue(object? value)
         {
             if (value is null)
                 return "null";
@@ -75,24 +77,43 @@ namespace UTIRLib.Diagnostics
                 if (isEmpty)
                     return "empty collection";
             }
+            if (value is Type type)
+                return type.GetName();
 
             return value.ToString();
         }
 
-        protected static string ConstructMessage(Type thisType, params object?[] args)
+        protected static string ConstructMessage(Type thisType,
+            params ArgumentInfo[] args)
         {
             ConstructorInfo ctor = thisType.GetConstructor(
-                BindingFlagsDefault.InstancePublic,
+                BindingFlagsDefault.InstanceAll,
                 binder: null,
-                new Type[] { thisType },
-                Array.Empty<ParameterModifier>());
+                args.Select(x => x.valueType).ToArray(),
+                Array.Empty<ParameterModifier>())
+                ??
+                throw new InvokableNotFoundException(thisType,
+                                                     MemberType.Constructor,
+                                                     new InvokableSignature(args.Select(x => x.valueType)));
 
             ParameterInfo[] parameters = ctor.GetParameters();
             var converted = new List<(string, string)>(args.Length);
             for (int i = 0; i < args.Length; i++)
-                converted.Add((parameters[i].Name, DefineParameterValue(args)));
+                converted.Add((parameters[i].Name, DefineParameterValue(args[i].value)));
 
             return CombineToAssignmentMessage(converted.ToArray());
+        }
+        protected static string ConstructMessage(Type thisType, params object[] args)
+        {
+            ArgumentInfo[] infos = args.Select(x =>
+            {
+                if (x is ArgumentInfo argInfo)
+                    return argInfo;
+
+                return new ArgumentInfo(x, x.GetType());
+            }).ToArray();
+
+            return ConstructMessage(thisType, infos!);
         }
 
         [Obsolete("Use CombineToAssignmentMessage instead.")]

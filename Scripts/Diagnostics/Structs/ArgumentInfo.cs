@@ -1,22 +1,17 @@
 #nullable enable
 
-namespace UTIRLib.Diagnostics
+using System;
+namespace UTIRLib.Diagnostics.Internal
 {
     public readonly struct ArgumentInfo
     {
-        public readonly string argumentName;
-        public readonly object? argumentValue;
+        public readonly object? value;
+        public readonly Type valueType;
 
-        public ArgumentInfo(object? argumentValue)
+        public ArgumentInfo(object? value, Type valueType)
         {
-            argumentName = string.Empty;
-            this.argumentValue = argumentValue;
-        }
-
-        public ArgumentInfo(string? argumentName, object? argumentValue)
-        {
-            this.argumentName = argumentName ?? string.Empty;
-            this.argumentValue = argumentValue;
+            this.value = value;
+            this.valueType = valueType;
         }
     }
 }

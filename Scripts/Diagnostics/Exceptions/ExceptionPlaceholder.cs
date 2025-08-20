@@ -1,8 +1,7 @@
 using System;
-using UTIRLib.Diagnostics;
 
 #nullable enable
-namespace UTIRLib
+namespace UTIRLib.Diagnostics
 {
     [Obsolete("Use LogicException instead.")]
     public class ExceptionPlaceholder : TirLibException
