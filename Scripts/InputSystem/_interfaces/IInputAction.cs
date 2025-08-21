@@ -4,7 +4,7 @@ using static UnityEngine.InputSystem.InputAction;
 #nullable enable
 namespace UTIRLib.InputSystem
 {
-    public interface IInputAction : IStateSwitchable, IDisposable
+    public interface IInputAction : ISwitchable, IDisposable
     {
         bool IsButtonPressed { get; }
 

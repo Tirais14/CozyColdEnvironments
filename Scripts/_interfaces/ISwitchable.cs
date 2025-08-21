@@ -2,7 +2,7 @@
 
 namespace UTIRLib
 {
-    public interface IStateSwitchable
+    public interface ISwitchable
     {
         bool IsEnabled { get; }
 

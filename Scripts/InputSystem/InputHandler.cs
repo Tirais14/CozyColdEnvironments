@@ -18,7 +18,7 @@ namespace UTIRLib.InputSystem
         MonoX,
         IInputHandler,
         IDisposableContainer,
-        IStateSwitchable
+        ISwitchable
     {
         private readonly DisposableCollection disposables = new();
 
