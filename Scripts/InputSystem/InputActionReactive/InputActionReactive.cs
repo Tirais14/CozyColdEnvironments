@@ -11,9 +11,9 @@ namespace UTIRLib.InputSystem.Reactive
         :
         IInputActionReactive
     {
-        protected readonly ReactiveProperty<CallbackContext> started = new();
-        protected readonly ReactiveProperty<CallbackContext> performed = new();
-        protected readonly ReactiveProperty<CallbackContext> canceled = new();
+        private readonly ReactiveProperty<CallbackContext> started = new();
+        private readonly ReactiveProperty<CallbackContext> performed = new();
+        private readonly ReactiveProperty<CallbackContext> canceled = new();
 
         private bool disposedValue;
 
