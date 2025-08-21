@@ -1,16 +1,20 @@
 using System;
 using UniRx;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UTIRLib.Disposables;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
+#pragma warning disable S3881
 namespace UTIRLib.InputSystem.Reactive
 {
     public class InputActionReactive 
         :
+        DisposableContainer,
         IInputActionReactive
     {
+        private readonly ReactiveProperty<CallbackContext> trigger = new();
         private readonly ReactiveProperty<CallbackContext> started = new();
         private readonly ReactiveProperty<CallbackContext> performed = new();
         private readonly ReactiveProperty<CallbackContext> canceled = new();
@@ -18,6 +22,7 @@ namespace UTIRLib.InputSystem.Reactive
         private bool disposedValue;
 
         public InputAction Action { get; }
+        public IObservable<CallbackContext> Trigger => trigger.AsObservable();
         public IObservable<CallbackContext> Started {
             get => started.Where(x => !x.Equals(default(CallbackContext)));
         }
@@ -27,6 +32,16 @@ namespace UTIRLib.InputSystem.Reactive
         public IObservable<CallbackContext> Canceled {
             get => canceled.Where(x => !x.Equals(default(CallbackContext)));
         }
+        public IObservable<bool> ButtonStarted {
+            get => started.Select(x => x.ReadValueAsButton());
+        }
+        public IObservable<bool> ButtonPerformed {
+            get => performed.Select(x => x.ReadValueAsButton());
+        }
+        public IObservable<bool> ButtonCanceled {
+            get => canceled.Select(x => x.ReadValueAsButton());
+        }
+        public string ActionName => Action.name;
         public bool IsEnabled => Action.enabled;
 
         public InputActionReactive(InputAction inputAction)
@@ -46,17 +61,39 @@ namespace UTIRLib.InputSystem.Reactive
 
         public void Disable() => Action.Disable();
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Action.started -= OnTrigger;
+                    Action.performed -= OnTrigger;
+                    Action.canceled -= OnTrigger;
+
+                    Action.started -= OnStarted;
+                    Action.performed -= OnPerformed;
+                    Action.canceled -= OnCanceled;
+                }
+
+                disposedValue = true;
+            }
         }
 
         private void Setup()
         {
+            Action.started += OnTrigger;
+            Action.performed += OnTrigger;
+            Action.canceled += OnTrigger;
+
             Action.started += OnStarted;
             Action.performed += OnPerformed;
             Action.canceled += OnCanceled;
+        }
+
+        private void OnTrigger(CallbackContext context)
+        {
+            trigger.Value = context;
         }
 
         private void OnStarted(CallbackContext context)
@@ -73,21 +110,6 @@ namespace UTIRLib.InputSystem.Reactive
         {
             canceled.Value = context;
         }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Action.started -= OnStarted;
-                    Action.performed -= OnPerformed;
-                    Action.canceled -= OnCanceled;
-                }
-
-                disposedValue = true;
-            }
-        }
     }
     public class InputActionReactive<T> 
         :
@@ -96,68 +118,18 @@ namespace UTIRLib.InputSystem.Reactive
 
         where T : struct
     {
-        private readonly ReactiveProperty<T> startedT = new();
-        private readonly ReactiveProperty<T> performedT = new();
-        private readonly ReactiveProperty<T> canceledT = new();
-        private bool disposedValue;
-
         public T Value { get; private set; }
-        public IObservable<T> StartedT => startedT.AsObservable();
-        public IObservable<T> PerformedT => performedT.AsObservable();
-        public IObservable<T> CanceledT => canceledT.AsObservable();
+        public IObservable<T> TStarted => Started.Select(x => x.ReadValue<T>());
+        public IObservable<T> TPerformed => Started.Select(x => x.ReadValue<T>());
+        public IObservable<T> TCanceled => Started.Select(x => x.ReadValue<T>());
 
         public InputActionReactive(InputAction inputAction) 
             :
             base(inputAction)
         {
-            Setup();
-        }
-
-        protected virtual T GetInputValue(CallbackContext context)
-        {
-            return context.ReadValue<T>();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Action.started -= OnStarted;
-                    Action.performed -= OnPerformed;
-                    Action.canceled -= OnCanceled;
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        private void Setup()
-        {
-            Action.started += OnStarted;
-            Action.performed += OnPerformed;
-            Action.canceled += OnCanceled;
-        }
-
-        private void OnStarted(CallbackContext context)
-        {
-            Value = GetInputValue(context);
-            startedT.Value = Value;
-        }
-
-        private void OnPerformed(CallbackContext context)
-        {
-            Value = GetInputValue(context);
-            performedT.Value = Value;
-        }
-
-        private void OnCanceled(CallbackContext context)
-        {
-            Value = GetInputValue(context);
-            canceledT.Value = Value;
+            TStarted.Subscribe(x => Value = x).AddTo(this);
+            TPerformed.Subscribe(x => Value = x).AddTo(this);
+            TCanceled.Subscribe(x => Value = x).AddTo(this);
         }
     }
 }

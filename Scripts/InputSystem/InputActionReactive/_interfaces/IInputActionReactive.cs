@@ -11,10 +11,14 @@ namespace UTIRLib.InputSystem.Reactive
         IDisposable
     {
         InputAction Action { get; }
-
+        string ActionName { get; }
+        IObservable<CallbackContext> Trigger { get; }
         IObservable<CallbackContext> Started { get; }
         IObservable<CallbackContext> Performed { get; }
         IObservable<CallbackContext> Canceled { get; }
+        IObservable<bool> ButtonStarted { get; }
+        IObservable<bool> ButtonPerformed { get; }
+        IObservable<bool> ButtonCanceled { get; }
 
         bool IsButtonPressed();
     }
@@ -23,8 +27,8 @@ namespace UTIRLib.InputSystem.Reactive
     {
         T Value { get; }
 
-        IObservable<T> StartedT { get; }
-        IObservable<T> PerformedT { get; }
-        IObservable<T> CanceledT { get; }
+        IObservable<T> TStarted { get; }
+        IObservable<T> TPerformed { get; }
+        IObservable<T> TCanceled { get; }
     }
 }

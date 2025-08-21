@@ -1,0 +1,19 @@
+{
+    "name": "UTIRLib.UniRx",
+    "rootNamespace": "UTIRLib.UniRx",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:5c01796d064528144a599661eaab93a6",
+        "GUID:560b04d1a97f54a4e82edc0cbbb69285"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

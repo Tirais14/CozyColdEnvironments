@@ -13,16 +13,15 @@ namespace UTIRLib.Reflection
         IEquatable<InvokableSignature>,
         IEquatable<Type[]>
     {
-        public static InvokableSignature Empty => new(Type.EmptyTypes);
-
         private readonly Type[] types;
 
+        public static InvokableSignature Empty => new(Type.EmptyTypes);
         public readonly bool AllowInheritance;
 
         public readonly ReadOnlySpan<Type> Types => new(types);
         public readonly int Count {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => types.Length;
+            get => types?.Length ?? 0;
         }
         public readonly Type this[int index] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,5 +1,4 @@
 using System;
-using UTIRLib.Disposables;
 
 #pragma warning disable S3881
 #nullable enable
@@ -7,38 +6,25 @@ namespace UTIRLib.Disposables
 {
     public class DisposableContainer : IDisposableContainer
     {
-        private readonly DisposableCollection disposables = new();
         private bool disposedValue;
+
+        protected readonly DisposableCollection disposables = new();
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void DisposeManaged()
+        protected virtual void Dispose(bool disposing)
         {
-        }
+            if (disposedValue)
+                return;
 
-        protected virtual void DisposeOther()
-        { 
-        }
+            if (disposing)
+                disposables.Dispose();
 
-        private void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    disposables.Dispose();
-                    DisposeManaged();
-                }
-
-                DisposeOther();
-
-                disposedValue = true;
-            }
+            disposedValue = true;
         }
     }
 }

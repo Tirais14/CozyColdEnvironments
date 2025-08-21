@@ -14,10 +14,6 @@ namespace UTIRLib.InputSystem.Reactive
             if (inputAction is null)
                 throw new ArgumentNullException(nameof(inputAction));
 
-            Type valueType = typeof(T);
-            if (valueType == typeof(bool))
-                return (IInputActionReactive<T>)new ButtonInputActionReactive(inputAction);
-
             return new InputActionReactive<T>(inputAction);
         }
         /// <exception cref="ArgumentNullException"></exception>
