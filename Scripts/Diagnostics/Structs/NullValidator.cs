@@ -2,20 +2,18 @@
 
 namespace UTIRLib.Diagnostics
 {
-    public readonly struct NullValidator<T>
+    public struct NullValidator<T>
     {
-        public readonly bool isNull;
-
-        public readonly bool AnyNull => isNull;
+        public bool IsNull { readonly get; private set; }
 
         public NullValidator(T? obj)
         {
             if (obj is null)
-                isNull = true;
+                IsNull = true;
             else if (obj.Equals(null))
-                isNull = true;
+                IsNull = true;
             else
-                isNull = false;
+                IsNull = false;
         }
     }
 }

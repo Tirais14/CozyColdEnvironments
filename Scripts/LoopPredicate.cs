@@ -22,6 +22,8 @@ namespace UTIRLib
 
             return predicate();
         }
+
+        public static implicit operator bool(LoopPredicate value) => value.Invoke();
     }
 
     public class LoopPredicate<T> : ALoopPredicate

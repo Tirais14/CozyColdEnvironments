@@ -5,21 +5,21 @@ using UTIRLib.Diagnostics;
 #pragma warning disable IDE1006
 namespace UTIRLib.Tickables
 {
-    public class ATickableMono
+    public class TickableMono
         :
         MonoX,
         ITickableBase
     {
-        private ITickerBase? m_Ticker;
+        private ITicker? ticker;
         private bool isTickableEnabled;
 
-        protected ITickerBase ticker {
+        protected ITicker Ticker {
             get
             {
-                if (m_Ticker.IsNull())
-                    throw new InvalidOperationException("Tickable not registered in any ticker.");
+                if (ticker.IsNull())
+                    throw new NullReferenceException("Tickable not registered in any ticker.");
 
-                return m_Ticker;
+                return ticker;
             }
         }
 
@@ -41,16 +41,16 @@ namespace UTIRLib.Tickables
 
         }
 
-        void ITickableBase.OnRegister(ITickerBase ticker)
+        void ITickableBase.OnRegister()
         {
             OnRegisterInternal();
-            m_Ticker = ticker;
+            ticker = Ticker;
         }
 
-        void ITickableBase.OnUnregister(ITickerBase ticker)
+        void ITickableBase.OnUnregister()
         {
             OnUnregisterInternal();
-            m_Ticker = null;
+            ticker = null;
         }
     }
 }

@@ -132,7 +132,7 @@ namespace UTIRLib.Diagnostics
         /// <summary>Checks for unity or system <see langword="null"/></summary>
         public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
         {
-            return new NullValidator<T>(obj).AnyNull;
+            return new NullValidator<T>(obj).IsNull;
         }
 
         /// <summary>Checks for unity or system <see langword="null"/></summary>
@@ -140,13 +140,13 @@ namespace UTIRLib.Diagnostics
         {
             validationResult = new NullValidator<T>(obj);
 
-            return validationResult.AnyNull;
+            return validationResult.IsNull;
         }
 
         /// <summary>Inverted</summary>
         public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj)
         {
-            return !new NullValidator<T>(obj).AnyNull;
+            return !new NullValidator<T>(obj).IsNull;
         }
 
         /// <summary>
