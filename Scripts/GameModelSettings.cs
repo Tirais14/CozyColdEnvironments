@@ -17,19 +17,19 @@ namespace UTIRLib
         [JsonProperty("bodySettings")]
         private GameObjectSettings bodySettings = null!;
 
-        [JsonIgnore]
-        public float Scale => bodySettings.Scale;
-
         [field: SerializeField]
         [JsonProperty("overrideBodyMesh")]
         public Mesh? BodyMesh { get; private set; } = null;
 
-        [JsonIgnore]
-        public bool HasBodyMesh => BodyMesh != null;
-
         [field: SerializeField]
         [JsonProperty("overrideBodyMaterials")]
         public Material[]? BodyMaterials { get; private set; } = null;
+
+        [JsonIgnore]
+        public float Scale => bodySettings.Scale;
+
+        [JsonIgnore]
+        public bool HasBodyMesh => BodyMesh != null;
 
         [JsonIgnore]
         public bool HasBodyMaterials => BodyMaterials != null;
@@ -44,15 +44,18 @@ namespace UTIRLib
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public void ApplyTo(GameModel component)
+        public void ApplyTo(GameModel gameModel)
         {
-            if (component == null)
-                throw new ArgumentNullException(nameof(component));
+            if (gameModel == null)
+                throw new ArgumentNullException(nameof(gameModel));
 
-            component.Body.SetMesh(BodyMesh);
+            if (HasBodyMesh)
+                gameModel.Body.SetMesh(BodyMesh);
 
             if (HasBodyMaterials)
-                component.Body.SetMaterials(BodyMaterials!);
+                gameModel.Body.SetMaterials(BodyMaterials!);
+
+            bodySettings.ApplyTo(gameModel.gameObject);
         }
 
         void IGameObjectSettings.ApplyTo(GameObject gameObject)

@@ -1,9 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.LowLevel;
 using UTIRLib.AddressableAssets.Databases;
-using UTIRLib.Reflection;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -19,7 +17,7 @@ namespace UTIRLib.Json.AddressableAssets.Databases
         {
             if (textAssets.IsNullOrEmpty())
             {
-                TirLibDebug.PrintWarning("Not loaded any textAsset.");
+                TirLibDebug.PrintWarning($"{this.GetTypeName()}: Not loaded any textAsset.");
                 return;
             }
 

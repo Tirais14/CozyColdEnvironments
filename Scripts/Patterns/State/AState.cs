@@ -28,7 +28,13 @@ namespace UTIRLib.Patterns.States
         {
         }
 
-        protected void StopExecuting() => stateMachine.ForceStopState(this);
+        protected void StopExecuting(string? message = null!)
+        {
+            stateMachine.ForceStopState(this);
+
+            if (message.IsNotNullOrEmpty())
+                TirLibDebug.PrintWarning($"{this.GetTypeName()} stopped. {message.Trim('.')}.");
+        }
 
         void IState.Enter() => OnEnter();
 
