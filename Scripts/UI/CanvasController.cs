@@ -11,14 +11,14 @@ namespace UTIRLib.UI
     public class CanvasController : MonoX, ICanvasController
     {
         [SerializeField]
-        private InputActionReference pointerRef = null!;
+        private InputActionReference m_PointerInput = null!;
 
-        [GetBySelf]
+        [field: GetBySelf]
         public GraphicRaycaster RaycasterGraphic { get; private set; } = null!;
 
-        [GetBySelf]
+        [field: GetBySelf]
         public ICanvasRaycaster RaycasterCanvas { get; private set; } = null!;
 
-        public InputAction Pointer => pointerRef;
+        public InputAction Pointer => m_PointerInput;
     }
 }

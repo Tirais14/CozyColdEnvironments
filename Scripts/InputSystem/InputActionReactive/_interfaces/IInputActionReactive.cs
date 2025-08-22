@@ -12,10 +12,11 @@ namespace UTIRLib.InputSystem.Reactive
     {
         InputAction Action { get; }
         string ActionName { get; }
-        IObservable<CallbackContext> Trigger { get; }
+        IObservable<CallbackContext> Raw { get; }
         IObservable<CallbackContext> Started { get; }
         IObservable<CallbackContext> Performed { get; }
         IObservable<CallbackContext> Canceled { get; }
+        IObservable<bool> ButtonRaw { get; }
         IObservable<bool> ButtonStarted { get; }
         IObservable<bool> ButtonPerformed { get; }
         IObservable<bool> ButtonCanceled { get; }
@@ -27,6 +28,7 @@ namespace UTIRLib.InputSystem.Reactive
     {
         T Value { get; }
 
+        IObservable<T> TRaw { get; }
         IObservable<T> TStarted { get; }
         IObservable<T> TPerformed { get; }
         IObservable<T> TCanceled { get; }

@@ -74,7 +74,7 @@ namespace UTIRLib
         //        InitObject(item);
         //}
 
-        public static async UniTask InitAllObjects(
+        public static async UniTask InitAllObjectsAsync(
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)
         {
             var allInitables = new ConcurrentDictionary<Type, IInitableBase>();

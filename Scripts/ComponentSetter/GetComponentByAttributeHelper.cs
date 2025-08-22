@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -189,7 +190,12 @@ namespace UTIRLib.ComponentSetter
             if (foundComponent.IsNull())
                 throw new ObjectNotFoundException(prop.PropertyType);
 
-            prop.SetValue(source, foundComponent);
+            prop.SetValue(source,
+                          foundComponent,
+                          BindingFlagsDefault.InstanceAll,
+                          binder: null,
+                          index: null,
+                          culture: CultureInfo.InvariantCulture);
         }
 
         private static void SetProps(Component source,

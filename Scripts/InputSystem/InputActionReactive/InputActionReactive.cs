@@ -14,7 +14,7 @@ namespace UTIRLib.InputSystem.Reactive
         DisposableContainer,
         IInputActionReactive
     {
-        private readonly ReactiveProperty<CallbackContext> trigger = new();
+        private readonly ReactiveProperty<CallbackContext> raw = new();
         private readonly ReactiveProperty<CallbackContext> started = new();
         private readonly ReactiveProperty<CallbackContext> performed = new();
         private readonly ReactiveProperty<CallbackContext> canceled = new();
@@ -22,24 +22,25 @@ namespace UTIRLib.InputSystem.Reactive
         private bool disposedValue;
 
         public InputAction Action { get; }
-        public IObservable<CallbackContext> Trigger => trigger.AsObservable();
+        public IObservable<CallbackContext> Raw => raw.AsObservable();
         public IObservable<CallbackContext> Started {
-            get => started.Where(x => !x.Equals(default(CallbackContext)));
+            get => started.Skip(1).Where(x => !x.Equals(default(CallbackContext)));
         }
         public IObservable<CallbackContext> Performed {
-            get => performed.Where(x => !x.Equals(default(CallbackContext)));
+            get => performed.Skip(1).Where(x => !x.Equals(default(CallbackContext)));
         }
         public IObservable<CallbackContext> Canceled {
-            get => canceled.Where(x => !x.Equals(default(CallbackContext)));
+            get => canceled.Skip(1).Where(x => !x.Equals(default(CallbackContext)));
         }
+        public IObservable<bool> ButtonRaw => raw.Select(x => x.ReadValueAsButton());
         public IObservable<bool> ButtonStarted {
-            get => started.Select(x => x.ReadValueAsButton());
+            get => started.Skip(1).Select(x => x.ReadValueAsButton());
         }
         public IObservable<bool> ButtonPerformed {
-            get => performed.Select(x => x.ReadValueAsButton());
+            get => performed.Skip(1).Select(x => x.ReadValueAsButton());
         }
         public IObservable<bool> ButtonCanceled {
-            get => canceled.Select(x => x.ReadValueAsButton());
+            get => canceled.Skip(1).Select(x => x.ReadValueAsButton());
         }
         public string ActionName => Action.name;
         public bool IsEnabled => Action.enabled;
@@ -67,9 +68,9 @@ namespace UTIRLib.InputSystem.Reactive
             {
                 if (disposing)
                 {
-                    Action.started -= OnTrigger;
-                    Action.performed -= OnTrigger;
-                    Action.canceled -= OnTrigger;
+                    Action.started -= OnRaw;
+                    Action.performed -= OnRaw;
+                    Action.canceled -= OnRaw;
 
                     Action.started -= OnStarted;
                     Action.performed -= OnPerformed;
@@ -82,18 +83,18 @@ namespace UTIRLib.InputSystem.Reactive
 
         private void Setup()
         {
-            Action.started += OnTrigger;
-            Action.performed += OnTrigger;
-            Action.canceled += OnTrigger;
+            Action.started += OnRaw;
+            Action.performed += OnRaw;
+            Action.canceled += OnRaw;
 
             Action.started += OnStarted;
             Action.performed += OnPerformed;
             Action.canceled += OnCanceled;
         }
 
-        private void OnTrigger(CallbackContext context)
+        private void OnRaw(CallbackContext context)
         {
-            trigger.SetValueAndForceNotify(context);
+            raw.SetValueAndForceNotify(context);
         }
 
         private void OnStarted(CallbackContext context)
@@ -119,9 +120,10 @@ namespace UTIRLib.InputSystem.Reactive
         where T : struct
     {
         public T Value { get; private set; }
+        public IObservable<T> TRaw => Raw.Select(x => x.ReadValue<T>());
         public IObservable<T> TStarted => Started.Select(x => x.ReadValue<T>());
-        public IObservable<T> TPerformed => Started.Select(x => x.ReadValue<T>());
-        public IObservable<T> TCanceled => Started.Select(x => x.ReadValue<T>());
+        public IObservable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
+        public IObservable<T> TCanceled => Canceled.Select(x => x.ReadValue<T>());
 
         public InputActionReactive(InputAction inputAction) 
             :

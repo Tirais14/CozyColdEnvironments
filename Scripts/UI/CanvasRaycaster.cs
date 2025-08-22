@@ -20,7 +20,7 @@ namespace UTIRLib.UI
         [Tooltip("Keep null to use current")]
         public EventSystem EventSys { get; private set; } = null!;
         [GetBySelf]
-        public GraphicRaycaster RaycasterGraphic { get; } = null!;
+        public GraphicRaycaster RaycasterGraphic { get; private set; } = null!;
 
         protected override void OnStart()
         {

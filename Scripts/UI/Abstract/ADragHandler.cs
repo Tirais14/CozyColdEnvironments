@@ -20,9 +20,6 @@ namespace UTIRLib.UI
         [RequiredField]
         protected ICanvasRaycaster raycaster;
 
-        [RequiredField]
-        protected InputAction pointer;
-
         protected virtual bool CanBeginDrag => true;
 
         protected override void OnStart()
@@ -33,7 +30,6 @@ namespace UTIRLib.UI
                                        .ThrowIfNull(new ObjectNotFoundException(typeof(ICanvasController)));
 
             raycaster = canvasController.RaycasterCanvas;
-            pointer = canvasController.Pointer;
 
             onEndFirstFrame += () => draggable.gameObject.SetActive(false);
 
