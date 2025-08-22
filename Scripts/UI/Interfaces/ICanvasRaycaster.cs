@@ -8,7 +8,7 @@ namespace UTIRLib.UI
 {
     public interface ICanvasRaycaster
     {
-        GraphicRaycaster GraphicRaycaster { get; }
+        GraphicRaycaster RaycasterGraphic { get; }
 
         object[] Raycast(Type type, Vector2 position, object? exclude = null);
         T[] Raycast<T>(Vector2 position, T? exclude = default);

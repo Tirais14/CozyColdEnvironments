@@ -11,17 +11,28 @@ using UTIRLib.Unity.Extensions;
 
 namespace UTIRLib.UI
 {
-    public sealed class CanvasRaycaster : ICanvasRaycaster
+    [RequireComponent(typeof(GraphicRaycaster))]
+    public sealed class CanvasRaycaster : MonoX, ICanvasRaycaster
     {
-        private readonly PointerEventData pointerEventData;
         private readonly List<RaycastResult> raycastResults = new();
+        private PointerEventData pointerEventData = null!;
 
-        public GraphicRaycaster GraphicRaycaster { get; }
+        [Tooltip("Keep null to use current")]
+        public EventSystem EventSys { get; private set; } = null!;
+        [GetBySelf]
+        public GraphicRaycaster RaycasterGraphic { get; } = null!;
 
-        public CanvasRaycaster(EventSystem eventSystem, GraphicRaycaster graphicRaycaster)
+        protected override void OnStart()
         {
-            pointerEventData = new PointerEventData(eventSystem);
-            GraphicRaycaster = graphicRaycaster;
+            base.OnStart();
+
+            if (EventSys == null)
+                EventSys = EventSystem.current;
+
+            if (EventSys == null)
+                throw new ObjectNotFoundException(typeof(EventSystem));
+
+            pointerEventData = new PointerEventData(EventSys);
         }
 
         public object[] Raycast(Type type, Vector2 position, object? exclude = null)
@@ -31,7 +42,7 @@ namespace UTIRLib.UI
 
             raycastResults.Clear();
             pointerEventData.position = position;
-            GraphicRaycaster.Raycast(pointerEventData, raycastResults);
+            RaycasterGraphic.Raycast(pointerEventData, raycastResults);
 
             var results =new List<object>();
             for (int i = 0; i < raycastResults.Count; i++)
@@ -54,7 +65,7 @@ namespace UTIRLib.UI
 
             raycastResults.Clear();
             pointerEventData.position = position;
-            GraphicRaycaster.Raycast(pointerEventData, raycastResults);
+            RaycasterGraphic.Raycast(pointerEventData, raycastResults);
 
             for (int i = 0; i < raycastResults.Count; i++)
             {

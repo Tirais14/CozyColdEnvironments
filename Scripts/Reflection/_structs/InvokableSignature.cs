@@ -53,7 +53,7 @@ namespace UTIRLib.Reflection
 
         public bool Equals(Type[]? other)
         {
-            if (other is null)
+            if (other is null || types is null)
                 return false;
 
             if (other.IsEmpty() && types.IsEmpty())
@@ -104,12 +104,11 @@ namespace UTIRLib.Reflection
 
         public override string ToString()
         {
-            var sb = new StringBuilder($"{nameof(InvokableSignature)}: {nameof(AllowInheritance)} = {AllowInheritance}, ");
+            if (types.IsNullOrEmpty())
+                return $"{nameof(InvokableArguments)}: empty.";
 
-            if (types.IsEmpty())
-                sb.Append("empty");
-            else
-                sb.AppendJoin(Environment.NewLine, types.Select(x => x.GetName()));
+            var sb = new StringBuilder($"{nameof(InvokableSignature)}: {nameof(AllowInheritance)} = {AllowInheritance}, ");
+            sb.AppendJoin(Environment.NewLine, types.Select(x => x.GetName()));
 
             return sb.ToString();
         }

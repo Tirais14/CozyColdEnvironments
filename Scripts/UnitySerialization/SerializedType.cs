@@ -10,7 +10,7 @@ using UTIRLib.Utils;
 namespace UTIRLib.Unity.Serialization
 {
     [Serializable]
-    public struct SerializedType : IUnitySerialized<Type>
+    public struct SerializedType : IUnitySerialized<Type?>
     {
         private Type? value;
 
@@ -23,11 +23,9 @@ namespace UTIRLib.Unity.Serialization
         [SerializeField]
         private bool isNamespacedFullName;
 
-        public Type Value {
+        public Type? Value {
             get
             {
-                if (typeName.IsNullOrEmpty())
-                    throw new StringException(typeName);
                 if (value == null)
                     FindTypeByName();
 
@@ -58,7 +56,7 @@ namespace UTIRLib.Unity.Serialization
             });
         }
 
-        public static implicit operator Type(SerializedType value)
+        public static implicit operator Type?(SerializedType value)
         {
             return value.Value;
         }

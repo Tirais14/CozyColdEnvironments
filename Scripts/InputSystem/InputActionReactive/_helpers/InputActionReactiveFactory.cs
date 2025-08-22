@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements.Experimental;
 using UTIRLib.Reflection;
 
 #nullable enable
@@ -22,20 +23,18 @@ namespace UTIRLib.InputSystem.Reactive
         {
             if (inputAction is null)
                 throw new ArgumentNullException(nameof(inputAction));
-
             if (valueType is null)
-            {
-                return MethodInvoker.Invoke<IInputActionReactive>(
-                    typeof(InputActionReactiveFactory),
-                    new MethodBindings())!;
-            }
+                return new InputActionReactive(inputAction);
 
-            return MethodInvoker.Invoke<IInputActionReactive>(
-                typeof(InputActionReactiveFactory), 
-                new MethodBindings
-                {
-                    GenericArguments = new Type[] { valueType }
-                })!;
+            var methodBindings = new MethodBindings
+            {
+                MethodName = nameof(Create),
+                BindingFlags = BindingFlagsDefault.StaticPublic,
+                ArgumentsData = InvokableArguments.Create(inputAction),
+                GenericArguments = new Type[] { valueType }
+            };
+
+            return MethodInvoker.Invoke<IInputActionReactive>(typeof(InputActionReactiveFactory), methodBindings)!;
         }
     }
 }

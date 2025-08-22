@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UTIRLib.Attributes;
 using UTIRLib.Diagnostics;
 using UTIRLib.InputSystem;
@@ -20,7 +21,7 @@ namespace UTIRLib.UI
         protected ICanvasRaycaster raycaster;
 
         [RequiredField]
-        protected IPointerInput pointerInput;
+        protected InputAction pointer;
 
         protected virtual bool CanBeginDrag => true;
 
@@ -32,7 +33,7 @@ namespace UTIRLib.UI
                                        .ThrowIfNull(new ObjectNotFoundException(typeof(ICanvasController)));
 
             raycaster = canvasController.RaycasterCanvas;
-            pointerInput = canvasController.Pointer;
+            pointer = canvasController.Pointer;
 
             onEndFirstFrame += () => draggable.gameObject.SetActive(false);
 

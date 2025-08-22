@@ -93,22 +93,22 @@ namespace UTIRLib.InputSystem.Reactive
 
         private void OnTrigger(CallbackContext context)
         {
-            trigger.Value = context;
+            trigger.SetValueAndForceNotify(context);
         }
 
         private void OnStarted(CallbackContext context)
         {
-            started.Value = context;
+            started.SetValueAndForceNotify(context);
         }
 
         private void OnPerformed(CallbackContext context)
         {
-            performed.Value = context;
+            performed.SetValueAndForceNotify(context);
         }
 
         private void OnCanceled(CallbackContext context)
         {
-            canceled.Value = context;
+            canceled.SetValueAndForceNotify(context);
         }
     }
     public class InputActionReactive<T> 

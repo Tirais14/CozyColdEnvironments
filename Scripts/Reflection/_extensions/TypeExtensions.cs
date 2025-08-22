@@ -316,10 +316,11 @@ namespace UTIRLib.Reflection
                 throw new ArgumentNullException(nameof(bindings));
 
             MethodInfo? method = value.GetMethod(bindings.MethodName,
-                                                bindings.BindingFlags,
-                                                bindings.Binder,
-                                                (Type[])bindings.ArgumentsData.Signature,
-                                                bindings.ParameterModifiers);
+                                                 bindings.GenericArguments.Length,
+                                                 bindings.BindingFlags,
+                                                 bindings.Binder,
+                                                 (Type[])bindings.ArgumentsData.Signature,
+                                                 bindings.ParameterModifiers);
 
             if (method is null)
             {
