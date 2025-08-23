@@ -1,5 +1,7 @@
 #nullable enable
+using System.Linq;
 using UTIRLib.Diagnostics;
+using UTIRLib.Unity.TypeMatching;
 
 namespace UTIRLib
 {
@@ -11,9 +13,12 @@ namespace UTIRLib
         protected override void OnAwake()
         {
             base.OnAwake();
-            if (FindAnyObjectByType(GetType()) != null)
+            if (FindObjectsByType(GetType(),
+                                  UnityEngine.FindObjectsInactive.Include,
+                                  UnityEngine.FindObjectsSortMode.None)
+                .Count(x => x != this) > 0)
             {
-                TirLibDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.");
+                TirLibDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
                 Destroy(this);
             }
         }

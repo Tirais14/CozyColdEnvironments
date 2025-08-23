@@ -22,7 +22,10 @@ namespace UTIRLib.Tickables
 
         protected override void OnAwake()
         {
-            if (FindAnyObjectByType<TickableManager>().Is<TickableManager>())
+            if (FindAnyObjectByType<TickableManager>()
+                .Is<TickableManager>(out var found)
+                && found != this
+                )
                 throw new ArgumentException($"On scene cannot be instantiated more than one {nameof(TickableManager)}.");
 
             instance = this;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 using UTIRLib.Unity.TypeMatching;
@@ -18,72 +19,108 @@ namespace UTIRLib
 
         protected override void OnAwake()
         {
-            if (FindAnyObjectByType<MonoXStaticCore>() != null)
+            if (FindObjectsByType<MonoXStaticCore>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Any(x => x != this))
                 throw new LogicException($"Cannot create more than one {nameof(MonoXStaticCore)}.");
 
             instance = this;
-
+            DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += (_, _) => instances.Clear();
             base.OnAwake();
-
-            Type[] staticMonos = GetStaticMonos();
-            CreateStaticMono(staticMonos);
-            AddMonosToCollection();
-
-            OnInstantiated += OnMonoXInstantiated;
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ObjectNotFoundException"></exception>
-        /// <exception cref="MissingReferenceException"></exception>
         public static MonoXStatic GetInstance(Type type)
         {
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
-            if (!instance.instances.TryGetValue(type, out MonoXStatic? result))
-                throw new ObjectNotFoundException(type);
+
+            if (instance == null)
+                GetOrCreateSelf();
+
+            if (!instance!.instances.TryGetValue(type, out MonoXStatic? result))
+                return instance.GetOrCreateStatic(type);
             if (result == null)
-                throw new MissingReferenceException();
+            {
+                instance.instances.Remove(type);
+                return instance.GetOrCreateStatic(type);
+            }
 
             return result;
         }
 
-        private static Type[] GetStaticMonos()
+        //private static Type[] GetStaticMonos()
+        //{
+        //    return (from x in AppDomain.CurrentDomain.GetAssemblies()
+        //            select x.GetTypes() into types
+        //            from t in types
+        //            where t.IsType<MonoXStatic>()
+        //            select t)
+        //            .ToArray();
+        //}
+
+        private static void GetOrCreateSelf()
         {
-            return (from x in AppDomain.CurrentDomain.GetAssemblies()
-                    select x.GetTypes() into types
-                    from t in types
-                    where t.IsType<MonoXStatic>()
-                    select t)
-                    .ToArray();
-        }
-
-        private void OnMonoXInstantiated(MonoX mono)
-        {
-            if (mono.IsNot<MonoXStatic>(out var result))
-                return;
-
-            instances.TryAdd(result.GetType(), result);
-        }
-
-        private void CreateStaticMono(Type[] staticMonos)
-        {
-            HashSet<Type> existingComponents = 
-                FindObjectsByType<MonoXStatic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .Select(x => x.GetType())
-                .Distinct()
-                .ToHashSet();
-
-            foreach (Type t in staticMonos)
+            if (FindAnyObjectByType<MonoXStaticCore>(FindObjectsInactive.Include)
+                .Is<MonoXStaticCore>(out var found)
+                )
             {
-                if (!existingComponents.Contains(t))
-                    gameObject.AddComponent(t);
+                instance = found;
+                return;
             }
+
+            var go = new GameObject("___StaticCore", typeof(MonoXStaticCore));
+            instance = go.GetComponent<MonoXStaticCore>();
         }
 
-        private void AddMonosToCollection()
+        private MonoXStatic GetOrCreateStatic(Type type)
         {
-            instances.AddRange(FindObjectsByType<MonoXStatic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .Select(x => new KeyValuePair<Type, MonoXStatic>(x.GetType(), x)));
+            var value = (MonoXStatic?)FindAnyObjectByType(type);
+
+            if (value == null)
+                value = (MonoXStatic)gameObject.AddComponent(type);
+
+            instances.Add(value.GetType(), value);
+
+            return value;
         }
+
+        //private void OnMonoXInstantiated(MonoX mono)
+        //{
+        //    if (mono.IsNot<MonoXStatic>(out var result))
+        //        return;
+
+        //    instances.TryAdd(result.GetType(), result);
+        //}
+
+        //private void CreateStaticMono(Type[] staticMonos)
+        //{
+        //    HashSet<Type> existingComponents = 
+        //        FindObjectsByType<MonoXStatic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+        //        .Select(x => x.GetType())
+        //        .Distinct()
+        //        .ToHashSet();
+
+        //    foreach (Type t in staticMonos)
+        //    {
+        //        if (!existingComponents.Contains(t))
+        //            gameObject.AddComponent(t);
+        //    }
+        //}
+
+        //private void AddMonosToCollection()
+        //{
+        //    instances.AddRange(FindObjectsByType<MonoXStatic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+        //        .Select(x => new KeyValuePair<Type, MonoXStatic>(x.GetType(), x)));
+        //}
+
+        //private void Init()
+        //{
+        //    Type[] staticMonos = GetStaticMonos();
+        //    CreateStaticMono(staticMonos);
+        //    AddMonosToCollection();
+
+        //    OnInstantiated += OnMonoXInstantiated;
+        //}
     }
 }

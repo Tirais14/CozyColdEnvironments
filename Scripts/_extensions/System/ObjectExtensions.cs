@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 using UTIRLib.Reflection.Cached;
@@ -25,6 +26,24 @@ namespace UTIRLib.Unity.TypeMatching
 {
     public static class ObjectExtensions
     {
+        public static bool IsType(this object? value, Type type)
+        {
+            return type.IsInstanceOfType(value);
+        }
+        public static bool IsType(this object? value,
+            Type type,
+            [NotNullWhen(true)] out object? result)
+        {
+            if (!value.IsType(type))
+            {
+                result = null;
+                return false;
+            }
+
+            result = value;
+            return result.IsNotNull();
+        }
+
         public static bool Is<T>(this object? obj)
         {
             if (obj is T && obj.IsNotNull())
@@ -59,6 +78,25 @@ namespace UTIRLib.Unity.TypeMatching
             }
 
             result = default;
+            return false;
+        }
+
+        public static bool IsNotType(this object? value, Type type)
+        {
+            return value.IsType(type);
+        }
+
+        public static bool IsNotType(this object? value,
+            Type type,
+            out object? result)
+        {
+            if (value.IsNotType(type))
+            {
+                result = null;
+                return true;
+            }
+
+            result = null;
             return false;
         }
 
