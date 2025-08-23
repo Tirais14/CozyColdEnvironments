@@ -7,6 +7,9 @@ namespace UTIRLib.Tickables
 {
     public interface ITicker : ISwitchable, IDisposable
     {
+        float DeltaTime { get; }
+        int FramesProcessed { get; }
+
         bool IsRegistered(ITickableBase tickable);
 
         IDisposable Register(ITickableBase tickable);

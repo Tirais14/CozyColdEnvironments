@@ -48,16 +48,11 @@ namespace UTIRLib
 
             return result;
         }
-
-        //private static Type[] GetStaticMonos()
-        //{
-        //    return (from x in AppDomain.CurrentDomain.GetAssemblies()
-        //            select x.GetTypes() into types
-        //            from t in types
-        //            where t.IsType<MonoXStatic>()
-        //            select t)
-        //            .ToArray();
-        //}
+        public static T GetInstance<T>()
+            where T : MonoXStatic
+        {
+            return (T)GetInstance(typeof(T));
+        }
 
         private static void GetOrCreateSelf()
         {
@@ -84,43 +79,5 @@ namespace UTIRLib
 
             return value;
         }
-
-        //private void OnMonoXInstantiated(MonoX mono)
-        //{
-        //    if (mono.IsNot<MonoXStatic>(out var result))
-        //        return;
-
-        //    instances.TryAdd(result.GetType(), result);
-        //}
-
-        //private void CreateStaticMono(Type[] staticMonos)
-        //{
-        //    HashSet<Type> existingComponents = 
-        //        FindObjectsByType<MonoXStatic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-        //        .Select(x => x.GetType())
-        //        .Distinct()
-        //        .ToHashSet();
-
-        //    foreach (Type t in staticMonos)
-        //    {
-        //        if (!existingComponents.Contains(t))
-        //            gameObject.AddComponent(t);
-        //    }
-        //}
-
-        //private void AddMonosToCollection()
-        //{
-        //    instances.AddRange(FindObjectsByType<MonoXStatic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-        //        .Select(x => new KeyValuePair<Type, MonoXStatic>(x.GetType(), x)));
-        //}
-
-        //private void Init()
-        //{
-        //    Type[] staticMonos = GetStaticMonos();
-        //    CreateStaticMono(staticMonos);
-        //    AddMonosToCollection();
-
-        //    OnInstantiated += OnMonoXInstantiated;
-        //}
     }
 }

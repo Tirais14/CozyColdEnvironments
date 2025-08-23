@@ -35,7 +35,7 @@ namespace UTIRLib.Tickables
         protected override void OnAwake()
         {
             base.OnAwake();
-            TickableManager.RegisterTickable(this);
+            Tickables.RegisterTickable(this);
         }
 
         protected virtual void OnRegisterInternal()

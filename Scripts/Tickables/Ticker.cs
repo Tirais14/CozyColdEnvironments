@@ -21,7 +21,9 @@ namespace UTIRLib.Tickables
         protected readonly List<T> tickables = new();
 
         public float TickablesCount => tickablesCount;
+        public float DeltaTime { get; protected set; }
         public bool IsEnabled => enabled;
+        public virtual int FramesProcessed => 1;
 
         private void OnDestroy() => ((IDisposable)this).Dispose();
 
@@ -70,10 +72,18 @@ namespace UTIRLib.Tickables
             return tickables.Contains(tickable);
         }
 
-        protected void DoTickablesTicks(float deltaTime)
+        /// <summary>
+        /// It's raw method. Not calculate <see cref="DeltaTime"/>
+        /// </summary>
+        protected void DoTickablesTicks()
         {
+            T tickable;
             for (int i = 0; i < tickablesCount; i++)
-                DoTick(tickables[i]);
+            {
+                tickable = tickables[i];
+                if (tickable.IsTickableEnabled)
+                    DoTick(tickable);
+            }
         }
 
         protected abstract void DoTick(T tickable);

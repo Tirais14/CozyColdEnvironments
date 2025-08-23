@@ -1,4 +1,6 @@
 #nullable enable
+using UnityEditor;
+
 namespace UTIRLib.Tickables
 {
     public abstract class TickerTimed<T> : Ticker<T>
@@ -10,16 +12,24 @@ namespace UTIRLib.Tickables
             Predicate = static (timer, deltaTime) => timer.IsTickAllowed(deltaTime)
         };
 
-        protected void ProccessFrame(float deltaTime)
+        private int framesProcessed;
+
+        public override int FramesProcessed => framesProcessed;
+
+        protected void ProccessFrames(float baseDeltaTime)
         {
-            timeCounter.OnStartTick(deltaTime);
+            framesProcessed = 0;
+            DeltaTime = 0;
+            timeCounter.OnStartTick(baseDeltaTime);
 
-            while (tickPredicate.Invoke(timeCounter, deltaTime))
+            while (tickPredicate.Invoke(timeCounter, baseDeltaTime))
             {
-                DoTickablesTicks(deltaTime);
-
-                timeCounter.OnEndTick(deltaTime);
+                DoTickablesTicks();
+                framesProcessed++;
+                timeCounter.OnEndTick(baseDeltaTime);
             }
+
+            DeltaTime = baseDeltaTime * framesProcessed;
         }
 
         public float TimeScale {
@@ -31,6 +41,14 @@ namespace UTIRLib.Tickables
 
                 timeCounter.TimeScale = value;
             }
+        }
+
+        protected float GetDeltaTime(float baseDeltaTime)
+        {
+            if (framesProcessed <= 1)
+                return baseDeltaTime;
+
+            return baseDeltaTime * TimeScale;
         }
     }
 }
