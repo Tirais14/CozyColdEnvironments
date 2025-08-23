@@ -66,6 +66,11 @@ namespace UTIRLib.Tickables
                 Unregister(tickables[^1]);
         }
 
+        public bool IsRegistered(T tickable)
+        {
+            return tickables.Contains(tickable);
+        }
+
         protected void DoTickablesTicks(float deltaTime)
         {
             for (int i = 0; i < tickablesCount; i++)
