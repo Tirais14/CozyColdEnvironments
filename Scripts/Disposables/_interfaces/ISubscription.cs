@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace UTIRLib.Disposables
@@ -8,9 +7,13 @@ namespace UTIRLib.Disposables
     {
     }
 
-    public interface ISubscription<out TObserver, out TObservable> : ISubscription
+    public interface ISubscription<out TObservable> : ISubscription
+    {
+        TObservable Observable { get; }
+    }
+
+    public interface ISubscription<out TObserver, out TObservable> : ISubscription<TObservable>
     {
         TObserver Observer { get; }
-        TObservable Observable { get; }
     }
 }

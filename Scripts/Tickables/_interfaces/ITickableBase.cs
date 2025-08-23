@@ -1,14 +1,9 @@
 #nullable enable
 namespace UTIRLib.Tickables
 {
-    public interface ITickableBase : IStateToggleable
+    public interface ITickableBase
     {
         bool IsTickableEnabled { get; set; }
-
-        bool IStateToggleable.IsEnabled {
-            get => IsEnabled;
-            set => IsEnabled = value;
-        }
 
         void OnRegister()
         {

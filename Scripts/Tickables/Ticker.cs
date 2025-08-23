@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using UTIRLib.Diagnostics;
 using UTIRLib.Disposables;
-using UTIRLib.Patterns.Commands;
 using UTIRLib.Reflection.Cached;
 
 #nullable enable

@@ -5,7 +5,7 @@ using UTIRLib.Diagnostics;
 #pragma warning disable IDE1006
 namespace UTIRLib.Tickables
 {
-    public class TickableMono
+    public class MonoXTickable
         :
         MonoX,
         ITickableBase
@@ -32,25 +32,22 @@ namespace UTIRLib.Tickables
             }
         }
 
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+            TickableManager.RegisterTickable(this);
+        }
+
         protected virtual void OnRegisterInternal()
         {
         }
 
         protected virtual void OnUnregisterInternal()
         {
-
         }
 
-        void ITickableBase.OnRegister()
-        {
-            OnRegisterInternal();
-            ticker = Ticker;
-        }
+        void ITickableBase.OnRegister() => OnRegisterInternal();
 
-        void ITickableBase.OnUnregister()
-        {
-            OnUnregisterInternal();
-            ticker = null;
-        }
+        void ITickableBase.OnUnregister() => OnUnregisterInternal();
     }
 }

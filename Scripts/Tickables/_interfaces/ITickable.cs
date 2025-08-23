@@ -5,4 +5,9 @@ namespace UTIRLib.Tickables
     {
         void DoTick();
     }
+    public interface ITickable<in T> : ITickable, ITickableBase<T>
+        where T : ITicker
+    {
+
+    }
 }

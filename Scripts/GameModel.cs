@@ -8,7 +8,6 @@ namespace UTIRLib.Unity
 {
     public class GameModel : MonoX
     {
-
         public Transform Anchor { get; private set; } = null!;
         public GameModelBody Body { get; private set; } = null!;
 

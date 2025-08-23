@@ -13,6 +13,8 @@ namespace UTIRLib
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class MonoX : MonoBehaviour
     {
+        public static event Action<MonoX>? OnInstantiated;
+
         protected event Action? onEndFirstFrame;
 
         protected virtual void OnAwake()
@@ -138,6 +140,8 @@ namespace UTIRLib
 
         protected void Awake()
         {
+            OnInstantiated?.Invoke(this);
+
             //Sets component fields and props marked by specical attribute
             GetComponentByAttributeHelper.SetMembers(this);
 
