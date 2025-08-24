@@ -202,9 +202,12 @@ namespace UTIRLib.Diagnostics
                 return true;
 
             Type type = value.GetType();
+            if (type.IsClass)
+                return false;
+
             if (!TypeCache.TryGetDefaultValue(type, out object? defaultValue))
             {
-                defaultValue = Activator.CreateInstance(type);
+                defaultValue = Activator.CreateInstance(type, nonPublic: true);
                 TypeCache.TryCacheDefaultValue(type, defaultValue);
             }
 

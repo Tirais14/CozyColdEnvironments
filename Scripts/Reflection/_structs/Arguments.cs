@@ -16,7 +16,7 @@ namespace UTIRLib.Reflection.ObjectModel
         private readonly ReadOnlyCollection<object?> values;
 
         public IReadOnlyList<object?> Values => values;
-        public int Count => values.Count;
+        public int Count => values?.Count ?? 0;
         public object? this[int index] => values[index];
 
         public Arguments(params object?[] values)

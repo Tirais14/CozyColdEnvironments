@@ -208,6 +208,13 @@ namespace UTIRLib.GameSystems.ItemStorageSystem
 
         int IReadOnlyCollection<IItemSlot>.Count => storage.SlotCount;
 
+        /// <summary>
+        /// For <see cref="InstanceFactory"/>
+        /// </summary>
+        protected ItemStorage(IItemSlot[] slots)
+        {
+            storage = new ItemStorage(slots);
+        }
         public ItemStorage(T[] slots)
         {
             storage = new ItemStorage(slots.Cast<IItemSlot>().ToArray());

@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Text;
 
 #nullable enable
 namespace UTIRLib.Reflection.ObjectModel
@@ -14,6 +15,16 @@ namespace UTIRLib.Reflection.ObjectModel
         {
             signature = new Signature(pairs.Select(x => x.type).ToArray());
             arguments = new Arguments(pairs.Select(x => x.value).ToArray());
+        }
+        public ExplicitArguments(params object[] args)
+            :
+            this(args.Select(x => new TypeValuePair(x.GetType(), x)).ToArray())
+        {
+        }
+        public ExplicitArguments(object args, bool singleArg)
+            :
+            this(args)
+        {
         }
 
         public static bool operator ==(ExplicitArguments left, ExplicitArguments right)
@@ -36,6 +47,20 @@ namespace UTIRLib.Reflection.ObjectModel
             return (object?[])args.arguments;
         }
 
+        public static explicit operator TypeValuePair[](ExplicitArguments args)
+        {
+            return args.ToPairs();
+        }
+
+        public TypeValuePair[] ToPairs()
+        {
+            var typeValuePairs = new List<TypeValuePair>(signature.Count);
+            for (int i = 0; i < signature.Count; i++)
+                typeValuePairs.Add(new TypeValuePair(signature[i], arguments[i]));
+
+            return typeValuePairs.ToArray();
+        }
+
         public bool Equals(ExplicitArguments other)
         {
             return signature.Equals(other.signature)
@@ -52,6 +77,21 @@ namespace UTIRLib.Reflection.ObjectModel
             return HashCode.Combine(signature, arguments);
         }
 
-        //TODO: ToString Method
+        public override string ToString()
+        {
+            if (signature.IsEmpty())
+                return "empty";
+
+            TypeValuePair[] typeValuePairs = ToPairs();
+            var builder = new StringBuilder();
+            TypeValuePair pair;
+            for (int i = 0; i < typeValuePairs.Length; i++)
+            {
+                pair = typeValuePairs[i];
+                builder.Append($"position = {i}, type = {pair.type.GetName()}, value = {pair.value}; ");
+            }
+
+            return builder.ToString();
+        }
     }
 }

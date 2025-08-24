@@ -16,7 +16,7 @@ namespace UTIRLib.Reflection.ObjectModel
         private readonly ReadOnlyCollection<Type> types;
 
         public IReadOnlyList<Type> Types => types;
-        public int Count => types.Count;
+        public int Count => types?.Count ?? 0;
         public Type this[int index] => types[index];
 
         public Signature(params Type[] types)

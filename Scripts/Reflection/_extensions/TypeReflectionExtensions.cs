@@ -161,6 +161,14 @@ namespace UTIRLib.Reflection
             return value.ForceGetMembers<ConstructorInfo>(bindingFlags);
         }
 
+        public static ConstructorInfo? ForceGetConstructor(this Type value,
+            ConstructorBindings bindings)
+        {
+            ConstructorInfo[] ctors = value.ForceGetConstructors(bindings.BindingFlags);
+
+            return ctors.FirstOrDefault(x => ConstructorBindingsMatcher.IsMatch(bindings, x));
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         public static MethodInfo? GetMethod(
             this Type value,
