@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
 using UTIRLib.Reflection.Cached;
@@ -12,7 +11,7 @@ namespace UTIRLib
     {
         /// <exception cref="ArgumentNullException"></exception>
         public static string GetTypeName<T>(this T? obj,
-            TypeNameAttributes attributes = TypeNameAttributes.Default)
+            TypeNameConvertingAttributes attributes = TypeNameConvertingAttributes.Default)
         {
             if (obj is null)
                 throw new ArgumentNullException(nameof(obj));
@@ -22,7 +21,7 @@ namespace UTIRLib
     }
 }
 
-namespace UTIRLib.Unity.TypeMatching
+namespace UTIRLib.TypeMatching
 {
     public static class ObjectExtensions
     {
@@ -44,6 +43,31 @@ namespace UTIRLib.Unity.TypeMatching
             return result.IsNotNull();
         }
 
+        public static bool IsNotType(this object? value, Type type)
+        {
+            return value.IsType(type);
+        }
+
+        public static bool IsNotType(this object? value,
+            Type type,
+            out object? result)
+        {
+            if (value.IsNotType(type))
+            {
+                result = null;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+    }
+}
+
+namespace UTIRLib.Unity.TypeMatching
+{
+    public static class ObjectExtensions
+    {
         public static bool Is<T>(this object? obj)
         {
             if (obj is T && obj.IsNotNull())
@@ -81,25 +105,6 @@ namespace UTIRLib.Unity.TypeMatching
             return false;
         }
 
-        public static bool IsNotType(this object? value, Type type)
-        {
-            return value.IsType(type);
-        }
-
-        public static bool IsNotType(this object? value,
-            Type type,
-            out object? result)
-        {
-            if (value.IsNotType(type))
-            {
-                result = null;
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-
         public static bool IsNot<T>(this object? obj)
         {
             return !obj.Is<T>();
@@ -122,7 +127,7 @@ namespace UTIRLib.Unity.TypeMatching
     }
 }
 
-namespace UTIRLib.Extensions
+namespace UTIRLib.TypeConverting
 {
     public static class ObjectExtensions
     {
@@ -190,23 +195,28 @@ namespace UTIRLib.Diagnostics
         /// <summary>
         /// Also checks for unity null
         /// </summary>
-        public static bool IsDefault([NotNullWhen(false)] this object? obj,
-            IsDefaultOption option = IsDefaultOption.None)
+        public static bool IsDefault([NotNullWhen(false)] this object? value,
+            EqualsDefaultOption option = EqualsDefaultOption.None)
         {
-            if (obj.IsNull())
+            if (value.IsNull())
                 return true;
 
-            object? defaultValue = TypeCache.GetDefaultValue(obj.GetType());
+            Type type = value.GetType();
+            if (!TypeCache.TryGetDefaultValue(type, out object? defaultValue))
+            {
+                defaultValue = Activator.CreateInstance(type);
+                TypeCache.TryCacheDefaultValue(type, defaultValue);
+            }
 
-            if (obj.Equals(defaultValue))
+            if (value.Equals(defaultValue))
                 return true;
 
-            if (obj is string str)
+            if (value is string str)
             {
                 return option switch
                 {
-                    IsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
-                    IsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
+                    EqualsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
+                    EqualsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
                     _ => throw new InvalidOperationException(),
                 };
             }
@@ -215,7 +225,7 @@ namespace UTIRLib.Diagnostics
         }
         public static bool IsDefault([NotNullWhen(false)] this object? obj,
             object[] customDefaultValues,
-            IsDefaultOption option = IsDefaultOption.None)
+            EqualsDefaultOption option = EqualsDefaultOption.None)
         {
             if (obj.IsDefault(option))
                 return true;
@@ -227,13 +237,13 @@ namespace UTIRLib.Diagnostics
 
         /// <summary>Inverted</summary>
         public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            IsDefaultOption option = IsDefaultOption.None)
+            EqualsDefaultOption option = EqualsDefaultOption.None)
         {
             return !obj.IsDefault(option);
         }
         public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
             object[] customDefaultValues,
-            IsDefaultOption option = IsDefaultOption.None)
+            EqualsDefaultOption option = EqualsDefaultOption.None)
         {
             return !obj.IsDefault(customDefaultValues, option);
         }

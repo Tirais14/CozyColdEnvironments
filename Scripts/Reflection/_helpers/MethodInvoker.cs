@@ -20,7 +20,7 @@ namespace UTIRLib.Reflection
 
             MethodInfo method = type.GetMethod(bindings, throwIfNotFound: true)!;
 
-            return method.Invoke(bindings.Target, bindings.Arguments);
+            return method.Invoke(bindings.Target, (object?[])bindings.Arguments);
         }
 
         public static T? Invoke<T>(Type value,

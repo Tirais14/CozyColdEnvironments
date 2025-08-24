@@ -1,12 +1,31 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using UTIRLib.Reflection.Cached;
 
 #nullable enable
 namespace UTIRLib.Reflection
 {
     public static class MemberInfoExtensions
     {
+        public static T? TryCacheMember<T>(this T? value, out bool result)
+            where T : MemberInfo
+        {
+            if (value is null)
+            {
+                result = false;
+                return null;
+            }
+
+            result = TypeCache.TryCacheMember(value);
+            return value;
+        }
+        public static T? TryCacheMember<T>(this T? value)
+            where T : MemberInfo
+        {
+            return value.TryCacheMember(out _);
+        }
+
         public static bool IsDefined<T>(this MemberInfo value)
             where T : Attribute
         {

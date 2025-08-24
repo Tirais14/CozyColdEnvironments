@@ -2,6 +2,7 @@ using System;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements.Experimental;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.ObjectModel;
 
 #nullable enable
 namespace UTIRLib.InputSystem.Reactive
@@ -30,7 +31,7 @@ namespace UTIRLib.InputSystem.Reactive
             {
                 MethodName = nameof(Create),
                 BindingFlags = BindingFlagsDefault.StaticPublic,
-                ArgumentsData = InvokableArguments.Create(inputAction),
+                Arguments = new ExplicitArguments(new TypeValuePair(inputAction)),
                 GenericArguments = new Type[] { valueType }
             };
 

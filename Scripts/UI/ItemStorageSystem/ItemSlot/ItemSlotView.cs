@@ -1,7 +1,9 @@
+using System.Net.Http.Headers;
 using UniRx;
 using UTIRLib.Diagnostics;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.ObjectModel;
 using UTIRLib.UI.MVVM;
 using UTIRLib.Unity.TypeMatching;
 
@@ -19,10 +21,13 @@ namespace UTIRLib.UI.ItemStorageSystem
         {
             TModel model = CreateModel();
 
-            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
-                InvokableArguments.Create(model,
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                parameters: InstanceCreationParameters.CacheConstructor);
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
+            {
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = new ExplicitArguments(new TypeValuePair(model))
+            }, InstanceFactory.Parameters.Default
+               |
+               InstanceFactory.Parameters.CacheConstructor);
 
             viewModel.AddTo(this);
 
@@ -36,9 +41,14 @@ namespace UTIRLib.UI.ItemStorageSystem
                      )
                 throw new ObjectNotFoundException(typeof(IItemStack));
 
-            return InstanceFactory.Create<TModel>(InvokableArguments.Create(itemStack,
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                    parameters: InstanceCreationParameters.CacheConstructor);
+            return InstanceFactory.Create<TModel>(new ConstructorBindings
+            {
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = new ExplicitArguments(
+                    new TypeValuePair(typeof(IItemStack), itemStack))
+            }, InstanceFactory.Parameters.Default
+               |
+               InstanceFactory.Parameters.CacheConstructor);
         }
     }
 }

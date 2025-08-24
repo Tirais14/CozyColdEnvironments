@@ -46,5 +46,15 @@ namespace UTIRLib.Tickables
             return tickable.GetType().GetCustomAttribute(typeof(TickerTypeAttribute))
                 .Is<TickerTypeAttribute>(out result);
         }
+
+        public static bool HasTickerInfo(ITickableBase? tickable)
+        {
+            if (tickable.IsNull())
+                return false;
+            if (!TryGetTickerType(tickable, out _))
+                return false;
+
+            return true;
+        }
     }
 }

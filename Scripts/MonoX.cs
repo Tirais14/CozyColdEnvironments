@@ -15,13 +15,19 @@ namespace UTIRLib
     {
         public static event Action<MonoX>? OnInstantiated;
 
+        private LazyX<ComponentCache> baseCache = null!;
+
         protected event Action? onEndFirstFrame;
 
+        public ComponentCache BaseCache => baseCache.Value;
+
         protected virtual void OnAwake()
-        { }
+        { 
+        }
 
         protected virtual void OnStart()
-        { }
+        { 
+        }
 
         public bool TryGetComponentInChildren(Type type,
             bool includeInactive,
@@ -103,44 +109,11 @@ namespace UTIRLib
             return false;
         }
 
-        protected void Message(object message)
-        {
-            Debug.Log(message, this);
-        }
-
-        protected void MessageFormat(string message, params object[] args)
-        {
-            Debug.LogFormat(this, message, args);
-        }
-
-        protected void Warning(object message)
-        {
-            Debug.LogWarning(message, this);
-        }
-
-        protected void WarningFormat(string message, params object[] args)
-        {
-            Debug.LogWarningFormat(this, message, args);
-        }
-
-        protected void Error(object message)
-        {
-            Debug.LogError(message, this);
-        }
-
-        protected void ErrorFormat(string message, params object[] args)
-        {
-            Debug.LogErrorFormat(this, message, args);
-        }
-
-        protected void LogException(Exception exception)
-        {
-            Debug.LogException(exception, this);
-        }
-
         protected void Awake()
         {
             OnInstantiated?.Invoke(this);
+
+            baseCache = new LazyX<ComponentCache>(() => new ComponentCache(transform, gameObject));
 
             //Sets component fields and props marked by specical attribute
             GetComponentByAttributeHelper.SetMembers(this);

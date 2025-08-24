@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
 using UTIRLib.Linq;
-using UTIRLib.Unity.TypeMatching;
+using UTIRLib.TypeConverting;
 
 #nullable enable
 

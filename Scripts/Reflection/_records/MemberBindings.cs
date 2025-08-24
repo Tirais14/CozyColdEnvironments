@@ -8,7 +8,8 @@ namespace UTIRLib.Reflection
     {
         public BindingFlags BindingFlags { get; set; } = BindingFlagsDefault.InstancePublic;
         public CallingConventions CallingConventions { get; set; } = CallingConventions.Standard | CallingConventions.HasThis;
-        public ParameterModifier[] ParameterModifiers { get; set; } = Array.Empty<ParameterModifier>();
+        public ParameterModifier ParameterModifiers { get; set; } = new();
+        public ParameterModifier[] ParameterModifiersArray => new ParameterModifier[] { ParameterModifiers };
         public Binder? Binder { get; set; } = null;
     }
 }

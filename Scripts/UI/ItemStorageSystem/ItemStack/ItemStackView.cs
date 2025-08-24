@@ -1,9 +1,11 @@
+using NUnit.Framework.Constraints;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using UTIRLib.Attributes;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.ObjectModel;
 using UTIRLib.UI.MVVM;
 
 #nullable enable
@@ -36,10 +38,11 @@ namespace UTIRLib.UI.ItemStorageSystem
         {
             TModel model = CreateModel();
 
-            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
-                InvokableArguments.Create(model,
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                 parameters: InstanceCreationParameters.CacheConstructor);
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
+            {
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = new ExplicitArguments(new TypeValuePair(model))
+            });
 
             viewModel.AddTo(this);
 
@@ -48,9 +51,11 @@ namespace UTIRLib.UI.ItemStorageSystem
 
         private static TModel CreateModel()
         {
-            return InstanceFactory.Create<TModel>(InvokableArguments.Create(int.MaxValue,
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                parameters: InstanceCreationParameters.CacheConstructor);
+            return InstanceFactory.Create<TModel>(new ConstructorBindings
+            {
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = new ExplicitArguments(new TypeValuePair(int.MaxValue))
+            });
         }
     }
 }

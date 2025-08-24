@@ -6,7 +6,7 @@ namespace UTIRLib
 {
     public static class ParameterInfoExtensions
     {
-        public static ParameterModifier GetParameterModifier(this ParameterInfo[] values)
+        public static ParameterModifier GetParameterModifiers(this ParameterInfo[] values)
         {
             var modifier = new ParameterModifier(values.Length);
 

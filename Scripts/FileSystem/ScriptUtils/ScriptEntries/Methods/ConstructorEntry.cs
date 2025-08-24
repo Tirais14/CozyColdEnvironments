@@ -59,7 +59,7 @@ namespace UTIRLib.FileSystem.ScriptUtils
         public ConstructorEntry(Type constructableType) : base()
         {
             TabulationsCount = 2;
-            TypeName = constructableType.GetName(TypeNameAttributes.ShortName);
+            TypeName = constructableType.GetName(TypeNameConvertingAttributes.ShortName);
         }
         public ConstructorEntry() : base()
         {

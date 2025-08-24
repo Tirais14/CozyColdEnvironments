@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UTIRLib.Diagnostics;
 using UTIRLib.Disposables;
+using UTIRLib.Reflection;
 using UTIRLib.Reflection.Cached;
 
 #nullable enable
@@ -88,12 +89,37 @@ namespace UTIRLib.Tickables
 
         protected abstract void DoTick(T tickable);
 
+        private static void TryVoidInjectedTicker(T tickable)
+        {
+            Type tickableType = tickable.GetType();
+            if (!TypeCache.TryGetField(
+                new TypeCache.FieldKey(tickableType, typeof(ITicker)),
+                out FieldInfo? tickerField))
+            {
+                tickerField = tickableType.GetField(
+                    typeof(ITicker),
+                    BindingFlagsDefault.InstanceAll)
+                    .TryCacheMember();
+            }
+
+            if (tickerField is null)
+                return;
+
+            tickerField.SetValue(tickable, null);
+        }
+
         private void TryInjectTicker(T tickable)
         {
-            FieldInfo? tickerField = TypeCache.GetField(tickable.GetType(),
-                                                        GetType(),
-                                                        BindingFlagsDefault.InstanceAll);
-
+            Type tickableType = tickable.GetType();
+            if (!TypeCache.TryGetField(
+                new TypeCache.FieldKey(tickableType, typeof(ITicker)),
+                out FieldInfo? tickerField))
+            {
+                tickerField = tickableType.GetField(
+                    typeof(ITicker),
+                    BindingFlagsDefault.InstanceAll)
+                    .TryCacheMember();
+            }
             if (tickerField is null)
                 return;
 
@@ -104,18 +130,6 @@ namespace UTIRLib.Tickables
                 throw new InvalidOperationException($"Field with type {nameof(ITicker).TrimFirst()} must be null(native or unity) before regsiterd.");
 
             tickerField.SetValue(tickable, this);
-        }
-
-        private void TryVoidInjectedTicker(T tickable)
-        {
-            FieldInfo? tickerField = TypeCache.GetField(tickable.GetType(),
-                                                        GetType(),
-                                                        BindingFlagsDefault.InstanceAll);
-
-            if (tickerField is null)
-                return;
-
-            tickerField.SetValue(tickable, null);
         }
 
         private void AddTickable(T tickable)

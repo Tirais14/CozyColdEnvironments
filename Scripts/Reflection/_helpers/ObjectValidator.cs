@@ -11,9 +11,9 @@ namespace UTIRLib.Reflection
     {
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        public static bool IsDefaultByFields(object obj,
+        public static bool EqaulsDefaultByFields(object obj,
             IReadOnlyDictionary<Type, object[]>? customDefaultValuesCollection = null,
-            IsDefaultOption isDefaultOption = IsDefaultOption.None)
+            EqualsDefaultOption isDefaultOption = EqualsDefaultOption.None)
         {
             if (obj.IsNull())
                 throw new ArgumentNullException(nameof(obj));
@@ -40,14 +40,14 @@ namespace UTIRLib.Reflection
             return true;
         }
 
-        public static bool IsDefaultByTypeFieldsAndFieldsValues(object? obj,
+        public static bool EqaulsDefaultByFieldsAndItTypes(object? obj,
             IReadOnlyDictionary<Type, object[]>? customDefaultValuesCollection = null,
-            IsDefaultOption isDefaultOption = IsDefaultOption.None)
+            EqualsDefaultOption isDefaultOption = EqualsDefaultOption.None)
         {
             if (obj.IsDefault(isDefaultOption))
                 return true;
 
-            object?[] allFieldValues = Special.TypeHelper.GetFieldValuesByTypeAndFieldValues(obj,
+            object?[] allFieldValues = TypeReflectionHelper.GetFieldValuesIncludeNestedFields(obj,
                 BindingFlagsDefault.InstanceAll);
 
             if (allFieldValues.IsEmpty())

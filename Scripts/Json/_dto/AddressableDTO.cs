@@ -4,6 +4,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.ObjectModel;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -60,8 +61,7 @@ namespace UTIRLib.Json.DTO
                 new MethodBindings
             {
                 MethodName = nameof(Addressables.LoadAssetAsync),
-                Arguments = new object[] { Key },
-                Signature = new InvokableSignature(typeof(object)),
+                Arguments = new ExplicitArguments(new TypeValuePair(typeof(object), Key)),
                 GenericArguments = new Type[] { AssetType }
             });
 

@@ -4,7 +4,7 @@ using System;
 namespace UTIRLib
 {
     [Flags]
-    public enum TypeNameAttributes
+    public enum TypeNameConvertingAttributes
     {
         None,
         ShortName,

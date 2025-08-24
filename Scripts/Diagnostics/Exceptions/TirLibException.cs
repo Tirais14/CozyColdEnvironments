@@ -84,17 +84,15 @@ namespace UTIRLib.Diagnostics
         }
 
         protected static string ConstructMessage(Type thisType,
-            params ArgumentInfo[] args)
+            params TypeValuePair[] args)
         {
             ConstructorInfo ctor = thisType.GetConstructor(
                 BindingFlagsDefault.InstanceAll,
                 binder: null,
-                args.Select(x => x.valueType).ToArray(),
+                args.Select(x => x.type).ToArray(),
                 Array.Empty<ParameterModifier>())
                 ??
-                throw new InvokableNotFoundException(thisType,
-                                                     MemberType.Constructor,
-                                                     new InvokableSignature(args.Select(x => x.valueType)));
+                throw new NullReferenceException($"Cannot find constructor in type = {thisType.GetName()}");
 
             ParameterInfo[] parameters = ctor.GetParameters();
             var converted = new List<(string, string)>(args.Length);
@@ -105,12 +103,12 @@ namespace UTIRLib.Diagnostics
         }
         protected static string ConstructMessage(Type thisType, params object[] args)
         {
-            ArgumentInfo[] infos = args.Select(x =>
+            TypeValuePair[] infos = args.Select(x =>
             {
-                if (x is ArgumentInfo argInfo)
+                if (x is TypeValuePair argInfo)
                     return argInfo;
 
-                return new ArgumentInfo(x, x.GetType());
+                return new TypeValuePair(x.GetType(), x);
             }).ToArray();
 
             return ConstructMessage(thisType, infos!);

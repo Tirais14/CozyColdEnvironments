@@ -45,8 +45,8 @@ namespace UTIRLib
 
         private static bool IsDefault<T>(T key)
         {
-            return ObjectValidator.IsDefaultByTypeFieldsAndFieldsValues(key,
-                isDefaultOption: IsDefaultOption.IncludeWhitespaceOrEmptyString);
+            return ObjectValidator.EqaulsDefaultByFieldsAndItTypes(key,
+                isDefaultOption: EqualsDefaultOption.IncludeWhitespaceOrEmptyString);
         }
 
         private void TryAddEmptySerializedItem()

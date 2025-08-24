@@ -1,141 +1,88 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
-using UnityEditor;
-using UTIRLib.Diagnostics;
+using UTIRLib.Reflection.ObjectModel;
 
 #nullable enable
 namespace UTIRLib.Reflection.Cached
 {
     public static class TypeCache
     {
-        private readonly static Dictionary<Type, object> defaultValuesCollection = new();
-
+        private readonly static Dictionary<Type, object?> defaultValuesCache = new();
         private readonly static Dictionary<ConstructrorKey, ConstructorInfo> constructorsCache = new();
-
         private readonly static Dictionary<FieldKey, FieldInfo> fieldsCache = new();
 
-        public static object? GetDefaultValue(Type type)
+        public static bool TryCacheDefaultValue(Type type, object? value)
         {
-            if (type.IsClass)
-                return null;
-
-            if (defaultValuesCollection.TryGetValue(type, out object defaultValue))
-                return defaultValue;
-
-            defaultValue = Activator.CreateInstance(type);
-            defaultValuesCollection.Add(type, defaultValue);
-
-            return defaultValue;
+            return defaultValuesCache.TryAdd(type, value);
         }
 
-        public static ConstructorInfo GetConstructor(Type type,
-                                                     ConstructorBindings constructorParams)
+        public static bool TryCacheMember(MemberInfo member)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-            if (constructorParams == null)
-                throw new ArgumentNullException(nameof(constructorParams));
-
-            if (constructorsCache.TryGetValue(new ConstructrorKey(type,
-                        constructorParams.ArgumentsData.Signature),
-                    out ConstructorInfo constructor)
-                )
-                return constructor;
-
-            constructor = type.GetConstructor(constructorParams, throwIfNotFound: true);
-
-            constructorsCache.Add(new ConstructrorKey(type,
-                    constructorParams.ArgumentsData.Signature),
-                constructor);
-
-            return constructor;
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public static bool IsConstructorCached(Type type,
-                                               InvokableSignature signature)
-        {
-            if (type is null)
-                throw new ArgumentNullException(nameof(type));
-
-            var constructrorKey = new ConstructrorKey(type, signature);
-
-            return constructorsCache.ContainsKey(constructrorKey);
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
-        public static FieldInfo GetField(Type type,
-                                         string name,
-                                         BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic,
-                                         bool throwIfNotFound = true)
-        {
-            if (type is null)
-                throw new ArgumentNullException(nameof(type));
-            if (name.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(name), name);
-
-            var key = new FieldKey(type, name);
-
-            if (fieldsCache.TryGetValue(key, out FieldInfo? field))
-                return field;
-
-            field = type.GetField(name, bindingFlags);
-
-            if (field is null)
+            return member switch
             {
-                if (throwIfNotFound)
-                    throw new MemberNotFoundException(type, MemberType.Field, name);
-                else
-                    return null!;
-            }
-
-            fieldsCache.Add(key, field);
-
-            return field;
+                ConstructorInfo ctor => constructorsCache.TryAdd(ConstructrorKey.Create(ctor), ctor),
+                FieldInfo field => fieldsCache.TryAdd(FieldKey.Create(field), field),
+                _ => throw new NotImplementedException(member.GetTypeName()),
+            };
         }
+
         /// <exception cref="ArgumentNullException"></exception>
-        public static FieldInfo GetField(Type type,
-                                         Type fieldType,
-                                         BindingFlags bindingFlags = BindingFlagsDefault.InstancePublic,
-                                         bool throwIfNotFound = true)
+        public static bool TryGetDefaultValue(Type type,
+                                                   out object? defaultValue)
         {
             if (type is null)
-                throw new ArgumentNullException(nameof(type));
-            if (fieldType is null)
-                throw new ArgumentNullException(nameof(fieldType));
+                throw new ArgumentNullException("type");
 
+            return defaultValuesCache.TryGetValue(type, out defaultValue);
+        }
 
-            var key = new FieldKey(type, fieldType);
+        public static bool TryGetConstructor(ConstructrorKey ctorKey,
+            [NotNullWhen(true)] out ConstructorInfo? ctor)
+        {
+            return constructorsCache.TryGetValue(ctorKey, out ctor);
+        }
 
-            if (fieldsCache.TryGetValue(key, out FieldInfo? field))
-                return field;
-
-            field = type.GetField(fieldType, bindingFlags);
-
-            if (field is null)
-            {
-                if (throwIfNotFound)
-                    throw new MemberNotFoundException(type, MemberType.Field);
-                else
-                    return null!;
-            }
-
-            fieldsCache.Add(key, field);
-
-            return field;
+        public static bool TryGetField(FieldKey fieldKey,
+            [NotNullWhen(true)] out FieldInfo? field)
+        {
+            return fieldsCache.TryGetValue(fieldKey, out field);
         }
 
         public readonly struct ConstructrorKey : IEquatable<ConstructrorKey>
         {
             public readonly Type ReflectedType { get; }
-            public readonly InvokableSignature Signature { get; }
+            public readonly Type[] Signature { get; }
+            public readonly ParameterModifier ParameterModifiers { get; }
 
-            public ConstructrorKey(Type type, InvokableSignature signature)
+            public ConstructrorKey(Type reflectedType,
+                                   Type[] signature,
+                                   ParameterModifier parameterModifiers)
             {
-                ReflectedType = type;
+                ReflectedType = reflectedType;
                 Signature = signature;
+                ParameterModifiers = parameterModifiers;
+            }
+            public ConstructrorKey(Type reflectedType,
+                                   Signature signature,
+                                   ParameterModifier parameterModifiers)
+                :
+                this(reflectedType, (Type[])signature, parameterModifiers)
+            {
+            }
+
+            public static ConstructrorKey Create(ConstructorInfo ctor)
+            {
+                ParameterInfo[] parameters = ctor.GetParameters();
+
+                Type[] signature = parameters.Select(x => x.ParameterType).ToArray();
+                ParameterModifier parameterModifiers = parameters.GetParameterModifiers();
+
+                return new ConstructrorKey(ctor.ReflectedType,
+                                           signature,
+                                           parameterModifiers);
             }
 
             public bool Equals(ConstructrorKey other)
@@ -145,7 +92,7 @@ namespace UTIRLib.Reflection.Cached
 
             public override bool Equals(object? obj)
             {
-                return obj is InvokableArguments typed && Equals(typed);
+                return obj is ConstructrorKey typed && Equals(typed);
             }
 
             public override int GetHashCode()
@@ -157,31 +104,29 @@ namespace UTIRLib.Reflection.Cached
         public readonly struct FieldKey : IEquatable<FieldKey>
         {
             public readonly Type ReflectedType { get; }
+            public readonly (Type fieldType, string fieldName) ID { get; }
 
-            public readonly string? Name { get; }
-            public readonly Type? FieldType { get; }
-
-            public FieldKey(Type reflectedType, string name)
+            public FieldKey(Type reflectedType, (Type fieldType, string fieldName) id)
             {
                 ReflectedType = reflectedType;
-                Name = name;
-                FieldType = null;
+                ID = id;
+            }
+            public FieldKey(Type reflectedType, Type fieldType)
+                :
+                this(reflectedType, (fieldType, string.Empty))
+            {
             }
 
-            public FieldKey(Type reflectedType, Type fieldType)
+            public static FieldKey Create(FieldInfo field)
             {
-                ReflectedType = reflectedType;
-                FieldType = fieldType;
-                Name = null;
+                return new FieldKey(field.ReflectedType, (field.FieldType, field.Name));
             }
 
             public bool Equals(FieldKey other)
             {
-                return other.ReflectedType == ReflectedType 
+                return other.ReflectedType == ReflectedType
                        &&
-                       other.Name == Name
-                       &&
-                       other.FieldType == FieldType;
+                       other.ID.Equals(ID);
             }
 
             public override bool Equals(object obj)
@@ -191,7 +136,7 @@ namespace UTIRLib.Reflection.Cached
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(ReflectedType, Name, FieldType);
+                return HashCode.Combine(ReflectedType, ID);
             }
         }
     }

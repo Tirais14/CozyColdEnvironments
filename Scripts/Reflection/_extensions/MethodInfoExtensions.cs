@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection.ObjectModel;
 
 #nullable enable
 
@@ -9,9 +10,9 @@ namespace UTIRLib.Reflection
 {
     public static class MethodInfoExtensions
     {
-        public static InvokableSignature GetSignature(this MethodInfo method)
+        public static Signature GetSignature(this MethodInfo method)
         {
-            return new InvokableSignature(method.GetParameters().Select(x => x.ParameterType));
+            return new Signature(method.GetParameters().Select(x => x.ParameterType));
         }
 
         /// <exception cref="ArgumentNullException"></exception>

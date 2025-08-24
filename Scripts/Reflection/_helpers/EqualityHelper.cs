@@ -6,7 +6,6 @@ namespace UTIRLib.Reflection
 {
     public static class EqualityHelper
     {
-
         public static bool EqualsByFields(object a, object b)
         {
             if (Equals(a, b))

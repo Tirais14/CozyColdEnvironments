@@ -5,6 +5,7 @@ using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.GameSystems.ItemStorageSystem;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.ObjectModel;
 using UTIRLib.UI.MVVM;
 using UTIRLib.Unity;
 using UTIRLib.Unity.TypeMatching;
@@ -36,10 +37,13 @@ namespace UTIRLib.UI.ItemStorageSystem
         {
             TModel model = CreateModel();
 
-            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
-                InvokableArguments.Create(model,
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance),
-                parameters: InstanceCreationParameters.CacheConstructor);
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
+            {
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = new ExplicitArguments(new TypeValuePair(model))
+            }, InstanceFactory.Parameters.Default 
+               | 
+               InstanceFactory.Parameters.CacheConstructor);
 
             viewModel.AddTo(this);
 
@@ -48,49 +52,15 @@ namespace UTIRLib.UI.ItemStorageSystem
 
         private TModel CreateModel()
         {
-            IItemSlot[] slotsUntyped = this.GetAssignedModelsInChildren<IItemSlot>();
+            IItemSlot[] slots = this.GetAssignedModelsInChildren<IItemSlot>();
 
-            InvokableArguments creationArguments;
-            if (slotsUntyped.IsNotEmpty())
-                creationArguments = InvokableArguments.Create(slotsUntyped,
-                    InvokableArguments.CreationSettings.CastArraysToElementType 
-                    | 
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
-            else
+            return InstanceFactory.Create<TModel>(new ConstructorBindings
             {
-                Type[] modelGenericArguments = TypeHelper.CollectGenericArgumentsFromBaseClasses(typeof(TModel));
-
-                if (modelGenericArguments.IsEmpty())
-                {
-                    creationArguments = InvokableArguments.Create(typeof(IItemSlot[]),
-                        InvokableArguments.CreationSettings.CastArraysToElementType
-                        |
-                        InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
-
-                    if (InstanceFactory.Create<TModel>(
-                        creationArguments,
-                        parameters: InstanceCreationParameters.None)
-                                       .IsNot<TModel>(out var model)
-                            )
-                        throw new Exception("Generic arguments not found.");
-
-                    return model;
-                }
-
-                Type? slotType = modelGenericArguments.First(x => x.IsType<IItemSlot>());
-                Type slotsArrayType = slotType.MakeArrayType();
-
-                Array slotsTyped = Array.CreateInstance(slotsArrayType, 0);
-
-                creationArguments = InvokableArguments.Create(slotsTyped,
-                    InvokableArguments.CreationSettings.CastArraysToElementType
-                    |
-                    InvokableArguments.CreationSettings.AllowSignatureTypesInheritance);
-            }
-
-            return InstanceFactory.Create<TModel>(
-                creationArguments,
-                parameters: InstanceCreationParameters.CacheConstructor);
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = new ExplicitArguments(new TypeValuePair(typeof(IItemSlot[]), slots))
+            }, InstanceFactory.Parameters.Default
+               |
+               InstanceFactory.Parameters.CacheConstructor);
         }
     }
 }

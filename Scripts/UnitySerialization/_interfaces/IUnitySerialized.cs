@@ -7,7 +7,7 @@ namespace UTIRLib.Unity.Serialization
 {
     public interface IUnitySerialized
     {
-        public bool IsDefault => ObjectValidator.IsDefaultByFields(this);
+        public bool IsDefault => ObjectValidator.EqaulsDefaultByFields(this);
     }
     public interface IUnitySerialized<T> : IUnitySerialized
     {

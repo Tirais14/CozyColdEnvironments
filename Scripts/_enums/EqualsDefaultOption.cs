@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace UTIRLib
 {
-    public enum IsDefaultOption
+    public enum EqualsDefaultOption
     {
         None,
         IncludeNullOrEmptyString,
