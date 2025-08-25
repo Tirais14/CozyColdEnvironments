@@ -57,13 +57,11 @@ namespace UTIRLib.Json.DTO
             if (IsAssetLoaded)
                 throw new InvalidOperationException("Asset already loaded.");
 
-            LoadHandle = MethodInvoker.Invoke<AsyncOperationHandle>(typeof(Addressables),
-                new MethodBindings
-            {
-                MethodName = nameof(Addressables.LoadAssetAsync),
-                Arguments = new ExplicitArguments(new TypeValuePair(typeof(object), Key)),
-                GenericArguments = new Type[] { AssetType }
-            });
+            LoadHandle = MethodHelper.Invoke<AsyncOperationHandle>(
+                new TypeValuePair(typeof(object), Key),
+                nameof(Addressables.LoadAssetAsync),
+                new ExplicitArguments(new TypeValuePair(typeof(object), Key)),
+                new Signature(AssetType));
 
             return LoadHandle;
         }

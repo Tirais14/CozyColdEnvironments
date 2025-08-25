@@ -20,6 +20,11 @@ namespace UTIRLib
             this(value.GetType(), value)
         {
         }
+        public TypeValuePair(Type type)
+            :
+            this(type, value: null)
+        {
+        }
 
         public static bool operator ==(TypeValuePair left, TypeValuePair right)
         {

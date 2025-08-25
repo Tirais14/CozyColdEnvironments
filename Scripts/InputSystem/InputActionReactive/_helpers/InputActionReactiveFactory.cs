@@ -1,6 +1,5 @@
 using System;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements.Experimental;
 using UTIRLib.Reflection;
 using UTIRLib.Reflection.ObjectModel;
 
@@ -27,15 +26,11 @@ namespace UTIRLib.InputSystem.Reactive
             if (valueType is null)
                 return new InputActionReactive(inputAction);
 
-            var methodBindings = new MethodBindings
-            {
-                MethodName = nameof(Create),
-                BindingFlags = BindingFlagsDefault.StaticPublic,
-                Arguments = new ExplicitArguments(new TypeValuePair(inputAction)),
-                GenericArguments = new Type[] { valueType }
-            };
-
-            return MethodInvoker.Invoke<IInputActionReactive>(typeof(InputActionReactiveFactory), methodBindings)!;
+            return MethodHelper.Invoke<IInputActionReactive>(
+                new TypeValuePair(typeof(InputActionReactiveFactory)),
+                nameof(Create),
+                new ExplicitArguments(new TypeValuePair(inputAction)),
+                new Signature(valueType))!;
         }
     }
 }
