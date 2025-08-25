@@ -3,6 +3,7 @@ using System.Reflection;
 using UTIRLib.Reflection;
 using UTIRLib.Reflection.Cached;
 using UTIRLib.Diagnostics;
+using UTIRLib.Reflection.ObjectModel;
 
 #nullable enable
 namespace UTIRLib
@@ -39,12 +40,18 @@ namespace UTIRLib
                     bindings.ParameterModifiers),
                 out ConstructorInfo? ctor))
             {
-                ctor = type.GetConstructor(bindings, throwIfNotFound: false)
-                    ?? 
-                    throw new MemberNotFoundException(
-                        type,
-                        MemberType.Constructor,
-                        bindings);
+                ctor = type.GetConstructor(bindings, throwIfNotFound: false);
+
+                if (ctor is null)
+                {
+                    if (throwIfNotFound)
+                        throw new MemberNotFoundException(
+                            type,
+                            MemberType.Constructor,
+                            bindings);
+
+                    return null!;
+                }
 
                 if (parameters.HasFlag(Parameters.CacheConstructor))
                     TypeCache.TryCacheMember(ctor);
@@ -53,11 +60,27 @@ namespace UTIRLib
             object?[] ctorArgs = (object?[])bindings.Arguments;
             return ctor.Invoke(ctorArgs);
         }
+        public static object Create(Type type,
+                                    ExplicitArguments args,
+                                    Parameters parameters = Parameters.Default)
+        {
+            return Create(type, new ConstructorBindings
+            {
+                BindingFlags = BindingFlagsDefault.InstanceAll,
+                Arguments = args
+            }, parameters);
+        }
 
         public static T Create<T>(ConstructorBindings constructorParams,
             Parameters parameters = Parameters.Default)
         {
             return (T)Create(typeof(T), constructorParams, parameters);
+        }
+        public static T Create<T>(Type type,
+                                  ExplicitArguments args,
+                                  Parameters parameters = Parameters.Default)
+        {
+            return (T)Create(type, args, parameters);
         }
     }
 }

@@ -11,8 +11,9 @@ namespace UTIRLib.Reflection.Cached
     public static class TypeCache
     {
         private readonly static Dictionary<Type, object?> defaultValuesCache = new();
-        private readonly static Dictionary<ConstructrorKey, ConstructorInfo> constructorsCache = new();
+        private readonly static Dictionary<ConstructrorKey, ConstructorInfo> ctorsCache = new();
         private readonly static Dictionary<FieldKey, FieldInfo> fieldsCache = new();
+        private readonly static Dictionary<FieldKey, PropertyInfo> propsCache = new();
 
         public static bool TryCacheDefaultValue(Type type, object? value)
         {
@@ -23,8 +24,9 @@ namespace UTIRLib.Reflection.Cached
         {
             return member switch
             {
-                ConstructorInfo ctor => constructorsCache.TryAdd(ConstructrorKey.Create(ctor), ctor),
+                ConstructorInfo ctor => ctorsCache.TryAdd(ConstructrorKey.Create(ctor), ctor),
                 FieldInfo field => fieldsCache.TryAdd(FieldKey.Create(field), field),
+                PropertyInfo prop => propsCache.TryAdd(FieldKey.Create(prop), prop),
                 _ => throw new NotImplementedException(member.GetTypeName()),
             };
         }
@@ -42,13 +44,19 @@ namespace UTIRLib.Reflection.Cached
         public static bool TryGetConstructor(ConstructrorKey ctorKey,
             [NotNullWhen(true)] out ConstructorInfo? ctor)
         {
-            return constructorsCache.TryGetValue(ctorKey, out ctor);
+            return ctorsCache.TryGetValue(ctorKey, out ctor);
         }
 
         public static bool TryGetField(FieldKey fieldKey,
             [NotNullWhen(true)] out FieldInfo? field)
         {
             return fieldsCache.TryGetValue(fieldKey, out field);
+        }
+
+        public static bool TryGetProperty(FieldKey fieldKey,
+            [NotNullWhen(true)] out PropertyInfo? prop)
+        {
+            return propsCache.TryGetValue(fieldKey, out prop);
         }
 
         public readonly struct ConstructrorKey : IEquatable<ConstructrorKey>
@@ -120,6 +128,10 @@ namespace UTIRLib.Reflection.Cached
             public static FieldKey Create(FieldInfo field)
             {
                 return new FieldKey(field.ReflectedType, (field.FieldType, field.Name));
+            }
+            public static FieldKey Create(PropertyInfo prop)
+            {
+                return new FieldKey(prop.ReflectedType, (prop.PropertyType, prop.Name));
             }
 
             public bool Equals(FieldKey other)

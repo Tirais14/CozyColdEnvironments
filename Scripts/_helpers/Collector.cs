@@ -4,7 +4,7 @@ using System.Collections.Generic;
 #nullable enable
 namespace UTIRLib
 {
-    public static class LoopHelper
+    public static class Collector
     {
         public delegate T?[] MoveNext<T>(T current, LoopState loopState);
 
@@ -17,8 +17,8 @@ namespace UTIRLib
             if (moveNext is null)
                 throw new ArgumentNullException(nameof(moveNext));
 
-            var toProccess = new Stack<T>();
-            toProccess.Push(first);
+            var toProccess = new Queue<T>();
+            toProccess.Enqueue(first);
 
             var results = new Queue<T>();
 
@@ -28,7 +28,7 @@ namespace UTIRLib
             var loopPredicate = new LoopPredicate(() => toProccess.Count > 0);
             while (loopPredicate.Invoke())
             {
-                current = toProccess.Pop();
+                current = toProccess.Dequeue();
                 if (current is null)
                     continue;
 
@@ -50,7 +50,7 @@ namespace UTIRLib
                 for (int i = 0; i < nextValuesCount; i++)
                 {
                     if (nextValues[i] is not null)
-                        toProccess.Push(nextValues[i]!);
+                        toProccess.Enqueue(nextValues[i]!);
                 }
             }
 

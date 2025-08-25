@@ -40,7 +40,7 @@ namespace UTIRLib.Reflection
             int targetFieldCount = targetFieldValues.Length;
             for (int i = 0; i < targetFieldCount; i++)
             {
-                collected = LoopHelper.Collect(targetFieldValues[i], (current) =>
+                collected = Collector.Collect(targetFieldValues[i], (current) =>
                 {
                     if (current is null)
                         return Array.Empty<object?>();
@@ -71,7 +71,7 @@ namespace UTIRLib.Reflection
 
             for (int i = 0; i < objFieldCount; i++)
             {
-                collected = LoopHelper.Collect(objFields[i], (current) =>
+                collected = Collector.Collect(objFields[i], (current) =>
                 {
                     FieldInfo[] tempFields = current.FieldType.ForceGetFields(bindingFlags);
 

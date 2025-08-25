@@ -53,7 +53,7 @@ namespace UTIRLib.Unity
             if (value.childCount == 0)
                 return Array.Empty<Transform>();
 
-            return LoopHelper.Collect(value.transform.GetChild(0), (x) => x.GetChilds())
+            return Collector.Collect(value.transform.GetChild(0), (x) => x.GetChilds())
                              .ToArray();
         }
 

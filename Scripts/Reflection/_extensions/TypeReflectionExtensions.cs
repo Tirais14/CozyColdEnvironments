@@ -107,7 +107,7 @@ namespace UTIRLib.Reflection
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            Queue<Type> baseTypes = LoopHelper.Collect(type, (x, loopState) =>
+            Queue<Type> baseTypes = Collector.Collect(type, (x, loopState) =>
             {
                 Type? next = x.BaseType;
 

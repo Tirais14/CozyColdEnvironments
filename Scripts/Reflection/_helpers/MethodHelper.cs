@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using UnityEditor.Toolbars;
 using UTIRLib.Diagnostics;
 using UTIRLib.Reflection.ObjectModel;
 
@@ -14,21 +15,35 @@ namespace UTIRLib.Reflection
         public static object? Invoke(TypeValuePair target,
                                      string methodName,
                                      ExplicitArguments args = default,
-                                     Signature genericParams = default)
+                                     Signature genericParams = default,
+                                     ParameterModifier parameterModifier = default)
         {
             if (target.type is null)
                 throw new ArgumentException(nameof(target));
             if (methodName.IsNullOrEmpty())
                 throw new StringArgumentException(nameof(methodName), methodName);
 
-            MethodInfo method = target.type.GetMethod(methodName, BindingFlagsDefault.All)
-                ?? throw new MemberNotFoundException(
+            BindingFlags bindingFlags = target.value.IsNull()
+                ?
+                BindingFlagsDefault.StaticAll
+                :
+                BindingFlagsDefault.InstanceAll;
+
+            MethodInfo method = target.type.GetMethod(
+                methodName,
+                genericParams.Count,
+                bindingFlags,
+                binder: null,
+                (Type[])args,
+                new ParameterModifier[] { parameterModifier })
+                ??
+                throw new MemberNotFoundException(
                     target.type,
                     MemberType.Method,
                     new MethodBindings
                     {
                         MethodName = methodName,
-                        BindingFlags = BindingFlagsDefault.All,
+                        BindingFlags = bindingFlags,
                         Arguments = args,
                         GenericArguments = (Type[])genericParams
                     });

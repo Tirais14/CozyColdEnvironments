@@ -13,7 +13,7 @@ namespace UTIRLib.Reflection
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
 
-            return LoopHelper.Collect(value.BaseType, x => x.BaseType);
+            return Collector.Collect(value, x => x.BaseType);
         }
 
         /// <exception cref="TypeNotFoundException"></exception>
