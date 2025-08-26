@@ -19,7 +19,6 @@ namespace UTIRLib.Tickables
         protected void ProccessFrames(float baseDeltaTime)
         {
             framesProcessed = 0;
-            DeltaTime = 0;
             timeCounter.OnStartTick(baseDeltaTime);
 
             while (tickPredicate.Invoke(timeCounter, baseDeltaTime))
@@ -29,7 +28,7 @@ namespace UTIRLib.Tickables
                 timeCounter.OnEndTick(baseDeltaTime);
             }
 
-            DeltaTime = baseDeltaTime * framesProcessed;
+            DeltaTime = GetDeltaTime(baseDeltaTime);
         }
 
         public float TimeScale {
@@ -48,7 +47,7 @@ namespace UTIRLib.Tickables
             if (framesProcessed <= 1)
                 return baseDeltaTime;
 
-            return baseDeltaTime * TimeScale;
+            return baseDeltaTime * framesProcessed;
         }
     }
 }

@@ -2,7 +2,7 @@
 namespace UTIRLib.Patterns.States
 {
     public abstract class AState<T> : IState
-        where T : AStateMachine
+        where T : IStateMachine
     {
         protected readonly T stateMachine;
 

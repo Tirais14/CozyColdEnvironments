@@ -3,8 +3,6 @@ using System;
 using UnityEngine;
 
 #nullable enable
-#pragma warning disable S1244
-#pragma warning disable S2328
 namespace UTIRLib
 {
     [Serializable]
@@ -14,31 +12,17 @@ namespace UTIRLib
         IEquatable<GameObjectSettings>
     {
         [Min(1E-06f)]
-        [SerializeField]
+        [field: SerializeField]
         [JsonProperty("scale")]
-        private float scale;
-
-        [JsonIgnore]
-        public float Scale => scale;
-
-        public GameObjectSettings(float scale)
-        {
-            this.scale = scale;
-        }
-
-        public GameObjectSettings() : this(scale: 1f)
-        {
-        }
+        public Vector3 Scale { get; set; } = Vector3.one;
 
         /// <exception cref="ArgumentNullException"></exception>
         public void ApplyTo(GameObject gameObject)
         {
             if (gameObject == null)
                 throw new ArgumentNullException(nameof(gameObject));
-            if (scale == 1f)
-                return;
 
-            gameObject.transform.localScale *= scale;
+            gameObject.transform.localScale = Scale;
         }
     }
 }

@@ -74,7 +74,7 @@ namespace UTIRLib.Tickables
         }
 
         /// <summary>
-        /// It's raw method. Not calculate <see cref="DeltaTime"/>
+        /// It's raw method. Not calculates <see cref="DeltaTime"/>
         /// </summary>
         protected void DoTickablesTicks()
         {

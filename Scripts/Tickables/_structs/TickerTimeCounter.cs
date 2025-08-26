@@ -5,7 +5,7 @@ namespace UTIRLib.Tickables
     {
         private float accumulated;
 
-        public float TimeScale { get; set; }
+        public float TimeScale { get; set; } = 1f;
 
         public bool IsTickAllowed(float deltaTime)
         {

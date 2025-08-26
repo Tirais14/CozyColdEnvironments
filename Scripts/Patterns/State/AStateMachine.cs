@@ -13,20 +13,25 @@ using UTIRLib.Reflection;
 #pragma warning disable S3881
 namespace UTIRLib.Patterns.States
 {
-    public abstract class AStateMachine : MonoX, IDisposableContainer
-    {
-        public static bool HelperWarningsEnabled = true;
+    /// <typeparam name="TDefault">Default state</typeparam>
+    public abstract class AStateMachine<TDefault> 
+        :
+        MonoX,
+        IStateMachine,
+        IDisposableContainer
 
+        where TDefault : IState
+    {
         private readonly DisposableCollection disposables = new();
 
         private bool disposedValue;
         private Dictionary<Type, Action>? forceStopableStates;
-        private IState playingState = null!;
+        private IState playingState = default!;
 
         protected bool autoCreateStatesByFactory = true;
-        protected IState defaultState;
+        public TDefault DefaultState { get; private set; } = default!;
 
-        public bool IsDefaultState => IsExecuting(defaultState);
+        public bool IsDefaultState => IsExecuting(DefaultState);
 
         protected override void OnStart()
         {
@@ -40,32 +45,54 @@ namespace UTIRLib.Patterns.States
 
             base.OnStart();
 
-            playingState = defaultState;
+            DefaultState = GetDefaultState();
+
+            playingState = DefaultState;
             playingState.Enter();
         }
 
-        public abstract IState GetNextState();
+        public bool IsExecuting(Type? stateType)
+        {
+            return playingState.GetType() == stateType;
+        }
+        public bool IsExecuting(IState state)
+        {
+            return IsExecuting(state.GetType());
+        }
 
-        public bool IsExecuting(IState state) => playingState.Equals(state);
+        public void ForceStopState(Type stateType)
+        {
+            if (stateType is null)
+                throw new ArgumentNullException(nameof(stateType));
+            if (!IsForceStopable(stateType))
+                throw new ArgumentException(stateType.GetName());
 
-        /// <exception cref="ArgumentNullException"></exception>
+            if (playingState.GetType() == stateType)
+                forceStopableStates![stateType]();
+        }
         public void ForceStopState(IState state)
         {
-            if (state.IsNull())
-                throw new ArgumentNullException(nameof(state));
-            if (!IsForceStopable(state))
-                throw new ArgumentException($"{state.GetTypeName()} is not force stopable state.");
-
-            forceStopableStates![state.GetType()].Invoke();
+            ForceStopState(state.GetType());
         }
 
-        public bool IsForceStopable(IState? state)
+        public bool IsForceStopable(Type? stateType)
         {
-            if (state.IsNull() || forceStopableStates is null)
+            if (stateType is null
+                ||
+                forceStopableStates is null
+                ||
+                forceStopableStates.Count == 0
+                )
                 return false;
 
-            return forceStopableStates.ContainsKey(state.GetType());
+            return forceStopableStates.ContainsKey(stateType);
         }
+        public bool IsForceStopable(IState? state)
+        {
+            return IsForceStopable(state?.GetType());
+        }
+
+        protected abstract IState GetNextState();
 
         /// <exception cref="ArgumentNullException"></exception>
         protected void BindForceStopable(IState state, Action action)
@@ -112,26 +139,18 @@ namespace UTIRLib.Patterns.States
             playingState.Enter();
         }
 
-        protected void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
-                    DisposeManaged();
+                    disposables.Dispose();
 
-                DisposeUnmanaged();
                 disposedValue = true;
             }
         }
 
-        protected virtual void DisposeManaged()
-        {
-            disposables.Dispose();
-        }
-
-        protected virtual void DisposeUnmanaged()
-        {
-        }
+        protected virtual TDefault GetDefaultState() => DefaultState;
 
         private bool IsStatesExists()
         {
@@ -164,8 +183,10 @@ namespace UTIRLib.Patterns.States
 
             if (factoryFields.Length > 1)
             {
-                if (HelperWarningsEnabled)
-                    TirLibDebug.PrintWarning("Cannot resolve factory to create states.");
+                TirLibDebug.AssertWarning(
+                    AStateMachine.HelperWarningsEnabled,
+                    "Cannot resolve factory to create states.",
+                    this);
 
                 autoCreateStatesByFactory = false;
                 stateFactory = null;
@@ -196,5 +217,9 @@ namespace UTIRLib.Patterns.States
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+    }
+    public abstract class AStateMachine : AStateMachine<IState>
+    {
+        public static bool HelperWarningsEnabled = true;
     }
 }

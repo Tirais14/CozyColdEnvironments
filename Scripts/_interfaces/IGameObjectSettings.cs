@@ -5,7 +5,7 @@ namespace UTIRLib
 {
     public interface IGameObjectSettings
     {
-        float Scale { get; }
+        Vector3 Scale { get; }
 
         void ApplyTo(GameObject gameObject);
     }

@@ -12,6 +12,10 @@ namespace UTIRLib.Json
     {
         public static JsonConverter[] Converters { get; private set; } = new JsonConverter[]
         {
+            new Vector2Converter(),
+            new Vector2IntConverter(),
+            new Vector3Converter(),
+            new Vector3IntConverter(),
         };
 
         public static void AddConverters(params JsonConverter[] converters)

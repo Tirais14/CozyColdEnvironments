@@ -1,7 +1,5 @@
 using System;
-using UnityEngine;
 using UTIRLib.Patterns.Factory;
-using UTIRLib.Patterns.States;
 
 #nullable enable
 namespace UTIRLib.Patterns.States
@@ -14,6 +12,19 @@ namespace UTIRLib.Patterns.States
             where T : IState
         {
             return (T)Create(typeof(T));
+        }
+    }
+    public abstract class AStateFactory<T> 
+        :
+        AStateFactory
+
+        where T : AStateMachine
+    {
+        protected readonly T machine;
+
+        protected AStateFactory(T machine)
+        {
+            this.machine = machine;
         }
     }
 }

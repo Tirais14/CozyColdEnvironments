@@ -14,6 +14,7 @@ namespace UTIRLib.Timers
         public float Seconds => seconds;
         public float TargetValue { get; set; }
         public bool TargetValueReached => TargetValue > 0 && seconds >= TargetValue;
+
         bool ITimer.IsExecuting => true;
 
         public TimerManual(float seconds)
@@ -32,6 +33,9 @@ namespace UTIRLib.Timers
                 throw new ArgumentException(nameof(seconds));
 
             this.seconds += seconds;
+
+            if (!TargetValueReached && targetReachedCallbackInvoked)
+                targetReachedCallbackInvoked = false;
 
             if (TargetValueReached && !targetReachedCallbackInvoked)
             {

@@ -48,17 +48,19 @@ namespace UTIRLib.Unity
         /// <summary>
         /// Replaces gameObject pinned to <see cref="GameModelBody"/>
         /// </summary>
-        /// <param name="modelBody"></param>
+        /// <param name="body"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void ReplaceModelBody(GameModelBody modelBody)
+        public void SetBody(GameModelBody body)
         {
-            if (modelBody == null)
-                throw new ArgumentNullException(nameof(modelBody));
+            if (body == null)
+                throw new ArgumentNullException(nameof(body));
+
+            Transform bodyTransform = body.BaseCache.transform;
 
             Destroy(Body.gameObject);
-            Body = modelBody;
-
-            modelBody.gameObject.transform.parent = Anchor;
+            Body = body;
+            bodyTransform.parent = Anchor;
+            bodyTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(0f, 0f, 0f));
         }
     }
 }

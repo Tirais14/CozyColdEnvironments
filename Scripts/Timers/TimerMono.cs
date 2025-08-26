@@ -21,7 +21,10 @@ namespace UTIRLib.Timers
 
         public ITimer Timer => timer;
         public float Seconds => timer.Seconds;
-        public float TargetValue => timer.TargetValue;
+        public float TargetValue {
+            get => timer.TargetValue;
+            set => timer.TargetValue = value;
+        }
         public bool TargetValueReached => timer.TargetValueReached;
         public bool IsExecuting { get; protected set; }
 

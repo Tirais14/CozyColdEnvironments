@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
+using System;
+using UTIRLib.Diagnostics;
 using UTIRLib.Unity.TypeMatching;
 
 #nullable enable
@@ -8,6 +10,20 @@ namespace UTIRLib.Unity
 {
     public static class GameObjectExtensions
     {
+        public static GameModel ToGameModel(this GameObject value,
+            bool throwIfNotFound = true)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            var model = value.GetComponent<GameModel>();
+
+            if (throwIfNotFound && model == null)
+                throw new ObjectNotFoundException(typeof(GameModel));
+
+            return model;
+        }
+
         /// <exception cref="System.ArgumentNullException"></exception>
         public static void ApplySettings(this GameObject value, GameObjectSettings settings)
         {

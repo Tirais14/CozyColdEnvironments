@@ -13,7 +13,7 @@ namespace UTIRLib
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class MonoX : MonoBehaviour
     {
-        public static event Action<MonoX>? OnInstantiated;
+        //public static event Action<MonoX>? OnInstantiated;
 
         private LazyX<ComponentCache> baseCache = null!;
 
@@ -111,7 +111,7 @@ namespace UTIRLib
 
         protected void Awake()
         {
-            OnInstantiated?.Invoke(this);
+            //OnInstantiated?.Invoke(this);
 
             baseCache = new LazyX<ComponentCache>(() => new ComponentCache(transform, gameObject));
 

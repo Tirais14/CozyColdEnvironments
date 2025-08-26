@@ -8,7 +8,7 @@ namespace UTIRLib.Timers
         event Action OnTargetReached;
 
         float Seconds { get; }
-        float TargetValue { get; }
+        float TargetValue { get; set; }
         bool TargetValueReached { get; }
         bool IsExecuting { get; }
 

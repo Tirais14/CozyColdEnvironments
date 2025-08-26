@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -19,19 +20,37 @@ namespace UTIRLib.Tickables
             if (tickable.IsNull())
                 return false;
 
-            if (TryGetTickerTypeAttribute(tickable, out TickerTypeAttribute attribute))
+            if (TryGetTickerTypeAttribute(tickable, out TickerTypeAttribute? attribute))
             {
                 result = attribute.TickerType;
                 return true;
             }
 
-            Type[] genericArguments = tickable.GetType().GetGenericArguments();
+            TryGetTickerTypeByInterfaces(tickable, out result);
 
-            if (genericArguments.IsEmpty())
-                return false;
+            return result is not null;
+        }
 
-            result = genericArguments.FirstOrDefault(x => x.IsType<ITicker>());
-            return result != null;
+        public static bool TryGetTickerTypeByInterfaces(ITickableBase tickable,
+            [NotNullWhen(true)] out Type? result)
+        {
+            if (tickable.IsNull())
+                throw new ArgumentNullException(nameof(tickable));
+
+            IEnumerable<Type> intefaceTypes =
+                from x in TypeHelper.CollectBaseTypes(tickable.GetType())
+                select x.GetInterfaces() into types
+                from t in types
+                select t;
+
+            result = (from x in intefaceTypes
+                      where x.IsType<ITickable>()
+                      where x.IsGenericType
+                      select x.GetGenericArguments() into types
+                      from t in types
+                      select t).FirstOrDefault();
+
+            return result is not null;
         }
 
         public static bool TryGetTickerTypeAttribute(ITickableBase? tickable,

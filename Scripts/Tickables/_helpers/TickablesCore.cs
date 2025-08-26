@@ -5,7 +5,6 @@ using System.Reflection;
 using UnityEngine;
 using UTIRLib.Diagnostics;
 using UTIRLib.Disposables;
-using UTIRLib.Initables;
 using UTIRLib.Reflection;
 using UTIRLib.Unity.TypeMatching;
 using UTIRLib.Utils;
@@ -24,7 +23,7 @@ namespace UTIRLib.Tickables
             base.OnAwake();
 
             DontDestroyOnLoad(gameObject);
-            OnInstantiated += TryRegisterTickable;
+            //OnInstantiated += TryRegisterTickable;
         }
 
         protected override void OnStart()
@@ -102,10 +101,10 @@ namespace UTIRLib.Tickables
 
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable));
-            if (!Tickable.TryGetTickerTypeAttribute(tickable, out TickerTypeAttribute? attribute))
-                throw new ArgumentException($"{tickable.GetTypeName()} cannot be register by {nameof(TickablesCore)} due to lack of {nameof(TickerTypeAttribute)}. Use by ticker-instance registering.");
-            if (!Instance.registeredTickers.TryGetValue(attribute.TickerType, out ITicker ticker))
-                throw new ArgumentException($"Cannot find {attribute.TickerType.GetName()}");
+            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
+                throw new ArgumentException($"Tickable cannot be register by {nameof(TickablesCore)}.");
+            if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker ticker))
+                throw new ArgumentException($"Cannot find {tickerType.GetName()}");
 
             return ticker.Register(tickable);
         }
@@ -116,10 +115,10 @@ namespace UTIRLib.Tickables
 
             if (tickable.IsNull())
                 return false;
-            if (!Tickable.TryGetTickerTypeAttribute(tickable, out TickerTypeAttribute? attribute))
-                throw new ArgumentException($"{tickable.GetTypeName()} cannot be unregsiter by {nameof(TickablesCore)} due to lack of {nameof(TickerTypeAttribute)}. Use by ticker-instance unregistering.");
-            if (!Instance.registeredTickers.TryGetValue(attribute.TickerType, out ITicker ticker))
-                throw new ArgumentException($"Cannot find {attribute.TickerType.GetName()}");
+            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
+                throw new ArgumentException($"Tickable cannot be register by {nameof(TickablesCore)}.");
+            if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker ticker))
+                throw new ArgumentException($"Cannot find {tickerType.GetName()}");
 
             return ticker.Unregister(tickable);
         }
@@ -170,16 +169,16 @@ namespace UTIRLib.Tickables
             return registeredCount;
         }
 
-        private static void TryRegisterTickable(MonoX value)
-        {
-            if (value.IsNot<ITickableBase>(out var tickable))
-                return;
+        //private static void TryRegisterTickable(MonoX value)
+        //{
+        //    if (value.IsNot<ITickableBase>(out var tickable))
+        //        return;
 
-            if (!Tickable.HasTickerInfo(tickable))
-                return;
+        //    if (!Tickable.HasTickerInfo(tickable))
+        //        return;
 
-            RegisterTickable(tickable);
-        }
+        //    RegisterTickable(tickable);
+        //}
 
         private static void Validate()
         {

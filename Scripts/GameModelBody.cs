@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UTIRLib.Diagnostics;
 using UTIRLib.Unity.Extensions;
 
 #nullable enable
@@ -58,27 +57,33 @@ namespace UTIRLib
             return Create(parent.IfNotNull(x => x.transform));
         }
 
-        public void SetMesh(Mesh? mesh)
+        public GameModelBody SetMesh(Mesh? mesh)
         {
             meshFilter.mesh = mesh;
+
+            return this;
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public void SetMaterial(Material material)
+        public GameModelBody SetMaterial(Material material)
         {
             if (material == null)
                 throw new ArgumentNullException(nameof(material));
 
             meshRenderer.material = material;
+
+            return this;
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public void SetMaterials(params Material[] materials)
+        public GameModelBody SetMaterials(params Material[] materials)
         {
             if (materials is null)
                 throw new ArgumentNullException(nameof(materials));
 
             meshRenderer.materials = materials;
+
+            return this;
         }
     }
 }
