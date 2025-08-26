@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -35,17 +34,15 @@ namespace UTIRLib.Patterns.States
 
         protected override void OnStart()
         {
-            if (autoCreateStatesByFactory 
-                &&
-                !IsStatesExists()
-                &&
-                TryGetSingleFactory(out IFactory<Type, IState>? stateFactory)
-                )
-                CreateStatesByFactory(stateFactory);
-
             base.OnStart();
 
+            if (autoCreateStatesByFactory)
+                CreateStatesByFactory();
+
             DefaultState = GetDefaultState();
+
+            if (DefaultState.IsNull())
+                throw new NullReferenceException("Default state is not setted.");
 
             playingState = DefaultState;
             playingState.Enter();
@@ -114,18 +111,21 @@ namespace UTIRLib.Patterns.States
             forceStopableStates.Add(stateType, action);
         }
 
-        protected void CreateStatesByFactory(IFactory<Type, IState>? factory = null)
+        protected void CreateStatesByFactory()
         {
-            StateMachineHelper.CreateStatesByFactory(this, factory);
+            FieldInfo[] stateFields = StateMachineHelper.GetStateFields(this);
+            IFactory<Type, IState>? stateFactory = StateMachineHelper.FindFactoryInFields(this);
+            if (stateFactory.IsNull())
+            {
+                TirLibDebug.PrintError("Failed to find state factory in fields.");
+                return;
+            }
 
-            GetType().ForceGetFields(BindingFlagsDefault.InstanceAll)
-                      .Where(x => x.FieldType.IsType<IState>()).Select(x =>
-                      {
-                          if (x.GetValue(this) is IDisposable disposable)
-                              disposables.Add(disposable);
+            IState[] states = StateMachineHelper.CreateStates(
+                stateFactory,
+                stateFields.Select(x => x.FieldType).ToArray());
 
-                          return x;
-                      });
+            StateMachineHelper.InjectStates(this, stateFields, states);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -151,53 +151,6 @@ namespace UTIRLib.Patterns.States
         }
 
         protected virtual TDefault GetDefaultState() => DefaultState;
-
-        private bool IsStatesExists()
-        {
-            FieldInfo[] stateFields = GetType().GetFields(BindingFlagsDefault.InstanceAll)
-                                          .Where(x => x.FieldType.IsType<IState>())
-                                          .ToArray();
-
-            foreach (var field in stateFields)
-            {
-                if (field.GetValue(this).IsNull())
-                    return false;
-            }
-
-            return true;
-        }
-
-        private bool TryGetSingleFactory(
-            [NotNullWhen(true)] out IFactory<Type, IState>? stateFactory)
-        {
-            FieldInfo[] factoryFields = GetType().GetFields(BindingFlagsDefault.InstanceAll)
-                                                 .Where(x => x.FieldType.IsType<IFactory<Type, IState>>())
-                                                 .ToArray();
-
-            if (factoryFields.IsEmpty())
-            {
-                autoCreateStatesByFactory = false;
-                stateFactory = null;
-                return false;
-            }
-
-            if (factoryFields.Length > 1)
-            {
-                TirLibDebug.AssertWarning(
-                    AStateMachine.HelperWarningsEnabled,
-                    "Cannot resolve factory to create states.",
-                    this);
-
-                autoCreateStatesByFactory = false;
-                stateFactory = null;
-                return false;
-            }
-
-            stateFactory = (IFactory<Type, IState>)factoryFields[0].GetValue(this);
-            autoCreateStatesByFactory = stateFactory.IsNotNull();
-
-            return autoCreateStatesByFactory;
-        }
 
         private void Update()
         {

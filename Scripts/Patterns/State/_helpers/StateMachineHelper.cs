@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UTIRLib.Diagnostics;
@@ -11,32 +12,65 @@ namespace UTIRLib.Patterns.States
     public static class StateMachineHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static void CreateStatesByFactory(object stateMachine,
-                                                 IFactory<Type, IState>? factory = null)
+        /// <exception cref="CollectionArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public static void InjectStates(IStateMachine stateMachine,
+                                        FieldInfo[] stateFields,
+                                        IState[] states)
+        {
+            if (stateMachine.IsNull())
+                throw new ArgumentNullException(nameof(stateMachine));
+            if (stateFields.IsNullOrEmpty())
+                throw new CollectionArgumentException(nameof(stateFields), stateFields);
+            if (states.IsNullOrEmpty())
+                throw new CollectionArgumentException(nameof(states), states);
+            if (stateFields.Length != states.Length)
+                throw new ArgumentException("Arrays must be the same length.");
+
+            FieldInfo field;
+            IState state;
+            for (int i = 0; i < stateFields.Length; i++)
+            {
+                field = stateFields[i];
+                state = states.First(x => x.GetType() == field.FieldType);
+
+                field.SetValue(stateMachine, state);
+            }
+        }
+
+        public static IFactory<Type, IState>? FindFactoryInFields(
+            IStateMachine stateMachine)
         {
             if (stateMachine.IsNull())
                 throw new ArgumentNullException(nameof(stateMachine));
 
-            FieldInfo[] fields = stateMachine.GetType()
-                .ForceGetFields(BindingFlagsDefault.InstanceAll);
-
-            if (factory.IsNull())
-                factory = (IFactory<Type, IState>)fields.First(
-                    x => x.FieldType.IsType<IFactory<Type, IState>>())
-                        .GetValue(stateMachine);
-
-            if (fields.IsEmpty())
-                throw new ArgumentException($"{stateMachine.GetTypeName()} doesn't contain any state field.");
-
-            fields = GetStateFields(fields);
-            foreach (var field in fields)
-                field.SetValue(stateMachine, factory.Create(field.FieldType));
+            return (from x in stateMachine.GetType().ForceGetFields(BindingFlagsDefault.InstanceAll)
+                    where x.FieldType.IsType<IFactory<Type, IState>>()
+                    select (IFactory<Type, IState>?)x.GetValue(stateMachine) into f
+                    where f.IsNotNull()
+                    select f).FirstOrDefault();
         }
 
-        private static FieldInfo[] GetStateFields(FieldInfo[] fields)
+        public static IState[] CreateStates(IFactory<Type, IState> factory,
+                                            Type[] stateTypes)
         {
-            return fields.Where(x => x.FieldType.IsType<IState>() && x.FieldType != typeof(IState))
-                         .ToArray();
+            if (factory.IsNull())
+                throw new ArgumentNullException(nameof(factory));
+            if (stateTypes.IsNullOrEmpty())
+                throw new CollectionArgumentException(nameof(stateTypes), stateTypes);
+
+            return stateTypes.Select(x => factory.Create(x)).ToArray();
+        }
+
+        /// <exception cref="ArgumentNullException"></exception>
+        public static FieldInfo[] GetStateFields(IStateMachine stateMachine)
+        {
+            if (stateMachine.IsNull())
+                throw new ArgumentNullException(nameof(stateMachine));
+
+            return (from x in stateMachine.GetType().ForceGetFields(BindingFlagsDefault.InstanceAll)
+                    where x.FieldType.IsType<IState>() && x.FieldType != typeof(IState)
+                    select x).ToArray();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace UTIRLib.Patterns.States
         {
         }
 
-        protected void StopExecuting(string? message = null!)
+        protected void ForceStopState(string? message = null!)
         {
             stateMachine.ForceStopState(this);
 
