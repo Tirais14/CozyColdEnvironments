@@ -18,10 +18,12 @@ namespace UTIRLib.Patterns.States
                 throw new ArgumentNullException(nameof(stateMachine));
 
             FieldInfo[] fields = stateMachine.GetType()
-                                                  .ForceGetFields(BindingFlagsDefault.InstanceAll);
+                .ForceGetFields(BindingFlagsDefault.InstanceAll);
+
             if (factory.IsNull())
-                factory = (IFactory<Type, IState>)fields.First(x => x.FieldType.IsType<IFactory<Type, IState>>())
-                                                             .GetValue(stateMachine);
+                factory = (IFactory<Type, IState>)fields.First(
+                    x => x.FieldType.IsType<IFactory<Type, IState>>())
+                        .GetValue(stateMachine);
 
             if (fields.IsEmpty())
                 throw new ArgumentException($"{stateMachine.GetTypeName()} doesn't contain any state field.");
@@ -33,7 +35,7 @@ namespace UTIRLib.Patterns.States
 
         private static FieldInfo[] GetStateFields(FieldInfo[] fields)
         {
-            return fields.Where(x => x.FieldType.IsType<IState>())
+            return fields.Where(x => x.FieldType.IsType<IState>() && x.FieldType != typeof(IState))
                          .ToArray();
         }
     }

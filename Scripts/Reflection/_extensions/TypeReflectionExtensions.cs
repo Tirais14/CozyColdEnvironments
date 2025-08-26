@@ -107,24 +107,11 @@ namespace UTIRLib.Reflection
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            Queue<Type> baseTypes = Collector.Collect(type, (x, loopState) =>
-            {
-                Type? next = x.BaseType;
-
-                if (next is null || next == typeof(object))
-                {
-                    loopState.Value = LoopKeyword.Break;
-                    return null;
-                }
-
-                return next!;
-            });
-
-            bindingFlags |= BindingFlags.DeclaredOnly;
-            var members = new List<MemberInfo>();
-
+            Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(type);
             var loopPredicate = new LoopPredicate(() => baseTypes.Count > 0);
-            while (loopPredicate.Invoke())
+            var members = new List<MemberInfo>();
+            bindingFlags |= BindingFlags.DeclaredOnly;
+            while (loopPredicate)
                 members.AddRange(baseTypes.Dequeue().GetMembers(bindingFlags));
 
             return members.ToArray();

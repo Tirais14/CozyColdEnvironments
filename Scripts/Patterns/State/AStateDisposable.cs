@@ -9,7 +9,7 @@ namespace UTIRLib.Patterns.States
         AState<T>,
         IDisposableContainer
 
-        where T : AStateMachine
+        where T : IStateMachine
     {
         private readonly DisposableCollection disposables = new();
         private bool disposedValue;

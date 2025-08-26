@@ -201,14 +201,29 @@ namespace UTIRLib.Patterns.States
 
         private void Update()
         {
+            if (playingState.IsNull())
+                return;
+
             SetState(GetNextState());
 
             playingState.Tick();
         }
 
-        private void FixedUpdate() => playingState.FixedTick();
+        private void FixedUpdate()
+        {
+            if (playingState.IsNull())
+                return;
 
-        private void LateUpdate() => playingState.LateTick();
+            playingState.FixedTick();
+        }
+
+        private void LateUpdate()
+        {
+            if (playingState.IsNull())
+                return;
+
+            playingState.LateTick();
+        }
 
         private void OnDestroy() => ((IDisposable)this).Dispose();
 
