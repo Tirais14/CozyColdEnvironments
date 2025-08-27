@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UTIRLib.Collections;
+using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
+using UTIRLib.Reflection.ObjectModel;
 using UTIRLib.Unity.TypeMatching;
 using Object = UnityEngine.Object;
 
@@ -40,10 +42,12 @@ namespace UTIRLib.Unity
         /// <param name="exclude"></param>
         /// <returns>Removed components</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Type[] RemoveMonoBehaviours(GameObject gameObject)
+        public static Type[] RemoveComponents(GameObject gameObject, Signature typesToRemove, Signature excludeTypes = default)
         {
             if (gameObject == null)
                 throw new ArgumentNullException(nameof(gameObject));
+            if (typesToRemove.IsNullOrEmpty())
+                throw new CollectionArgumentException(nameof(typesToRemove), typesToRemove);
 
             Stack<Component> components = CreateStackByHardDependecies(gameObject);
             var results = new List<Type>(components.Count);
@@ -52,7 +56,10 @@ namespace UTIRLib.Unity
             while (predicate)
             {
                 component = components.Pop();
-                if (component.Is<MonoBehaviour>())
+                Type componentType = component.GetType();
+                if (typesToRemove.Any(x => componentType.IsType(x))
+                    &&
+                    !excludeTypes.Any(x => componentType.IsType(x)))
                 {
                     results.Add(component.GetType());
                     Object.Destroy(component);
@@ -60,6 +67,10 @@ namespace UTIRLib.Unity
             }
 
             return results.ToArray();
+        }
+        public static Type[] RemoveComponents<T>(GameObject gameObject)
+        {
+            return RemoveComponents(gameObject, new Signature(typeof(T)));
         }
 
         public static Component[] GetHardDependencies(Component component)

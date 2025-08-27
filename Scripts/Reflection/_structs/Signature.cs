@@ -1,9 +1,11 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using UTIRLib.Collections;
 
 #nullable enable
 namespace UTIRLib.Reflection.ObjectModel
@@ -80,7 +82,7 @@ namespace UTIRLib.Reflection.ObjectModel
 
         public IEnumerator<Type> GetEnumerator()
         {
-            return types.GetEnumerator();
+            return types?.GetEnumerator() ?? TEnumerable<Type>.Empty.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
