@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UTIRLib.Collections;
 using UTIRLib.Diagnostics;
 
 namespace UTIRLib
@@ -13,12 +12,6 @@ namespace UTIRLib
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetLengthOrZero<T>(this T[]? array) => array?.Length ?? 0;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DefaultEnumerator<T> GetEnumeratorT<T>(this T[]? array)
-        {
-            return new DefaultEnumerator<T>(array ?? Array.Empty<T>());
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Fill<T>(this T[] array, T value) => Array.Fill(array, value);

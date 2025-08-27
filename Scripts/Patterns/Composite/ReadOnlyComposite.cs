@@ -36,7 +36,7 @@ namespace UTIRLib.Patterns.Composite
             return value.IsNotDefault() && Array.IndexOf(childs, value) >= 0;
         }
 
-        public IEnumerator<T> GetEnumerator() => childs.GetEnumeratorT();
+        public IEnumerator<T> GetEnumerator() => (IEnumerator<T>)childs.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => childs.GetEnumerator();
 

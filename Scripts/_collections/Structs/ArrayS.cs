@@ -189,7 +189,7 @@ namespace UTIRLib.Collections
 
         public static implicit operator T[](ArrayS<T> array) => array.Value;
 
-        public IEnumerator<T> GetEnumerator() => array.GetEnumeratorT();
+        public IEnumerator<T> GetEnumerator() => (IEnumerator<T>)array.GetEnumerator();
 
         void ICollection<T>.Add(T item) => throw new NotSupportedException();
 

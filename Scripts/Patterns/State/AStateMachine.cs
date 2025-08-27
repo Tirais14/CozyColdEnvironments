@@ -12,14 +12,14 @@ using UTIRLib.Reflection;
 #pragma warning disable S3881
 namespace UTIRLib.Patterns.States
 {
-    /// <typeparam name="TDefault">Default state</typeparam>
-    public abstract class AStateMachine<TDefault> 
+    /// <typeparam name="TIdle">Default state</typeparam>
+    public abstract class AStateMachine<TIdle> 
         :
         MonoX,
         IStateMachine,
         IDisposableContainer
 
-        where TDefault : IState
+        where TIdle : IState
     {
         private readonly DisposableCollection disposables = new();
 
@@ -28,9 +28,9 @@ namespace UTIRLib.Patterns.States
         private IState playingState = default!;
 
         protected bool autoCreateStatesByFactory = true;
-        public TDefault DefaultState { get; private set; } = default!;
+        protected TIdle IdleState { get; private set; } = default!;
 
-        public bool IsDefaultState => IsExecuting(DefaultState);
+        public bool IsIdle => IsExecuting(IdleState);
 
         protected override void OnStart()
         {
@@ -39,12 +39,12 @@ namespace UTIRLib.Patterns.States
             if (autoCreateStatesByFactory)
                 CreateStatesByFactory();
 
-            DefaultState = GetDefaultState();
+            IdleState = GetIdleState();
 
-            if (DefaultState.IsNull())
+            if (IdleState.IsNull())
                 throw new NullReferenceException("Default state is not setted.");
 
-            playingState = DefaultState;
+            playingState = IdleState;
             playingState.Enter();
         }
 
@@ -150,7 +150,7 @@ namespace UTIRLib.Patterns.States
             }
         }
 
-        protected virtual TDefault GetDefaultState() => DefaultState;
+        protected virtual TIdle GetIdleState() => IdleState;
 
         private void Update()
         {
