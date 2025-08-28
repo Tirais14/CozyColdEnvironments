@@ -16,7 +16,7 @@ namespace UTIRLib.GameSystems.Collectables
 
         IStorageItem ICollectableItem.Item => Item;
     }
-    public interface ICollectable<TItem, TItemStack> : ICollectableItem<TItem>
+    public interface ICollectableItem<TItem, TItemStack> : ICollectableItem<TItem>
         where TItem : IStorageItem
         where TItemStack : IItemStack
     {
