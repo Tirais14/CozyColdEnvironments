@@ -48,12 +48,16 @@ namespace UTIRLib.Unity
         /// <summary>
         /// Include nested childs
         /// </summary>
-        public static Transform[] GetAllChilds(this Transform value)
+        public static Transform[] GetAllChilds(this Transform value, bool includeFirst = true)
         {
             if (value.childCount == 0)
                 return Array.Empty<Transform>();
 
-            return Collector.Collect(value.transform.GetChild(0), (x) => x.GetChilds())
+            if (includeFirst)
+                return Collector.Collect(value, (x) => x.GetChilds())
+                             .ToArray();
+
+            return Collector.Collect(value.GetChild(0), (x) => x.GetChilds())
                              .ToArray();
         }
 

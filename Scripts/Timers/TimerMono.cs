@@ -5,6 +5,7 @@ using UTIRLib.Unity;
 
 namespace UTIRLib.Timers
 {
+    [DisallowMultipleComponent]
     public class TimerMono : MonoX, ITimer
     {
         public const string TIMERS_OBJ_NAME = "___Timers";

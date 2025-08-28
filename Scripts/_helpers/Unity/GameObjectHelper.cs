@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using UTIRLib.Collections;
-using UTIRLib.Diagnostics;
 using UTIRLib.Reflection;
-using UTIRLib.Reflection.ObjectModel;
-using UTIRLib.Unity.TypeMatching;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -42,14 +37,12 @@ namespace UTIRLib.Unity
         /// <param name="exclude"></param>
         /// <returns>Removed components</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Type[] RemoveComponents(GameObject gameObject, Signature typesToRemove, Signature excludeTypes = default)
+        public static Type[] RemoveComponents(RemoveComponentsArguments args)
         {
-            if (gameObject == null)
-                throw new ArgumentNullException(nameof(gameObject));
-            if (typesToRemove.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(typesToRemove), typesToRemove);
+            if (args is null)
+                throw new ArgumentNullException(nameof(args));
 
-            Stack<Component> components = CreateStackByHardDependecies(gameObject);
+            Stack<Component> components = CreateStackByHardDependecies(args.Object);
             var results = new List<Type>(components.Count);
             Component component;
             var predicate = new LoopPredicate(() => components.Count > 0);
@@ -57,58 +50,25 @@ namespace UTIRLib.Unity
             {
                 component = components.Pop();
                 Type componentType = component.GetType();
-                if (typesToRemove.Any(x => componentType.IsType(x))
-                    &&
-                    !excludeTypes.Any(x => componentType.IsType(x)))
+                if (args.IsToRemoveType(componentType))
                 {
-                    results.Add(component.GetType());
+                    results.Add(componentType);
                     Object.Destroy(component);
                 }
             }
 
             return results.ToArray();
         }
-        public static Type[] RemoveComponents<T>(GameObject gameObject)
-        {
-            return RemoveComponents(gameObject, new Signature(typeof(T)));
-        }
-
-        public static Component[] GetHardDependencies(Component component)
-        {
-            if (component == null)
-                throw new ArgumentNullException(nameof(component));
-
-            Type type = component.GetType();
-            Type[] depTypes = CollectHardDependencyTypes(type);
-
-            if (depTypes.IsEmpty())
-                return Array.Empty<Component>();
-
-            var deps = new Component[depTypes.Length];
-            for (int i = 0; i < depTypes.Length; i++)
-                deps[i] = component.GetComponent(depTypes[i]);
-
-            return deps;
-        }
-
-        public static Type[] CollectHardDependencyTypes(Type type)
-        {
-            IEnumerable<RequireComponent> attributes = type.GetCustomAttributes<RequireComponent>();
-            if (attributes.IsNullOrEmpty())
-                return Type.EmptyTypes;
-
-            return (from x in attributes
-                    select x.AsEnumerable() into types
-                    from t in types
-                    where t is not null
-                    select t).ToArray();
-        }
 
 #pragma warning disable S1854
+        /// <exception cref="ArgumentNullException"></exception>
         public static Stack<Component> CreateStackByHardDependecies(
-            GameObject go)
+            GameObject gameObject)
         {
-            Component[] components = go.GetComponents<Component>();
+            if (gameObject == null)
+                throw new ArgumentNullException(nameof(gameObject));
+
+            Component[] components = gameObject.GetComponents<Component>();
 
             Dictionary<Type, Type[]> allDeps = GetAllDependencies();
             IEnumerable<Component> toStack = GetComponentsWithoutDependencies();
@@ -137,7 +97,7 @@ namespace UTIRLib.Unity
                         select groups.First() into x
                         select x.GetType() into t
                         select t)
-                        .ToDictionary(x => x, x => CollectHardDependencyTypes(x));
+                        .ToDictionary(x => x, x => ComponentHelper.CollectHardDependencyTypes(x));
             }
 
             IEnumerable<Component> GetComponentsByDependencies()
