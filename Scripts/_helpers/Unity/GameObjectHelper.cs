@@ -30,11 +30,6 @@ namespace UTIRLib.Unity
                 monos[i].enabled = false;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="gameObject"></param>
-        /// <param name="exclude"></param>
         /// <returns>Removed components</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static Type[] RemoveComponents(RemoveComponentsArguments args)
@@ -90,6 +85,7 @@ namespace UTIRLib.Unity
 
             return results;
 
+            //Defines
             Dictionary<Type, Type[]> GetAllDependencies()
             {
                 return (from x in components
@@ -118,7 +114,7 @@ namespace UTIRLib.Unity
 
             void AddToResults()
             {
-                foreach (var item in components)
+                foreach (var item in toStack)
                 {
                     addedComponentTypes.Add(item.GetType());
                     results.Push(item);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UTIRLib.Reflection;
 
 #nullable enable
 namespace UTIRLib.Unity
@@ -29,19 +30,21 @@ namespace UTIRLib.Unity
             if (type is null)
                 return false;
 
+            bool exclude = IsExcludeType(type);
             bool removeByType = typesToRemove.IsNotNullOrEmpty() 
                                 &&
-                                typesToRemove.Contains(type);
+                                typesToRemove.Any(x => type.IsType(x));
+            if (!exclude && removeByType)
+                return true;
 
+            string ns = type.Namespace;
             bool removeByNamespace = NamespacesToRemove.IsNotNullOrEmpty()
                                      &&
-                                     IsNamespaceToRemove(type.Namespace);
+                                     NamespacesToRemove.Any(x => ns.Contains(x));
+            if (!exclude && removeByNamespace)
+                return true;
 
-            return (removeByType
-                   ||
-                   removeByNamespace)
-                   &&
-                   !IsExcludeType(type);
+            return false;
         }
 
         public bool IsExcludeType(Type? type)
@@ -51,23 +54,19 @@ namespace UTIRLib.Unity
 
             bool excludeByType = typesToExclude.IsNotNullOrEmpty() 
                                  &&
-                                 typesToExclude.Contains(type);
+                                 typesToExclude.Any(x => type.IsType(x));
+            if (excludeByType)
+                return true;
 
-            bool excludeByNamepsace = NamespacesToRemove.IsNotNullOrEmpty()
+            string ns = type.Namespace;
+            bool excludeByNamepsace = NamespacesToExclude.IsNotNullOrEmpty()
                                       &&
-                                      IsNamespaceToExclude(type.Namespace);
+                                      NamespacesToExclude.Any(x => ns.Contains(x));
 
-            return excludeByType || excludeByNamepsace;
-        }
+            if (excludeByNamepsace)
+                return true;
 
-        private bool IsNamespaceToRemove(string ns)
-        {
-            return NamespacesToRemove.Any(x => ns.Contains(x));
-        }
-
-        private bool IsNamespaceToExclude(string ns)
-        {
-            return NamespacesToExclude.Any(x => ns.Contains(x));
+            return false;
         }
     }
 }

@@ -27,20 +27,27 @@ namespace UTIRLib.Timers
             set => timer.TargetValue = value;
         }
         public bool TargetValueReached => timer.TargetValueReached;
-        public bool IsExecuting { get; protected set; }
+        public bool IsActive => timer.IsActive;
+        public bool IsOnTargetReachedInvoked => timer.IsOnTargetReachedInvoked;
+        public TimerOptions Options {
+            get => timer.Options;
+            set => timer.Options = value;
+        }
+
+        public TimeSpan GetTimeSpan() => timer.GetTimeSpan();
 
         public ITimer StartTimer()
         {
-            IsExecuting = true;
-            enabled = IsExecuting;
+            timer.StartTimer();
+            enabled = IsActive;
 
             return this;
         }
 
         public ITimer StopTimer()
         {
-            IsExecuting = false;
-            enabled = IsExecuting;
+            timer.StopTimer();
+            enabled = IsActive;
 
             return this;
         }

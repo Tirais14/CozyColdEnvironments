@@ -6,24 +6,36 @@ namespace UTIRLib.Timers
 {
     public sealed class TimerManual : ITimer, IEquatable<TimerManual>
     {
-        private float seconds;
-        private bool targetReachedCallbackInvoked;
-
         public event Action? OnTargetReached;
 
-        public float Seconds => seconds;
         public float TargetValue { get; set; }
-        public bool TargetValueReached => TargetValue > 0 && seconds >= TargetValue;
+        public TimerOptions Options { get; set; }
+        public float Seconds { get; private set; }
+        public bool TargetValueReached => TargetValue > 0 && Seconds >= TargetValue;
+        public bool IsOnTargetReachedInvoked { get; private set; }
+        public bool IsActive { get; private set; }
 
-        bool ITimer.IsExecuting => true;
-
-        public TimerManual(float seconds)
+        public TimerManual()
         {
-            this.seconds = seconds;
         }
 
-        public TimerManual() : this(seconds: 0)
+        public TimeSpan GetTimeSpan()
         {
+            return TimeSpan.FromSeconds(Seconds);
+        }
+
+        public ITimer StartTimer()
+        {
+            IsActive = true;
+
+            return this;
+        }
+
+        public ITimer StopTimer()
+        {
+            IsActive = false;
+
+            return this;
         }
 
         /// <exception cref="ArgumentException"></exception>
@@ -31,23 +43,36 @@ namespace UTIRLib.Timers
         {
             if (seconds < 0)
                 throw new ArgumentException(nameof(seconds));
+            if (!IsActive)
+                return;
 
-            this.seconds += seconds;
+            Seconds += seconds;
 
-            if (!TargetValueReached && targetReachedCallbackInvoked)
-                targetReachedCallbackInvoked = false;
+            if (!TargetValueReached && IsOnTargetReachedInvoked)
+                IsOnTargetReachedInvoked = false;
 
-            if (TargetValueReached && !targetReachedCallbackInvoked)
+            if (TargetValueReached
+                &&
+                !IsOnTargetReachedInvoked)
             {
-                OnTargetReached?.Invoke();
-                targetReachedCallbackInvoked = true;
+                if (OnTargetReached is not null)
+                {
+                    OnTargetReached();
+                    IsOnTargetReachedInvoked = true;
+                }
+
+                if (Options.IsFlagSetted(TimerOptions.StopOnTargetReached))
+                    StopTimer();
+
+                if (Options.IsFlagSetted(TimerOptions.ResetOnTargetReached))
+                    ResetTimer();
             }
         }
 
         public ITimer ResetTimer()
         {
-            seconds = 0f;
-            targetReachedCallbackInvoked = false;
+            Seconds = 0f;
+            IsOnTargetReachedInvoked = false;
 
             return this;
         }
@@ -57,7 +82,7 @@ namespace UTIRLib.Timers
             if (other is null)
                 return false;
 
-            return seconds.NearlyEquals(other.seconds)
+            return Seconds.NearlyEquals(other.Seconds)
                    &&
                    TargetValue.NearlyEquals(other.TargetValue);
         }
@@ -69,7 +94,7 @@ namespace UTIRLib.Timers
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(seconds, TargetValue);
+            return HashCode.Combine(Seconds, TargetValue);
         }
 
         public static explicit operator float(TimerManual? timer)
@@ -77,7 +102,7 @@ namespace UTIRLib.Timers
             if (timer is null)
                 return -1f;
 
-            return timer.seconds;
+            return timer.Seconds;
         }
 
         public static implicit operator bool(TimerManual timer)
@@ -104,9 +129,5 @@ namespace UTIRLib.Timers
 
             return !left.Equals(right);
         }
-
-        ITimer ITimer.StartTimer() => this;
-
-        ITimer ITimer.StopTimer() => this;
     }
 }

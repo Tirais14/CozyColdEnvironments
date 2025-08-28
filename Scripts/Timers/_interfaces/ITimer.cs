@@ -10,12 +10,16 @@ namespace UTIRLib.Timers
         float Seconds { get; }
         float TargetValue { get; set; }
         bool TargetValueReached { get; }
-        bool IsExecuting { get; }
+        bool IsActive { get; }
+        bool IsOnTargetReachedInvoked { get; }
+        TimerOptions Options { get; set; }
 
         ITimer StartTimer();
 
         ITimer StopTimer();
 
         ITimer ResetTimer();
+
+        TimeSpan GetTimeSpan();
     }
 }

@@ -7,7 +7,7 @@ namespace UTIRLib.Timers
     {
         private void Update()
         {
-            if (!IsExecuting)
+            if (!IsActive)
                 return;
 
             timer.AddSeconds(Time.deltaTime);
