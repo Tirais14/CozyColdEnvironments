@@ -5,6 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Utils;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs
@@ -100,7 +101,7 @@ namespace CCEnvs
                     return false;
             }
 
-            switch (UnsafeUtility.SizeOf<T>())
+            switch (Unsafe.SizeOf<T>())
             {
                 case 1:
                     byte valueByte = value.ToByte();
@@ -308,7 +309,7 @@ namespace CCEnvs
                     return value;
             }
 
-            return UnsafeUtility.SizeOf<T>() switch
+            return Unsafe.SizeOf<T>() switch
             {
                 1 => SetFlagByteInternal(value, flag, isToSet),
                 2 => SetFlagInt16Internal(value, flag, isToSet),
@@ -319,15 +320,15 @@ namespace CCEnvs
         }
         private static T SetFlagByteInternal<T>(T value, T flag, bool isToSet)
         {
-            byte valueByte = UnsafeUtility.As<T, byte>(ref value);
-            byte flagByte = UnsafeUtility.As<T, byte>(ref flag);
+            byte valueByte = Unsafe.As<T, byte>(ref value);
+            byte flagByte = Unsafe.As<T, byte>(ref flag);
 
             if (isToSet)
                 valueByte |= flagByte;
             else
                 valueByte &= (byte)~flagByte;
 
-            return UnsafeUtility.As<byte, T>(ref valueByte);
+            return Unsafe.As<byte, T>(ref valueByte);
         }
         private static T SetFlagInt16Internal<T>(T value, T flag, bool isToSet)
         {
@@ -339,31 +340,31 @@ namespace CCEnvs
             else
                 valueByte &= (ushort)~flagByte;
 
-            return UnsafeUtility.As<ushort, T>(ref valueByte);
+            return Unsafe.As<ushort, T>(ref valueByte);
         }
         private static T SetFlagInt32Internal<T>(T value, T flag, bool isToSet)
         {
-            uint valueByte = UnsafeUtility.As<T, uint>(ref value);
-            uint flagByte = UnsafeUtility.As<T, uint>(ref flag);
+            uint valueByte = Unsafe.As<T, uint>(ref value);
+            uint flagByte = Unsafe.As<T, uint>(ref flag);
 
             if (isToSet)
                 valueByte |= flagByte;
             else
                 valueByte &= ~flagByte;
 
-            return UnsafeUtility.As<uint, T>(ref valueByte);
+            return Unsafe.As<uint, T>(ref valueByte);
         }
         private static T SetFlagInt64Internal<T>(T value, T flag, bool isToSet)
         {
-            ulong valueByte = UnsafeUtility.As<T, ulong>(ref value);
-            ulong flagByte = UnsafeUtility.As<T, ulong>(ref flag);
+            ulong valueByte = Unsafe.As<T, ulong>(ref value);
+            ulong flagByte = Unsafe.As<T, ulong>(ref flag);
 
             if (isToSet)
                 valueByte |= flagByte;
             else
                 valueByte &= ~flagByte;
 
-            return UnsafeUtility.As<ulong, T>(ref valueByte);
+            return Unsafe.As<ulong, T>(ref valueByte);
         }
 
         /// <exception cref="EnumNotFlagsException"></exception>

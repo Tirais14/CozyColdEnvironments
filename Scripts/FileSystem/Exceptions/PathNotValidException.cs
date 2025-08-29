@@ -4,7 +4,7 @@ using CCEnvs.Extensions;
 #nullable enable
 namespace CCEnvs.FileSystem
 {
-    public class PathNotValidException : TirLibException
+    public class PathNotValidException : CCEException
     {
         public PathNotValidException()
         {

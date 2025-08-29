@@ -1,9 +1,10 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Extensions;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CCEnvs.Diagnostics;
-using CCEnvs.Extensions;
 
 #nullable enable
 namespace CCEnvs.FileSystem
@@ -75,12 +76,12 @@ namespace CCEnvs.FileSystem
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
             Directory.CreateDirectory(Path);
-            TirLibDebug.PrintLog($"Directory created: \"{Path}\"", this);
+            CCDebug.PrintLog($"Directory created: \"{Path}\"", this);
             return true;
         }
 

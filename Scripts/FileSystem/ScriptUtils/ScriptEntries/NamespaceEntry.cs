@@ -29,7 +29,7 @@ namespace CCEnvs.FileSystem.ScriptUtils
 
         protected override void BuildString()
         {
-            TirLibDebug.AssertError(NamespaceName.IsNullOrEmpty(), "Trying to create namespace without name.", this);
+            CCDebug.AssertError(NamespaceName.IsNullOrEmpty(), "Trying to create namespace without name.", this);
 
             WriteLine($"namespace {NamespaceName}");
 

@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace CCEnvs.Diagnostics
 {
-    public class CollectionException : TirLibException
+    public class CollectionException : CCEException
     {
         public CollectionException()
         {

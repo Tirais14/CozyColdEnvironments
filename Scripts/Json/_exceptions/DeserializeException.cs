@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 #nullable enable
 namespace CCEnvs.Json
 {
-    public class DeserializeException : TirLibException
+    public class DeserializeException : CCEException
     {
         public DeserializeException()
         {

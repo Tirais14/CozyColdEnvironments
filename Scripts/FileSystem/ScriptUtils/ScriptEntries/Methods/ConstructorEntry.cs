@@ -154,7 +154,7 @@ namespace CCEnvs.FileSystem.ScriptUtils
                     results.Add(parentArgumentNames[i]);
             }
 
-            TirLibDebug.AssertWarning(results.Count < parentArgumentNames.Length, "Not all arguments found.");
+            CCDebug.AssertWarning(results.Count < parentArgumentNames.Length, "Not all arguments found.");
 
             return results.JoinStrings(", ");
         }

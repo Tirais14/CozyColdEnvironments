@@ -68,7 +68,7 @@ namespace CCEnvs.Json.Editor
             if (fileTypesToCreateField.value.HasFlag(FileTypes.Const))
             {
                 if (constFileName.value.IsNullOrWhiteSpace())
-                    TirLibDebug.PrintWarning("Specify the const file name.", this);
+                    CCDebug.PrintWarning("Specify the const file name.", this);
                 else
                 {
                     CreateClassFile();
@@ -81,7 +81,7 @@ namespace CCEnvs.Json.Editor
             if (fileTypesToCreateField.value.HasFlag(FileTypes.Enum))
             {
                 if (enumFileName.value.IsNullOrWhiteSpace())
-                    TirLibDebug.PrintWarning("Specify the enum file name.", this);
+                    CCDebug.PrintWarning("Specify the enum file name.", this);
                 else
                 {
                     CreateEnumFile();

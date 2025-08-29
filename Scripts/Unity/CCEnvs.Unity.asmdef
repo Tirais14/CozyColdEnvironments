@@ -3,6 +3,7 @@
     "rootNamespace": "CCEnvs.Unity",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:5fc19e916dbec2e4eb8fe60a0c56b165",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
         "GUID:593a5b492d29ac6448b1ebf7f035ef33",
         "GUID:4129704b5a1a13841ba16f230bf24a57",

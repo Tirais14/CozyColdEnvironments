@@ -2,7 +2,7 @@
 
 namespace CCEnvs.Diagnostics
 {
-    public class CollectionItemException : TirLibException
+    public class CollectionItemException : CCEException
     {
         public CollectionItemException() : base()
         {

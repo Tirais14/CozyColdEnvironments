@@ -16,7 +16,7 @@ namespace CCEnvs.Unity
                                   UnityEngine.FindObjectsSortMode.None)
                 .Any(x => x != this))
             {
-                TirLibDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
+                CCEDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
                 Destroy(this);
             }
         }

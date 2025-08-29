@@ -4,7 +4,7 @@ using CCEnvs.Reflection;
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public class EnumNotFlagsException : TirLibException
+    public class EnumNotFlagsException : CCEException
     {
         public EnumNotFlagsException()
         {

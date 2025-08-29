@@ -162,11 +162,11 @@ namespace CCEnvs.Unity.ThreeD
                                  SurfaceMask,
                                  QueryTriggerInteraction.Ignore))
             {
-                TirLibDebug.PrintWarning("Not found any surface.", this);
+                CCDebug.PrintWarning("Not found any surface.", this);
                 return;
             }
 
-            TirLibDebug.AssertError(hit.transform == transform, "Collide with self.");
+            CCDebug.AssertError(hit.transform == transform, "Collide with self.");
 
             IsOnSurface = hit.distance.NearlyEquals(RAYCAST_SURFACE_OFFSET, 1f);
             surfaceHit = hit;

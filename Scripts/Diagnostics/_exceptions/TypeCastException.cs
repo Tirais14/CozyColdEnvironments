@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public class TypeCastException : TirLibException
+    public class TypeCastException : CCEException
     {
         public TypeCastException()
         {

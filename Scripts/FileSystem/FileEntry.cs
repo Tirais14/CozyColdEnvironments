@@ -55,12 +55,12 @@ namespace CCEnvs.FileSystem
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.PrintError($"{nameof(FileEntry)}: content is null.");
+                CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
@@ -81,12 +81,12 @@ namespace CCEnvs.FileSystem
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
+                CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
@@ -260,12 +260,12 @@ namespace CCEnvs.FileSystem
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
             File.Create(Path);
-            TirLibDebug.PrintLog($"File created: \"{Path}\"", this);
+            CCDebug.PrintLog($"File created: \"{Path}\"", this);
             return true;
         }
         #endregion Default
@@ -320,7 +320,7 @@ namespace CCEnvs.FileSystem
                 case string[] lines:
                     return lines;
                 default:
-                    TirLibDebug.PrintError($"{customContent?.GetTypeName()} type doesn't supported.");
+                    CCDebug.PrintError($"{customContent?.GetTypeName()} type doesn't supported.");
                     return Array.Empty<string>();
             }
         }

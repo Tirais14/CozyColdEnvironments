@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 #nullable enable
 
@@ -21,13 +20,13 @@ namespace CCEnvs
                 epsilon = customEpsilon.Value;
             else
             {
-                if (Mathf.Abs(value) > 1)
+                if (MathF.Abs(value) > 1)
                     epsilon = SECOND_EPSILON;
                 else
                     epsilon = FIRST_EPSILON;
             }
 
-            return Mathf.Abs(value - other) < epsilon;
+            return MathF.Abs(value - other) < epsilon;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

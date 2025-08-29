@@ -6,7 +6,7 @@ using CCEnvs.Diagnostics;
 namespace CCEnvs.Disposables
 {
     /// <summary>
-    /// Inherits from this, for auto implementing <see cref="DisposableExtensions.AddTo(IDisposable, IDisposableContainer)"/>
+    /// Inherits from this, for auto implementing <see cref="IDisposableExtensions.AddTo(IDisposable, IDisposableContainer)"/>
     /// </summary>
     public interface IDisposableContainer : IDisposable
     {

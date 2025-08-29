@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.UI.MVVM
             FindObjectsSortMode findObjectsSortMode = FindObjectsSortMode.None)
             where T : IView
         {
-            return UnityObjectHelper.FindObjectsByType<T>(findObjectsInactive,
+            return UObjectFinder.FindObjectsByType<T>(findObjectsInactive,
                                                           findObjectsSortMode);
         }
 
@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.UI.MVVM
             FindObjectsSortMode findObjectsSortMode = FindObjectsSortMode.None)
             where T : IView
         {
-            return UnityObjectHelper.FindObjectsByType<T>(findObjectsInactive,
+            return UObjectFinder.FindObjectsByType<T>(findObjectsInactive,
                                                           findObjectsSortMode)
                                     .SingleOrDefault();
         }

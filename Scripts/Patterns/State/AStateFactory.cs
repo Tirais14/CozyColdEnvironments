@@ -1,5 +1,5 @@
-using System;
 using CCEnvs.Patterns.Factory;
+using System;
 
 #nullable enable
 namespace CCEnvs.Patterns.States
@@ -18,7 +18,7 @@ namespace CCEnvs.Patterns.States
         :
         AStateFactory
 
-        where T : AStateMachine
+        where T : IStateMachine
     {
         protected readonly T machine;
 

@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.AddressableAssets
             }
             catch (System.Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
                 throw;
             }
         }

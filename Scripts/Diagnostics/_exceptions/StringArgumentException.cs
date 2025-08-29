@@ -2,7 +2,7 @@
 
 namespace CCEnvs.Diagnostics
 {
-    public sealed class StringArgumentException : TirLibException
+    public sealed class StringArgumentException : CCEException
     {
         public StringArgumentException()
         {

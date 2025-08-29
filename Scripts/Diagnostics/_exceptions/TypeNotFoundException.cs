@@ -4,7 +4,7 @@ using CCEnvs.Reflection;
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public class TypeNotFoundException : TirLibException
+    public class TypeNotFoundException : CCEException
     {
         public TypeNotFoundException()
         {

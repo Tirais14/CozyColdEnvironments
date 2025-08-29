@@ -62,7 +62,7 @@ namespace CCEnvs.Unity.EditorC
 
         protected void Abort(string? message = null)
         {
-            TirLibDebug.PrintLog($"{windowType.GetName()}: Proccess aborted. {message}", this);
+            CCEDebug.PrintLog($"{windowType.GetName()}: Proccess aborted. {message}", this);
         }
 
         protected bool TryAbortByDirectoryPath(string path)

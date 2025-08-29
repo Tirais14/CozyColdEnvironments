@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -5,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs
@@ -144,7 +144,7 @@ namespace CCEnvs
             MatchCollection matches = Regex.Matches(str, @"\{\d+\}");
             if (matches == null || matches.Count == 0)
             {
-                Debug.LogError("Incorrect string to format.");
+                CCDebug.PrintError("Incorrect string to format.");
                 return str;
             }
 

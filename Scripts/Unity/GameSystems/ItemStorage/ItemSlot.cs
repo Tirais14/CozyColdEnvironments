@@ -16,7 +16,7 @@ namespace CCEnvs.GameSystems.Storages
             {
                 if (value > itemStack.MaxItemCount)
                 {
-                    TirLibDebug.PrintWarning($"Capacity limit > {nameof(itemStack)}.{nameof(itemStack.MaxItemCount)}");
+                    CCDebug.PrintWarning($"Capacity limit > {nameof(itemStack)}.{nameof(itemStack.MaxItemCount)}");
                     capacityLimit = itemStack.MaxItemCount;
                     return;
                 }

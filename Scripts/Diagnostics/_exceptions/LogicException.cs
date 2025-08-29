@@ -3,7 +3,7 @@ using System;
 
 namespace CCEnvs.Diagnostics
 {
-    public class LogicException : TirLibException
+    public class LogicException : CCEException
     {
         public LogicException()
         {

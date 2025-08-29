@@ -18,20 +18,13 @@ namespace CCEnvs.Patterns.States
         {
         }
 
-        protected virtual void DisposaManaged() => disposables.Dispose();
-
-        protected virtual void DisposeUnmanaged()
-        {
-        }
-
         protected void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
-                    DisposaManaged();
+                    disposables.Dispose();
 
-                DisposeUnmanaged();
                 disposedValue = true;
             }
         }

@@ -40,12 +40,12 @@ namespace CCEnvs.FileSystem.ScriptUtils
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.PrintError($"{nameof(FileEntry)}: content is null.");
+                CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 
@@ -64,12 +64,12 @@ namespace CCEnvs.FileSystem.ScriptUtils
                 return false;
             if (customContent is null)
             {
-                TirLibDebug.PrintError($"{nameof(FileEntry)}: content is null.");
+                CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                TirLibDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.PrintError(new FileNameException(Name), this);
                 return false;
             }
 

@@ -20,24 +20,24 @@ namespace CCEnvs.Unity.Initables
     {
         public static AsyncTaskRegistry TaskRegistry { get; } = new();
 
-        /// <exception cref="TirLibException"></exception>
+        /// <exception cref="CCEException"></exception>
         public static void InitObject(IInitable initable)
         {
             if (initable.IsInited)
-                throw new TirLibException($"{initable.GetTypeName()} is already inited.");
+                throw new CCEException($"{initable.GetTypeName()} is already inited.");
 
             initable.Init();
             SetInited(initable);
 
-            TirLibDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
+            CCEDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
-        /// <exception cref="TirLibException"></exception>
+        /// <exception cref="CCEException"></exception>
         public static async UniTask InitObjectAsync(IInitableAsync initableAsync)
         {
             try
             {
                 if (initableAsync.IsInited)
-                    throw new TirLibException($"{initableAsync.GetTypeName()} is already inited.");
+                    throw new CCEException($"{initableAsync.GetTypeName()} is already inited.");
 
                 var task = initableAsync.InitAsync();
                 TaskRegistry.RegisterTask(task);
@@ -45,11 +45,11 @@ namespace CCEnvs.Unity.Initables
 
                 SetInited(initableAsync);
 
-                TirLibDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
+                CCEDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
             }
             catch (Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
             }
         }
 
@@ -80,7 +80,7 @@ namespace CCEnvs.Unity.Initables
             var allInitables = new ConcurrentDictionary<Type, IInitableBase>();
 
             IInitable[] inits =
-                UnityObjectHelper.FindObjectsByType<IInitable>(findObjectsInactive)
+                UObjectFinder.FindObjectsByType<IInitable>(findObjectsInactive)
                 .Where(x => x.GetType().IsDefinedAny(inherit: true,
                                                      typeof(InitAttribute),
                                                      typeof(InitFirstAttribute),
@@ -88,7 +88,7 @@ namespace CCEnvs.Unity.Initables
                                                      ).ToArray();
 
             IInitableAsync[] initsAsync =
-                UnityObjectHelper.FindObjectsByType<IInitableAsync>(findObjectsInactive)
+                UObjectFinder.FindObjectsByType<IInitableAsync>(findObjectsInactive)
                 .Where(x => x.GetType().IsDefinedAny(inherit: true,
                                                      typeof(InitAsyncAttribute),
                                                      typeof(InitAsyncFirstAttribute),
@@ -219,7 +219,7 @@ namespace CCEnvs.Unity.Initables
             IInitable[] firstInits = GetFirstInits(inits);
 
             if (firstInits.CountNotNull() == 0)
-                throw new TirLibException("Not found any first initable.");
+                throw new CCEException("Not found any first initable.");
 
             for (int i = 0; i < firstInits.Length; i++)
                 queue.Enqueue(firstInits[i]);
@@ -378,7 +378,7 @@ namespace CCEnvs.Unity.Initables
             }
             catch (Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
             }
         }
 
@@ -398,12 +398,12 @@ namespace CCEnvs.Unity.Initables
                             item.initable,
                             item.attribute.InitableTypes,
                             allInitablesAsync))
-                                .Forget(ex => TirLibDebug.PrintException(ex));
+                                .Forget(ex => CCEDebug.PrintException(ex));
                 }
             }
             catch (Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
             }
         }
 
@@ -418,7 +418,7 @@ namespace CCEnvs.Unity.Initables
             }
             catch (Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
             }
         }
 

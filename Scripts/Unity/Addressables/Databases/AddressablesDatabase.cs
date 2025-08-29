@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.AddressableAssets.Databases
             }
             catch (Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
             }
         }
 
@@ -60,7 +60,7 @@ namespace CCEnvs.Unity.AddressableAssets.Databases
             }
             catch (Exception ex)
             {
-                TirLibDebug.PrintException(ex);
+                CCEDebug.PrintException(ex);
                 return Array.Empty<T>();
             }
         }

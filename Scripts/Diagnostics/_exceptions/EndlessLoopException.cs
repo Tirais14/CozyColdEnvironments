@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 #nullable enable
 namespace CCEnvs
 {
-    public class EndlessLoopException : TirLibException
+    public class EndlessLoopException : CCEException
     {
         public EndlessLoopException()
         {

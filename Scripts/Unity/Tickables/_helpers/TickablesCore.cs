@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Tickables
                 return false;
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
             {
-                TirLibDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesCore)}. Return false.", Instance);
+                CCEDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesCore)}. Return false.", Instance);
                 return false;
             }
 
@@ -127,7 +127,7 @@ namespace CCEnvs.Unity.Tickables
         {
             Validate();
 
-            var tickers = UnityObjectHelper.FindObjectsByType<ITicker>(FindObjectsInactive.Include);
+            var tickers = UObjectFinder.FindObjectsByType<ITicker>(FindObjectsInactive.Include);
 
             if (tickers.IsEmpty())
                 return 0;
@@ -148,7 +148,7 @@ namespace CCEnvs.Unity.Tickables
         {
             Validate();
 
-            var tickables = UnityObjectHelper.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include);
+            var tickables = UObjectFinder.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include);
 
             if (tickables.IsEmpty())
                 return 0;

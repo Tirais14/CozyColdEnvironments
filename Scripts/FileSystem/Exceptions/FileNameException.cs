@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 
 namespace CCEnvs.FileSystem
 {
-    public class FileNameException : TirLibException
+    public class FileNameException : CCEException
     {
         public FileNameException()
         {

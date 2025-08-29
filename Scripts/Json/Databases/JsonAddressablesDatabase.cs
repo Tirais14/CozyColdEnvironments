@@ -17,7 +17,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         {
             if (textAssets.IsNullOrEmpty())
             {
-                TirLibDebug.PrintWarning($"{this.GetTypeName()}: Not loaded any textAsset.");
+                CCDebug.PrintWarning($"{this.GetTypeName()}: Not loaded any textAsset.");
                 return;
             }
 
@@ -32,7 +32,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
                 values.Add(GetItemID(deserialized), deserialized);
 
                 if (deserialized is null)
-                    TirLibDebug.PrintError("Database cannot contain null items.");
+                    CCDebug.PrintError("Database cannot contain null items.");
             }
 
             values.TrimExcess();

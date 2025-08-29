@@ -128,12 +128,12 @@ namespace CCEnvs.Unity.ComponentSetter
         {
             if (field.GetValue(source).IsNotNull())
             {
-                TirLibDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
+                CCEDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
                 return;
             }
             if (!IsTypeValid(field.FieldType))
             {
-                TirLibDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
+                CCEDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
                 return;
             }
 
@@ -177,7 +177,7 @@ namespace CCEnvs.Unity.ComponentSetter
                 return;
             if (!IsTypeValid(prop.PropertyType))
             {
-                TirLibDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
+                CCEDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
                 return;
             }
 

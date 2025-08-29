@@ -6,7 +6,7 @@ using CCEnvs.Extensions;
 
 namespace CCEnvs.Attributes.Metadata
 {
-    public class MetadataAttributeNotFoundException : TirLibException
+    public class MetadataAttributeNotFoundException : CCEException
     {
         public MetadataAttributeNotFoundException()
         {

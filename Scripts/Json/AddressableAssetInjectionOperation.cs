@@ -59,7 +59,7 @@ namespace CCEnvs.Json
                 throw new InvalidOperationException("Allowed only fields or properties.");
 
             Task = AwaitInjection();
-            Task.Forget(ex => TirLibDebug.PrintException(ex, this));
+            Task.Forget(ex => CCDebug.PrintException(ex, this));
         }
 
         private async UniTask AwaitInjection()

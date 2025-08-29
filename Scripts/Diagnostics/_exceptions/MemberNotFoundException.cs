@@ -6,7 +6,7 @@ using CCEnvs.Reflection;
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public class MemberNotFoundException : TirLibException
+    public class MemberNotFoundException : CCEException
     {
         public MemberNotFoundException()
         {
