@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace UTIRLib.Collections
 {
+    [Obsolete("Use Cast<T> on empty array instead")]
     public readonly struct DefaultEnumerator<T> : IEnumerator<T?>
     {
         private readonly IEnumerator defaultEnumerator;
