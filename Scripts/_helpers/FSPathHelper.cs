@@ -5,11 +5,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using CozyColdEnvironments.Collections;
-using CozyColdEnvironments.Diagnostics;
-using static CozyColdEnvironments.FileSystem.FSPath;
+using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
+using static CCEnvs.FileSystem.FSPath;
 
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public static class FSPathHelper
     {

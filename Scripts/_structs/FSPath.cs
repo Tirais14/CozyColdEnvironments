@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     /// <summary>
     /// Structure for convenient work with file system paths.

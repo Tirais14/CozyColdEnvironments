@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public struct DefaultValueConverter : ITypeConverter<string?>
     {

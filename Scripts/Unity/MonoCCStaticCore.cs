@@ -1,14 +1,13 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Unity.TypeMatching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     [DefaultExecutionOrder(-10)]
     public sealed class MonoCCStaticCore : MonoCC

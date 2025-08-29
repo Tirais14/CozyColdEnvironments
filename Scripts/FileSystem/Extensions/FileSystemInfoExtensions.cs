@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public static class FileSystemInfoExtensions
     {

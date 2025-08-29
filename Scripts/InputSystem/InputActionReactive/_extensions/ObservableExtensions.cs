@@ -1,10 +1,10 @@
 using System;
 using UniRx;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem.Reactive
+namespace CCEnvs.InputSystem.Reactive
 {
     public static class ObservableExtensions
     {

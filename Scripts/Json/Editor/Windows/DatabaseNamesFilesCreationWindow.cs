@@ -6,13 +6,13 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.UnityEditor;
-using CozyColdEnvironments.FileSystem;
-using CozyColdEnvironments.FileSystem.ScriptUtils;
+using CCEnvs.Diagnostics;
+using CCEnvs.UnityEditor;
+using CCEnvs.FileSystem;
+using CCEnvs.FileSystem.ScriptUtils;
 
 #nullable enable
-namespace CozyColdEnvironments.Json.Editor
+namespace CCEnvs.Json.Editor
 {
     public abstract class DatabaseNamesFilesCreationWindow : TirLibEditorWindow
     {

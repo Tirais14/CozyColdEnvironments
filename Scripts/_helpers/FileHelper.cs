@@ -2,7 +2,7 @@ using System.IO;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Utils
+namespace CCEnvs.Utils
 {
     public static class FileHelper
     {

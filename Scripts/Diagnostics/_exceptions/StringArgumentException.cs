@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace CozyColdEnvironments.Diagnostics
+namespace CCEnvs.Diagnostics
 {
     public sealed class StringArgumentException : TirLibException
     {

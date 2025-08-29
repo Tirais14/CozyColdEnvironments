@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Unity.Serialization;
+using CCEnvs.Diagnostics;
+using CCEnvs.Unity.Serialization;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem.Reactive
+namespace CCEnvs.InputSystem.Reactive
 {
     [Serializable]
     public sealed class InputActionReactiveReference

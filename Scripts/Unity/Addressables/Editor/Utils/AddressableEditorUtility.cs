@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,13 +7,11 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Extensions;
 using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace CozyColdEnvironments.AddressableAssets
+namespace CCEnvs.Unity.AddressableAssets
 {
     public static class AddressableEditorUtility
     {

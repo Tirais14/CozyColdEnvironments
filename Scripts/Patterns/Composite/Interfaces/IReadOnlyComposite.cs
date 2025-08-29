@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace CozyColdEnvironments.Patterns.Composite
+namespace CCEnvs.Patterns.Composite
 {
     public interface IReadOnlyComposite
     {

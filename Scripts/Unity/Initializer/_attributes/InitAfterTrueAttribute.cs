@@ -1,9 +1,9 @@
 using System;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Reflection;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.Initables
+namespace CCEnvs.Unity.Initables
 {
     /// <summary>
     /// Not Implemented for now

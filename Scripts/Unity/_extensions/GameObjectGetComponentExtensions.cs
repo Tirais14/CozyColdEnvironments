@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Unity
+namespace CCEnvs.Unity
 {
     public static class GameObjectGetComponentExtensions
     {
@@ -89,7 +89,7 @@ namespace CozyColdEnvironments.Unity
     }
 }
 
-namespace CozyColdEnvironments.Unity.Extensions
+namespace CCEnvs.Unity.Extensions
 {
     public static class GameObjectGetComponentExtensions
     {

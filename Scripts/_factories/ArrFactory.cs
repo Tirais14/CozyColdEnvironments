@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     [Obsolete]
     public static class ArrFactory

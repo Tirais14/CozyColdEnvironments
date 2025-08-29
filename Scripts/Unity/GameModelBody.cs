@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
-using CozyColdEnvironments.Unity.Extensions;
+using CCEnvs.Unity.Extensions;
 
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable IDE1006
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     [RequireComponent(typeof(MeshRenderer))]
     public class GameModelBody : MonoCC

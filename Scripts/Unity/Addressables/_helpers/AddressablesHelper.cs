@@ -1,8 +1,7 @@
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 
 #nullable enable
-namespace CozyColdEnvironments.AddressableAssets
+namespace CCEnvs.Unity.AddressableAssets
 {
     public static class AddressablesHelper
     {

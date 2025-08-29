@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class BindingFlagsDefault
     {

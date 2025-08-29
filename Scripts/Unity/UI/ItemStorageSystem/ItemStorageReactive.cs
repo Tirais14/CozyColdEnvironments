@@ -1,8 +1,7 @@
 using UniRx;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemStorageReactive : ItemStorage, IItemStorageReactive
     {

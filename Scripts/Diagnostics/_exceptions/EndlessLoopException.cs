@@ -1,7 +1,7 @@
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public class EndlessLoopException : TirLibException
     {

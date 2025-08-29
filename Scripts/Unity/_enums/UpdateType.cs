@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     public enum UpdateType
     {

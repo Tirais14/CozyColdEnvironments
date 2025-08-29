@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public class MaxHeap<T> : BinaryHeap<T> where T : IComparable<T>
     {

@@ -1,9 +1,9 @@
 using System;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.Initables
+namespace CCEnvs.Unity.Initables
 {
     /// <summary>
     /// Call <see cref="IInitable.Init"/> only after initialization this types.

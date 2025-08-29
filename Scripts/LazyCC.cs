@@ -1,7 +1,7 @@
 #nullable enable
 using System.Threading;
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public class LazyCC<T> : System.Lazy<T>
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using System;
-using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+using static CCEnvs.FileSystem.ScriptUtils.Syntax;
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public interface IType :
         IScriptContent,

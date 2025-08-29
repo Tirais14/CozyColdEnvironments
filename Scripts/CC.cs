@@ -1,7 +1,7 @@
 #nullable enable
 
 using UnityEngine;
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class CC
     {

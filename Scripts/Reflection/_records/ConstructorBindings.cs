@@ -1,7 +1,7 @@
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public record ConstructorBindings : MemberBindings
     {

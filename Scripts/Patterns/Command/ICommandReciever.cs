@@ -1,4 +1,4 @@
-namespace CozyColdEnvironments.Patterns.Commands
+namespace CCEnvs.Patterns.Commands
 {
 #nullable enable
 

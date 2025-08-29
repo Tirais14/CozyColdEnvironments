@@ -1,7 +1,7 @@
 #nullable enable
 using System.Linq;
 
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     /// <summary>
     /// Do not add this or derived from this component! On scene must be only one <see cref="MonoCCStaticCore"/>

@@ -1,13 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Linq;
-using CozyColdEnvironments.TypeConverting;
+using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using CCEnvs.TypeConverting;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Patterns.Composite
+namespace CCEnvs.Patterns.Composite
 {
     [Obsolete]
     public class Composite<T> : ReadOnlyComposite<T>, IComposite<T>

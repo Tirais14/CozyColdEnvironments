@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity.ComponentSetter
 {
     public abstract class GetComponentAttribute : Attribute
     {

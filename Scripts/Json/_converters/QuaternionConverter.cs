@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Json.Converters
+namespace CCEnvs.Json.Converters
 {
     public class QuaternionConverter : JsonConverter<Quaternion>
     {

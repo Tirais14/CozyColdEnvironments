@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Disposables;
-using CozyColdEnvironments.Patterns.Factory;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
+using CCEnvs.Patterns.Factory;
+using CCEnvs.Reflection;
 
 #pragma warning disable S3881
-namespace CozyColdEnvironments.Patterns.States
+namespace CCEnvs.Patterns.States
 {
     /// <typeparam name="TIdle">Default state</typeparam>
     public abstract class AStateMachine<TIdle> 

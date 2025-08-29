@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection.Injections
+namespace CCEnvs.Reflection.Injections
 {
     public static class MemberInjectorExtensions
     {

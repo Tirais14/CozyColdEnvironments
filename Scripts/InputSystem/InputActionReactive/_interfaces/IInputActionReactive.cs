@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem.Reactive
+namespace CCEnvs.InputSystem.Reactive
 {
     public interface IInputActionReactive
         :

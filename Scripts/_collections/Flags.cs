@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public sealed class Flags<T> : ICollection<T>, IEquatable<Flags<T>>
     {

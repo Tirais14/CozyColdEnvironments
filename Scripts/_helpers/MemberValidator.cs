@@ -1,11 +1,11 @@
 using System;
 using System.Reflection;
-using CozyColdEnvironments.Attributes;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Attributes;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Utils
+namespace CCEnvs.Utils
 {
     public static class MemberValidator
     {

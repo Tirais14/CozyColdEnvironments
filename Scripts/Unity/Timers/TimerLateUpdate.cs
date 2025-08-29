@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Timers
+namespace CCEnvs.Unity.Timers
 {
     public class TimerLateUpdate : TimerMono
     {

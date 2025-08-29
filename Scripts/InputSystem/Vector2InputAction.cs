@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CozyColdEnvironments.Unity.Extensions;
+using CCEnvs.Unity.Extensions;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem
+namespace CCEnvs.InputSystem
 {
     public class Vector2InputAction : InputActionX<Vector2>
     {

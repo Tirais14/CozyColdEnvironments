@@ -1,11 +1,11 @@
 using System;
-using CozyColdEnvironments.Attributes.Metadata;
-using CozyColdEnvironments.Extensions;
-using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
+using CCEnvs.Attributes.Metadata;
+using CCEnvs.Extensions;
+using static CCEnvs.FileSystem.ScriptUtils.Syntax;
 
 #nullable enable
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public record FieldEntry : ScriptEntry, IField
     {

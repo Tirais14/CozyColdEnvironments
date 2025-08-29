@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class MethodInfoExtensions
     {

@@ -1,4 +1,4 @@
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public interface IFileText
     {

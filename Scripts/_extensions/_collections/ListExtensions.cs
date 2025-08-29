@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class ListExtensions
     {
@@ -14,7 +14,7 @@ namespace CozyColdEnvironments
     }
 }
 
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class ListExtensions
     {
@@ -25,7 +25,7 @@ namespace CozyColdEnvironments.Reflection
     }
 }
 
-namespace CozyColdEnvironments.Performance
+namespace CCEnvs.Performance
 {
     public static class ListExtensions
     {

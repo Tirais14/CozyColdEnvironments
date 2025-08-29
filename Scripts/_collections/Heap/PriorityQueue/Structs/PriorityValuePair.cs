@@ -1,6 +1,6 @@
 using System;
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public struct PriorityValuePair<TPriority, TValue> : IComparable<PriorityValuePair<TPriority, TValue>>
         where TPriority : struct, IComparable<TPriority>

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 #nullable enable
-namespace CozyColdEnvironments.Async
+namespace CCEnvs.Async
 {
     public sealed class AsyncTaskRegistry : IAsyncTaskRegistry
     {

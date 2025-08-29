@@ -3,17 +3,17 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using CozyColdEnvironments.AddressableAssets;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Initables;
+using CCEnvs.AddressableAssets;
+using CCEnvs.Diagnostics;
+using CCEnvs.Initables;
 
 #nullable enable
 #pragma warning disable S2743
-namespace CozyColdEnvironments.AddressableAssets.Databases
+namespace CCEnvs.Unity.AddressableAssets.Databases
 {
     public abstract class AddressablesDatabase<T> 
         :
-        MonoXInitableAsync
+        MonoCCInitableAsync
 
         where T : UnityEngine.Object
     {

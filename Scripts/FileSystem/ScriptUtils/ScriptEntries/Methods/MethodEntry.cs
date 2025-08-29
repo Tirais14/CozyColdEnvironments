@@ -1,11 +1,11 @@
 using System;
-using CozyColdEnvironments.Attributes.Metadata;
-using CozyColdEnvironments.Reflection;
-using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
+using CCEnvs.Attributes.Metadata;
+using CCEnvs.Reflection;
+using static CCEnvs.FileSystem.ScriptUtils.Syntax;
 
 #nullable enable
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public record MethodEntry : ScriptEntry,
         IMethod,

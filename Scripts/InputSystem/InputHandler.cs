@@ -6,12 +6,12 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
-using CozyColdEnvironments.Attributes.Metadata;
-using CozyColdEnvironments.Disposables;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Attributes.Metadata;
+using CCEnvs.Disposables;
+using CCEnvs.Reflection;
 
 #pragma warning disable S3881
-namespace CozyColdEnvironments.InputSystem
+namespace CCEnvs.InputSystem
 {
     public class InputHandler 
         :

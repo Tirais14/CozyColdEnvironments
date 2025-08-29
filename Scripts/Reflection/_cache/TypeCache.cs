@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection.Cached
+namespace CCEnvs.Reflection.Cached
 {
     public static class TypeCache
     {

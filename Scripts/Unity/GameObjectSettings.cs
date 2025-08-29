@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     [Serializable]
     public sealed record GameObjectSettings 

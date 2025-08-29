@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public readonly ref struct SpanEnumerator
     {

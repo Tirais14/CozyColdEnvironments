@@ -1,12 +1,10 @@
+using CCEnvs.Diagnostics;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
 #pragma warning disable S4035
-namespace CozyColdEnvironments.GameSystems
+namespace CCEnvs.GameSystems.Storages
 {
     public class StorageItem 
         :

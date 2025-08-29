@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CozyColdEnvironments.Attributes.Metadata;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
-using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
+using CCEnvs.Attributes.Metadata;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
+using static CCEnvs.FileSystem.ScriptUtils.Syntax;
 
 #nullable enable
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public sealed record ConstructorEntry : ScriptEntry,
         IMethod,

@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public abstract class FileSystemEntry
     {

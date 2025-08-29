@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Disposables
 {
     public interface ISubscription : IDisposable
     {

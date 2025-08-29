@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.FileSystem.Json.UnityEditor
+namespace CCEnvs.FileSystem.Json.UnityEditor
 {
     public static class JsonFileAddressableDatabaseCreator
     {

@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace CozyColdEnvironments.Patterns.Composite
+namespace CCEnvs.Patterns.Composite
 {
     public interface IComposite : IReadOnlyComposite
     {

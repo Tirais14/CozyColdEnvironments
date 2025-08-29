@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Diagnostics
+namespace CCEnvs.Diagnostics
 {
     public readonly struct ValidationInfo
     {

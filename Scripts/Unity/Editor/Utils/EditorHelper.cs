@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace CozyColdEnvironments.UnityEditor
+namespace CCEnvs.UnityEditor
 {
     public static class EditorHelper
     {

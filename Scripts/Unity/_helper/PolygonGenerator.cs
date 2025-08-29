@@ -1,6 +1,7 @@
 using UnityEngine;
 
-namespace CozyColdEnvironments.Utils
+#nullable enable
+namespace CCEnvs.Unity
 {
     public static class PolygonGenerator
     {

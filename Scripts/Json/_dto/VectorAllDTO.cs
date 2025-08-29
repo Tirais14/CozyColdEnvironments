@@ -4,7 +4,7 @@ using System;
 #nullable enable
 #pragma warning disable S101
 #pragma warning disable S1104
-namespace CozyColdEnvironments.Json.Converters
+namespace CCEnvs.Json.Converters
 {
     [Serializable]
     public struct VectorAllDTO

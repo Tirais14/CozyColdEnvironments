@@ -2,7 +2,7 @@ using System;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem
+namespace CCEnvs.InputSystem
 {
     public interface IInputAction : ISwitchable, IDisposable
     {

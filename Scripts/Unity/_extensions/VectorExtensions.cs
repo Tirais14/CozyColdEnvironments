@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S2094
-namespace CozyColdEnvironments.Unity
+namespace CCEnvs.Unity
 {
     public static class Vector2Extensions
     {
@@ -62,7 +62,7 @@ namespace CozyColdEnvironments.Unity
     }
 }
 
-namespace CozyColdEnvironments.Unity.Extensions
+namespace CCEnvs.Unity.Extensions
 {
     public static class Vector2Extensions
     {

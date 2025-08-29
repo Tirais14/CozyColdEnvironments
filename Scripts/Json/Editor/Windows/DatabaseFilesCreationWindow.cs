@@ -3,12 +3,12 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine.UIElements;
-using CozyColdEnvironments.AddressableAssets;
-using CozyColdEnvironments.UnityEditor;
+using CCEnvs.AddressableAssets;
+using CCEnvs.UnityEditor;
 
 #nullable enable
 
-namespace CozyColdEnvironments.FileSystem.Json.UnityEditor
+namespace CCEnvs.FileSystem.Json.UnityEditor
 {
     public abstract class DatabaseFilesCreationWindow : TirLibEditorWindow
     {

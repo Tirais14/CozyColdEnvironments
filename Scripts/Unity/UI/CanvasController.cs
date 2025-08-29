@@ -1,11 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using CozyColdEnvironments.Attributes;
 
 #nullable enable
 
-namespace CozyColdEnvironments.UI
+namespace CCEnvs.Unity.UI
 {
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
     public class CanvasController : MonoCC, ICanvasController

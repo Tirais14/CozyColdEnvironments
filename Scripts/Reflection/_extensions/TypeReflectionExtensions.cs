@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection.ObjectModel;
-using static CozyColdEnvironments.BindingFlagsDefault;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection.ObjectModel;
+using static CCEnvs.BindingFlagsDefault;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class TypeReflectionExtensions
     {

@@ -1,4 +1,4 @@
-namespace CozyColdEnvironments.Patterns.Factory
+namespace CCEnvs.Patterns.Factory
 {
 #nullable enable
 

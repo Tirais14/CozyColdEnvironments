@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Unity
+namespace CCEnvs.Unity
 {
     public static class RequireComponentExtensions
     {

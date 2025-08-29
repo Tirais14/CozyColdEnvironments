@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Properties
+namespace CCEnvs.Properties
 {
     public class ResetableProperty<T>
     {

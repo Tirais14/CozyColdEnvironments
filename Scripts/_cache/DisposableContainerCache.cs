@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Unity.TypeMatching;
+using CCEnvs.Reflection;
+using CCEnvs.Unity.TypeMatching;
 
 #nullable enable
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Disposables
 {
     public static class DisposableContainerCache
     {

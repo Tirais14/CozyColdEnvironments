@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public interface ITypeConverter
     {

@@ -1,14 +1,14 @@
 using System.Net.Http.Headers;
 using UniRx;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Reflection.ObjectModel;
-using CozyColdEnvironments.UI.MVVM;
-using CozyColdEnvironments.Unity.TypeMatching;
+using CCEnvs.Diagnostics;
+using CCEnvs.GameSystems.ItemStorageSystem;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.UI.MVVM;
+using CCEnvs.Unity.TypeMatching;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemSlotView<TViewModel, TModel> 
         :

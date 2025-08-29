@@ -1,17 +1,10 @@
-using System;
-using System.Linq;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.UI.MVVM;
 using UniRx;
-using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Reflection.ObjectModel;
-using CozyColdEnvironments.UI.MVVM;
-using CozyColdEnvironments.Unity;
-using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemStorageView<TViewModel, TModel> : AView<TViewModel>
         where TViewModel : IItemStorageViewModel<TModel>

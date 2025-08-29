@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Reflection.Cached;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.Cached;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class ObjectExtensions
     {
@@ -21,7 +21,7 @@ namespace CozyColdEnvironments
     }
 }
 
-namespace CozyColdEnvironments.TypeMatching
+namespace CCEnvs.TypeMatching
 {
     public static class ObjectExtensions
     {
@@ -64,7 +64,7 @@ namespace CozyColdEnvironments.TypeMatching
     }
 }
 
-namespace CozyColdEnvironments.Unity.TypeMatching
+namespace CCEnvs.Unity.TypeMatching
 {
     public static class ObjectExtensions
     {
@@ -127,7 +127,7 @@ namespace CozyColdEnvironments.Unity.TypeMatching
     }
 }
 
-namespace CozyColdEnvironments.TypeConverting
+namespace CCEnvs.TypeConverting
 {
     public static class ObjectExtensions
     {
@@ -168,7 +168,7 @@ namespace CozyColdEnvironments.TypeConverting
     }
 }
 
-namespace CozyColdEnvironments.Diagnostics
+namespace CCEnvs.Diagnostics
 {
     public static class ObjectExtensions
     {

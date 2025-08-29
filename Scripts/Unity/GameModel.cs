@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CozyColdEnvironments.Unity
+namespace CCEnvs.Unity
 {
     public class GameModel : MonoCC
     {

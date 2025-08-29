@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     [Flags]
     public enum InjectionOptions

@@ -2,12 +2,12 @@ using System;
 using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CozyColdEnvironments.Disposables;
+using CCEnvs.Disposables;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CozyColdEnvironments.InputSystem.Reactive
+namespace CCEnvs.InputSystem.Reactive
 {
     public class InputActionReactive 
         :

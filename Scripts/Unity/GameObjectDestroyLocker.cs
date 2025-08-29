@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     public sealed class GameObjectDestroyLocker : MonoCC
     {

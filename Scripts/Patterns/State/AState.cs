@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.Patterns.States
+namespace CCEnvs.Patterns.States
 {
     public abstract class AState<T> : IState
         where T : IStateMachine

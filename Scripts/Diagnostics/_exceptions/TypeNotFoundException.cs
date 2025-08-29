@@ -1,8 +1,8 @@
-using CozyColdEnvironments.Extensions;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Extensions;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.Diagnostics
+namespace CCEnvs.Diagnostics
 {
     public class TypeNotFoundException : TirLibException
     {

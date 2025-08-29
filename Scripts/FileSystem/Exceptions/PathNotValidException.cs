@@ -1,8 +1,8 @@
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Extensions;
+using CCEnvs.Diagnostics;
+using CCEnvs.Extensions;
 
 #nullable enable
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public class PathNotValidException : TirLibException
     {

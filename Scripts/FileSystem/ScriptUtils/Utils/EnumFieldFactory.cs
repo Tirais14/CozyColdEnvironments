@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public static class EnumFieldFactory
     {

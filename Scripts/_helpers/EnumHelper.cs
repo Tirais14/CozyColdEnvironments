@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Linq;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using CCEnvs.Reflection;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Utils
+namespace CCEnvs.Utils
 {
     public static class EnumHelper
     {

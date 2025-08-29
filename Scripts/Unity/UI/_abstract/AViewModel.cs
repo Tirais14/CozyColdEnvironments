@@ -1,0 +1,18 @@
+#nullable enable
+using CCEnvs.Disposables;
+
+namespace CCEnvs.UI.MVVM
+{
+    public abstract class AViewModel<T> : DisposableContainer, IViewModel<T>
+    {
+        protected T model;
+
+        protected AViewModel(T model)
+        {
+            this.model = model;
+        }
+
+        public T GetModel() => model;
+        object IViewModel.GetModel() => model!;
+    }
+}

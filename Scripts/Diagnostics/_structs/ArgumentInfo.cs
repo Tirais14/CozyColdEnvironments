@@ -1,7 +1,7 @@
 #nullable enable
 
 using System;
-namespace CozyColdEnvironments.Diagnostics.Internal
+namespace CCEnvs.Diagnostics.Internal
 {
     public readonly struct ArgumentInfo
     {

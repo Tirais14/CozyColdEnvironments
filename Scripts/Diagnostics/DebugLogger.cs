@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
-using CozyColdEnvironments.Collections;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Collections;
+using CCEnvs.Reflection;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public sealed class DebugLogger : IDebugLogger
     {

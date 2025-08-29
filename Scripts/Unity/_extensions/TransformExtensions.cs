@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Unity
+namespace CCEnvs.Unity
 {
     public static class TransformExtensions
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
-namespace CozyColdEnvironments.Utils
+namespace CCEnvs.Unity
 {
     public static class ResourcesHelper
     {

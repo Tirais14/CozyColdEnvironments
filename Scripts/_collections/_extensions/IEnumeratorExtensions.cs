@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public static class IEnumeratorExtensions
     {

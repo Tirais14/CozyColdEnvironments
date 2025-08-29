@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Reflection;
 
 #nullable enable
 #pragma warning disable S2743
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class ListCache<T>
     {

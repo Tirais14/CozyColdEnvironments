@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class StructExtensions
     {

@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class EqualityHelper
     {

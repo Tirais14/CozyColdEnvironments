@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public enum EqualsDefaultOption
     {

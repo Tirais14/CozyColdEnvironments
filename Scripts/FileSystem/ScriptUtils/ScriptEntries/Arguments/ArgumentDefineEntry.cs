@@ -1,9 +1,9 @@
 using System;
-using CozyColdEnvironments.Attributes.Metadata;
+using CCEnvs.Attributes.Metadata;
 
 #nullable enable
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public record ArgumentDefineEntry : ScriptEntry, ITypeProvider
     {

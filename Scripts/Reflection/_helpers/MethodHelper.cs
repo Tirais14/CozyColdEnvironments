@@ -1,11 +1,11 @@
 using System;
 using System.Reflection;
 using UnityEditor.Toolbars;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class MethodHelper
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public static class ArrayFactory
     {

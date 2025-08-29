@@ -1,8 +1,8 @@
-using CozyColdEnvironments.Disposables;
+using CCEnvs.Disposables;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CozyColdEnvironments.Patterns.States
+namespace CCEnvs.Patterns.States
 {
     public abstract class AStateDisposable<T> 
         :

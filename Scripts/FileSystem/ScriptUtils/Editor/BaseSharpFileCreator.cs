@@ -1,10 +1,10 @@
 #nullable enable
 
-using CozyColdEnvironments.Collections;
-using CozyColdEnvironments.Extensions;
-using CozyColdEnvironments.FileSystem.ScriptUtils;
+using CCEnvs.Collections;
+using CCEnvs.Extensions;
+using CCEnvs.FileSystem.ScriptUtils;
 
-namespace CozyColdEnvironments.FileSystem.Editor
+namespace CCEnvs.FileSystem.Editor
 {
     public abstract class BaseSharpFileCreator<T>
     {

@@ -1,14 +1,13 @@
+using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using CozyColdEnvironments.ComponentSetter;
-using CozyColdEnvironments.Unity;
-using CozyColdEnvironments.Utils;
 
 #nullable enable
 
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class MonoCC : MonoBehaviour

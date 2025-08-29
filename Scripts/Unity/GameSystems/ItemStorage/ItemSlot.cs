@@ -1,8 +1,8 @@
 #nullable enable
 using System;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
-namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
+namespace CCEnvs.GameSystems.Storages
 {
     public class ItemSlot : IItemSlot
     {

@@ -1,4 +1,4 @@
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public enum ArgumentsResolveRule
     {

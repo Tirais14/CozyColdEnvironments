@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Linq
+namespace CCEnvs.Linq
 {
     public static class ObjectExtensions
     {

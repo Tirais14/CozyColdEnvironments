@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.Returnables
+namespace CCEnvs.Returnables
 {
     public class MethodResult : IMethodResult
     {
@@ -106,7 +106,7 @@ namespace CozyColdEnvironments.Returnables
         public MethodResult(bool isValidResults, T0 result0)
             :
             base(isValidResults,
-                 TC.Array(new TypeValuePair(typeof(T0), result0)))
+                 CC.Create.Array(new TypeValuePair(typeof(T0), result0)))
         {
             Result0 = result0;
         }
@@ -135,8 +135,8 @@ namespace CozyColdEnvironments.Returnables
         public MethodResult(bool isValidResults, T0 result0, T1 result1)
             :
             base(isValidResults,
-                 TC.Array(new TypeValuePair(typeof(T0), result0),
-                          new TypeValuePair(typeof(T1), result1)))
+                 CC.Create.Array(new TypeValuePair(typeof(T0), result0),
+                                 new TypeValuePair(typeof(T1), result1)))
         {
             Result1 = result1;
         }
@@ -174,9 +174,9 @@ namespace CozyColdEnvironments.Returnables
                             T2 result2)
             :
             base(isValidResults,
-                 TC.Array(new TypeValuePair(typeof(T0), result0),
-                          new TypeValuePair(typeof(T1), result1),
-                          new TypeValuePair(typeof(T2), result2)))
+                 CC.Create.Array(new TypeValuePair(typeof(T0), result0),
+                                 new TypeValuePair(typeof(T1), result1),
+                                 new TypeValuePair(typeof(T2), result2)))
         {
             Result2 = result2;
         }

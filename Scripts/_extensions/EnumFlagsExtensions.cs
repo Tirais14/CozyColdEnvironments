@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections.LowLevel.Unsafe;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Utils;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
+using CCEnvs.Utils;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     using static Options.EnumFlagsOptions;
     public static class EnumFlagsExtensions

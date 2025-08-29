@@ -1,11 +1,11 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
-using CozyColdEnvironments.AddressableAssets.Databases;
+using CCEnvs.AddressableAssets.Databases;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CozyColdEnvironments.Json.AddressableAssets.Databases
+namespace CCEnvs.Json.AddressableAssets.Databases
 {
     public abstract class JsonAddressablesDatabase<TId, TItem> : TextAddressablesDatabase
     {

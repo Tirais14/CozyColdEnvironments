@@ -1,7 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public interface IUsingsProvider
     {

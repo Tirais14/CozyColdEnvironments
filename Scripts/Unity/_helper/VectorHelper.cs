@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CozyColdEnvironments.Utils
+namespace CCEnvs.Unity
 {
     public static class Vector3Helper
     {

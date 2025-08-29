@@ -1,17 +1,15 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
+using CCEnvs.Unity.Extensions;
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Unity;
-using CozyColdEnvironments.Unity.Extensions;
-using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
 
-namespace CozyColdEnvironments.ComponentSetter
+namespace CCEnvs.Unity.ComponentSetter
 {
     public static class GetComponentByAttributeHelper
     {

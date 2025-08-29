@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public class LoopState
     {

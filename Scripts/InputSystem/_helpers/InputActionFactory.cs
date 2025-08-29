@@ -2,11 +2,11 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem
+namespace CCEnvs.InputSystem
 {
     public static class InputActionFactory
     {

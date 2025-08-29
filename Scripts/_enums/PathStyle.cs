@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public enum PathStyle
     {

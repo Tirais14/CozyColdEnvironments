@@ -1,7 +1,7 @@
 #nullable enable
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public class FileNameException : TirLibException
     {

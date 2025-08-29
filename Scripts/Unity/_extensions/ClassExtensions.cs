@@ -1,13 +1,11 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Linq;
-using CozyColdEnvironments.Reflection;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CozyColdEnvironments.Unity.Extensions
+namespace CCEnvs.Unity.Extensions
 {
     public static class ClassExtensions
     {

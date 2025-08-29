@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     public class ComponentCache
     {

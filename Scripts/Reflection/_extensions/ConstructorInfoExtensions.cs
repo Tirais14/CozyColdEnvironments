@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class ConstructorInfoExtensions
     {

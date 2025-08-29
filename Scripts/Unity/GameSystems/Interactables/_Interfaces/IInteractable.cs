@@ -1,7 +1,7 @@
 #nullable enable
-using CozyColdEnvironments.Returnables;
+using CCEnvs.Returnables;
 
-namespace CozyColdEnvironments.GameSystems.Interactables
+namespace CCEnvs.GameSystems.Interactables
 {
     public interface IInteractable
     {

@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public abstract class BinaryHeap<T> where T : IComparable<T>
     {

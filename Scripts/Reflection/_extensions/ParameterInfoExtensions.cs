@@ -2,7 +2,7 @@ using System.Linq;
 using System.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class ParameterInfoExtensions
     {

@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Disposables
 {
     public static class Subscription
     {

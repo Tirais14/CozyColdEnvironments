@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S2328
-namespace CozyColdEnvironments.Timers
+namespace CCEnvs.Unity.Timers
 {
     public sealed class TimerManual : ITimer, IEquatable<TimerManual>
     {

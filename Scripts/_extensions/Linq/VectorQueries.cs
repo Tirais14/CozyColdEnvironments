@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CozyColdEnvironments.Vectors.Linq
+namespace CCEnvs.Vectors.Linq
 {
     public static class Vector3Queries
     {

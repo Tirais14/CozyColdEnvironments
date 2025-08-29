@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments.Initables
+namespace CCEnvs.Unity.Initables
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class InitAsyncFirstAttribute : InitAsyncAttribute

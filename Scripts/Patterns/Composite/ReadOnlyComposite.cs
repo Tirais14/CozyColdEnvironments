@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using CozyColdEnvironments.Collections;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Extensions;
-using CozyColdEnvironments.Linq;
+using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
+using CCEnvs.Extensions;
+using CCEnvs.Linq;
 
 #nullable enable
 
-namespace CozyColdEnvironments.Patterns.Composite
+namespace CCEnvs.Patterns.Composite
 {
     public class ReadOnlyComposite<T> : IReadOnlyComposite<T>
     {

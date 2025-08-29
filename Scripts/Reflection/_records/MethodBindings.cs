@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public record MethodBindings : ConstructorBindings
     {

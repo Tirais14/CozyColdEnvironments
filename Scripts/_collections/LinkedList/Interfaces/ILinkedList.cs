@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public interface ILinkedList<T> : IList<T>
     {

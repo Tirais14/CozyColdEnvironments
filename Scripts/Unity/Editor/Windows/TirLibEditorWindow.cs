@@ -1,15 +1,14 @@
+using CCEnvs.FileSystem;
+using CCEnvs.Reflection;
 using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.FileSystem;
 
 #nullable enable
 
-namespace CozyColdEnvironments.UnityEditor
+namespace CCEnvs.Unity.EditorC
 {
     public abstract class TirLibEditorWindow : EditorWindow
     {

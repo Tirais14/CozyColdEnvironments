@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Disposables
 {
     public sealed class DisposableCollection : IDisposableCollection
     {

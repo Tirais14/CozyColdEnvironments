@@ -1,8 +1,8 @@
 using UniRx;
-using CozyColdEnvironments.UI.MVVM;
+using CCEnvs.UI.MVVM;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemStorageViewModel<T> : AViewModel<T>, IItemStorageViewModel<T>
         where T : IItemStorageReactive

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Disposables
 {
     public class DisposableBinding : IDisposable
     {

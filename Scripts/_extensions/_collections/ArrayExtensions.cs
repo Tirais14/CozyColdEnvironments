@@ -4,9 +4,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class ArrayExtensions
     {

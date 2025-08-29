@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Patterns.Factory;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Patterns.Factory;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.Patterns.States
+namespace CCEnvs.Patterns.States
 {
     public static class StateMachineHelper
     {

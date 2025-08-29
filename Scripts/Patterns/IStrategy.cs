@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.Patterns.Strategy
+namespace CCEnvs.Patterns.Strategy
 {
     public interface IStrategy
     {

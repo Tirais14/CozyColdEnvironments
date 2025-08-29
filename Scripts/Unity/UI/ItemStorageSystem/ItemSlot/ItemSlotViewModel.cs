@@ -1,12 +1,12 @@
 using System;
 using UnityEngine.EventSystems;
-using CozyColdEnvironments.GameSystems;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
-using CozyColdEnvironments.UI.MVVM;
-using CozyColdEnvironments.Unity.TypeMatching;
+using CCEnvs.GameSystems;
+using CCEnvs.GameSystems.ItemStorageSystem;
+using CCEnvs.UI.MVVM;
+using CCEnvs.Unity.TypeMatching;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemSlotViewModel<T> 
         :

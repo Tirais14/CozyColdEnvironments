@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public record StructEntry : TypeEntry
     {

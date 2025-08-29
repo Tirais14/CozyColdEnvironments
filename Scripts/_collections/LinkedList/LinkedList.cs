@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public class LinkedList<T> : ILinkedList<T>
     {

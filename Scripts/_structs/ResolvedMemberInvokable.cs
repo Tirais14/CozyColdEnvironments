@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public readonly struct ResolvedMemberInvokable
     {

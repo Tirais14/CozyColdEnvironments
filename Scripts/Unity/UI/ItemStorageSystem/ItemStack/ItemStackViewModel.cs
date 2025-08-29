@@ -1,12 +1,12 @@
 using UniRx;
 using UnityEngine;
-using CozyColdEnvironments.Disposables;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
-using CozyColdEnvironments.UI.MVVM;
-using CozyColdEnvironments.Unity.Extensions;
+using CCEnvs.Disposables;
+using CCEnvs.GameSystems.ItemStorageSystem;
+using CCEnvs.UI.MVVM;
+using CCEnvs.Unity.Extensions;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemStackViewModel<T> : AViewModel<T>,
         IItemStackViewModel<T>

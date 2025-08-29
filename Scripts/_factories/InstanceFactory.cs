@@ -1,12 +1,12 @@
 using System;
 using System.Reflection;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Reflection.Cached;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.Cached;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class InstanceFactory
     {

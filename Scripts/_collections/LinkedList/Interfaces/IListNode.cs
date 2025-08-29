@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public interface IListNode<T> : IReadOnlyListNode<T>
     {

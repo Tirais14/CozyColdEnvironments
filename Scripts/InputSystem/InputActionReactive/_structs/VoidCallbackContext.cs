@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.InputSystem
+namespace CCEnvs.InputSystem
 {
     public readonly ref struct VoidCallbackContext
     {

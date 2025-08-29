@@ -1,7 +1,7 @@
-using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.FileSystem.ScriptUtils.Syntax;
 
 #nullable enable
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public record PropertySetMethod : PropertyMethod
     {

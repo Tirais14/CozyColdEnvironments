@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using CozyColdEnvironments.Disposables;
+using CCEnvs.Disposables;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public sealed class TEvent<T>
         where T : Delegate

@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using CozyColdEnvironments.GameSystems.ItemStorageSystem;
+using CCEnvs.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace CozyColdEnvironments.UI.ItemStorageSystem
+namespace CCEnvs.Unity.UI.Storages
 {
     public class ItemSlotViewDraggable<TViewModel, TModel> 
         :

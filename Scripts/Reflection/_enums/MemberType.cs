@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public enum MemberType
     {

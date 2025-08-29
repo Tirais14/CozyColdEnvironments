@@ -2,11 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using System;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Unity.TypeMatching;
+using CCEnvs.Diagnostics;
+using CCEnvs.Unity.TypeMatching;
 
 #nullable enable
-namespace CozyColdEnvironments.Unity
+namespace CCEnvs.Unity
 {
     public static class GameObjectExtensions
     {
@@ -83,7 +83,7 @@ namespace CozyColdEnvironments.Unity
         }
     }
 }
-namespace CozyColdEnvironments.Unity.Special
+namespace CCEnvs.Unity.Special
 {
     public static class GameObjectExtensions 
     {

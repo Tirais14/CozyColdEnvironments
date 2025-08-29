@@ -1,9 +1,9 @@
 #nullable enable
 using System;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 
-namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
+namespace CCEnvs.GameSystems.Storages
 {
     public class ItemStack : IItemStack
     {

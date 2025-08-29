@@ -2,10 +2,10 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Extensions;
+using CCEnvs.Diagnostics;
+using CCEnvs.Extensions;
 
-namespace CozyColdEnvironments.FileSystem
+namespace CCEnvs.FileSystem
 {
     public class FileEntry : FileSystemEntry
     {

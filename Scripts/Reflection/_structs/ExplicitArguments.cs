@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection.ObjectModel
+namespace CCEnvs.Reflection.ObjectModel
 {
     public readonly struct ExplicitArguments : IEquatable<ExplicitArguments>
     {

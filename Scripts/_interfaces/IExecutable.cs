@@ -1,4 +1,4 @@
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public interface IExecutable : IExecutableBase
     {

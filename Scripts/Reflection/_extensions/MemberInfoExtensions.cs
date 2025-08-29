@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using CozyColdEnvironments.Reflection.Cached;
+using CCEnvs.Reflection.Cached;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection
+namespace CCEnvs.Reflection
 {
     public static class MemberInfoExtensions
     {
@@ -51,7 +51,7 @@ namespace CozyColdEnvironments.Reflection
     }
 }
 
-namespace CozyColdEnvironments.Attributes.Metadata
+namespace CCEnvs.Attributes.Metadata
 {
     public static class MemberInfoExtensions
     {

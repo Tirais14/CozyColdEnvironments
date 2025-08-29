@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -6,10 +7,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Unity.Extensions;
 
-namespace CozyColdEnvironments.UI
+namespace CCEnvs.Unity.UI
 {
     [RequireComponent(typeof(GraphicRaycaster))]
     public sealed class CanvasRaycaster : MonoCC, ICanvasRaycaster

@@ -1,5 +1,5 @@
 #nullable enable
-namespace CozyColdEnvironments.Options
+namespace CCEnvs.Options
 {
     public static class EnumFlagsOptions
     {

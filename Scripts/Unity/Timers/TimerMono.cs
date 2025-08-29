@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 using UnityEngine;
-using CozyColdEnvironments.Unity;
+using CCEnvs.Unity;
 
-namespace CozyColdEnvironments.Timers
+namespace CCEnvs.Unity.Timers
 {
     [DisallowMultipleComponent]
     public class TimerMono : MonoCC, ITimer

@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Disposables
 {
     public static class DisposableExtensions
     {

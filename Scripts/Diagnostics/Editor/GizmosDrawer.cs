@@ -5,7 +5,7 @@
 using System;
 using UnityEngine;
 
-namespace CozyColdEnvironments.Diagnostics
+namespace CCEnvs.Diagnostics
 {
     /// <summary>
     /// !Editor only

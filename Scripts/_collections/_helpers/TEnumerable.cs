@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     public static class TEnumerable<T>
     {

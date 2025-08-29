@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
+namespace CCEnvs.GameSystems.Storages
 {
     public class ItemStorage : IItemStorage
     {

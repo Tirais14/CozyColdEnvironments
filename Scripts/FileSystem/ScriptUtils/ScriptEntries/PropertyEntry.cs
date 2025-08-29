@@ -1,7 +1,7 @@
 #nullable enable
-using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.FileSystem.ScriptUtils.Syntax;
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public record PropertyEntry : ScriptEntry
     {

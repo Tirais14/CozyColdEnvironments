@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public readonly struct QueryItem<TIn, TOut>
     {

@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public sealed record EnumFieldEntry : FieldEntry
     {

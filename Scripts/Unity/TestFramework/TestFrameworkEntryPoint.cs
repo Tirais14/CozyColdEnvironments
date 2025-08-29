@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments.TestFramework
+namespace CCEnvs.Unity.Tests
 {
     [DefaultExecutionOrder(-2)]
     public class TestFrameworkEntryPoint : MonoCC
     {
         private Assembly testsAssembly = null!;
-        private MonoTest[] monoTests = null!;
+        private MonoCCTest[] monoTests = null!;
 
         [SerializeField]
         private string testsAssemblyName;
@@ -33,7 +33,7 @@ namespace CozyColdEnvironments.TestFramework
 
             CreateTestClasses();
 
-            monoTests = GetComponents<MonoTest>().Where(x => x.IsEnabled).ToArray();
+            monoTests = GetComponents<MonoCCTest>().Where(x => x.IsEnabled).ToArray();
         }
 
         protected override void OnStart()
@@ -58,7 +58,7 @@ namespace CozyColdEnvironments.TestFramework
         private void CreateTestClasses()
         {
             Type[] testsTypes = testsAssembly.GetTypes()
-                                 .Where(x => x.IsType<MonoTest>()
+                                 .Where(x => x.IsType<MonoCCTest>()
                                         &&
                                         !x.IsAbstract)
                                  .ToArray();
@@ -70,13 +70,13 @@ namespace CozyColdEnvironments.TestFramework
 
         private void RunMonoTests()
         {
-            Dictionary<MonoTest, MethodInfo[]> testMethods = monoTests.Aggregate(new Dictionary<MonoTest, MethodInfo[]>(), (collection, x) =>
+            Dictionary<MonoCCTest, MethodInfo[]> testMethods = monoTests.Aggregate(new Dictionary<MonoCCTest, MethodInfo[]>(), (collection, x) =>
             {
                 MethodInfo[] methods = x.GetType()
                                         .GetMethods(BindingFlagsDefault.InstanceAll)
                                         .Aggregate(new List<MethodInfo>(), (list, y) =>
                                         {
-                                            if (y.IsDefined<MonoTestAttribute>()
+                                            if (y.IsDefined<MonoCCTestAttribute>()
                                                 &&
                                                 y.ReturnType.IsAnyType(typeof(void), typeof(IEnumerator))
                                                 )

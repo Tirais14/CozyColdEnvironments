@@ -1,8 +1,8 @@
 using System;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Reflection;
 
 #nullable enable
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public readonly struct TypeValuePair : IEquatable<TypeValuePair>
     {

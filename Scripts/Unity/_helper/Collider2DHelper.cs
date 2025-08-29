@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using CozyColdEnvironments.Collections;
-using CozyColdEnvironments.Diagnostics;
 
-namespace CozyColdEnvironments.Utils
+namespace CCEnvs.Unity
 {
     public static class Collider2DHelper
     {

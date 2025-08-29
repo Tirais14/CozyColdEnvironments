@@ -1,10 +1,10 @@
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CozyColdEnvironments.Disposables
+namespace CCEnvs.Unity.Disposables
 {
     public sealed class GameObjectDisposablesObserver : MonoCC
     {

@@ -1,6 +1,6 @@
 #nullable enable
 #pragma warning disable S101
-namespace CozyColdEnvironments.Json.DTO
+namespace CCEnvs.Json.DTO
 {
     public interface IJsonDTO
     {

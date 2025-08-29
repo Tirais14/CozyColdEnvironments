@@ -5,10 +5,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using CozyColdEnvironments.Attributes.Metadata;
-using CozyColdEnvironments.Reflection;
+using CCEnvs.Attributes.Metadata;
+using CCEnvs.Reflection;
 
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public abstract record ScriptEntry : IScriptContent, IAttributesProvider, IUsingsProvider
     {

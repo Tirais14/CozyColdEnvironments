@@ -1,8 +1,8 @@
 using System;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CozyColdEnvironments.Reflection.Diagnostics
+namespace CCEnvs.Reflection.Diagnostics
 {
     public class ConstructorNotFoundException : TirLibException
     {

@@ -1,8 +1,8 @@
 using System;
-using CozyColdEnvironments.Patterns.Factory;
+using CCEnvs.Patterns.Factory;
 
 #nullable enable
-namespace CozyColdEnvironments.Patterns.States
+namespace CCEnvs.Patterns.States
 {
     public abstract class AStateFactory : IFactory<Type, IState>
     {

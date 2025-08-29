@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 #nullable enable
-namespace CozyColdEnvironments.FileSystem.ScriptUtils
+namespace CCEnvs.FileSystem.ScriptUtils
 {
     public interface IScriptContent
     {

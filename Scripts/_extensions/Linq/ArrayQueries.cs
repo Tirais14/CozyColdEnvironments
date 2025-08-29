@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments.Linq
+namespace CCEnvs.Linq
 {
     public static class ArrayQueries
     {

@@ -3,7 +3,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace CozyColdEnvironments.FileSystem.Json.UnityEditor
+namespace CCEnvs.FileSystem.Json.UnityEditor
 {
     public class JsonFileCreationTool : MonoBehaviour
     {

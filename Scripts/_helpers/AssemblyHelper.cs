@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 
-namespace CozyColdEnvironments
+namespace CCEnvs
 {
     public static class AssemblyHelper
     {

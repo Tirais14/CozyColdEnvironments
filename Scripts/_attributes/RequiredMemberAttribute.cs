@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments.Attributes
+namespace CCEnvs.Attributes
 {
     public abstract class RequiredMemberAttribute : Attribute
     {

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CozyColdEnvironments.AddressableAssets.Databases
+namespace CCEnvs.AddressableAssets.Databases
 {
     public abstract class TextAddressablesDatabase : AddressablesDatabase<TextAsset>
     {

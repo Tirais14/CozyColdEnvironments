@@ -1,12 +1,12 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using CozyColdEnvironments.Attributes.Metadata;
+using CCEnvs.Attributes.Metadata;
 using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace CozyColdEnvironments
+namespace CCEnvs.Unity
 {
     [Flags]
     public enum AssetType

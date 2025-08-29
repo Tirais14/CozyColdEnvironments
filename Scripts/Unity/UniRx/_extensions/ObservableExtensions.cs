@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
-using CozyColdEnvironments.Diagnostics;
+using CCEnvs.Diagnostics;
 using UniRx;
 
 #nullable enable
-namespace CozyColdEnvironments.UniRx
+namespace CCEnvs.UniRx
 {
     public static class ObservableExtensions
     {

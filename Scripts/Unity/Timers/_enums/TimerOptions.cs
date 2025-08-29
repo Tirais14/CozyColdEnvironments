@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CozyColdEnvironments.Timers
+namespace CCEnvs.Unity.Timers
 {
     [Flags]
     public enum TimerOptions

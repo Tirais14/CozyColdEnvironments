@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using CozyColdEnvironments.Diagnostics;
-using CozyColdEnvironments.Unity.TypeMatching;
+using CCEnvs.Diagnostics;
+using CCEnvs.Unity.TypeMatching;
 
-namespace CozyColdEnvironments.Initables
+namespace CCEnvs.Unity.Initables
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class InitAsyncAfterTypeAttribute : InitAsyncAttribute

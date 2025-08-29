@@ -1,10 +1,10 @@
 using System;
 using UnityEngine.InputSystem;
-using CozyColdEnvironments.Reflection;
-using CozyColdEnvironments.Reflection.ObjectModel;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.ObjectModel;
 
 #nullable enable
-namespace CozyColdEnvironments.InputSystem.Reactive
+namespace CCEnvs.InputSystem.Reactive
 {
     public static class InputActionReactiveFactory
     {

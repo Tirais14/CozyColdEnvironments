@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace CozyColdEnvironments.Collections
+namespace CCEnvs.Collections
 {
     [Obsolete]
     public readonly struct ArrayS<T> : IList<T>, ICloneable, IEquatable<ArrayS<T>>
