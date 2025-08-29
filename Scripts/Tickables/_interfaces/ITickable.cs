@@ -12,6 +12,5 @@ namespace UTIRLib.Tickables
     public interface ITickable<in T> : ITickable, ITickableBase<T>
         where T : ITicker
     {
-
     }
 }

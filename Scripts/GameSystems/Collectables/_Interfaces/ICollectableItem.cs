@@ -1,9 +1,10 @@
+using UTIRLib.GameSystems.Interactables;
 using UTIRLib.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace UTIRLib.GameSystems.Collectables
 {
-    public interface ICollectableItem
+    public interface ICollectableItem : IInteractable<IItemStack>
     {
         IStorageItem Item { get; }
 
@@ -20,8 +21,7 @@ namespace UTIRLib.GameSystems.Collectables
         where TItem : IStorageItem
         where TItemStack : IItemStack
     {
-        new TItemStack CollectItem
-            ();
+        new TItemStack CollectItem();
 
         IItemStack ICollectableItem.CollectItem() => CollectItem();
     }

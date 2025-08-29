@@ -4,7 +4,7 @@ using UnityEditor;
 namespace UTIRLib.Tickables
 {
     public abstract class TickerTimed<T> : Ticker<T>
-        where T : ITickable
+        where T : ITickableBase
     {
         private readonly TickerTimeCounter timeCounter = new();
         private readonly LoopPredicate<TickerTimeCounter, float> tickPredicate = new()
