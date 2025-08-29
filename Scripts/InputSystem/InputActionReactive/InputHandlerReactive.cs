@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.InputSystem;
-using UTIRLib.Diagnostics;
-using UTIRLib.Disposables;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Disposables;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.InputSystem.Reactive
+namespace CozyColdEnvironments.InputSystem.Reactive
 {
     public abstract class InputHandlerReactive
         :

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using UTIRLib.Attributes.Metadata;
-using UTIRLib.Extensions;
+using CozyColdEnvironments.Attributes.Metadata;
+using CozyColdEnvironments.Extensions;
 
 #nullable enable
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public static class Syntax
     {

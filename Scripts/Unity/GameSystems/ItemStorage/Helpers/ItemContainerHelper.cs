@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.GameSystems.ItemStorageSystem
+namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
 {
     public static class ItemContainerHelper
     {

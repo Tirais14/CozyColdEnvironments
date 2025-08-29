@@ -1,9 +1,9 @@
 using System;
 using Newtonsoft.Json;
-using UTIRLib.Linq;
+using CozyColdEnvironments.Linq;
 
 #nullable enable
-namespace UTIRLib.FileSystem.Json
+namespace CozyColdEnvironments.FileSystem.Json
 {
     public class JsonFile : FileEntry
     {

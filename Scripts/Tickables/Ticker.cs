@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UTIRLib.Diagnostics;
-using UTIRLib.Disposables;
-using UTIRLib.Reflection;
-using UTIRLib.Reflection.Cached;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Disposables;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Reflection.Cached;
 
 #nullable enable
 #pragma warning disable S3881
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     public abstract class Ticker<T> 
         :
-        MonoX,
+        MonoCC,
         ITicker<T>
 
         where T : ITickableBase

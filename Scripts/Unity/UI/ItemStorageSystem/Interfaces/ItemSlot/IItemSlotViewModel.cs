@@ -1,8 +1,8 @@
 using UnityEngine.EventSystems;
-using UTIRLib.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public interface IItemSlotViewModel
         :

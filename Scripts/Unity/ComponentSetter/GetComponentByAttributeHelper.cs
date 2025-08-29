@@ -3,15 +3,15 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Unity;
-using UTIRLib.Unity.Extensions;
-using UTIRLib.Unity.TypeMatching;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity;
+using CozyColdEnvironments.Unity.Extensions;
+using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
 
-namespace UTIRLib.ComponentSetter
+namespace CozyColdEnvironments.ComponentSetter
 {
     public static class GetComponentByAttributeHelper
     {

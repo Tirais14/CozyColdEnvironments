@@ -1,10 +1,10 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UTIRLib.Unity;
+using CozyColdEnvironments.Unity;
 
 #nullable enable
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public static class GridLayoutExtensions
     {

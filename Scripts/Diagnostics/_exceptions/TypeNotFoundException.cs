@@ -1,8 +1,8 @@
-using UTIRLib.Extensions;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Extensions;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class TypeNotFoundException : TirLibException
     {

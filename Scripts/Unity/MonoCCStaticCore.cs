@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Unity.TypeMatching;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [DefaultExecutionOrder(-10)]
-    public sealed class MonoXStaticCore : MonoX
+    public sealed class MonoCCStaticCore : MonoCC
     {
-        private static MonoXStaticCore instance = null!;
+        private static MonoCCStaticCore instance = null!;
 
-        private readonly Dictionary<Type, MonoXStatic> instances = new();
+        private readonly Dictionary<Type, MonoCCStatic> instances = new();
 
         protected override void OnAwake()
         {
-            if (FindObjectsByType<MonoXStaticCore>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            if (FindObjectsByType<MonoCCStaticCore>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                 .Any(x => x != this))
-                throw new LogicException($"Cannot create more than one {nameof(MonoXStaticCore)}.");
+                throw new LogicException($"Cannot create more than one {nameof(MonoCCStaticCore)}.");
 
             instance = this;
             DontDestroyOnLoad(gameObject);
@@ -30,7 +30,7 @@ namespace UTIRLib
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static MonoXStatic GetInstance(Type type)
+        public static MonoCCStatic GetInstance(Type type)
         {
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
@@ -38,7 +38,7 @@ namespace UTIRLib
             if (instance == null)
                 GetOrCreateSelf();
 
-            if (!instance!.instances.TryGetValue(type, out MonoXStatic? result))
+            if (!instance!.instances.TryGetValue(type, out MonoCCStatic? result))
                 return instance.GetOrCreateStatic(type);
             if (result == null)
             {
@@ -49,31 +49,31 @@ namespace UTIRLib
             return result;
         }
         public static T GetInstance<T>()
-            where T : MonoXStatic
+            where T : MonoCCStatic
         {
             return (T)GetInstance(typeof(T));
         }
 
         private static void GetOrCreateSelf()
         {
-            if (FindAnyObjectByType<MonoXStaticCore>(FindObjectsInactive.Include)
-                .Is<MonoXStaticCore>(out var found)
+            if (FindAnyObjectByType<MonoCCStaticCore>(FindObjectsInactive.Include)
+                .Is<MonoCCStaticCore>(out var found)
                 )
             {
                 instance = found;
                 return;
             }
 
-            var go = new GameObject("___StaticCore", typeof(MonoXStaticCore));
-            instance = go.GetComponent<MonoXStaticCore>();
+            var go = new GameObject("___StaticCore", typeof(MonoCCStaticCore));
+            instance = go.GetComponent<MonoCCStaticCore>();
         }
 
-        private MonoXStatic GetOrCreateStatic(Type type)
+        private MonoCCStatic GetOrCreateStatic(Type type)
         {
-            var value = (MonoXStatic?)FindAnyObjectByType(type);
+            var value = (MonoCCStatic?)FindAnyObjectByType(type);
 
             if (value == null)
-                value = (MonoXStatic)gameObject.AddComponent(type);
+                value = (MonoCCStatic)gameObject.AddComponent(type);
 
             instances.Add(value.GetType(), value);
 

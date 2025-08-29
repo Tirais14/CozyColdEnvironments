@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEngine;
 
-namespace UTIRLib.Vectors.Linq
+namespace CozyColdEnvironments.Vectors.Linq
 {
     public ref struct Vector3Queryable
     {

@@ -1,7 +1,7 @@
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public class ButtonInputAction : InputActionX<bool>
     {

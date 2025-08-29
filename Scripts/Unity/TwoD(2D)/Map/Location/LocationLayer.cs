@@ -2,16 +2,16 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UTIRLib.Collections;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Collections;
+using CozyColdEnvironments.Diagnostics;
 using static UnityEngine.Tilemaps.Tilemap;
 
 #nullable enable
-namespace UTIRLib.TwoD.Map
+namespace CozyColdEnvironments.TwoD.Map
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Tilemap))]
-    public class LocationLayer : MonoX, ILocationLayer
+    public class LocationLayer : MonoCC, ILocationLayer
     {
         private Map<ILocationCell> cellMap = null!;
 

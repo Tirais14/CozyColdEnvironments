@@ -1,7 +1,7 @@
 #nullable enable
-using UTIRLib.Disposables;
+using CozyColdEnvironments.Disposables;
 
-namespace UTIRLib.UI.MVVM
+namespace CozyColdEnvironments.UI.MVVM
 {
     public abstract class AViewModel<T> : DisposableContainer, IViewModel<T>
     {

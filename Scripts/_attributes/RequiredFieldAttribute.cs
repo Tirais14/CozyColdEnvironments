@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.Attributes
+namespace CozyColdEnvironments.Attributes
 {
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public class RequiredFieldAttribute : RequiredMemberAttribute

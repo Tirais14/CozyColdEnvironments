@@ -1,14 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Linq;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Linq;
 
 #nullable enable
-namespace UTIRLib.TwoD.Map
+namespace CozyColdEnvironments.TwoD.Map
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Grid))]
-    public class Location : MonoX, ILocation
+    public class Location : MonoCC, ILocation
     {
         private ILocationLayer[] layers = null!;
 

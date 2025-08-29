@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 
-namespace UTIRLib.Attributes
+namespace CozyColdEnvironments.Attributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, 
         AllowMultiple = false,

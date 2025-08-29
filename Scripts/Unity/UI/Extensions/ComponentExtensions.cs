@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Linq;
+using CozyColdEnvironments.Linq;
 
 #nullable enable
-namespace UTIRLib.UI.MVVM
+namespace CozyColdEnvironments.UI.MVVM
 {
     public static class ComponentExtensions
     {

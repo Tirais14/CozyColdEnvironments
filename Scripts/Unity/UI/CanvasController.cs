@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UTIRLib.Attributes;
+using CozyColdEnvironments.Attributes;
 
 #nullable enable
 
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
-    public class CanvasController : MonoX, ICanvasController
+    public class CanvasController : MonoCC, ICanvasController
     {
         [SerializeField]
         private InputActionReference m_PointerInput = null!;

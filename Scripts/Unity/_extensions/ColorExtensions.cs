@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
     public static class ColorExtensions
     {

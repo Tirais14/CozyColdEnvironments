@@ -1,12 +1,12 @@
 using System;
 using UnityEngine;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
-    public class GameModel : MonoX
+    public class GameModel : MonoCC
     {
         public Transform Anchor { get; private set; } = null!;
         public GameModelBody Body { get; private set; } = null!;
@@ -32,7 +32,7 @@ namespace UTIRLib.Unity
 
             gameModel.Anchor = new GameObject("Anchor").transform;
             gameModel.Anchor.parent = gameModel.transform;
-            gameModel.Anchor.tag = TirLib.Tags.TRANSFORM_OVERRIDE;
+            gameModel.Anchor.tag = CC.Tags.TRANSFORM_OVERRIDE;
 
             return gameModel;
         }

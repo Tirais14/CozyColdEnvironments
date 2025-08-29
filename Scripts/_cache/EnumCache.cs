@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 
 #nullable enable
-namespace UTIRLib.Utils
+namespace CozyColdEnvironments.Utils
 {
     public static class EnumCache<T>
         where T : Enum

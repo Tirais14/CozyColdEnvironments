@@ -1,10 +1,10 @@
 using System;
 using Unity.Collections.LowLevel.Unsafe;
-using UTIRLib.GameSystems.ItemStorageSystem;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.GameSystems
+namespace CozyColdEnvironments.GameSystems
 {
     public interface IItemContainer : IItemContainerInfo
     {

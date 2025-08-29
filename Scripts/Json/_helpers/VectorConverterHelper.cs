@@ -1,11 +1,11 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Json.Converters
+namespace CozyColdEnvironments.Json.Converters
 {
     public static class VectorConverterHelper
     {

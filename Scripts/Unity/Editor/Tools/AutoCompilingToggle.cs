@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Unity.Editor
+namespace CozyColdEnvironments.Unity.Editor
 {
     public static class AutoCompilingToggle
     {

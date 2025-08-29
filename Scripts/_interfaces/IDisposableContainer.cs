@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.Disposables
+namespace CozyColdEnvironments.Disposables
 {
     /// <summary>
     /// Inherits from this, for auto implementing <see cref="DisposableExtensions.AddTo(IDisposable, IDisposableContainer)"/>

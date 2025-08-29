@@ -1,8 +1,8 @@
 using UniRx;
-using UTIRLib.UI.ItemStorageSystem;
+using CozyColdEnvironments.UI.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public interface IItemStorageViewModel<T> : IViewModel<T>
         where T : IItemStorageReactive

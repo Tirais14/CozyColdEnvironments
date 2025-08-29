@@ -1,9 +1,9 @@
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
-namespace UTIRLib.UI.MVVM
+namespace CozyColdEnvironments.UI.MVVM
 {
     public static class ViewHelper
     {

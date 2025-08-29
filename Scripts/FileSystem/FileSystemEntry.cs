@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public abstract class FileSystemEntry
     {

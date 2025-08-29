@@ -2,11 +2,11 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public static class InputActionFactory
     {

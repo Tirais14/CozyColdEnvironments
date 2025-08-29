@@ -2,14 +2,14 @@ using NUnit.Framework.Constraints;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
-using UTIRLib.Attributes;
-using UTIRLib.GameSystems.ItemStorageSystem;
-using UTIRLib.Reflection;
-using UTIRLib.Reflection.ObjectModel;
-using UTIRLib.UI.MVVM;
+using CozyColdEnvironments.Attributes;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Reflection.ObjectModel;
+using CozyColdEnvironments.UI.MVVM;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorageSystem
+namespace CozyColdEnvironments.UI.ItemStorageSystem
 {
     [RequireComponent(typeof(Image))]
     public class ItemStackView<TViewModel, TModel>  : AView<TViewModel>

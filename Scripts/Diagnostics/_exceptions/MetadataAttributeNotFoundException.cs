@@ -1,10 +1,10 @@
 #nullable enable
 using System;
 using System.Reflection;
-using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Extensions;
 
-namespace UTIRLib.Attributes.Metadata
+namespace CozyColdEnvironments.Attributes.Metadata
 {
     public class MetadataAttributeNotFoundException : TirLibException
     {

@@ -3,7 +3,7 @@ using System.Reflection;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Unity.Editor
+namespace CozyColdEnvironments.Unity.Editor
 {
     [AttributeUsage(AttributeTargets.Field)]
     public class DropdownMenuAttribute : PropertyAttribute

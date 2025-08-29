@@ -1,12 +1,12 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using UTIRLib.Attributes.Metadata;
+using CozyColdEnvironments.Attributes.Metadata;
 using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [Flags]
     public enum AssetType

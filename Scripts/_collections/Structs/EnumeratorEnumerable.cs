@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 #nullable enable
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public readonly struct EnumeratorEnumerable<T> : IEnumerable<T>
     {

@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 using System;
 using UnityEditor;
-using UTIRLib.Json.DTO;
+using CozyColdEnvironments.Json.DTO;
 
 #nullable enable
-namespace UTIRLib.Json.Converters
+namespace CozyColdEnvironments.Json.Converters
 {
     public class AddressableConverter<T> : JsonConverter<T>
         where T : UnityEngine.Object

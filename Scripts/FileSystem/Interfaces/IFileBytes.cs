@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public interface IFileBytes
     {

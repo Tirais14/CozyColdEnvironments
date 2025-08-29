@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Unity;
+using CozyColdEnvironments.Unity;
 
 #nullable enable
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public record Map<T> : IEnumerable<T>
     {

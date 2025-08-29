@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public class MinHeap<T> : BinaryHeap<T> where T : IComparable<T>
     {

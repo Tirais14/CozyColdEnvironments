@@ -1,7 +1,7 @@
 #nullable enable
 using UniRx;
 
-namespace UTIRLib.Reactive
+namespace CozyColdEnvironments.Reactive
 {
     public interface IToggleableReactive : IToggleable
     {

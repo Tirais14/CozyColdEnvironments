@@ -1,9 +1,9 @@
 #nullable enable
 
 using UnityEngine;
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
-    public static class TirLib
+    public static class CC
     {
         public static class Tags 
         {
@@ -11,21 +11,26 @@ namespace UTIRLib
             public const string GAME_OBJECT_OVERRIDE = "GameObjectOverride";
         }
 
-        public readonly static LazyX<Sprite> ColorSprite = new(() =>
+        public readonly static LazyCC<Sprite> ColorSprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/ColorSprite");
         });
 
-        public readonly static LazyX<Sprite> DummySprite = new(() =>
+        public readonly static LazyCC<Sprite> DummySprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/DummySprite");
         });
 
-        public readonly static LazyX<Sprite> ErrorSprite = new(() =>
+        public readonly static LazyCC<Sprite> ErrorSprite = new(() =>
         {
             return Resources.Load<Sprite>("Textures/ErrorSprite");
         });
 
         public static string WordSeparator { get; set; } = "_";
+
+        public static class Create 
+        {
+            public static T[] Array<T>(params T[] values) => values;
+        }
     }
 }

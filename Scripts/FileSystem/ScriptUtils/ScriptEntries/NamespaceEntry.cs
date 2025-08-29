@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public record NamespaceEntry : ScriptEntry, IContentProvider
     {

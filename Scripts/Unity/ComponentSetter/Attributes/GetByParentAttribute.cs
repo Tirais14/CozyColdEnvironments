@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponentInParent"/>

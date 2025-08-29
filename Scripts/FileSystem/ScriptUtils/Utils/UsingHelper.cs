@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using UTIRLib.Linq;
+using CozyColdEnvironments.Linq;
 
 #nullable enable
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public static class UsingHelper
     {

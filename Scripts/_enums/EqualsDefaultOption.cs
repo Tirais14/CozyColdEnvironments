@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public enum EqualsDefaultOption
     {

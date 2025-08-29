@@ -1,9 +1,9 @@
 using UniRx;
-using UTIRLib.GameSystems;
-using UTIRLib.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.GameSystems;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorageSystem
+namespace CozyColdEnvironments.UI.ItemStorageSystem
 {
     public interface IItemContainerReactive : IItemContainer
     {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Reflection.ObjectModel;
+using CozyColdEnvironments.Reflection.ObjectModel;
 
 #nullable enable
-namespace UTIRLib.Reflection.Cached
+namespace CozyColdEnvironments.Reflection.Cached
 {
     public static class TypeCache
     {

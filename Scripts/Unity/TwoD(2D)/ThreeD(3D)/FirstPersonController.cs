@@ -1,13 +1,13 @@
 using System;
 using UniRx;
 using UnityEngine;
-using UTIRLib.Unity;
-using UTIRLib.Unity.Extensions;
-using UTIRLib.Vectors.Linq;
+using CozyColdEnvironments.Unity;
+using CozyColdEnvironments.Unity.Extensions;
+using CozyColdEnvironments.Vectors.Linq;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [RequireComponent(typeof(Rigidbody))]
     public class FirstPersonController : GameModel

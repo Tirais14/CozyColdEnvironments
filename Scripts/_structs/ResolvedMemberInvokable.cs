@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public readonly struct ResolvedMemberInvokable
     {

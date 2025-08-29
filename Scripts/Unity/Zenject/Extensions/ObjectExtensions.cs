@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 
-namespace UTIRLib.Zenject
+namespace CozyColdEnvironments.Zenject
 {
     public static class ObjectExtensions
     {

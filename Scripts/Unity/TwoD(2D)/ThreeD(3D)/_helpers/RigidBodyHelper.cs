@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S1244
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class RigidBodyHelper
     {

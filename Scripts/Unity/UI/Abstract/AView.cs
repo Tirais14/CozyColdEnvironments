@@ -1,10 +1,10 @@
 #nullable enable 
-namespace UTIRLib.UI.MVVM
+namespace CozyColdEnvironments.UI.MVVM
 {
-    public abstract class AView<T> : MonoX, IView
+    public abstract class AView<T> : MonoCC, IView
         where T : IViewModel
     {
-        private LazyX<T> viewModelLazy = null!;
+        private LazyCC<T> viewModelLazy = null!;
 
         protected T viewModel => viewModelLazy.Value;
 
@@ -12,14 +12,14 @@ namespace UTIRLib.UI.MVVM
         {
             base.OnAwake();
 
-            viewModelLazy ??= new LazyX<T>(CreateViewModel);
+            viewModelLazy ??= new LazyCC<T>(CreateViewModel);
         }
 
         protected abstract T CreateViewModel();
 
         public IViewModel GetViewModel()
         {
-            viewModelLazy ??= new LazyX<T>(CreateViewModel);
+            viewModelLazy ??= new LazyCC<T>(CreateViewModel);
 
             return viewModel;
         }

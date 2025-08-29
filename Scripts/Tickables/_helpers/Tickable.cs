@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Unity.TypeMatching;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     public static class Tickable
     {

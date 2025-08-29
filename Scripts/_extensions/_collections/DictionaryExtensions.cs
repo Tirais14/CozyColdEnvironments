@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class DictionaryExtensions
     {

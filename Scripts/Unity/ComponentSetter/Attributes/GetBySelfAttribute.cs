@@ -1,10 +1,10 @@
 using System;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     /// <summary>
-    /// Same as <see cref="UnityEngine.Component.GetComponent"/>. Calls in <see cref="MonoX.Awake"/>
+    /// Same as <see cref="UnityEngine.Component.GetComponent"/>. Calls in <see cref="MonoCC.Awake"/>
     /// </summary>
     [AttributeUsage(AttributeTargets.Field 
                     | 

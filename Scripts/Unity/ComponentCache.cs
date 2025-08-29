@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public class ComponentCache
     {

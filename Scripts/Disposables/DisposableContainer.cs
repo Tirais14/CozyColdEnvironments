@@ -2,7 +2,7 @@ using System;
 
 #pragma warning disable S3881
 #nullable enable
-namespace UTIRLib.Disposables
+namespace CozyColdEnvironments.Disposables
 {
     public class DisposableContainer : IDisposableContainer
     {

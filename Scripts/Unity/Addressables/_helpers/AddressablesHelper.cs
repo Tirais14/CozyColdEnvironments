@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 
 #nullable enable
-namespace UTIRLib.AddressableAssets
+namespace CozyColdEnvironments.AddressableAssets
 {
     public static class AddressablesHelper
     {

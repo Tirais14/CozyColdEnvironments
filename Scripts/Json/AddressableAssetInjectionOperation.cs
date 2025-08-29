@@ -3,11 +3,11 @@ using System;
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Json
+namespace CozyColdEnvironments.Json
 {
     public class AddressableAssetInjectionOperation
     {

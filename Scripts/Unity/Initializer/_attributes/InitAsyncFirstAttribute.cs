@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.Initables
+namespace CozyColdEnvironments.Initables
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class InitAsyncFirstAttribute : InitAsyncAttribute

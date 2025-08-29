@@ -6,11 +6,11 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.UIElements;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.AddressableAssets
+namespace CozyColdEnvironments.AddressableAssets
 {
     public static class AddressableLoader
     {

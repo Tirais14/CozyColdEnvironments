@@ -1,8 +1,8 @@
 #nullable enable
 using System;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
-namespace UTIRLib.GameSystems.ItemStorageSystem
+namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
 {
     public class ItemSlot : IItemSlot
     {

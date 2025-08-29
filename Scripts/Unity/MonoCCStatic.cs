@@ -1,12 +1,12 @@
 #nullable enable
 using System.Linq;
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     /// <summary>
-    /// Do not add this or derived from this component! On scene must be only one <see cref="MonoXStaticCore"/>
+    /// Do not add this or derived from this component! On scene must be only one <see cref="MonoCCStaticCore"/>
     /// </summary>
-    public abstract class MonoXStatic : MonoX
+    public abstract class MonoCCStatic : MonoCC
     {
         protected override void OnAwake()
         {
@@ -22,10 +22,10 @@ namespace UTIRLib
         }
     }
     /// <summary>
-    /// Do not add this or derived from this component! On scene must be only one <see cref="MonoXStaticCore"/>
+    /// Do not add this or derived from this component! On scene must be only one <see cref="MonoCCStaticCore"/>
     /// </summary>
-    public abstract class MonoXStatic<TThis> : MonoXStatic
-        where TThis : MonoXStatic
+    public abstract class MonoCCStatic<TThis> : MonoCCStatic
+        where TThis : MonoCCStatic
     {
         private static TThis? instance;
 
@@ -33,7 +33,7 @@ namespace UTIRLib
             get
             {
                 if (instance == null)
-                    instance = MonoXStaticCore.GetInstance<TThis>();
+                    instance = MonoCCStaticCore.GetInstance<TThis>();
 
                 return instance;
             }

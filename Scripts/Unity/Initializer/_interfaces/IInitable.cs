@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Initables
+namespace CozyColdEnvironments.Initables
 {
     public interface IInitable : IInitableBase
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public static class ArrayFactory
     {

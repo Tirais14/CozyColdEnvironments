@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.Linq
+namespace CozyColdEnvironments.Linq
 {
     public static class EnumerableQueries
     {

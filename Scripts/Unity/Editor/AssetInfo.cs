@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.UnityEditor
+namespace CozyColdEnvironments.UnityEditor
 {
     public class AssetInfo<T> where T : Object
     {

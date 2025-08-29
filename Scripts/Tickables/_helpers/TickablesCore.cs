@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Disposables;
-using UTIRLib.Reflection;
-using UTIRLib.Unity.TypeMatching;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Disposables;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity.TypeMatching;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
-    public class TickablesCore : MonoXStatic<TickablesCore>
+    public class TickablesCore : MonoCCStatic<TickablesCore>
     {
         private readonly static NullReferenceException instanceException = new("Cannot find any ticker.");
 

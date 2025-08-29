@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Unity.Serialization
+namespace CozyColdEnvironments.Unity.Serialization
 {
     public interface IUnitySerialized
     {

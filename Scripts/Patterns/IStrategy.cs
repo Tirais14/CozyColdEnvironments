@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Patterns.Strategy
+namespace CozyColdEnvironments.Patterns.Strategy
 {
     public interface IStrategy
     {

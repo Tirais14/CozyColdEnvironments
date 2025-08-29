@@ -1,8 +1,8 @@
 using UnityEngine;
-using UTIRLib.Attributes.Metadata;
+using CozyColdEnvironments.Attributes.Metadata;
 
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public enum InputActionValueType : byte
     {

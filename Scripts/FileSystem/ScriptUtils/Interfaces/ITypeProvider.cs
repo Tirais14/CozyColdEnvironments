@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public interface ITypeProvider
     {

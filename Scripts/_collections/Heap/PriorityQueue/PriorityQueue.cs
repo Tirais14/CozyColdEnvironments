@@ -2,7 +2,7 @@
 
 #nullable enable
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public class PriorityQueue<TPriority, TValue>
         where TPriority : struct, IComparable<TPriority>

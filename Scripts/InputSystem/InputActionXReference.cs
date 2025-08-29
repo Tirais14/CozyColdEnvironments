@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     [Serializable]
     public class InputActionXReference

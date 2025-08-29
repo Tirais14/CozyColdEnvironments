@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S3881
-namespace UTIRLib.Disposables
+namespace CozyColdEnvironments.Disposables
 {
     public static class Subscription
     {

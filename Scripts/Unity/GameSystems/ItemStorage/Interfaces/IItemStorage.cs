@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace UTIRLib.GameSystems.ItemStorageSystem
+namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
 {
     public interface IItemStorage : IReadOnlyList<IItemSlot>
     {

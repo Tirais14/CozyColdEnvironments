@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class FloatExtensions
     {

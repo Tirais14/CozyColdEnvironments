@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public readonly ref struct SpanEnumerator
     {

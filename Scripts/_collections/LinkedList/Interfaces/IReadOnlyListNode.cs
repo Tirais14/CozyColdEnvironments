@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public interface IReadOnlyListNode<out T>
     {

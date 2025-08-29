@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public interface ICompositeCollider : ISwitchable
     {

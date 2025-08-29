@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class ListExtensions
     {
@@ -14,7 +14,7 @@ namespace UTIRLib
     }
 }
 
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class ListExtensions
     {
@@ -25,7 +25,7 @@ namespace UTIRLib.Reflection
     }
 }
 
-namespace UTIRLib.Performance
+namespace CozyColdEnvironments.Performance
 {
     public static class ListExtensions
     {

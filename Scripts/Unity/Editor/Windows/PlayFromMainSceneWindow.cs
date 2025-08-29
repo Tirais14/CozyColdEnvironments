@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #pragma warning disable S2325
-namespace UTIRLib.Unity.Editor
+namespace CozyColdEnvironments.Unity.Editor
 {
     public class PlayFromMainSceneWindow : EditorWindow
     {

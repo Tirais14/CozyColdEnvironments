@@ -1,14 +1,14 @@
 using System;
 using UnityEngine;
-using UTIRLib.Unity.Extensions;
+using CozyColdEnvironments.Unity.Extensions;
 
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable IDE1006
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [RequireComponent(typeof(MeshRenderer))]
-    public class GameModelBody : MonoX
+    public class GameModelBody : MonoCC
     {
         private Collider? m_Collider;
         private Rigidbody? m_RigidBody;
@@ -48,7 +48,7 @@ namespace UTIRLib
             var go = new GameObject("Body", typeof(MeshRenderer));
 
             go.transform.parent = parent;
-            go.tag = TirLib.Tags.GAME_OBJECT_OVERRIDE;
+            go.tag = CC.Tags.GAME_OBJECT_OVERRIDE;
 
             return go.AddComponent<GameModelBody>();
         }

@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 
 #nullable enable
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
     public static class ComponentExtensions
     {
@@ -17,7 +17,7 @@ namespace UTIRLib.Unity
     }
 }
 
-namespace UTIRLib.Unity.Special
+namespace CozyColdEnvironments.Unity.Special
 {
     public static class ComponentExtensions
     {

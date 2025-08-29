@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Utils;
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public unsafe static class EnumExtensions
     {
@@ -95,7 +95,7 @@ namespace UTIRLib
     }
 }
 
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class EnumExtensions
     {
@@ -111,11 +111,11 @@ namespace UTIRLib.Reflection
     }
 }
 
-namespace UTIRLib.Attributes.Metadata
+namespace CozyColdEnvironments.Attributes.Metadata
 {
-    using UTIRLib.Diagnostics;
-    using UTIRLib.Options;
-    using UTIRLib.Reflection;
+    using CozyColdEnvironments.Diagnostics;
+    using CozyColdEnvironments.Options;
+    using CozyColdEnvironments.Reflection;
 
     public static class EnumExtensions
     {

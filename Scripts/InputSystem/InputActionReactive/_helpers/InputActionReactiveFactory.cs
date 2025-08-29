@@ -1,10 +1,10 @@
 using System;
 using UnityEngine.InputSystem;
-using UTIRLib.Reflection;
-using UTIRLib.Reflection.ObjectModel;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Reflection.ObjectModel;
 
 #nullable enable
-namespace UTIRLib.InputSystem.Reactive
+namespace CozyColdEnvironments.InputSystem.Reactive
 {
     public static class InputActionReactiveFactory
     {

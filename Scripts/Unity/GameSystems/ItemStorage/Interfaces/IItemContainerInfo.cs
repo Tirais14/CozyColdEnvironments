@@ -1,7 +1,7 @@
-using UTIRLib.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.GameSystems
+namespace CozyColdEnvironments.GameSystems
 {
     public interface IItemContainerInfo
     {

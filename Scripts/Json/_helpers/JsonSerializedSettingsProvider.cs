@@ -2,11 +2,11 @@ using Newtonsoft.Json;
 using System.Linq;
 using System.Runtime.Serialization;
 using UnityEngine;
-using UTIRLib.Json.Converters;
+using CozyColdEnvironments.Json.Converters;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace UTIRLib.Json
+namespace CozyColdEnvironments.Json
 {
     public static class JsonSerializedSettingsProvider
     {

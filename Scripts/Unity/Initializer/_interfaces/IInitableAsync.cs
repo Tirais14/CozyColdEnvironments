@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 
 #nullable enable
-namespace UTIRLib.Initables
+namespace CozyColdEnvironments.Initables
 {
     public interface IInitableAsync : IInitableBase
     {

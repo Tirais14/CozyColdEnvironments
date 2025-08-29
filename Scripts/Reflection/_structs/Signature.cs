@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using UTIRLib.Collections;
+using CozyColdEnvironments.Collections;
 
 #nullable enable
-namespace UTIRLib.Reflection.ObjectModel
+namespace CozyColdEnvironments.Reflection.ObjectModel
 {
     public readonly struct Signature
         :

@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEditor;
 
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     public abstract class TickerTimed<T> : Ticker<T>
         where T : ITickableBase

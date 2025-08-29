@@ -1,12 +1,12 @@
 using UniRx;
 using UnityEngine;
-using UTIRLib.Disposables;
-using UTIRLib.GameSystems.ItemStorageSystem;
-using UTIRLib.UI.MVVM;
-using UTIRLib.Unity.Extensions;
+using CozyColdEnvironments.Disposables;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.UI.MVVM;
+using CozyColdEnvironments.Unity.Extensions;
 
 #nullable enable
-namespace UTIRLib.UI.ItemStorageSystem
+namespace CozyColdEnvironments.UI.ItemStorageSystem
 {
     public class ItemStackViewModel<T> : AViewModel<T>,
         IItemStackViewModel<T>
@@ -24,7 +24,7 @@ namespace UTIRLib.UI.ItemStorageSystem
                                    .AddTo(this);
 
             model.ItemReactive.Subscribe(x => iconView.Value = x.IfNotNull(x => x.Icon)
-                                                                .IfNull(TirLib.ErrorSprite))
+                                                                .IfNull(CC.ErrorSprite))
                               .AddTo(this);
         }
     }

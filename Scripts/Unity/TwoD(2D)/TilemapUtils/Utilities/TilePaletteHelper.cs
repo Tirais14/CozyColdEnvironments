@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public static class TilePaletteHelper
     {

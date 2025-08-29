@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class TypeCastException : TirLibException
     {

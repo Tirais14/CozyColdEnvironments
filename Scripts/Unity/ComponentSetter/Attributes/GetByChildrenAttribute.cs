@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponentInChildren"/>

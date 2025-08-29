@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public interface IInputHandler
     {

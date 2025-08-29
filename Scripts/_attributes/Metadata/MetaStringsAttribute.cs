@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib.Attributes.Metadata
+namespace CozyColdEnvironments.Attributes.Metadata
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public sealed class MetaStringsAttribute : MetadataAttribute

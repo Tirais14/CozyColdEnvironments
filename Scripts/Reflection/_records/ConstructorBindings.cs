@@ -1,7 +1,7 @@
-using UTIRLib.Reflection.ObjectModel;
+using CozyColdEnvironments.Reflection.ObjectModel;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public record ConstructorBindings : MemberBindings
     {

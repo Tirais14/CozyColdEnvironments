@@ -6,13 +6,13 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Extensions;
 using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace UTIRLib.AddressableAssets
+namespace CozyColdEnvironments.AddressableAssets
 {
     public static class AddressableEditorUtility
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEngine;
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public interface IGameObjectSettings
     {

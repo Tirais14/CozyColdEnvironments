@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public record UsingEntry : IScriptContent
     {

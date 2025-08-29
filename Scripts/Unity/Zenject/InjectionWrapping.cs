@@ -1,13 +1,13 @@
 #nullable enable
 using System;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Linq;
-using UTIRLib.Utils;
-using static UTIRLib.Zenject.InjectionWrapping;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Linq;
+using CozyColdEnvironments.Utils;
+using static CozyColdEnvironments.Zenject.InjectionWrapping;
 using Object = UnityEngine.Object;
 
-namespace UTIRLib.Zenject
+namespace CozyColdEnvironments.Zenject
 {
     public static class InjectionWrapping
     {

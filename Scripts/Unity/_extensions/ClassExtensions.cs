@@ -1,13 +1,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Linq;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Linq;
+using CozyColdEnvironments.Reflection;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace UTIRLib.Unity.Extensions
+namespace CozyColdEnvironments.Unity.Extensions
 {
     public static class ClassExtensions
     {

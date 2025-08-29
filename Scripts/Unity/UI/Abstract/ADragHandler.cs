@@ -1,15 +1,15 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UTIRLib.Attributes;
-using UTIRLib.Diagnostics;
-using UTIRLib.InputSystem;
-using UTIRLib.Unity.Extensions;
+using CozyColdEnvironments.Attributes;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.InputSystem;
+using CozyColdEnvironments.Unity.Extensions;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
-    public abstract class ADragHandler<T> : MonoX,
+    public abstract class ADragHandler<T> : MonoCC,
         IBeginDragHandler,
         IDragHandler
 

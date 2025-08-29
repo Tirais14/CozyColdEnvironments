@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
-using UTIRLib.Unity;
+using CozyColdEnvironments.Unity;
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [Flags]
     public enum Direction2D

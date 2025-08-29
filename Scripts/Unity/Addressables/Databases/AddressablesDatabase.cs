@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UTIRLib.AddressableAssets;
-using UTIRLib.Diagnostics;
-using UTIRLib.Initables;
+using CozyColdEnvironments.AddressableAssets;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Initables;
 
 #nullable enable
 #pragma warning disable S2743
-namespace UTIRLib.AddressableAssets.Databases
+namespace CozyColdEnvironments.AddressableAssets.Databases
 {
     public abstract class AddressablesDatabase<T> 
         :

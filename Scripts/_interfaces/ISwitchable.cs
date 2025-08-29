@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public interface ISwitchable
     {

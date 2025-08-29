@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class EnumNotFlagsException : TirLibException
     {

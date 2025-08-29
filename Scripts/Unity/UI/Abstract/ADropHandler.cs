@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public abstract class ADropHandler<TReciever>
         :
-        MonoX,
+        MonoCC,
         IDropHandler
 
         where TReciever : Component, IView

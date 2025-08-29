@@ -2,7 +2,7 @@ using System.Linq;
 using System.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class ParameterInfoExtensions
     {

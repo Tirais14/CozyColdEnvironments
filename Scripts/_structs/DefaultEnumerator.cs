@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     [Obsolete("Use Cast<T> on empty array instead")]
     public readonly struct DefaultEnumerator<T> : IEnumerator<T?>

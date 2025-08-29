@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Linq;
-using UTIRLib.Unity.Extensions;
+using CozyColdEnvironments.Linq;
+using CozyColdEnvironments.Unity.Extensions;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace UTIRLib.Utils
+namespace CozyColdEnvironments.Utils
 {
     public static class UnityObjectHelper
     {

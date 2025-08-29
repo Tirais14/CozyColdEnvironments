@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.AddressableAssets.Settings;
-using UTIRLib.AddressableAssets;
-using UTIRLib.Attributes;
-using UTIRLib.Attributes.Metadata;
-using UTIRLib.FileSystem.ScriptUtils;
+using CozyColdEnvironments.AddressableAssets;
+using CozyColdEnvironments.Attributes;
+using CozyColdEnvironments.Attributes.Metadata;
+using CozyColdEnvironments.FileSystem.ScriptUtils;
 
 #nullable enable
 
-namespace UTIRLib.FileSystem.Editor
+namespace CozyColdEnvironments.FileSystem.Editor
 {
     public sealed class AssetNamesCreator : BaseSharpFileCreator<AddressableAssetSettings>
     {

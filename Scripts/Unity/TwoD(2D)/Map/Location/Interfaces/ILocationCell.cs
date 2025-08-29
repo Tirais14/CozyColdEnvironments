@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace UTIRLib.TwoD.Map
+namespace CozyColdEnvironments.TwoD.Map
 {
     public interface ILocationCell : IDisposable
     {

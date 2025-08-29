@@ -1,7 +1,7 @@
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public class EndlessLoopException : TirLibException
     {

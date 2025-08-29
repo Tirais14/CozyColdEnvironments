@@ -6,13 +6,13 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UTIRLib.Diagnostics;
-using UTIRLib.Unity.Extensions;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Unity.Extensions;
 
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     [RequireComponent(typeof(GraphicRaycaster))]
-    public sealed class CanvasRaycaster : MonoX, ICanvasRaycaster
+    public sealed class CanvasRaycaster : MonoCC, ICanvasRaycaster
     {
         private readonly List<RaycastResult> raycastResults = new();
         private PointerEventData pointerEventData = null!;

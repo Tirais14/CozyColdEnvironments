@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public static class TEnumerable<T>
     {

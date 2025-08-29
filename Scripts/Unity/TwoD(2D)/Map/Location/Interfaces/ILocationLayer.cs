@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 #nullable enable
-namespace UTIRLib.TwoD.Map
+namespace CozyColdEnvironments.TwoD.Map
 {
     public interface ILocationLayer : IDisposable
     {

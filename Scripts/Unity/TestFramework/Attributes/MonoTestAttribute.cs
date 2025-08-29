@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.TestFramework
+namespace CozyColdEnvironments.TestFramework
 {
     public class MonoTestAttribute : Attribute
     {

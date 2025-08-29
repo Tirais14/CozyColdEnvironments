@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UTIRLib.Collections;
-using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
-using UTIRLib.Linq;
+using CozyColdEnvironments.Collections;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Extensions;
+using CozyColdEnvironments.Linq;
 
 #nullable enable
 
-namespace UTIRLib.Patterns.Composite
+namespace CozyColdEnvironments.Patterns.Composite
 {
     public class ReadOnlyComposite<T> : IReadOnlyComposite<T>
     {

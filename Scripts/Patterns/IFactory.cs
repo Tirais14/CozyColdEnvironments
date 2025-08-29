@@ -1,4 +1,4 @@
-namespace UTIRLib.Patterns.Factory
+namespace CozyColdEnvironments.Patterns.Factory
 {
 #nullable enable
 

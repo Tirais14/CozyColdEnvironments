@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Json.Converters
+namespace CozyColdEnvironments.Json.Converters
 {
     public class Vector3Converter : JsonConverter<Vector3>
     {

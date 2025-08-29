@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
     public record RemoveComponentsArguments
     {

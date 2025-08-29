@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S2328
-namespace UTIRLib.Timers
+namespace CozyColdEnvironments.Timers
 {
     public sealed class TimerManual : ITimer, IEquatable<TimerManual>
     {

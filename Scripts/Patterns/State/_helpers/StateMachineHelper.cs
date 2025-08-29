@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Diagnostics;
-using UTIRLib.Patterns.Factory;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Patterns.Factory;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Patterns.States
+namespace CozyColdEnvironments.Patterns.States
 {
     public static class StateMachineHelper
     {

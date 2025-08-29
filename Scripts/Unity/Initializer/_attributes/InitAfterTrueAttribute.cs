@@ -1,9 +1,9 @@
 using System;
-using UTIRLib.Reflection;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.Initables
+namespace CozyColdEnvironments.Initables
 {
     /// <summary>
     /// Not Implemented for now

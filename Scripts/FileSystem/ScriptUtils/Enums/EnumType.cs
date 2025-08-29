@@ -1,6 +1,6 @@
-using UTIRLib.Attributes.Metadata;
+using CozyColdEnvironments.Attributes.Metadata;
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public enum EnumType
     {

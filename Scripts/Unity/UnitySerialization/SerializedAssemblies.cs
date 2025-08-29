@@ -1,10 +1,10 @@
 using System;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Unity.Serialization
+namespace CozyColdEnvironments.Unity.Serialization
 {
     [Serializable]
     public struct SerializedAssemblies : IUnitySerialized<Assembly[]>

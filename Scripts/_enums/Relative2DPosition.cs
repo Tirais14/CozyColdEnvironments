@@ -1,4 +1,4 @@
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public enum Relative2DPosition
     {

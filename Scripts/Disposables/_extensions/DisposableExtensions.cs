@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.Disposables
+namespace CozyColdEnvironments.Disposables
 {
     public static class DisposableExtensions
     {

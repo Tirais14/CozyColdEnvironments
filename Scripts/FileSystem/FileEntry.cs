@@ -2,10 +2,10 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Extensions;
 
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public class FileEntry : FileSystemEntry
     {

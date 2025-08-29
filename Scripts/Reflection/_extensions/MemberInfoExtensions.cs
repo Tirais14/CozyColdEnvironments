@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Reflection.Cached;
+using CozyColdEnvironments.Reflection.Cached;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class MemberInfoExtensions
     {
@@ -51,7 +51,7 @@ namespace UTIRLib.Reflection
     }
 }
 
-namespace UTIRLib.Attributes.Metadata
+namespace CozyColdEnvironments.Attributes.Metadata
 {
     public static class MemberInfoExtensions
     {

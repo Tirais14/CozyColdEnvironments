@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Patterns.States
+namespace CozyColdEnvironments.Patterns.States
 {
     public abstract class AState<T> : IState
         where T : IStateMachine

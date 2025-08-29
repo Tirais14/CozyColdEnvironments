@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Patterns.Commands
+namespace CozyColdEnvironments.Patterns.Commands
 {
     public interface ICommandX
     {

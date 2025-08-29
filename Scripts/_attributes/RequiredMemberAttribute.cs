@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.Attributes
+namespace CozyColdEnvironments.Attributes
 {
     public abstract class RequiredMemberAttribute : Attribute
     {

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 #nullable enable
 
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public interface ICanvasController
     {

@@ -2,20 +2,20 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using UTIRLib.ComponentSetter;
-using UTIRLib.Unity;
-using UTIRLib.Utils;
+using CozyColdEnvironments.ComponentSetter;
+using CozyColdEnvironments.Unity;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-    public class MonoX : MonoBehaviour
+    public class MonoCC : MonoBehaviour
     {
         //public static event Action<MonoX>? OnInstantiated;
 
-        private LazyX<ComponentCache> baseCache = null!;
+        private LazyCC<ComponentCache> baseCache = null!;
 
         protected event Action? onEndFirstFrame;
 
@@ -113,7 +113,7 @@ namespace UTIRLib
         {
             //OnInstantiated?.Invoke(this);
 
-            baseCache = new LazyX<ComponentCache>(() => new ComponentCache(transform, gameObject));
+            baseCache = new LazyCC<ComponentCache>(() => new ComponentCache(transform, gameObject));
 
             //Sets component fields and props marked by specical attribute
             GetComponentByAttributeHelper.SetMembers(this);

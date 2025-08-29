@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection.ObjectModel;
-using static UTIRLib.BindingFlagsDefault;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection.ObjectModel;
+using static CozyColdEnvironments.BindingFlagsDefault;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class TypeReflectionExtensions
     {

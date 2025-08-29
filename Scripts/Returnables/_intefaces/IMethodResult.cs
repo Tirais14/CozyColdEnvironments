@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace UTIRLib.Returnables
+namespace CozyColdEnvironments.Returnables
 {
     public interface IMethodResult
     {

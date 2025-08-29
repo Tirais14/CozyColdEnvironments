@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Unity.Extensions;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Unity.Extensions;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
-    public abstract class CompositeCollider<TCollider> : MonoX, ICompositeCollider<TCollider>
+    public abstract class CompositeCollider<TCollider> : MonoCC, ICompositeCollider<TCollider>
         where TCollider : Collider2D
     {
         protected readonly List<Collider2D> overlaps = new();

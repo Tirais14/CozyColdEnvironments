@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S3881
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public abstract class AInputActionSubscription<TInput, TAction> : IDisposable
         where TInput : IInputAction

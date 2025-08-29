@@ -1,12 +1,12 @@
 #nullable enable
 using System;
 using UnityEngine;
-using UTIRLib.Unity;
+using CozyColdEnvironments.Unity;
 
-namespace UTIRLib.Timers
+namespace CozyColdEnvironments.Timers
 {
     [DisallowMultipleComponent]
-    public class TimerMono : MonoX, ITimer
+    public class TimerMono : MonoCC, ITimer
     {
         public const string TIMERS_OBJ_NAME = "___Timers";
         public const string TIMERS_UPDATE_OBJ_NAME = "___Timers_Update";

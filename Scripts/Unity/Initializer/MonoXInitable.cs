@@ -1,9 +1,9 @@
-using UTIRLib.Initables;
+using CozyColdEnvironments.Initables;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
-    public abstract class MonoXInitable : MonoX, IInitable
+    public abstract class MonoXInitable : MonoCC, IInitable
     {
         public bool IsInited { get; private set; }
 

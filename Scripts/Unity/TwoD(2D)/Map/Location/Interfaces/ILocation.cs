@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
-namespace UTIRLib.TwoD.Map
+namespace CozyColdEnvironments.TwoD.Map
 {
     public interface ILocation
     {

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public record MethodBindings : ConstructorBindings
     {

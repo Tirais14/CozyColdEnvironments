@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.TestFramework
+namespace CozyColdEnvironments.TestFramework
 {
     [DefaultExecutionOrder(-2)]
-    public class TestFrameworkEntryPoint : MonoX
+    public class TestFrameworkEntryPoint : MonoCC
     {
         private Assembly testsAssembly = null!;
         private MonoTest[] monoTests = null!;

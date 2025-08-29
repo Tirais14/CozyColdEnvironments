@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class TickerTypeAttribute : Attribute

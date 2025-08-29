@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UTIRLib.Unity.Extensions;
-using UTIRLib.Unity.TypeMatching;
+using CozyColdEnvironments.Unity.Extensions;
+using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib.UI.MVVM
+namespace CozyColdEnvironments.UI.MVVM
 {
     public static class GameObjectExtensions
     {

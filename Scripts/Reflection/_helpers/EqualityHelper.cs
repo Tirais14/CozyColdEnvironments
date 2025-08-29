@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class EqualityHelper
     {

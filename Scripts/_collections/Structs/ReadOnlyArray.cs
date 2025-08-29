@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace UTIRLib.Collections.Generic
+namespace CozyColdEnvironments.Collections.Generic
 {
     [JsonArray]
     [Serializable]

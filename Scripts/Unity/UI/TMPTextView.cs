@@ -4,7 +4,7 @@ using UnityEngine;
 #pragma warning disable IDE0044
 #pragma warning disable S101
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     [RequireComponent(typeof(TextMeshProUGUI))]
     public class TMPTextView : ATextView

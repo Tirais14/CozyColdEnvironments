@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class SignatureComparer
     {

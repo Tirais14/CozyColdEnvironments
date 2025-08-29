@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UTIRLib.Disposables;
+using CozyColdEnvironments.Disposables;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public sealed class TEvent<T>
         where T : Delegate

@@ -5,11 +5,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using UTIRLib.Collections;
-using UTIRLib.Diagnostics;
-using static UTIRLib.FileSystem.FSPath;
+using CozyColdEnvironments.Collections;
+using CozyColdEnvironments.Diagnostics;
+using static CozyColdEnvironments.FileSystem.FSPath;
 
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public static class FSPathHelper
     {

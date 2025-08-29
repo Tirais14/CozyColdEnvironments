@@ -1,7 +1,7 @@
 #nullable enable
-using UTIRLib.Returnables;
+using CozyColdEnvironments.Returnables;
 
-namespace UTIRLib.GameSystems.Interactables
+namespace CozyColdEnvironments.GameSystems.Interactables
 {
     public interface IInteractable
     {

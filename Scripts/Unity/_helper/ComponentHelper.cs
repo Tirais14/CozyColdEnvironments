@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 using System.Linq;
 
 #nullable enable
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
     public static class ComponentHelper
     {

@@ -2,7 +2,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public static class StringExtensions
     {

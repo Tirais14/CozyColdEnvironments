@@ -4,7 +4,7 @@ using UnityEngine;
 
 #pragma warning disable S101
 #pragma warning disable S1104
-namespace UTIRLib.Json.DTO
+namespace CozyColdEnvironments.Json.DTO
 {
     [Serializable]
     public struct Vector2IntDTO

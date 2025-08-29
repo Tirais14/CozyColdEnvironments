@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using static UTIRLib.SpanEnumerator;
+using static CozyColdEnvironments.SpanEnumerator;
 
 #nullable enable
-namespace UTIRLib.Linq
+namespace CozyColdEnvironments.Linq
 {
     public static class SpanQueries
     {
@@ -102,7 +102,7 @@ namespace UTIRLib.Linq
     }
 }
 
-namespace UTIRLib.Linq.Extended
+namespace CozyColdEnvironments.Linq.Extended
 {
     public static class SpanQueries
     {

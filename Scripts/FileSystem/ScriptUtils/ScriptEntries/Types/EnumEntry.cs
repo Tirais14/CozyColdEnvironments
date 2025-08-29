@@ -2,10 +2,10 @@
 
 using System;
 using System.Linq;
-using UTIRLib.Attributes.Metadata;
-using static UTIRLib.FileSystem.ScriptUtils.Syntax;
+using CozyColdEnvironments.Attributes.Metadata;
+using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public record EnumEntry : ScriptEntry, IType
     {

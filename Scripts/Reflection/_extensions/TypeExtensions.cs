@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public static class TypeExtensions
     {

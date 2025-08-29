@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public interface IColliderShapeInfo
     {

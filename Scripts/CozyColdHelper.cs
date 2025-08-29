@@ -5,9 +5,9 @@ using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
-    public static partial class TirLibHelper
+    public static partial class CozyColdHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
         public static AssetType SystemTypeToAssetType(Type assetObjectType)

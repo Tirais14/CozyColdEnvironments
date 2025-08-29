@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace UTIRLib.Linq
+namespace CozyColdEnvironments.Linq
 {
     public static class StringQueries
     {

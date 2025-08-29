@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.UnityEditor
+namespace CozyColdEnvironments.UnityEditor
 {
     public static class ResourcesEditorUtility
     {

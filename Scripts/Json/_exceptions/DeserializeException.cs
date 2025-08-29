@@ -1,7 +1,7 @@
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.Json
+namespace CozyColdEnvironments.Json
 {
     public class DeserializeException : TirLibException
     {

@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Reflection
+namespace CozyColdEnvironments.Reflection
 {
     public enum MemberType
     {

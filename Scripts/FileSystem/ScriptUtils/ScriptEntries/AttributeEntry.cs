@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
-using UTIRLib.Extensions;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Extensions;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public sealed record AttributeEntry : ScriptEntry, ITypeProvider, IContentProvider
     {

@@ -5,16 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Initables;
-using UTIRLib.Linq;
-using UTIRLib.Reflection;
-using UTIRLib.Unity.TypeMatching;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Initables;
+using CozyColdEnvironments.Linq;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity.TypeMatching;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
 #pragma warning disable S127
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class SceneInitializer
     {

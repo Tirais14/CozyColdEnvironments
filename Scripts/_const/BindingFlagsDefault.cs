@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class BindingFlagsDefault
     {

@@ -1,10 +1,10 @@
 #nullable enable
 using System;
 using System.Text;
-using UTIRLib.Reflection;
-using static UTIRLib.FileSystem.ScriptUtils.Syntax;
+using CozyColdEnvironments.Reflection;
+using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public abstract record TypeEntry : ScriptEntry, IType
     {

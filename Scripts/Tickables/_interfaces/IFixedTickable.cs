@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     public interface IFixedTickable : ITickableBase
     {

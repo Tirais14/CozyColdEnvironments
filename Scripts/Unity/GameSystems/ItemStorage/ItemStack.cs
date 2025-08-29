@@ -1,9 +1,9 @@
 #nullable enable
 using System;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
-namespace UTIRLib.GameSystems.ItemStorageSystem
+namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
 {
     public class ItemStack : IItemStack
     {

@@ -1,7 +1,7 @@
 using UniRx;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public interface IOpenableReactive : IOpenable
     {

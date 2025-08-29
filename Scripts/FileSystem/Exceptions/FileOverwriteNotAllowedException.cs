@@ -1,7 +1,7 @@
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public class FileOverwriteNotAllowedException : TirLibException
     {

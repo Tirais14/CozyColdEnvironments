@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UTIRLib.Utils
+namespace CozyColdEnvironments.Utils
 {
     public static class PolygonGenerator
     {

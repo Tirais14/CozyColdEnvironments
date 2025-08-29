@@ -1,10 +1,10 @@
 using UniRx;
-using UTIRLib.GameSystems;
-using UTIRLib.GameSystems.ItemStorageSystem;
-using UTIRLib.UI.ItemStorageSystem;
+using CozyColdEnvironments.GameSystems;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.UI.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public class ItemSlotReactive 
         :

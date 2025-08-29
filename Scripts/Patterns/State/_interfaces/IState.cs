@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib.Patterns.States
+namespace CozyColdEnvironments.Patterns.States
 {
     public interface IState
     {

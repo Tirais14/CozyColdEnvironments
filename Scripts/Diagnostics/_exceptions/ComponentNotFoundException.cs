@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class ComponentNotFoundException : TirLibException
     {

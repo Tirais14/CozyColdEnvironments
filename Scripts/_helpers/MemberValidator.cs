@@ -1,11 +1,11 @@
 using System;
 using System.Reflection;
-using UTIRLib.Attributes;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Attributes;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
 
-namespace UTIRLib.Utils
+namespace CozyColdEnvironments.Utils
 {
     public static class MemberValidator
     {

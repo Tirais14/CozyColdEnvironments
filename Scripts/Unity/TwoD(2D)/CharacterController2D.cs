@@ -1,13 +1,13 @@
 using UnityEngine;
-using UTIRLib.ComponentSetter;
-using UTIRLib.Utils;
+using CozyColdEnvironments.ComponentSetter;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public sealed class CharacterController2D : MonoX
+    public sealed class CharacterController2D : MonoCC
     {
         [GetBySelfAttribute]
         private Rigidbody2D rigidbody2DComponent = null!;

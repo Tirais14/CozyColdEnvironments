@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
     public static class ComponentGetComponentExtensions
     {
@@ -65,7 +65,7 @@ namespace UTIRLib.Unity
     }
 }
 
-namespace UTIRLib.Unity.Extensions
+namespace CozyColdEnvironments.Unity.Extensions
 {
     public static class ComponentGetComponentExtensions
     {

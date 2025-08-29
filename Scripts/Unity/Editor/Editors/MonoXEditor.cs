@@ -3,15 +3,15 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UTIRLib.Attributes;
-using UTIRLib.ComponentSetter;
+using CozyColdEnvironments.Attributes;
+using CozyColdEnvironments.ComponentSetter;
 
 #nullable enable
 
-namespace UTIRLib.UnityEditor
+namespace CozyColdEnvironments.UnityEditor
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(MonoX), editorForChildClasses: true)]
+    [CustomEditor(typeof(MonoCC), editorForChildClasses: true)]
     public class MonoXEditor : global::UnityEditor.Editor
     {
         private VisualElement root = null!;

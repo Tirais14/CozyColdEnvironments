@@ -3,13 +3,13 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.FileSystem;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.FileSystem;
 
 #nullable enable
 
-namespace UTIRLib.UnityEditor
+namespace CozyColdEnvironments.UnityEditor
 {
     public abstract class TirLibEditorWindow : EditorWindow
     {

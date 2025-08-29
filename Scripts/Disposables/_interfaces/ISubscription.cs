@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.Disposables
+namespace CozyColdEnvironments.Disposables
 {
     public interface ISubscription : IDisposable
     {

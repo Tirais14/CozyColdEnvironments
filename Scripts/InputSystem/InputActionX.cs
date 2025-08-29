@@ -6,7 +6,7 @@ using UnityEngine.VFX;
 
 #nullable enable
 #pragma warning disable S3881
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public class InputActionX : IInputAction
     {

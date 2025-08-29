@@ -4,18 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
-using UTIRLib.Diagnostics;
-using UTIRLib.Disposables;
-using UTIRLib.Patterns.Factory;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Disposables;
+using CozyColdEnvironments.Patterns.Factory;
+using CozyColdEnvironments.Reflection;
 
 #pragma warning disable S3881
-namespace UTIRLib.Patterns.States
+namespace CozyColdEnvironments.Patterns.States
 {
     /// <typeparam name="TIdle">Default state</typeparam>
     public abstract class AStateMachine<TIdle> 
         :
-        MonoX,
+        MonoCC,
         IStateMachine,
         IDisposableContainer
 

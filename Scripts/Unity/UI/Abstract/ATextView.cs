@@ -1,7 +1,7 @@
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
-    public abstract class ATextView : MonoX
+    public abstract class ATextView : MonoCC
     {
         public abstract string Text { get; set; }
     }

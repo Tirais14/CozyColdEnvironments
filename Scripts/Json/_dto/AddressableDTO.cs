@@ -2,14 +2,14 @@ using Newtonsoft.Json;
 using System;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Reflection.ObjectModel;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Reflection.ObjectModel;
 using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S101
-namespace UTIRLib.Json.DTO
+namespace CozyColdEnvironments.Json.DTO
 {
     [Serializable]
     public record AddressableDTO : IJsonDTO

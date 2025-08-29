@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 #nullable enable
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public class LocationTileInfo : IReadOnlyTileProvider
     {

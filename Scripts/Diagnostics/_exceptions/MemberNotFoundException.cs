@@ -1,10 +1,10 @@
 using System;
 using System.Reflection;
 using System.Security.Cryptography;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class MemberNotFoundException : TirLibException
     {

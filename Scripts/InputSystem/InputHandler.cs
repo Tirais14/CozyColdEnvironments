@@ -6,16 +6,16 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
-using UTIRLib.Attributes.Metadata;
-using UTIRLib.Disposables;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Attributes.Metadata;
+using CozyColdEnvironments.Disposables;
+using CozyColdEnvironments.Reflection;
 
 #pragma warning disable S3881
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public class InputHandler 
         :
-        MonoX,
+        MonoCC,
         IInputHandler,
         IDisposableContainer,
         ISwitchable

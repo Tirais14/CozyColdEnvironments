@@ -2,7 +2,7 @@ using System;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public sealed class InputActionSubscription 
         : 

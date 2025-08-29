@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.GameSystems.ItemStorageSystem
+namespace CozyColdEnvironments.GameSystems.ItemStorageSystem
 {
     public interface IItemStack : IItemContainer
     {

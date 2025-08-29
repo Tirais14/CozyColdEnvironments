@@ -3,7 +3,7 @@ using System.Linq;
 
 #nullable enable
 
-namespace UTIRLib.Attributes.Metadata
+namespace CozyColdEnvironments.Attributes.Metadata
 {
     public abstract class MetadataAttribute : Attribute
     {

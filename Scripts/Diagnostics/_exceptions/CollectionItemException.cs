@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class CollectionItemException : TirLibException
     {

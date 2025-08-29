@@ -2,7 +2,7 @@ using System;
 using UnityEngine.EventSystems;
 
 #nullable enable
-namespace UTIRLib.UI
+namespace CozyColdEnvironments.UI
 {
     public interface IDraggable : IDragHandler, IEndDragHandler
     {

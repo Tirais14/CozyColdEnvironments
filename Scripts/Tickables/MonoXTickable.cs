@@ -1,13 +1,13 @@
 using System;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     public class MonoXTickable
         :
-        MonoX,
+        MonoCC,
         ITickableBase
     {
         private ITicker? ticker;

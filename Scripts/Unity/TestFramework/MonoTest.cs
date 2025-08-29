@@ -3,11 +3,11 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
-namespace UTIRLib.TestFramework
+namespace CozyColdEnvironments.TestFramework
 {
-    public abstract class MonoTest : MonoX
+    public abstract class MonoTest : MonoCC
     {
         protected Type thisType;
 

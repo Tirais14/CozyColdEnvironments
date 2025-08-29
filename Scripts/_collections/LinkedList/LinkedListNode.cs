@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public class LinkedListNode<T> : IListNode<T>
     {

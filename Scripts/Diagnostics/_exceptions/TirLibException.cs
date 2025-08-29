@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.Analytics;
-using UTIRLib.Diagnostics.Internal;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics.Internal;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
 
 #pragma warning disable S1751
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class TirLibException : Exception
     {

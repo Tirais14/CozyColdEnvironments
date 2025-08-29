@@ -1,8 +1,8 @@
 using UnityEngine;
-using UTIRLib.Extensions;
+using CozyColdEnvironments.Extensions;
 
 #nullable enable
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public static class TirLibTwoDHelper
     {

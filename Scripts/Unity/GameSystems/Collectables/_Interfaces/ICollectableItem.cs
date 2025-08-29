@@ -1,8 +1,8 @@
-using UTIRLib.GameSystems.Interactables;
-using UTIRLib.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.GameSystems.Interactables;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.GameSystems.Collectables
+namespace CozyColdEnvironments.GameSystems.Collectables
 {
     public interface ICollectableItem : IInteractable<IItemStack>
     {

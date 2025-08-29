@@ -1,9 +1,9 @@
 using Cysharp.Threading.Tasks;
 
 #nullable enable
-namespace UTIRLib.Initables
+namespace CozyColdEnvironments.Initables
 {
-    public abstract class MonoXInitableAsync : MonoX, IInitableAsync
+    public abstract class MonoXInitableAsync : MonoCC, IInitableAsync
     {
         public bool IsInited { get; private set; }
 

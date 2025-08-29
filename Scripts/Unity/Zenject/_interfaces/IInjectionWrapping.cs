@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.Zenject
+namespace CozyColdEnvironments.Zenject
 {
     public interface IInjectionWrapping
     {

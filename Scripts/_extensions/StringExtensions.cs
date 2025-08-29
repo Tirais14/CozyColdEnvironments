@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class StringExtensions
     {
@@ -226,7 +226,7 @@ namespace UTIRLib
     }
 }
 
-namespace UTIRLib.Extensions
+namespace CozyColdEnvironments.Extensions
 {
     public static class StringExtensions
     {

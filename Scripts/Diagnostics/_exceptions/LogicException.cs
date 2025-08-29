@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class LogicException : TirLibException
     {

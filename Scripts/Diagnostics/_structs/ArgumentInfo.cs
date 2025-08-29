@@ -1,7 +1,7 @@
 #nullable enable
 
 using System;
-namespace UTIRLib.Diagnostics.Internal
+namespace CozyColdEnvironments.Diagnostics.Internal
 {
     public readonly struct ArgumentInfo
     {

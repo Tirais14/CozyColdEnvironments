@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     /// <summary>
     /// Use this for while cycle for preventing endless loop

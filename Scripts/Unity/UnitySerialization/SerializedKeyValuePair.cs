@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UTIRLib.Unity.Serialization;
+using CozyColdEnvironments.Unity.Serialization;
 
 #nullable enable
 #pragma warning disable S2955
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [Serializable]
     public struct SerializedKeyValuePair<TKey, TValue> :

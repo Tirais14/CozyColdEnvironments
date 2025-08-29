@@ -1,12 +1,12 @@
 using UnityEngine;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace UTIRLib.Disposables
+namespace CozyColdEnvironments.Disposables
 {
-    public sealed class GameObjectDisposablesObserver : MonoX
+    public sealed class GameObjectDisposablesObserver : MonoCC
     {
         public const int SKIP_FRAMES_COUNT = 9;
 

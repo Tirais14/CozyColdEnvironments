@@ -2,7 +2,7 @@ using System.Collections;
 
 #nullable enable
 
-namespace UTIRLib.Diagnostics
+namespace CozyColdEnvironments.Diagnostics
 {
     public class CollectionException : TirLibException
     {

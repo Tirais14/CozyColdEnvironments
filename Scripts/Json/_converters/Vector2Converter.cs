@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-namespace UTIRLib.Json.Converters
+namespace CozyColdEnvironments.Json.Converters
 {
     public class Vector2Converter : JsonConverter<Vector2>
     {

@@ -4,7 +4,7 @@ using UnityEngine.Tilemaps;
 using static UnityEngine.Tilemaps.Tilemap;
 
 #nullable enable
-namespace UTIRLib.TwoD.Map
+namespace CozyColdEnvironments.TwoD.Map
 {
     public class LocationCell : ILocationCell
     {

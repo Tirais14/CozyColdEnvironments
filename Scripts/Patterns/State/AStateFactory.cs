@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Patterns.Factory;
+using CozyColdEnvironments.Patterns.Factory;
 
 #nullable enable
-namespace UTIRLib.Patterns.States
+namespace CozyColdEnvironments.Patterns.States
 {
     public abstract class AStateFactory : IFactory<Type, IState>
     {

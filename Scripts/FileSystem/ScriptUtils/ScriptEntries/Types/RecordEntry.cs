@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public record RecordEntry : TypeEntry
     {

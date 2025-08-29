@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 #nullable enable
-namespace UTIRLib.Unity.Serialization
+namespace CozyColdEnvironments.Unity.Serialization
 {
     public static class IDictionaryExtensions
     {

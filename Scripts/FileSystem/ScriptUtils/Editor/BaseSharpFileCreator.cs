@@ -1,10 +1,10 @@
 #nullable enable
 
-using UTIRLib.Collections;
-using UTIRLib.Extensions;
-using UTIRLib.FileSystem.ScriptUtils;
+using CozyColdEnvironments.Collections;
+using CozyColdEnvironments.Extensions;
+using CozyColdEnvironments.FileSystem.ScriptUtils;
 
-namespace UTIRLib.FileSystem.Editor
+namespace CozyColdEnvironments.FileSystem.Editor
 {
     public abstract class BaseSharpFileCreator<T>
     {

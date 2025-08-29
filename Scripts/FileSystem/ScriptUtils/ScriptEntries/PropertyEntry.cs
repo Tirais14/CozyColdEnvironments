@@ -1,7 +1,7 @@
 #nullable enable
-using static UTIRLib.FileSystem.ScriptUtils.Syntax;
+using static CozyColdEnvironments.FileSystem.ScriptUtils.Syntax;
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public record PropertyEntry : ScriptEntry
     {

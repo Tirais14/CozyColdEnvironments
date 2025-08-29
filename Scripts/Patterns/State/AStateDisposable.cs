@@ -1,8 +1,8 @@
-using UTIRLib.Disposables;
+using CozyColdEnvironments.Disposables;
 
 #nullable enable
 #pragma warning disable S3881
-namespace UTIRLib.Patterns.States
+namespace CozyColdEnvironments.Patterns.States
 {
     public abstract class AStateDisposable<T> 
         :

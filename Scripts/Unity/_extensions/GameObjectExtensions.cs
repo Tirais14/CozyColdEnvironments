@@ -2,11 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using System;
-using UTIRLib.Diagnostics;
-using UTIRLib.Unity.TypeMatching;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib.Unity
+namespace CozyColdEnvironments.Unity
 {
     public static class GameObjectExtensions
     {
@@ -83,7 +83,7 @@ namespace UTIRLib.Unity
         }
     }
 }
-namespace UTIRLib.Unity.Special
+namespace CozyColdEnvironments.Unity.Special
 {
     public static class GameObjectExtensions 
     {
@@ -110,12 +110,12 @@ namespace UTIRLib.Unity.Special
             GameObject[] childs = value.GetAllChilds();
 
             if (childs.Select(x => x.transform)
-                      .FirstOrDefault(x => x.CompareTag(TirLib.Tags.TRANSFORM_OVERRIDE))
+                      .FirstOrDefault(x => x.CompareTag(CC.Tags.TRANSFORM_OVERRIDE))
                 .IsNot<Transform>(out var result)
                 &&
                 throwIfNotFound
                 )
-                throw new System.Exception($"Not found {TirLib.Tags.TRANSFORM_OVERRIDE} for {value.name}.");
+                throw new System.Exception($"Not found {CC.Tags.TRANSFORM_OVERRIDE} for {value.name}.");
 
             return result;
         }
@@ -142,12 +142,12 @@ namespace UTIRLib.Unity.Special
 
             GameObject[] childs = value.GetAllChilds();
 
-            if (childs.FirstOrDefault(x => x.CompareTag(TirLib.Tags.TRANSFORM_OVERRIDE))
+            if (childs.FirstOrDefault(x => x.CompareTag(CC.Tags.TRANSFORM_OVERRIDE))
                 .IsNot<GameObject>(out var result)
                 &&
                 throwIfNotFound
                 )
-                throw new System.Exception($"Not found {TirLib.Tags.GAME_OBJECT_OVERRIDE} for {value.name}.");
+                throw new System.Exception($"Not found {CC.Tags.GAME_OBJECT_OVERRIDE} for {value.name}.");
 
             return result;
         }

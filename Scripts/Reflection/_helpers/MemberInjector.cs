@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
 #nullable enable
-namespace UTIRLib.Reflection.Injections
+namespace CozyColdEnvironments.Reflection.Injections
 {
     public static class MemberInjector
     {

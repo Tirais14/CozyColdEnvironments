@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UTIRLib.Diagnostics;
-using UTIRLib.Unity.Serialization;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Unity.Serialization;
 
 #nullable enable
-namespace UTIRLib.InputSystem.Reactive
+namespace CozyColdEnvironments.InputSystem.Reactive
 {
     [Serializable]
     public sealed class InputActionReactiveReference

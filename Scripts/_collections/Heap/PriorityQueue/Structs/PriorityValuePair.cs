@@ -1,6 +1,6 @@
 using System;
 
-namespace UTIRLib.Collections
+namespace CozyColdEnvironments.Collections
 {
     public struct PriorityValuePair<TPriority, TValue> : IComparable<PriorityValuePair<TPriority, TValue>>
         where TPriority : struct, IComparable<TPriority>

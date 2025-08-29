@@ -1,8 +1,8 @@
-using UTIRLib.Diagnostics;
-using UTIRLib.Extensions;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Extensions;
 
 #nullable enable
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public class PathNotValidException : TirLibException
     {

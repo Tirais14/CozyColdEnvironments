@@ -2,7 +2,7 @@ using System.IO;
 
 #nullable enable
 
-namespace UTIRLib.Utils
+namespace CozyColdEnvironments.Utils
 {
     public static class FileHelper
     {

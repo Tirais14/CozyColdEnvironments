@@ -1,8 +1,8 @@
 using System;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public readonly struct TypeValuePair : IEquatable<TypeValuePair>
     {

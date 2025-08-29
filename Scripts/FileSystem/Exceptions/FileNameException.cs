@@ -1,7 +1,7 @@
 #nullable enable
-using UTIRLib.Diagnostics;
+using CozyColdEnvironments.Diagnostics;
 
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public class FileNameException : TirLibException
     {

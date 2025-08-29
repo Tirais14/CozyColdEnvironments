@@ -1,9 +1,9 @@
 using System;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Initables
+namespace CozyColdEnvironments.Initables
 {
     /// <summary>
     /// Call <see cref="IInitable.Init"/> only after initialization this types.

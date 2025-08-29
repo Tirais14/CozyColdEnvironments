@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [Flags]
     public enum InjectionOptions

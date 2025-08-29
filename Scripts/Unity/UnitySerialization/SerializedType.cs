@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
 #pragma warning disable S1117
-namespace UTIRLib.Unity.Serialization
+namespace CozyColdEnvironments.Unity.Serialization
 {
     [Serializable]
     public struct SerializedType : IUnitySerialized<Type?>

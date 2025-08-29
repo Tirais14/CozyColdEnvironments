@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
-using UTIRLib.Unity.Serialization;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity.Serialization;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     [Serializable]
     public sealed class SerializedDictionary<TKey, TValue> :

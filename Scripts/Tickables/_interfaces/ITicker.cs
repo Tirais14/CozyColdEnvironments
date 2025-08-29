@@ -1,9 +1,9 @@
 using System;
-using UTIRLib.Reflection;
-using UTIRLib.Unity.TypeMatching;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Unity.TypeMatching;
 
 #nullable enable
-namespace UTIRLib.Tickables
+namespace CozyColdEnvironments.Tickables
 {
     public interface ITicker : ISwitchable, IDisposable
     {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Reflection;
 
 #nullable enable
-namespace UTIRLib.Unity.Editor
+namespace CozyColdEnvironments.Unity.Editor
 {
     [CustomPropertyDrawer(typeof(DropdownMenuAttribute))]
     public class DropdownMenuDrawer : PropertyDrawer

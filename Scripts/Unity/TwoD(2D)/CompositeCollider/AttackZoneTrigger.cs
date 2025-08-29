@@ -1,11 +1,11 @@
 using System.Linq;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.Unity;
-using UTIRLib.Unity.Extensions;
-using UTIRLib.Utils;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Unity;
+using CozyColdEnvironments.Unity.Extensions;
+using CozyColdEnvironments.Utils;
 
-namespace UTIRLib.TwoD
+namespace CozyColdEnvironments.TwoD
 {
     public class AttackZoneTrigger : CompositeCollider<PolygonCollider2D>,
         ICompositeTrigger<Direction2D, PolygonCollider2D>

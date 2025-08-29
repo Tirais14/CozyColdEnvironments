@@ -1,4 +1,4 @@
-namespace UTIRLib.FileSystem
+namespace CozyColdEnvironments.FileSystem
 {
     public interface IFileText
     {

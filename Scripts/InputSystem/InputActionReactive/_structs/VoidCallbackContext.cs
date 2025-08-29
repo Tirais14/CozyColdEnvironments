@@ -1,5 +1,5 @@
 #nullable enable
-namespace UTIRLib.InputSystem
+namespace CozyColdEnvironments.InputSystem
 {
     public readonly ref struct VoidCallbackContext
     {

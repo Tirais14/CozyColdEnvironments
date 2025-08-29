@@ -1,12 +1,12 @@
 using System;
 using System.Reflection;
-using UTIRLib.Reflection;
-using UTIRLib.Reflection.Cached;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection.ObjectModel;
+using CozyColdEnvironments.Reflection;
+using CozyColdEnvironments.Reflection.Cached;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection.ObjectModel;
 
 #nullable enable
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public static class InstanceFactory
     {

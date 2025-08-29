@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UTIRLib.FileSystem.ScriptUtils;
-using UTIRLib.Utils;
+using CozyColdEnvironments.FileSystem.ScriptUtils;
+using CozyColdEnvironments.Utils;
 
 #nullable enable
 
-namespace UTIRLib.FileSystem.Editor
+namespace CozyColdEnvironments.FileSystem.Editor
 {
     public sealed class DirectoryInfoFilesCreator : BaseSharpFileCreator<string>
     {

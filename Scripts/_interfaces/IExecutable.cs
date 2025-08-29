@@ -1,4 +1,4 @@
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
     public interface IExecutable : IExecutableBase
     {

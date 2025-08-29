@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace UTIRLib.Timers
+namespace CozyColdEnvironments.Timers
 {
     public interface ITimer
     {

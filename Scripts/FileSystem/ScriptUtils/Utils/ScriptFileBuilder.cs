@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UTIRLib.FileSystem.ScriptUtils
+namespace CozyColdEnvironments.FileSystem.ScriptUtils
 {
     public static class ScriptFileBuilder
     {

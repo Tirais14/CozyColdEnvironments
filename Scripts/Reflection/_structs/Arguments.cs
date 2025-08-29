@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 
 #nullable enable
-namespace UTIRLib.Reflection.ObjectModel
+namespace CozyColdEnvironments.Reflection.ObjectModel
 {
     public readonly struct Arguments
         :

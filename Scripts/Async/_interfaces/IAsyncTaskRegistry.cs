@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 #nullable enable
-namespace UTIRLib.Async
+namespace CozyColdEnvironments.Async
 {
     public interface IAsyncTaskRegistry
     {

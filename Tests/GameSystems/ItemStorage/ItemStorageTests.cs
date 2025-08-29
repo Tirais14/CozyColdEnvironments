@@ -1,9 +1,9 @@
 using NUnit.Framework;
 using System;
-using UTIRLib.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
-namespace UTIRLib.Tests.GameSystems.Storage
+namespace CozyColdEnvironments.Tests.GameSystems.Storage
 {
     public class ItemStorageTests
     {

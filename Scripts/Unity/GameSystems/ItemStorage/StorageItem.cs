@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UTIRLib.Diagnostics;
-using UTIRLib.GameSystems.ItemStorageSystem;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.GameSystems.ItemStorageSystem;
 
 #nullable enable
 #pragma warning disable S4035
-namespace UTIRLib.GameSystems
+namespace CozyColdEnvironments.GameSystems
 {
     public class StorageItem 
         :
@@ -17,7 +17,7 @@ namespace UTIRLib.GameSystems
 
         public string Name { get; } = "NullItem";
         public int ID { get; } = int.MinValue;
-        public Sprite Icon { get; } = TirLib.ErrorSprite;
+        public Sprite Icon { get; } = CC.ErrorSprite;
         public int MaxStackCount { get; } = 0;
 
         public StorageItem()

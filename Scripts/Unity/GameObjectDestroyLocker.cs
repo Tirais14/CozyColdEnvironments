@@ -1,8 +1,8 @@
 #nullable enable
 
-namespace UTIRLib
+namespace CozyColdEnvironments
 {
-    public sealed class GameObjectDestroyLocker : MonoX
+    public sealed class GameObjectDestroyLocker : MonoCC
     {
         protected override void OnAwake()
         {

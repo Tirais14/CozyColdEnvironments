@@ -3,10 +3,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using UTIRLib.Diagnostics;
-using UTIRLib.Reflection;
+using CozyColdEnvironments.Diagnostics;
+using CozyColdEnvironments.Reflection;
 
-namespace UTIRLib.Utils
+namespace CozyColdEnvironments.Utils
 {
     public static class TypeSearch
     {
