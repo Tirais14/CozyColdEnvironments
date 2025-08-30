@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
+using CCEnvs.Common;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Reactive
@@ -50,7 +51,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
                 IsEnabled = false;
             }
         }
@@ -66,7 +67,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
                 IsEnabled = false;
             }
         }
@@ -103,7 +104,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
 
             if (props.IsNullOrEmpty())
             {
-                CCEDebug.PrintWarning("Cannot find any input action properties.");
+                CCDebug.PrintWarning("Cannot find any input action properties.");
                 return;
             }
 

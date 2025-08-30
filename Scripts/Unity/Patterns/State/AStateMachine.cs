@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Factory;
@@ -118,7 +119,7 @@ namespace CCEnvs.Patterns.States
             IFactory<Type, IState>? stateFactory = StateMachineHelper.FindFactoryInFields(this);
             if (stateFactory.IsNull())
             {
-                CCEDebug.PrintError("Failed to find state factory in fields.");
+                CCDebug.PrintError("Failed to find state factory in fields.");
                 return;
             }
 

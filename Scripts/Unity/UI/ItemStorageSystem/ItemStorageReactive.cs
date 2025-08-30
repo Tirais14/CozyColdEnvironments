@@ -1,9 +1,13 @@
+using CCEnvs.Unity.GameSystems.Storages;
 using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public class ItemStorageReactive : ItemStorage, IItemStorageReactive
+    public class ItemStorageReactive
+        :
+        ItemStorage, 
+        IItemStorageReactive
     {
         private readonly ReactiveProperty<bool> isOpenedReactive = new();
 

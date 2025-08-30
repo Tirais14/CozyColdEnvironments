@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Tests
 
         public MethodInfo[] GetTestMethods()
         {
-            return thisType.GetMethods(BindingFlagsDefault.InstanceAll).Where(x => x.IsDefined<MonoCCTestAttribute>()).ToArray();
+            return thisType.GetMethods(BindingFlagsDefault.InstanceAll).Where(x => x.IsDefined<CCMonoTestAttribute>()).ToArray();
         }
 
         protected void Complete(string? testName = null)

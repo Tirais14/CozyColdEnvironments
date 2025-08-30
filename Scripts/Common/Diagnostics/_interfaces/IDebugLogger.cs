@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CCEnvs.Common.Diagnostics
+namespace CCEnvs.Common
 {
     public interface IDebugLogger
     {

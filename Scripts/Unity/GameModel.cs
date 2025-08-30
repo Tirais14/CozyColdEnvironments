@@ -1,6 +1,6 @@
+using CCEnvs.Unity.Diagnostics;
 using System;
 using UnityEngine;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 #pragma warning disable IDE1006

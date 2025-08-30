@@ -1,7 +1,8 @@
+using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.UI;
+using CCEnvs.Unity.UI.Storages;
 using UniRx;
 using UnityEngine;
-using CCEnvs.GameSystems.ItemStorageSystem;
-using CCEnvs.UI.Storages;
 
 #nullable enable
 namespace CCEnvs.UI

@@ -3,8 +3,7 @@
     "rootNamespace": "UTIRLib.Tests",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
-        "GUID:cec408dde85aac047a78e88de30b4173",
-        "GUID:d7e6b35e6ee7eb64ea3456f83ab6cf54",
+        "GUID:1898880136cb79448802a5416e8c3523",
         "GUID:0acc523941302664db1f4e527237feb3",
         "GUID:27619889b8ba8c24980f49ee34dbb44a"
     ],

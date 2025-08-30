@@ -1,7 +1,8 @@
-using CCEnvs.Async;
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
+using CCEnvs.Unity.Async;
 using CCEnvs.Unity.TypeMatching;
 using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace CCEnvs.Unity.Initables
             initable.Init();
             SetInited(initable);
 
-            CCEDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
+            CCDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
         /// <exception cref="CCEException"></exception>
         public static async UniTask InitObjectAsync(IInitableAsync initableAsync)
@@ -45,11 +46,11 @@ namespace CCEnvs.Unity.Initables
 
                 SetInited(initableAsync);
 
-                CCEDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
+                CCDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
             }
         }
 
@@ -378,7 +379,7 @@ namespace CCEnvs.Unity.Initables
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
             }
         }
 
@@ -398,12 +399,12 @@ namespace CCEnvs.Unity.Initables
                             item.initable,
                             item.attribute.InitableTypes,
                             allInitablesAsync))
-                                .Forget(ex => CCEDebug.PrintException(ex));
+                                .Forget(ex => CCDebug.PrintException(ex));
                 }
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
             }
         }
 
@@ -418,7 +419,7 @@ namespace CCEnvs.Unity.Initables
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
             }
         }
 

@@ -1,13 +1,11 @@
+using CCEnvs.Attributes;
+using CCEnvs.Unity.Diagnostics;
+using CCEnvs.Unity.Extensions;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
-using CCEnvs.Attributes;
-using CCEnvs.Diagnostics;
-using CCEnvs.InputSystem;
-using CCEnvs.Unity.Extensions;
 
 #nullable enable
-namespace CCEnvs.UI
+namespace CCEnvs.Unity.UI
 {
     public abstract class ADragHandler<T> : MonoCC,
         IBeginDragHandler,

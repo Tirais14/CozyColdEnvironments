@@ -1,5 +1,7 @@
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
+using CCEnvs.Unity.Diagnostics;
 using CCEnvs.Unity.Extensions;
 using System;
 using System.Globalization;
@@ -128,12 +130,12 @@ namespace CCEnvs.Unity.ComponentSetter
         {
             if (field.GetValue(source).IsNotNull())
             {
-                CCEDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
+                CCDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
                 return;
             }
             if (!IsTypeValid(field.FieldType))
             {
-                CCEDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
+                CCDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
                 return;
             }
 
@@ -177,7 +179,7 @@ namespace CCEnvs.Unity.ComponentSetter
                 return;
             if (!IsTypeValid(prop.PropertyType))
             {
-                CCEDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
+                CCDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
                 return;
             }
 

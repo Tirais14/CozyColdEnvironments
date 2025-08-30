@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.Returnables;
 
-namespace CCEnvs.GameSystems.Interactables
+namespace CCEnvs.Unity.GameSystems.Interactables
 {
     public interface IInteractable
     {

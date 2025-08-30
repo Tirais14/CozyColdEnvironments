@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.UI
+namespace CCEnvs.Unity.UI
 {
     public abstract class ATextView : MonoCC
     {

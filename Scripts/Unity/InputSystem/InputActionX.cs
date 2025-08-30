@@ -1,8 +1,9 @@
+using CCEnvs.Unity.InputSystem;
 using System;
-using UnityEngine.InputSystem;
-using static UnityEngine.InputSystem.InputAction;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.VFX;
+using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
 #pragma warning disable S3881

@@ -1,11 +1,13 @@
+using CCEnvs.Unity.GameSystems.Storages;
 using UniRx;
-using CCEnvs.GameSystems;
-using CCEnvs.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public class ItemStackReactive : IItemStack, IItemContainerReactive
+    public class ItemStackReactive
+        :
+        IItemStack,
+        IItemContainerReactive
     {
         private readonly ItemStack stack;
         private readonly ReactiveProperty<IStorageItem> itemReactive = new(new StorageItem());
@@ -91,7 +93,11 @@ namespace CCEnvs.Unity.UI.Storages
             itemCountReactive.Value = stack.ItemCount;
         }
     }
-    public class ItemStackReactive<T> : IItemStack<T>, IItemContainerReactive<IItemStack<T>, T>
+    public class ItemStackReactive<T>
+        :
+        IItemStack<T>,
+        IItemContainerReactive<IItemStack<T>, T>
+
         where T : IStorageItem, new()
     {
         private readonly ItemStack<T> stack;

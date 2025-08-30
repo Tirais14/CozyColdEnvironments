@@ -17,9 +17,5 @@ namespace CCEnvs.Unity.Async
         void RegisterTask(Task task);
 
         void RegisterTask(Func<bool> waitUntilFalse);
-
-#if USE_ADDRESSABLES
-        void RegisterTask(AsyncOperationHandle handle);
-#endif
     }
 }

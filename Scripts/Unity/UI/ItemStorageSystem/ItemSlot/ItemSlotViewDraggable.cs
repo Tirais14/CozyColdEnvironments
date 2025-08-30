@@ -1,7 +1,7 @@
+using CCEnvs.Unity.GameSystems.Storages;
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using CCEnvs.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages

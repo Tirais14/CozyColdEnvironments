@@ -1,5 +1,5 @@
+using CCEnvs.Unity.GameSystems.Storages;
 using UnityEngine;
-using CCEnvs.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace CCEnvs.Tests.GameSystems.Storage
@@ -8,7 +8,7 @@ namespace CCEnvs.Tests.GameSystems.Storage
     {
         public readonly string Name => "TestItem";
         public readonly int ID => 1;
-        public readonly Sprite Icon => CC.DummySprite;
+        public readonly Sprite Icon => Unity.CC.DummySprite;
         public readonly int MaxStackCount => 0;
     }
 }

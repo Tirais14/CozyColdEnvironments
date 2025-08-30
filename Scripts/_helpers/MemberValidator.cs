@@ -1,7 +1,8 @@
+using CCEnvs.Attributes;
+using CCEnvs.Common;
+using CCEnvs.Diagnostics;
 using System;
 using System.Reflection;
-using CCEnvs.Attributes;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 
@@ -46,7 +47,7 @@ namespace CCEnvs.Utils
                 {
                     fieldValue = field.GetValue(instance);
 
-                    CCDebug.AssertError(fieldValue.IsNull(),
+                    CCDebug.AssertError(fieldValue.IsNotNull(),
                         $"Field: {field.Name} in type: {instance.GetTypeName()} not setted but required.",
                         instance);
                 }
@@ -68,7 +69,7 @@ namespace CCEnvs.Utils
                 {
                     propertyValue = property.GetValue(instance);
 
-                    CCDebug.AssertError(propertyValue.IsNull(),
+                    CCDebug.AssertError(propertyValue.IsNotNull(),
                         $"Property: {property.Name} in type: {instance.GetTypeName()} not setted but required.",
                         instance);
                 }

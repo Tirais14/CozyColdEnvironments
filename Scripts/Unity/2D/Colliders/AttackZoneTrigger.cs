@@ -47,7 +47,7 @@ namespace CCEnvs.Unity.TwoD.Colliders
             for (int i = 0; i < directions.Length; i++)
                 AddCollider(directions[i]);
 
-            complexity = colliders.Count(Diagnostics.ObjectExtensions.IsNotNull);
+            complexity = colliders.Count(CCEnvs.Diagnostics.ObjectExtensions.IsNotNull);
         }
 
         protected void ConvertCollidersToTriggers()

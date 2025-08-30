@@ -1,4 +1,6 @@
 #nullable enable
+using CCEnvs.Common;
+
 namespace CCEnvs.Patterns.States
 {
     public abstract class AState<T> : IState

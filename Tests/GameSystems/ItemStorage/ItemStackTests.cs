@@ -1,5 +1,5 @@
+using CCEnvs.Unity.GameSystems.Storages;
 using NUnit.Framework;
-using CCEnvs.GameSystems.ItemStorageSystem;
 
 #nullable enable
 namespace CCEnvs.Tests.GameSystems.Storage

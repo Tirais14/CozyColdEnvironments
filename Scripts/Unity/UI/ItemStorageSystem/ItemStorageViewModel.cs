@@ -1,10 +1,14 @@
+using CCEnvs.Unity.UI.MVVM;
 using UniRx;
-using CCEnvs.UI.MVVM;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public class ItemStorageViewModel<T> : AViewModel<T>, IItemStorageViewModel<T>
+    public class ItemStorageViewModel<T>
+        
+        : AViewModel<T>,
+        IItemStorageViewModel<T>
+
         where T : IItemStorageReactive
     {
         public IReadOnlyReactiveProperty<bool> IsOpenedView => model.IsOpenedReactive;

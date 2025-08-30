@@ -1,7 +1,7 @@
-using CCEnvs.GameSystems.Interactables;
-using CCEnvs.GameSystems.Storages;
-
 #nullable enable
+using CCEnvs.Unity.GameSystems.Interactables;
+using CCEnvs.Unity.GameSystems.Storages;
+
 namespace CCEnvs.Unity.GameSystems.Collectables
 {
     public interface ICollectableItem : IInteractable<IItemStack>

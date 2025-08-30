@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.Collections.LowLevel.Unsafe;
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Utils;
-using System.Runtime.CompilerServices;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs
 {
-    using static Options.EnumFlagsOptions;
     public static class EnumFlagsExtensions
     {
         public static bool IsFlags(this Enum value)
@@ -25,14 +23,6 @@ namespace CCEnvs
 
         public static Enum[] ToArrayByFlags(this Enum value, string? exceptByName = "None")
         {
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return Array.Empty<Enum>();
-            }
-
             bool toExceptByName = exceptByName.IsNotNullOrEmpty();
             Enum[] typeValues = Enum.GetValues(value.GetType()).Cast<Enum>().ToArray();
             List<Enum> result = new(typeValues.Length);
@@ -58,14 +48,6 @@ namespace CCEnvs
         public static T[] ToArrayByFlags<T>(this T value, string? exceptByName = "None")
             where T : unmanaged, Enum
         {
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return Array.Empty<T>();
-            }
-
             bool toExceptByName = exceptByName.IsNotNullOrEmpty();
             List<T> result = new();
             T[] typeValues = EnumCache<T>.Values;
@@ -88,46 +70,6 @@ namespace CCEnvs
             return result.ToArray();
         }
 
-        /// <exception cref="EnumNotFlagsException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        public static bool IsFlagSetted<T>(this T value, T flag)
-            where T : unmanaged, Enum
-        {
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return false;
-            }
-
-            switch (Unsafe.SizeOf<T>())
-            {
-                case 1:
-                    byte valueByte = value.ToByte();
-                    byte flagByte = flag.ToByte();
-
-                    return (valueByte & flagByte) == flagByte;
-                case 2:
-                    ushort valueShort = value.ToUshort();
-                    ushort flagShort = flag.ToUshort();
-
-                    return (valueShort & flagShort) == flagShort;
-                case 4:
-                    uint valueInt = value.ToUint();
-                    uint flagInt = flag.ToUint();
-
-                    return (valueInt & flagInt) == flagInt;
-                case 8:
-                    ulong valueLong = value.ToUlong();
-                    ulong flagLong = flag.ToUlong();
-
-                    return (valueLong & flagLong) == flagLong;
-                default:
-                    throw new InvalidOperationException("Unsupported enum size.");
-            }
-        }
-
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="EnumNotFlagsException"></exception>
         public static bool IsFlagsSetted<T>(this T value, IEnumerable<T> flags)
@@ -137,13 +79,6 @@ namespace CCEnvs
                 throw new ArgumentNullException(nameof(flags));
             if (flags.IsEmpty())
                 return false;
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return false;
-            }
 
             foreach (var flag in flags)
             {
@@ -162,13 +97,6 @@ namespace CCEnvs
                 throw new ArgumentNullException(nameof(flags));
             if (flags.IsEmpty())
                 return false;
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return false;
-            }
 
             int flagsCount = flags.Length;
             for (int i = 0; i < flagsCount; i++)
@@ -188,7 +116,7 @@ namespace CCEnvs
         public static T SetFlag<T>(this T value, T flag)
             where T : unmanaged, Enum
         {
-            return SetFlagInternal(value, flag, isToSet: true);
+            return EnumFlagsHelper.SetFlagInternal(value, flag, isToSet: true);
         }
         public static T SetFlags<T>(this T value, IEnumerable<T> flags)
             where T : unmanaged, Enum
@@ -215,7 +143,7 @@ namespace CCEnvs
         public static T ResetFlag<T>(this T value, T flag)
             where T : unmanaged, Enum
         {
-            return SetFlagInternal(value, flag, isToSet: false);
+            return EnumFlagsHelper.SetFlagInternal(value, flag, isToSet: false);
         }
         public static T ResetFlags<T>(this T value, IEnumerable<T> flags)
             where T : unmanaged, Enum
@@ -241,158 +169,12 @@ namespace CCEnvs
 
         public static string[] ToStringArrayByFlags(this Enum value)
         {
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return Array.Empty<string>();
-            }
-
             return value.ToArrayByFlags().ToStringArray();
         }
         public static string[] ToStringArrayByFlags<T>(this T value)
             where T : unmanaged, Enum
         {
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return Array.Empty<string>();
-            }
-
             return value.ToArrayByFlags().ToStringArray();
-        }
-
-        #region Collections
-        public static T UniteFlags<T>(this T[] values)
-            where T : unmanaged, Enum
-        {
-            T result = default;
-            for (int i = 0; i < values.Length; i++)
-                result.SetFlag(values[i]);
-
-            return result;
-        }
-        public static T UniteFlags<T>(this IEnumerable<T> values)
-            where T : unmanaged, Enum
-        {
-            T result = default;
-            foreach (var value in values)
-                result.SetFlag(value);
-
-            return result;
-        }
-
-        public static string[] ToStringArray(this Enum[] values)
-        {
-            return values.Select(x => x.ToString()).ToArray();
-        }
-        public static string[] ToStringArray<T>(this T[] values)
-            where T : unmanaged, Enum
-        {
-            return values.Select(x => x.ToString()).ToArray();
-        }
-        #endregion Collections
-
-        /// <exception cref="EnumNotFlagsException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        private static T SetFlagInternal<T>(T value, T flag, bool isToSet)
-            where T : unmanaged, Enum
-        {
-            if (!value.IsFlags())
-            {
-                if (ThrowNotFlagsException)
-                    throw new EnumNotFlagsException(value.GetType());
-                else
-                    return value;
-            }
-
-            return Unsafe.SizeOf<T>() switch
-            {
-                1 => SetFlagByteInternal(value, flag, isToSet),
-                2 => SetFlagInt16Internal(value, flag, isToSet),
-                4 => SetFlagInt32Internal(value, flag, isToSet),
-                8 => SetFlagInt64Internal(value, flag, isToSet),
-                _ => throw new InvalidOperationException("Unsupported enum size."),
-            };
-        }
-        private static T SetFlagByteInternal<T>(T value, T flag, bool isToSet)
-        {
-            byte valueByte = Unsafe.As<T, byte>(ref value);
-            byte flagByte = Unsafe.As<T, byte>(ref flag);
-
-            if (isToSet)
-                valueByte |= flagByte;
-            else
-                valueByte &= (byte)~flagByte;
-
-            return Unsafe.As<byte, T>(ref valueByte);
-        }
-        private static T SetFlagInt16Internal<T>(T value, T flag, bool isToSet)
-        {
-            ushort valueByte = UnsafeUtility.As<T, ushort>(ref value);
-            ushort flagByte = UnsafeUtility.As<T, ushort>(ref flag);
-
-            if (isToSet)
-                valueByte |= flagByte;
-            else
-                valueByte &= (ushort)~flagByte;
-
-            return Unsafe.As<ushort, T>(ref valueByte);
-        }
-        private static T SetFlagInt32Internal<T>(T value, T flag, bool isToSet)
-        {
-            uint valueByte = Unsafe.As<T, uint>(ref value);
-            uint flagByte = Unsafe.As<T, uint>(ref flag);
-
-            if (isToSet)
-                valueByte |= flagByte;
-            else
-                valueByte &= ~flagByte;
-
-            return Unsafe.As<uint, T>(ref valueByte);
-        }
-        private static T SetFlagInt64Internal<T>(T value, T flag, bool isToSet)
-        {
-            ulong valueByte = Unsafe.As<T, ulong>(ref value);
-            ulong flagByte = Unsafe.As<T, ulong>(ref flag);
-
-            if (isToSet)
-                valueByte |= flagByte;
-            else
-                valueByte &= ~flagByte;
-
-            return Unsafe.As<ulong, T>(ref valueByte);
-        }
-
-        /// <exception cref="EnumNotFlagsException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static bool HasFlags(this Enum value, params Enum[] flags)
-        {
-            if (!value.IsFlags())
-                throw new EnumNotFlagsException(value.GetType());
-            if (flags is null)
-                throw new ArgumentNullException(nameof(flags));
-            if (flags.IsEmpty())
-                return false;
-
-            for (int i = 0; i < flags.Length; i++)
-            {
-                if (!value.HasFlag(flags[i]))
-                    return false;
-            }
-
-            return true;
-        }
-        public static bool HasFlags(this Enum value, IEnumerable<Enum> flags)
-        {
-            return value.HasFlags(flags.ToArray());
-        }
-        public static bool HasFlags(this Enum value, Enum flags)
-        {
-            return value.HasFlags(flags.ToArrayByFlags());
         }
     }
 }

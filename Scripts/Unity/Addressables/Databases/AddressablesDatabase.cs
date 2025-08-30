@@ -1,11 +1,11 @@
+using CCEnvs.Common;
+using CCEnvs.Diagnostics;
+using CCEnvs.Unity.Initables;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using CCEnvs.AddressableAssets;
-using CCEnvs.Diagnostics;
-using CCEnvs.Initables;
 
 #nullable enable
 #pragma warning disable S2743
@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.AddressableAssets.Databases
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
             }
         }
 
@@ -60,7 +60,7 @@ namespace CCEnvs.Unity.AddressableAssets.Databases
             }
             catch (Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
                 return Array.Empty<T>();
             }
         }

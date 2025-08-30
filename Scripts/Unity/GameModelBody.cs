@@ -1,6 +1,7 @@
+using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Extensions;
 using System;
 using UnityEngine;
-using CCEnvs.Unity.Extensions;
 
 #nullable enable
 #pragma warning disable IDE0044

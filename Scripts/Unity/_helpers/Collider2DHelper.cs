@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -36,7 +37,7 @@ namespace CCEnvs.Unity
         {
             if (excludeObjs.HasNullElement())
             {
-                throw new Diagnostics.CollectionItemException();
+                throw new CollectionItemException();
             }
             if (overlaps == null)
             {

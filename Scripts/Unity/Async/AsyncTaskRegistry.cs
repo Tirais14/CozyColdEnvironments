@@ -42,20 +42,13 @@ namespace CCEnvs.Unity.Async
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public void RegisterTask(Func<bool> waitWhileFalse)
+        public void RegisterTask(Func<bool> waitUntilFalse)
         {
-            if (waitWhileFalse is null)
-                throw new ArgumentNullException(nameof(waitWhileFalse));
+            if (waitUntilFalse is null)
+                throw new ArgumentNullException(nameof(waitUntilFalse));
 
-            RegisterTask(UniTask.RunOnThreadPool(waitWhileFalse));
+            RegisterTask(UniTask.RunOnThreadPool(waitUntilFalse));
         }
-
-#if USE_ADDRESSABLES
-        public void RegisterTask(AsyncOperationHandle handle)
-        {
-            RegisterTask(handle.Task);
-        }
-#endif
 
         private void TrackTasks()
         {

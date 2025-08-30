@@ -4,7 +4,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Common.Diagnostics
+namespace CCEnvs.Common
 {
     public sealed class DebugLogger : IDebugLogger
     {
@@ -29,7 +29,11 @@ namespace CCEnvs.Common.Diagnostics
             if (!IsPrintAllowed(context))
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.Log(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void PrintWarning(object message, object? context = null)
@@ -37,7 +41,11 @@ namespace CCEnvs.Common.Diagnostics
             if (!IsPrintAllowed(context))
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.LogWarning(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void PrintError(object message, object? context = null)
@@ -45,7 +53,11 @@ namespace CCEnvs.Common.Diagnostics
             if (!IsPrintAllowed(context))
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.LogError(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void PrintException(Exception exception, object? context = null)
@@ -53,39 +65,59 @@ namespace CCEnvs.Common.Diagnostics
             if (!IsPrintAllowed(context))
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.LogException(exception, context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void AssertLog(bool condition, object message, object? context)
         {
-            if (!IsPrintAllowed(context) || !condition)
+            if (!IsPrintAllowed(context) || condition)
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.Log(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void AssertWarning(bool condition, object message, object? context)
         {
-            if (!IsPrintAllowed(context) || !condition)
+            if (!IsPrintAllowed(context) || condition)
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.LogWarning(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void AssertError(bool condition, object message, object? context)
         {
-            if (!IsPrintAllowed(context) || !condition)
+            if (!IsPrintAllowed(context) || condition)
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.LogError(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
         }
 
         public void AssertException(bool condition, Exception exception, object? context)
         {
-            if (!IsPrintAllowed(context) || !condition)
+            if (!IsPrintAllowed(context) || condition)
                 return;
 
+#if UNITY_2017_1_OR_NEWER
             Debug.LogException(exception, context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(exception);
+#endif
         }
 
         private static string GetMessage(object message, object? context)

@@ -1,5 +1,4 @@
 using UniRx;
-using CCEnvs.UI.Storages;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages

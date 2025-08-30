@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Common;
 using System.Linq;
 
 namespace CCEnvs.Unity
@@ -16,7 +17,7 @@ namespace CCEnvs.Unity
                                   UnityEngine.FindObjectsSortMode.None)
                 .Any(x => x != this))
             {
-                CCEDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
+                CCDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
                 Destroy(this);
             }
         }

@@ -1,3 +1,4 @@
+using CCEnvs.Common;
 using UnityEngine.AddressableAssets;
 
 #nullable enable
@@ -17,7 +18,7 @@ namespace CCEnvs.Unity.AddressableAssets
             }
             catch (System.Exception ex)
             {
-                CCEDebug.PrintException(ex);
+                CCDebug.PrintException(ex);
                 throw;
             }
         }

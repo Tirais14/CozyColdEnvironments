@@ -1,12 +1,17 @@
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.ObjectModel;
 using CCEnvs.UI.MVVM;
+using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.UI.MVVM;
 using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public class ItemStorageView<TViewModel, TModel> : AView<TViewModel>
+    public class ItemStorageView<TViewModel, TModel>
+        :
+        AView<TViewModel>
+
         where TViewModel : IItemStorageViewModel<TModel>
         where TModel : IItemStorageReactive
     {

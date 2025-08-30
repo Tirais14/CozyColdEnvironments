@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S101
-namespace CCEnvs.Common.Diagnostics
+namespace CCEnvs.Common
 {
     public static class CCDebug 
     {

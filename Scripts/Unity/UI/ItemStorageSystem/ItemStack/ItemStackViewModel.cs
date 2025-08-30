@@ -1,15 +1,19 @@
+using CCEnvs.Disposables;
+using CCEnvs.UI;
+using CCEnvs.Unity.Extensions;
+using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.UI.MVVM;
 using UniRx;
 using UnityEngine;
-using CCEnvs.Disposables;
-using CCEnvs.GameSystems.ItemStorageSystem;
-using CCEnvs.UI.MVVM;
-using CCEnvs.Unity.Extensions;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public class ItemStackViewModel<T> : AViewModel<T>,
+    public class ItemStackViewModel<T>
+        :
+        AViewModel<T>,
         IItemStackViewModel<T>
+
         where T : IItemStack, IItemContainerReactive
     {
         private readonly ReactiveProperty<string> counterView = new();

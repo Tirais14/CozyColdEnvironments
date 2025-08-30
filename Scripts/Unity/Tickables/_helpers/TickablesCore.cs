@@ -1,13 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.TypeMatching;
 using CCEnvs.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Tickables
@@ -52,7 +53,7 @@ namespace CCEnvs.Unity.Tickables
                 return false;
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
             {
-                CCEDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesCore)}. Return false.", Instance);
+                CCDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesCore)}. Return false.", Instance);
                 return false;
             }
 

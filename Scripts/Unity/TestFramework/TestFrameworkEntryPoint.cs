@@ -76,7 +76,7 @@ namespace CCEnvs.Unity.Tests
                                         .GetMethods(BindingFlagsDefault.InstanceAll)
                                         .Aggregate(new List<MethodInfo>(), (list, y) =>
                                         {
-                                            if (y.IsDefined<MonoCCTestAttribute>()
+                                            if (y.IsDefined<CCMonoTestAttribute>()
                                                 &&
                                                 y.ReturnType.IsAnyType(typeof(void), typeof(IEnumerator))
                                                 )

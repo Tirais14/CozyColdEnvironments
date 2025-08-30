@@ -1,9 +1,9 @@
-using System;
+using CCEnvs.Common;
+using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Extensions;
+using CCEnvs.Unity.Linq;
 using UniRx;
 using UnityEngine;
-using CCEnvs.Unity;
-using CCEnvs.Unity.Extensions;
-using CCEnvs.Vectors.Linq;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -82,6 +82,17 @@ namespace CCEnvs.Unity.ThreeD
 
             characterCameraTransform = characterCamera.transform;
             BindReactiveProps();
+        }
+
+        private void Update()
+        {
+            IsOnSufaceObserver();
+        }
+
+        private void FixedUpdate()
+        {
+            if (IsMoving)
+                SnapToSurface();
         }
 
         public void Jump(bool inputValue)
@@ -166,7 +177,7 @@ namespace CCEnvs.Unity.ThreeD
                 return;
             }
 
-            CCDebug.AssertError(hit.transform == transform, "Collide with self.");
+            CCDebug.AssertError(hit.transform != transform, "Collide with self.");
 
             IsOnSurface = hit.distance.NearlyEquals(RAYCAST_SURFACE_OFFSET, 1f);
             surfaceHit = hit;
@@ -176,17 +187,6 @@ namespace CCEnvs.Unity.ThreeD
         {
             float lerpedY = Mathf.Lerp(rigidBody.position.y, surfaceHit.point.y, 0.01f);
             rigidBody.MovePosition(rigidBody.position.Q().SetY(lerpedY));
-        }
-
-        private void Update()
-        {
-            IsOnSufaceObserver();
-        }
-
-        private void FixedUpdate()
-        {
-            if (IsMoving)
-                SnapToSurface();
         }
     }
 }
