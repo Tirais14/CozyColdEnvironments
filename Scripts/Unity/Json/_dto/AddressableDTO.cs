@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.Json.Converters
 {
     [JsonObject]
     [Serializable]
-    public record AddressableDto : IJsonDTO
+    public record AddressableDto : IJsonDto
     {
         [JsonProperty("assetPath")]
         public string AssetPath { get; set; } = string.Empty;
@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.Json.Converters
     }
 
     [Serializable]
-    public record AddressableDTO<T>
+    public record AddressableDto<T>
         :
         AddressableDto
 
@@ -84,7 +84,7 @@ namespace CCEnvs.Unity.Json.Converters
             set => base.LoadHandle = value;
         }
 
-        public AddressableDTO()
+        public AddressableDto()
         {
             AssetType = typeof(T);
         }

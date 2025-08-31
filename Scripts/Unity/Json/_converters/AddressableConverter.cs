@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.Json.Converters
                                     bool hasExistingValue,
                                     JsonSerializer serializer)
         {
-            var dto = serializer.Deserialize<AddressableDTO<T>>(reader);
+            var dto = serializer.Deserialize<AddressableDto<T>>(reader);
 
             if (dto is null)
                 return null;
@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.Json.Converters
 
 #if UNITY_EDITOR
             string assetPath = AssetDatabase.GetAssetPath(value);
-            serializer.Serialize(writer, new AddressableDTO<T>
+            serializer.Serialize(writer, new AddressableDto<T>
             {
                 AssetPath = assetPath,
                 GUID = AssetDatabase.AssetPathToGUID(assetPath)

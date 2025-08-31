@@ -1,6 +1,5 @@
 #nullable enable
 
-#pragma warning disable S101
 namespace CCEnvs
 {
     public static class CC

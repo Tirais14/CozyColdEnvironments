@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Json
     public static class UnityJsonInstanceFactory
     {
         public static T Create<TDto, T>(TDto dto)
-            where TDto : IJsonDTO
+            where TDto : IJsonDto
         {
             if (UnityJsonSettingsProvider.TryGetFactoryByDtoMethod(out Func<TDto, T>? method))
                 return InstanceFactory.CreateBy<T>(dto);

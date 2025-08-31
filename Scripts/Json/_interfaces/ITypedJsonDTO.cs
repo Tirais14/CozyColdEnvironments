@@ -5,7 +5,7 @@ using System;
 #pragma warning disable S101
 namespace CCEnvs.Json
 {
-    public interface ITypedJsonDTO : IJsonDTO
+    public interface ITypedJsonDTO : IJsonDto
     {
         public Type ObjectType { get; }
     }

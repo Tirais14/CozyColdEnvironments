@@ -63,7 +63,7 @@ namespace CCEnvs.Unity.Json
         }
 
         public static void AddOrReplaceFactoryByDtoMethod<TDto, T>(Func<TDto, T> func)
-            where TDto : IJsonDTO
+            where TDto : IJsonDto
         {
             if (factoryByDtoMethods.ContainsKey(typeof(T)))
             {
@@ -76,7 +76,7 @@ namespace CCEnvs.Unity.Json
 
         public static bool TryGetFactoryByDtoMethod<TDto, T>(
             [NotNullWhen(true)] out Func<TDto, T>? result)
-            where TDto : IJsonDTO
+            where TDto : IJsonDto
         {
             if (factoryByDtoMethods.TryGetValue(typeof(T), out Delegate methodUntyped))
             {

@@ -10,7 +10,7 @@ namespace CCEnvs.Diagnostics
         {
         }
 
-        public TypeNotFoundException(TypeSearchingParameters parameters) 
+        public TypeNotFoundException(TypeFinderParameters parameters) 
             : base($"Parameters: {parameters}.")
         {
         }

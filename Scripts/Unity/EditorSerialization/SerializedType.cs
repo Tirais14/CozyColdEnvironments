@@ -14,13 +14,10 @@ namespace CCEnvs.Unity.EditorSerialization
         private Type? value;
 
         [SerializeField]
-        private string namespacePart;
+        private string _namespace;
 
         [SerializeField]
         private string typeName;
-
-        [SerializeField]
-        private bool isNamespacedFullName;
 
         public Type? Value {
             get
@@ -34,7 +31,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public SerializedType(string typeName, string? namespacePart = null) : this()
         {
-            this.namespacePart = namespacePart ?? string.Empty;
+            this._namespace = namespacePart ?? string.Empty;
             this.typeName = typeName;
 
             FindTypeByName();
@@ -47,11 +44,10 @@ namespace CCEnvs.Unity.EditorSerialization
             if (typeName.IsNullOrEmpty())
                 throw new StringException(typeName);
 
-            value = TypeSearch.FindTypeInAppDomain(new TypeSearchingParameters
+            value = TypeFinder.FindTypeInAppDomain(new TypeFinderParameters
             {
-                NamepsacePart = namespacePart,
+                Namepsace = _namespace,
                 TypeName = typeName,
-                SearchByFullName = isNamespacedFullName
             });
         }
 

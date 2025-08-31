@@ -109,9 +109,9 @@ namespace CCEnvs.FileSystem
         {
 
 
-            string[] parts = new ArrayS<string>(path)
-                                 .Concat(pathParts)
-                                 .ToArray();
+            string[] parts = CC.Create.Array(path)
+                                      .Concat(pathParts)
+                                      .ToArray();
 
             return Combine(style, parts);
         }

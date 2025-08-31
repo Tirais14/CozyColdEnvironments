@@ -74,9 +74,11 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         IItemContainer IItemContainer.TakeItemAll() => TakeItemAll();
     }
-    public interface IItemContainer<TContainer, TItem> :
+    public interface IItemContainer<TContainer, TItem> 
+        :
         IItemContainer<TContainer>,
         IItemContainerInfo<TItem>
+
         where TContainer : IItemContainer
         where TItem : IStorageItem
     {
