@@ -1,10 +1,11 @@
 using System.Collections;
+using static CCEnvs.Diagnostics.ExceptionMessageConstructor;
 
 #nullable enable
 
 namespace CCEnvs.Diagnostics
 {
-    public class CollectionException : CCEException
+    public class CollectionException : CCException
     {
         public CollectionException()
         {
@@ -16,13 +17,15 @@ namespace CCEnvs.Diagnostics
 
         public CollectionException(IEnumerable? collection)
             : 
-            base(ConstructMessage(typeof(CollectionException), collection))
+            base(ConstructMessage<CollectionException>(TypeValuePair.Create(collection)))
         {
         }
 
         public CollectionException(IEnumerable? collection, string message)
             :
-             base(ConstructMessage(typeof(CollectionException), collection, message))
+             base(ConstructMessage<CollectionException>(
+                 TypeValuePair.Create(collection),
+                 new TypeValuePair(message)))
         {
         }
     }

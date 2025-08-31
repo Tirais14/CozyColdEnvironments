@@ -6,8 +6,9 @@ using UnityEngine;
 #pragma warning disable S1104
 namespace CCEnvs.Json.DTO
 {
+    [JsonObject]
     [Serializable]
-    public struct Vector3IntDTO
+    public struct Vector3IntDto : IJsonDTO
     {
         [JsonProperty(nameof(x))]
         public int x;
@@ -16,7 +17,7 @@ namespace CCEnvs.Json.DTO
         [JsonProperty(nameof(z))]
         public int z;
 
-        public static implicit operator Vector3Int(Vector3IntDTO dto)
+        public static implicit operator Vector3Int(Vector3IntDto dto)
         {
             return new Vector3Int(dto.x, dto.y, dto.z);
         }

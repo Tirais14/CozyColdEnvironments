@@ -69,9 +69,10 @@ namespace CCEnvs.Reflection
             });
 
             if (throwIfNotFound && found is null)
-                throw new MemberNotFoundException(type,
-                                                  MemberType.Constructor,
-                                                  constructorParameters);
+                throw new ConstructorNotFoundException(
+                    type,
+                    constructorParameters.BindingFlags,
+                    constructorParameters.Arguments.signature);
 
             return found;
         }
@@ -177,7 +178,10 @@ namespace CCEnvs.Reflection
             if (method is null)
             {
                 if (throwIfNotFound)
-                    throw new MemberNotFoundException(value, MemberType.Method, bindings);
+                    throw new MethodNotFoundException(
+                        value,
+                        bindings.MethodName,
+                        bindings.BindingFlags);
                 else
                     return method;
             }

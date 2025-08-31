@@ -4,7 +4,7 @@ using CCEnvs.Diagnostics;
 #nullable enable
 namespace CCEnvs.Reflection.Diagnostics
 {
-    public class ConstructorNotFoundException : CCEException
+    public class ConstructorNotFoundException : CCException
     {
         public ConstructorNotFoundException()
         {

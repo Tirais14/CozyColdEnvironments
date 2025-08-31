@@ -1,9 +1,10 @@
 using System;
+using static CCEnvs.Diagnostics.ExceptionMessageConstructor;
 
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public class TypeCastException : CCEException
+    public class TypeCastException : CCException
     {
         public TypeCastException()
         {
@@ -11,7 +12,9 @@ namespace CCEnvs.Diagnostics
 
         public TypeCastException(Type? fromType, Type toType)
             :
-            base(ConstructMessage(typeof(TypeCastException), new Internal.ArgumentInfo(fromType, typeof(Type)), toType))
+            base(ConstructMessage<TypeCastException>(
+                TypeValuePair.Create(fromType),
+                new TypeValuePair(toType)))
         {
         }
     }

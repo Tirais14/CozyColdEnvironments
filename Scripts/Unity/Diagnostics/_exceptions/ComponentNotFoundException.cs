@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.Diagnostics
 {
-    public class ComponentNotFoundException : CCEException
+    public class ComponentNotFoundException : CCException
     {
         public ComponentNotFoundException()
         {

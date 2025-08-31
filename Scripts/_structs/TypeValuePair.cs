@@ -26,6 +26,11 @@ namespace CCEnvs
         {
         }
 
+        public static TypeValuePair Create<T>(T? value)
+        {
+            return new TypeValuePair(typeof(T), value);
+        }
+
         public static bool operator ==(TypeValuePair left, TypeValuePair right)
         {
             return left.Equals(right);

@@ -26,10 +26,10 @@ namespace CCEnvs.Reflection.Injections
             if (field is null)
             {
                 if (throwIfFailed)
-                    throw new MemberNotFoundException(
+                    throw new FieldNotFoundException(
                         target.type,
-                        MemberType.Field,
-                        fieldName);
+                        fieldName,
+                        bindingFlags);
 
                 return false;
             }
@@ -76,10 +76,10 @@ namespace CCEnvs.Reflection.Injections
             if (prop is null)
             {
                 if (throwIfFailed)
-                    throw new MemberNotFoundException(
+                    throw new PropertyNotFoundException(
                         target.type,
-                        MemberType.Field,
-                        propName);
+                        propName,
+                        bindingFlags);
 
                 return false;
             }

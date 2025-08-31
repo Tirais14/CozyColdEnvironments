@@ -21,24 +21,24 @@ namespace CCEnvs.Unity.Initables
     {
         public static AsyncTaskRegistry TaskRegistry { get; } = new();
 
-        /// <exception cref="CCEException"></exception>
+        /// <exception cref="CCException"></exception>
         public static void InitObject(IInitable initable)
         {
             if (initable.IsInited)
-                throw new CCEException($"{initable.GetTypeName()} is already inited.");
+                throw new CCException($"{initable.GetTypeName()} is already inited.");
 
             initable.Init();
             SetInited(initable);
 
             CCDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
-        /// <exception cref="CCEException"></exception>
+        /// <exception cref="CCException"></exception>
         public static async UniTask InitObjectAsync(IInitableAsync initableAsync)
         {
             try
             {
                 if (initableAsync.IsInited)
-                    throw new CCEException($"{initableAsync.GetTypeName()} is already inited.");
+                    throw new CCException($"{initableAsync.GetTypeName()} is already inited.");
 
                 var task = initableAsync.InitAsync();
                 TaskRegistry.RegisterTask(task);
@@ -120,7 +120,7 @@ namespace CCEnvs.Unity.Initables
                 x.PropertyType == typeof(bool)
                 ) 
                 ?? 
-                throw new MemberNotFoundException(initable.GetType(), MemberType.Property);
+                throw new PropertyNotFoundException(initable.GetType(), nameof(IInitableBase.IsInited));
 
             if (isInitedProp.SetMethod is null)
                 throw new InvalidOperationException("Not found SetMethod.");
@@ -220,7 +220,7 @@ namespace CCEnvs.Unity.Initables
             IInitable[] firstInits = GetFirstInits(inits);
 
             if (firstInits.CountNotNull() == 0)
-                throw new CCEException("Not found any first initable.");
+                throw new CCException("Not found any first initable.");
 
             for (int i = 0; i < firstInits.Length; i++)
                 queue.Enqueue(firstInits[i]);

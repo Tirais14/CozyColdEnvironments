@@ -4,6 +4,8 @@ using CCEnvs.Reflection;
 using CCEnvs.Reflection.Cached;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.ObjectModel;
+using System.Linq;
+using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs
@@ -45,10 +47,10 @@ namespace CCEnvs
                 if (ctor is null)
                 {
                     if (throwIfNotFound)
-                        throw new MemberNotFoundException(
+                        throw new ConstructorNotFoundException(
                             type,
-                            MemberType.Constructor,
-                            bindings);
+                            bindings.BindingFlags,
+                            bindings.Arguments.signature);
 
                     return null!;
                 }
@@ -81,6 +83,75 @@ namespace CCEnvs
                                   Parameters parameters = Parameters.Default)
         {
             return (T)Create(type, args, parameters);
+        }
+
+        /// <summary>
+        /// Creates type by fields and props in data and by comparing it names.
+        /// Skips readonly fields and properties without setter.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static object CreateBy(Type type,
+                                      object data,
+                                      Parameters parameters = Parameters.Default)
+        {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+            if (data.IsNull())
+                throw new ArgumentNullException(nameof(data));
+
+            object created = Create(type,
+                new ConstructorBindings
+                {
+                    BindingFlags = BindingFlagsDefault.InstanceAll,
+                    Arguments = ExplicitArguments.Empty
+                },
+                parameters);
+
+            Type dataType = data.GetType();
+
+            FieldInfo[] fields = dataType.ForceGetFields(
+                BindingFlagsDefault.InstanceAll)
+                .Where(x => !x.IsInitOnly)
+                .ToArray();
+
+            IEnumerable<FieldInfo> createdFields = type.ForceGetFields(
+                BindingFlagsDefault.InstanceAll)
+                .Where(x => !x.IsInitOnly);
+
+            foreach (var createdField in createdFields)
+            {
+                if (fields.Find(x => x.Name.Equals(createdField.Name))
+                    is FieldInfo foundField
+                    )
+                    createdField.SetValue(created, foundField.GetValue(data));
+            }
+
+            PropertyInfo[] props = dataType.ForceGetProperties(
+                BindingFlagsDefault.InstanceAll)
+                .Where(x => x.CanWrite && x.CanRead)
+                .ToArray();
+
+            IEnumerable<PropertyInfo> createdProps = type.ForceGetProperties(
+                BindingFlagsDefault.InstanceAll)
+                .Where(x => x.CanWrite && x.CanRead);
+
+            foreach (var createdProp in createdProps)
+            {
+                if (props.Find(x => x.Name.Equals(createdProp.Name))
+                    is PropertyInfo foundProp
+                    )
+                    createdProp.SetValue(created, foundProp.GetValue(data));
+            }
+
+            return created;
+        }
+
+        /// <summary>
+        /// <see cref="CreateBy(Type, object, Parameters)"/>
+        /// </summary>
+        public static T CreateBy<T>(object data, Parameters parameters = Parameters.Default)
+        {
+            return (T)CreateBy(typeof(T), data, parameters);
         }
     }
 }

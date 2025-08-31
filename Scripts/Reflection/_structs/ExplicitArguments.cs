@@ -8,6 +8,8 @@ namespace CCEnvs.Reflection.ObjectModel
 {
     public readonly struct ExplicitArguments : IEquatable<ExplicitArguments>
     {
+        public static ExplicitArguments Empty => new(Array.Empty<object>());
+
         public readonly Signature signature;
         public readonly Arguments arguments;
 

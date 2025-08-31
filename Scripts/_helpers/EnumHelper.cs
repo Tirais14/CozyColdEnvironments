@@ -18,8 +18,8 @@ namespace CCEnvs.Utils
             if (!enumType.IsEnum && !enumType.IsType<Enum>())
                 throw new ArgumentException($"{enumType.Name} is not enum.");
 
-            FieldInfo field = enumType.GetField(name) ??
-                throw new MemberNotFoundException(enumType, MemberType.Field, name);
+            FieldInfo field = enumType.GetField(name, BindingFlagsDefault.All) ??
+                throw new FieldNotFoundException(enumType, name, BindingFlagsDefault.All);
 
             return field;
         }

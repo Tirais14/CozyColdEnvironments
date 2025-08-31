@@ -6,42 +6,11 @@ using System.Linq;
 using System.Reflection;
 
 #nullable enable
-
-#pragma warning disable S1751
-#pragma warning disable S101
 namespace CCEnvs.Diagnostics
 {
-    public class CCEException : Exception
+    public static class ExceptionMessageConstructor
     {
-        private const string PARAM_NAME_MSG = "Parameter: {0}";
-
-        public CCEException() : base()
-        {
-        }
-
-        public CCEException(string message,
-                               Exception? innerException = null)
-            :
-            base(message, innerException)
-        {
-        }
-
-        public CCEException(Exception? innerException,
-                               string notFormattedMessage,
-                               params object[] args)
-            :
-            base(string.Format(notFormattedMessage, args), innerException)
-        {
-        }
-
-        public CCEException(string notFormattedMessage,
-                               params object[] args)
-            :
-            base(string.Format(notFormattedMessage, args))
-        {
-        }
-
-        protected static string CombineToAssignmentMessage(
+        public static string CombineToAssignmentMessage(
             params (string paramName, string value)[] args)
         {
             IEnumerable<string> converted = args.Select(x => x.paramName + " = " + x.value);
@@ -49,7 +18,7 @@ namespace CCEnvs.Diagnostics
             return converted.JoinStrings(", ");
         }
 
-        protected static string DefineParameterValue(object? value)
+        public static string DefineParameterValue(object? value)
         {
             if (value is null)
                 return "null";
@@ -82,7 +51,7 @@ namespace CCEnvs.Diagnostics
             return value.ToString();
         }
 
-        protected static string ConstructMessage(Type thisType,
+        public static string ConstructMessage(Type thisType,
             params TypeValuePair[] args)
         {
             ConstructorInfo ctor = thisType.GetConstructor(
@@ -100,7 +69,7 @@ namespace CCEnvs.Diagnostics
 
             return CombineToAssignmentMessage(converted.ToArray());
         }
-        protected static string ConstructMessage(Type thisType, params object[] args)
+        public static string ConstructMessage(Type thisType, params object[] args)
         {
             TypeValuePair[] infos = args.Select(x =>
             {
@@ -112,11 +81,15 @@ namespace CCEnvs.Diagnostics
 
             return ConstructMessage(thisType, infos!);
         }
-
-        [Obsolete("Use CombineToAssignmentMessage instead.")]
-        protected static string GetParamNameMsg(string paramName) => string.Format(PARAM_NAME_MSG, paramName);
-
-        [Obsolete("Use GetType().GetName() instead.")]
-        protected static string GetObjectTypeName(object? obj) => obj.IsNull() ? "null" : obj.GetType().Name;
+        public static string ConstructMessage<T>(params TypeValuePair[] args)
+            where T : Exception
+        {
+            return ConstructMessage(typeof(T), args);
+        }
+        public static string ConstructMessage<T>(params object[] args)
+            where T : Exception
+        {
+            return ConstructMessage(typeof(T), args);
+        }
     }
 }

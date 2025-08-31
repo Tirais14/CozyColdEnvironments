@@ -12,8 +12,9 @@ using Object = UnityEngine.Object;
 #pragma warning disable S101
 namespace CCEnvs.Unity.Json.Converters
 {
+    [JsonObject]
     [Serializable]
-    public record AddressableDTO : IJsonDTO
+    public record AddressableDto : IJsonDTO
     {
         [JsonProperty("assetPath")]
         public string AssetPath { get; set; } = string.Empty;
@@ -71,7 +72,7 @@ namespace CCEnvs.Unity.Json.Converters
     [Serializable]
     public record AddressableDTO<T>
         :
-        AddressableDTO
+        AddressableDto
 
         where T : Object
     {

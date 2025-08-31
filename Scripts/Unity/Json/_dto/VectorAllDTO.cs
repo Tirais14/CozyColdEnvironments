@@ -1,3 +1,4 @@
+using CCEnvs.Json.DTO;
 using Newtonsoft.Json;
 using System;
 
@@ -6,8 +7,9 @@ using System;
 #pragma warning disable S1104
 namespace CCEnvs.Json.Converters
 {
+    [JsonObject]
     [Serializable]
-    public struct VectorAllDTO
+    public struct VectorAllDto : IJsonDTO
     {
         [JsonProperty(nameof(all))]
         public float all;

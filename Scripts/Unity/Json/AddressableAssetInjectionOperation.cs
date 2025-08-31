@@ -84,9 +84,10 @@ namespace CCEnvs.Unity.Json
                     FieldInfo injectionField = target.GetType()
                         .GetField(injectionMemberName,
                                   BindingFlagsDefault.InstanceAll)
-                                  ?? 
-                        throw new MemberNotFoundException(target.GetType(),
-                                                          MemberType.Field);
+                                  ??
+                        throw new FieldNotFoundException(target.GetType(),
+                                                         injectionMemberName,
+                                                         BindingFlagsDefault.InstanceAll);
 
                     if (injectionField.FieldType.IsNotType(injectionMemberValueType))
                         throw new InvalidOperationException($"Invalid type = {injectionMemberValueType.GetName()}");
@@ -98,8 +99,9 @@ namespace CCEnvs.Unity.Json
                         .GetProperty(injectionMemberName,
                                      BindingFlagsDefault.InstanceAll)
                                      ??
-                        throw new MemberNotFoundException(target.GetType(),
-                                                          MemberType.Field);
+                        throw new PropertyNotFoundException(target.GetType(),
+                                                            injectionMemberName,
+                                                            BindingFlagsDefault.InstanceAll);
 
                     if (injectionProp.PropertyType.IsNotType(injectionMemberValueType))
                         throw new InvalidOperationException($"Invalid type = {injectionMemberValueType.GetName()}");

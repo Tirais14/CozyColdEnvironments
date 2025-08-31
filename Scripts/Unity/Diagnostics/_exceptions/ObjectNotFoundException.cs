@@ -6,7 +6,7 @@ using System;
 
 namespace CCEnvs.Unity.Diagnostics
 {
-    public sealed class ObjectNotFoundException : CCEException
+    public sealed class ObjectNotFoundException : CCException
     {
         public ObjectNotFoundException() : base()
         {

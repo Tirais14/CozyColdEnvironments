@@ -20,7 +20,7 @@ namespace CCEnvs.Unity
         {
             if (FindObjectsByType<MonoCCStaticCore>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                 .Any(x => x != this))
-                throw new LogicException($"Cannot create more than one {nameof(MonoCCStaticCore)}.");
+                throw new CCFrameworkException($"Cannot create more than one {nameof(MonoCCStaticCore)}.");
 
             instance = this;
             DontDestroyOnLoad(gameObject);

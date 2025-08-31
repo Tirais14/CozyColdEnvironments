@@ -29,7 +29,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             {
                 deserialized = JsonConvert.DeserializeObject<TItem>(
                     textAssets[i].text,
-                    JsonSerializerSettingsProvider.GetSettings())!;
+                    UnityJsonSettingsProvider.GetSettings())!;
 
                 values.Add(GetItemID(deserialized), deserialized);
 

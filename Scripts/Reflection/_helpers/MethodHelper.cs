@@ -36,16 +36,10 @@ namespace CCEnvs.Reflection
                 (Type[])args,
                 new ParameterModifier[] { parameterModifier })
                 ??
-                throw new MemberNotFoundException(
+                throw new MethodNotFoundException(
                     target.type,
-                    MemberType.Method,
-                    new MethodBindings
-                    {
-                        MethodName = methodName,
-                        BindingFlags = bindingFlags,
-                        Arguments = args,
-                        GenericArguments = (Type[])genericParams
-                    });
+                    methodName,
+                    bindingFlags);
 
             if (genericParams.IsNotEmpty() && method.IsGenericMethod)
                 method = method.MakeGenericMethod((Type[])genericParams);

@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 #nullable enable
 namespace CCEnvs.FileSystem
 {
-    public class FileOverwriteNotAllowedException : CCEException
+    public class FileOverwriteNotAllowedException : CCException
     {
         public FileOverwriteNotAllowedException()
         {

@@ -1,8 +1,9 @@
 #nullable enable
+using static CCEnvs.Diagnostics.ExceptionMessageConstructor;
 
 namespace CCEnvs.Diagnostics
 {
-    public class CollectionItemException : CCEException
+    public class CollectionItemException : CCException
     {
         public CollectionItemException() : base()
         {
@@ -10,13 +11,15 @@ namespace CCEnvs.Diagnostics
 
         public CollectionItemException(object? item)
             :
-            base(ConstructMessage(typeof(CollectionItemException), item))
+            base(ConstructMessage<CollectionItemException>(TypeValuePair.Create(item)))
         {
         }
 
-        public CollectionItemException(object item, object position)
+        public CollectionItemException(object? item, object position)
             :
-            base(ConstructMessage(typeof(CollectionItemException), item, position))
+            base(ConstructMessage<CollectionItemException>(
+                TypeValuePair.Create(item),
+                new TypeValuePair(position)))
         {
         }
     }
