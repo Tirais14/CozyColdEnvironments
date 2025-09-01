@@ -1,7 +1,7 @@
 using System;
 using UnityEngine.InputSystem;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Reactive

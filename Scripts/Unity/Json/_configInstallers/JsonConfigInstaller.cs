@@ -17,8 +17,9 @@ namespace CCEnvs.Unity.Json
                 new Vector2IntConverter(),
                 new Vector3Converter(),
                 new Vector3IntConverter(),
-                new TypedDtoJsonConverter<StorageItemDto, IStorageItem>(),
-                new TypedDtoJsonConverter<ItemStackDto, IItemStack>()
+                new TypedDtoJsonConverter<IStorageItemDto, IStorageItem>(),
+                new TypedDtoJsonConverter<IItemStackDto, IItemStack>(),
+                new CommonDtoJsonConverter<ItemStackDto, ItemStack>()
                 );
         }
     }

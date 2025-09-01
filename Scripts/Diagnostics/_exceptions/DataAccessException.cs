@@ -23,6 +23,9 @@ namespace CCEnvs.Diagnostics
             if (value is Type type)
                 return $"Type = {type.Name}";
 
+            if (value is string str)
+                return str;
+
             return $"Value = {value.GetType().GetName()}";
         }
     }

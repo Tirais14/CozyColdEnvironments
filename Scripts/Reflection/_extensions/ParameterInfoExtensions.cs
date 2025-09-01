@@ -8,6 +8,9 @@ namespace CCEnvs
     {
         public static ParameterModifier GetParameterModifiers(this ParameterInfo[] values)
         {
+            if (values.IsEmpty())
+                return default;
+
             var modifier = new ParameterModifier(values.Length);
 
             for (int i = 0; i < values.Length; i++)

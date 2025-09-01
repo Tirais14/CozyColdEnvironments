@@ -1,20 +1,13 @@
-using CCEnvs.Json;
+using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Unity.GameSystems.Storages;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
 
 #nullable enable
 namespace CCEnvs.Unity.Json
 {
-    [JsonObject]
-    [Serializable]
-    public record ItemStackDto : ITypedJsonDTO, IJsonDtoConvertible<IItemStack>
+    public record ItemStackDto : IJsonDto, IJsonDtoConvertible<ItemStack>
     {
-        [JsonProperty]
-        public Type ObjectType { get; set; } = null!;
-
         [JsonProperty]
         public int MaxItemCount { get; set; } = int.MaxValue;
 
@@ -28,17 +21,19 @@ namespace CCEnvs.Unity.Json
         {
         }
 
-        public ItemStackDto(IItemStack itemStack)
+        public ItemStackDto(ItemStack itemStack)
         {
-            ObjectType = itemStack.GetType();
             MaxItemCount = itemStack.MaxItemCount;
             Item = itemStack.Item;
             ItemCount = itemStack.ItemCount;
         }
 
-        public IItemStack ConvertToValue()
+        public ItemStack ConvertToValue()
         {
-            return DtoConverter.Convert<IItemStack>(this)!;
+            if (Item.IsNull())
+                return new ItemStack(MaxItemCount);
+
+            return new ItemStack(Item, ItemCount, MaxItemCount);
         }
     }
 }

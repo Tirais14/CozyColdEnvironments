@@ -6,8 +6,8 @@ namespace CCEnvs.Returnables
 {
     public interface IMethodResult
     {
-        bool IsValidResults { get; }
-        bool IsVoidResults { get; }
+        bool IsValid { get; }
+        bool IsVoid { get; }
         int ResultCount { get; }
         IReadOnlyList<TypeValuePair> ExplicitResults { get; }
         IReadOnlyList<object?> Results { get; }

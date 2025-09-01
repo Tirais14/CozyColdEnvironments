@@ -34,6 +34,12 @@ namespace CCEnvs.Unity.UI.Storages
             stack = new ItemStack(item, itemCount, maxItemCount);
         }
 
+        public ItemStackReactive(ItemStackReactive stack)
+            :
+            this(stack.Item, stack.ItemCount, stack.MaxItemCount)
+        {
+        }
+
         public IItemContainer AddItem(IStorageItem item, int count)
         {
             IItemContainer temp = stack.AddItem(item, count);
@@ -123,6 +129,12 @@ namespace CCEnvs.Unity.UI.Storages
                                  int maxItemCount = int.MaxValue)
         {
             stack = new ItemStack<T>(item, itemCount, maxItemCount);
+        }
+
+        public ItemStackReactive(ItemStackReactive<T> stack)
+            :
+            this(stack.Item, stack.ItemCount, stack.MaxItemCount)
+        {
         }
 
         public IItemStack<T> AddItem(T item, int count)

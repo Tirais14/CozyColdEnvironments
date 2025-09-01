@@ -36,6 +36,19 @@ namespace CCEnvs.Unity.GameSystems.Storages
             ItemCount = itemCount;
         }
 
+        public ItemStack(ItemStack stack)
+        {
+            Item = stack.Item;
+            ItemCount = stack.ItemCount;
+            MaxItemCount = stack.MaxItemCount;
+        }
+
+        public ItemStack(IItemStack stack)
+            :
+            this(stack.Item, stack.ItemCount, stack.MaxItemCount)
+        {
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public IItemContainer AddItem(IStorageItem item, int count)
@@ -176,6 +189,12 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public ItemStack(T item, int itemCount, int maxItemCount = int.MaxValue)
         {
             stack = new ItemStack(item, itemCount, maxItemCount);
+        }
+
+        public ItemStack(ItemStack<T> stack)
+            :
+            this(stack.Item, stack.ItemCount, stack.MaxItemCount)
+        {
         }
 
         public IItemStack<T> AddItem(T item, int count)

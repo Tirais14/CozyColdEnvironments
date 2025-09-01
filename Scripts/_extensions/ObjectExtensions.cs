@@ -150,10 +150,16 @@ namespace CCEnvs.TypeConverting
         /// <summary>
         /// Same as the <see cref="Convert.ChangeType(object, Type)"/> but in <see langword="try"/>-<see langword="catch"/>
         /// </summary>
-        public static bool TryChangeType(this object? obj,
+        public static bool TryChangeType(this object obj,
                                          Type conversionType,
                                          [NotNullWhen(true)] out object? result)
         {
+            if (obj.GetType() == conversionType)
+            {
+                result = obj;
+                return true;
+            }
+
             try
             {
                 result = Convert.ChangeType(obj, conversionType);

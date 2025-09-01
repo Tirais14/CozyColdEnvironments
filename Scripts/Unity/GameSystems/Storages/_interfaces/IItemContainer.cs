@@ -4,7 +4,8 @@ using System;
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Storages
 {
-    public interface IItemContainer : IItemContainerInfo
+    public interface IItemContainer
+        : IItemContainerInfo
     {
         IItemContainer AddItem(IStorageItem item, int count);
 
@@ -20,7 +21,9 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         void Clear();
     }
-    public interface IItemContainer<TContainer> : IItemContainer
+    public interface IItemContainer<TContainer>
+        : IItemContainer
+
         where TContainer : IItemContainer
     {
         new TContainer AddItem(IStorageItem item, int count);

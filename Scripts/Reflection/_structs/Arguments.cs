@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 
 #nullable enable
-namespace CCEnvs.Reflection.ObjectModel
+namespace CCEnvs.Reflection.Data
 {
     public readonly struct Arguments
         :
@@ -77,7 +77,7 @@ namespace CCEnvs.Reflection.ObjectModel
 
         public IEnumerator<object?> GetEnumerator()
         {
-            return values.GetEnumerator();
+            return values?.GetEnumerator() ?? Enumerable.Empty<object?>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

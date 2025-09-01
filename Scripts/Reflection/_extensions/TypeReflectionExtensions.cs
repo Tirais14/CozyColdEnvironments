@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 using static CCEnvs.BindingFlagsDefault;
 
 #nullable enable
@@ -21,6 +21,8 @@ namespace CCEnvs.Reflection
             ConstructorBindings constructorParameters,
             bool throwIfNotFound = false)
         {
+            //TODO: If first type is specific enum searching for constructor only with default parameters
+
             if (type.GetConstructor(constructorParameters.BindingFlags,
                                     constructorParameters.Binder,
                                     constructorParameters.CallingConventions,

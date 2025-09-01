@@ -1,5 +1,5 @@
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 using CCEnvs.UI.MVVM;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.UI.MVVM;

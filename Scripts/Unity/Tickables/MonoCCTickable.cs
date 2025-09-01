@@ -17,14 +17,14 @@ namespace CCEnvs.Unity.Tickables
             get
             {
                 if (ticker.IsNull())
-                    throw new NullReferenceException("Tickable not registered in any ticker.");
+                    throw new DataAccessException("Tickable not registered in any ticker.");
 
                 return ticker;
             }
         }
 
         public bool IsTickableEnabled {
-            get => isTickableEnabled && enabled;
+            get => didStart && isTickableEnabled && enabled;
             set
             {
                 isTickableEnabled = value;

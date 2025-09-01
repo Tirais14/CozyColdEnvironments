@@ -1,4 +1,3 @@
-using CCEnvs.Json;
 using CCEnvs.Json.DTO;
 using CCEnvs.Unity.GameSystems.Storages;
 using Newtonsoft.Json;
@@ -10,7 +9,7 @@ namespace CCEnvs.Unity.Json
 {
     [JsonObject]
     [Serializable]
-    public record StorageItemDto : ITypedJsonDTO, IJsonDtoConvertible<IStorageItem>
+    public record IStorageItemDto : ITypedJsonDTO
     {
         [JsonProperty]
         public Type ObjectType { get; set; } = null!;
@@ -18,19 +17,14 @@ namespace CCEnvs.Unity.Json
         [JsonProperty]
         public int ID { get; set; } = -1;
 
-        public StorageItemDto()
+        public IStorageItemDto()
         {
         }
 
-        public StorageItemDto(IStorageItem item)
+        public IStorageItemDto(IStorageItem item)
         {
             ObjectType = item.GetType();
             ID = item.ID;
-        }
-
-        public IStorageItem ConvertToValue()
-        {
-            return DtoConverter.Convert<IStorageItem>(this)!;
         }
     }
 }

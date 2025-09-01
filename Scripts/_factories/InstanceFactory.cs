@@ -3,7 +3,7 @@ using System.Reflection;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Cached;
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -31,6 +31,8 @@ namespace CCEnvs
                 throw new ArgumentNullException(nameof(type));
             if (type.IsInterface)
                 throw new ArgumentException($"Type {type.GetName()} is interface and not allowed to create.");
+            if (type.IsAbstract)
+                throw new ArgumentException($"Type {type.GetName()} is abstract and not allowed to create.");
             if (bindings is null)
                 throw new ArgumentNullException(nameof(bindings));
 
@@ -107,6 +109,9 @@ namespace CCEnvs
                 },
                 parameters);
 
+            if (created.IsNull())
+                return created;
+
             Type dataType = data.GetType();
 
             FieldInfo[] fields = dataType.ForceGetFields(
@@ -114,9 +119,10 @@ namespace CCEnvs
                 .Where(x => !x.IsInitOnly)
                 .ToArray();
 
-            IEnumerable<FieldInfo> createdFields = type.ForceGetFields(
+            FieldInfo[] createdFields = type.ForceGetFields(
                 BindingFlagsDefault.InstanceAll)
-                .Where(x => !x.IsInitOnly);
+                .Where(x => !x.IsInitOnly)
+                .ToArray();
 
             foreach (var createdField in createdFields)
             {
@@ -131,9 +137,10 @@ namespace CCEnvs
                 .Where(x => x.CanWrite && x.CanRead)
                 .ToArray();
 
-            IEnumerable<PropertyInfo> createdProps = type.ForceGetProperties(
+            PropertyInfo[] createdProps = type.ForceGetProperties(
                 BindingFlagsDefault.InstanceAll)
-                .Where(x => x.CanWrite && x.CanRead);
+                .Where(x => x.CanWrite && x.CanRead)
+                .ToArray();
 
             foreach (var createdProp in createdProps)
             {

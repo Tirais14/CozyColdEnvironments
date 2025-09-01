@@ -6,8 +6,11 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 {
     public abstract class CollectableTrigger : MonoCC, ICollectableTrigger
     {
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled {
+            get => didStart && enabled;
+            set => enabled = value;
+        }
 
-        public abstract IItemStack InitiateCollecting(IStorageItem? item = null);
+        public abstract IItemStack Collect(IStorageItem? item = null);
     }
 }

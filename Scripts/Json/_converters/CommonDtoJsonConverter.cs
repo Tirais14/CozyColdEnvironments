@@ -1,14 +1,14 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 using Newtonsoft.Json;
 using System;
 
 namespace CCEnvs.Json.Converters
 {
     public class CommonDtoJsonConverter<TDto, T> : JsonConverter<T>
-        where TDto : IJsonDtoConvertible
+        where TDto : IJsonDto
     {
         public override T? ReadJson(JsonReader reader,
                                     Type objectType,
@@ -18,13 +18,7 @@ namespace CCEnvs.Json.Converters
         {
             var dto = serializer.Deserialize<TDto>(reader);
 
-            if (dto.IsDefault())
-                return default;
-
-            if (dto is IJsonDtoConvertible<T> convertible)
-                return convertible.ConvertToValue();
-
-            return (T)dto.ConvertToValue();
+            return DtoConverter.ConvertTo<T>(dto);
         }
 
         public override void WriteJson(JsonWriter writer,
@@ -37,7 +31,7 @@ namespace CCEnvs.Json.Converters
                 return;
             }
 
-            InstanceFactory.Create(typeof(TDto),
+            var dto = InstanceFactory.Create<TDto>(
                 new Reflection.ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
@@ -46,6 +40,8 @@ namespace CCEnvs.Json.Converters
                 InstanceFactory.Parameters.CacheConstructor
                 |
                 InstanceFactory.Parameters.ThrowIfNotFound);
+
+            serializer.Serialize(writer, dto);
         }
     }
 }

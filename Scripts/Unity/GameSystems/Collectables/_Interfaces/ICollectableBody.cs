@@ -8,6 +8,6 @@ namespace CCEnvs.Unity.GameSystems.Interactables
         IStorageItem? Item { get; }
         int ItemCount { get; }
 
-        IItemStack GetCollectedItems(IStorageItem item);
+        IItemStack GetCollectedItems(IStorageItem? item = null);
     }
 }

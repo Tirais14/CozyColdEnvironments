@@ -1,4 +1,4 @@
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 
 #nullable enable
 namespace CCEnvs.Reflection

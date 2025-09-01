@@ -1,7 +1,8 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.ObjectModel;
+using CCEnvs.Reflection.Data;
 using Newtonsoft.Json;
 using System;
 
@@ -19,9 +20,6 @@ namespace CCEnvs.Json.Converters
                                     JsonSerializer serializer)
         {
             var dto = serializer.Deserialize<Tdto>(reader);
-
-            if (dto is IJsonDtoConvertible<T> convertible)
-                return convertible.ConvertToValue();
 
             return DtoConverter.Convert<T>(dto);
         }

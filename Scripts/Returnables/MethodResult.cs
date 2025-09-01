@@ -12,8 +12,8 @@ namespace CCEnvs.Returnables
         public readonly static MethodResult Void = new(isValidResults: true);
         public readonly static MethodResult Failed = new(isValidResults: false);
 
-        public bool IsValidResults { get; }
-        public bool IsVoidResults { get; }
+        public bool IsValid { get; }
+        public bool IsVoid { get; }
         public IReadOnlyList<TypeValuePair> ExplicitResults { get; }
         public IReadOnlyList<object?> Results { get; }
         public IReadOnlyList<Type> ResultTypes { get; }
@@ -21,8 +21,8 @@ namespace CCEnvs.Returnables
 
         protected MethodResult(bool isValidResults)
         {
-            IsValidResults = isValidResults;
-            IsVoidResults = true;
+            IsValid = isValidResults;
+            IsVoid = true;
 
             ExplicitResults = Array.Empty<TypeValuePair>();
             Results = Array.Empty<object?>();
@@ -30,7 +30,7 @@ namespace CCEnvs.Returnables
         }
         public MethodResult(bool isValidResults, params TypeValuePair[] explicitResults)
         {
-            IsValidResults = isValidResults;
+            IsValid = isValidResults;
 
             ExplicitResults = new ReadOnlyCollection<TypeValuePair>(explicitResults);
 
@@ -40,7 +40,7 @@ namespace CCEnvs.Returnables
             ResultTypes = new ReadOnlyCollection<Type>(
                 explicitResults.Select(x => x.type).ToArray());
 
-            IsVoidResults = ResultTypes.All(x => x.IsAnyType(typeof(void)));
+            IsVoid = ResultTypes.All(x => x.IsAnyType(typeof(void)));
         }
         public MethodResult(bool isValidResults,
                             params object[] results)
@@ -52,7 +52,7 @@ namespace CCEnvs.Returnables
 
         public static implicit operator bool(MethodResult result)
         {
-            return result.IsValidResults;
+            return result.IsValid;
         }
 
         public object? GetResult(int index)
@@ -111,7 +111,7 @@ namespace CCEnvs.Returnables
             Result0 = result0;
         }
         protected MethodResult(bool isValidResults,
-                       params TypeValuePair[] explicitResults)
+                               params TypeValuePair[] explicitResults)
             :
             base(isValidResults, explicitResults)
         {
