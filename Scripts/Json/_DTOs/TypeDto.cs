@@ -3,12 +3,13 @@ using CCEnvs.Reflection;
 using CCEnvs.Utils;
 using Newtonsoft.Json;
 using System;
+using System.Reflection;
 
 namespace CCEnvs.Json.DTO
 {
     [JsonObject]
     [Serializable]
-    public record TypeDto : IJsonDto<Type>
+    public record TypeDto : IJsonDto, IJsonDtoConvertible<Type>
     {
         [JsonProperty("assemblyName")]
         public string AssemblyName { get; set; } = string.Empty;

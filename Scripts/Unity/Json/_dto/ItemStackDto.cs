@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Json
 {
     [JsonObject]
     [Serializable]
-    public record ItemStackDto : ITypedJsonDTO
+    public record ItemStackDto : ITypedJsonDTO, IJsonDtoConvertible<IItemStack>
     {
         [JsonProperty("stackType")]
         public Type ObjectType { get; set; } = null!;
@@ -33,6 +33,11 @@ namespace CCEnvs.Unity.Json
             MaxItemCount = itemStack.MaxItemCount;
             Item = itemStack.Item;
             ItemCount = itemStack.ItemCount;
+        }
+
+        public IItemStack ConvertToValue()
+        {
+            return DtoConverter.Convert<IItemStack>(this)!;
         }
     }
 }

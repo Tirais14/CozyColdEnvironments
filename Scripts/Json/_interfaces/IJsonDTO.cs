@@ -4,12 +4,5 @@ namespace CCEnvs.Json.DTO
 {
     public interface IJsonDto
     {
-        object ConvertToValue();
-    }
-    public interface IJsonDto<out T> : IJsonDto
-    {
-        new T ConvertToValue();
-
-        object IJsonDto.ConvertToValue() => ConvertToValue()!;
     }
 }

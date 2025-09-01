@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Diagnostics;
+using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.ObjectModel;
 using Newtonsoft.Json;
@@ -20,24 +20,10 @@ namespace CCEnvs.Json
         {
             var dto = serializer.Deserialize<Tdto>(reader);
 
-            if (dto.IsDefault())
-                return default;
+            if (dto is IJsonDtoConvertible<T> convertible)
+                return convertible.ConvertToValue();
 
-            if (dto.ObjectType is null)
-                throw new DataAccessException(dto.ObjectType);
-
-            if (dto.ObjectType.IsNotType(typeof(T)))
-                throw new TypeIsNotExpectedTypeException(dto.ObjectType, typeof(T));
-
-            return InstanceFactory.Create<T>(
-                new ConstructorBindings
-                {
-                    BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = new ExplicitArguments(dto)
-                },
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound);
+            return DtoConverter.Convert<T>(dto);
         }
 
         public override void WriteJson(JsonWriter writer,

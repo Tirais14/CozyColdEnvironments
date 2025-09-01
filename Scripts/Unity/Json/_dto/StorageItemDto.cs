@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Json
 {
     [JsonObject]
     [Serializable]
-    public record StorageItemDto : ITypedJsonDTO
+    public record StorageItemDto : ITypedJsonDTO, IJsonDtoConvertible<IStorageItem>
     {
         [JsonProperty("itemType")]
         public Type ObjectType { get; set; } = null!;
@@ -26,6 +26,11 @@ namespace CCEnvs.Unity.Json
         {
             ObjectType = item.GetType();
             ItemID = item.ID;
+        }
+
+        public IStorageItem ConvertToValue()
+        {
+            return DtoConverter.Convert<IStorageItem>(this)!;
         }
     }
 }
