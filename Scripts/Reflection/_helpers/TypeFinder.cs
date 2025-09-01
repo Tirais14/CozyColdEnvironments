@@ -1,13 +1,10 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
-using Mono.Cecil.Cil;
 
-namespace CCEnvs.Utils
+namespace CCEnvs.Reflection
 {
     public static class TypeFinder
     {
@@ -17,12 +14,19 @@ namespace CCEnvs.Utils
         {
             if (parameters is null)
                 throw new ArgumentNullException(nameof(parameters));
+            System.Collections.Generic.IEnumerable<Type> enumerable()
+            {
+                foreach (var x in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    Type t = FindType(x, parameters, throwOnError: false);
+                    if (t is not null)
+                    {
+                        yield return t;
+                    }
+                }
+            }
 
-            Type[] foundTypes = (from x in AppDomain.CurrentDomain.GetAssemblies()
-                                 select FindType(x, parameters, throwOnError: false) into t
-                                 where t is not null
-                                 select t)
-                                 .ToArray();
+            Type[] foundTypes = enumerable().ToArray();
 
             if (foundTypes.IsEmpty())
             {

@@ -27,9 +27,8 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             int count = textAssets.Count;
             for (int i = 0; i < count; i++)
             {
-                deserialized = JsonConvert.DeserializeObject<TItem>(
-                    textAssets[i].text,
-                    UnityJsonSettingsProvider.GetSettings())!;
+                deserialized = JsonConvert.DeserializeObject<TItem>(textAssets[i].text,
+                    JsonSettingsProvider.GetSettings())!;
 
                 values.Add(GetItemID(deserialized), deserialized);
 

@@ -1,16 +1,14 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
-using CCEnvs.Reflection;
 using CCEnvs.Reflection.ObjectModel;
 using Newtonsoft.Json;
 using System;
 
-namespace CCEnvs.Json
+namespace CCEnvs.Json.Converters
 {
-    public class TypedJsonConverter<Tdto, T>
-        :
-        JsonConverter<T>
-        where Tdto : ITypedJsonDTO
+    public class CommonDtoJsonConverter<TDto, T> : JsonConverter<T>
+        where TDto : IJsonDtoConvertible
     {
         public override T? ReadJson(JsonReader reader,
                                     Type objectType,
@@ -18,35 +16,36 @@ namespace CCEnvs.Json
                                     bool hasExistingValue,
                                     JsonSerializer serializer)
         {
-            var dto = serializer.Deserialize<Tdto>(reader);
+            var dto = serializer.Deserialize<TDto>(reader);
+
+            if (dto.IsDefault())
+                return default;
 
             if (dto is IJsonDtoConvertible<T> convertible)
                 return convertible.ConvertToValue();
 
-            return DtoConverter.Convert<T>(dto);
+            return (T)dto.ConvertToValue();
         }
 
         public override void WriteJson(JsonWriter writer,
                                        T? value,
                                        JsonSerializer serializer)
         {
-            if (value is null)
+            if (value.IsNull())
             {
                 writer.WriteNull();
                 return;
             }
 
-            InstanceFactory.Create(typeof(Tdto),
-                new ConstructorBindings
+            InstanceFactory.Create(typeof(TDto),
+                new Reflection.ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = new ExplicitArguments(value)
+                    Arguments = new ExplicitArguments(TypeValuePair.Create(value))
                 },
                 InstanceFactory.Parameters.CacheConstructor
                 |
                 InstanceFactory.Parameters.ThrowIfNotFound);
-
-            serializer.Serialize(writer, value);
         }
     }
 }

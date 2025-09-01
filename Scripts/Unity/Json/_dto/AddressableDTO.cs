@@ -16,11 +16,11 @@ namespace CCEnvs.Unity.Json.Converters
     [Serializable]
     public record AddressableDto : IJsonDto
     {
-        [JsonProperty("assetPath")]
+        [JsonProperty]
         public string AssetPath { get; set; } = string.Empty;
-        [JsonProperty("guid")]
+        [JsonProperty]
         public string GUID { get; set; } = string.Empty;
-        [JsonProperty("assetType")]
+        [JsonProperty]
         public Type AssetType { get; set; } = null!;
 
         [JsonIgnore]

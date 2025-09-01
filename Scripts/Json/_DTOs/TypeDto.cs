@@ -11,16 +11,16 @@ namespace CCEnvs.Json.DTO
     [Serializable]
     public record TypeDto : IJsonDto, IJsonDtoConvertible<Type>
     {
-        [JsonProperty("assemblyName")]
+        [JsonProperty]
         public string AssemblyName { get; set; } = string.Empty;
 
-        [JsonProperty("namespace")]
+        [JsonProperty]
         public string Namespace { get; set; } = string.Empty;
 
-        [JsonProperty("typeName")]
+        [JsonProperty]
         public string TypeName { get; set; } = string.Empty;
 
-        [JsonProperty("ignoreCase")]
+        [JsonProperty]
         public bool IgnoreCase { get; set; }
 
         public TypeDto()
@@ -41,7 +41,9 @@ namespace CCEnvs.Json.DTO
                     Namepsace = Namespace,
                     TypeName = TypeName,
                 },
-                throwOnError: true);
+                throwOnError: true) 
+                ?? 
+                throw new Diagnostics.DataAccessException($"Cannot find type: {this}.");
         }
     }
 }

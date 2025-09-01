@@ -20,15 +20,24 @@ namespace CCEnvs.Json.DTO
             if (refType is not null && dto.ObjectType.IsNotType(refType))
                 throw new TypeIsNotExpectedTypeException(dto.ObjectType, refType);
 
-            return InstanceFactory.Create(dto.ObjectType,
+            if (JsonSettingsProvider.TryGetDtoConverter(dto.GetType(), out Func<IJsonDto, object>? method))
+                return method(dto);
+
+            object? result = InstanceFactory.Create(dto.ObjectType,
                 new ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
                     Arguments = new ExplicitArguments(dto)
                 },
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound);
+                InstanceFactory.Parameters.CacheConstructor);
+
+            if (result.IsNull())
+                result = InstanceFactory.CreateBy(
+                    dto.ObjectType,
+                    dto,
+                    InstanceFactory.Parameters.CacheConstructor);
+
+            return result;
         }
         public static T? Convert<T>(ITypedJsonDTO? dto)
         {

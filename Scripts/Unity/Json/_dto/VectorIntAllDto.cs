@@ -9,7 +9,7 @@ namespace CCEnvs.Json.Converters
     [Serializable]
     public struct VectorIntAllDto : IJsonDto
     {
-        [JsonProperty(nameof(all))]
+        [JsonProperty]
         public int all;
 
         public readonly int ConvertToValue() => all;

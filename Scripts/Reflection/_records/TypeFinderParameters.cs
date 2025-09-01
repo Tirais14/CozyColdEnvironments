@@ -13,8 +13,12 @@ namespace CCEnvs.Reflection
         public bool HasNamespace => Namepsace.IsNotNullOrEmpty();
         public bool HasTypeName => TypeName.IsNotNullOrEmpty();
 
+        /// <exception cref="ArgumentNullException"></exception>
         public bool IsMatch(Type type)
         {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+
             StringComparison comparison = IgnoreCase
                 ? 
                 StringComparison.InvariantCultureIgnoreCase
@@ -28,7 +32,7 @@ namespace CCEnvs.Reflection
             if (!result)
                 return false;
 
-            if (HasNamespace)
+            if (HasNamespace && type.Namespace.IsNotNullOrEmpty())
                 result = type.Namespace.Contains(Namepsace, comparison);
 
             if (!result)

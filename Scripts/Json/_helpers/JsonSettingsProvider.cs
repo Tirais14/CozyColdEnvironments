@@ -1,30 +1,23 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Json;
+using CCEnvs.Json.Converters;
 using CCEnvs.Json.DTO;
-using CCEnvs.Unity.GameSystems.Storages;
-using CCEnvs.Unity.Json.Converters;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.Serialization;
 
 #nullable enable
-namespace CCEnvs.Unity.Json
+namespace CCEnvs.Json
 {
-    public static class UnityJsonSettingsProvider
+    public static class JsonSettingsProvider
     {
         public static JsonConverter[] Converters { get; private set; } = new JsonConverter[]
         {
-            new Vector2Converter(),
-            new Vector2IntConverter(),
-            new Vector3Converter(),
-            new Vector3IntConverter(),
-            new TypedJsonConverter<StorageItemDto, IStorageItem>(),
-            new TypedJsonConverter<ItemStackDto, IItemStack>()
+            new CommonDtoJsonConverter<TypeDto, Type>()
         };
-        private readonly static Dictionary<Type, Delegate> factoryByDtoMethods = new();
+        private readonly static Dictionary<Type, Delegate> dtoConverters = new();
 
         /// <exception cref="CollectionArgumentException"></exception>
         public static void AddConverters(params JsonConverter[] converters)
@@ -62,25 +55,24 @@ namespace CCEnvs.Unity.Json
                 ReplaceOrAddConverter(converters[i]);
         }
 
-        public static void AddOrReplaceFactoryByDtoMethod<TDto, T>(Func<TDto, T> func)
-            where TDto : IJsonDto
+        public static void AddOrReplaceDtoConverter(Type dtoType,
+            Func<IJsonDto, object> func)
         {
-            if (factoryByDtoMethods.ContainsKey(typeof(T)))
+            if (dtoConverters.ContainsKey(dtoType))
             {
-                factoryByDtoMethods[typeof(TDto)] = func;
+                dtoConverters[dtoType] = func;
                 return;
             }
 
-            factoryByDtoMethods.Add(typeof(TDto), func);
+            dtoConverters.Add(dtoType, func);
         }
 
-        public static bool TryGetFactoryByDtoMethod<TDto, T>(
-            [NotNullWhen(true)] out Func<TDto, T>? result)
-            where TDto : IJsonDto
+        public static bool TryGetDtoConverter(Type dtoType,
+            [NotNullWhen(true)] out Func<IJsonDto, object>? result)
         {
-            if (factoryByDtoMethods.TryGetValue(typeof(T), out Delegate methodUntyped))
+            if (dtoConverters.TryGetValue(dtoType, out Delegate methodUntyped))
             {
-                result = (Func<TDto, T>)methodUntyped;
+                result = (Func<IJsonDto, object>)methodUntyped;
                 return true;
             }
 
@@ -88,17 +80,30 @@ namespace CCEnvs.Unity.Json
             return false;
         }
 
-        public static JsonSerializerSettings GetSettings(object? context = null,
-            StreamingContextStates contextStates = StreamingContextStates.File)
+        public static JsonSerializerSettings GetSettings()
         {
-            JsonSerializerSettings defaultSettings = JsonConvert.DefaultSettings?.Invoke()
-                                                     ??
-                                                     new JsonSerializerSettings();
+            JsonSerializerSettings? defaultSettings = null;
+            if (JsonConvert.DefaultSettings != GetSettingsInternal)
+                defaultSettings = JsonConvert.DefaultSettings?.Invoke();
 
-            defaultSettings.Context = new StreamingContext(contextStates, context);
-            defaultSettings.Converters = defaultSettings.Converters.Concat(Converters).ToArray();
+            defaultSettings ??= new JsonSerializerSettings();
+
+            defaultSettings.Converters = defaultSettings.Converters.Concat(Converters)
+                                                                   .Distinct()
+                                                                   .ToArray();
+
+            defaultSettings.ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy(true, true, true)
+            };
+            defaultSettings.Formatting = Formatting.Indented;
 
             return defaultSettings;
+        }
+
+        private static JsonSerializerSettings GetSettingsInternal()
+        {
+            return GetSettings();
         }
     }
 }

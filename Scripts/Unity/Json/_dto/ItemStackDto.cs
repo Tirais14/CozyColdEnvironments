@@ -2,6 +2,7 @@ using CCEnvs.Json;
 using CCEnvs.Json.DTO;
 using CCEnvs.Unity.GameSystems.Storages;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 
 #nullable enable
@@ -11,16 +12,16 @@ namespace CCEnvs.Unity.Json
     [Serializable]
     public record ItemStackDto : ITypedJsonDTO, IJsonDtoConvertible<IItemStack>
     {
-        [JsonProperty("stackType")]
+        [JsonProperty]
         public Type ObjectType { get; set; } = null!;
 
-        [JsonProperty("maxItemCount")]
+        [JsonProperty]
         public int MaxItemCount { get; set; } = int.MaxValue;
 
-        [JsonProperty("item")]
+        [JsonProperty]
         public IStorageItem? Item { get; set; }
 
-        [JsonProperty("itemCount")]
+        [JsonProperty]
         public int ItemCount { get; set; }
 
         public ItemStackDto()

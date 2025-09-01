@@ -10,11 +10,11 @@ namespace CCEnvs.Json.DTO
     [Serializable]
     public struct Vector3IntDto : IJsonDto, IJsonDtoConvertible<Vector3Int>
     {
-        [JsonProperty(nameof(x))]
+        [JsonProperty]
         public int x;
-        [JsonProperty(nameof(y))]
+        [JsonProperty]
         public int y;
-        [JsonProperty(nameof(z))]
+        [JsonProperty]
         public int z;
 
         public static implicit operator Vector3Int(Vector3IntDto dto)
