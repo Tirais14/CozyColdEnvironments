@@ -21,12 +21,10 @@ namespace CCEnvs.Reflection
             ConstructorBindings bindings,
             bool throwIfNotFound = false)
         {
-            //TODO: If first type is specific enum searching for constructor only with default parameters
-
             if (type.GetConstructor(bindings.BindingFlags,
                                     bindings.Binder,
                                     bindings.CallingConventions,
-                                    (Type[])bindings.Arguments,
+                                    bindings.Arguments.GetTypes(),
                                     bindings.ParameterModifiersArray
                                     )
                 is ConstructorInfo found

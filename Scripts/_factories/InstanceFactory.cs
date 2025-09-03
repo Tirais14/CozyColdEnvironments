@@ -41,7 +41,7 @@ namespace CCEnvs
             if (!TypeCache.TryGetConstructor(
                 new TypeCache.ConstructrorKey(
                     type,
-                    (Type[])bindings.Arguments,
+                    ((CCParameters)bindings.Arguments),
                     bindings.ParameterModifiers),
                 out ConstructorInfo? ctor))
             {

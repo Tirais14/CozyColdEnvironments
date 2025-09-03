@@ -10,13 +10,13 @@ namespace CCEnvs.Diagnostics
         {
         }
 
-        public DataAccessException(object? message, Exception? innerException = null) 
+        public DataAccessException(object? data, string? message = null, Exception? innerException = null) 
             :
-            base(GetMessage(message), innerException)
+            base($"{ConvertData(data)}. {message}", innerException)
         {
         }
 
-        private static string GetMessage(object? value)
+        private static string ConvertData(object? value)
         {
             if (value.IsNull())
                 return "Value = null";
@@ -26,7 +26,7 @@ namespace CCEnvs.Diagnostics
             if (value is string str)
                 return str;
 
-            return $"Value = {value.GetType().GetName()}";
+            return $"{value.GetType().GetName()} = {value}";
         }
     }
 }

@@ -62,22 +62,23 @@ namespace CCEnvs.Reflection.Cached
         public readonly struct ConstructrorKey : IEquatable<ConstructrorKey>
         {
             public readonly Type ReflectedType { get; }
-            public readonly Type[] Signature { get; }
+            public readonly Type[] ParameterTypes { get; }
             public readonly ParameterModifier ParameterModifiers { get; }
 
             public ConstructrorKey(Type reflectedType,
-                                   Type[] signature,
+                                   Type[] parameterTypes,
                                    ParameterModifier parameterModifiers)
             {
                 ReflectedType = reflectedType;
-                Signature = signature;
+                ParameterTypes = parameterTypes;
                 ParameterModifiers = parameterModifiers;
             }
+
             public ConstructrorKey(Type reflectedType,
-                                   CCParameters signature,
+                                   CCParameters parameters,
                                    ParameterModifier parameterModifiers)
                 :
-                this(reflectedType, (Type[])signature, parameterModifiers)
+                this(reflectedType, (Type[])parameters, parameterModifiers)
             {
             }
 
@@ -95,7 +96,7 @@ namespace CCEnvs.Reflection.Cached
 
             public bool Equals(ConstructrorKey other)
             {
-                return other.ReflectedType == ReflectedType && other.Signature == Signature;
+                return other.ReflectedType == ReflectedType && other.ParameterTypes == ParameterTypes;
             }
 
             public override bool Equals(object? obj)
@@ -105,7 +106,7 @@ namespace CCEnvs.Reflection.Cached
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(ReflectedType, Signature);
+                return HashCode.Combine(ReflectedType, ParameterTypes);
             }
         }
 

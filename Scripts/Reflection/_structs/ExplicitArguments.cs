@@ -79,6 +79,11 @@ namespace CCEnvs.Reflection.Data
             return obj is ExplicitArguments typed && Equals(typed);
         }
 
+        public Type[] GetTypes()
+        {
+            return ((CCParameters)this).Select(x => x.ParameterType).ToArray();
+        }
+
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(Arguments);
