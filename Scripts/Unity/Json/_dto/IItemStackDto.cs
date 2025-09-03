@@ -39,4 +39,19 @@ namespace CCEnvs.Unity.Json
                 CCDebug.PrintException(new DataAccessException(ObjectType, nameof(ObjectType)));
         }
     }
+    public record IItemStackDto<T> : IItemStackDto
+        where T : IItemStack
+    {
+        public IItemStackDto()
+        {
+            ObjectType = typeof(T);
+        }
+
+        public IItemStackDto(T itemStack)
+            :
+            base(itemStack)
+        {
+            ObjectType = typeof(T);
+        }
+    }
 }

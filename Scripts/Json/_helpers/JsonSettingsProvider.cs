@@ -28,33 +28,6 @@ namespace CCEnvs.Json
             Converters = Converters.Concat(converters).ToArray();
         }
 
-        /// <exception cref="ArgumentNullException"></exception>
-        public static void ReplaceOrAddConverter(JsonConverter converter)
-        {
-            if (converter is null)
-                throw new ArgumentNullException(nameof(converter));
-
-            Type converterType = converter.GetType();
-            for (int i = 0; i < Converters.Length; i++)
-            {
-                if (Converters[i].GetType() == converterType)
-                    Converters[i] = converter;
-            }
-
-            AddConverters(converter);
-        }
-
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public static void ReplaceOrAddConverters(params JsonConverter[] converters)
-        {
-            if (converters is null)
-                throw new ArgumentNullException(nameof(converters));
-
-            for (int i = 0; i < converters.Length; i++)
-                ReplaceOrAddConverter(converters[i]);
-        }
-
         public static void AddOrReplaceDtoConverter(Type dtoType,
             Func<IJsonDto, object> func)
         {
@@ -65,6 +38,11 @@ namespace CCEnvs.Json
             }
 
             dtoConverters.Add(dtoType, func);
+        }
+        public static void AddOrReplaceDtoConverter<T>(Func<IJsonDto, object> func)
+            where T : IJsonDto
+        {
+            AddOrReplaceDtoConverter(typeof(T), func);
         }
 
         public static bool TryGetDtoConverter(Type dtoType,

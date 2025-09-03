@@ -12,14 +12,14 @@ namespace CCEnvs.Unity.Json
     {
         public static void Install()
         {
-            JsonSettingsProvider.ReplaceOrAddConverters(
+            JsonSettingsProvider.AddConverters(
                 new Vector2Converter(),
                 new Vector2IntConverter(),
                 new Vector3Converter(),
                 new Vector3IntConverter(),
                 new TypedDtoJsonConverter<IStorageItemDto, IStorageItem>(),
                 new TypedDtoJsonConverter<IItemStackDto, IItemStack>(),
-                new CommonDtoJsonConverter<ItemStackDto, ItemStack>()
+                new CommonDtoJsonConverter<IItemStackDto<ItemStack>, ItemStack>()
                 );
         }
     }

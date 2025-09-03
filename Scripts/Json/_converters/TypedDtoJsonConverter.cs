@@ -7,9 +7,7 @@ using System;
 
 namespace CCEnvs.Json.Converters
 {
-    public class TypedDtoJsonConverter<Tdto, T>
-        :
-        JsonConverter<T>
+    public class TypedDtoJsonConverter<Tdto, T> : JsonConverter<T>
         where Tdto : ITypedJsonDTO
     {
         public override T? ReadJson(JsonReader reader,
