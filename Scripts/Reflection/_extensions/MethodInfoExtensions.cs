@@ -10,9 +10,10 @@ namespace CCEnvs.Reflection
 {
     public static class MethodInfoExtensions
     {
-        public static Signature GetSignature(this MethodInfo method)
+        public static CCParameters GetCCParameters(this MethodInfo method)
         {
-            return new Signature(method.GetParameters().Select(x => x.ParameterType));
+            return new CCParameters(method.GetParameters()
+                .Select(x => x.AsCCParameterInfo()).ToArray());
         }
 
         /// <exception cref="ArgumentNullException"></exception>

@@ -57,7 +57,7 @@ namespace CCEnvs.Diagnostics
             ConstructorInfo ctor = thisType.GetConstructor(
                 BindingFlagsDefault.InstanceAll,
                 binder: null,
-                args.Select(x => x.type).ToArray(),
+                args.Select(x => x.Type).ToArray(),
                 Array.Empty<ParameterModifier>())
                 ??
                 throw new NullReferenceException($"Cannot find constructor in type = {thisType.GetName()}");
@@ -65,7 +65,7 @@ namespace CCEnvs.Diagnostics
             ParameterInfo[] parameters = ctor.GetParameters();
             var converted = new List<(string, string)>(args.Length);
             for (int i = 0; i < args.Length; i++)
-                converted.Add((parameters[i].Name, DefineParameterValue(args[i].value)));
+                converted.Add((parameters[i].Name, DefineParameterValue(args[i].Value)));
 
             return CombineToAssignmentMessage(converted.ToArray());
         }

@@ -63,7 +63,7 @@ namespace CCEnvs.Unity.Json.Converters
                 new TypeValuePair(typeof(object), Key),
                 nameof(Addressables.LoadAssetAsync),
                 new ExplicitArguments(new TypeValuePair(typeof(object), Key)),
-                new Signature(AssetType));
+                AssetType);
 
             return LoadHandle;
         }

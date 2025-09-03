@@ -1,6 +1,7 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection.Data;
 using System;
 using System.Reflection;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Reflection
@@ -15,7 +16,7 @@ namespace CCEnvs.Reflection
             if (ctor is null)
                 throw new ArgumentNullException(nameof(ctor));
 
-            if (bindings.Arguments.signature != ctor.GetSignature())
+            if (((CCParameters)bindings.Arguments) != ctor.GetCCParameters())
                 return false;
 
             if (bindings.ParameterModifiersArray.IsNotDefault())

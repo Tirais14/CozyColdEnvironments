@@ -1,9 +1,9 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection.Data;
 using static CCEnvs.BindingFlagsDefault;
 
 #nullable enable
@@ -15,66 +15,37 @@ namespace CCEnvs.Reflection
         /// Extended version
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="constructorParameters"></param>
+        /// <param name="bindings"></param>
         /// <returns></returns>
         public static ConstructorInfo GetConstructor(this Type type,
-            ConstructorBindings constructorParameters,
+            ConstructorBindings bindings,
             bool throwIfNotFound = false)
         {
             //TODO: If first type is specific enum searching for constructor only with default parameters
 
-            if (type.GetConstructor(constructorParameters.BindingFlags,
-                                    constructorParameters.Binder,
-                                    constructorParameters.CallingConventions,
-                                    (Type[])constructorParameters.Arguments,
-                                    constructorParameters.ParameterModifiersArray
+            if (type.GetConstructor(bindings.BindingFlags,
+                                    bindings.Binder,
+                                    bindings.CallingConventions,
+                                    (Type[])bindings.Arguments,
+                                    bindings.ParameterModifiersArray
                                     )
                 is ConstructorInfo found
-                                    )
+                )
                 return found;
 
             ConstructorInfo[] constructors = type.GetConstructors(
-                constructorParameters.BindingFlags);
+                bindings.BindingFlags);
 
-            found = constructors.FirstOrDefault(x =>
-            {
-                ParameterInfo[] parameters = x.GetParameters();
-
-                if (!constructorParameters.ParameterModifiers
-                        .Equals(parameters.GetParameterModifiers())
-                        )
-                    return false;
-
-                return constructorParameters.Arguments.signature == new Signature(parameters.Select(x => x.ParameterType));
-
-                //This for filter default params, cause bugs
-                //bool result = signature.IsMatch(parameters,
-                //                                signature.AllowInheritance,
-                //                                ignoreDefaultValues: true);
-
-
-                //if (result && constructorParameters.Arguments.Length < parameters.Length)
-                //{
-                //    var newArgs = new object[parameters.Length];
-                //    for (int i = 0; i < newArgs.Length; i++)
-                //        newArgs[i] = parameters[i].DefaultValue;
-
-                //    constructorParameters.Arguments.CopyTo(newArgs, 0);
-
-                //    signature = new InvokableSignature(parameters.Select(x => x.ParameterType));
-
-                //    constructorParameters.Arguments = newArgs;
-                //    constructorParameters.Signature = signature;
-                //}
-
-                //return result;
-            });
+            found = (from x in constructors
+                     let parameters = x.GetCCParameters()
+                     where parameters == ((CCParameters)bindings.Arguments)
+                     select x).FirstOrDefault();
 
             if (throwIfNotFound && found is null)
                 throw new ConstructorNotFoundException(
                     type,
-                    constructorParameters.BindingFlags,
-                    constructorParameters.Arguments.signature);
+                    bindings.BindingFlags,
+                    (CCParameters)bindings.Arguments);
 
             return found;
         }

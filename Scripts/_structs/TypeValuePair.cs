@@ -1,18 +1,19 @@
-using System;
 using CCEnvs.Reflection;
+using CCEnvs.Reflection.Data;
+using System;
 
 #nullable enable
 namespace CCEnvs
 {
     public readonly struct TypeValuePair : IEquatable<TypeValuePair>
     {
-        public readonly Type type;
-        public readonly object? value;
+        public readonly Type Type { get; }
+        public readonly object? Value { get; }
 
         public TypeValuePair(Type type, object? value)
         {
-            this.type = type;
-            this.value = value;
+            Type = type;
+            Value = value;
         }
 
         public TypeValuePair(object value)
@@ -41,9 +42,16 @@ namespace CCEnvs
             return !left.Equals(right);
         }
 
+        public static explicit operator ExplicitArgument(TypeValuePair pair)
+        {
+            return pair.ToExplicitArgument();
+        }
+
+        public ExplicitArgument ToExplicitArgument() => new(new CCParameterInfo(Type), Value);
+
         public bool Equals(TypeValuePair other)
         {
-            return type == other.type && value == other.value;
+            return Type == other.Type && Value == other.Value;
         }
 
         public override bool Equals(object obj)
@@ -53,12 +61,12 @@ namespace CCEnvs
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(type, value);
+            return HashCode.Combine(Type, Value);
         }
 
         public override string ToString()
         {
-            return type.GetName();
+            return Type.GetName();
         }
     }
 }

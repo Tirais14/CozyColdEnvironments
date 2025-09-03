@@ -30,7 +30,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
                 new TypeValuePair(typeof(InputActionReactiveFactory)),
                 nameof(Create),
                 new ExplicitArguments(new TypeValuePair(inputAction)),
-                new Signature(valueType))!;
+                valueType)!;
         }
     }
 }

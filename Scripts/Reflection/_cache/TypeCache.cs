@@ -74,7 +74,7 @@ namespace CCEnvs.Reflection.Cached
                 ParameterModifiers = parameterModifiers;
             }
             public ConstructrorKey(Type reflectedType,
-                                   Signature signature,
+                                   CCParameters signature,
                                    ParameterModifier parameterModifiers)
                 :
                 this(reflectedType, (Type[])signature, parameterModifiers)

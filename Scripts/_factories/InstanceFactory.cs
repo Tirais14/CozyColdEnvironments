@@ -6,6 +6,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.Data;
 using System.Linq;
 using System.Collections.Generic;
+using CCEnvs.Common;
 
 #nullable enable
 namespace CCEnvs
@@ -52,7 +53,7 @@ namespace CCEnvs
                         throw new ConstructorNotFoundException(
                             type,
                             bindings.BindingFlags,
-                            bindings.Arguments.signature);
+                            ((CCParameters)bindings.Arguments));
 
                     return null!;
                 }
@@ -105,52 +106,69 @@ namespace CCEnvs
                 new ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = ExplicitArguments.Empty
+                    Arguments = ExplicitArguments.OptionalAsEmpty
                 },
-                parameters);
+                parameters.ResetFlag(Parameters.ThrowIfNotFound));
 
             if (created.IsNull())
-                return created;
+            {
+                if (parameters.IsFlagSetted(Parameters.ThrowIfNotFound))
+                    throw new ConstructorNotFoundException(
+                        type,
+                        BindingFlagsDefault.InstanceAll,
+                        Reflection.Data.CCParameters.Empty);
+
+                return null!;
+            }
 
             Type dataType = data.GetType();
 
-            FieldInfo[] fields = dataType.ForceGetFields(
-                BindingFlagsDefault.InstanceAll)
-                .Where(x => !x.IsInitOnly)
-                .ToArray();
-
-            FieldInfo[] createdFields = type.ForceGetFields(
-                BindingFlagsDefault.InstanceAll)
-                .Where(x => !x.IsInitOnly)
-                .ToArray();
-
-            foreach (var createdField in createdFields)
-            {
-                if (fields.Find(x => x.Name.Equals(createdField.Name))
-                    is FieldInfo foundField
-                    )
-                    createdField.SetValue(created, foundField.GetValue(data));
-            }
-
-            PropertyInfo[] props = dataType.ForceGetProperties(
-                BindingFlagsDefault.InstanceAll)
-                .Where(x => x.CanWrite && x.CanRead)
-                .ToArray();
-
-            PropertyInfo[] createdProps = type.ForceGetProperties(
-                BindingFlagsDefault.InstanceAll)
-                .Where(x => x.CanWrite && x.CanRead)
-                .ToArray();
-
-            foreach (var createdProp in createdProps)
-            {
-                if (props.Find(x => x.Name.Equals(createdProp.Name))
-                    is PropertyInfo foundProp
-                    )
-                    createdProp.SetValue(created, foundProp.GetValue(data));
-            }
+            InjectProperties();
+            InjectFields();
 
             return created;
+
+            void InjectProperties()
+            {
+                PropertyInfo[] props = dataType.ForceGetProperties(
+                    BindingFlagsDefault.InstanceAll)
+                    .Where(x => x.CanWrite && x.CanRead)
+                    .ToArray();
+
+                PropertyInfo[] createdProps = type.ForceGetProperties(
+                    BindingFlagsDefault.InstanceAll)
+                    .Where(x => x.CanWrite && x.CanRead)
+                    .ToArray();
+
+                foreach (var createdProp in createdProps)
+                {
+                    if (props.Find(x => x.Name.Equals(createdProp.Name))
+                        is PropertyInfo foundProp
+                        )
+                        createdProp.SetValue(created, foundProp.GetValue(data));
+                }
+            }
+
+            void InjectFields()
+            {
+                FieldInfo[] fields = dataType.ForceGetFields(
+                    BindingFlagsDefault.InstanceAll)
+                    .Where(x => !x.IsInitOnly)
+                    .ToArray();
+
+                FieldInfo[] createdFields = type.ForceGetFields(
+                    BindingFlagsDefault.InstanceAll)
+                    .Where(x => !x.IsInitOnly)
+                    .ToArray();
+
+                foreach (var createdField in createdFields)
+                {
+                    if (fields.Find(x => x.Name.Equals(createdField.Name))
+                        is FieldInfo foundField
+                        )
+                        createdField.SetValue(created, foundField.GetValue(data));
+                }
+            }
         }
 
         /// <summary>

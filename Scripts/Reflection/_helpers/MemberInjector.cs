@@ -21,13 +21,13 @@ namespace CCEnvs.Reflection.Injections
 
             DeconstructOptions(options, out bool throwIfFailed, out bool cacheField);
             BindingFlags bindingFlags = ResolveBindingFlags(target);
-            FieldInfo? field = FindField(target.type, fieldName, bindingFlags);
+            FieldInfo? field = FindField(target.Type, fieldName, bindingFlags);
 
             if (field is null)
             {
                 if (throwIfFailed)
                     throw new FieldNotFoundException(
-                        target.type,
+                        target.Type,
                         fieldName,
                         bindingFlags);
 
@@ -38,7 +38,7 @@ namespace CCEnvs.Reflection.Injections
             {
                 try
                 {
-                    SetField(target.value, value, field, cacheField);
+                    SetField(target.Value, value, field, cacheField);
                     return true;
                 }
                 catch (Exception)
@@ -47,7 +47,7 @@ namespace CCEnvs.Reflection.Injections
                 }
             }
 
-            SetField(target.value, value, field, cacheField);
+            SetField(target.Value, value, field, cacheField);
             return true;
         }
         public static bool InjectField(object target,
@@ -71,13 +71,13 @@ namespace CCEnvs.Reflection.Injections
 
             DeconstructOptions(options, out bool throwIfFailed, out bool cacheProp);
             BindingFlags bindingFlags = ResolveBindingFlags(target);
-            PropertyInfo? prop = FindProperty(target.type, propName, bindingFlags);
+            PropertyInfo? prop = FindProperty(target.Type, propName, bindingFlags);
 
             if (prop is null)
             {
                 if (throwIfFailed)
                     throw new PropertyNotFoundException(
-                        target.type,
+                        target.Type,
                         propName,
                         bindingFlags);
 
@@ -90,7 +90,7 @@ namespace CCEnvs.Reflection.Injections
             {
                 try
                 {
-                    SetProperty(target.value, value, prop, cacheProp);
+                    SetProperty(target.Value, value, prop, cacheProp);
                     return true;    
                 }
                 catch (Exception)
@@ -99,7 +99,7 @@ namespace CCEnvs.Reflection.Injections
                 }
             }
 
-            SetProperty(target.value, value, prop, cacheProp);
+            SetProperty(target.Value, value, prop, cacheProp);
             return true;
         }
         public static bool InjectProperty(object target,
@@ -166,7 +166,7 @@ namespace CCEnvs.Reflection.Injections
 
         private static BindingFlags ResolveBindingFlags(TypeValuePair target)
         {
-            BindingFlags bindingFlags = target.value.IsNull()
+            BindingFlags bindingFlags = target.Value.IsNull()
                 ?
                 BindingFlagsDefault.StaticAll
                 :

@@ -1,28 +1,39 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
 #nullable enable
 namespace CCEnvs.Reflection.Data
 {
-    public readonly struct ExplicitArguments : IEquatable<ExplicitArguments>
+    public readonly struct ExplicitArguments
+        : IReadOnlyList<ExplicitArgument>,
+        IEquatable<ExplicitArguments>
     {
         public static ExplicitArguments Empty => new(Array.Empty<object>());
+        /// <summary>
+        /// A constructor that contains only optional parameters is also considered empty
+        /// </summary>
+        public static ExplicitArguments OptionalAsEmpty => new(new ExplicitArgument());
 
-        public readonly Signature signature;
-        public readonly Arguments arguments;
+        public int Count => Arguments.Count;
+        public ReadOnlyCollection<ExplicitArgument> Arguments { get; }
+        public ExplicitArgument this[int index] => Arguments[index];
 
-        public ExplicitArguments(params TypeValuePair[] pairs)
+        public ExplicitArguments(params ExplicitArgument[] args)
         {
-            signature = new Signature(pairs.Select(x => x.type).ToArray());
-            arguments = new Arguments(pairs.Select(x => x.value).ToArray());
+            Arguments = new ReadOnlyCollection<ExplicitArgument>(args);
         }
+
         public ExplicitArguments(params object[] args)
             :
-            this(args.Select(x => new TypeValuePair(x.GetType(), x)).ToArray())
+            this(args.Select(x => new ExplicitArgument(new CCParameterInfo(x.GetType()),
+                                                       x)).ToArray())
         {
         }
+
         public ExplicitArguments(object args, bool singleArg)
             :
             this(args)
@@ -39,61 +50,65 @@ namespace CCEnvs.Reflection.Data
             return !left.Equals(right);
         }
 
-        public static explicit operator Type[](ExplicitArguments args)
+        public static explicit operator CCParameters(ExplicitArguments args)
         {
-            return (Type[])args.signature;
+            return new CCParameters(args.Select(x => x.Parameter).ToArray());
         }
 
         public static explicit operator object?[](ExplicitArguments args)
         {
-            return (object?[])args.arguments;
+            return args.Arguments.Select(x => x.Value).ToArray();
         }
 
         public static explicit operator TypeValuePair[](ExplicitArguments args)
         {
-            return args.ToPairs();
+            return args.ToTypeValuePairs();
         }
 
-        public TypeValuePair[] ToPairs()
+        public readonly TypeValuePair[] ToTypeValuePairs()
         {
-            var typeValuePairs = new List<TypeValuePair>(signature.Count);
-            for (int i = 0; i < signature.Count; i++)
-                typeValuePairs.Add(new TypeValuePair(signature[i], arguments[i]));
-
-            return typeValuePairs.ToArray();
+            return Arguments.Select(x => new TypeValuePair(x.Parameter.ParameterType, x.Value)).ToArray();
         }
 
-        public bool Equals(ExplicitArguments other)
+        public readonly bool Equals(ExplicitArguments other)
         {
-            return signature.Equals(other.signature)
-                   && 
-                   arguments.Equals(other.arguments);
+            return Arguments.SequenceEqual(other.Arguments);
         }
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is ExplicitArguments typed && Equals(typed);
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
-            return HashCode.Combine(signature, arguments);
+            return HashCode.Combine(Arguments);
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
-            if (signature.IsEmpty())
+            if (Arguments.IsEmpty())
                 return "empty";
 
-            TypeValuePair[] typeValuePairs = ToPairs();
+            TypeValuePair[] typeValuePairs = ToTypeValuePairs();
             var builder = new StringBuilder();
             TypeValuePair pair;
             for (int i = 0; i < typeValuePairs.Length; i++)
             {
                 pair = typeValuePairs[i];
-                builder.Append($"position = {i}, type = {pair.type.GetName()}, value = {pair.value}; ");
+                builder.Append($"position = {i}, type = {pair.Type.GetName()}, value = {pair.Value}; ");
             }
 
             return builder.ToString();
+        }
+
+        public IEnumerator<ExplicitArgument> GetEnumerator()
+        {
+            return Arguments.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

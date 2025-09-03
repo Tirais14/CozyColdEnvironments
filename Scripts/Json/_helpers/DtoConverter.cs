@@ -17,7 +17,8 @@ namespace CCEnvs.Json.DTO
             if (toType is null)
                 throw new ArgumentNullException(nameof(toType));
 
-            if (JsonSettingsProvider.TryGetDtoConverter(dto.GetType(), out Func<IJsonDto, object>? method))
+            if (JsonSettingsProvider.TryGetDtoConverter(dto.GetType(),
+                                                        out Func<IJsonDto, object>? method))
                 return method(dto);
 
             if (dto is IJsonDtoConvertible convertible

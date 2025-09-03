@@ -25,7 +25,7 @@ namespace CCEnvs.Diagnostics
 
         public ConstructorNotFoundException(Type reflectedType,
                                             BindingFlags bindings,
-                                            Signature signature)
+                                            CCParameters signature)
             :
             base(reflectedType,
                  ".ctor",
@@ -36,8 +36,8 @@ namespace CCEnvs.Diagnostics
 
         public ConstructorNotFoundException(Type reflectedType,
                                             BindingFlags bindings,
-                                            Signature signature,
-                                            Signature genericParams)
+                                            CCParameters signature,
+                                            CCParameters genericParams)
             :
             base(reflectedType,
                  ".ctor",

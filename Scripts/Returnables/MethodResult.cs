@@ -35,10 +35,10 @@ namespace CCEnvs.Returnables
             ExplicitResults = new ReadOnlyCollection<TypeValuePair>(explicitResults);
 
             Results = new ReadOnlyCollection<object?>(
-                explicitResults.Select(x => x.value).ToArray());
+                explicitResults.Select(x => x.Value).ToArray());
 
             ResultTypes = new ReadOnlyCollection<Type>(
-                explicitResults.Select(x => x.type).ToArray());
+                explicitResults.Select(x => x.Type).ToArray());
 
             IsVoid = ResultTypes.All(x => x.IsAnyType(typeof(void)));
         }

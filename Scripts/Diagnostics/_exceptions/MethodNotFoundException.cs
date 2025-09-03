@@ -35,7 +35,7 @@ namespace CCEnvs.Diagnostics
         public MethodNotFoundException(Type reflectedType,
                                        string methodName,
                                        BindingFlags bindings,
-                                       Signature signature)
+                                       CCParameters signature)
             :
             base($"{ReflectedType(reflectedType)}Method: {methodName}, bindings = {bindings}, signature = {signature}.")
         {
@@ -44,8 +44,8 @@ namespace CCEnvs.Diagnostics
         public MethodNotFoundException(Type reflectedType,
                                        string methodName,
                                        BindingFlags bindings,
-                                       Signature signature,
-                                       Signature genericParams)
+                                       CCParameters signature,
+                                       CCParameters genericParams)
             :
             base($"{ReflectedType(reflectedType)}Method: {methodName}, bindings = {bindings}, signature = {signature}, generic parameters = {genericParams}.")
         {
