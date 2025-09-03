@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.UI.Storages
             TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
             {
                 BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new TypeValuePair(model))
+                Arguments = new ExplicitArguments(new ExplicitArgument(model))
             });
 
             viewModel.AddTo(this);
@@ -58,7 +58,7 @@ namespace CCEnvs.Unity.UI.Storages
             return InstanceFactory.Create<TModel>(new ConstructorBindings
             {
                 BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new TypeValuePair(int.MaxValue))
+                Arguments = new ExplicitArguments(new ExplicitArgument(int.MaxValue))
             });
         }
     }

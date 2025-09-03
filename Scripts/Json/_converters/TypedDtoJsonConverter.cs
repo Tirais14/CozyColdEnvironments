@@ -37,7 +37,7 @@ namespace CCEnvs.Json.Converters
                 new ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = new ExplicitArguments(value)
+                    Arguments = new ExplicitArguments(new ExplicitArgument(value))
                 },
                 InstanceFactory.Parameters.CacheConstructor
                 |

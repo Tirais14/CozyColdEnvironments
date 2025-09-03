@@ -106,7 +106,7 @@ namespace CCEnvs
                 new ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = ExplicitArguments.OptionalAsEmpty
+                    Arguments = ExplicitArguments.EmptyIgnoreOptional
                 },
                 parameters.ResetFlag(Parameters.ThrowIfNotFound));
 
@@ -116,7 +116,7 @@ namespace CCEnvs
                     throw new ConstructorNotFoundException(
                         type,
                         BindingFlagsDefault.InstanceAll,
-                        Reflection.Data.CCParameters.Empty);
+                        CCParameters.Empty);
 
                 return null!;
             }

@@ -36,7 +36,7 @@ namespace CCEnvs.Json.DTO
                 new ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = new ExplicitArguments(dto)
+                    Arguments = new ExplicitArguments(new ExplicitArgument(dto))
                 },
                 InstanceFactory.Parameters.CacheConstructor);
 

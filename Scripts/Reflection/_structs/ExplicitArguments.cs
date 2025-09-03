@@ -8,36 +8,28 @@ using System.Text;
 #nullable enable
 namespace CCEnvs.Reflection.Data
 {
-    public readonly struct ExplicitArguments
+    public struct ExplicitArguments
         : IReadOnlyList<ExplicitArgument>,
         IEquatable<ExplicitArguments>
     {
-        public static ExplicitArguments Empty => new(Array.Empty<object>());
-        /// <summary>
-        /// A constructor that contains only optional parameters is also considered empty
-        /// </summary>
-        public static ExplicitArguments OptionalAsEmpty => new(new ExplicitArgument());
+        public static ExplicitArguments Empty => new(Array.Empty<ExplicitArgument>());
+        public static ExplicitArguments EmptyIgnoreOptional => new(Array.Empty<ExplicitArgument>())
+        {
+            IgnoreOptionalArguments = true
+        };
 
-        public int Count => Arguments.Count;
-        public ReadOnlyCollection<ExplicitArgument> Arguments { get; }
-        public ExplicitArgument this[int index] => Arguments[index];
+        public readonly int Count => Arguments.Count;
+        public readonly ReadOnlyCollection<ExplicitArgument> Arguments { get; }
+        public readonly ExplicitArgument this[int index] => Arguments[index];
+        public bool IgnoreOptionalArguments { readonly get; set; }
 
-        public ExplicitArguments(params ExplicitArgument[] args)
+        public readonly CCParameters RequiredArguments => new(Arguments.Select(x => x.Parameter)
+                                                              .Where(x => !x.HasDefaultValue)
+                                                              .ToArray());
+
+        public ExplicitArguments(params ExplicitArgument[] args) : this()
         {
             Arguments = new ReadOnlyCollection<ExplicitArgument>(args);
-        }
-
-        public ExplicitArguments(params object[] args)
-            :
-            this(args.Select(x => new ExplicitArgument(new CCParameterInfo(x.GetType()),
-                                                       x)).ToArray())
-        {
-        }
-
-        public ExplicitArguments(object args, bool singleArg)
-            :
-            this(args)
-        {
         }
 
         public static bool operator ==(ExplicitArguments left, ExplicitArguments right)
@@ -79,7 +71,7 @@ namespace CCEnvs.Reflection.Data
             return obj is ExplicitArguments typed && Equals(typed);
         }
 
-        public Type[] GetTypes()
+        public readonly Type[] GetTypes()
         {
             return ((CCParameters)this).Select(x => x.ParameterType).ToArray();
         }
@@ -106,12 +98,12 @@ namespace CCEnvs.Reflection.Data
             return builder.ToString();
         }
 
-        public IEnumerator<ExplicitArgument> GetEnumerator()
+        public readonly IEnumerator<ExplicitArgument> GetEnumerator()
         {
             return Arguments.GetEnumerator();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        readonly IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }

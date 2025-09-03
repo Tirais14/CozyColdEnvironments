@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             return MethodHelper.Invoke<IInputActionReactive>(
                 new TypeValuePair(typeof(InputActionReactiveFactory)),
                 nameof(Create),
-                new ExplicitArguments(new TypeValuePair(inputAction)),
+                new ExplicitArguments(new ExplicitArgument(inputAction)),
                 valueType)!;
         }
     }

@@ -62,7 +62,8 @@ namespace CCEnvs.Unity.Json.Converters
             LoadHandle = MethodHelper.Invoke<AsyncOperationHandle>(
                 new TypeValuePair(typeof(object), Key),
                 nameof(Addressables.LoadAssetAsync),
-                new ExplicitArguments(new TypeValuePair(typeof(object), Key)),
+                new ExplicitArguments(new ExplicitArgument(new CCParameterInfo(typeof(object)),
+                                                           Key)),
                 AssetType);
 
             return LoadHandle;

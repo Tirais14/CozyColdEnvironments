@@ -13,7 +13,7 @@ namespace CCEnvs.Reflection.Data
                                 object? value)
         {
             Parameter = parameter;
-            this.Value = value;
+            Value = value;
         }
 
         public ExplicitArgument(object value)
@@ -24,6 +24,7 @@ namespace CCEnvs.Reflection.Data
                 value)
         {
         }
+
         public ExplicitArgument(CCParameterInfo parameter)
             :
             this(parameter, parameter.HasDefaultValue ? Type.Missing : null)
