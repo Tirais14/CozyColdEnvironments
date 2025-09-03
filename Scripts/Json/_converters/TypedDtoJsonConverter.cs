@@ -7,8 +7,8 @@ using System;
 
 namespace CCEnvs.Json.Converters
 {
-    public class TypedDtoJsonConverter<Tdto, T> : JsonConverter<T>
-        where Tdto : ITypedJsonDTO
+    public class TypedDtoJsonConverter<TDto, T> : JsonConverter<T>
+        where TDto : ITypedJsonDTO
     {
         public override T? ReadJson(JsonReader reader,
                                     Type objectType,
@@ -16,7 +16,7 @@ namespace CCEnvs.Json.Converters
                                     bool hasExistingValue,
                                     JsonSerializer serializer)
         {
-            var dto = serializer.Deserialize<Tdto>(reader);
+            var dto = serializer.Deserialize<TDto>(reader);
 
             return DtoConverter.Convert<T>(dto);
         }
@@ -31,7 +31,7 @@ namespace CCEnvs.Json.Converters
                 return;
             }
 
-            InstanceFactory.Create(typeof(Tdto),
+            InstanceFactory.Create(typeof(TDto),
                 new ConstructorBindings
                 {
                     BindingFlags = BindingFlagsDefault.InstanceAll,

@@ -1,3 +1,4 @@
+using CCEnvs.Reflection.Cached;
 using System;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,21 @@ namespace CCEnvs.Reflection
 {
     public static class TypeExtensions
     {
+        public static object? GetDefault(this Type value)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
+            if (value.IsClass)
+                return null;
+
+            var result = Activator.CreateInstance(value);
+
+            TypeCache.TryCacheDefaultValue(value, result);
+
+            return result;
+        }
+
         /// <summary>
         /// Extends default method and now includes types <see cref="string"/>, <see cref="decimal"/>
         /// </summary>
@@ -205,6 +221,8 @@ namespace CCEnvs.Reflection
                 return "float";
             else if (type.IsType<double>())
                 return "double";
+            else if (type.IsType<char>())
+                return "char";
             else if (type.IsType<Array>())
                 return $"{type.GetName(TypeNameConvertingAttributes.Default | ~TypeNameConvertingAttributes.ShortName)}[]";
 

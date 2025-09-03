@@ -40,39 +40,41 @@ namespace CCEnvs.Json.DTO
                 },
                 InstanceFactory.Parameters.CacheConstructor);
 
-            if (result.IsNotNull())
-                return result;
+            //if (result.IsNotNull())
+            //    return result;
 
-            result = InstanceFactory.CreateBy(
-                toType,
-                dto,
-                InstanceFactory.Parameters.CacheConstructor);
+            //result = InstanceFactory.CreateBy(
+            //    toType,
+            //    dto,
+            //    InstanceFactory.Parameters.CacheConstructor);
 
-            if (result.IsNotNull())
-                return result;
+            if (result.IsNull())
+                throw new InstanceCreationException(toType);
 
-            throw new InstanceCreationException(toType);
+            return result;
         }
         public static T? ConvertTo<T>(IJsonDto? dto)
         {
             return (T?)ConvertTo(dto, typeof(T));
         }
 
+        /// <exception cref="ArgumentException"></exception>
         public static object? Convert(ITypedJsonDTO? dto)
         {
             if (dto.IsDefault())
                 return default;
             if (dto.ObjectType is null)
-                throw new DataAccessException(dto.ObjectType);
+                throw new ArgumentException(nameof(dto.ObjectType));
 
             return ConvertTo(dto, dto.ObjectType);
         }
+        /// <exception cref="ArgumentException"></exception>
         public static T? Convert<T>(ITypedJsonDTO? dto)
         {
             if (dto.IsDefault())
                 return default;
             if (dto.ObjectType is null)
-                throw new DataAccessException(dto.ObjectType);
+                throw new ArgumentException(nameof(dto.ObjectType));
             if (dto.ObjectType.IsNotType(typeof(T)))
                 throw new ArgumentException(nameof(dto.ObjectType));
 

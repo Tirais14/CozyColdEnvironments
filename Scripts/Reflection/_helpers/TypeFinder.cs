@@ -14,19 +14,14 @@ namespace CCEnvs.Reflection
         {
             if (parameters is null)
                 throw new ArgumentNullException(nameof(parameters));
-            System.Collections.Generic.IEnumerable<Type> enumerable()
-            {
-                foreach (var x in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    Type t = FindType(x, parameters, throwOnError: false);
-                    if (t is not null)
-                    {
-                        yield return t;
-                    }
-                }
-            }
+            if (parameters.TypeName.IsNullOrEmpty())
+                throw new StringArgumentException(nameof(parameters.TypeName), parameters.TypeName);
 
-            Type[] foundTypes = enumerable().ToArray();
+            Type[] foundTypes = (from x in AppDomain.CurrentDomain.GetAssemblies()
+                                 select FindType(x, parameters, throwOnError: false)
+                                 into t
+                                 where t is not null
+                                 select t).ToArray();
 
             if (foundTypes.IsEmpty())
             {
@@ -60,7 +55,7 @@ namespace CCEnvs.Reflection
                                  where types.IsNotEmpty()
                                  from t in types
                                  select t)
-                                .ToArray();
+                                 .ToArray();
 
             if (foundTypes.IsEmpty())
             {

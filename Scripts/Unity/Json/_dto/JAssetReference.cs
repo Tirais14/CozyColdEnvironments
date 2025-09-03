@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.Json.Converters
 {
     [JsonObject]
     [Serializable]
-    public record AddressableDto : IJsonDto
+    public record JAssetReference : IJsonDto
     {
         [JsonProperty]
         public string AssetPath { get; set; } = string.Empty;
@@ -71,9 +71,9 @@ namespace CCEnvs.Unity.Json.Converters
     }
 
     [Serializable]
-    public record AddressableDto<T>
+    public record JAssetReference<T>
         :
-        AddressableDto
+        JAssetReference
 
         where T : Object
     {
@@ -85,7 +85,7 @@ namespace CCEnvs.Unity.Json.Converters
             set => base.LoadHandle = value;
         }
 
-        public AddressableDto()
+        public JAssetReference()
         {
             AssetType = typeof(T);
         }

@@ -6,11 +6,11 @@ namespace CCEnvs.Reflection
     public record TypeFinderParameters
     {
         public string AssemblyName { get; set; } = string.Empty;
-        public string Namepsace { get; set; } = string.Empty;
+        public string Namespace { get; set; } = string.Empty;
         public string TypeName { get; set; } = string.Empty;
         public bool IgnoreCase { get; set; }
         public bool HasAssemblyName => AssemblyName.IsNotNullOrEmpty();
-        public bool HasNamespace => Namepsace.IsNotNullOrEmpty();
+        public bool HasNamespace => Namespace.IsNotNullOrEmpty();
         public bool HasTypeName => TypeName.IsNotNullOrEmpty();
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -33,7 +33,7 @@ namespace CCEnvs.Reflection
                 return false;
 
             if (HasNamespace && type.Namespace.IsNotNullOrEmpty())
-                result = type.Namespace.Contains(Namepsace, comparison);
+                result = type.Namespace.Contains(Namespace, comparison);
 
             if (!result)
                 return false;

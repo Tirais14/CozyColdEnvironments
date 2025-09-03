@@ -46,7 +46,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
             value = TypeFinder.FindTypeInAppDomain(new TypeFinderParameters
             {
-                Namepsace = _namespace,
+                Namespace = _namespace,
                 TypeName = typeName,
             });
         }

@@ -36,7 +36,7 @@ namespace CCEnvs.Json.DTO
                 new TypeFinderParameters
                 {
                     AssemblyName = AssemblyName,
-                    Namepsace = Namespace,
+                    Namespace = Namespace,
                     TypeName = TypeName,
                 },
                 throwOnError: true) 

@@ -102,13 +102,11 @@ namespace CCEnvs
             if (data.IsNull())
                 throw new ArgumentNullException(nameof(data));
 
-            object created = Create(type,
-                new ConstructorBindings
-                {
-                    BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = ExplicitArguments.EmptyIgnoreOptional
-                },
-                parameters.ResetFlag(Parameters.ThrowIfNotFound));
+            object created;
+            CreateByEmptyConstructor();
+
+            if (created.IsNull())
+                CreateByAnyConstructor();
 
             if (created.IsNull())
             {
@@ -127,6 +125,32 @@ namespace CCEnvs
             InjectFields();
 
             return created;
+            void CreateByEmptyConstructor()
+            {
+                created = Create(type,
+                    new ConstructorBindings
+                    {
+                        BindingFlags = BindingFlagsDefault.InstanceAll,
+                        Arguments = ExplicitArguments.EmptyIgnoreOptional
+                    },
+                    parameters.ResetFlag(Parameters.ThrowIfNotFound));
+            }
+
+            void CreateByAnyConstructor()
+            {
+                (ConstructorInfo ctor, ParameterInfo[] parameters) pair =
+                    (from x in type.GetConstructors(BindingFlagsDefault.InstanceAll)
+                     select (ctor: x, parameters: x.GetParameters()) into p
+                     orderby p.parameters.Length
+                     select p).FirstOrDefault();
+
+                if (pair.ctor is null)
+                    return;
+
+                object[] args = new object[pair.parameters.Length];
+
+                created = pair.ctor.Invoke(args);
+            }
 
             void InjectProperties()
             {
