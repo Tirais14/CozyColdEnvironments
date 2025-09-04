@@ -6,9 +6,9 @@ using CCEnvs.Diagnostics;
 
 #nullable enable
 
-namespace CCEnvs
+namespace CCEnvs.Collections
 {
-    public static class EnumerableExtensions
+    public static class IEnumerableExtensions
     {
         public static int CountNotNull<T>(this IEnumerable<T> values)
             where T : class
@@ -31,23 +31,5 @@ namespace CCEnvs
         {
             return values.Contains((IEnumerable<T>)toCheckValues);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IEnumerable<T>? enumerable)
-        {
-            return enumerable.IsNull() || enumerable.IsEmpty();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNotNullOrEmpty<T>([NotNullWhen(true)] this IEnumerable<T>? enumerable)
-        {
-            return !enumerable.IsNullOrEmpty();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsEmpty<T>(this IEnumerable<T> enumerable) => !enumerable.Any();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNotEmpty<T>(this IEnumerable<T> enumerable) => !enumerable.IsEmpty();
     }
 }

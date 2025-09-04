@@ -1,6 +1,6 @@
 #nullable enable
 using CCEnvs.Diagnostics;
-using CCEnvs.Linq;
+using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Diagnostics;
 using CCEnvs.Utils;
 using System;

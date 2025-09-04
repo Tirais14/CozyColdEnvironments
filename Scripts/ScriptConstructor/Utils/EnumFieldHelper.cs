@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using System;
 
 namespace CCEnvs.FileSystem.ScriptUtils

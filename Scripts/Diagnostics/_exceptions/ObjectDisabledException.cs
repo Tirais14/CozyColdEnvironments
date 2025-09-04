@@ -1,4 +1,6 @@
 #nullable enable
+using CCEnvs.Reflection;
+
 namespace CCEnvs.Diagnostics
 {
     public class ObjectDisabledException : CCException

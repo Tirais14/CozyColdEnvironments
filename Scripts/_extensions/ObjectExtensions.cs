@@ -1,69 +1,18 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Cached;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace CCEnvs
 {
     public static class ObjectExtensions
     {
-        public static string GetTypeName<T>(this T? obj,
-            TypeNameConvertingAttributes attributes = TypeNameConvertingAttributes.Default)
-        {
-            if (obj is null)
-                return "null";
 
-            return obj.GetType().GetName(attributes);
-        }
     }
 }
 
 namespace CCEnvs.TypeMatching
-{
-    public static class ObjectExtensions
-    {
-        public static bool IsType(this object? value, Type type)
-        {
-            return type.IsInstanceOfType(value);
-        }
-        public static bool IsType(this object? value,
-            Type type,
-            [NotNullWhen(true)] out object? result)
-        {
-            if (!value.IsType(type))
-            {
-                result = null;
-                return false;
-            }
-
-            result = value;
-            return result.IsNotNull();
-        }
-
-        public static bool IsNotType(this object? value, Type type)
-        {
-            return value.IsType(type);
-        }
-
-        public static bool IsNotType(this object? value,
-            Type type,
-            out object? result)
-        {
-            if (value.IsNotType(type))
-            {
-                result = null;
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-    }
-}
-
-namespace CCEnvs.Unity.TypeMatching
 {
     public static class ObjectExtensions
     {
@@ -123,10 +72,20 @@ namespace CCEnvs.Unity.TypeMatching
         {
             return !obj.Is(out result);
         }
+
+        public static T? IsQ<T>(this object? obj)
+        {
+            return obj is T typedObj ? typedObj : default;
+        }
+
+        public static TValue? IsQ<TObj, TValue>(this TObj? obj)
+        {
+            return obj is TValue typedObj ? typedObj : default;
+        }
     }
 }
 
-namespace CCEnvs.TypeConverting
+namespace CCEnvs.Converting
 {
     public static class ObjectExtensions
     {
@@ -169,91 +128,6 @@ namespace CCEnvs.TypeConverting
                 result = null;
                 return false;
             }
-        }
-    }
-}
-
-namespace CCEnvs.Diagnostics
-{
-    public static class ObjectExtensions
-    {
-        /// <summary>Checks for unity or system <see langword="null"/></summary>
-        public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
-        {
-            return new NullValidator<T>(obj).IsNull;
-        }
-
-        /// <summary>Checks for unity or system <see langword="null"/></summary>
-        public static bool IsNull<T>([NotNullWhen(false)] this T? obj, out NullValidator<T> validationResult)
-        {
-            validationResult = new NullValidator<T>(obj);
-
-            return validationResult.IsNull;
-        }
-
-        /// <summary>Inverted</summary>
-        public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj)
-        {
-            return !new NullValidator<T>(obj).IsNull;
-        }
-
-        /// <summary>
-        /// Also checks for unity null
-        /// </summary>
-        public static bool IsDefault([NotNullWhen(false)] this object? value,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            if (value.IsNull())
-                return true;
-
-            Type type = value.GetType();
-            if (type.IsClass)
-                return false;
-
-            if (!TypeCache.TryGetDefaultValue(type, out object? defaultValue))
-            {
-                defaultValue = Activator.CreateInstance(type, nonPublic: true);
-                TypeCache.TryCacheDefaultValue(type, defaultValue);
-            }
-
-            if (value.Equals(defaultValue))
-                return true;
-
-            if (value is string str)
-            {
-                return option switch
-                {
-                    EqualsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
-                    EqualsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
-                    _ => throw new InvalidOperationException(),
-                };
-            }
-
-            return false;
-        }
-        public static bool IsDefault([NotNullWhen(false)] this object? obj,
-            object[] customDefaultValues,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            if (obj.IsDefault(option))
-                return true;
-            else if (customDefaultValues.Contains(obj))
-                return true;
-
-            return false;
-        }
-
-        /// <summary>Inverted</summary>
-        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            return !obj.IsDefault(option);
-        }
-        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            object[] customDefaultValues,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            return !obj.IsDefault(customDefaultValues, option);
         }
     }
 }

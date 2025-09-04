@@ -1,7 +1,7 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.TypeMatching;
 using System;
 using System.Linq;
-using CCEnvs.Diagnostics;
-using CCEnvs.Unity.TypeMatching;
 
 namespace CCEnvs.Unity.Initables
 {

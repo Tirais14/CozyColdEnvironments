@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using CCEnvs.Reflection;
 
 #nullable enable
-namespace CCEnvs
+namespace CCEnvs.Collections
 {
     public static class ListExtensions
     {
@@ -14,18 +14,7 @@ namespace CCEnvs
     }
 }
 
-namespace CCEnvs.Reflection
-{
-    public static class ListExtensions
-    {
-        public static T[] GetInternalArray<T>(this List<T> list)
-        {
-            return ListCache<T>.GetInternalArray(list);
-        }
-    }
-}
-
-namespace CCEnvs.Performance
+namespace CCEnvs.Collections.Performance
 {
     public static class ListExtensions
     {

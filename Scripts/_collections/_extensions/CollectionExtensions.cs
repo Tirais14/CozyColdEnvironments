@@ -6,7 +6,7 @@ using CCEnvs.Diagnostics;
 
 #nullable enable
 
-namespace CCEnvs
+namespace CCEnvs.Collections
 {
     public static class CollectionExtensions
     {
@@ -22,7 +22,7 @@ namespace CCEnvs
                 collection.Add(item);
         }
 
-        public static void AddRange<T>(this ICollection<T> collection, T[] range)
+        public static void AddRange<T>(this ICollection<T> collection, params T[] range)
         {
             int rangeLength = range.Length;
             for (int i = 0; i < rangeLength; i++)

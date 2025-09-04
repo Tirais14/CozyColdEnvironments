@@ -3,6 +3,7 @@ using CCEnvs.Diagnostics;
 using System;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.Collections;
 
 namespace CCEnvs.Reflection
 {

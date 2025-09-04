@@ -1,5 +1,4 @@
 using CCEnvs.Reflection.Cached;
-using DG.Tweening;
 using System;
 using System.Linq;
 using System.Text;
@@ -9,6 +8,15 @@ namespace CCEnvs.Reflection
 {
     public static class TypeExtensions
     {
+        public static string GetTypeName<T>(this T? obj,
+            TypeNameConvertingAttributes attributes = TypeNameConvertingAttributes.Default)
+        {
+            if (obj is null)
+                return "null";
+
+            return obj.GetType().GetName(attributes);
+        }
+
         public static object? GetDefault(this Type value)
         {
             if (value is null)

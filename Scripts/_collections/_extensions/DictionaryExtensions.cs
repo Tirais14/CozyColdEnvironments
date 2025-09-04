@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace CCEnvs
+namespace CCEnvs.Collections
 {
     public static class DictionaryExtensions
     {
@@ -26,24 +26,26 @@ namespace CCEnvs
             return true;
         }
 
-        public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, KeyValuePair<TKey, TValue> item) =>
-            dictionary.Add(item.Key, item.Value);
-
-        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> items)
+        public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> dictionary,
+                                             KeyValuePair<TKey, TValue> item)
         {
-            foreach (var item in items)
-            {
-                dictionary.Add(item);
-            }
+            dictionary.Add(item.Key, item.Value);
         }
 
-        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, KeyValuePair<TKey, TValue>[] items)
+        public static void AddRange<TKey, TValue>(
+            this Dictionary<TKey, TValue> dictionary,
+            IEnumerable<KeyValuePair<TKey, TValue>> items)
+        {
+            foreach (var item in items)
+                dictionary.Add(item);
+        }
+
+        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dictionary,
+                                                  KeyValuePair<TKey, TValue>[] items)
         {
             int itemsCount = items.Length;
             for (int i = 0; i < itemsCount; i++)
-            {
                 dictionary.Add(items[i]);
-            }
         }
     }
 }
