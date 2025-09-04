@@ -1,4 +1,5 @@
 #nullable enable
+
 using System;
 
 namespace CCEnvs.Attributes
@@ -8,6 +9,5 @@ namespace CCEnvs.Attributes
         Inherited = true)]
     public class OptionalPropertyAttribute : OptionalAttribute
     {
-    
     }
 }

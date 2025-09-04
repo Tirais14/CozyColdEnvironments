@@ -5,11 +5,12 @@ using System.Linq;
 using System.Reflection;
 
 #nullable enable
+
 namespace CCEnvs.Disposables
 {
     public static class DisposableContainerCache
     {
-        private readonly static Dictionary<Type, FieldInfo> collectionFields = new();
+        private static readonly Dictionary<Type, FieldInfo> collectionFields = new();
 
         /// <exception cref="ArgumentNullException"></exception>
         public static FieldInfo GetCollectionField(Type type)

@@ -99,7 +99,8 @@ namespace CCEnvs.Collections
             {
                 if (enumerator.Index == index)
                 {
-                    enumerator.Current = new LinkedListNode<T>(item) {
+                    enumerator.Current = new LinkedListNode<T>(item)
+                    {
                         NextNode = enumerator.Next
                     };
 
@@ -194,7 +195,8 @@ namespace CCEnvs.Collections
 
             public IListNode<T> Current {
                 readonly get => current;
-                set {
+                set
+                {
                     if (current == linkedList.FirstNode)
                     {
                         throw new NotSupportedException("First node cannot be setted by enumerator.");

@@ -1,5 +1,5 @@
 #nullable enable
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +13,7 @@ namespace CCEnvs.Collections
         {
             this.values = values;
         }
+
         public CCArray(IEnumerable<T> values)
             :
             this(values.ToArray())

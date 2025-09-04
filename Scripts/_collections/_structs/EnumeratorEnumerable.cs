@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 #nullable enable
+
 namespace CCEnvs.Collections
 {
     public readonly struct EnumeratorEnumerable<T> : IEnumerable<T>

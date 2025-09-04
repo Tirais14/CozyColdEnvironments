@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using CCEnvs.Diagnostics;
+using System.Collections.Generic;
 
 #nullable enable
+
 namespace CCEnvs.Collections
 {
     public static class IEnumeratorExtensions

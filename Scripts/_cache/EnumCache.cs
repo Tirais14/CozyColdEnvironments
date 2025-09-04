@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 
 #nullable enable
+
 namespace CCEnvs.Utils
 {
     public static class EnumCache<T>
@@ -10,7 +11,8 @@ namespace CCEnvs.Utils
         private static T[]? values;
 
         public static T[] Values {
-            get {
+            get
+            {
                 values ??= Enum.GetValues(typeof(T)).Cast<T>().ToArray();
 
                 return values;

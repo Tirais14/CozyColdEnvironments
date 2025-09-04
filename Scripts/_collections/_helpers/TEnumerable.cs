@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 #nullable enable
+
 namespace CCEnvs.Collections
 {
     public static class TEnumerable<T>

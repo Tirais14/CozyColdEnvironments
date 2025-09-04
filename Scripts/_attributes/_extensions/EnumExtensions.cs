@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
+
 namespace CCEnvs.Attributes.Metadata
 {
     public static class EnumExtensions
@@ -17,8 +18,9 @@ namespace CCEnvs.Attributes.Metadata
                         .GetMetadata()
                         .Single<MetaStringAttribute>().Value;
         }
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
@@ -39,6 +41,7 @@ namespace CCEnvs.Attributes.Metadata
             success = true;
             return data;
         }
+
         public static string TryGetMetaString<T>(this T value)
             where T : Enum
         {
@@ -52,6 +55,7 @@ namespace CCEnvs.Attributes.Metadata
                         .GetMetadata()
                         .Single<MetaTypeAttribute>().Value;
         }
+
         public static bool TryGetMetaType<T>(this T value, [NotNullWhen(true)] out Type? data)
             where T : Enum
         {

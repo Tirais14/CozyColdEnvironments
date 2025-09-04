@@ -22,6 +22,7 @@ namespace CCEnvs.Attributes.Metadata
 
             return SingleInternal(values, type, throwIfNotFound: true);
         }
+
         public static T Single<T>(this MetadataAttribute[] values)
             where T : MetadataAttribute
         {
@@ -37,6 +38,7 @@ namespace CCEnvs.Attributes.Metadata
 
             return SingleInternal(values, type, throwIfNotFound: false);
         }
+
         public static T? SingleOrDefault<T>(this MetadataAttribute[] values)
             where T : MetadataAttribute
         {
@@ -64,6 +66,7 @@ namespace CCEnvs.Attributes.Metadata
 
             return results;
         }
+
         public static MetadataAttribute[] Where<T>(this MetadataAttribute[] values,
                                                    bool throwIfNotFound = true)
             where T : MetadataAttribute

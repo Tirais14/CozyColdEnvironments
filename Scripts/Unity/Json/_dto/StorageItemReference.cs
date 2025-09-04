@@ -6,6 +6,7 @@ using System;
 using System.Runtime.Serialization;
 
 #nullable enable
+
 namespace CCEnvs.Unity.Json
 {
     [JsonObject]

@@ -16,6 +16,7 @@ namespace CCEnvs.Collections
             collection[key] = value;
             return true;
         }
+
         public static bool TrySetValue<TKey, TValue>(this Dictionary<TKey, TValue> collection,
                                                      KeyValuePair<TKey, TValue> pair)
         {

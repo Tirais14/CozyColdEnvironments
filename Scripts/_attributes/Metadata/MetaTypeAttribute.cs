@@ -1,6 +1,7 @@
 using System;
 
 #nullable enable
+
 namespace CCEnvs.Attributes.Metadata
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
