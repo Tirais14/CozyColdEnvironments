@@ -8,7 +8,7 @@ namespace CCEnvs.Tests.GameSystems.Storage
     {
         public readonly string Name => "TestItem";
         public readonly int ID => 1;
-        public readonly Sprite Icon => Unity.CC.DummySprite;
+        public readonly Sprite Icon => Unity.UCC.DummySprite;
         public readonly int MaxStackCount => 0;
     }
 }

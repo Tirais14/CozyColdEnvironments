@@ -32,7 +32,7 @@ namespace CCEnvs.Unity
 
             gameModel.Anchor = new GameObject("Anchor").transform;
             gameModel.Anchor.parent = gameModel.transform;
-            gameModel.Anchor.tag = CC.Tags.TRANSFORM_OVERRIDE;
+            gameModel.Anchor.tag = UCC.Tags.TRANSFORM_OVERRIDE;
 
             return gameModel;
         }

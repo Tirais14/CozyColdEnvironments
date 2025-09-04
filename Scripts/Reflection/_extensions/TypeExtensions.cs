@@ -1,4 +1,5 @@
 using CCEnvs.Reflection.Cached;
+using DG.Tweening;
 using System;
 using System.Linq;
 using System.Text;
@@ -197,32 +198,34 @@ namespace CCEnvs.Reflection
 
         private static string ToShortName(Type type)
         {
-            if (type.IsType<byte>())
+            if (type == typeof(byte))
                 return "byte";
-            else if (type.IsType<sbyte>())
+            else if (type == typeof(sbyte))
                 return "sbyte";
-            else if (type.IsType<short>())
+            else if (type == typeof(short))
                 return "short";
-            else if (type.IsType<ushort>())
+            else if (type == typeof(ushort))
                 return "ushort";
-            else if (type.IsType<int>())
+            else if (type == typeof(int))
                 return "int";
-            else if (type.IsType<uint>())
+            else if (type == typeof(uint))
                 return "uint";
-            else if (type.IsType<long>())
+            else if (type == typeof(long))
                 return "long";
-            else if (type.IsType<ulong>())
+            else if (type == typeof(ulong))
                 return "ulong";
-            else if (type.IsType<string>())
+            else if (type == typeof(string))
                 return "string";
-            else if (type.IsType<bool>())
+            else if (type == typeof(bool))
                 return "bool";
-            else if (type.IsType<float>())
+            else if (type == typeof(float))
                 return "float";
-            else if (type.IsType<double>())
+            else if (type == typeof(double))
                 return "double";
-            else if (type.IsType<char>())
+            else if (type == typeof(char))
                 return "char";
+            else if (type == typeof(object))
+                return "object";
             else if (type.IsType<Array>())
                 return $"{type.GetName(TypeNameConvertingAttributes.Default | ~TypeNameConvertingAttributes.ShortName)}[]";
 

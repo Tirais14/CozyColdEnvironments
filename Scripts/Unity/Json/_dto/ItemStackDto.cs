@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 #nullable enable
 namespace CCEnvs.Unity.Json
 {
-    public record ItemStackDto : IJsonDto, IJsonDtoConvertible<ItemStack>
+    public record ItemStackDto : IJsonDto, ICCConvertible<ItemStack>
     {
         [JsonProperty]
         public int MaxItemCount { get; set; } = int.MaxValue;
@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.Json
             ItemCount = itemStack.ItemCount;
         }
 
-        public ItemStack ConvertToValue()
+        public ItemStack Convert()
         {
             if (Item.IsNull())
                 return new ItemStack(MaxItemCount);

@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public string Name { get; } = "NullItem";
         public int ID { get; } = int.MinValue;
-        public Sprite Icon { get; } = CC.ErrorSprite;
+        public Sprite Icon { get; } = UCC.ErrorSprite;
         public int MaxStackCount { get; } = 0;
 
         public StorageItem()

@@ -18,7 +18,7 @@ namespace CCEnvs.Json.Converters
         {
             var dto = serializer.Deserialize<TDto>(reader);
 
-            return DtoConverter.ConvertTo<T>(dto);
+            return DtoConverter.Convert<T>(dto);
         }
 
         public override void WriteJson(JsonWriter writer,

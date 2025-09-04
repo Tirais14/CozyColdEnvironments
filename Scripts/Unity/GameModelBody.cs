@@ -49,7 +49,7 @@ namespace CCEnvs.Unity
             var go = new GameObject("Body", typeof(MeshRenderer));
 
             go.transform.parent = parent;
-            go.tag = CC.Tags.GAME_OBJECT_OVERRIDE;
+            go.tag = UCC.Tags.GAME_OBJECT_OVERRIDE;
 
             return go.AddComponent<GameModelBody>();
         }

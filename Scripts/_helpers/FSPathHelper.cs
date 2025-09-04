@@ -53,14 +53,14 @@ namespace CCEnvs.FileSystem
             return path.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        /// <exception cref="InvalidDataException"></exception>
+        /// <exception cref="CCInvalidDataException"></exception>
         public static char GetDirectorySeparator(PathStyle style = PathStyle.Default)
         {
             return style switch {
                 PathStyle.Default => DefaultDirectorySeparator,
                 PathStyle.Windows => '\\',
                 PathStyle.Universal => '/',
-                _ => throw new InvalidDataException(style.ToString()),
+                _ => throw new CCInvalidDataException(style, nameof(style)),
             };
         }
 

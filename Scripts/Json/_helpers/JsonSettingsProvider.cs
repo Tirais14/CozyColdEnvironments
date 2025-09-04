@@ -1,3 +1,4 @@
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Json.Converters;
 using CCEnvs.Json.DTO;
@@ -11,25 +12,18 @@ using System.Linq;
 #nullable enable
 namespace CCEnvs.Json
 {
+    public delegate object? CCJsonConverterFunc(object? value);
+
     public static class JsonSettingsProvider
     {
-        public static JsonConverter[] Converters { get; private set; } = new JsonConverter[]
+        public static List<JsonConverter> Converters { get; private set; } = new()
         {
             new CommonDtoJsonConverter<TypeDto, Type>()
         };
-        private readonly static Dictionary<Type, Delegate> dtoConverters = new();
-
-        /// <exception cref="CollectionArgumentException"></exception>
-        public static void AddConverters(params JsonConverter[] converters)
-        {
-            if (converters.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(converters), converters);
-
-            Converters = Converters.Concat(converters).ToArray();
-        }
+        private readonly static Dictionary<Type, CCJsonConverterFunc> dtoConverters = new();
 
         public static void AddOrReplaceDtoConverter(Type dtoType,
-            Func<IJsonDto, object> func)
+            CCJsonConverterFunc func)
         {
             if (dtoConverters.ContainsKey(dtoType))
             {
@@ -39,18 +33,17 @@ namespace CCEnvs.Json
 
             dtoConverters.Add(dtoType, func);
         }
-        public static void AddOrReplaceDtoConverter<T>(Func<IJsonDto, object> func)
-            where T : IJsonDto
+        public static void AddOrReplaceDtoConverter<T>(CCJsonConverterFunc func)
         {
             AddOrReplaceDtoConverter(typeof(T), func);
         }
 
         public static bool TryGetDtoConverter(Type dtoType,
-            [NotNullWhen(true)] out Func<IJsonDto, object>? result)
+            [NotNullWhen(true)] out CCJsonConverterFunc? result)
         {
-            if (dtoConverters.TryGetValue(dtoType, out Delegate methodUntyped))
+            if (dtoConverters.TryGetValue(dtoType, out CCJsonConverterFunc methodUntyped))
             {
-                result = (Func<IJsonDto, object>)methodUntyped;
+                result = methodUntyped;
                 return true;
             }
 
@@ -75,6 +68,11 @@ namespace CCEnvs.Json
                 NamingStrategy = new CamelCaseNamingStrategy(true, true, true)
             };
             defaultSettings.Formatting = Formatting.Indented;
+
+            defaultSettings.Error = (sender, e) =>
+            {
+                CCDebug.PrintError(e.ErrorContext.Path, sender);
+            };
 
             return defaultSettings;
         }

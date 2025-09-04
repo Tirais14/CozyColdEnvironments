@@ -9,12 +9,11 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
-        /// <exception cref="ArgumentNullException"></exception>
         public static string GetTypeName<T>(this T? obj,
             TypeNameConvertingAttributes attributes = TypeNameConvertingAttributes.Default)
         {
             if (obj is null)
-                throw new ArgumentNullException(nameof(obj));
+                return "null";
 
             return obj.GetType().GetName(attributes);
         }

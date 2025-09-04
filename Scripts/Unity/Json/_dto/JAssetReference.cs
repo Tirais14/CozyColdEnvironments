@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.Json.Converters
     {
         [JsonProperty]
         public string AssetPath { get; set; } = string.Empty;
-        [JsonProperty]
+        [JsonProperty("GUID")]
         public string GUID { get; set; } = string.Empty;
         [JsonProperty]
         public Type AssetType { get; set; } = null!;

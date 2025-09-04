@@ -60,7 +60,7 @@ namespace CCEnvs.Diagnostics
                 args.Select(x => x.Type).ToArray(),
                 Array.Empty<ParameterModifier>())
                 ??
-                throw new NullReferenceException($"Cannot find constructor in type = {thisType.GetName()}");
+                throw new ConstructorNotFoundException(thisType, BindingFlagsDefault.InstanceAll);
 
             ParameterInfo[] parameters = ctor.GetParameters();
             var converted = new List<(string, string)>(args.Length);

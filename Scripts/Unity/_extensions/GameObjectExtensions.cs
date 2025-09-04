@@ -111,12 +111,12 @@ namespace CCEnvs.Unity.Special
             GameObject[] childs = value.GetAllChilds();
 
             if (childs.Select(x => x.transform)
-                      .FirstOrDefault(x => x.CompareTag(CC.Tags.TRANSFORM_OVERRIDE))
+                      .FirstOrDefault(x => x.CompareTag(UCC.Tags.TRANSFORM_OVERRIDE))
                 .IsNot<Transform>(out var result)
                 &&
                 throwIfNotFound
                 )
-                throw new System.Exception($"Not found {CC.Tags.TRANSFORM_OVERRIDE} for {value.name}.");
+                throw new System.Exception($"Not found {UCC.Tags.TRANSFORM_OVERRIDE} for {value.name}.");
 
             return result;
         }
@@ -143,12 +143,12 @@ namespace CCEnvs.Unity.Special
 
             GameObject[] childs = value.GetAllChilds();
 
-            if (childs.FirstOrDefault(x => x.CompareTag(CC.Tags.TRANSFORM_OVERRIDE))
+            if (childs.FirstOrDefault(x => x.CompareTag(UCC.Tags.TRANSFORM_OVERRIDE))
                 .IsNot<GameObject>(out var result)
                 &&
                 throwIfNotFound
                 )
-                throw new System.Exception($"Not found {CC.Tags.GAME_OBJECT_OVERRIDE} for {value.name}.");
+                throw new System.Exception($"Not found {UCC.Tags.GAME_OBJECT_OVERRIDE} for {value.name}.");
 
             return result;
         }

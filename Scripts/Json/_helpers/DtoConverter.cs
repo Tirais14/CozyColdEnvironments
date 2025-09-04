@@ -10,7 +10,7 @@ namespace CCEnvs.Json.DTO
     {
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InstanceCreationException"></exception>
-        public static object? ConvertTo(IJsonDto? dto, Type toType)
+        public static object? Convert(object? dto, Type toType)
         {
             if (dto.IsNull())
                 return null;
@@ -18,12 +18,12 @@ namespace CCEnvs.Json.DTO
                 throw new ArgumentNullException(nameof(toType));
 
             if (JsonSettingsProvider.TryGetDtoConverter(dto.GetType(),
-                                                        out Func<IJsonDto, object>? method))
+                                                        out CCJsonConverterFunc? method))
                 return method(dto);
 
-            if (dto is IJsonDtoConvertible convertible
+            if (dto is ICCConvertible convertible
                 &&
-                convertible.ConvertToValue() is object temp
+                convertible.Convert() is object temp
                 &&
                 temp.GetType().IsType(toType)
                 )
@@ -53,9 +53,9 @@ namespace CCEnvs.Json.DTO
 
             return result;
         }
-        public static T? ConvertTo<T>(IJsonDto? dto)
+        public static T? Convert<T>(object? dto)
         {
-            return (T?)ConvertTo(dto, typeof(T));
+            return (T?)Convert(dto, typeof(T));
         }
 
         /// <exception cref="ArgumentException"></exception>
@@ -66,7 +66,7 @@ namespace CCEnvs.Json.DTO
             if (dto.ObjectType is null)
                 throw new ArgumentException(nameof(dto.ObjectType));
 
-            return ConvertTo(dto, dto.ObjectType);
+            return Convert(dto, dto.ObjectType);
         }
         /// <exception cref="ArgumentException"></exception>
         public static T? Convert<T>(ITypedJsonDTO? dto)
@@ -78,7 +78,7 @@ namespace CCEnvs.Json.DTO
             if (dto.ObjectType.IsNotType(typeof(T)))
                 throw new ArgumentException(nameof(dto.ObjectType));
 
-            return (T?)ConvertTo(dto, dto.ObjectType);
+            return (T?)Convert(dto, dto.ObjectType);
         }
     }
 }

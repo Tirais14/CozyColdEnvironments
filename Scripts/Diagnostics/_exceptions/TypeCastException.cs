@@ -12,9 +12,7 @@ namespace CCEnvs.Diagnostics
 
         public TypeCastException(Type? fromType, Type toType)
             :
-            base(ConstructMessage<TypeCastException>(
-                TypeValuePair.Create(fromType),
-                new TypeValuePair(toType)))
+            base($"From {fromType} to {toType}.")
         {
         }
     }

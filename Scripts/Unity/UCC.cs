@@ -4,7 +4,7 @@ using UnityEngine;
 #pragma warning disable S101
 namespace CCEnvs.Unity
 {
-    public static class CC
+    public static class UCC
     {
         public static class Tags
         {
