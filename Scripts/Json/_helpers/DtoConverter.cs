@@ -59,7 +59,7 @@ namespace CCEnvs.Json.DTO
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public static object? Convert(ITypedJsonDTO? dto)
+        public static object? Convert(ITypedJsonDto? dto)
         {
             if (dto.IsDefault())
                 return default;
@@ -69,7 +69,7 @@ namespace CCEnvs.Json.DTO
             return Convert(dto, dto.ObjectType);
         }
         /// <exception cref="ArgumentException"></exception>
-        public static T? Convert<T>(ITypedJsonDTO? dto)
+        public static T? Convert<T>(ITypedJsonDto? dto)
         {
             if (dto.IsDefault())
                 return default;

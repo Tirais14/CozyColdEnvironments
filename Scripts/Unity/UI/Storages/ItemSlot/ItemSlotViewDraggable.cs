@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.UI.Storages
         public event Action<PointerEventData> OnEndDragEvent {
             add
             {
-                if (onEndDragEvent.IsInInvocationList(value))
+                if (onEndDragEvent.Contains(value))
                     return;
 
                 onEndDragEvent += value;

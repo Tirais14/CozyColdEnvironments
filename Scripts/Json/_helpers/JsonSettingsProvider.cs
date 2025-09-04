@@ -1,5 +1,4 @@
 using CCEnvs.Common;
-using CCEnvs.Diagnostics;
 using CCEnvs.Json.Converters;
 using CCEnvs.Json.DTO;
 using Newtonsoft.Json;
@@ -16,11 +15,28 @@ namespace CCEnvs.Json
 
     public static class JsonSettingsProvider
     {
+        public static bool IsDebugEnabled { get; private set; }
         public static List<JsonConverter> Converters { get; private set; } = new()
         {
             new CommonDtoJsonConverter<TypeDto, Type>()
         };
         private readonly static Dictionary<Type, CCJsonConverterFunc> dtoConverters = new();
+        private static EventHandler<ErrorEventArgs>? OnError;
+
+        public static void EnableDebug()
+        {
+            IsDebugEnabled = true;
+            OnError = (sender, e) =>
+            {
+                CCDebug.PrintException(e.ErrorContext.Error);
+            };
+        }
+
+        public static void DisableDebug()
+        {
+            IsDebugEnabled = false;
+            OnError = null;
+        }
 
         public static void AddOrReplaceDtoConverter(Type dtoType,
             CCJsonConverterFunc func)
@@ -68,11 +84,7 @@ namespace CCEnvs.Json
                 NamingStrategy = new CamelCaseNamingStrategy(true, true, true)
             };
             defaultSettings.Formatting = Formatting.Indented;
-
-            defaultSettings.Error = (sender, e) =>
-            {
-                CCDebug.PrintError(e.ErrorContext.Path, sender);
-            };
+            defaultSettings.Error = OnError;
 
             return defaultSettings;
         }

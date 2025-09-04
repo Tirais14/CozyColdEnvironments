@@ -6,7 +6,6 @@ using System;
 using System.Runtime.Serialization;
 
 #nullable enable
-#pragma warning disable S101
 namespace CCEnvs.Unity.Json
 {
     [JsonObject]

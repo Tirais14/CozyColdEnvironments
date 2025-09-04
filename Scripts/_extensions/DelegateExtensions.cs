@@ -6,7 +6,7 @@ namespace CCEnvs
     public static class DelegateExtensions
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool IsInInvocationList(this Delegate? value, Delegate other)
+        public static bool Contains(this Delegate? value, Delegate other)
         {
             if (other is null)
                 throw new ArgumentNullException(nameof(other));

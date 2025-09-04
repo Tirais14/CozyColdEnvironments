@@ -41,9 +41,7 @@ namespace CCEnvs.Json.DTO
                     Namespace = Namespace,
                     TypeName = TypeName,
                 },
-                throwOnError: true) 
-                ?? 
-                throw new Diagnostics.DataAccessException($"Cannot find type: {this}.");
+                throwOnError: true);
         }
     }
 }

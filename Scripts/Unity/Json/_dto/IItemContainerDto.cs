@@ -14,22 +14,30 @@ namespace CCEnvs.Unity.Json
 {
     [JsonObject]
     [Serializable]
-    public record IItemStackDto
-        : ItemStackDto,
-        ITypedJsonDTO
+    public record IItemContainerDto : ITypedJsonDto
     {
-        [JsonProperty]
-        public Type ObjectType { get; set; } = null!;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Type ObjectType { get; set; } = typeof(ItemStack);
 
-        public IItemStackDto()
+        [JsonProperty]
+        public int MaxItemCount { get; set; } = int.MaxValue;
+
+        [JsonProperty]
+        public int ItemCount { get; set; }
+
+        [JsonProperty]
+        public IStorageItem Item { get; set; } = null!;
+
+        public IItemContainerDto()
         {
         }
 
-        public IItemStackDto(IItemStack itemStack)
-            :
-            base(new ItemStack(itemStack))
+        public IItemContainerDto(IItemContainer itemContainer)
         {
-            ObjectType = itemStack.GetType();
+            ObjectType = itemContainer.GetType();
+            MaxItemCount = itemContainer.MaxItemCount;
+            ItemCount = itemContainer.ItemCount;
+            Item = itemContainer.Item;
         }
 
         [OnDeserialized]
@@ -39,19 +47,18 @@ namespace CCEnvs.Unity.Json
                 CCDebug.PrintException(new DataAccessException(ObjectType, nameof(ObjectType)));
         }
     }
-    public record IItemStackDto<T> : IItemStackDto
+    public record IItemContainerDto<T> : IItemContainerDto
         where T : IItemStack
     {
-        public IItemStackDto()
+        public IItemContainerDto()
         {
             ObjectType = typeof(T);
         }
 
-        public IItemStackDto(T itemStack)
+        public IItemContainerDto(T itemStack)
             :
             base(itemStack)
         {
-            ObjectType = typeof(T);
         }
     }
 }
