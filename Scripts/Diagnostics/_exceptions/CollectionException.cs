@@ -17,14 +17,14 @@ namespace CCEnvs.Diagnostics
 
         public CollectionException(IEnumerable? collection)
             : 
-            base(ConstructMessage<CollectionException>(TypeValuePair.Create(collection)))
+            base(ConstructMessage<CollectionException>(TypeValuePair.T(collection)))
         {
         }
 
         public CollectionException(IEnumerable? collection, string message)
             :
              base(ConstructMessage<CollectionException>(
-                 TypeValuePair.Create(collection),
+                 TypeValuePair.T(collection),
                  new TypeValuePair(message)))
         {
         }

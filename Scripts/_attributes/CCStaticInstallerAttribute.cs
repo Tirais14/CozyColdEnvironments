@@ -13,7 +13,7 @@ namespace CCEnvs.Attributes
         AttributeTargets.Struct,
         AllowMultiple = false,
         Inherited = true)]
-    public class CCConfigurationInstallerAttribute : Attribute
+    public class CCStaticInstallerAttribute : Attribute
     {
     }
 }

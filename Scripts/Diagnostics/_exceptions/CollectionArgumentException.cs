@@ -21,7 +21,7 @@ namespace CCEnvs.Diagnostics
             :
             base(ConstructMessage<CollectionArgumentException>(
                 new TypeValuePair(paramName),
-                TypeValuePair.Create(collection)))
+                TypeValuePair.T(collection)))
         {
         }
     }

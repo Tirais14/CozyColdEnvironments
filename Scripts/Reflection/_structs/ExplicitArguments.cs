@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 #nullable enable
@@ -69,6 +70,19 @@ namespace CCEnvs.Reflection.Data
         public readonly override bool Equals(object obj)
         {
             return obj is ExplicitArguments typed && Equals(typed);
+        }
+
+        public readonly ParameterModifier GetParameterModifiers()
+        {
+            var result = new ParameterModifier(Count);
+
+            for (int i = 0; i < Arguments.Count; i++)
+            {
+                if (Arguments[i].Parameter.HasModifier)
+                    result[i] = true;
+            }
+
+            return result;
         }
 
         public readonly Type[] GetTypes()

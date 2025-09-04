@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace CCEnvs
 {
-    public static class CCConfigurationInstaller
+    public static class CCStaticInstaller
     {
         public static void Install()
         {
@@ -19,12 +19,14 @@ namespace CCEnvs
                 from m in modules
                 select m.FindTypes(
                     (type, attributeType) => type.IsDefined((Type)attributeType, inherit: true),
-                    typeof(CCConfigurationInstallerAttribute)) into types
+                    typeof(CCStaticInstallerAttribute)) into types
                 where types.IsNotNullOrEmpty()
                 from t in types
-                select t.ForceGetMethods(BindingFlagsDefault.StaticPublic) into methods
+                select t.ForceGetMethods(BindingFlagsDefault.StaticAll) into methods
                 from mt in methods
-                where mt.Name.Equals("install", StringComparison.InvariantCultureIgnoreCase)
+                where mt.IsDefined<CCStaticInstallerMethodAttribute>(inherit: true)
+                ||
+                mt.Name.Equals("Install", StringComparison.Ordinal)
                 select mt;
 
             foreach (var installer in installers)

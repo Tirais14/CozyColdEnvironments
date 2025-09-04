@@ -53,7 +53,9 @@ namespace CCEnvs.Json.AddressableAssets.Databases
                                                           serializerSettings) into d
                                        where d.IsNotNull()
                                        select d)
-                                       .Last();
+                                       .LastOrDefault() 
+                                       ??
+                                       throw new CCException($"Cannot be deserialized. Text = {textAssets[i].text}");
 
                 TItem item = ConvertDeserialized(deserialized);
 

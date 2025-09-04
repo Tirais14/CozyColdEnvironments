@@ -27,7 +27,11 @@ namespace CCEnvs
         {
         }
 
-        public static TypeValuePair Create<T>(T? value)
+        public static TypeValuePair T<T>()
+        {
+            return new TypeValuePair(typeof(T));
+        }
+        public static TypeValuePair T<T>(T? value)
         {
             return new TypeValuePair(typeof(T), value);
         }

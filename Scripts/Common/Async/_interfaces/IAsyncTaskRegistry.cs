@@ -1,9 +1,11 @@
+#if UNI_TASK
 using Cysharp.Threading.Tasks;
+#endif
 using System;
 using System.Threading.Tasks;
 
 #nullable enable
-namespace CCEnvs.Unity.Async
+namespace CCEnvs.Async
 {
     public interface IAsyncTaskRegistry
     {
@@ -12,7 +14,9 @@ namespace CCEnvs.Unity.Async
         int TaskCount { get; }
         bool HasTasks { get; }
 
+#if UNI_TASK
         void RegisterTask(UniTask task);
+#endif
 
         void RegisterTask(Task task);
 

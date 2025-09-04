@@ -1,4 +1,5 @@
 #nullable enable
+using Mono.Cecil.Cil;
 using System;
 
 namespace CCEnvs.Reflection.Data
@@ -7,15 +8,21 @@ namespace CCEnvs.Reflection.Data
     {
         public Type ParameterType { get; }
         public bool HasDefaultValue { get; }
-        public bool HasModifier { get; }
+        public Type[] ModifierTypes { get; }
+        public bool HasModifier => ModifierTypes is not null;
 
         public CCParameterInfo(Type type,
-                             bool hasDefaultValue = false,
-                             bool hasModifier = false)
+                               bool hasDefaultValue = false,
+                               Type[]? modifierTypes = null)
         {
             ParameterType = type;
             HasDefaultValue = hasDefaultValue;
-            HasModifier = hasModifier;
+            ModifierTypes = modifierTypes ?? Type.EmptyTypes;
+        }
+
+        public static CCParameterInfo T<T>()
+        {
+            return new CCParameterInfo(typeof(T));
         }
 
         public static bool operator ==(CCParameterInfo? left, CCParameterInfo? right)

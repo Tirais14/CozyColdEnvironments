@@ -11,14 +11,14 @@ namespace CCEnvs.Diagnostics
 
         public CollectionItemException(object? item)
             :
-            base(ConstructMessage<CollectionItemException>(TypeValuePair.Create(item)))
+            base(ConstructMessage<CollectionItemException>(TypeValuePair.T(item)))
         {
         }
 
         public CollectionItemException(object? item, object position)
             :
             base(ConstructMessage<CollectionItemException>(
-                TypeValuePair.Create(item),
+                TypeValuePair.T(item),
                 new TypeValuePair(position)))
         {
         }

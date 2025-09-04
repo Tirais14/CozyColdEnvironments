@@ -1,4 +1,4 @@
-using CCEnvs.Unity.Async;
+using CCEnvs.Async;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 #nullable enable

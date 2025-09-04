@@ -18,10 +18,8 @@ namespace CCEnvs.Reflection.Data
 
         public ExplicitArgument(object value)
             :
-            this(new CCParameterInfo(value.GetType(),
-                hasDefaultValue: false,
-                hasModifier: false),
-                value)
+            this(new CCParameterInfo(value.GetType()),
+                 value)
         {
         }
 
@@ -31,12 +29,9 @@ namespace CCEnvs.Reflection.Data
         {
         }
 
-        public static ExplicitArgument Create<T>(T? value)
+        public static ExplicitArgument T<T>(T? value)
         {
-            return new ExplicitArgument(new CCParameterInfo(typeof(T),
-                hasDefaultValue: false,
-                hasModifier: false),
-                value);
+            return new ExplicitArgument(new CCParameterInfo(typeof(T)), value);
         }
 
         public static bool operator ==(ExplicitArgument left, ExplicitArgument right)

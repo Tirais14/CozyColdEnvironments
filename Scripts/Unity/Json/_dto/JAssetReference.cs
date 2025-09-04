@@ -1,9 +1,12 @@
+using CCEnvs.Async;
 using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
+using CCEnvs.Unity.AddressableAssets;
 using Newtonsoft.Json;
 using System;
+using System.Runtime.Serialization;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Object = UnityEngine.Object;
@@ -18,13 +21,19 @@ namespace CCEnvs.Unity.Json.Converters
     {
         [JsonProperty]
         public string AssetPath { get; set; } = string.Empty;
+
         [JsonProperty("GUID")]
         public string GUID { get; set; } = string.Empty;
+
         [JsonProperty]
         public Type AssetType { get; set; } = null!;
 
+        [JsonProperty]
+        public bool ImmediateStartLoading { get; set; }
+
         [JsonIgnore]
         public AsyncOperationHandle LoadHandle { get; protected set; }
+
         [JsonIgnore]
         public Object Asset {
             get
@@ -35,14 +44,19 @@ namespace CCEnvs.Unity.Json.Converters
                 return (Object)LoadHandle.Result;
             }
         }
+
         [JsonIgnore]
         public bool IsAssetLoaded => LoadHandle.IsNotDefault() && LoadHandle.IsDone;
+
         [JsonIgnore]
+
         public bool HasAssetPath => AssetPath.IsNotNullOrEmpty();
         [JsonIgnore]
         public bool HasGUID => GUID.IsNotNullOrEmpty();
+
         [JsonIgnore]
         public bool HasKey => HasAssetPath || HasGUID;
+
         [JsonIgnore]
         public string Key {
             get
@@ -59,14 +73,20 @@ namespace CCEnvs.Unity.Json.Converters
             if (IsAssetLoaded)
                 throw new InvalidOperationException("Asset already loaded.");
 
-            LoadHandle = MethodHelper.Invoke<AsyncOperationHandle>(
-                new TypeValuePair(typeof(object), Key),
+            LoadHandle = MethodInvoker.Invoke<AsyncOperationHandle>(
+                TypeValuePair.T<object>(Key),
                 nameof(Addressables.LoadAssetAsync),
-                new ExplicitArguments(new ExplicitArgument(new CCParameterInfo(typeof(object)),
-                                                           Key)),
+                new ExplicitArguments(ExplicitArgument.T<object>(Key)),
                 AssetType);
 
             return LoadHandle;
+        }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext _)
+        {
+            if (ImmediateStartLoading)
+                CC.NeccesaryTasks.RegisterTask(StartAssetLoading());
         }
     }
 

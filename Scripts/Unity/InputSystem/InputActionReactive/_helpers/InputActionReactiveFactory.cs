@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             if (valueType is null)
                 return new InputActionReactive(inputAction);
 
-            return MethodHelper.Invoke<IInputActionReactive>(
+            return MethodInvoker.Invoke<IInputActionReactive>(
                 new TypeValuePair(typeof(InputActionReactiveFactory)),
                 nameof(Create),
                 new ExplicitArguments(new ExplicitArgument(inputAction)),

@@ -29,6 +29,11 @@ namespace CCEnvs.Unity.Json
             ID = item.ID;
         }
 
+        public static implicit operator T(StorageItemReference<T> reference)
+        {
+            return reference.Value;
+        }
+
         protected virtual void ValidateOnDeserialized()
         {
             if (ID < 1)

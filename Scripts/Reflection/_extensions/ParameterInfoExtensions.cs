@@ -1,5 +1,4 @@
 using CCEnvs.Reflection.Data;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -41,7 +40,7 @@ namespace CCEnvs
 
             return new CCParameterInfo(value.ParameterType,
                 value.HasDefaultValue,
-                value.GetRequiredCustomModifiers().Length > 1);
+                value.GetRequiredCustomModifiers().Concat(value.GetOptionalCustomModifiers()).ToArray());
         }
     }
 }

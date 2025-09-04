@@ -4,7 +4,6 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Async;
 using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
 using System;
@@ -20,8 +19,6 @@ namespace CCEnvs.Unity.Initables
 {
     public static class SceneInitializer
     {
-        public static AsyncTaskRegistry TaskRegistry { get; } = new();
-
         /// <exception cref="CCException"></exception>
         public static void InitObject(IInitable initable)
         {
@@ -42,7 +39,7 @@ namespace CCEnvs.Unity.Initables
                     throw new CCException($"{initableAsync.GetTypeName()} is already inited.");
 
                 var task = initableAsync.InitAsync();
-                TaskRegistry.RegisterTask(task);
+                CC.NeccesaryTasks.RegisterTask(task);
                 await task;
 
                 SetInited(initableAsync);
