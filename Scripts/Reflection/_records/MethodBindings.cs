@@ -1,13 +1,13 @@
+using CCEnvs.Reflection.Data;
 using System;
 
 #nullable enable
 namespace CCEnvs.Reflection
 {
-    public record MethodBindings : ConstructorBindings
+    public record MethodBindings : MemberBindings
     {
-        public string MethodName { get; set; } = string.Empty;
-        public object? Target { get; set; }
-        public Type[] GenericArguments { get; set; } = Type.EmptyTypes;
+        public ExplicitArguments Arguments { get; set; }
+        public Type[] GenericArguments { get; set; } = Array.Empty<Type>();
         public bool HasGenericArguments => GenericArguments.IsNotNullOrEmpty();
     }
 }

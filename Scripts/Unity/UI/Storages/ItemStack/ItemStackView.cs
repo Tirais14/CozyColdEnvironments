@@ -1,5 +1,4 @@
 using CCEnvs.Attributes;
-using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using CCEnvs.UI;
 using CCEnvs.Unity.ComponentSetter;
@@ -42,11 +41,13 @@ namespace CCEnvs.Unity.UI.Storages
         {
             TModel model = CreateModel();
 
-            TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new ExplicitArgument(model))
-            });
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
+                new ExplicitArguments(new ExplicitArgument(model)),
+                InstanceFactory.Parameters.ThrowIfNotFound
+                |
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.NonPublic);
 
             viewModel.AddTo(this);
 
@@ -55,11 +56,13 @@ namespace CCEnvs.Unity.UI.Storages
 
         private static TModel CreateModel()
         {
-            return InstanceFactory.Create<TModel>(new ConstructorBindings
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new ExplicitArgument(int.MaxValue))
-            });
+            return InstanceFactory.Create<TModel>(
+                new ExplicitArguments(new ExplicitArgument(int.MaxValue)),
+                InstanceFactory.Parameters.ThrowIfNotFound
+                |
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.NonPublic);
         }
     }
 }

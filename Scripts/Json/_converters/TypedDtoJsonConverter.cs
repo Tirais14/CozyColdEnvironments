@@ -41,11 +41,7 @@ namespace CCEnvs.Json.Converters
             }
 
             InstanceFactory.Create(typeof(TDto),
-                new ConstructorBindings
-                {
-                    BindingFlags = BindingFlagsDefault.InstanceAll,
-                    Arguments = new ExplicitArguments(new ExplicitArgument(value))
-                },
+                new ExplicitArguments(new ExplicitArgument(value)),
                 InstanceFactory.Parameters.CacheConstructor
                 |
                 InstanceFactory.Parameters.ThrowIfNotFound);

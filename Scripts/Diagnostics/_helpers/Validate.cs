@@ -21,20 +21,20 @@ namespace CCEnvs.Diagnostics
                 throw new ArgumentNullException(complexParamName.JoinStrings('.'));
         }
 
-        public static void Argument([NotNull] object? value,
-                                    string paramName,
-                                    bool condition)
+        public static void Argument<T>(T value,
+                                       string paramName,
+                                       Predicate<T> predicate)
         {
-            if (!condition || value.IsNull())
-                throw new ArgumentException($"{paramName} = {value?.ToString() ?? "null"}");
+            if (!predicate(value))
+                throw new ArgumentException($"{paramName} = {value}.");
         }
 
-        public static void ArgumentNested(object? value,
-                                          bool condition,
-                                          params string[] complexParamName)
+        public static void ArgumentNested<T>(T value,
+                                             Predicate<T> predicate,
+                                             params string[] complexParamName)
         {
-            if (!condition || value.IsNull())
-                throw new ArgumentException($"{complexParamName.JoinStrings('.')} = {value?.ToString() ?? "null"}");
+            if (!predicate(value))
+                throw new ArgumentException($"{complexParamName.JoinStrings('.')} = {value}.");
         }
 
         public static void StringArgument(string paramName, [NotNull] string? value)

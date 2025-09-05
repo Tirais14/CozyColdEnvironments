@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.Data;
 
 #nullable enable
@@ -11,7 +12,8 @@ namespace CCEnvs.Reflection.Cached
     public static class TypeCache
     {
         private readonly static Dictionary<Type, object?> defaultValuesCache = new();
-        private readonly static Dictionary<ConstructrorKey, ConstructorInfo> ctorsCache = new();
+        private readonly static Dictionary<MethodKey, ConstructorInfo> ctorsCache = new();
+        private readonly static Dictionary<MethodKey, MethodInfo> methodsCache = new();
         private readonly static Dictionary<FieldKey, FieldInfo> fieldsCache = new();
         private readonly static Dictionary<FieldKey, PropertyInfo> propsCache = new();
 
@@ -24,16 +26,49 @@ namespace CCEnvs.Reflection.Cached
         {
             return member switch
             {
-                ConstructorInfo ctor => ctorsCache.TryAdd(ConstructrorKey.Create(ctor), ctor),
+                ConstructorInfo ctor => ctorsCache.TryAdd(MethodKey.Create(ctor), ctor),
+                MethodInfo method => methodsCache.TryAdd(MethodKey.Create(method), method),
                 FieldInfo field => fieldsCache.TryAdd(FieldKey.Create(field), field),
                 PropertyInfo prop => propsCache.TryAdd(FieldKey.Create(prop), prop),
                 _ => throw new NotImplementedException(member.GetTypeName()),
             };
         }
 
+        public static bool UncacheMember(MemberInfo member)
+        {
+            return member switch
+            {
+                ConstructorInfo ctor => ctorsCache.Remove(MethodKey.Create(ctor)),
+                MethodInfo method => methodsCache.Remove(MethodKey.Create(method)),
+                FieldInfo field => fieldsCache.Remove(FieldKey.Create(field)),
+                PropertyInfo prop => propsCache.Remove(FieldKey.Create(prop)),
+                _ => throw new NotImplementedException(member.GetTypeName()),
+            };
+        }
+
+        public static void Clear()
+        {
+            defaultValuesCache.Clear();
+            ctorsCache.Clear();
+            methodsCache.Clear();
+            fieldsCache.Clear();
+            propsCache.Clear();
+
+            TrimExcess();
+        }
+
+        public static void TrimExcess()
+        {
+            defaultValuesCache.TrimExcess();
+            ctorsCache.TrimExcess();
+            methodsCache.TrimExcess();
+            fieldsCache.TrimExcess();
+            propsCache.TrimExcess();
+        }
+
         /// <exception cref="ArgumentNullException"></exception>
         public static bool TryGetDefaultValue(Type type,
-                                                   out object? defaultValue)
+                                              out object? defaultValue)
         {
             if (type is null)
                 throw new ArgumentNullException("type");
@@ -41,10 +76,16 @@ namespace CCEnvs.Reflection.Cached
             return defaultValuesCache.TryGetValue(type, out defaultValue);
         }
 
-        public static bool TryGetConstructor(ConstructrorKey ctorKey,
+        public static bool TryGetConstructor(MethodKey ctorKey,
             [NotNullWhen(true)] out ConstructorInfo? ctor)
         {
             return ctorsCache.TryGetValue(ctorKey, out ctor);
+        }
+
+        public static bool TryGetMethod(MethodKey methodKey,
+            [NotNullWhen(true)] out MethodInfo? method)
+        {
+            return methodsCache.TryGetValue(methodKey, out method);
         }
 
         public static bool TryGetField(FieldKey fieldKey,
@@ -59,13 +100,13 @@ namespace CCEnvs.Reflection.Cached
             return propsCache.TryGetValue(fieldKey, out prop);
         }
 
-        public readonly struct ConstructrorKey : IEquatable<ConstructrorKey>
+        public readonly struct MethodKey : IEquatable<MethodKey>
         {
             public readonly Type ReflectedType { get; }
             public readonly Type[] ParameterTypes { get; }
             public readonly ParameterModifier ParameterModifiers { get; }
 
-            public ConstructrorKey(Type reflectedType,
+            public MethodKey(Type reflectedType,
                                    Type[] parameterTypes,
                                    ParameterModifier parameterModifiers)
             {
@@ -74,7 +115,7 @@ namespace CCEnvs.Reflection.Cached
                 ParameterModifiers = parameterModifiers;
             }
 
-            public ConstructrorKey(Type reflectedType,
+            public MethodKey(Type reflectedType,
                                    CCParameters parameters,
                                    ParameterModifier parameterModifiers)
                 :
@@ -82,26 +123,28 @@ namespace CCEnvs.Reflection.Cached
             {
             }
 
-            public static ConstructrorKey Create(ConstructorInfo ctor)
+            public static MethodKey Create(MethodBase method)
             {
-                ParameterInfo[] parameters = ctor.GetParameters();
+                Validate.ArgumentNull(method, nameof(method));
+
+                ParameterInfo[] parameters = method.GetParameters();
 
                 Type[] signature = parameters.Select(x => x.ParameterType).ToArray();
                 ParameterModifier parameterModifiers = parameters.GetParameterModifiers();
 
-                return new ConstructrorKey(ctor.ReflectedType,
+                return new MethodKey(method.ReflectedType,
                                            signature,
                                            parameterModifiers);
             }
 
-            public bool Equals(ConstructrorKey other)
+            public bool Equals(MethodKey other)
             {
                 return other.ReflectedType == ReflectedType && other.ParameterTypes == ParameterTypes;
             }
 
             public override bool Equals(object? obj)
             {
-                return obj is ConstructrorKey typed && Equals(typed);
+                return obj is MethodKey typed && Equals(typed);
             }
 
             public override int GetHashCode()

@@ -1,4 +1,3 @@
-using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using CCEnvs.UI.MVVM;
 using CCEnvs.Unity.GameSystems.Storages;
@@ -35,13 +34,13 @@ namespace CCEnvs.Unity.UI.Storages
         {
             TModel model = CreateModel();
 
-            TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new ExplicitArgument(model))
-            }, InstanceFactory.Parameters.Default 
-               | 
-               InstanceFactory.Parameters.CacheConstructor);
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
+                new ExplicitArguments(new ExplicitArgument(model)),
+                InstanceFactory.Parameters.Default 
+                | 
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.NonPublic);
 
             viewModel.AddTo(this);
 
@@ -52,15 +51,13 @@ namespace CCEnvs.Unity.UI.Storages
         {
             IItemSlot[] slots = this.GetAssignedModelsInChildren<IItemSlot>();
 
-            return InstanceFactory.Create<TModel>(new ConstructorBindings
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new ExplicitArgument(
-                    new CCParameterInfo(typeof(IItemSlot[])),
-                    slots))
-            }, InstanceFactory.Parameters.Default
-               |
-               InstanceFactory.Parameters.CacheConstructor);
+            return InstanceFactory.Create<TModel>(
+                new ExplicitArguments(ExplicitArgument.T(slots)),
+                InstanceFactory.Parameters.Default
+                |
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.NonPublic);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 
 #nullable enable
 namespace CCEnvs.Reflection.Data
@@ -68,6 +69,21 @@ namespace CCEnvs.Reflection.Data
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(Values, IgnoreOptionalInEquals);
+        }
+
+        public readonly override string ToString()
+        {
+            var sb = new StringBuilder(GetType().GetName());
+            sb.Append(':');
+
+            IEnumerable<string> strings = ((Type[])this).Select(x => x.GetName());
+            foreach (var str in strings)
+            {
+                sb.Append(" ");
+                sb.Append(str);
+            }
+
+            return sb.ToString();
         }
 
         public readonly IEnumerator<CCParameterInfo> GetEnumerator()

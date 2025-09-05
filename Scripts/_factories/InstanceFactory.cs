@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Common;
 using CCEnvs.Diagnostics;
@@ -6,8 +7,10 @@ using CCEnvs.Reflection.Cached;
 using CCEnvs.Reflection.Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using static CCEnvs.BindingFlagsDefault;
 
 #nullable enable
 namespace CCEnvs
@@ -20,13 +23,14 @@ namespace CCEnvs
             None,
             CacheConstructor,
             ThrowIfNotFound = 2,
+            NonPublic = 4,
             Default = ThrowIfNotFound,
         }
 
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public static object Create(Type type,
-                                    ConstructorBindings bindings,
+                                    ExplicitArguments arguments = default,
                                     Parameters parameters = Parameters.Default)
         {
             if (type == null)
@@ -35,26 +39,19 @@ namespace CCEnvs
                 throw new ArgumentException($"Type {type.GetName()} is interface and not allowed to create.");
             if (type.IsAbstract)
                 throw new ArgumentException($"Type {type.GetName()} is abstract and not allowed to create.");
-            if (bindings is null)
-                throw new ArgumentNullException(nameof(bindings));
+            if (arguments.IsDefault())
+                arguments = ExplicitArguments.Empty;
 
-            bool throwIfNotFound = parameters.HasFlag(Parameters.ThrowIfNotFound);
-            if (!TypeCache.TryGetConstructor(
-                new TypeCache.ConstructrorKey(
-                    type,
-                    ((CCParameters)bindings.Arguments),
-                    bindings.ParameterModifiers),
-                out ConstructorInfo? ctor))
+            bool nonPublic = parameters.IsFlagSetted(Parameters.NonPublic);
+            BindingFlags bindingFlags = ResolveBindingFlags(nonPublic);
+            if (!GetConstructorByCache(out MethodBase? ctor))
             {
-                ctor = type.GetConstructor(bindings, throwIfNotFound: false);
+                ctor = GetConstructor();
 
                 if (ctor is null)
                 {
-                    if (throwIfNotFound)
-                        throw new ConstructorNotFoundException(
-                            type,
-                            bindings.BindingFlags,
-                            ((CCParameters)bindings.Arguments));
+                    if (parameters.HasFlag(Parameters.ThrowIfNotFound))
+                        ThrowNotFound();
 
                     return null!;
                 }
@@ -63,30 +60,83 @@ namespace CCEnvs
                     TypeCache.TryCacheMember(ctor);
             }
 
-            object?[] ctorArgs = (object?[])bindings.Arguments;
-            return ctor.Invoke(ctorArgs);
-        }
-        public static object Create(Type type,
-                                    ExplicitArguments args,
-                                    Parameters parameters = Parameters.Default)
-        {
-            return Create(type, new ConstructorBindings
+            object?[] ctorArgs = (object?[])arguments;
+            if (ctor is ConstructorInfo typedCtor)
+                return typedCtor.Invoke(ctorArgs);
+
+            return ctor.Invoke(null, ctorArgs);
+
+            bool GetConstructorByCache([NotNullWhen(true)] out MethodBase? result)
             {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = args
-            }, parameters);
+                TypeCache.TryGetConstructor(
+                    new TypeCache.MethodKey(
+                        type,
+                        (CCParameters)arguments,
+                        arguments.GetParameterModifiers()),
+                    out ConstructorInfo? ctor);
+
+                result = ctor;
+
+                if (result is null)
+                {
+                    TypeCache.TryGetMethod(
+                        new TypeCache.MethodKey(
+                            type,
+                            (CCParameters)arguments,
+                            arguments.GetParameterModifiers()),
+                        out MethodInfo? method);
+
+                    result = method;
+                }
+
+                return result is not null;
+            }
+
+            void ThrowNotFound()
+            {
+                throw new ConstructorNotFoundException(
+                    type,
+                    bindingFlags,
+                    (CCParameters)arguments);
+            }
+
+            MethodBase? GetConstructor()
+            {
+                bindingFlags |= BindingFlags.Instance;
+                MethodBase? ctor = type.GetConstructor(bindingFlags,
+                    binder: null,
+                    arguments.GetTypes(),
+                    CC.C.Array(arguments.GetParameterModifiers()));
+
+                if (ctor is null)
+                {
+                    bindingFlags = bindingFlags.ResetFlag(BindingFlags.Instance)
+                                               .SetFlag(BindingFlags.Static);
+
+                    MethodInfo[] methods =
+                        (from x in type.ForceGetMethods(bindingFlags)
+                         where x.IsDefined<CCConstructorAttribute>(inherit: true)
+                         ||
+                         x.Name == "Create"
+                         where x.ReturnType.IsType(type)
+                         select x)
+                         .ToArray();
+
+                    ctor = methods.FirstOrDefault(
+                        x => x.GetCCParameters() == (CCParameters)arguments);
+                }
+
+                return ctor;
+            }
         }
 
-        public static T Create<T>(ConstructorBindings constructorParams,
-            Parameters parameters = Parameters.Default)
+        public static T Create<T>(ExplicitArguments arguments = default,
+                                  Parameters parameters = Parameters.Default,
+                                  Type? type = null)
         {
-            return (T)Create(typeof(T), constructorParams, parameters);
-        }
-        public static T Create<T>(Type type,
-                                  ExplicitArguments args,
-                                  Parameters parameters = Parameters.Default)
-        {
-            return (T)Create(type, args, parameters);
+            type ??= typeof(T);
+
+            return (T)Create(type, arguments, parameters);
         }
 
         /// <summary>
@@ -94,7 +144,7 @@ namespace CCEnvs
         /// Skips readonly fields and properties without setter.
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
-        public static object CreateBy(Type type,
+        public static object _CreateBy(Type type,
                                       object data,
                                       Parameters parameters = Parameters.Default)
         {
@@ -114,7 +164,7 @@ namespace CCEnvs
                 if (parameters.IsFlagSetted(Parameters.ThrowIfNotFound))
                     throw new ConstructorNotFoundException(
                         type,
-                        BindingFlagsDefault.InstanceAll,
+                        InstanceAll,
                         CCParameters.Empty);
 
                 return null!;
@@ -129,11 +179,7 @@ namespace CCEnvs
             void CreateByEmptyConstructor()
             {
                 created = Create(type,
-                    new ConstructorBindings
-                    {
-                        BindingFlags = BindingFlagsDefault.InstanceAll,
-                        Arguments = ExplicitArguments.EmptyIgnoreOptional
-                    },
+                    ExplicitArguments.EmptyIgnoreOptional,
                     parameters.ResetFlag(Parameters.ThrowIfNotFound));
             }
 
@@ -197,11 +243,19 @@ namespace CCEnvs
         }
 
         /// <summary>
-        /// <see cref="CreateBy(Type, object, Parameters)"/>
+        /// <see cref="_CreateBy(Type, object, Parameters)"/>
         /// </summary>
-        public static T CreateBy<T>(object data, Parameters parameters = Parameters.Default)
+        public static T _CreateBy<T>(object data, Parameters parameters = Parameters.Default)
         {
-            return (T)CreateBy(typeof(T), data, parameters);
+            return (T)_CreateBy(typeof(T), data, parameters);
+        }
+
+        private static BindingFlags ResolveBindingFlags(bool nonPublic)
+        {
+            if (nonPublic)
+                return BindingFlags.Public | BindingFlags.NonPublic;
+
+            return BindingFlags.Public;
         }
     }
 }

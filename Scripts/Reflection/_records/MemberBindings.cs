@@ -6,6 +6,7 @@ namespace CCEnvs.Reflection
 {
     public record MemberBindings
     {
+        public string Name { get; set; } = string.Empty;
         public BindingFlags BindingFlags { get; set; } = BindingFlagsDefault.InstancePublic;
         public CallingConventions CallingConventions { get; set; } = CallingConventions.Standard | CallingConventions.HasThis;
         public ParameterModifier ParameterModifiers { get; set; } = new();

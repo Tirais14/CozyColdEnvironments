@@ -10,7 +10,7 @@ using static CCEnvs.BindingFlagsDefault;
 #nullable enable
 namespace CCEnvs.Reflection
 {
-    public static class TypeReflectionExtensions
+    public static class TypeReflectionUtils
     {
         /// <summary>
         /// Extended version
@@ -19,7 +19,7 @@ namespace CCEnvs.Reflection
         /// <param name="bindings"></param>
         /// <returns></returns>
         public static ConstructorInfo GetConstructor(this Type type,
-            ConstructorBindings bindings,
+            MethodBindings bindings,
             bool throwIfNotFound = false)
         {
             if (type.GetConstructor(bindings.BindingFlags,
@@ -173,7 +173,7 @@ namespace CCEnvs.Reflection
         }
 
         public static ConstructorInfo? ForceGetConstructor(this Type value,
-            ConstructorBindings bindings)
+            MethodBindings bindings)
         {
             ConstructorInfo[] ctors = value.ForceGetConstructors(bindings.BindingFlags);
 
@@ -191,7 +191,7 @@ namespace CCEnvs.Reflection
             if (bindings is null)
                 throw new ArgumentNullException(nameof(bindings));
 
-            MethodInfo? method = value.GetMethod(bindings.MethodName,
+            MethodInfo? method = value.GetMethod(bindings.Name,
                                                  bindings.GenericArguments.Length,
                                                  bindings.BindingFlags,
                                                  bindings.Binder,
@@ -203,7 +203,7 @@ namespace CCEnvs.Reflection
                 if (throwIfNotFound)
                     throw new MethodNotFoundException(
                         value,
-                        bindings.MethodName,
+                        bindings.Name,
                         bindings.BindingFlags);
                 else
                     return method;

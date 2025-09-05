@@ -21,13 +21,13 @@ namespace CCEnvs.Unity.UI.Storages
         {
             TModel model = CreateModel();
 
-            TViewModel viewModel = InstanceFactory.Create<TViewModel>(new ConstructorBindings
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(new ExplicitArgument(model))
-            }, InstanceFactory.Parameters.Default
-               |
-               InstanceFactory.Parameters.CacheConstructor);
+            TViewModel viewModel = InstanceFactory.Create<TViewModel>(
+                new ExplicitArguments(new ExplicitArgument(model)),
+                InstanceFactory.Parameters.Default
+                |
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.NonPublic);
 
             viewModel.AddTo(this);
 
@@ -41,15 +41,13 @@ namespace CCEnvs.Unity.UI.Storages
                      )
                 throw new ObjectNotFoundException(typeof(IItemStack));
 
-            return InstanceFactory.Create<TModel>(new ConstructorBindings
-            {
-                BindingFlags = BindingFlagsDefault.InstanceAll,
-                Arguments = new ExplicitArguments(
-                    new ExplicitArgument(new CCParameterInfo(typeof(IItemStack)),
-                                         itemStack))
-            }, InstanceFactory.Parameters.Default
-               |
-               InstanceFactory.Parameters.CacheConstructor);
+            return InstanceFactory.Create<TModel>(
+                new ExplicitArguments(ExplicitArgument.T(itemStack)),
+                InstanceFactory.Parameters.Default
+                |
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.NonPublic);
         }
     }
 }

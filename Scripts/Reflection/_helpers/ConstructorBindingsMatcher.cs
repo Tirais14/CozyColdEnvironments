@@ -9,7 +9,7 @@ namespace CCEnvs.Reflection
     public static class ConstructorBindingsMatcher
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool IsMatch(ConstructorBindings bindings, ConstructorInfo ctor)
+        public static bool IsMatch(MethodBindings bindings, ConstructorInfo ctor)
         {
             if (bindings is null)
                 throw new ArgumentNullException(nameof(bindings));
