@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Diagnostics
 {
-    public static class ThrowHelper
+    public static class Validate
     {
         public static void ArgumentNull([NotNull] object? obj,
-                                        string paramName)
+                                        string paramName = "value")
         {
             if (obj.IsNull())
                 throw new ArgumentNullException(paramName);

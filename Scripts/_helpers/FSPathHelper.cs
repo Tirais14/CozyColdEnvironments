@@ -109,7 +109,7 @@ namespace CCEnvs.FileSystem
         {
 
 
-            string[] parts = CC.Create.Array(path)
+            string[] parts = CC.C.Array(path)
                                       .Concat(pathParts)
                                       .ToArray();
 

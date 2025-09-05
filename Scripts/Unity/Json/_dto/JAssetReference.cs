@@ -3,9 +3,12 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
+using CCEnvs.TypeMatching;
 using CCEnvs.Unity.AddressableAssets;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -73,13 +76,23 @@ namespace CCEnvs.Unity.Json.Converters
             if (IsAssetLoaded)
                 throw new InvalidOperationException("Asset already loaded.");
 
-            LoadHandle = MethodInvoker.Invoke<AsyncOperationHandle>(
-                TypeValuePair.T<object>(Key),
-                nameof(Addressables.LoadAssetAsync),
-                new ExplicitArguments(ExplicitArgument.T<object>(Key)),
-                AssetType);
+            object genericHandle = LoadAssetAsync();
+
+            MethodInfo castOperator = genericHandle.GetType().GetOverloadedCastOperator(
+                typeof(AsyncOperationHandle));
+
+            LoadHandle = (AsyncOperationHandle)castOperator.Invoke(obj: null, CC.C.Array(genericHandle));
 
             return LoadHandle;
+        }
+
+        private object LoadAssetAsync()
+        {
+            return MethodInvoker.Invoke(
+                new TypeValuePair(typeof(Addressables)),
+                nameof(Addressables.LoadAssetAsync),
+                new ExplicitArguments(ExplicitArgument.T<object>(Key)),
+                AssetType)!;
         }
 
         [OnDeserialized]

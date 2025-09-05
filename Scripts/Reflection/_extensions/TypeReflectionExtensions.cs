@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using static CCEnvs.BindingFlagsDefault;
 
 #nullable enable
@@ -102,16 +103,67 @@ namespace CCEnvs.Reflection
             return value.ForceGetMembers<FieldInfo>(bindingFlags);
         }
 
+        public static FieldInfo? ForceGetField(this Type value,
+            string fieldName,
+            BindingFlags bindingFlags = InstancePublic)
+        {
+            Validate.ArgumentNull(value);
+
+            return value.ForceGetFields(bindingFlags).FirstOrDefault(x => x.Name == fieldName);
+        }
+
         public static PropertyInfo[] ForceGetProperties(this Type value,
             BindingFlags bindingFlags = InstancePublic)
         {
             return value.ForceGetMembers<PropertyInfo>(bindingFlags);
         }
 
+        public static PropertyInfo? ForceGetProperty(this Type value,
+            string propName,
+            BindingFlags bindingFlags = InstancePublic)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.ForceGetProperties(bindingFlags).FirstOrDefault(x => x.Name == propName);
+        }
+
         public static MethodInfo[] ForceGetMethods(this Type value,
             BindingFlags bindingFlags = InstancePublic)
         {
             return value.ForceGetMembers<MethodInfo>(bindingFlags);
+        }
+
+        public static MethodInfo? ForceGetMethod(this Type value,
+            string methodName,
+            Type[]? types = null,
+            BindingFlags bindingFlags = InstancePublic)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            types ??= Type.EmptyTypes;
+
+            return value.ForceGetMethods(bindingFlags)
+                        .FirstOrDefault(x => x.Name == methodName 
+                                &&
+                                x.GetParameters().Select(x => x.ParameterType)
+                                    .SequenceEqual(types));
+        }
+
+        public static MethodInfo[] GetOverloadedCastOperators(this Type value)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.ForceGetMethods(StaticAll)
+                        .Where(x => x.Name == "op_Implicit" || x.Name == "op_Explicit")
+                        .ToArray();
+        }
+
+        public static MethodInfo GetOverloadedCastOperator(this Type value, Type castType)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+            Validate.ArgumentNull(castType, nameof(castType));
+
+            return value.GetOverloadedCastOperators().First(x => x.ReturnType == castType);
         }
 
         public static ConstructorInfo[] ForceGetConstructors(this Type value,

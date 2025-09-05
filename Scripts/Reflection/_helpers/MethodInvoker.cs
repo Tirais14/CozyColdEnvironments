@@ -13,23 +13,20 @@ namespace CCEnvs.Reflection
                                      ExplicitArguments args = default,
                                      params Type[] genericParams)
         {
-            ThrowHelper.ArgumentNullNested(target.Type,
+            Validate.ArgumentNullNested(target.Type,
                                            nameof(target),
                                            nameof(target.Type));
-            ThrowHelper.StringArgument(nameof(methodName), methodName);
+            Validate.StringArgument(nameof(methodName), methodName);
 
-            BindingFlags bindingFlags = target.Value.IsNull()
-                ?
-                BindingFlagsDefault.StaticAll
-                :
-                BindingFlagsDefault.InstanceAll;
+            BindingFlags bindingFlags = BindingFlagsDefault.All;
 
             MethodInfo method = target.Type.GetMethod(
                 methodName,
+                genericParams.Length,
                 bindingFlags,
                 binder: null,
                 args.GetTypes(),
-                CC.Create.Array(args.GetParameterModifiers()))
+                CC.C.Array(args.GetParameterModifiers()))
                 ??
                 throw new MethodNotFoundException(
                     target.Type,

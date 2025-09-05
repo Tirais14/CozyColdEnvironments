@@ -114,7 +114,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         private Type[] ResolveDeserializedTypes()
         {
             if (DeserializedTypes.IsNullOrEmpty())
-                return CC.Create.Array(typeof(TItem));
+                return CC.C.Array(typeof(TItem));
 
             return DeserializedTypes;
         }

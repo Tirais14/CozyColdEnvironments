@@ -7,6 +7,8 @@ namespace CCEnvs
 {
     public readonly struct TypeValuePair : IEquatable<TypeValuePair>
     {
+        public static TypeValuePair Empty => T<object>();
+
         public readonly Type Type { get; }
         public readonly object? Value { get; }
 

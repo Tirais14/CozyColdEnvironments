@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.Cached;
 using System;
 using System.Linq;
@@ -8,6 +9,13 @@ namespace CCEnvs.Reflection
 {
     public static class TypeExtensions
     {
+        public static Reflected AsReflected(this Type value)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return new Reflected(value);
+        }
+
         public static string GetTypeName<T>(this T? obj,
             TypeNameConvertingAttributes attributes = TypeNameConvertingAttributes.Default)
         {

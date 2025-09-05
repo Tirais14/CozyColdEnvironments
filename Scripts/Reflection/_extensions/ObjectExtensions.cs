@@ -18,5 +18,12 @@ namespace CCEnvs.Reflection
         {
             return !value.IsType(other);
         }
+
+        public static Reflected AsReflected(this object value)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return new Reflected(value);
+        }
     }
 }

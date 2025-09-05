@@ -24,6 +24,12 @@ namespace CCEnvs.Reflection.Data
             Values = new ReadOnlyCollection<CCParameterInfo>(parameters);
         }
 
+        public CCParameters(params Type[] types)
+            :
+            this(types.Select(x => new CCParameterInfo(x)).ToArray())
+        {
+        }
+
         public readonly CCParameterInfo[] GetRequiredParameters()
         {
             return Values.Where(x => !x.HasDefaultValue).ToArray();

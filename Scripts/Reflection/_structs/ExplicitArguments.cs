@@ -19,9 +19,15 @@ namespace CCEnvs.Reflection.Data
             IgnoreOptionalArguments = true
         };
 
-        public readonly int Count => Arguments.Count;
-        public readonly ReadOnlyCollection<ExplicitArgument> Arguments { get; }
-        public readonly ExplicitArgument this[int index] => Arguments[index];
+        public readonly int Count => Arguments?.Count ?? 0;
+        public readonly ReadOnlyCollection<ExplicitArgument>? Arguments { get; }
+
+        public readonly ExplicitArgument this[int index] => Arguments is null
+            ?
+            Array.Empty<ExplicitArgument>()[index]
+            :
+            Arguments[index];
+
         public bool IgnoreOptionalArguments { readonly get; set; }
 
         public readonly CCParameters RequiredArguments => new(Arguments.Select(x => x.Parameter)
@@ -74,11 +80,14 @@ namespace CCEnvs.Reflection.Data
 
         public readonly ParameterModifier GetParameterModifiers()
         {
+            if (Count == 0)
+                return default;
+
             var result = new ParameterModifier(Count);
 
-            for (int i = 0; i < Arguments.Count; i++)
+            for (int i = 0; i < Arguments!.Count; i++)
             {
-                if (Arguments[i].Parameter.HasModifier)
+                if (Arguments![i].Parameter.HasModifier)
                     result[i] = true;
             }
 
@@ -97,7 +106,7 @@ namespace CCEnvs.Reflection.Data
 
         public readonly override string ToString()
         {
-            if (Arguments.IsEmpty())
+            if (Arguments.IsNullOrEmpty())
                 return "empty";
 
             TypeValuePair[] typeValuePairs = ToTypeValuePairs();
@@ -114,7 +123,9 @@ namespace CCEnvs.Reflection.Data
 
         public readonly IEnumerator<ExplicitArgument> GetEnumerator()
         {
-            return Arguments.GetEnumerator();
+            return Arguments?.GetEnumerator()
+                   ??
+                   Enumerable.Empty<ExplicitArgument>().GetEnumerator();
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator()

@@ -1,5 +1,6 @@
 using CCEnvs.Reflection;
 using System;
+using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Diagnostics
@@ -10,6 +11,19 @@ namespace CCEnvs.Diagnostics
         {
         }
 
+        public MemberNotFoundException(Type reflectedType,
+                                       string? name = null,
+                                       BindingFlags? bindingFlags = null)
+            :
+            base(ReflectedType(reflectedType)
+                 +
+                 (name is not null ? $" Name = {name}. " : string.Empty) 
+                 + 
+                 (bindingFlags.HasValue ? $" Binding flags = {bindingFlags.Value}. " : string.Empty))
+        {
+
+        }
+
         public MemberNotFoundException(string message, Exception? innerException = null) 
             :
             base(message, innerException)
@@ -18,7 +32,7 @@ namespace CCEnvs.Diagnostics
 
         protected static string ReflectedType(Type type)
         {
-            return $"Reflected type = {type.GetName()}. ";
+            return $"Reflected type = {type.GetName()}.";
         }
     }
 }
