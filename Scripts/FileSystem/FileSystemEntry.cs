@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using CCEnvs.Diagnostics;
 
 #nullable enable
@@ -51,19 +52,20 @@ namespace CCEnvs.FileSystem
             customName = name;
         }
 
-        public abstract bool TrySave(bool overwrite = false);
-
-        /// <exception cref="FileOverwriteNotAllowedException"></exception>
-        public virtual void Save(bool overwrite = false)
+        public bool TrySave(bool overwrite = false)
         {
-            if (string.IsNullOrWhiteSpace(path))
-                throw new PathNotValidException(path);
-
-            bool saveResult = TrySave(overwrite);
-
-            if (!saveResult && Exists && !overwrite)
-                throw new FileOverwriteNotAllowedException(path);
+            try
+            {
+                Save(overwrite);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
+
+        public abstract void Save(bool overwrite = false);
 
         public virtual void SetPath(FSPath path) => this.path = path;
         public void SetPath(string path)
@@ -112,15 +114,20 @@ namespace CCEnvs.FileSystem
             return false;
         }
 
-        public abstract bool TryCreate(bool overwrite = false);
-
-        public virtual void Create(bool overwrite = false)
+        public bool TryCreate(bool overwrite = false)
         {
-            if (!TryCreate())
+            try
             {
-                throw new FileOverwriteNotAllowedException(path);
+                Create(overwrite);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
+
+        public abstract void Create(bool overwrite = false);
 
         public override string ToString() => Path.value;
 

@@ -12,24 +12,21 @@ namespace CCEnvs.Unity.Editor
         private const string AUTO_COMPILING = "AutoCompiling";
         private static int compilationFinishedSubscriptionCount;
 
+        private static bool IsCompilationEnabled => !PlayerPrefs.HasKey(AUTO_COMPILING)
+                                                    ||
+                                                    PlayerPrefs.GetInt(AUTO_COMPILING) == 1;
+
         static AutoCompilingToggle()
         {
-            CompilationPipeline.compilationFinished += AfterCompilation;
-            if (PlayerPrefs.HasKey(AUTO_COMPILING)
-                &&
-                PlayerPrefs.GetInt(AUTO_COMPILING) == 0
-                )
-                DisableAutoCompiling(false);
+            if (!IsCompilationEnabled)
+                DisableAutoCompiling(isInternal: true);
         }
 
         //Cause issues
-        [MenuItem("Editor Scripts/Compiling/Force Compile And Disable &r")]
-        public static void ForceCompileAndDisableCompiling()
+        [MenuItem("Editor/Compiling/Force Compile &r")]
+        public static void ForceCompile()
         {
-            EditorApplication.UnlockReloadAssemblies();
-            AssetDatabase.Refresh();
-            EditorUtility.RequestScriptReload();
-            CompilationPipeline.RequestScriptCompilation();
+            EnableAutoCompiling(isInternal: true);
 
             if (compilationFinishedSubscriptionCount > 0)
             {
@@ -37,40 +34,52 @@ namespace CCEnvs.Unity.Editor
                 compilationFinishedSubscriptionCount++;
             }
 
-            Debug.Log($"{nameof(AutoCompilingToggle)}: Editor force compiling initiated.");
+            CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Editor force compiling initiated.");
         }
 
         [MenuItem("Editor/Compiling/Enable &e")]
         public static void EnableAutoCompiling()
         {
-            EditorApplication.UnlockReloadAssemblies();
-            AssetDatabase.Refresh();
-            EditorUtility.RequestScriptReload();
-            CompilationPipeline.RequestScriptCompilation();
-            PlayerPrefs.SetInt(AUTO_COMPILING, 1);
-            PlayerPrefs.Save();
-
-            Debug.Log($"{nameof(AutoCompilingToggle)}: Auto compiling enabled.");
+            EnableAutoCompiling(isInternal: false);
         }
 
         [MenuItem("Editor/Compiling/Disable &d")]
         public static void DisableAutoCompiling()
         {
-            DisableAutoCompiling(true);
+            DisableAutoCompiling(isInternal: false);
         }
-        private static void DisableAutoCompiling(bool log)
+
+        private static void EnableAutoCompiling(bool isInternal)
+        {
+            EditorApplication.UnlockReloadAssemblies();
+            AssetDatabase.Refresh();
+            EditorUtility.RequestScriptReload();
+            CompilationPipeline.RequestScriptCompilation();
+
+            if (!isInternal)
+            {
+                PlayerPrefs.SetInt(AUTO_COMPILING, 1);
+                PlayerPrefs.Save();
+                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling enabled.");
+            }
+        }
+
+        private static void DisableAutoCompiling(bool isInternal)
         {
             EditorApplication.LockReloadAssemblies();
-            PlayerPrefs.SetInt(AUTO_COMPILING, 0);
-            PlayerPrefs.Save();
 
-            if (log)
-                Debug.Log($"{nameof(AutoCompilingToggle)}: Auto compiling disabled.");
+            if (!isInternal)
+            {
+                PlayerPrefs.SetInt(AUTO_COMPILING, 0);
+                PlayerPrefs.Save();
+                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling disabled.");
+            }
         }
 
         private static void AfterCompilation(object _)
         {
-            DisableAutoCompiling();
+            if (!IsCompilationEnabled)
+                DisableAutoCompiling();
 
             CompilationPipeline.compilationFinished -= AfterCompilation;
             compilationFinishedSubscriptionCount--;

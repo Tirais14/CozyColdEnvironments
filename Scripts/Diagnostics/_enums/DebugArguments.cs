@@ -10,6 +10,10 @@ namespace CCEnvs.Diagnostics
         /// <summary>
         /// Marks log message as additive. These messages can be turned off by separate setting
         /// </summary>
-        IsAdditive
+        IsAdditive,
+        /// <summary>
+        /// Marks log message as editor only. These messages can be turned off by separate setting
+        /// </summary>
+        Editor
     }
 }

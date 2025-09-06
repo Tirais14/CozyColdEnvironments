@@ -1,4 +1,5 @@
 using CCEnvs.Common;
+using CCEnvs.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -43,16 +44,7 @@ namespace CCEnvs.FileSystem
             return CreateEntry(overwrite, path.value);
         }
 
-        public override bool TrySave(bool overwrite = false)
-        {
-            if (Exists && !overwrite) return false;
-
-            bool result = TryCreate(overwrite);
-
-            ApplyChanges();
-
-            return result;
-        }
+        public sealed override void Save(bool overwrite = false) => Create(overwrite);
 
         public DirectoryEntry CreateChild(bool overwrite = false, params string[] relativePathParts)
         {
@@ -66,21 +58,16 @@ namespace CCEnvs.FileSystem
             return CreateChild(overwrite: false, relativePathParts);
         }
 
-        public override bool TryCreate(bool overwrite = false)
+        public override void Create(bool overwrite = false)
         {
             if (Exists && !overwrite)
-            {
-                return false;
-            }
-            if (Name.IsNullOrEmpty())
-            {
-                CCDebug.PrintError(new FileNameException(Name), this);
-                return false;
-            }
+                throw new FileOverwriteNotAllowedException(path);
+            Validate.StringArgument(Name, nameof(Name));
 
             Directory.CreateDirectory(Path);
+            ApplyChanges();
+
             CCDebug.PrintLog($"Directory created: \"{Path}\"", this);
-            return true;
         }
 
         #region GetDirectoryPath

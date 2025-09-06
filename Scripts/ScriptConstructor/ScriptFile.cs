@@ -35,28 +35,22 @@ namespace CCEnvs.FileSystem.ScriptUtils
         {
         }
 
-        public override bool TrySave(bool overwrite = false)
+        public override void Save(bool overwrite = false)
         {
             if (Exists && !overwrite)
-                return false;
+                throw new FileNotFoundException(path);
             if (customContent is null)
             {
                 CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
-                return false;
+                return;
             }
-            if (Name.IsNullOrEmpty())
-            {
-                CCDebug.PrintError(new FileNameException(Name), this);
-                return false;
-            }
+            Validate.StringArgument(Name, nameof(Name));
 
             ProccessUsings();
 
             using FileStream fileStream = OpenOrCreate();
 
             Write(fileStream);
-
-            return true;
         }
 
         public override async Task<bool> TrySaveAsync(bool overwrite = false)

@@ -120,7 +120,9 @@ namespace CCEnvs.FileSystem
 
         public readonly bool Equals(FSPath other)
         {
-            return value == other.value && style == other.style;
+            return value == other.value
+                   &&
+                   style == other.style;
         }
         public readonly override bool Equals(object obj)
         {

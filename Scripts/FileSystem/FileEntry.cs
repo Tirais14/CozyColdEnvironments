@@ -1,9 +1,11 @@
 #nullable enable
 using CCEnvs.Common;
+using CCEnvs.Diagnostics;
 using CCEnvs.Extensions;
 using CCEnvs.Reflection;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CCEnvs.FileSystem
@@ -44,71 +46,64 @@ namespace CCEnvs.FileSystem
             return CreateEntry(overwrite, path.value);
         }
 
-        /// <summary>
-        /// Will be skip existing files if overwrite = false
-        /// </summary>
-        /// <param name="overwrite"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        public override bool TrySave(bool overwrite = false)
+        public override void Save(bool overwrite = false)
         {
             if (Exists && !overwrite)
-                return false;
+                throw new FileOverwriteNotAllowedException(path);
             if (customContent is null)
             {
-                CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
-                return false;
+                CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
+                return;
             }
-            if (Name.IsNullOrEmpty())
-            {
-                CCDebug.PrintError(new FileNameException(Name), this);
-                return false;
-            }
+            Validate.StringArgument(Name, nameof(Name));
 
             using FileStream fileStream = OpenOrCreate();
 
             Write(fileStream);
 
             ApplyChanges();
-
-            return true;
         }
 
         /// <exception cref="FileOverwriteNotAllowedException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
         public virtual async Task<bool> TrySaveAsync(bool overwrite = false)
         {
-            if (Exists && !overwrite)
+            try
+            {
+                await SaveAsync(overwrite);
+                return true;
+            }
+            catch (Exception)
+            {
                 return false;
+            }
+        }
+
+        public virtual async Task SaveAsync(bool overwrite = false)
+        {
+            if (Exists && !overwrite)
+                throw new FileOverwriteNotAllowedException(path);
             if (customContent is null)
             {
                 CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
-                return false;
+                return;
             }
-            if (Name.IsNullOrEmpty())
+            Validate.StringArgument(Name, nameof(Name));
+
+            try
             {
-                CCDebug.PrintError(new FileNameException(Name), this);
-                return false;
+                using FileStream fileStream = OpenOrCreate();
+
+                await WriteAsync(fileStream);
+
+                ApplyChanges();
+
+                await fileStream.DisposeAsync();
             }
-
-            FileStream fileStream = OpenOrCreate();
-
-            await WriteAsync(fileStream);
-
-            ApplyChanges();
-
-            await fileStream.DisposeAsync();
-
-            return true;
-        }
-
-        /// <exception cref="FileOverwriteNotAllowedException"></exception>
-        public virtual async Task SaveAsync(bool overwrite = false)
-        {
-            bool result = await TrySaveAsync(overwrite);
-
-            if (!result && Exists && !overwrite)
-                throw new FileOverwriteNotAllowedException(path);
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -161,16 +156,16 @@ namespace CCEnvs.FileSystem
 
         public void WriteBytes(byte[] bytes) => File.WriteAllBytes(Path, bytes);
 
-        public async Task WriteBytesAsync(byte[] bytes)
+        public async Task WriteBytesAsync(byte[] bytes, CancellationToken cancellationToken = default)
         {
-            await File.WriteAllBytesAsync(Path, bytes);
+            await File.WriteAllBytesAsync(Path, bytes, cancellationToken);
         }
 
         public void WriteText(string text) => File.WriteAllText(Path, text);
 
-        public async Task WriteTextAsync(string text)
+        public async Task WriteTextAsync(string text, CancellationToken cancellationToken = default)
         {
-            await File.WriteAllTextAsync(Path, text);
+            await File.WriteAllTextAsync(Path, text, cancellationToken);
         }
 
         public void WriteLines(string[] textLines) => File.WriteAllLines(Path, textLines);
@@ -253,21 +248,14 @@ namespace CCEnvs.FileSystem
             File.Replace(Path, destFileName, backupFileName, ignoreMetadataErrors);
         }
 
-        public override bool TryCreate(bool overwrite = false)
+        public override void Create(bool overwrite = false)
         {
             if (Exists && !overwrite)
-            {
-                return false;
-            }
-            if (Name.IsNullOrEmpty())
-            {
-                CCDebug.PrintError(new FileNameException(Name), this);
-                return false;
-            }
+                throw new FileNotFoundException(path);
+            Validate.StringArgument(Name, nameof(Name));
 
             File.Create(Path);
             CCDebug.PrintLog($"File created: \"{Path}\"", this);
-            return true;
         }
         #endregion Default
 
@@ -292,14 +280,15 @@ namespace CCEnvs.FileSystem
             }
         }
 
-        protected async Task WriteAsync(FileStream fileStream)
+        protected async Task WriteAsync(FileStream fileStream,
+                                        CancellationToken cancellationToken = default)
         {
             using StreamWriter writer = new(fileStream);
 
             switch (customContent)
             {
                 case byte[] bytes:
-                    await fileStream.WriteAsync(bytes, 0, bytes.Length);
+                    await fileStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
                     break;
                 case string str:
                     await writer.WriteAsync(str);
