@@ -9,7 +9,7 @@ namespace CCEnvs.Diagnostics
     public static class Validate
     {
         public static void ArgumentNull([NotNull] object? obj,
-                                        string paramName = "value")
+                                        string paramName)
         {
             if (obj.IsNull())
                 throw new ArgumentNullException(paramName);

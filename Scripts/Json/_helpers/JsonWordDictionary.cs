@@ -34,9 +34,6 @@ namespace CCEnvs.Json
             string[] fieldNames = CollectFieldNames(types);
             string[] propNames = CollectPropertyNames(types);
 
-            //propNames = propNames.Intersect(fieldNames)
-            //                     .ToArray();
-
             string content = typeFullnames.Concat(fieldNames)
                                           .Concat(propNames)
                                           .Where(x => x.All(c => !char.IsNumber(c)))
@@ -105,11 +102,19 @@ namespace CCEnvs.Json
             return (from type in types
                     where !type.IsGenericType
                     let name = type.IsGenericType ? type.Name[..1] : type.Name
-                    select type.Namespace + '.' + name into name
+                    select GetFullName(type, name) into name
                     where name.All(x => char.IsLetter(x) || x == '.')
                     orderby name
                     select name)
                     .ToArray();
+
+            static string GetFullName(Type type, string name)
+            {
+                if (type.Namespace.IsNullOrEmpty())
+                    return name;
+
+                return type.Namespace + '.' + name;
+            }
         }
 
         private static string[] CollectFieldNames(Type[] types)
@@ -126,11 +131,8 @@ namespace CCEnvs.Json
                           field.IsDefined<JsonPropertyAttribute>(inherit: true)
                     where !field.IsInitOnly
                     select field.Name into name
-                    where name.Any(c => char.IsLetter(c))
-                    where !name.StartsWith('<')
-                    where !Regex.IsMatch(name, @"^[a-zA-Z]_.*")
-                    where !Regex.IsMatch(name, @"^W")
                     select ToCamelCase(name) into name
+                    where name.All(x => char.IsLetter(x))
                     orderby name
                     select name)
                     .Concat(enumFields.Select(x => x.Name))
@@ -149,6 +151,7 @@ namespace CCEnvs.Json
                           ||
                           prop.IsDefined<JsonPropertyAttribute>(inherit: true)
                     select ToCamelCase(prop.Name) into name
+                    where name.All(x => char.IsLetter(x))
                     orderby name
                     select name)
                     .ToArray();
@@ -159,7 +162,8 @@ namespace CCEnvs.Json
             if (str.IsNullOrEmpty())
                 return string.Empty;
 
-            str = str.Remove(0, str.TakeWhile(x => !char.IsLetter(x)).Count());
+            int notLetterCount = str.TakeWhile(x => !char.IsLetter(x)).Count();
+            str = str[notLetterCount..];
 
             if (str.Any(x => !char.IsLetter(x) && x != '_')
                 ||

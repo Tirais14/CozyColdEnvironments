@@ -11,7 +11,7 @@ using CCEnvs.Unity.Json.Converters;
 namespace CCEnvs.Unity.Json
 {
     [CCStaticInstaller]
-    public static class JsonStaticInstaller
+    public static class JsonConfigInstaller
     {
         [CCStaticInstallerMethod]
         private static void Main()
