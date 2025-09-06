@@ -19,24 +19,29 @@ namespace CCEnvs.Reflection.Data
             IgnoreOptionalArguments = true
         };
 
-        public readonly int Count => Arguments?.Count ?? 0;
-        public readonly ReadOnlyCollection<ExplicitArgument>? Arguments { get; }
+        public int Count => Arguments.Count;
+        public ReadOnlyCollection<ExplicitArgument> Arguments {
+            get
+            {
+                arguments ??= new ReadOnlyCollection<ExplicitArgument>(
+                    Array.Empty<ExplicitArgument>());
 
-        public readonly ExplicitArgument this[int index] => Arguments is null
-            ?
-            Array.Empty<ExplicitArgument>()[index]
-            :
-            Arguments[index];
+                return arguments;
+            }
+        }
 
+        public ExplicitArgument this[int index] => Arguments[index];
         public bool IgnoreOptionalArguments { readonly get; set; }
 
-        public readonly CCParameters RequiredArguments => new(Arguments.Select(x => x.Parameter)
-                                                              .Where(x => !x.HasDefaultValue)
-                                                              .ToArray());
+        private ReadOnlyCollection<ExplicitArgument>? arguments;
+
+        public CCParameters RequiredArguments => new(Arguments.Select(x => x.Parameter)
+                                                     .Where(x => !x.HasDefaultValue)
+                                                     .ToArray());
 
         public ExplicitArguments(params ExplicitArgument[] args) : this()
         {
-            Arguments = new ReadOnlyCollection<ExplicitArgument>(args);
+            arguments = new ReadOnlyCollection<ExplicitArgument>(args);
         }
 
         public static bool operator ==(ExplicitArguments left, ExplicitArguments right)
@@ -64,23 +69,23 @@ namespace CCEnvs.Reflection.Data
             return args.ToTypeValuePairs();
         }
 
-        public readonly TypeValuePair[] ToTypeValuePairs()
+        public TypeValuePair[] ToTypeValuePairs()
         {
             return Arguments.Select(x => new TypeValuePair(x.Parameter.ParameterType, x.Value)).ToArray();
         }
 
-        public readonly bool Equals(ExplicitArguments other)
+        public bool Equals(ExplicitArguments other)
         {
             return Arguments.SequenceEqual(other.Arguments);
         }
-        public readonly override bool Equals(object obj)
+        public override bool Equals(object obj)
         {
             return obj is ExplicitArguments typed && Equals(typed);
         }
 
-        public readonly ParameterModifier GetParameterModifiers()
+        public ParameterModifier GetParameterModifiers()
         {
-            if (Count == 0)
+            if (Arguments.IsEmpty())
                 return default;
 
             var result = new ParameterModifier(Count);
@@ -99,12 +104,12 @@ namespace CCEnvs.Reflection.Data
             return ((CCParameters)this).Select(x => x.ParameterType).ToArray();
         }
 
-        public readonly override int GetHashCode()
+        public override int GetHashCode()
         {
             return HashCode.Combine(Arguments);
         }
 
-        public readonly override string ToString()
+        public override string ToString()
         {
             if (Arguments.IsNullOrEmpty())
                 return "empty";
@@ -121,14 +126,12 @@ namespace CCEnvs.Reflection.Data
             return builder.ToString();
         }
 
-        public readonly IEnumerator<ExplicitArgument> GetEnumerator()
+        public IEnumerator<ExplicitArgument> GetEnumerator()
         {
-            return Arguments?.GetEnumerator()
-                   ??
-                   Enumerable.Empty<ExplicitArgument>().GetEnumerator();
+            return Arguments.GetEnumerator();
         }
 
-        readonly IEnumerator IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }

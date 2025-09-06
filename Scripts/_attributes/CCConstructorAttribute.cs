@@ -3,6 +3,9 @@ using System;
 
 namespace CCEnvs.Attributes
 {
+    /// <summary>
+    /// Marks static method as constructor for <see cref="InstanceFactory"/>
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class CCConstructorAttribute : Attribute, ICCAttribute
     {

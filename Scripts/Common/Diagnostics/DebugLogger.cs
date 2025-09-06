@@ -140,7 +140,12 @@ namespace CCEnvs.Common
             if (!IsEnabled)
                 return false;
 
-            if (context is not null && disabledTypes.Contains(context.GetType()))
+            if (context is not null
+                &&
+                (context is Type type && disabledTypes.Contains(type)
+                 ||
+                 disabledTypes.Contains(context.GetType()))
+                 )
                 return false;
 
             return true;

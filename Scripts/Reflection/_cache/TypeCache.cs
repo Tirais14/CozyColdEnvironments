@@ -139,7 +139,7 @@ namespace CCEnvs.Reflection.Cached
 
             public bool Equals(MethodKey other)
             {
-                return other.ReflectedType == ReflectedType && other.ParameterTypes == ParameterTypes;
+                return ReflectedType == other.ReflectedType && ParameterTypes.SequenceEqual(other.ParameterTypes);
             }
 
             public override bool Equals(object? obj)
@@ -149,7 +149,14 @@ namespace CCEnvs.Reflection.Cached
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(ReflectedType, ParameterTypes);
+                var hash = new HashCode();
+                hash.Add(ReflectedType);
+
+                int count = ParameterTypes.Length;
+                for (int i = 0; i < count; i++)
+                    hash.Add(ParameterTypes[i]);
+
+                return hash.ToHashCode();
             }
         }
 

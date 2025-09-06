@@ -11,6 +11,8 @@ namespace CCEnvs.Unity
         IGameObjectSettings, 
         IEquatable<GameObjectSettings>
     {
+        public static GameObjectSettings Default { get; } = new();
+
         [Min(1E-06f)]
         [field: SerializeField]
         [JsonProperty("scale")]

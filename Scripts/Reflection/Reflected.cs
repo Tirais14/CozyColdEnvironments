@@ -27,6 +27,11 @@ namespace CCEnvs.Reflection
             TargetType = target.GetType();
         }
 
+        public static Reflected T<T>()
+        {
+            return new Reflected(typeof(T));
+        }
+
         public static bool operator ==(Reflected left, Reflected right)
         {
             return ReferenceEquals(left, right) || left.Equals(right);
