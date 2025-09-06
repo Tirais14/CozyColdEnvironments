@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 using static CCEnvs.BindingFlagsDefault;
 
 #nullable enable
@@ -15,14 +14,17 @@ namespace CCEnvs.Reflection
         /// <summary>
         /// Extended version
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="value"></param>
         /// <param name="bindings"></param>
         /// <returns></returns>
-        public static ConstructorInfo GetConstructor(this Type type,
+        public static ConstructorInfo GetConstructor(this Type value,
             MethodBindings bindings,
             bool throwIfNotFound = false)
         {
-            if (type.GetConstructor(bindings.BindingFlags,
+            Validate.ArgumentNull(value, nameof(value));
+            Validate.ArgumentNull(bindings, nameof(bindings));
+
+            if (value.GetConstructor(bindings.BindingFlags,
                                     bindings.Binder,
                                     bindings.CallingConventions,
                                     bindings.Arguments.GetTypes(),
@@ -32,7 +34,7 @@ namespace CCEnvs.Reflection
                 )
                 return found;
 
-            ConstructorInfo[] constructors = type.GetConstructors(
+            ConstructorInfo[] constructors = value.GetConstructors(
                 bindings.BindingFlags);
 
             found = (from x in constructors
@@ -42,7 +44,7 @@ namespace CCEnvs.Reflection
 
             if (throwIfNotFound && found is null)
                 throw new ConstructorNotFoundException(
-                    type,
+                    value,
                     bindings.BindingFlags,
                     (CCParameters)bindings.Arguments);
 
@@ -50,16 +52,14 @@ namespace CCEnvs.Reflection
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static MemberInfo[] GetMembers(Type type,
+        public static MemberInfo[] GetMembers(Type value,
             Type memberType,
             BindingFlags bindingFlags = BindingFlags.Default)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-            if (memberType is null)
-                throw new ArgumentNullException(nameof(memberType));
+            Validate.ArgumentNull(value, nameof(value));
+            Validate.ArgumentNull(memberType, nameof(memberType));
 
-            MemberInfo[] members = type.GetMembers(bindingFlags);
+            MemberInfo[] members = value.GetMembers(bindingFlags);
             List<MemberInfo> results = new();
 
             MemberInfo member;
@@ -74,13 +74,12 @@ namespace CCEnvs.Reflection
             return results.ToArray();
         }
 
-        public static MemberInfo[] ForceGetMembers(this Type type,
+        public static MemberInfo[] ForceGetMembers(this Type value,
             BindingFlags bindingFlags = BindingFlags.Default)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
+            Validate.ArgumentNull(value, nameof(value));
 
-            Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(type);
+            Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(value);
             var loopPredicate = new LoopPredicate(() => baseTypes.Count > 0);
             var members = new List<MemberInfo>();
             bindingFlags |= BindingFlags.DeclaredOnly;
@@ -94,12 +93,16 @@ namespace CCEnvs.Reflection
 
             where T : MemberInfo
         {
+            Validate.ArgumentNull(value, nameof(value));
+
             return value.ForceGetMembers(bindingFlags).OfType<T>().ToArray();
         }
 
         public static FieldInfo[] ForceGetFields(this Type value,
             BindingFlags bindingFlags = InstancePublic)
         {
+            Validate.ArgumentNull(value, nameof(value));
+
             return value.ForceGetMembers<FieldInfo>(bindingFlags);
         }
 
@@ -115,6 +118,8 @@ namespace CCEnvs.Reflection
         public static PropertyInfo[] ForceGetProperties(this Type value,
             BindingFlags bindingFlags = InstancePublic)
         {
+            Validate.ArgumentNull(value, nameof(value));
+
             return value.ForceGetMembers<PropertyInfo>(bindingFlags);
         }
 
@@ -130,6 +135,8 @@ namespace CCEnvs.Reflection
         public static MethodInfo[] ForceGetMethods(this Type value,
             BindingFlags bindingFlags = InstancePublic)
         {
+            Validate.ArgumentNull(value, nameof(value));
+
             return value.ForceGetMembers<MethodInfo>(bindingFlags);
         }
 
@@ -175,6 +182,8 @@ namespace CCEnvs.Reflection
         public static ConstructorInfo? ForceGetConstructor(this Type value,
             MethodBindings bindings)
         {
+            Validate.ArgumentNull(value, nameof(value));
+
             ConstructorInfo[] ctors = value.ForceGetConstructors(bindings.BindingFlags);
 
             return ctors.FirstOrDefault(x => ConstructorBindingsMatcher.IsMatch(bindings, x));
@@ -186,10 +195,8 @@ namespace CCEnvs.Reflection
             MethodBindings bindings,
             bool throwIfNotFound = false)
         {
-            if (value is null)
-                throw new ArgumentNullException(nameof(value));
-            if (bindings is null)
-                throw new ArgumentNullException(nameof(bindings));
+            Validate.ArgumentNull(value, nameof(value));
+            Validate.ArgumentNull(bindings, nameof(bindings));
 
             MethodInfo? method = value.GetMethod(bindings.Name,
                                                  bindings.GenericArguments.Length,

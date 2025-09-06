@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 
 namespace CCEnvs.Reflection
 {
@@ -12,6 +13,7 @@ namespace CCEnvs.Reflection
         public bool HasAssemblyName => AssemblyName.IsNotNullOrEmpty();
         public bool HasNamespace => Namespace.IsNotNullOrEmpty();
         public bool HasTypeName => TypeName.IsNotNullOrEmpty();
+        public Type[] DefinedAttributeTypes { get; set; } = Type.EmptyTypes;
 
         /// <exception cref="ArgumentNullException"></exception>
         public bool IsMatch(Type type)
@@ -40,6 +42,12 @@ namespace CCEnvs.Reflection
 
             if (HasTypeName)
                 result = type.GetName().Contains(TypeName, comparison);
+
+            if (DefinedAttributeTypes.IsNotEmpty()
+                &&
+                !DefinedAttributeTypes.All(x => type.IsDefined(x, inherit: true))
+                )
+                return false;
 
             return result;
         }

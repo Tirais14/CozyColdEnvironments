@@ -43,6 +43,13 @@ namespace CCEnvs.Diagnostics
                 throw new StringArgumentException(paramName, value);
         }
 
+        public static void StringArgumentNested([NotNull] string? value,
+                                                params string[] nameParts)
+        {
+            if (value.IsNullOrEmpty())
+                throw new StringArgumentException(nameParts.JoinStrings('.'), value);
+        }
+
         public static void String([NotNull] string? value)
         {
             if (value.IsNullOrEmpty())

@@ -1,6 +1,9 @@
+using CCEnvs.Attributes;
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.Cached;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -9,6 +12,36 @@ namespace CCEnvs.Reflection
 {
     public static class TypeExtensions
     {
+        private readonly static HashSet<Type> primitiveTypes = new()
+        {
+            typeof(byte),
+            typeof(sbyte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(object),
+            typeof(string),
+            typeof(decimal),
+            typeof(float),
+            typeof(double),
+            typeof(char),
+            typeof(Array)
+        };
+
+        public static Type[] PrimitiveTypes = primitiveTypes.ToArray();
+
+        public static bool IsCacheableType(this Type value)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.IsDefined<CacheableAttribute>(inherit: false)
+                   ||
+                   value.GetInterfaces().Any(x => x.IsType(typeof(ICacheable)));
+        }
+
         public static Reflected AsReflected(this Type value)
         {
             Validate.ArgumentNull(value, nameof(value));
@@ -49,8 +82,15 @@ namespace CCEnvs.Reflection
         {
             if (type == null)
                 return false;
+            if (type == typeof(string)
+                ||
+                type == typeof(decimal)
+                ||
+                type == typeof(string)
+                )
+                return true;
 
-            return type.IsPrimitive || type.IsAnyType(typeof(decimal), typeof(string));
+            return type.IsPrimitive;
         }
 
         public static bool IsPrimitiveNumber(this Type value)
@@ -118,7 +158,7 @@ namespace CCEnvs.Reflection
 
             for (int i = 0; i < types.Length; i++)
             {
-                if (a.IsAssignableFrom(types[i]))
+                if (a.IsType(types[i]))
                     return true;
             }
 
@@ -135,20 +175,46 @@ namespace CCEnvs.Reflection
         {
             if (type == null) return "null";
 
-            if (attributes.HasFlag(TypeNameConvertingAttributes.ShortName)
+            if (attributes.IsFlagSetted(TypeNameConvertingAttributes.ShortName)
                 &&
                 type.IsPrimitiveType()
                 )
-                return ToShortName(type);
+                return GetShortName(type);
 
             if (type.IsGenericType)
             {
-                if (attributes.HasFlag(TypeNameConvertingAttributes.IncludeGenericArguments))
+                if (attributes.IsFlagSetted(TypeNameConvertingAttributes.IncludeGenericArguments))
                     return ConvertGenericArgumentsToString(type);
                 else
                     return type.Name[..^2];
             }
             else return type.Name;
+        }
+
+        public static string GetShortName(Type type)
+        {
+            Validate.Argument(type, nameof(type), x => !x.IsGenericType);
+
+            if (type == typeof(short))
+                return "short";
+            else if (type == typeof(ushort))
+                return "ushort";
+            else if (type == typeof(int))
+                return "int";
+            else if (type == typeof(uint))
+                return "uint";
+            else if (type == typeof(long))
+                return "long";
+            else if (type == typeof(ulong))
+                return "ulong";
+            else if (type == typeof(bool))
+                return "bool";
+            else if (type == typeof(float))
+                return "float";
+            else if (type.IsType<Array>())
+                return $"{type.GetName(TypeNameConvertingAttributes.IncludeGenericArguments)}[]";
+
+            return type.Name.ToLower();
         }
 
         private static string ConvertGenericArgumentsToString(Type type)
@@ -210,42 +276,6 @@ namespace CCEnvs.Reflection
             }
 
             return false;
-        }
-
-        private static string ToShortName(Type type)
-        {
-            if (type == typeof(byte))
-                return "byte";
-            else if (type == typeof(sbyte))
-                return "sbyte";
-            else if (type == typeof(short))
-                return "short";
-            else if (type == typeof(ushort))
-                return "ushort";
-            else if (type == typeof(int))
-                return "int";
-            else if (type == typeof(uint))
-                return "uint";
-            else if (type == typeof(long))
-                return "long";
-            else if (type == typeof(ulong))
-                return "ulong";
-            else if (type == typeof(string))
-                return "string";
-            else if (type == typeof(bool))
-                return "bool";
-            else if (type == typeof(float))
-                return "float";
-            else if (type == typeof(double))
-                return "double";
-            else if (type == typeof(char))
-                return "char";
-            else if (type == typeof(object))
-                return "object";
-            else if (type.IsType<Array>())
-                return $"{type.GetName(TypeNameConvertingAttributes.Default | ~TypeNameConvertingAttributes.ShortName)}[]";
-
-            throw new Exception($"Invalid type {type.Name}.");
         }
     }
 }

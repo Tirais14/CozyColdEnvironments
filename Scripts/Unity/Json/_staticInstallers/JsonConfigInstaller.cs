@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Json
     [CCStaticInstaller]
     public static class JsonConfigInstaller
     {
-        [CCStaticInstallerMethod]
+        [StaticInstallerMethod]
         private static void Main()
         {
             JsonSettingsProvider.Converters.AddRange(

@@ -24,7 +24,7 @@ namespace CCEnvs
                 from t in types
                 select t.ForceGetMethods(BindingFlagsDefault.StaticAll) into methods
                 from mt in methods
-                where mt.IsDefined<CCStaticInstallerMethodAttribute>(inherit: true)
+                where mt.IsDefined<StaticInstallerMethodAttribute>(inherit: true)
                 ||
                 mt.Name.Equals("Install", StringComparison.Ordinal)
                 select mt;

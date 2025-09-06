@@ -10,13 +10,14 @@ using System.Runtime.Serialization;
 
 #nullable enable
 #pragma warning disable S101
+#pragma warning disable IDE0044
 namespace CCEnvs.Unity.Json
 {
     [JsonObject]
     [Serializable]
     public record IItemContainerDto : ITypedJsonDto
     {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty]
         public Type ObjectType { get; set; } = typeof(ItemStack);
 
         [JsonProperty]

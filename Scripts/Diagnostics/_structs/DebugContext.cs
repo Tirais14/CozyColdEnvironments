@@ -14,7 +14,7 @@ namespace CCEnvs.Diagnostics
             Arguments = arguments;
         }
 
-        [CCConstructor]
+        [Constructor]
         public DebugContext Additive(object? target = null)
         {
             return new DebugContext(target, DebugArguments.IsAdditive);

@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Common;
+using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
@@ -23,9 +24,29 @@ namespace CCEnvs.Json.Converters
                 var token = JToken.Load(reader);
 
                 CCDebug.PrintLog($"{this.GetTypeName()}: deserializing token.{Environment.NewLine}{token}");
+
+                reader = token.CreateReader();
             }
 
-            var dto = serializer.Deserialize<TDto>(reader);
+            Type dtoType = typeof(TDto);
+            if (((JsonDtoCache.IsBinded(dtoType)
+                ||
+                dtoType.IsCacheableType())
+                &&
+                JsonDtoCache.TryGetCached(dtoType, out TDto? dto)))
+            {
+                if (!JsonDtoCache.TryGetCached(dtoType, out dto))
+                {
+                    dto = serializer.Deserialize<TDto>(reader);
+
+                    if (dto.IsDefault())
+                        throw new DeserializeDataException(typeof(TDto));
+
+                    JsonDtoCache.TryCache(dtoType, dto);
+                }
+            }
+            else
+                dto = serializer.Deserialize<TDto>(reader);
 
             return DtoConverter.Convert<T>(dto);
         }

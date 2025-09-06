@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System;
@@ -8,7 +9,15 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
+        public static bool IsCacheable<T>(this T value)
+        {
+            Validate.ArgumentNull(value, nameof(value));
 
+            if (value is ICacheable)
+                return true;
+
+            return value.GetType().IsDefined<CacheableAttribute>(inherit: false);
+        }
     }
 }
 
