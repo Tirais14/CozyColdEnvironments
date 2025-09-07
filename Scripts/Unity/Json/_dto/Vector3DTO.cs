@@ -8,7 +8,7 @@ namespace CCEnvs.Json.DTO
 {
     [JsonObject]
     [Serializable]
-    public struct Vector3Dto : IJsonDto, ICCConvertible<Vector3>
+    public struct Vector3Dto : IJsonDto, IConvertibleCC<Vector3>
     {
         [JsonProperty]
         public float x;

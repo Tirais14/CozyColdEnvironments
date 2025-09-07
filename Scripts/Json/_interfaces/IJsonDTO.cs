@@ -11,12 +11,12 @@ namespace CCEnvs.Json.DTO
     {
         public static object? ConvertTo(this IJsonDto? value, Type toType)
         {
-            return DtoConverter.Convert(value, toType);
+            return CCConvert.Convert(value, toType);
         }
 
         public static T? ConvertTo<T>(this IJsonDto? value)
         {
-            return DtoConverter.Convert<T>(value);
+            return CCConvert.Convert<T>(value);
         }
     }
 }

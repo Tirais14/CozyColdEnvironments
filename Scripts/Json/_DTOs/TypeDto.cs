@@ -7,7 +7,7 @@ namespace CCEnvs.Json.DTO
 {
     [JsonObject]
     [Serializable]
-    public record TypeDto : IJsonDto, ICCConvertible<Type>
+    public record TypeDto : IJsonDto, IConvertibleCC<Type>
     {
         [JsonProperty]
         public string AssemblyName { get; set; } = string.Empty;

@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Common;
 using CCEnvs.Diagnostics;
+using CCEnvs.Json.Diagnsotics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
@@ -10,8 +11,7 @@ using System;
 
 namespace CCEnvs.Json.Converters
 {
-    public class TypedDtoJsonConverter<TDto, T> : JsonConverter<T>
-        where TDto : ITypedJsonDto
+    public class PolymorphJsonConverter<TIntermediate, T> : JsonConverter<T>
     {
         public override T? ReadJson(JsonReader reader,
                                     Type objectType,
@@ -19,7 +19,7 @@ namespace CCEnvs.Json.Converters
                                     bool hasExistingValue,
                                     JsonSerializer serializer)
         {
-            if (JsonSettingsProvider.IsDebugEnabled)
+            if (JsonSerializerDebug.IsEnabled)
             {
                 var token = JToken.Load(reader);
 
@@ -28,46 +28,30 @@ namespace CCEnvs.Json.Converters
                 reader = token.CreateReader();
             }
 
-            Type dtoType = typeof(TDto);
-            if (((JsonDtoCache.IsBinded(dtoType)
-                ||
-                dtoType.IsCacheableType())
-                &&
-                JsonDtoCache.TryGetCached(dtoType, out TDto? dto)))
-            {
-                if (!JsonDtoCache.TryGetCached(dtoType, out dto))
-                {
-                    dto = serializer.Deserialize<TDto>(reader);
+            var dto = serializer.Deserialize<TIntermediate>(reader);
 
-                    if (dto.IsDefault())
-                        throw new DeserializeDataException(typeof(TDto));
-
-                    JsonDtoCache.TryCache(dtoType, dto);
-                }
-            }
-            else
-                dto = serializer.Deserialize<TDto>(reader);
-
-            return DtoConverter.Convert<T>(dto);
+            return CCConvert.Convert<T>(dto);
         }
 
         public override void WriteJson(JsonWriter writer,
                                        T? value,
                                        JsonSerializer serializer)
         {
-            if (value is null)
+            if (value.IsNull())
             {
                 writer.WriteNull();
                 return;
             }
 
-            InstanceFactory.Create(typeof(TDto),
+            var dto = InstanceFactory.Create<TIntermediate>(
                 new ExplicitArguments(new ExplicitArgument(value)),
                 InstanceFactory.Parameters.CacheConstructor
                 |
-                InstanceFactory.Parameters.ThrowIfNotFound);
+                InstanceFactory.Parameters.ThrowIfNotFound
+                |
+                InstanceFactory.Parameters.NonPublic);
 
-            serializer.Serialize(writer, value);
+            serializer.Serialize(writer, dto);
         }
     }
 }

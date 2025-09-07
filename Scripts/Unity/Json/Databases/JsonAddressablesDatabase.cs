@@ -26,13 +26,25 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         {
             var result = dto.IsQ<TItem>();
 
-            if (result.IsNull() && dto is ICCConvertible<TItem> convertible)
+            if (result.IsNull() && dto is IConvertibleCC<TItem> convertible)
                 result = convertible.Convert();
 
             if (result.IsNull())
                 throw new TypeCastException(dto.GetType(), typeof(TItem));
 
             return result!;
+        }
+
+        private static object? Deserialize(string text, Type type, JsonSerializerSettings settings)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject(text, type, settings);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
 
         protected override void ProccessTextAssets(IList<TextAsset> textAssets)
@@ -97,19 +109,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
 
         protected abstract TId GetItemID(TItem item);
 
-        protected abstract JsonConverter? GetConverter();
-
-        private object? Deserialize(string text, Type type, JsonSerializerSettings settings)
-        {
-            try
-            {
-                return JsonConvert.DeserializeObject(text, type, settings);
-            }
-            catch (JsonException)
-            {
-                return null;
-            }
-        }
+        protected virtual object? GetConverter() => CC.EmptyObject;
 
         private Type[] ResolveDeserializedTypes()
         {
@@ -121,19 +121,21 @@ namespace CCEnvs.Json.AddressableAssets.Databases
 
         private JsonSerializerSettings GetSerializerSettings()
         {
-            JsonConverter? converter = GetConverter();
+            object? converter = GetConverter();
             JsonSerializerSettings serializerSettings = JsonSettingsProvider.GetSettings();
 
-            if (converter is null)
+            if (converter is JsonConverter converterTyped)
+            {
+                serializerSettings.Converters = JsonConverterHelper.ReplaceByType(
+                    serializerSettings.Converters,
+                    converterTyped);
+            }
+            else if (converter is null)
             {
                 serializerSettings.Converters = JsonConverterHelper.RemoveByType(
                     serializerSettings.Converters,
                     typeof(TItem));
             }
-            else
-                serializerSettings.Converters = JsonConverterHelper.ReplaceByType(
-                    serializerSettings.Converters,
-                    converter);
 
             return serializerSettings;
         }

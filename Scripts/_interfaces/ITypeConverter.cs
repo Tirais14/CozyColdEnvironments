@@ -18,7 +18,7 @@ namespace CCEnvs
         bool TryConvert(object? value, [NotNullWhen(true)] out TOut result);
     }
 
-    public interface IConverter<T, TOut> : ITypeConverter<TOut>
+    public interface ITypeConverter<T, TOut> : ITypeConverter<TOut>
     {
         TOut Convert(T? value);
 

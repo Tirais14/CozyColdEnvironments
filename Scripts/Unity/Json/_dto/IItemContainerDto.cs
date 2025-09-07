@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.Json
 {
     [JsonObject]
     [Serializable]
-    public record IItemContainerDto : ITypedJsonDto
+    public record IItemContainerDto : IJsonDto, ITypeProvider
     {
         [JsonProperty]
         public Type ObjectType { get; set; } = typeof(ItemStack);
