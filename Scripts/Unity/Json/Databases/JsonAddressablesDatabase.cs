@@ -108,13 +108,13 @@ namespace CCEnvs.Json.AddressableAssets.Databases
 
             if (converter is JsonConverter converterTyped)
             {
-                serializerSettings.Converters = JsonConverterHelper.ReplaceByType(
+                serializerSettings.Converters = JsonConverterCollectionHelper.ReplaceByType(
                     serializerSettings.Converters,
                     converterTyped);
             }
             else if (converter is null)
             {
-                serializerSettings.Converters = JsonConverterHelper.RemoveByType(
+                serializerSettings.Converters = JsonConverterCollectionHelper.RemoveByType(
                     serializerSettings.Converters,
                     typeof(TItem));
             }

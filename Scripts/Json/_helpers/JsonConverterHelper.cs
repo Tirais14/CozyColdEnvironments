@@ -3,110 +3,50 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace CCEnvs.Json
 {
     public static class JsonConverterHelper
     {
-        /// <exception cref="ArgumentNullException"></exception>
-        public static Type ResolveConvertType(JsonConverter converter,
-                                              bool throwOnError = true)
+        /// <summary>
+        /// Only for generic converters for now
+        /// </summary>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
+        public static Type GetConversationType(JsonConverter converter)
         {
-            if (converter is null)
-                throw new ArgumentNullException(nameof(converter));
+            Validate.ArgumentNull(converter, nameof(converter));
 
             Type type = converter.GetType();
-            HashSet<Type> baseTypes = TypeHelper.CollectBaseTypes(type).Distinct().ToHashSet();
-            Type[] genericTypes = (from x in baseTypes
-                                   where x.IsType<JsonConverter>()
-                                   where x.IsGenericType
-                                   where x.Namespace.Contains(nameof(Newtonsoft.Json), StringComparison.Ordinal)
-                                   select x)
-                                   .ToArray();
+            if (!JsonHelper.IsDefaultJsonType(type))
+                type = GetDefaultJsonConverterType(converter);
 
-            if (genericTypes.IsNullOrEmpty())
-                throw new LogicException($"Cannot resolve convert type for non-generic {nameof(JsonConverter)}.");
+            if (!type.IsGenericType)
+                throw new NotSupportedException("Cannot resolve converter type for non generic version.");
 
-            Type[] genericArguments = (from x in genericTypes
-                                       select x.GetGenericArguments() into types
-                                       from t in types
-                                       select t)
-                                       .Distinct()
-                                       .ToArray();
-
-            Type genericConverterType = typeof(JsonConverter<>);
-            Type[] genericConverters = (from x in genericArguments
-                                        select genericConverterType.MakeGenericType(x) into x
-                                        select x)
-                                       .ToArray();
-
-            for (int i = 0; i < genericConverters.Length; i++)
-            {
-                if (baseTypes.Contains(genericConverters[i]))
-                    return genericConverters[i].GetGenericArguments().Single();
-            }
-
-            if (genericArguments is null && throwOnError)
-                throw new Diagnostics.DataAccessException(null, $"Cannot resolve type for non generic {nameof(JsonConverter)}.");
-
-            return null;
+            return type.GetGenericArguments()[0];
         }
 
-        /// <exception cref="ArgumentNullException"></exception>
-        public static JsonConverter[] FindOfType(IEnumerable<JsonConverter> converters,
-                                                 Type convertType)
+        public static Type GetDefaultJsonConverterType(JsonConverter converter)
         {
-            if (converters is null)
-                throw new ArgumentNullException(nameof(converters));
-            if (convertType is null)
-                throw new ArgumentNullException(nameof(convertType));
+            Validate.ArgumentNull(converter, nameof(converter));
+            Type type = converter.GetType();
+            if (type.Namespace.IsNotNullOrEmpty()
+                &&
+                type.Namespace.ContainsOrdinal(GJson.Namespace)
+                )
+                return type;
 
-            var results = (from x in converters
-                           let t = ResolveConvertType(x, throwOnError: false)
-                           where t is not null && t.IsType(convertType)
-                           select x).ToArray();
+            Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(type);
 
-            return results;
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public static JsonConverter[] RemoveByType(IEnumerable<JsonConverter> converters,
-                                                   Type convertType)
-        {
-            if (converters is null)
-                throw new ArgumentNullException(nameof(converters));
-            if (convertType is null)
-                throw new ArgumentNullException(nameof(convertType));
-
-            return converters.Except(FindOfType(converters, convertType)).ToArray();
-        }
-        /// <exception cref="ArgumentNullException"></exception>
-        public static JsonConverter[] RemoveByType(IEnumerable<JsonConverter> converters,
-                                                   JsonConverter converter)
-        {
-            if (converters is null)
-                throw new ArgumentNullException(nameof(converters));
-            if (converter is null)
-                throw new ArgumentNullException(nameof(converter));
-
-            Type seekType = ResolveConvertType(converter);
-
-            return RemoveByType(converters, seekType);
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public static JsonConverter[] ReplaceByType(IEnumerable<JsonConverter> converters,
-                                                    JsonConverter converter)
-        {
-            if (converters is null)
-                throw new ArgumentNullException(nameof(converters));
-            if (converter is null)
-                throw new ArgumentNullException(nameof(converter));
-
-            return RemoveByType(converters, converter).Concat(CC.C.Array(converter))
-                                                      .ToArray();
+            return (from baseType in baseTypes
+                    where baseType.Namespace.IsNotNullOrEmpty()
+                    where baseType.Namespace.ContainsOrdinal(GJson.Namespace)
+                    select baseType)
+                    .First();
         }
     }
 }

@@ -96,7 +96,7 @@ namespace CCEnvs.Unity.Tests
                 object? routine;
                 foreach (var method in methods)
                 {
-                    routine = method.Invoke(null, CC.C.Array(monoTests[i]));
+                    routine = method.Invoke(monoTests[i], CC.EmptyArguments);
 
                     if (routine.IsNotNull())
                         StartCoroutine((IEnumerator)routine);

@@ -1,4 +1,3 @@
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -13,6 +12,54 @@ namespace CCEnvs
 {
     public static class StringExtensions
     {
+        public static bool EqualsInvariant(this string value,
+                                           string other,
+                                           bool ignoreCase = false)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.Equals(other, ignoreCase ?
+                StringComparison.InvariantCultureIgnoreCase
+                :
+                StringComparison.InvariantCulture);
+        }
+
+        public static bool EqualsOrdinal(this string value,
+                                         string other,
+                                         bool ignoreCase = false)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.Contains(other, ignoreCase ?
+                StringComparison.OrdinalIgnoreCase
+                :
+                StringComparison.Ordinal);
+        }
+
+        public static bool ContainsInvariant(this string value,
+                                             string other,
+                                             bool ignoreCase = false)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.Contains(other, ignoreCase ?
+                StringComparison.InvariantCultureIgnoreCase
+                : 
+                StringComparison.InvariantCulture);
+        }
+
+        public static bool ContainsOrdinal(this string value,
+                                           string other,
+                                           bool ignoreCase = false)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            return value.Contains(other, ignoreCase ?
+                StringComparison.OrdinalIgnoreCase
+                :
+                StringComparison.Ordinal);
+        }
+
         public static string TrimFirst(this string value)
         {
             if (value is null)

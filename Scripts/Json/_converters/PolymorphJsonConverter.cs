@@ -53,15 +53,6 @@ namespace CCEnvs.Json.Converters
             if (intermediate.IsDefault())
                 return default;
 
-            Type resultType = typeof(T);
-            if (resultType.IsInterface
-               ||
-               resultType.IsAbstract
-               &&
-               resultType.IsNotType<IConvertibleCC>()
-               )
-                throw new JsonSerializationException($"Cannot convert {resultType} because it is abstract or interface type. For this conversations object must implement {nameof(IConvertibleCC)}");
-
             return CCConvert.ChangeType<T>(intermediate);
         }
 

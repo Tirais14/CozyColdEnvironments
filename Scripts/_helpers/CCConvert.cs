@@ -114,13 +114,20 @@ namespace CCEnvs
 
             void CreateByFactory()
             {
-                result = InstanceFactory.Create(toType,
-                    new ExplicitArguments(new ExplicitArgument(target)),
-                    InstanceFactory.Parameters.CacheConstructor
-                    |
-                    InstanceFactory.Parameters.ThrowIfNotFound
-                    |
-                    InstanceFactory.Parameters.NonPublic);
+                try
+                {
+                    result = InstanceFactory.Create(toType,
+                        new ExplicitArguments(new ExplicitArgument(target)),
+                        InstanceFactory.Parameters.CacheConstructor
+                        |
+                        InstanceFactory.Parameters.ThrowIfNotFound
+                        |
+                        InstanceFactory.Parameters.NonPublic);
+                }
+                catch (CCException ex)
+                {
+                    throw new InvalidCastException($"Cannot convert {targetType.GetName()} to {toType.GetName()}. Object must be implement one of the conversation variants: {nameof(IConvertibleCC)}, {nameof(ConverterAttribute)}, explicit/implicit overloaded cast operator, {nameof(IConvertible)}, constructor of {targetType.GetName()} which input takes in argument {toType.GetName()}.", ex);
+                }
             }
         }
         public static T ChangeType<T>(object target)
