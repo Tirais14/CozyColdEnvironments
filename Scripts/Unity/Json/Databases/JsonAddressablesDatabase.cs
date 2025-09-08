@@ -30,7 +30,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
                 result = convertible.Convert();
 
             if (result.IsNull())
-                throw new TypeCastException(dto.GetType(), typeof(TItem));
+                Throw.InvalidCast(dto.GetType(), typeof(TItem));
 
             return result!;
         }

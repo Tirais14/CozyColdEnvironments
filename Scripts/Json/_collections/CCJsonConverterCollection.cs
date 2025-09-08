@@ -25,39 +25,51 @@ namespace CCEnvs.Json
         {
         }
 
-        public void AddOrReplaceAllByType(JsonConverter converter)
+        public CCJsonConverterCollection AddOrReplaceAllByType(JsonConverter converter)
         {
             Validate.ArgumentNull(converter, nameof(converter));
 
-            if (!ReplaceAllByType(converter))
+            ReplaceAllByType(converter, out bool isReplaced);
+
+            if (!isReplaced)
                 Add(converter);
+
+            return this;
         }
 
-        public bool ReplaceAllByType(JsonConverter converter)
+        public CCJsonConverterCollection ReplaceAllByType(JsonConverter converter,
+                                                          out bool isReplaced)
         {
             Validate.ArgumentNull(converter, nameof(converter));
 
             Type conversationType = GetConversationType(converter);
-            if (!RemoveAllByType(conversationType))
-                return false;
+            RemoveAllByType(conversationType, out isReplaced);
+
+            if (!isReplaced)
+                return this;
 
             Add(converter);
-            return true;
+            isReplaced = true;
+
+            return this;
         }
 
-        public bool RemoveAllByType(Type conversationType)
+        public CCJsonConverterCollection RemoveAllByType(Type conversationType,
+                                                         out bool isRemoved)
         {
             Validate.ArgumentNull(conversationType, nameof(conversationType));
 
             IndexValuePair<JsonConverter>[] withSameConversationType = FindAllByType(conversationType);
 
             if (withSameConversationType.IsEmpty())
-                return false;
+                isRemoved = false;
 
             foreach (var pair in withSameConversationType)
                 RemoveItem(pair.index);
 
-            return true;
+            isRemoved = true;
+
+            return this;
         }
 
         public IndexValuePair<JsonConverter>[] FindAllByType(Type conversationType)

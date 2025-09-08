@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Json
             if (injectionMemberValueType is null)
                 throw new ArgumentNullException(nameof(injectionMemberValueType));
             if (injection.GetType().IsNotType(injectionMemberValueType))
-                throw new TypeCastException(injection.GetType(), injectionMemberValueType);
+                Throw.InvalidCast(injection.GetType(), injectionMemberValueType);
             if (injectionMemberName.IsNullOrEmpty())
                 throw new StringArgumentException(nameof(injectionMemberName), injectionMemberName);
             if (injectionMemberType != MemberType.Field
