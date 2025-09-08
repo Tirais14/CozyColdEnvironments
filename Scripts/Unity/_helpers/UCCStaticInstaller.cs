@@ -9,7 +9,7 @@ namespace CCEnvs.Unity
         protected override void OnAwake()
         {
             base.OnAwake();
-            CCStaticInstaller.Install();
+            Install.Static();
 
             Destroy(gameObject);
         }

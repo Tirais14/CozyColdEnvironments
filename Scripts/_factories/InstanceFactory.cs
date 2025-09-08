@@ -115,7 +115,7 @@ namespace CCEnvs
 
                     MethodInfo[] methods =
                         (from x in type.ForceGetMethods(bindingFlags)
-                         where x.IsDefined<ConstructorAttribute>(inherit: true)
+                         where x.IsDefined<InstanceConstructorAttribute>(inherit: true)
                          ||
                          x.Name == "Create"
                          where x.ReturnType.IsType(type)

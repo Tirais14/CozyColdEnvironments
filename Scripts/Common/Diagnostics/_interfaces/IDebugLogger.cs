@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CCEnvs.Common
+namespace CCEnvs.Diagnostics
 {
     public interface IDebugLogger
     {
@@ -18,6 +18,8 @@ namespace CCEnvs.Common
         void PrintError(object message, object? context = null);
 
         void PrintException(Exception exception, object? context = null);
+
+        void PrintExceptionAsLog(Exception exception, object? context = null);
 
         void AssertLog(bool condition, object message, object? context);
 

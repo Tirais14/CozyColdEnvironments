@@ -1,8 +1,6 @@
 #nullable enable
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Json.Diagnsotics;
-using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using Newtonsoft.Json;
@@ -19,18 +17,52 @@ namespace CCEnvs.Json.Converters
                                     bool hasExistingValue,
                                     JsonSerializer serializer)
         {
+            if (typeof(TIntermediate) == typeof(T))
+                throw new JsonSerializationException($"{nameof(TIntermediate)} cannot equals {nameof(T)}.");
+
             if (JsonSerializerDebug.IsEnabled)
             {
                 var token = JToken.Load(reader);
-
                 CCDebug.PrintLog($"{this.GetTypeName()}: deserializing token.{Environment.NewLine}{token}");
-
                 reader = token.CreateReader();
             }
 
-            var dto = serializer.Deserialize<TIntermediate>(reader);
+            //To avoid dead loop
+            serializer = JsonSerializer.Create(JsonSettingsProvider.GetSettings());
+            serializer.Converters.Remove(this);
 
-            return CCConvert.Convert<T>(dto);
+            TIntermediate? intermediate;
+            Type intermediateType = typeof(TIntermediate);
+            if (JsonDtoCache.IsBinded(intermediateType)
+                ||
+                intermediateType.IsCacheableType())
+            {
+                if (!JsonDtoCache.TryGetCached(intermediateType, out intermediate))
+                {
+                    intermediate = serializer.Deserialize<TIntermediate>(reader);
+
+                    if (intermediate.IsDefault())
+                        throw new DeserializeDataException(intermediateType);
+
+                    JsonDtoCache.TryCache(intermediateType, intermediate);
+                }
+            }
+            else
+                intermediate = serializer.Deserialize<TIntermediate>(reader);
+
+            if (intermediate.IsDefault())
+                return default;
+
+            Type resultType = typeof(T);
+            if (resultType.IsInterface
+               ||
+               resultType.IsAbstract
+               &&
+               resultType.IsNotType<IConvertibleCC>()
+               )
+                throw new JsonSerializationException($"Cannot convert {resultType} because it is abstract or interface type. For this conversations object must implement {nameof(IConvertibleCC)}");
+
+            return CCConvert.ChangeType<T>(intermediate);
         }
 
         public override void WriteJson(JsonWriter writer,

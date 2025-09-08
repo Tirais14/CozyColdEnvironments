@@ -1,6 +1,7 @@
 #nullable enable
 
 using CCEnvs.Async;
+using System;
 
 namespace CCEnvs
 {
@@ -9,6 +10,7 @@ namespace CCEnvs
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
         public static AsyncTaskRegistry BackgroundTasks { get; } = new();
         public static object EmptyObject { get; } = new object();
+        public static object[] EmptyArguments { get; } = Array.Empty<object>();
         public static string WordSeparator { get; set; } = "_";
 
         public static class C 

@@ -10,7 +10,7 @@ using CCEnvs.Unity.Json.Converters;
 #pragma warning disable IDE0051
 namespace CCEnvs.Unity.Json
 {
-    [CCStaticInstaller]
+    [StaticInstaller]
     public static class JsonConfigInstaller
     {
         [StaticInstallerMethod]
@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.Json
                 new Vector2IntConverter(),
                 new Vector3Converter(),
                 new Vector3IntConverter(),
-                new PolymorphTypedJsonConverter<IItemContainerDto, IItemContainer>()
+                new PolymorphJsonConverter<IItemContainerDto, IItemContainer>()
                 );
         }
     }

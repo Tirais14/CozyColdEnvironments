@@ -1,4 +1,7 @@
+using CCEnvs.Async;
 using CCEnvs.Common;
+using CCEnvs.Diagnostics;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
@@ -11,6 +14,7 @@ namespace CCEnvs.Unity.Editor
     {
         private const string AUTO_COMPILING = "AutoCompiling";
         private static int compilationFinishedSubscriptionCount;
+        private static bool compilationInProgress;
 
         private static bool IsCompilationEnabled => !PlayerPrefs.HasKey(AUTO_COMPILING)
                                                     ||
@@ -28,13 +32,14 @@ namespace CCEnvs.Unity.Editor
         {
             EnableAutoCompiling(isInternal: true);
 
-            if (compilationFinishedSubscriptionCount > 0)
+            if (compilationFinishedSubscriptionCount < 1)
             {
-                CompilationPipeline.compilationFinished += AfterCompilation;
+                _ = AfterCompilation();
+                CompilationPipeline.compilationStarted += OnCompilationStarted;
                 compilationFinishedSubscriptionCount++;
             }
 
-            CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Editor force compiling initiated.");
+            CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Editor force compiling initiated.", typeof(AutoCompilingToggle));
         }
 
         [MenuItem("Editor/Compiling/Enable &e")]
@@ -52,15 +57,15 @@ namespace CCEnvs.Unity.Editor
         private static void EnableAutoCompiling(bool isInternal)
         {
             EditorApplication.UnlockReloadAssemblies();
-            AssetDatabase.Refresh();
-            EditorUtility.RequestScriptReload();
-            CompilationPipeline.RequestScriptCompilation();
+            _ = DelayedAssetDatabaseRefresh();
+            //EditorUtility.RequestScriptReload();
+            //CompilationPipeline.RequestScriptCompilation();
 
             if (!isInternal)
             {
                 PlayerPrefs.SetInt(AUTO_COMPILING, 1);
                 PlayerPrefs.Save();
-                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling enabled.");
+                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling enabled.", typeof(AutoCompilingToggle));
             }
         }
 
@@ -72,19 +77,42 @@ namespace CCEnvs.Unity.Editor
             {
                 PlayerPrefs.SetInt(AUTO_COMPILING, 0);
                 PlayerPrefs.Save();
-                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling disabled.");
+                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling disabled.", typeof(AutoCompilingToggle));
             }
         }
 
-        private static void AfterCompilation(object _)
+        private static async Task AfterCompilation()
         {
             if (!IsCompilationEnabled)
                 DisableAutoCompiling();
 
-            CompilationPipeline.compilationFinished -= AfterCompilation;
+            await Task.Delay(2000);
+
+            await TaskHelper.WaitWhile(() => compilationInProgress
+                                       ||
+                                       EditorApplication.isCompiling);
+
+            compilationInProgress = false;
+            CompilationPipeline.compilationStarted -= OnCompilationStarted;
             compilationFinishedSubscriptionCount--;
 
             CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Editor force compiling ended.", typeof(AutoCompilingToggle));
+        }
+
+        private static async Task DelayedAssetDatabaseRefresh()
+        {
+            await Task.Delay(1000);
+
+            AssetDatabase.Refresh();
+            CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Asset database refreshed", typeof(AutoCompilingToggle));
+            EditorUtility.RequestScriptReload();
+            CompilationPipeline.RequestScriptCompilation();
+            CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Compilation requested", typeof(AutoCompilingToggle));
+        }
+
+        private static void OnCompilationStarted(object _)
+        {
+            compilationInProgress = true;
         }
     }
 }

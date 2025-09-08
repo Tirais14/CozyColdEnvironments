@@ -5,7 +5,7 @@ using System;
 namespace CCEnvs.Attributes
 {
     /// <summary>
-    /// Marks type as configuration installer by CCInstaller
+    /// Marks type as configuration installer by <see cref="Install"/>
     /// </summary>
     [AttributeUsage(
         AttributeTargets.Class
@@ -13,7 +13,7 @@ namespace CCEnvs.Attributes
         AttributeTargets.Struct,
         AllowMultiple = false,
         Inherited = true)]
-    public class CCStaticInstallerAttribute : Attribute
+    public class StaticInstallerAttribute : Attribute
     {
     }
 }

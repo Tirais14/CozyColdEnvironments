@@ -10,21 +10,14 @@ namespace CCEnvs.Reflection
 {
     public static class MethodInfoExtensions
     {
-        public static CCParameters GetCCParameters(this MethodInfo method)
+        public static CCParameters GetCCParameters(this MethodInfo method, 
+            bool ignoreOptionalParameters = false)
         {
             return new CCParameters(method.GetParameters()
-                .Select(x => x.AsCCParameterInfo()).ToArray());
-        }
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public static object Invoke(this MethodBase method,
-                                    object target,
-                                    params object[] parameters)
-        {
-            if (target.IsNull())
-                throw new ArgumentNullException(nameof(target));
-
-            return method.Invoke(target, parameters);
+                .Select(x => x.AsCCParameterInfo()).ToArray())
+            {
+                IgnoreOptionalInEquals = ignoreOptionalParameters
+            };
         }
     }
 }

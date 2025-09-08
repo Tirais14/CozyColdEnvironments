@@ -9,6 +9,21 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
+        public static bool IsEmptyObject<T>(this T? value)
+        {
+            if (value is null)
+                return false;
+
+            return value.Equals(CC.EmptyObject) 
+                   ||
+                   value.GetType() == typeof(object);
+        }
+
+        public static bool IsNotEmptyObject<T>(this T? value)
+        {
+            return !value.IsEmptyObject();
+        }
+
         public static bool IsCacheable<T>(this T value)
         {
             Validate.ArgumentNull(value, nameof(value));

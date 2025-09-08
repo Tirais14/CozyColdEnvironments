@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Common;
+using CCEnvs.Diagnostics;
 using Newtonsoft.Json.Serialization;
 using System;
 

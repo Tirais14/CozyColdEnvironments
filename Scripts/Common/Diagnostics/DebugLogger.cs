@@ -1,27 +1,31 @@
+using CCEnvs.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Common
+namespace CCEnvs.Diagnostics
 {
     public sealed class DebugLogger : IDebugLogger
     {
-        private readonly HashSet<Type> disabledTypes = new();
+        private readonly HashSet<Type> disabled = new(0);
+        private readonly HashSet<Type> disabledAdditive = new(0);
 
         public bool IsEnabled { get; set; } = true;
 
         public void DisableDebugFor(params Type[] types)
         {
             for (int i = 0; i < types.Length; i++)
-                disabledTypes.Add(types[i]);
+                disabled.Add(types[i]);
         }
 
         public void EnableDebugFor(params Type[] types)
         {
             for (int i = 0; i < types.Length; i++)
-                disabledTypes.Remove(types[i]);
+                disabled.Remove(types[i]);
         }
 
         public void PrintLog(object message, object? context = null)
@@ -55,6 +59,18 @@ namespace CCEnvs.Common
 
 #if UNITY_2017_1_OR_NEWER
             Debug.LogError(GetMessage(message, context), context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
+        }
+
+        public void PrintExceptionAsLog(Exception exception, object? context = null)
+        {
+            if (!IsPrintAllowed(context))
+                return;
+
+#if UNITY_2017_1_OR_NEWER
+            Debug.Log($"{exception.GetType().Name}: {exception.Message}", context as Object);
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -120,19 +136,56 @@ namespace CCEnvs.Common
 #endif
         }
 
+        private static string GetTypeName(object target)
+        {
+            if (target is not Type type)
+                type = target.GetType();
+
+            string typeName = type.Name;
+            if (type.IsGenericType)
+            {
+                typeName = typeName[..^2];
+                typeName += ConvertGenericArguments();
+            }
+
+            return typeName;
+
+            string ConvertGenericArguments()
+            {
+                var sb = new StringBuilder();
+
+                sb.Append('<');
+
+                IEnumerable<string> names =
+                    from type in type.GetGenericArguments()
+                    select GetTypeName(type) into name
+                    select name;
+
+                sb.AppendJoin(", ", names);
+
+                sb.Append('>');
+
+                return sb.ToString();
+            }
+        }
+
         private static string GetMessage(object message, object? context)
         {
-            string messageString = (message?.ToString() ?? string.Empty).TrimEnd('.');
+            message = (message?.ToString() ?? string.Empty).TrimEnd('.');
 
             if (context is not null)
             {
                 if (context is Object unityObj)
-                    return $"{unityObj.name}: {messageString}.";
+                    return $"{unityObj.name}: {message}.";
+                else if (context is DebugContext debugContext
+                        &&
+                        debugContext.Target is not null)
+                    return $"{GetTypeName(debugContext.Target)}: {message}.";
                 else
-                    return $"{context.GetType().Name}: {messageString}.";
+                    return $"{GetTypeName(context)}: {message}.";
             }
 
-            return $"{messageString}.";
+            return $"{message}.";
         }
 
         private bool IsPrintAllowed(object? context)
@@ -140,13 +193,26 @@ namespace CCEnvs.Common
             if (!IsEnabled)
                 return false;
 
-            if (context is not null
-                &&
-                (context is Type type && disabledTypes.Contains(type)
-                 ||
-                 disabledTypes.Contains(context.GetType()))
-                 )
-                return false;
+            object? target;
+            DebugArguments debugArguments = default;
+            if (context is DebugContext debugContext)
+                debugContext.Deconstruct(out target, out debugArguments);
+            else
+                target = context;
+
+            if (target is not null)
+            {
+                if (target is not Type contextType)
+                    contextType = target.GetType();
+
+                if (disabled.Contains(contextType))
+                    return false;
+                if (debugArguments.IsFlagSetted(DebugArguments.IsAdditive)
+                    &&
+                    disabledAdditive.Contains(contextType)
+                    )
+                    return false;
+            }
 
             return true;
         }

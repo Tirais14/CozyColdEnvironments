@@ -35,14 +35,23 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             return result!;
         }
 
-        private static object? Deserialize(string text, Type type, JsonSerializerSettings settings)
+        private static object? Deserialize(string text,
+                                           Type type,
+                                           JsonSerializerSettings settings)
         {
             try
             {
-                return JsonConvert.DeserializeObject(text, type, settings);
+                CCDebug.PrintLog($"Deserializing => {type.GetName()}",
+                    DebugContext.Additive(typeof(JsonAddressablesDatabase<TId, TItem>)));
+
+                var obj = JsonConvert.DeserializeObject(text, type, settings);
+
+                return obj;
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
+                CCDebug.PrintExceptionAsLog(ex,
+                    DebugContext.Additive(typeof(JsonAddressablesDatabase<TId, TItem>)));
                 return null;
             }
         }
@@ -51,7 +60,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         {
             if (textAssets.IsNullOrEmpty())
             {
-                CCDebug.PrintWarning($"{this.GetTypeName()}: Not loaded any textAsset.");
+                CCDebug.PrintWarning("Not loaded any textAsset.", this);
                 return;
             }
 
@@ -59,12 +68,15 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             Type[] deserializingTypes = ResolveDeserializedTypes();
             for (int i = 0; i < textAssets.Count; i++)
             {
-                object deserialized = (from x in deserializingTypes
+                //Iterates through the different types.
+                //In high priority last not null object.
+                //Last added type override the same early added
+                object deserialized = (from type in deserializingTypes
                                        select Deserialize(textAssets[i].text,
-                                                          x,
-                                                          serializerSettings) into d
-                                       where d.IsNotNull()
-                                       select d)
+                                                          type,
+                                                          serializerSettings) into deserializedTemp
+                                       where deserializedTemp.IsNotNull()
+                                       select deserializedTemp)
                                        .LastOrDefault() 
                                        ??
                                        throw new CCException($"Cannot be deserialized. Text = {textAssets[i].text}");
@@ -73,36 +85,6 @@ namespace CCEnvs.Json.AddressableAssets.Databases
 
                 values.Add(GetItemID(item), item);
             }
-
-            //object? deserialized = null;
-            //TItem? item;
-            //int count = textAssets.Count;
-            //JsonSerializerSettings serializerSettings = GetSerializerSettings();
-            //Type deserializedType = ResolveDeserializedTypes();
-            //for (int i = 0; i < count; i++)
-            //{
-            //    try
-            //    {
-            //        for (int j = 0; j < DeserializedTypes.Length; j++)
-            //        {
-            //            deserialized = JsonConvert.DeserializeObject(
-            //                textAssets[i].text,
-            //                deserializedType,
-            //                serializerSettings);
-            //        }
-            //    }
-            //    catch (JsonException) 
-            //    {
-            //        //Mock
-            //    }
-
-            //    if (deserialized.IsNull())
-            //        throw new DeserializeDataException(deserializedType);
-
-            //    item = ConvertDeserialized(deserialized);
-
-            //    values.Add(GetItemID(item), item);
-            //}
 
             values.TrimExcess();
         }

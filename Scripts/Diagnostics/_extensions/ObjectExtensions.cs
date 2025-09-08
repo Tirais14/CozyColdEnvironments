@@ -8,14 +8,6 @@ namespace CCEnvs.Diagnostics
 {
     public static class ObjectExtensions
     {
-        public static DebugContext AsDebugContext(this object? value,
-                                                  DebugArguments arguments = default)
-        {
-            Validate.ArgumentNull(value, nameof(value));
-
-            return new DebugContext(value, arguments);
-        }
-
         /// <summary>Checks for unity or system <see langword="null"/></summary>
         public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
         {

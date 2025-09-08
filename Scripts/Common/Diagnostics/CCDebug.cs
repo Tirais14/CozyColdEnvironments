@@ -2,7 +2,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S101
-namespace CCEnvs.Common
+namespace CCEnvs.Diagnostics
 {
     public static class CCDebug 
     {
@@ -24,6 +24,12 @@ namespace CCEnvs.Common
                                       object? context = null)
         {
             Logger.PrintError(message, context);
+        }
+
+        public static void PrintExceptionAsLog(Exception exception,
+                                               object? context = null)
+        {
+            Logger.PrintExceptionAsLog(exception, context);
         }
 
         public static void PrintException(Exception exception,

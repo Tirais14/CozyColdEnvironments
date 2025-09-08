@@ -191,6 +191,17 @@ namespace CCEnvs.Reflection
             else return type.Name;
         }
 
+        public static string GetFullName(this Type value,
+            TypeNameConvertingAttributes nameAttributes = TypeNameConvertingAttributes.Default)
+        {
+            Validate.ArgumentNull(value, nameof(value));
+
+            if (value.Namespace.IsNotNullOrEmpty())
+                return value.Namespace + '.' + value.GetName(nameAttributes);
+
+            return value.GetName(nameAttributes);
+        }
+
         public static string GetShortName(Type type)
         {
             Validate.Argument(type, nameof(type), x => !x.IsGenericType);

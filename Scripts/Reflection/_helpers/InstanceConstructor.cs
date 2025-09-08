@@ -8,7 +8,7 @@ using System.Reflection;
 #nullable enable
 namespace CCEnvs.Reflection
 {
-    public static class ConstructorMethod
+    public static class InstanceConstructor
     {
         private readonly static Dictionary<Type, Type[]> constructorTypes = new();
         private readonly static Dictionary<Type, MethodInfo[]> constructorMethods = new();
@@ -41,7 +41,7 @@ namespace CCEnvs.Reflection
                  from method in methods
                  where method.ReturnType.IsType(constructableType)
                  ||
-                 method.IsDefined<ConstructorAttribute>(inherit: true)
+                 method.IsDefined<InstanceConstructorAttribute>(inherit: true)
                  select method)
                  .ToHashSet();
 
@@ -52,7 +52,7 @@ namespace CCEnvs.Reflection
                        from method in methods
                        where method.ReturnType.IsType(constructableType)
                        ||
-                       method.IsDefined<ConstructorAttribute>(inherit: true)
+                       method.IsDefined<InstanceConstructorAttribute>(inherit: true)
                        select method)
                        .Aggregate(resultCollection, TryAddToResults);
 

@@ -1,76 +1,161 @@
 #nullable enable
+using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 
 namespace CCEnvs
 {
     public static class CCConvert
     {
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="InstanceCreationException"></exception>
-        public static object? Convert(object? target, Type toType)
+        public static object ChangeType(object target, Type toType)
         {
-            if (target.IsNull())
-                return null;
-            if (toType is null)
-                throw new ArgumentNullException(nameof(toType));
+            Validate.ArgumentNull(target, nameof(target));
+            Validate.ArgumentNull(toType, nameof(toType));
 
-            if (target is IConvertibleCC convertible
-                &&
-                convertible.Convert() is object temp
-                &&
-                temp.GetType().IsType(toType)
-                )
-                return temp;
+            if (target.IsType(toType))
+                return target;
 
-            if (toType.IsInterface || toType.IsAbstract)
-                return default;
+            Type targetType = target.GetType();
+            object result = null!;
 
-            object? result = InstanceFactory.Create(toType,
-                new ExplicitArguments(new ExplicitArgument(target)),
-                InstanceFactory.Parameters.CacheConstructor);
+            if (TryConvertByInterface())
+                return result;
 
-            //if (result.IsNotNull())
-            //    return result;
+            if (TryConvertByOverloadedCastOperator())
+                return result;
 
-            //result = InstanceFactory.CreateBy(
-            //    toType,
-            //    dto,
-            //    InstanceFactory.Parameters.CacheConstructor);
+            if (TryConvertByAttributedMethods())
+                return result;
 
-            if (result.IsNull())
-                throw new InstanceCreationException(toType);
+            if (TryConvertByDefaultConverter())
+                return result;
+
+            //Until this line converstaion could be done with abstraction
+            Validate.Argument(toType, nameof(toType), x => !x.IsAbstract && !x.IsInterface);
+
+            CreateByFactory();
 
             return result;
+
+            bool TryConvertByAttributedMethods()
+            {
+                MethodInfo? found = (from method in targetType.ForceGetMethods(BindingFlagsDefault.InstanceAll)
+                                     where method.IsDefined<ConverterAttribute>(inherit: true)
+                                     where method.ReturnType.IsType(toType)
+                                     where method.GetCCParameters(ignoreOptionalParameters: true) == CCParameters.Empty
+                                     select method)
+                                     .FirstOrDefault();
+
+                if (found is null)
+                {
+                    var seekingsParams = new CCParameters(new CCParameterInfo(targetType))
+                    {
+                        IgnoreOptionalInEquals = true
+                    };
+                    found = (from method in targetType.ForceGetMethods(BindingFlagsDefault.StaticAll)
+                             where method.IsDefined<ConverterAttribute>(inherit: true)
+                             where method.ReturnType.IsType(toType)
+                             where method.GetCCParameters(ignoreOptionalParameters: true) == seekingsParams
+                             select method)
+                             .FirstOrDefault();
+
+                    result = found.Invoke(null!, CC.C.Array(target));
+                }
+                else
+                    result = found.Invoke(target, CC.EmptyArguments);
+
+                return result is not null;
+            }
+
+            bool TryConvertByOverloadedCastOperator()
+            {
+                if (TryGetCastOperator(targetType,
+                                       toType,
+                                       out MethodInfo? conversationOperator))
+                {
+                    result = conversationOperator.Invoke(null, CC.C.Array(target));
+
+                    return result is not null;
+                }
+
+                return false;
+            }
+
+            bool TryConvertByInterface()
+            {
+                if (target is IConvertibleCC convertible)
+                {
+                    result = convertible.Convert();
+
+                    return result is not null && result.GetType().IsType(toType);
+                }
+
+                return false;
+            }
+
+            bool TryConvertByDefaultConverter()
+            {
+                try
+                {
+                    result = Convert.ChangeType(target, toType);
+
+                    return result is not null;
+                }
+                catch (InvalidCastException)
+                {
+                    return false;
+                }
+            }
+
+            void CreateByFactory()
+            {
+                result = InstanceFactory.Create(toType,
+                    new ExplicitArguments(new ExplicitArgument(target)),
+                    InstanceFactory.Parameters.CacheConstructor
+                    |
+                    InstanceFactory.Parameters.ThrowIfNotFound
+                    |
+                    InstanceFactory.Parameters.NonPublic);
+            }
         }
-        public static T? Convert<T>(object? target)
+        public static T ChangeType<T>(object target)
         {
-            return (T?)Convert(target, typeof(T));
+            return (T)ChangeType(target, typeof(T));
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public static object? Convert(ITypeProvider? target)
+        public static object ChangeType(ITypeProvider target)
         {
-            if (target.IsDefault())
-                return default;
+            Validate.ArgumentNull(target, nameof(target));
             if (target.ObjectType is null)
                 throw new ArgumentException(nameof(target.ObjectType));
 
-            return Convert(target, target.ObjectType);
+            return ChangeType(target, target.ObjectType);
         }
         /// <exception cref="ArgumentException"></exception>
-        public static T? Convert<T>(ITypeProvider? target)
+        public static T ChangeType<T>(ITypeProvider target)
         {
-            if (target.IsDefault())
-                return default;
+            Validate.ArgumentNull(target, nameof(target));
             if (target.ObjectType is null)
                 throw new ArgumentException(nameof(target.ObjectType));
             if (target.ObjectType.IsNotType(typeof(T)))
                 throw new ArgumentException(nameof(target.ObjectType));
 
-            return (T?)Convert(target, target.ObjectType);
+            return (T)ChangeType(target, target.ObjectType);
+        }
+
+        private static bool TryGetCastOperator(Type ofType,
+            Type toType,
+            [NotNullWhen(true)] out MethodInfo? result)
+        {
+            result = ofType.GetOverloadedCastOperator(toType);
+
+            return result is not null;
         }
     }
 }
