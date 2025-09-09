@@ -1,8 +1,8 @@
 #nullable enable
-namespace CCEnvs
+namespace CCEnvs.Cacheables
 {
     public interface ICacheable
     {
-        bool AllowCaching { get; }
+        bool AllowCaching => true;
     }
 }

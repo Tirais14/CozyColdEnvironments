@@ -44,7 +44,7 @@ namespace CCEnvs.FileSystem.ScriptUtils
                 CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
                 return;
             }
-            Validate.StringArgument(Name, nameof(Name));
+            CC.Validate.StringArgument(Name, nameof(Name));
 
             ProccessUsings();
 

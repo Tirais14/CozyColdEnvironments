@@ -62,7 +62,7 @@ namespace CCEnvs.FileSystem
         {
             if (Exists && !overwrite)
                 throw new FileOverwriteNotAllowedException(path);
-            Validate.StringArgument(Name, nameof(Name));
+            CC.Validate.StringArgument(Name, nameof(Name));
 
             Directory.CreateDirectory(Path);
             ApplyChanges();

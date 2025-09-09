@@ -14,8 +14,8 @@ namespace CCEnvs
     {
         public static object ChangeType(object target, Type toType)
         {
-            Validate.ArgumentNull(target, nameof(target));
-            Validate.ArgumentNull(toType, nameof(toType));
+            CC.Validate.ArgumentNull(target, nameof(target));
+            CC.Validate.ArgumentNull(toType, nameof(toType));
 
             if (target.IsType(toType))
                 return target;
@@ -36,7 +36,7 @@ namespace CCEnvs
                 return result;
 
             //Until this line converstaion could be done with abstraction
-            Validate.Argument(toType, nameof(toType), x => !x.IsAbstract && !x.IsInterface);
+            CC.Validate.Argument(toType, nameof(toType), x => !x.IsAbstract && !x.IsInterface);
 
             CreateByFactory();
 
@@ -64,7 +64,7 @@ namespace CCEnvs
                              select method)
                              .FirstOrDefault();
 
-                    result = found.Invoke(null!, CC.C.Array(target));
+                    result = found.Invoke(null!, CC.Create.Array(target));
                 }
                 else
                     result = found.Invoke(target, CC.EmptyArguments);
@@ -78,7 +78,7 @@ namespace CCEnvs
                                        toType,
                                        out MethodInfo? conversationOperator))
                 {
-                    result = conversationOperator.Invoke(null, CC.C.Array(target));
+                    result = conversationOperator.Invoke(null, CC.Create.Array(target));
 
                     return result is not null;
                 }
@@ -138,7 +138,7 @@ namespace CCEnvs
         /// <exception cref="ArgumentException"></exception>
         public static object ChangeType(ITypeProvider target)
         {
-            Validate.ArgumentNull(target, nameof(target));
+            CC.Validate.ArgumentNull(target, nameof(target));
             if (target.ObjectType is null)
                 throw new ArgumentException(nameof(target.ObjectType));
 
@@ -147,7 +147,7 @@ namespace CCEnvs
         /// <exception cref="ArgumentException"></exception>
         public static T ChangeType<T>(ITypeProvider target)
         {
-            Validate.ArgumentNull(target, nameof(target));
+            CC.Validate.ArgumentNull(target, nameof(target));
             if (target.ObjectType is null)
                 throw new ArgumentException(nameof(target.ObjectType));
             if (target.ObjectType.IsNotType(typeof(T)))

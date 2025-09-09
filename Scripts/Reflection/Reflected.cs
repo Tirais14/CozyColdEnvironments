@@ -45,7 +45,7 @@ namespace CCEnvs.Reflection
         /// <exception cref="FieldNotFoundException"></exception>
         public FieldInfo Field(string name, bool nonPublic = false)
         {
-            Validate.StringArgument(name, nameof(name));
+            CC.Validate.StringArgument(name, nameof(name));
 
             BindingFlags bindings = ResolveBindingFlags(nonPublic);
             return TargetType.ForceGetField(name, bindings) 
@@ -57,6 +57,18 @@ namespace CCEnvs.Reflection
         {
             return Field(name, nonPublic).GetValue(Target);
         }
+        public T FieldGet<T>(string name, bool nonPublic = false)
+        {
+            object untyped = FieldGet(name, nonPublic);
+
+            if (untyped is not T typed)
+            {
+                CC.Throw.InvalidCast(untyped.GetType(), typeof(T));
+                return default;
+            }
+
+            return typed;
+        }
 
         public void FieldSet(string name, object value, bool nonPublic = false)
         {
@@ -66,7 +78,7 @@ namespace CCEnvs.Reflection
         /// <exception cref="PropertyNotFoundException"></exception>
         public PropertyInfo Property(string name, bool nonPublic = false)
         {
-            Validate.StringArgument(name, nameof(name));
+            CC.Validate.StringArgument(name, nameof(name));
 
             BindingFlags bindings = ResolveBindingFlags(nonPublic);
             return TargetType.ForceGetProperty(name, bindings)
@@ -79,6 +91,18 @@ namespace CCEnvs.Reflection
             return Property(name, nonPublic).GetValue(Target);
         }
 
+        public T PropertyGet<T>(string name, bool nonPublic = false)
+        {
+            object untyped = PropertyGet(name, nonPublic);
+            if (untyped is not T typed)
+            {
+                CC.Throw.InvalidCast(untyped.GetType(), typeof(T));
+                return default;
+            }
+
+            return typed;
+        }
+
         public void PropertySet(string name, object value, bool nonPublic = false)
         {
             Property(name, nonPublic).SetValue(Target, value);
@@ -86,7 +110,7 @@ namespace CCEnvs.Reflection
 
         public EventInfo Event(string name, bool nonPublic = false)
         {
-            Validate.StringArgument(name, nameof(name));
+            CC.Validate.StringArgument(name, nameof(name));
 
             BindingFlags bindings = ResolveBindingFlags(nonPublic);
 
@@ -110,7 +134,7 @@ namespace CCEnvs.Reflection
                                  ExplicitArguments args = default,
                                  bool nonPublic = false)
         {
-            Validate.StringArgument(nameof(name), name);
+            CC.Validate.StringArgument(nameof(name), name);
 
             if (args.IsDefault())
                 args = ExplicitArguments.Empty;
@@ -128,11 +152,11 @@ namespace CCEnvs.Reflection
                     new CCParameters(args.GetTypes()));
         }
 
-        public object MethodInvoke(string name,
-                                   ExplicitArguments args = default,
-                                   bool nonPublic = false)
+        public object? MethodInvoke(string name,
+                                    ExplicitArguments args = default,
+                                    bool nonPublic = false)
         {
-            Validate.StringArgument(nameof(name), name);
+            CC.Validate.StringArgument(nameof(name), name);
 
             if (args.IsDefault())
                 args = ExplicitArguments.Empty;
@@ -149,25 +173,33 @@ namespace CCEnvs.Reflection
 
             return method.Invoke(Target, (object?[])args);
         }
-
-        public object Cast(Type toType)
+        public T? MethodInvoke<T>(string name,
+                                 ExplicitArguments args = default,
+                                 bool nonPublic = false)
         {
-            Validate.ArgumentNull(toType, nameof(toType));
+            object? untyped = MethodInvoke(name, args, nonPublic);
 
-            if (Target.IsNull())
-                throw new LogicException($"Cannot cast static class {TargetType.GetName()}.");
+            if (untyped.IsDefault())
+                return default;
 
-            if (TargetType.IsType(toType))
-                return Target;
+            if (untyped is not T typed)
+            {
+                CC.Throw.InvalidCast(untyped.GetType(), typeof(T));
+                return default;
+            }
 
-            MethodInfo? op = TargetType.GetOverloadedCastOperator(toType);
-
-            if (op is not null)
-                return op.Invoke(null!, CC.C.Array(Target));
-
-            return Convert.ChangeType(Target, toType);
+            return typed;
         }
-        public T Cast<T>() => (T)Cast(typeof(T));
+
+        public object ChangeType(Type toType)
+        {
+            CC.Validate.ArgumentNull(toType, nameof(toType));
+
+            if (Target is null)
+                CC.Throw.InvalidCast(toType, "Cannot not convert null object.");
+
+            return CCConvert.ChangeType(Target, toType);
+        }
 
         public bool Equals(Reflected? other)
         {

@@ -10,10 +10,10 @@ namespace CCEnvs.Json.DTO
     public record TypeDto : IJsonDto, IConvertibleCC<Type>
     {
         [JsonProperty]
-        public string AssemblyName { get; set; } = string.Empty;
+        public string? AssemblyName { get; set; } = string.Empty;
 
         [JsonProperty]
-        public string Namespace { get; set; } = string.Empty;
+        public string? Namespace { get; set; } = string.Empty;
 
         [JsonProperty]
         public string TypeName { get; set; } = string.Empty;

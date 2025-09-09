@@ -30,7 +30,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
                 result = convertible.Convert();
 
             if (result.IsNull())
-                Throw.InvalidCast(dto.GetType(), typeof(TItem));
+                CC.Throw.InvalidCast(dto.GetType(), typeof(TItem));
 
             return result!;
         }
@@ -96,7 +96,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         private Type[] ResolveDeserializedTypes()
         {
             if (DeserializedTypes.IsNullOrEmpty())
-                return CC.C.Array(typeof(TItem));
+                return CC.Create.Array(typeof(TItem));
 
             return DeserializedTypes;
         }

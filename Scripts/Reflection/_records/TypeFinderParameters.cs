@@ -21,27 +21,21 @@ namespace CCEnvs.Reflection
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
 
-            StringComparison comparison = IgnoreCase
-                ? 
-                StringComparison.InvariantCultureIgnoreCase
-                : 
-                StringComparison.InvariantCulture;
-
             bool result = true;
             if (HasAssemblyName)
-                result = type.Assembly.GetName().Name.Contains(AssemblyName, comparison);
+                result = type.Assembly.GetName().Name.ContainsOrdinal(AssemblyName, IgnoreCase);
 
             if (!result)
                 return false;
 
             if (HasNamespace && type.Namespace.IsNotNullOrEmpty())
-                result = type.Namespace.Contains(Namespace, comparison);
+                result = type.Namespace.ContainsOrdinal(Namespace, IgnoreCase);
 
             if (!result)
                 return false;
 
             if (HasTypeName)
-                result = type.GetName().Contains(TypeName, comparison);
+                result = type.GetName().ContainsOrdinal(TypeName, IgnoreCase);
 
             if (DefinedAttributeTypes.IsNotEmpty()
                 &&

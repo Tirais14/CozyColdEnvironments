@@ -15,14 +15,14 @@ namespace CCEnvs.Reflection
 
         public static Type[] GetConstructorTypes(Type constructableType)
         {
-            Validate.ArgumentNull(constructableType, nameof(constructableType));
+            CC.Validate.ArgumentNull(constructableType, nameof(constructableType));
 
             if (constructorTypes.TryGetValue(constructableType, out Type[] results))
                 return results;
 
             results = TypeFinder.FindTypesInAppDomain(new TypeFinderParameters
             {
-                DefinedAttributeTypes = CC.C.Array(typeof(ConstructorOfTypeAttribute))
+                DefinedAttributeTypes = CC.Create.Array(typeof(ConstructorOfTypeAttribute))
             });
 
             constructorTypes.Add(constructableType, results);

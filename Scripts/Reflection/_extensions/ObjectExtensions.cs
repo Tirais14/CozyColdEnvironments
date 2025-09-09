@@ -21,7 +21,7 @@ namespace CCEnvs.Reflection
 
         public static Reflected AsReflected(this object value)
         {
-            Validate.ArgumentNull(value, nameof(value));
+            CC.Validate.ArgumentNull(value, nameof(value));
 
             return new Reflected(value);
         }

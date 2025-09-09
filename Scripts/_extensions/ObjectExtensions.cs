@@ -23,16 +23,6 @@ namespace CCEnvs
         {
             return !value.IsEmptyObject();
         }
-
-        public static bool IsCacheable<T>(this T value)
-        {
-            Validate.ArgumentNull(value, nameof(value));
-
-            if (value is ICacheable)
-                return true;
-
-            return value.GetType().IsDefined<CacheableAttribute>(inherit: false);
-        }
     }
 }
 

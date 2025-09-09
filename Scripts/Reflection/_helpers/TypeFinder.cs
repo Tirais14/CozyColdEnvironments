@@ -11,7 +11,7 @@ namespace CCEnvs.Reflection
     {
         public static Type[] FindTypesInAppDomain(TypeFinderParameters parameters)
         {
-            Validate.ArgumentNull(parameters, nameof(parameters));
+            CC.Validate.ArgumentNull(parameters, nameof(parameters));
 
             return FindTypesInternal(parameters).ToArray();
         }
@@ -21,12 +21,12 @@ namespace CCEnvs.Reflection
         public static Type FindTypeInAppDomain(TypeFinderParameters parameters,
                                                bool throwOnError = true)
         {
-            Validate.ArgumentNull(parameters, nameof(parameters));
-            Validate.StringArgumentNested(parameters.TypeName,
+            CC.Validate.ArgumentNull(parameters, nameof(parameters));
+            CC.Validate.StringArgumentNested(parameters.TypeName,
                                           nameof(parameters),
                                           nameof(parameters.TypeName));
 
-            IEnumerable<Type> foundTypes = FindTypesInternal(parameters);
+            Type[] foundTypes = FindTypesInternal(parameters).ToArray();
 
             if (foundTypes.IsEmpty())
             {
@@ -35,15 +35,15 @@ namespace CCEnvs.Reflection
                 return null!;
             }
 
-            if (foundTypes.Count() > 1 && throwOnError)
+            if (foundTypes.Length > 1)
             {
                 FilterFounds();
 
-                if (foundTypes.Count() > 1)
+                if (foundTypes.Length > 1)
                     FilterFoundsStrict();
 
-                if (foundTypes.Count() > 1)
-                    throw new CannotResolvedException("More than one type matches. Try to specify a more precise name.");
+                if (foundTypes.Length > 1)
+                    throw new AmbiguousMatchException("More than one type matches. Try to specify a more precise name.");
 
                 if (foundTypes.IsEmpty())
                 {
@@ -53,21 +53,21 @@ namespace CCEnvs.Reflection
                 }
             }
 
-            return foundTypes.First();
+            return foundTypes[0];
 
             void FilterFounds()
             {
                 foundTypes = foundTypes.Where(
-                    x => x.GetName()
-                          .Equals(parameters.TypeName, StringComparison.Ordinal));
+                    x => x.GetName(TypeNameConvertingAttributes.None)
+                          .Equals(parameters.TypeName, StringComparison.Ordinal)).ToArray();
             }
 
             void FilterFoundsStrict()
             {
                 if (foundTypes.Count() > 1)
                     foundTypes = foundTypes.Where(
-                        x => x.GetName(TypeNameConvertingAttributes.ShortName)
-                              .Equals(parameters.TypeName, StringComparison.Ordinal));
+                        x => x.GetName(TypeNameConvertingAttributes.IncludeGenericArguments)
+                              .Equals(parameters.TypeName, StringComparison.Ordinal)).ToArray();
             }
 
             void TryThrowNotFound()

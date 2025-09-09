@@ -1,7 +1,8 @@
+using CCEnvs.Attributes;
 using System;
 
 #nullable enable
-namespace CCEnvs.Attributes
+namespace CCEnvs.Cacheables
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
         AllowMultiple = false, 

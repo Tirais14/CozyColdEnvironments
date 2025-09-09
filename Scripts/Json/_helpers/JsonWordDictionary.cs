@@ -21,8 +21,8 @@ namespace CCEnvs.Json
                                                    string[]? includeNamespaces = null,
                                                    string[]? excludeNamespaces = null)
         {
-            Validate.Argument(path, nameof(path), x => x.IsNotDefault());
-            Validate.ArgumentNested(path, x => x.HasFileName, nameof(path));
+            CC.Validate.Argument(path, nameof(path), x => x.IsNotDefault());
+            CC.Validate.ArgumentNested(path, x => x.HasFileName, nameof(path));
             var directory = new DirectoryEntry(path - path.FileName);
 
             if (!directory.Exists)
@@ -180,7 +180,7 @@ namespace CCEnvs.Json
             if (upper.Length > 1)
             {
                 upper = upper.Select(x => char.ToLower(x)).ToArray();
-                upper = upper.Concat(CC.C.Array(char.ToUpper(str[upper.Length]))).ToArray();
+                upper = upper.Concat(CC.Create.Array(char.ToUpper(str[upper.Length]))).ToArray();
                 str = str[(upper.Length + 1)..];
 
                 for (int i = (upper.Length) - (1); i >= 0; i--)

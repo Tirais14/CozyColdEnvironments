@@ -106,7 +106,7 @@ namespace CCEnvs
                 MethodBase? ctor = type.GetConstructor(bindingFlags,
                     binder: null,
                     arguments.GetTypes(),
-                    CC.C.Array(arguments.GetParameterModifiers()));
+                    CC.Create.Array(arguments.GetParameterModifiers()));
 
                 if (ctor is null)
                 {

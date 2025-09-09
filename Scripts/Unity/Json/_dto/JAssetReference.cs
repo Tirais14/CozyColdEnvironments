@@ -81,7 +81,7 @@ namespace CCEnvs.Unity.Json.Converters
             MethodInfo castOperator = genericHandle.GetType().GetOverloadedCastOperator(
                 typeof(AsyncOperationHandle));
 
-            LoadHandle = (AsyncOperationHandle)castOperator.Invoke(obj: null, CC.C.Array(genericHandle));
+            LoadHandle = (AsyncOperationHandle)castOperator.Invoke(obj: null, CC.Create.Array(genericHandle));
 
             return LoadHandle;
         }

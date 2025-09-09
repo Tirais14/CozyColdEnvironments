@@ -18,7 +18,7 @@ namespace CCEnvs.Json
         /// <exception cref="NotSupportedException"></exception>
         public static Type GetConversationType(JsonConverter converter)
         {
-            Validate.ArgumentNull(converter, nameof(converter));
+            CC.Validate.ArgumentNull(converter, nameof(converter));
 
             Type type = converter.GetType();
             if (!JsonHelper.IsDefaultJsonType(type))
@@ -32,7 +32,7 @@ namespace CCEnvs.Json
 
         public static Type GetDefaultJsonConverterType(JsonConverter converter)
         {
-            Validate.ArgumentNull(converter, nameof(converter));
+            CC.Validate.ArgumentNull(converter, nameof(converter));
             Type type = converter.GetType();
             if (type.Namespace.IsNotNullOrEmpty()
                 &&

@@ -27,7 +27,7 @@ namespace CCEnvs.Json
 
         public CCJsonConverterCollection AddOrReplaceAllByType(JsonConverter converter)
         {
-            Validate.ArgumentNull(converter, nameof(converter));
+            CC.Validate.ArgumentNull(converter, nameof(converter));
 
             ReplaceAllByType(converter, out bool isReplaced);
 
@@ -40,7 +40,7 @@ namespace CCEnvs.Json
         public CCJsonConverterCollection ReplaceAllByType(JsonConverter converter,
                                                           out bool isReplaced)
         {
-            Validate.ArgumentNull(converter, nameof(converter));
+            CC.Validate.ArgumentNull(converter, nameof(converter));
 
             Type conversationType = GetConversationType(converter);
             RemoveAllByType(conversationType, out isReplaced);
@@ -57,7 +57,7 @@ namespace CCEnvs.Json
         public CCJsonConverterCollection RemoveAllByType(Type conversationType,
                                                          out bool isRemoved)
         {
-            Validate.ArgumentNull(conversationType, nameof(conversationType));
+            CC.Validate.ArgumentNull(conversationType, nameof(conversationType));
 
             IndexValuePair<JsonConverter>[] withSameConversationType = FindAllByType(conversationType);
 
@@ -74,7 +74,7 @@ namespace CCEnvs.Json
 
         public IndexValuePair<JsonConverter>[] FindAllByType(Type conversationType)
         {
-            Validate.ArgumentNull(conversationType, nameof(conversationType));
+            CC.Validate.ArgumentNull(conversationType, nameof(conversationType));
 
             var results = new List<IndexValuePair<JsonConverter>>();
             int count = Items.Count;

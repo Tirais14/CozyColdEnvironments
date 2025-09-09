@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.Json
                 new Vector2IntConverter(),
                 new Vector3Converter(),
                 new Vector3IntConverter(),
-                new PolymorphJsonConverter<IItemContainerDto, IItemContainer>()
+                new PolymorphJsonConverter<IItemContainer>()
                 );
         }
     }

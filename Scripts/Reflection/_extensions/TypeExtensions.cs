@@ -35,7 +35,7 @@ namespace CCEnvs.Reflection
 
         public static bool IsCacheableType(this Type value)
         {
-            Validate.ArgumentNull(value, nameof(value));
+            CC.Validate.ArgumentNull(value, nameof(value));
 
             return value.IsDefined<CacheableAttribute>(inherit: false)
                    ||
@@ -44,7 +44,7 @@ namespace CCEnvs.Reflection
 
         public static Reflected AsReflected(this Type value)
         {
-            Validate.ArgumentNull(value, nameof(value));
+            CC.Validate.ArgumentNull(value, nameof(value));
 
             return new Reflected(value);
         }
@@ -194,7 +194,7 @@ namespace CCEnvs.Reflection
         public static string GetFullName(this Type value,
             TypeNameConvertingAttributes nameAttributes = TypeNameConvertingAttributes.Default)
         {
-            Validate.ArgumentNull(value, nameof(value));
+            CC.Validate.ArgumentNull(value, nameof(value));
 
             if (value.Namespace.IsNotNullOrEmpty())
                 return value.Namespace + '.' + value.GetName(nameAttributes);
@@ -204,7 +204,7 @@ namespace CCEnvs.Reflection
 
         public static string GetShortName(Type type)
         {
-            Validate.Argument(type, nameof(type), x => !x.IsGenericType);
+            CC.Validate.Argument(type, nameof(type), x => !x.IsGenericType);
 
             if (type == typeof(short))
                 return "short";

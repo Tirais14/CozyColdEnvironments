@@ -55,7 +55,7 @@ namespace CCEnvs.FileSystem
                 CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
                 return;
             }
-            Validate.StringArgument(Name, nameof(Name));
+            CC.Validate.StringArgument(Name, nameof(Name));
 
             using FileStream fileStream = OpenOrCreate();
 
@@ -88,7 +88,7 @@ namespace CCEnvs.FileSystem
                 CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
                 return;
             }
-            Validate.StringArgument(Name, nameof(Name));
+            CC.Validate.StringArgument(Name, nameof(Name));
 
             try
             {
@@ -252,7 +252,7 @@ namespace CCEnvs.FileSystem
         {
             if (Exists && !overwrite)
                 throw new FileNotFoundException(path);
-            Validate.StringArgument(Name, nameof(Name));
+            CC.Validate.StringArgument(Name, nameof(Name));
 
             File.Create(Path);
             CCDebug.PrintLog($"File created: \"{Path}\"", this);

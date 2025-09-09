@@ -10,10 +10,10 @@ namespace CCEnvs.Reflection
 {
     public static class MethodInfoExtensions
     {
-        public static CCParameters GetCCParameters(this MethodInfo method, 
+        public static CCParameters GetCCParameters(this MethodBase value, 
             bool ignoreOptionalParameters = false)
         {
-            return new CCParameters(method.GetParameters()
+            return new CCParameters(value.GetParameters()
                 .Select(x => x.AsCCParameterInfo()).ToArray())
             {
                 IgnoreOptionalInEquals = ignoreOptionalParameters

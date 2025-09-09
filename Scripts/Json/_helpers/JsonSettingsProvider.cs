@@ -1,12 +1,7 @@
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
 using CCEnvs.Json.Converters;
 using CCEnvs.Json.Diagnsotics;
-using CCEnvs.Json.DTO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 #nullable enable
@@ -18,7 +13,7 @@ namespace CCEnvs.Json
     {
         public static CCJsonConverterCollection Converters { get; private set; } = new()
         {
-            new PolymorphJsonConverter<TypeDto, Type>()
+            new TypeJsonConverter()
         };
 
         public static JsonSerializerSettings GetSettings()

@@ -125,7 +125,7 @@ namespace CCEnvs.Reflection.Cached
 
             public static MethodKey Create(MethodBase method)
             {
-                Validate.ArgumentNull(method, nameof(method));
+                CC.Validate.ArgumentNull(method, nameof(method));
 
                 ParameterInfo[] parameters = method.GetParameters();
 
