@@ -1,12 +1,11 @@
 using CCEnvs.Attributes;
+using CCEnvs.Cacheables;
 using CCEnvs.Collections;
 using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Cached;
 using CCEnvs.Reflection.Data;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -68,8 +67,8 @@ namespace CCEnvs
 
             bool GetConstructorByCache([NotNullWhen(true)] out MethodBase? result)
             {
-                TypeCache.TryGetConstructor(
-                    new TypeCache.MethodKey(
+                TypeCache.Constructors.TryGetValue(
+                    new MethodKey(
                         type,
                         (CCParameters)arguments,
                         arguments.GetParameterModifiers()),
@@ -79,8 +78,8 @@ namespace CCEnvs
 
                 if (result is null)
                 {
-                    TypeCache.TryGetMethod(
-                        new TypeCache.MethodKey(
+                    TypeCache.Methods.TryGetValue(
+                        new MethodKey(
                             type,
                             (CCParameters)arguments,
                             arguments.GetParameterModifiers()),

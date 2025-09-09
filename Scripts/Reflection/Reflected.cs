@@ -203,17 +203,19 @@ namespace CCEnvs.Reflection
         }
 
         /// <exception cref="FieldNotFoundException"></exception>
-        public FieldInfo Field(string name)
+        public ContextedFieldInfo Field(string name)
         {
             CC.Validate.StringArgument(nameof(name), name);
 
             IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
 
-            return fields.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
-                   ??
-                   throw new FieldNotFoundException(TargetType, name, GetBindingFlags());
+            FieldInfo found = fields.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+                              ??
+                              throw new FieldNotFoundException(TargetType, name, GetBindingFlags());
+
+            return new ContextedFieldInfo(Target, found);
         }
-        public FieldInfo Field(Type type)
+        public ContextedFieldInfo Field(Type type)
         {
             CC.Validate.ArgumentNull(type, nameof(type));
 
@@ -221,7 +223,7 @@ namespace CCEnvs.Reflection
                 new FieldKey(TargetType, type),
                 out FieldInfo found)
                 )
-                return found;
+                return new ContextedFieldInfo(Target, found);
 
             IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
 
@@ -233,17 +235,18 @@ namespace CCEnvs.Reflection
                 &&
                 fields.FirstOrDefault(x => x.FieldType == type) is FieldInfo preciseMatch
                 )
-                return preciseMatch;
+                return new ContextedFieldInfo(Target, preciseMatch);
 
-            found = fields.FirstOrDefault()
+            found = (fields.FirstOrDefault()
                     ??
-                    throw new FieldNotFoundException(TargetType, type, GetBindingFlags());
+                    throw new FieldNotFoundException(TargetType, type, GetBindingFlags()))
+                    .TryCacheMember();
 
-            return found.TryCacheMember();
+            return new ContextedFieldInfo(Target, found);
         }
 
         /// <exception cref="PropertyNotFoundException"></exception>
-        public PropertyInfo Property(string name)
+        public ContextedPropertyInfo Property(string name)
         {
             CC.Validate.StringArgument(name, nameof(name));
 
@@ -251,7 +254,7 @@ namespace CCEnvs.Reflection
                 new FieldKey(TargetType, name),
                 out PropertyInfo found)
                 )
-                return found;
+                return new ContextedPropertyInfo(Target, found);
 
             IEnumerable<PropertyInfo> props = IncludeNonPublic
                                               ? 
@@ -259,13 +262,14 @@ namespace CCEnvs.Reflection
                                               : 
                                               PublicProperties;
 
-            found = props.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+            found = (props.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
                     ??
-                    throw new PropertyNotFoundException(TargetType, name, GetBindingFlags());
+                    throw new PropertyNotFoundException(TargetType, name, GetBindingFlags()))
+                    .TryCacheMember();
 
-            return found.TryCacheMember();
+            return new ContextedPropertyInfo(Target, found);
         }
-        public PropertyInfo Property(Type type)
+        public ContextedPropertyInfo Property(Type type)
         {
             CC.Validate.ArgumentNull(type, nameof(type));
 
@@ -273,7 +277,7 @@ namespace CCEnvs.Reflection
                     new FieldKey(TargetType, type),
                     out PropertyInfo found)
                     )
-                return found;
+                return new ContextedPropertyInfo(Target, found);
 
             IEnumerable<PropertyInfo> props = IncludeNonPublic
                                               ?
@@ -286,16 +290,19 @@ namespace CCEnvs.Reflection
                      select prop)
                      .ToArray();
 
-            if (props.FirstOrDefault(x => x.PropertyType == type) is PropertyInfo temp)
-                return temp;
+            if (props.FirstOrDefault(x => x.PropertyType == type) is PropertyInfo preciseMatch)
+                return new ContextedPropertyInfo(Target, preciseMatch);
 
-            return props.FirstOrDefault()
-                   ??
-                   throw new PropertyNotFoundException(TargetType, type, GetBindingFlags());
+            found = (props.FirstOrDefault()
+                    ??
+                    throw new PropertyNotFoundException(TargetType, type, GetBindingFlags()))
+                    .TryCacheMember();
+
+            return new ContextedPropertyInfo(Target, found);
         }
 
         /// <exception cref="MethodNotFoundException"></exception>
-        public MethodInfo Method(string name,
+        public ContextedMethodInfo Method(string name,
                                  ExplicitArguments args = default,
                                  bool ignoreOptionalParameters = false)
         {
@@ -305,7 +312,7 @@ namespace CCEnvs.Reflection
                 new MethodKey(TargetType, (CCParameters)args, args.GetParameterModifiers()),
                 out MethodInfo found)
                 )
-                return found;
+                return new ContextedMethodInfo(Target, found);
 
             IEnumerable<MethodInfo> methods = IncludeNonPublic
                                               ?
@@ -313,15 +320,16 @@ namespace CCEnvs.Reflection
                                               :
                                               PublicMethods;
 
-            found = (from method in methods
-                     where method.Name.EqualsOrdinal(name)
-                     where method.GetCCParameters(ignoreOptionalParameters) == ((CCParameters)args)
-                     select method)
+            found = ((from method in methods
+                      where method.Name.EqualsOrdinal(name)
+                      where method.GetCCParameters(ignoreOptionalParameters) == ((CCParameters)args)
+                      select method)
                      .FirstOrDefault()
                      ??
-                     throw new MethodNotFoundException(TargetType, name, GetBindingFlags());
+                     throw new MethodNotFoundException(TargetType, name, GetBindingFlags()))
+                     .TryCacheMember();
 
-            return found.TryCacheMember();
+            return new ContextedMethodInfo(Target, found);
         }
 
         public EventInfo Event(string name)

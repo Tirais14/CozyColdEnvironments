@@ -8,7 +8,7 @@ namespace CCEnvs.Reflection
 {
     public static class TypeCache
     {
-        public static Dictionary<Type, object?> DefaultValuesCache { get; } = new(0);
+        public static Dictionary<Type, object?> DefaultValues { get; } = new(0);
         public static Dictionary<MethodKey, ConstructorInfo> Constructors { get; } = new(0);
         public static Dictionary<MethodKey, MethodInfo> Methods { get; } = new(0);
         public static Dictionary<FieldKey, FieldInfo> Fields { get; } = new(0);
@@ -16,7 +16,7 @@ namespace CCEnvs.Reflection
 
         public static bool TryCacheDefaultValue(Type type, object? value)
         {
-            return DefaultValuesCache.TryAdd(type, value);
+            return DefaultValues.TryAdd(type, value);
         }
 
         public static bool TryCacheMember(MemberInfo member)
@@ -45,7 +45,7 @@ namespace CCEnvs.Reflection
 
         public static void Clear()
         {
-            DefaultValuesCache.Clear();
+            DefaultValues.Clear();
             Constructors.Clear();
             Methods.Clear();
             Fields.Clear();
@@ -56,7 +56,7 @@ namespace CCEnvs.Reflection
 
         public static void TrimExcess()
         {
-            DefaultValuesCache.TrimExcess();
+            DefaultValues.TrimExcess();
             Constructors.TrimExcess();
             Methods.TrimExcess();
             Fields.TrimExcess();

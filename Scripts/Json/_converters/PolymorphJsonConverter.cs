@@ -73,7 +73,8 @@ namespace CCEnvs.Json.Converters
                 {
                     NamingStrategy namingStrategy = (NamingStrategy)serializer.ContractResolver
                                                         .AsReflected()
-                                                        .PropertyGet(nameof(NamingStrategy), nonPublic: true);
+                                                        .Property(nameof(NamingStrategy))
+                                                        .GetValue();
 
                     string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
                     JToken? objectTypeToken = token[keyName]

@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Reflection.Cached;
+using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace CCEnvs.Diagnostics
             if (type.IsClass)
                 return false;
 
-            if (!TypeCache.TryGetDefaultValue(type, out object? defaultValue))
+            if (!TypeCache.DefaultValues.TryGetValue(type, out object? defaultValue))
             {
                 defaultValue = Activator.CreateInstance(type, nonPublic: true);
                 TypeCache.TryCacheDefaultValue(type, defaultValue);

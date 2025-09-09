@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+using CCEnvs.Cacheables;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Cached;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 #nullable enable
 #pragma warning disable S3881
@@ -92,8 +92,8 @@ namespace CCEnvs.Unity.Tickables
         private static void TryVoidInjectedTicker(T tickable)
         {
             Type tickableType = tickable.GetType();
-            if (!TypeCache.TryGetField(
-                new TypeCache.FieldKey(tickableType, typeof(ITicker)),
+            if (!TypeCache.Fields.TryGetValue(
+                new FieldKey(tickableType, typeof(ITicker)),
                 out FieldInfo? tickerField))
             {
                 tickerField = tickableType.GetField(
@@ -111,8 +111,8 @@ namespace CCEnvs.Unity.Tickables
         private void TryInjectTicker(T tickable)
         {
             Type tickableType = tickable.GetType();
-            if (!TypeCache.TryGetField(
-                new TypeCache.FieldKey(tickableType, typeof(ITicker)),
+            if (!TypeCache.Fields.TryGetValue(
+                new FieldKey(tickableType, typeof(ITicker)),
                 out FieldInfo? tickerField))
             {
                 tickerField = tickableType.GetField(

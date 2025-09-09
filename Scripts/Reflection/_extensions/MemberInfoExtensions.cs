@@ -8,7 +8,7 @@ namespace CCEnvs.Reflection
 {
     public static class MemberInfoExtensions
     {
-        [return: NotNullIfNotNull(nameof(value))]
+        [return: NotNullIfNotNull("value")]
         public static T? TryCacheMember<T>(this T? value, out bool result)
             where T : MemberInfo
         {
@@ -21,7 +21,7 @@ namespace CCEnvs.Reflection
             result = TypeCache.TryCacheMember(value);
             return value;
         }
-        [return: NotNullIfNotNull(nameof(value))]
+        [return: NotNullIfNotNull("value")]
         public static T? TryCacheMember<T>(this T? value)
             where T : MemberInfo
         {
