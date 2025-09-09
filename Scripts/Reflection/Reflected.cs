@@ -1,10 +1,19 @@
 #nullable enable
+using CCEnvs.Cacheables;
+using CCEnvs.Common;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
 using CCEnvs.Reflection.Data;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using static CCEnvs.BindingFlagsDefault;
 
+#pragma warning disable IDE1006
 namespace CCEnvs.Reflection
 {
     /// <summary>
@@ -12,24 +21,175 @@ namespace CCEnvs.Reflection
     /// </summary>
     public sealed class Reflected : IEquatable<Reflected>
     {
-        public object? Target { get; }
-        public Type TargetType { get; }
-
-        public Reflected(Type targetType)
+        [Flags]
+        public enum Settings 
         {
-            Target = null;
+            Default = IncludeNonPublic | OnlyStaticWhenTargetIsNull,
+            None = 0,
+            IncludeNonPublic = 1,
+            OnlyStaticWhenTargetIsNull = 2
+        }
+
+        private ReadOnlyCollection<FieldInfo>? allFields;
+        private ReadOnlyCollection<PropertyInfo>? allProperties;
+        private ReadOnlyCollection<MethodInfo>? allMethods;
+        private ReadOnlyCollection<EventInfo>? allEvents;
+
+        private ReadOnlyCollection<FieldInfo>? publicFields;
+        private ReadOnlyCollection<PropertyInfo>? publicProperties;
+        private ReadOnlyCollection<MethodInfo>? publicMethods;
+        private ReadOnlyCollection<EventInfo>? publicEvents;
+
+        private ReadOnlyCollection<FieldInfo>? nonPublicFields;
+        private ReadOnlyCollection<PropertyInfo>? nonPublicProperties;
+        private ReadOnlyCollection<MethodInfo>? nonPublicMethods;
+        private ReadOnlyCollection<EventInfo>? nonPublicEvents;
+
+        private object? target;
+
+        public ReadOnlyCollection<FieldInfo> AllFields {
+            get
+            {
+                allFields ??= new ReadOnlyCollection<FieldInfo>(
+                    TargetType.ForceGetFields(GetBindingFlags()));
+
+                return allFields;
+            }
+        }
+
+        public ReadOnlyCollection<PropertyInfo> AllProperties {
+            get
+            {
+                allProperties ??= new ReadOnlyCollection<PropertyInfo>(
+                    TargetType.ForceGetProperties(GetBindingFlags()));
+
+                return allProperties;
+            }
+        }
+
+        public ReadOnlyCollection<MethodInfo> AllMethods {
+            get
+            {
+                allMethods ??= new ReadOnlyCollection<MethodInfo>(
+                    TargetType.ForceGetMethods(GetBindingFlags()));
+
+                return allMethods;
+            }
+        }
+
+        public ReadOnlyCollection<EventInfo> AllEvents {
+            get
+            {
+                allEvents ??= new ReadOnlyCollection<EventInfo>(
+                    TargetType.ForceGetMembers<EventInfo>(GetBindingFlags()));
+
+                return allEvents;
+            }
+        }
+
+        public ReadOnlyCollection<FieldInfo> PublicFields {
+            get
+            {
+                publicFields ??= AllFields.Where(x => x.IsPublic).ToReadOnlyCollection();
+
+                return publicFields;
+            }
+        }
+
+        public ReadOnlyCollection<PropertyInfo> PublicProperties {
+            get
+            {
+                publicProperties ??= AllProperties.Where(x => x.GetAccessors().Any(x => x.IsPublic)).ToReadOnlyCollection();
+
+                return publicProperties;
+            }
+        }
+
+        public ReadOnlyCollection<MethodInfo> PublicMethods {
+            get
+            {
+                publicMethods ??= AllMethods.Where(x => x.IsPublic).ToReadOnlyCollection();
+
+                return publicMethods;
+            }
+        }
+
+        public ReadOnlyCollection<EventInfo> PublicEvents {
+            get
+            {
+                publicEvents ??= AllEvents.Where(x => x.AddMethod.IsPublic || x.RemoveMethod.IsPublic).ToReadOnlyCollection();
+
+                return publicEvents;
+            }
+        }
+
+        public ReadOnlyCollection<FieldInfo> NonPublicFields {
+            get
+            {
+                nonPublicFields ??= AllFields.Where(x => !x.IsPublic).ToReadOnlyCollection();
+
+                return nonPublicFields;
+            }
+        }
+
+        public ReadOnlyCollection<PropertyInfo> NonPublicProperties {
+            get
+            {
+                nonPublicProperties ??= AllProperties.Where(x => x.GetAccessors().All(x => !x.IsPublic)).ToReadOnlyCollection();
+
+                return nonPublicProperties;
+            }
+        }
+
+        public ReadOnlyCollection<MethodInfo> NonPublicMethods {
+            get
+            {
+                nonPublicMethods ??= AllMethods.Where(x => !x.IsPublic).ToReadOnlyCollection();
+
+                return nonPublicMethods;
+            }
+        }
+
+        public ReadOnlyCollection<EventInfo> NonPublicEvents {
+            get
+            {
+                nonPublicEvents ??= AllEvents.Where(x => !x.AddMethod.IsPublic && !x.RemoveMethod.IsPublic).ToReadOnlyCollection();
+
+                return nonPublicEvents;
+            }
+        }
+
+        public object? Target {
+            get => target;
+            set
+            {
+                target = value;
+                TargetType = target!.GetType();
+            }
+        }
+        public Type TargetType { get; private set; }
+        public Settings settings { get; }
+        public bool IncludeNonPublic { get; }
+
+        public Reflected(Type targetType, Settings settings = default)
+        {
+            target = null;
             TargetType = targetType;
+            this.settings = settings;
+            IncludeNonPublic = settings.IsFlagSetted(Settings.IncludeNonPublic);
         }
 
-        public Reflected(object target)
+        public Reflected(object target, Settings settings = default)
         {
-            Target = target;
+            this.target = target;
             TargetType = target.GetType();
+            this.settings = settings;
+            IncludeNonPublic = settings.IsFlagSetted(Settings.IncludeNonPublic);
         }
 
-        public static Reflected T<T>()
+        public static Reflected T<T>(Settings settings = default)
         {
-            return new Reflected(typeof(T));
+            return new Reflected(typeof(T), settings);
         }
 
         public static bool operator ==(Reflected left, Reflected right)
@@ -43,152 +203,140 @@ namespace CCEnvs.Reflection
         }
 
         /// <exception cref="FieldNotFoundException"></exception>
-        public FieldInfo Field(string name, bool nonPublic = false)
+        public FieldInfo Field(string name)
         {
-            CC.Validate.StringArgument(name, nameof(name));
+            CC.Validate.StringArgument(nameof(name), name);
 
-            BindingFlags bindings = ResolveBindingFlags(nonPublic);
-            return TargetType.ForceGetField(name, bindings) 
-                ??
-                throw new FieldNotFoundException(TargetType, name, bindings);
+            IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
+
+            return fields.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+                   ??
+                   throw new FieldNotFoundException(TargetType, name, GetBindingFlags());
         }
-
-        public object FieldGet(string name, bool nonPublic = false)
+        public FieldInfo Field(Type type)
         {
-            return Field(name, nonPublic).GetValue(Target);
-        }
-        public T FieldGet<T>(string name, bool nonPublic = false)
-        {
-            object untyped = FieldGet(name, nonPublic);
+            CC.Validate.ArgumentNull(type, nameof(type));
 
-            if (untyped is not T typed)
-            {
-                CC.Throw.InvalidCast(untyped.GetType(), typeof(T));
-                return default;
-            }
+            if (TypeCache.Fields.TryGetValue(
+                new FieldKey(TargetType, type),
+                out FieldInfo found)
+                )
+                return found;
 
-            return typed;
-        }
+            IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
 
-        public void FieldSet(string name, object value, bool nonPublic = false)
-        {
-            Field(name, nonPublic).SetValue(Target, value);
+            FieldInfo[] filteredFields = (from field in fields
+                                          where field.FieldType.IsType(type)
+                                          select field).ToArray();
+
+            if (filteredFields.Length > 1
+                &&
+                fields.FirstOrDefault(x => x.FieldType == type) is FieldInfo preciseMatch
+                )
+                return preciseMatch;
+
+            found = fields.FirstOrDefault()
+                    ??
+                    throw new FieldNotFoundException(TargetType, type, GetBindingFlags());
+
+            return found.TryCacheMember();
         }
 
         /// <exception cref="PropertyNotFoundException"></exception>
-        public PropertyInfo Property(string name, bool nonPublic = false)
+        public PropertyInfo Property(string name)
         {
             CC.Validate.StringArgument(name, nameof(name));
 
-            BindingFlags bindings = ResolveBindingFlags(nonPublic);
-            return TargetType.ForceGetProperty(name, bindings)
+            if (TypeCache.Properties.TryGetValue(
+                new FieldKey(TargetType, name),
+                out PropertyInfo found)
+                )
+                return found;
+
+            IEnumerable<PropertyInfo> props = IncludeNonPublic
+                                              ? 
+                                              AllProperties
+                                              : 
+                                              PublicProperties;
+
+            found = props.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+                    ??
+                    throw new PropertyNotFoundException(TargetType, name, GetBindingFlags());
+
+            return found.TryCacheMember();
+        }
+        public PropertyInfo Property(Type type)
+        {
+            CC.Validate.ArgumentNull(type, nameof(type));
+
+            if (TypeCache.Properties.TryGetValue(
+                    new FieldKey(TargetType, type),
+                    out PropertyInfo found)
+                    )
+                return found;
+
+            IEnumerable<PropertyInfo> props = IncludeNonPublic
+                                              ?
+                                              AllProperties
+                                              :
+                                              PublicProperties;
+
+            props = (from prop in props
+                     where prop.PropertyType.IsType(type)
+                     select prop)
+                     .ToArray();
+
+            if (props.FirstOrDefault(x => x.PropertyType == type) is PropertyInfo temp)
+                return temp;
+
+            return props.FirstOrDefault()
                    ??
-                   throw new PropertyNotFoundException(TargetType, name, bindings);
-        }
-
-        public object PropertyGet(string name, bool nonPublic = false)
-        {
-            return Property(name, nonPublic).GetValue(Target);
-        }
-
-        public T PropertyGet<T>(string name, bool nonPublic = false)
-        {
-            object untyped = PropertyGet(name, nonPublic);
-            if (untyped is not T typed)
-            {
-                CC.Throw.InvalidCast(untyped.GetType(), typeof(T));
-                return default;
-            }
-
-            return typed;
-        }
-
-        public void PropertySet(string name, object value, bool nonPublic = false)
-        {
-            Property(name, nonPublic).SetValue(Target, value);
-        }
-
-        public EventInfo Event(string name, bool nonPublic = false)
-        {
-            CC.Validate.StringArgument(name, nameof(name));
-
-            BindingFlags bindings = ResolveBindingFlags(nonPublic);
-
-            return TargetType.GetEvent(name, bindings)
-                   ?? 
-                   throw new EventNotFoundException(TargetType, name, bindings);
-        }
-
-        public void EventAdd(string name, Delegate handler, bool nonPublic = false)
-        {
-            Event(name, nonPublic).AddEventHandler(Target, handler);
-        }
-
-        public void EventRemove(string name, Delegate handler, bool nonPublic = false)
-        {
-            Event(name, nonPublic).RemoveEventHandler(Target, handler);
+                   throw new PropertyNotFoundException(TargetType, type, GetBindingFlags());
         }
 
         /// <exception cref="MethodNotFoundException"></exception>
         public MethodInfo Method(string name,
                                  ExplicitArguments args = default,
-                                 bool nonPublic = false)
+                                 bool ignoreOptionalParameters = false)
         {
             CC.Validate.StringArgument(nameof(name), name);
 
-            if (args.IsDefault())
-                args = ExplicitArguments.Empty;
+            if (TypeCache.Methods.TryGetValue(
+                new MethodKey(TargetType, (CCParameters)args, args.GetParameterModifiers()),
+                out MethodInfo found)
+                )
+                return found;
 
-            BindingFlags bindings = ResolveBindingFlags(nonPublic);
-            return TargetType.ForceGetMethod(
-                name,
-                args.GetTypes(),
-                bindings)
-                ??
-                throw new MethodNotFoundException(
-                    TargetType,
-                    name,
-                    bindings,
-                    new CCParameters(args.GetTypes()));
+            IEnumerable<MethodInfo> methods = IncludeNonPublic
+                                              ?
+                                              AllMethods
+                                              :
+                                              PublicMethods;
+
+            found = (from method in methods
+                     where method.Name.EqualsOrdinal(name)
+                     where method.GetCCParameters(ignoreOptionalParameters) == ((CCParameters)args)
+                     select method)
+                     .FirstOrDefault()
+                     ??
+                     throw new MethodNotFoundException(TargetType, name, GetBindingFlags());
+
+            return found.TryCacheMember();
         }
 
-        public object? MethodInvoke(string name,
-                                    ExplicitArguments args = default,
-                                    bool nonPublic = false)
+        public EventInfo Event(string name)
         {
-            CC.Validate.StringArgument(nameof(name), name);
+            CC.Validate.StringArgument(name, nameof(name));
 
-            if (args.IsDefault())
-                args = ExplicitArguments.Empty;
+            IEnumerable<EventInfo> events = IncludeNonPublic
+                                            ?
+                                            AllEvents
+                                            :
+                                            PublicEvents;
 
-            BindingFlags bindings = ResolveBindingFlags(nonPublic);
-            MethodInfo method = TargetType.ForceGetMethod(name,
-                                                          args.GetTypes(),
-                                                          bindings)
-                ??
-                throw new MethodNotFoundException(TargetType,
-                                                  name,
-                                                  bindings,
-                                                  new CCParameters(args.GetTypes()));
-
-            return method.Invoke(Target, (object?[])args);
-        }
-        public T? MethodInvoke<T>(string name,
-                                 ExplicitArguments args = default,
-                                 bool nonPublic = false)
-        {
-            object? untyped = MethodInvoke(name, args, nonPublic);
-
-            if (untyped.IsDefault())
-                return default;
-
-            if (untyped is not T typed)
-            {
-                CC.Throw.InvalidCast(untyped.GetType(), typeof(T));
-                return default;
-            }
-
-            return typed;
+            return events.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+                   ?? 
+                   throw new EventNotFoundException(TargetType, name, GetBindingFlags());
         }
 
         public object ChangeType(Type toType)
@@ -198,7 +346,22 @@ namespace CCEnvs.Reflection
             if (Target is null)
                 CC.Throw.InvalidCast(toType, "Cannot not convert null object.");
 
-            return CCConvert.ChangeType(Target, toType);
+            Target = CCConvert.ChangeType(Target, toType);
+
+            if (Target is null)
+                throw new DataAccessException(nameof(Target));
+
+            return Target;
+        }
+        [DebuggerStepThrough]
+        public T ChangeType<T>() => (T)ChangeType(typeof(T));
+
+        public T As<T>()
+        {
+            if (Target is null)
+                CC.Throw.InvalidCast(typeof(void), typeof(T));
+
+            return (T)Target;
         }
 
         public bool Equals(Reflected? other)
@@ -218,20 +381,15 @@ namespace CCEnvs.Reflection
 
         public override int GetHashCode() => HashCode.Combine(Target, TargetType);
 
-        private BindingFlags ResolveBindingFlags(bool nonPublic)
+        private BindingFlags GetBindingFlags()
         {
-            if (nonPublic)
-            {
-                if (Target.IsNull())
-                    return StaticAll;
-                else
-                    return All;
-            }
+            if (Target is null
+                && 
+                settings.IsFlagSetted(Settings.OnlyStaticWhenTargetIsNull)
+                )
+                return IncludeNonPublic ? StaticAll : StaticPublic;
 
-            if (Target.IsNull())
-                return StaticPublic;
-
-            return AllPublic;
+            return IncludeNonPublic ? All : AllPublic;
         }
     }
 }

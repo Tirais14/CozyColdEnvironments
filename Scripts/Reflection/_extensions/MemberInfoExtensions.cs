@@ -1,13 +1,14 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using CCEnvs.Reflection.Cached;
 
 #nullable enable
 namespace CCEnvs.Reflection
 {
     public static class MemberInfoExtensions
     {
+        [return: NotNullIfNotNull(nameof(value))]
         public static T? TryCacheMember<T>(this T? value, out bool result)
             where T : MemberInfo
         {
@@ -20,6 +21,7 @@ namespace CCEnvs.Reflection
             result = TypeCache.TryCacheMember(value);
             return value;
         }
+        [return: NotNullIfNotNull(nameof(value))]
         public static T? TryCacheMember<T>(this T? value)
             where T : MemberInfo
         {

@@ -4,6 +4,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -130,10 +131,12 @@ namespace CCEnvs
                 }
             }
         }
+        [DebuggerStepThrough]
         public static T ChangeType<T>(object target)
         {
             return (T)ChangeType(target, typeof(T));
         }
+        [DebuggerStepThrough]
 
         /// <exception cref="ArgumentException"></exception>
         public static object ChangeType(ITypeProvider target)
@@ -144,6 +147,7 @@ namespace CCEnvs
 
             return ChangeType(target, target.ObjectType);
         }
+        [DebuggerStepThrough]
         /// <exception cref="ArgumentException"></exception>
         public static T ChangeType<T>(ITypeProvider target)
         {

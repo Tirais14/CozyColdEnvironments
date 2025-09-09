@@ -56,43 +56,47 @@ namespace CCEnvs.Json.Converters
                     throw new JsonSerializationException("Intermediate deserialize returned null.");
 
                 if (isCacheable)
-                    JsonSerializerCache.TryCache(conversationType, intermediate);
+                    JsonSerializerCache.Values.TryAdd(conversationType, intermediate);
             }
                 
             return CCConvert.ChangeType<T>(intermediate);
 
             Type GetConversationType()
             {
-                NamingStrategy namingStrategy = (NamingStrategy)serializer.ContractResolver
-                                                    .AsReflected()
-                                                    .PropertyGet(nameof(NamingStrategy), nonPublic: true);
-
-                string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
-                JToken? objectTypeToken = token[keyName];
-
-                if (objectTypeToken.IsNull())
-                {
-                    if (PolymorphJsonConverter.DefaultTypeBindings.TryGetValue(
+                if (PolymorphJsonConverter.DefaultTypeBindings.TryGetValue(
                     typeof(T),
                     out Type result)
                     )
-                        return result;
+                    return result;
 
-                    throw new JsonSerializationException($"The converter needs at least one binding: {PolymorphJsonConverter.DefaultTypeBindings} or objectType key in json data to resolve conversation type.");
+                if (result is null)
+                {
+                    NamingStrategy namingStrategy = (NamingStrategy)serializer.ContractResolver
+                                                        .AsReflected()
+                                                        .PropertyGet(nameof(NamingStrategy), nonPublic: true);
+
+                    string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
+                    JToken? objectTypeToken = token[keyName]
+                        ??
+                        throw new JsonSerializationException($"The converter needs at least one binding: {PolymorphJsonConverter.DefaultTypeBindings} or objectType key in json data to resolve conversation type.");
+
+                    result = objectTypeToken.ToObject<Type>(serializer)
+                             ??
+                             CC.Throw.InvalidCast(typeof(JToken)).As<Type>();
                 }
 
-
-                return objectTypeToken.ToObject<Type>(serializer)
-                       ??
-                       CC.Throw.InvalidCast(typeof(JToken)).As<Type>();
+                return result;
             }
 
             bool TryGetByCache(out bool isCacheable)
             {
                 isCacheable = conversationType.IsCacheableType();
 
-                if (isCacheable || JsonSerializerCache.IsBinded(conversationType))
-                    return JsonSerializerCache.TryGetCached(conversationType, out intermediate);
+                if (isCacheable
+                    ||
+                    JsonSerializerCache.Values.ContainsKey(conversationType)
+                    )
+                    return JsonSerializerCache.Values.TryGetValue(conversationType, out intermediate);
 
                 return false;
             }
