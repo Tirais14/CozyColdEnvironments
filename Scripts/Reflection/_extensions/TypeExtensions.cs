@@ -1,6 +1,4 @@
-using CCEnvs.Attributes;
 using CCEnvs.Common;
-using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.Cached;
 using System;
 using System.Collections.Generic;
@@ -12,7 +10,9 @@ namespace CCEnvs.Reflection
 {
     public static class TypeExtensions
     {
-        private readonly static HashSet<Type> primitiveTypes = new()
+        private static Dictionary<Type, int> baseTypeCountCache = new(0);
+
+        private readonly static HashSet<Type> basicTypes = new()
         {
             typeof(byte),
             typeof(sbyte),
@@ -31,15 +31,23 @@ namespace CCEnvs.Reflection
             typeof(Array)
         };
 
-        public static Type[] PrimitiveTypes = primitiveTypes.ToArray();
+        public static Type[] PrimitiveTypes = basicTypes.ToArray();
 
-        public static bool IsCacheableType(this Type value)
+        public static int GetBaseTypeCount(this Type value, bool trimCache = false)
         {
             CC.Validate.ArgumentNull(value, nameof(value));
+            if (baseTypeCountCache.TryGetValue(value, out int count))
+                return count;
 
-            return value.IsDefined<CacheableAttribute>(inherit: false)
-                   ||
-                   value.GetInterfaces().Any(x => x.IsType(typeof(ICacheable)));
+            Type[] baseTypes = TypeHelper.CollectBaseTypes(value).ToArray();
+
+            for ( int i = 0; i < baseTypes.Length; i++)
+                baseTypeCountCache.TryAdd(baseTypes[i], baseTypes.Length - i);
+
+            if (trimCache)
+                baseTypeCountCache.TrimExcess();
+
+            return count;
         }
 
         public static Reflected AsReflected(this Type value)
@@ -78,7 +86,7 @@ namespace CCEnvs.Reflection
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsPrimitiveType(this Type? type)
+        public static bool IsBasicType(this Type? type)
         {
             if (type == null)
                 return false;
@@ -177,7 +185,7 @@ namespace CCEnvs.Reflection
 
             if (attributes.IsFlagSetted(TypeNameConvertingAttributes.ShortName)
                 &&
-                type.IsPrimitiveType()
+                type.IsBasicType()
                 )
                 return GetShortName(type);
 

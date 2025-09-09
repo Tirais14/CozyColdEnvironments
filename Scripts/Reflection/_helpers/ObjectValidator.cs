@@ -58,7 +58,7 @@ namespace CCEnvs.Reflection
                 if (fieldValue.IsDefault(isDefaultOption))
                     continue;
 
-                if (!fieldValue.GetType().IsPrimitiveType())
+                if (!fieldValue.GetType().IsBasicType())
                     continue;
 
                 if (IsCustomDefaultValue(fieldValue, customDefaultValuesCollection))

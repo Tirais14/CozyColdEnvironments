@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using CCEnvs.Diagnostics;
+using System.Runtime.InteropServices;
 
 #nullable enable
 
@@ -8,6 +10,27 @@ namespace CCEnvs.Reflection
 {
     public static class TypeHelper
     {
+        /// <summary>
+        /// Finds type with the largest number of base types
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public static Type GetElderType(IEnumerable<Type>? types, Type? restriction = null)
+        {
+            CC.Validate.CollectionArgument(nameof(types), types);
+
+            IEnumerable<Type> ordered = from type in types
+                                        orderby type.GetBaseTypeCount() descending
+                                        select type;
+
+            if (restriction is not null)
+                return ordered.FirstOrDefault(x => x.IsType(restriction))
+                       ??
+                       throw new LogicException("Incorrect input types. Not found any matches by setted restriction.");
+
+            return ordered.First();
+        }
+
         public static Queue<Type> CollectBaseTypes(Type value)
         {
             if (value is null)

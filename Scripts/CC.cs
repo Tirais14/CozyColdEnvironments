@@ -4,6 +4,7 @@ using CCEnvs.Async;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
+using CCEnvs.Returnables;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
@@ -26,13 +27,13 @@ namespace CCEnvs
         public static class Throw
         {
             [DoesNotReturn]
-            public static object InvalidCast(Type toType, string? message = null)
+            public static ThrowVoid InvalidCast(Type toType, string? message = null)
             {
                 throw new InvalidCastException($"Conversation type = {toType.GetFullName()}. {message}");
             }
 
             [DoesNotReturn]
-            public static object InvalidCast(Type fromType,
+            public static ThrowVoid InvalidCast(Type fromType,
                                              Type toType,
                                              string? message = null)
             {
