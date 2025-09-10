@@ -59,5 +59,50 @@ namespace CCEnvs.Linq
             foreach (var item in value)
                 yield return (TResult)CCConvert.ChangeType(item, typeof(TResult));
         }
+
+        /// <summary>
+        /// Only invokes action
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Before<T>(this IEnumerable<T> values, Action action)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Validate.ArgumentNull(action, nameof(action));
+
+            action();
+
+            return values;
+        }
+        /// <summary>
+        /// Only invokes action
+        /// </summary>
+        /// <typeparam name="T0"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static IEnumerable<T0> Before<T0, T1>(this IEnumerable<T0> values,
+                                                     T1 arg,
+                                                     Action<T1> action)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Validate.ArgumentNull(action, nameof(action));
+
+            action(arg);
+
+            return values;
+        }
+
+        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> values)
+        {
+            if (values is T[] array)
+                return array;
+            if (values is ICollection<T> collection)
+                return collection;  
+
+            return values.ToArray();
+        }
     }
 }

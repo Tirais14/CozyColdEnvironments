@@ -16,13 +16,13 @@ namespace CCEnvs.Json
         : IList<JsonConverter>, 
         IReadOnlyList<JsonConverter>
     {
-        private readonly SortedList<int, JsonConverter> values = new();
+        private readonly List<KeyValuePair<int, JsonConverter>> values = new(0);
 
         public int Count => values.Count;
         public bool IsReadOnly => false;
         public JsonConverter this[int index] {
-            get => values[index];
-            set => values[index] = value;
+            get => values[index].Value;
+            set => values[index] = new KeyValuePair<int, JsonConverter>(value.GetType().GetBaseTypeCount(), value);
         }
 
         public CCJsonConverterCollection()
@@ -31,7 +31,7 @@ namespace CCEnvs.Json
 
         public CCJsonConverterCollection(int capacity)
         {
-            values = new SortedList<int, JsonConverter>(capacity);
+            values = new List<KeyValuePair<int, JsonConverter>>(capacity);
         }
 
         public CCJsonConverterCollection(IEnumerable<JsonConverter> converters)
@@ -96,8 +96,8 @@ namespace CCEnvs.Json
             int count = values.Count;
             for (int i = 0; i < count; i++)
             {
-                if (GetConversationType(values[i]) == conversationType)
-                    results.Add(new IndexValuePair<JsonConverter>(i, values[i]));
+                if (GetConversationType(values[i].Value) == conversationType)
+                    results.Add(new IndexValuePair<JsonConverter>(i, values[i].Value));
             }
 
             return results.ToArray();
@@ -105,42 +105,44 @@ namespace CCEnvs.Json
 
         public void Add(JsonConverter converter)
         {
-            values.Add(converter.GetType().GetBaseTypeCount(), converter);
+            values.Add(new KeyValuePair<int, JsonConverter>(converter.GetType().GetBaseTypeCount(), converter));
         }
 
         public void Clear() => values.Clear();
 
-        public int IndexOf(JsonConverter item) => values.IndexOfValue(item);
+        public int IndexOf(JsonConverter item) => values.IndexOf(new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item));
 
-        public bool Contains(JsonConverter item) => values.ContainsValue(item);
+        public bool Contains(JsonConverter item) => values.Contains(new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item));
 
         public bool Remove(JsonConverter item)
         {
-            return values.Remove(item.GetType().GetBaseTypeCount());
+            return values.Remove(new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item));
         }
         public void RemoveAt(int index) => values.RemoveAt(index);
 
         public IEnumerator<JsonConverter> GetEnumerator()
         {
-            return values.Select(x => x.Value).ToArray().GetEnumeratorT();
+            return values.Select(x => x.Value)
+                         .ToArray()
+                         .GetEnumeratorT();
         }
 
         void ICollection<JsonConverter>.CopyTo(JsonConverter[] array, int arrayIndex)
         {
-            values.Select(x => x.Value).ToArray().CopyTo(array, arrayIndex);
+            values.Select(x => x.Value)
+                  .ToArray()
+                  .CopyTo(array, arrayIndex);
         }
 
         void IList<JsonConverter>.Insert(int index, JsonConverter item)
         {
-            IEnumerable<KeyValuePair<int, JsonConverter>> result =
-                values.Index()
-                      .Insert(index, new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item))
-                      .Unindex()
-                      .ToArray();
-
-            values.Clear();
-            foreach (var value in result)
-                values.Add(value.Key, value.Value);
+            values.Index()
+                  .Insert(index, new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item))
+                  .Unindex()
+                  .Materialize()
+                  .Before(values, x => x.Clear())
+                  .Aggregate(values, (list, x) => { list.Add(x); return list; })
+                  .ToArray();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
