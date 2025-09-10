@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Collections
 {
-    public static class CollectionExtensions
+    public static class ICollectionExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetCountOrZero(this ICollection? collection)

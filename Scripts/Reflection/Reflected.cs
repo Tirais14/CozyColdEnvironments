@@ -90,7 +90,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<FieldInfo> PublicFields {
             get
             {
-                publicFields ??= AllFields.Where(x => x.IsPublic).ToReadOnlyCollection();
+                publicFields ??= AllFields.Where(x => x.IsPublic).AsReadOnly();
 
                 return publicFields;
             }
@@ -99,7 +99,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<PropertyInfo> PublicProperties {
             get
             {
-                publicProperties ??= AllProperties.Where(x => x.GetAccessors().Any(x => x.IsPublic)).ToReadOnlyCollection();
+                publicProperties ??= AllProperties.Where(x => x.GetAccessors().Any(x => x.IsPublic)).AsReadOnly();
 
                 return publicProperties;
             }
@@ -108,7 +108,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<MethodInfo> PublicMethods {
             get
             {
-                publicMethods ??= AllMethods.Where(x => x.IsPublic).ToReadOnlyCollection();
+                publicMethods ??= AllMethods.Where(x => x.IsPublic).AsReadOnly();
 
                 return publicMethods;
             }
@@ -117,7 +117,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<EventInfo> PublicEvents {
             get
             {
-                publicEvents ??= AllEvents.Where(x => x.AddMethod.IsPublic || x.RemoveMethod.IsPublic).ToReadOnlyCollection();
+                publicEvents ??= AllEvents.Where(x => x.AddMethod.IsPublic || x.RemoveMethod.IsPublic).AsReadOnly();
 
                 return publicEvents;
             }
@@ -126,7 +126,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<FieldInfo> NonPublicFields {
             get
             {
-                nonPublicFields ??= AllFields.Where(x => !x.IsPublic).ToReadOnlyCollection();
+                nonPublicFields ??= AllFields.Where(x => !x.IsPublic).AsReadOnly();
 
                 return nonPublicFields;
             }
@@ -135,7 +135,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<PropertyInfo> NonPublicProperties {
             get
             {
-                nonPublicProperties ??= AllProperties.Where(x => x.GetAccessors().All(x => !x.IsPublic)).ToReadOnlyCollection();
+                nonPublicProperties ??= AllProperties.Where(x => x.GetAccessors().All(x => !x.IsPublic)).AsReadOnly();
 
                 return nonPublicProperties;
             }
@@ -144,7 +144,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<MethodInfo> NonPublicMethods {
             get
             {
-                nonPublicMethods ??= AllMethods.Where(x => !x.IsPublic).ToReadOnlyCollection();
+                nonPublicMethods ??= AllMethods.Where(x => !x.IsPublic).AsReadOnly();
 
                 return nonPublicMethods;
             }
@@ -153,7 +153,7 @@ namespace CCEnvs.Reflection
         public ReadOnlyCollection<EventInfo> NonPublicEvents {
             get
             {
-                nonPublicEvents ??= AllEvents.Where(x => !x.AddMethod.IsPublic && !x.RemoveMethod.IsPublic).ToReadOnlyCollection();
+                nonPublicEvents ??= AllEvents.Where(x => !x.AddMethod.IsPublic && !x.RemoveMethod.IsPublic).AsReadOnly();
 
                 return nonPublicEvents;
             }

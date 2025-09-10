@@ -7,8 +7,6 @@ using System.Linq;
 #nullable enable
 namespace CCEnvs.Json
 {
-    public delegate object? JsonConverterFunc(object? value);
-
     public static class JsonSettingsProvider
     {
         public static CCJsonConverterCollection Converters { get; private set; } = new()

@@ -13,7 +13,7 @@ namespace CCEnvs
     {
         private static FieldInfo? arrayField;
 
-        public static T[] GetInternalArray(List<T> target)
+        public static T[] GetInternalArray(IList<T> target)
         {
             if (target is null)
                 throw new ArgumentNullException(nameof(target));

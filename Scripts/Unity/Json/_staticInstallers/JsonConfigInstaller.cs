@@ -23,6 +23,8 @@ namespace CCEnvs.Unity.Json
                 new Vector3IntConverter(),
                 new PolymorphJsonConverter<IItemContainer>()
                 );
+
+            PolymorphJsonConverter.DefaultTypeBindings.Add<IItemContainer, ItemStack>();
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -7,6 +9,13 @@ namespace CCEnvs.Diagnostics
 {
     public static class ArrayExtensions
     {
+        public static IEnumerator<T> GetEnumeratorT<T>(this T[] value)
+        {
+            CC.Validate.ArgumentNull(value, nameof(value));
+
+            return value.GetEnumerator().As<IEnumerator<T>>();
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmpty<T>(this T[] array) => array.Length == 0;
 

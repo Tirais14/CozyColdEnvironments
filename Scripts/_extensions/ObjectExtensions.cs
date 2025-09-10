@@ -7,6 +7,8 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
+        public static T As<T>(this object obj) => (T)obj;
+
         public static bool IsEmptyObject<T>(this T? value)
         {
             if (value is null)

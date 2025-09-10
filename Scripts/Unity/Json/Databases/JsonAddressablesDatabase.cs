@@ -1,6 +1,7 @@
 using CCEnvs.AddressableAssets.Databases;
 using CCEnvs.Diagnostics;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,13 +25,21 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             }
 
             JsonSerializerSettings serializerSettings = GetSerializerSettings();
+            TItem deserialized = default!;
             for (int i = 0; i < textAssets.Count; i++)
             {
-                var deserialized = JsonConvert.DeserializeObject<TItem>(
-                    textAssets[i].text,
-                    serializerSettings)
-                    ??
-                    throw new CCException($"Error while deserializng object. Type = {typeof(TItem)}, data = {textAssets[i]}");
+                try
+                {
+                    deserialized = JsonConvert.DeserializeObject<TItem>(
+                        textAssets[i].text,
+                        serializerSettings)
+                        ??
+                        throw new CCException($"Error while deserializng object. Type = {typeof(TItem)}, data = {textAssets[i]}");
+                }
+                catch (InvalidCastException ex)
+                {
+                    CC.Throw.InvalidCast(typeof(TItem), "Most likely the polymorph coverter returned wrong value type", ex);
+                }
 
                 values.Add(GetItemID(deserialized), deserialized);
             }

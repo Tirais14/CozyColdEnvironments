@@ -1,28 +1,44 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using static CCEnvs.Json.JsonConverterHelper;
 
 #nullable enable
 namespace CCEnvs.Json
 {
-    public class CCJsonConverterCollection : Collection<JsonConverter>
+    public class CCJsonConverterCollection 
+        : IList<JsonConverter>, 
+        IReadOnlyList<JsonConverter>
     {
+        private readonly SortedList<int, JsonConverter> values = new();
+
+        public int Count => values.Count;
+        public bool IsReadOnly => false;
+        public JsonConverter this[int index] {
+            get => values[index];
+            set => values[index] = value;
+        }
+
         public CCJsonConverterCollection()
         {
         }
 
-        public CCJsonConverterCollection(IList<JsonConverter> list) : base(list)
+        public CCJsonConverterCollection(int capacity)
         {
+            values = new SortedList<int, JsonConverter>(capacity);
         }
 
-        public CCJsonConverterCollection(IEnumerable<JsonConverter> collection)
+        public CCJsonConverterCollection(IEnumerable<JsonConverter> converters)
             :
-            base(collection.ToArray())
+            this()
         {
+            this.AddRange(converters);
         }
 
         public CCJsonConverterCollection AddOrReplaceAllByType(JsonConverter converter)
@@ -65,7 +81,7 @@ namespace CCEnvs.Json
                 isRemoved = false;
 
             foreach (var pair in withSameConversationType)
-                RemoveItem(pair.index);
+                values.RemoveAt(pair.index);
 
             isRemoved = true;
 
@@ -77,14 +93,59 @@ namespace CCEnvs.Json
             CC.Validate.ArgumentNull(conversationType, nameof(conversationType));
 
             var results = new List<IndexValuePair<JsonConverter>>();
-            int count = Items.Count;
+            int count = values.Count;
             for (int i = 0; i < count; i++)
             {
-                if (GetConversationType(Items[i]) == conversationType)
-                    results.Add(new IndexValuePair<JsonConverter>(i, Items[i]));
+                if (GetConversationType(values[i]) == conversationType)
+                    results.Add(new IndexValuePair<JsonConverter>(i, values[i]));
             }
 
             return results.ToArray();
+        }
+
+        public void Add(JsonConverter converter)
+        {
+            values.Add(converter.GetType().GetBaseTypeCount(), converter);
+        }
+
+        public void Clear() => values.Clear();
+
+        public int IndexOf(JsonConverter item) => values.IndexOfValue(item);
+
+        public bool Contains(JsonConverter item) => values.ContainsValue(item);
+
+        public bool Remove(JsonConverter item)
+        {
+            return values.Remove(item.GetType().GetBaseTypeCount());
+        }
+        public void RemoveAt(int index) => values.RemoveAt(index);
+
+        public IEnumerator<JsonConverter> GetEnumerator()
+        {
+            return values.Select(x => x.Value).ToArray().GetEnumeratorT();
+        }
+
+        void ICollection<JsonConverter>.CopyTo(JsonConverter[] array, int arrayIndex)
+        {
+            values.Select(x => x.Value).ToArray().CopyTo(array, arrayIndex);
+        }
+
+        void IList<JsonConverter>.Insert(int index, JsonConverter item)
+        {
+            IEnumerable<KeyValuePair<int, JsonConverter>> result =
+                values.Index()
+                      .Insert(index, new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item))
+                      .Unindex()
+                      .ToArray();
+
+            values.Clear();
+            foreach (var value in result)
+                values.Add(value.Key, value.Value);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

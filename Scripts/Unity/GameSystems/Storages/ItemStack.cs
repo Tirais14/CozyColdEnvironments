@@ -2,6 +2,7 @@
 using System;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
+using Newtonsoft.Json;
 
 namespace CCEnvs.Unity.GameSystems.Storages
 {
@@ -9,18 +10,43 @@ namespace CCEnvs.Unity.GameSystems.Storages
     {
         public static ItemStack Empty => new();
 
+#if NEWTONSOFT_JSON
+        [JsonProperty]
+#endif
         public IStorageItem Item { get; private set; } = new StorageItem();
+
+#if NEWTONSOFT_JSON
+        [JsonProperty]
+#endif
         public int ItemCount { get; private set; }
+
+#if NEWTONSOFT_JSON
+        [JsonProperty]
+#endif
         public int MaxItemCount { get; private set; }
+
+#if NEWTONSOFT_JSON
+        [JsonIgnore]
+#endif
         public bool HasItem => Item.IsNotNull() && ItemCount > 0;
+
+#if NEWTONSOFT_JSON
+        [JsonIgnore]
+#endif
         public bool IsContainerFull => ItemCount >= MaxItemCount;
 
-        public ItemStack(int maxItemCount = int.MaxValue)
+        public ItemStack(int maxItemCount)
         {
             if (maxItemCount < 1)
                 throw new ArgumentException($"{nameof(MaxItemCount)} cannot be {maxItemCount}.");
 
             MaxItemCount = maxItemCount;
+        }
+
+        public ItemStack()
+            :
+            this(int.MaxValue)
+        {
         }
 
         public ItemStack(IStorageItem item,
@@ -181,9 +207,15 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         IStorageItem IItemContainerInfo.Item => Item;
 
-        public ItemStack(int maxItemCount = int.MaxValue)
+        public ItemStack(int maxItemCount)
         {
             stack = new ItemStack(maxItemCount);
+        }
+
+        public ItemStack()
+            :
+            this(int.MaxValue)
+        {
         }
 
         public ItemStack(T item, int itemCount, int maxItemCount = int.MaxValue)

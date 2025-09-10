@@ -27,17 +27,26 @@ namespace CCEnvs
         public static class Throw
         {
             [DoesNotReturn]
-            public static ThrowVoid InvalidCast(Type toType, string? message = null)
+            public static ThrowVoid InvalidCast(Type toType,
+                                                string? message = null,
+                                                Exception? innerException = null)
             {
-                throw new InvalidCastException($"Conversation type = {toType.GetFullName()}. {message}");
+                throw new InvalidCastException($"Conversation type = {toType.GetFullName()}. {message}", innerException);
             }
 
             [DoesNotReturn]
             public static ThrowVoid InvalidCast(Type fromType,
-                                             Type toType,
-                                             string? message = null)
+                                                Type toType,
+                                                string? message = null,
+                                                Exception? innerException = null)
             {
-                throw new InvalidCastException($"From {fromType.GetFullName()} to {toType.GetFullName()}. {message}");
+                throw new InvalidCastException($"From {fromType.GetFullName()} to {toType.GetFullName()}. {message}", innerException);
+            }
+
+            [DoesNotReturn]
+            public static ThrowVoid IndexOutOfRange(long index)
+            {
+                throw new IndexOutOfRangeException($"Index = {index}.");
             }
         }
 
