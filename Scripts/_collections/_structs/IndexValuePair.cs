@@ -14,6 +14,16 @@ namespace CCEnvs
             this.value = value;
         }
 
+        public static bool operator ==(IndexValuePair<T> left, IndexValuePair<T> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IndexValuePair<T> left, IndexValuePair<T> right)
+        {
+            return !(left == right);
+        }
+
         public bool Equals(IndexValuePair<T> other)
         {
             return index.Equals(other.index) && value.Equals(other.value);

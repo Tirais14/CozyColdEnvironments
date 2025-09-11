@@ -67,10 +67,11 @@ namespace CCEnvs
 
             public static void Argument<T>(T value,
                                            string paramName,
-                                           Predicate<T> predicate)
+                                           Predicate<T> predicate,
+                                           string? message = null)
             {
                 if (!predicate(value))
-                    throw new ArgumentException($"{paramName} = {value}.");
+                    throw new ArgumentException($"{paramName} = {value}. {message}");
             }
 
             public static void ArgumentNested<T>(T value,

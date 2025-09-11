@@ -10,7 +10,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "SuperLinq.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

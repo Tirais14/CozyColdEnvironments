@@ -11,14 +11,14 @@ namespace CCEnvs.Linq
 {
     public static class EnumerableQueries
     {
-        public static IEnumerable<IndexValuePair<T>> Index<T>(this IEnumerable<T> values)
-        {
-            CC.Validate.ArgumentNull(values, nameof(values));
+        //public static IEnumerable<IndexValuePair<T>> Index<T>(this IEnumerable<T> values)
+        //{
+        //    CC.Validate.ArgumentNull(values, nameof(values));
 
-            int i = 0;
-            foreach (var value in values)
-                yield return new IndexValuePair<T>(i++, value);
-        }
+        //    int i = 0;
+        //    foreach (var value in values)
+        //        yield return new IndexValuePair<T>(i++, value);
+        //}
 
         public static IEnumerable<KeyValuePair<TKey, TValue>> AssignKey<TKey, TValue>(
             this IEnumerable<TValue> values,
@@ -103,6 +103,28 @@ namespace CCEnvs.Linq
                 return collection;  
 
             return values.ToArray();
+        }
+
+        public static Queue<T> ToQueue<T>(this IEnumerable<T> values)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            var results = new Queue<T>();   
+            foreach (var value in values)
+                results.Enqueue(value);
+
+            return results;
+        }
+
+        public static Stack<T> ToStack<T>(this IEnumerable<T> values)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            var results = new Stack<T>();
+            foreach (var value in values)
+                results.Push(value);
+
+            return results;
         }
     }
 }

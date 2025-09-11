@@ -3,9 +3,11 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using static CCEnvs.Json.JsonConverterHelper;
 
@@ -22,7 +24,7 @@ namespace CCEnvs.Json
         public bool IsReadOnly => false;
         public JsonConverter this[int index] {
             get => values[index].Value;
-            set => values[index] = new KeyValuePair<int, JsonConverter>(value.GetType().GetBaseTypeCount(), value);
+            set => values[index] = ToListItem(value);
         }
 
         public CCJsonConverterCollection()
@@ -39,6 +41,25 @@ namespace CCEnvs.Json
             this()
         {
             this.AddRange(converters);
+        }
+
+        private static int GetPriority(JsonConverter converter)
+        {
+            try
+            {
+                Type conversationType = GetConversationType(converter);
+
+                return conversationType.GetParentsCount();
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+        }
+
+        private static KeyValuePair<int, JsonConverter> ToListItem(JsonConverter converter)
+        {
+            return new KeyValuePair<int, JsonConverter>(GetPriority(converter), converter);
         }
 
         public CCJsonConverterCollection AddOrReplaceAllByType(JsonConverter converter)
@@ -105,26 +126,44 @@ namespace CCEnvs.Json
 
         public void Add(JsonConverter converter)
         {
-            values.Add(new KeyValuePair<int, JsonConverter>(converter.GetType().GetBaseTypeCount(), converter));
+            values.Add(ToListItem(converter));
+            Reorder();
         }
 
         public void Clear() => values.Clear();
 
-        public int IndexOf(JsonConverter item) => values.IndexOf(new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item));
+        public int IndexOf(JsonConverter item)
+        {
+            return values.IndexOf(ToListItem(item));
+        }
 
-        public bool Contains(JsonConverter item) => values.Contains(new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item));
+        public bool Contains(JsonConverter item)
+        {
+            return values.Contains(ToListItem(item));
+        }
 
         public bool Remove(JsonConverter item)
         {
-            return values.Remove(new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item));
+            bool result = values.Remove(ToListItem(item));
+            Reorder();
+            return result;
         }
-        public void RemoveAt(int index) => values.RemoveAt(index);
+        public void RemoveAt(int index)
+        {
+            values.RemoveAt(index);
+            Reorder();
+        }
 
         public IEnumerator<JsonConverter> GetEnumerator()
         {
             return values.Select(x => x.Value)
                          .ToArray()
                          .GetEnumeratorT();
+        }
+
+        private void Reorder()
+        {
+            values.Sort((x, y) => x.Key.CompareTo(y.Key));
         }
 
         void ICollection<JsonConverter>.CopyTo(JsonConverter[] array, int arrayIndex)
@@ -136,13 +175,8 @@ namespace CCEnvs.Json
 
         void IList<JsonConverter>.Insert(int index, JsonConverter item)
         {
-            values.Index()
-                  .Insert(index, new KeyValuePair<int, JsonConverter>(item.GetType().GetBaseTypeCount(), item))
-                  .Unindex()
-                  .Materialize()
-                  .Before(values, x => x.Clear())
-                  .Aggregate(values, (list, x) => { list.Add(x); return list; })
-                  .ToArray();
+            values.Insert(index, ToListItem(item));
+            Reorder();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

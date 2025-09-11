@@ -10,9 +10,9 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
-#pragma warning disable IDE0044
-#pragma warning disable S3963
+#pragma warning disable S2696
 namespace CCEnvs.Json.Converters
 {
     public static class PolymorphJsonConverter
@@ -22,40 +22,54 @@ namespace CCEnvs.Json.Converters
 
     public class PolymorphJsonConverter<T> : JsonConverter<T>
     {
+        private static int invokesCount;
+
         public override T? ReadJson(JsonReader reader,
                                     Type objectType,
                                     T? existingValue,
                                     bool hasExistingValue,
                                     JsonSerializer serializer)
         {
-            PreventDeadLoop(ref serializer);
-            JToken token = ReadToken(ref reader);
+            invokesCount++;
 
-            if (JsonSerializerDebug.IsEnabled)
-                CCDebug.PrintLog($"Deserializing token content => {token}", DebugContext.Additive(this));
+            if (invokesCount > 3)
+                throw new JsonSerializationException("Prevented dead loop in polymorph converter.");
 
-            Type conversationType = GetConversationType(serializer, token);
-
-            if (JsonSerializerDebug.IsEnabled)
-                CCDebug.PrintLog($"Conversation type = {conversationType.GetFullName()}. Result type = {objectType.GetFullName()}.", DebugContext.Additive(this));
-
-            if (conversationType.IsNotType(objectType))
-                throw new JsonSerializationException($"Invalid conversation type = {conversationType.GetFullName()}.");
-
-            if (!TryGetByCache(conversationType,
-                               out object? intermediate,
-                               out bool isCacheable))
+            try
             {
-                intermediate = token.ToObject(conversationType, serializer);
+                JToken token = ReadToken(ref reader);
 
-                if (intermediate.IsNull())
-                    throw new JsonSerializationException("Intermediate deserialize returned null.");
+                if (JsonSerializerDebug.IsEnabled)
+                    CCDebug.PrintLog($"Deserializing token content => {token}", DebugContext.Additive(this));
 
-                if (isCacheable)
-                    JsonSerializerCache.Values.TryAdd(conversationType, intermediate);
+                Type conversationType = GetConversationType(serializer, token);
+                CreateSerializerWithoutThisConverter(conversationType, ref serializer);
+
+                if (JsonSerializerDebug.IsEnabled)
+                    CCDebug.PrintLog($"Conversation type = {conversationType.GetFullName()}. Result type = {objectType.GetFullName()}.", DebugContext.Additive(this));
+
+                if (conversationType.IsNotType(objectType))
+                    throw new JsonSerializationException($"Invalid conversation type = {conversationType.GetFullName()}.");
+
+                if (!TryGetByCache(conversationType,
+                                   out object? intermediate,
+                                   out bool isCacheable))
+                {
+                    intermediate = token.ToObject(conversationType, serializer);
+
+                    if (intermediate.IsNull())
+                        throw new JsonSerializationException("Intermediate deserialize returned null.");
+
+                    if (isCacheable)
+                        JsonSerializerCache.Values.TryAdd(conversationType, intermediate);
+                }
+
+                return CCConvert.ChangeType<T>(intermediate);
             }
-                
-            return CCConvert.ChangeType<T>(intermediate);
+            finally
+            {
+                invokesCount--;
+            }
         }
 
         public override void WriteJson(JsonWriter writer,
@@ -79,13 +93,28 @@ namespace CCEnvs.Json.Converters
             serializer.Serialize(writer, dto);
         }
 
-        private static void PreventDeadLoop(ref JsonSerializer serializer)
+        private static void CreateSerializerWithoutThisConverter(Type conversationType, ref JsonSerializer serializer)
         {
             JsonSerializerSettings settings = JsonSettingsProvider.GetSettings();
-            var temp = new CCJsonConverterCollection(settings.Converters);
-            temp.RemoveAllByType(typeof(T), out _);
+            var edited = new CCJsonConverterCollection(settings.Converters);
 
-            settings.Converters = temp;
+            IEnumerable<Type> conversationTypes = edited.Select(x =>
+            {
+                try
+                {
+                    return JsonConverterHelper.GetConversationType(x);
+                }
+                catch (NotSupportedException)
+                {
+                    return null!;
+                }
+            }).Where(x => x.IsNotNull());
+
+            Type elderConversationType = TypeHelper.GetElderType(conversationTypes);
+
+            edited.RemoveAllByType(elderConversationType, out _);
+
+            settings.Converters = edited;
 
             serializer = JsonSerializer.CreateDefault(settings);
         }

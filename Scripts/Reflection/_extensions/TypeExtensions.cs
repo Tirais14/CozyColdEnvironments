@@ -32,16 +32,17 @@ namespace CCEnvs.Reflection
 
         public static Type[] PrimitiveTypes = basicTypes.ToArray();
 
-        public static int GetBaseTypeCount(this Type value, bool trimCache = false)
+        public static int GetParentsCount(this Type value, bool trimCache = false)
         {
             CC.Validate.ArgumentNull(value, nameof(value));
+
             if (baseTypeCountCache.TryGetValue(value, out int count))
                 return count;
 
             Type[] baseTypes = TypeHelper.CollectBaseTypes(value).ToArray();
 
             for ( int i = 0; i < baseTypes.Length; i++)
-                baseTypeCountCache.TryAdd(baseTypes[i], baseTypes.Length - i);
+                baseTypeCountCache.TryAdd(baseTypes[i], baseTypes.Length - 1 - i);
 
             if (trimCache)
                 baseTypeCountCache.TrimExcess();
@@ -65,7 +66,7 @@ namespace CCEnvs.Reflection
             return obj.GetType().GetName(attributes);
         }
 
-        public static object? GetDefault(this Type value)
+        public static object? GetDefaultValue(this Type value)
         {
             if (value is null)
                 throw new ArgumentNullException(nameof(value));

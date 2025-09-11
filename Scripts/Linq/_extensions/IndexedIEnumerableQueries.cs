@@ -1,24 +1,49 @@
-using CCEnvs.Diagnostics;
+using QuikGraph.Algorithms.ShortestPath;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Linq
 {
     public static class IndexedIEnumerableQueries
     {
-        public static IEnumerable<T> Unindex<T>(this IEnumerable<IndexValuePair<T>> values)
+        public static IEnumerable<T> Unindex<T>(this IEnumerable<(int index, T value)> values)
         {
             CC.Validate.ArgumentNull(values, nameof(values));
 
-            foreach (var pair in values)
-                yield return pair.value;
+            foreach (var (_, value) in values)
+                yield return value;
         }
 
-        public static IEnumerable<IndexValuePair<T>> Insert<T>(
-            this IEnumerable<IndexValuePair<T>> values,
+        public static IEnumerable<T> Insert<T>(
+            this IEnumerable<T> values,
             int position,
+            T newValue)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            bool inserted = false;
+            int i = 0;
+            foreach (var value in values)
+            {
+                i++;
+                if (i == position)
+                {
+                    inserted = true;
+                    yield return newValue;
+                }
+                else
+                    yield return value;
+            }
+
+#pragma warning disable S112
+            if (!inserted)
+                throw new IndexOutOfRangeException($"Index = {i}");
+#pragma warning restore S112
+        }
+        public static IEnumerable<(int index, T value)> InsertBy<T>(
+            this IEnumerable<(int index, T value)> values,
+            int index,
             T newValue)
         {
             CC.Validate.ArgumentNull(values, nameof(values));
@@ -27,13 +52,13 @@ namespace CCEnvs.Linq
             int i = 0;
             foreach (var indexed in values)
             {
-                if (indexed.index == position)
-                {
+                if (i == index)
                     inserted = true;
-                    yield return new IndexValuePair<T>(i++, newValue);
+
+                if (inserted)
+                {
+                    yield return (i++, newValue);
                 }
-                else if (inserted)
-                    yield return new IndexValuePair<T>(i, indexed.value);
                 else
                 {
                     i = indexed.index;
@@ -41,13 +66,51 @@ namespace CCEnvs.Linq
                 }
             }
 
+#pragma warning disable S112
             if (!inserted)
                 throw new IndexOutOfRangeException($"Index = {i}");
+#pragma warning restore S112
         }
 
-        public static IEnumerable<IndexValuePair<T>> RemoveAt<T>(
-            this IEnumerable<IndexValuePair<T>> values,
+        public static IEnumerable<T> Remove<T>(this IEnumerable<T> values, T removeValue)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            foreach (var value in values)
+            {
+                if (Equals(value, removeValue))
+                    continue;
+
+                yield return value;
+            }
+        }
+
+        public static IEnumerable<T> RemoveAt<T>(
+            this IEnumerable<T> values,
             int position)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            bool removed = false;
+            int i = 0;
+            foreach (var value in values)
+            {
+                i++;
+                if (i == position)
+                    removed = true;
+                else
+                    yield return value;
+            }
+
+#pragma warning disable S112
+            if (!removed)
+                throw new IndexOutOfRangeException($"Index = {i}");
+#pragma warning restore S112
+        }
+        public static IEnumerable<(int index, T value)> RemoveAtBy<T>(
+            this IEnumerable<(int index, T value)> values,
+            int index,
+            T removedValue)
         {
             CC.Validate.ArgumentNull(values, nameof(values));
 
@@ -55,41 +118,27 @@ namespace CCEnvs.Linq
             int i = 0;
             foreach (var indexed in values)
             {
-                if (indexed.index == position)
+                if (i == index)
                 {
                     removed = true;
-                    i--;
+                    continue;
                 }
-                else if (removed)
-                    yield return new IndexValuePair<T>(i, indexed.value);
+
+                if (removed)
+                {
+                    yield return (i++, removedValue);
+                }
                 else
                 {
                     i = indexed.index;
                     yield return indexed;
                 }
             }
-        }
 
-        public static T GetValueAt<T>(this IEnumerable<IndexValuePair<T>> values, int index)
-        {
-            CC.Validate.ArgumentNull(values, nameof(values));
-
-            var found = values.FirstOrDefault(x => x.index == index);
-
-            if (found.IsDefault())
-                CC.Throw.IndexOutOfRange(index);
-
-            return found.value;
-        }
-
-        public static int IndexOf<T>(this IEnumerable<IndexValuePair<T>> values, T value)
-        {
-            IndexValuePair<T> found = values.FirstOrDefault(x => x.Equals(value!));
-
-            if (found.IsDefault())
-                return -1;
-
-            return found.index;
+#pragma warning disable S112
+            if (!removed)
+                throw new IndexOutOfRangeException($"Index = {i}");
+#pragma warning restore S112
         }
     }
 }

@@ -9,11 +9,11 @@ namespace CCEnvs.Diagnostics
 {
     public static class ArrayExtensions
     {
-        public static IEnumerator<T> GetEnumeratorT<T>(this T[] value)
+        public static IEnumerator<T> GetEnumeratorT<T>(this T[] values)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Validate.ArgumentNull(values, nameof(values));
 
-            return value.GetEnumerator().As<IEnumerator<T>>();
+            return ((IEnumerable<T>)values).GetEnumerator();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

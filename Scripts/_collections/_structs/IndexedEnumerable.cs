@@ -7,7 +7,12 @@ namespace CCEnvs
 {
     public readonly struct IndexedEnumerable<T> : IIndexedEnumerable<T>
     {
-        private readonly IEnumerable<IndexValuePair<T>> items;
+        public readonly IEnumerable<IndexValuePair<T>> items;
+
+        public IndexedEnumerable(IEnumerable<IndexValuePair<T>> items)
+        {
+            this.items = items;
+        }
 
         public IEnumerator<IndexValuePair<T>> GetEnumerator()
         {
