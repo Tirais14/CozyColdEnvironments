@@ -2,13 +2,14 @@ using CCEnvs.Converting;
 using CCEnvs.Diagnostics;
 using QuikGraph;
 using QuikGraph.Algorithms;
+using QuikGraph.Graphviz;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SuperLinq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using QuikGraph.Graphviz;
 
 #nullable enable
 
@@ -16,6 +17,49 @@ namespace CCEnvs.Reflection
 {
     public static class TypeHelper
     {
+        public static MemberMatches GetMemberMatches(Type left,
+                                                     Type right)
+        {
+            CC.Validate.ArgumentNull(left, nameof(left));
+            CC.Validate.ArgumentNull(right, nameof(right));
+
+            BindingFlags bindings = BindingFlagsDefault.All;
+            var comparer = new MemberEqualityComparer();
+            FieldInfo[] valueFields = left.ForceGetFields(bindings);
+            FieldInfo[] otherFields = right.ForceGetFields(bindings);
+
+            var matches = new List<MemberInfo>();
+            valueFields.Where(x => otherFields.FirstOrDefault(
+                            y => comparer.Equals(x, y)).IsNotDefault())
+                       .ForEach(x => matches.Add(x));
+
+            PropertyInfo[] valueProps = left.ForceGetProperties(bindings);
+            PropertyInfo[] otherProps = right.ForceGetProperties(bindings);
+
+            valueProps.Where(x => otherProps.FirstOrDefault(
+                            y => comparer.Equals(x, y)).IsNotDefault())
+                       .ForEach(x => matches.Add(x));
+
+            MethodInfo[] valueMethods = left.ForceGetMethods(bindings);
+            MethodInfo[] otherMethods = right.ForceGetMethods(bindings);
+
+            valueMethods.Where(x => otherMethods.FirstOrDefault(
+                            y => comparer.Equals(x, y)).IsNotDefault())
+                       .ForEach(x => matches.Add(x));
+
+            EventInfo[] valueEvents = left.ForceGetMembers<EventInfo>(bindings);
+            EventInfo[] otherEvents = right.ForceGetMembers<EventInfo>(bindings);
+
+            valueEvents.Where(x => otherEvents.FirstOrDefault(
+                            y => comparer.Equals(x, y)).IsNotDefault())
+                       .ForEach(x => matches.Add(x));
+
+            return new MemberMatches(
+                valueFields.Length + valueProps.Length + valueMethods.Length + valueEvents.Length,
+                otherFields.Length + otherProps.Length + otherMethods.Length + otherEvents.Length,
+                matches.AsReadOnly());
+        }
+
         /// <summary>
         /// Finds type with the largest number of base types
         /// </summary>
@@ -72,6 +116,7 @@ namespace CCEnvs.Reflection
             {
                 return pair.target.GetInterfaces()
                                   .Select(x => (source: (Type?)pair.target, target: x))
+                                  .DistinctBy(x => HashCode.Combine(x.source, x.target))
                                   .ToArray();
             });
 

@@ -20,6 +20,17 @@ namespace CCEnvs.Linq
         //        yield return new IndexValuePair<T>(i++, value);
         //}
 
+        public static int ToHashCode<T>(this IEnumerable<T> values)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            var hash = new HashCode();
+            foreach ( var item in values)
+                hash.Add(item);
+
+            return hash.ToHashCode();
+        }
+
         public static IEnumerable<KeyValuePair<TKey, TValue>> AssignKey<TKey, TValue>(
             this IEnumerable<TValue> values,
             Func<TValue, TKey> keySelector)

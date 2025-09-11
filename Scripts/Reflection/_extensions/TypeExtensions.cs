@@ -2,6 +2,7 @@ using CCEnvs.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 #nullable enable
@@ -30,7 +31,10 @@ namespace CCEnvs.Reflection
             typeof(Array)
         };
 
-        public static Type[] PrimitiveTypes = basicTypes.ToArray();
+        public static Type[] GetPrimitiveTypes()
+        {
+            return basicTypes.ToArray();
+        }
 
         public static int GetParentsCount(this Type value, bool trimCache = false)
         {
@@ -120,6 +124,16 @@ namespace CCEnvs.Reflection
                    value == typeof(long)
                    ||
                    value == typeof(ulong);
+        }
+
+        public static bool IsTypeBySemantics(this Type left, Type right)
+        {
+            CC.Validate.ArgumentNull(left, nameof(left));
+            CC.Validate.ArgumentNull(right, nameof(right));
+
+            MemberMatches matches = TypeHelper.GetMemberMatches(left, right);
+
+            return matches.values.Count == matches.leftProcessedMemberCount;
         }
 
         /// <summary>
