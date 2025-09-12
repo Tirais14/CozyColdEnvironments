@@ -3,19 +3,17 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FileSystem;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace CCEnvs.Json
 {
-    public static class JsonWordDictionary
+    public static class JsonIDEWordDictionary
     {
         public static async Task<FileEntry> Create(FSPath path,
                                                    string[]? includeNamespaces = null,

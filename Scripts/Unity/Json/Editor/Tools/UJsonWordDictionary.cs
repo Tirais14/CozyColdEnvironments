@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.Json.EditorC
                 if (Equals(path, default(FSPath)))
                     path = Application.dataPath.ToFilePath() - "Assets" + "External" + "Json" + "dictionary_generated.txt";
 
-                await JsonWordDictionary.Create(path,
+                await JsonIDEWordDictionary.Create(path,
                                                 includeNamespaces,
                                                 excludeNamespaces);
                 inProcess = false;

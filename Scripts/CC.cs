@@ -24,6 +24,7 @@ namespace CCEnvs
             public static T[] Array<T>(params T[] values) => values;
         }
 
+#pragma warning disable S112
         public static class Throw
         {
             [DoesNotReturn]
@@ -49,6 +50,7 @@ namespace CCEnvs
                 throw new IndexOutOfRangeException($"Index = {index}.");
             }
         }
+#pragma warning restore S112
 
         public static class Validate
         {
@@ -82,7 +84,7 @@ namespace CCEnvs
                     throw new ArgumentException($"{complexParamName.JoinStrings('.')} = {value}.");
             }
 
-            public static void StringArgument(string paramName, [NotNull] string? value)
+            public static void StringArgument([NotNull] string? value, string paramName)
             {
                 if (value.IsNullOrEmpty())
                     throw new StringArgumentException(paramName, value);
@@ -105,7 +107,7 @@ namespace CCEnvs
                                                   [NotNull] IEnumerable? enumerable)
             {
                 if (CCEnumerable.IsNullOrEmpty(enumerable))
-                    throw new CollectionArgumentException(nameof(paramName), enumerable);
+                    throw new CollectionArgumentException(paramName, enumerable);
             }
 
             public static void Collection([NotNull] IEnumerable? enumerable)

@@ -16,7 +16,7 @@ namespace CCEnvs.Reflection
             CC.Validate.ArgumentNullNested(target.Type,
                                            nameof(target),
                                            nameof(target.Type));
-            CC.Validate.StringArgument(nameof(methodName), methodName);
+            CC.Validate.StringArgument(methodName, nameof(methodName));
 
             BindingFlags bindingFlags = BindingFlagsDefault.All;
 

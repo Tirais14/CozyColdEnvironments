@@ -14,12 +14,13 @@ using System.Security.Cryptography;
 using static CCEnvs.BindingFlagsDefault;
 
 #pragma warning disable IDE1006
+#pragma warning disable S4035
 namespace CCEnvs.Reflection
 {
     /// <summary>
     /// Used for convenient type handling using reflection
     /// </summary>
-    public sealed class Reflected : IEquatable<Reflected>
+    public class Reflected : IEquatable<Reflected>
     {
         [Flags]
         public enum Settings 
@@ -205,7 +206,7 @@ namespace CCEnvs.Reflection
         /// <exception cref="FieldNotFoundException"></exception>
         public ContextedFieldInfo Field(string name)
         {
-            CC.Validate.StringArgument(nameof(name), name);
+            CC.Validate.StringArgument(name, nameof(name));
 
             IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
 
@@ -306,7 +307,7 @@ namespace CCEnvs.Reflection
                                  ExplicitArguments args = default,
                                  bool ignoreOptionalParameters = false)
         {
-            CC.Validate.StringArgument(nameof(name), name);
+            CC.Validate.StringArgument(name, nameof(name));
 
             if (TypeCache.Methods.TryGetValue(
                 new MethodKey(TargetType, (CCParameters)args, args.GetParameterModifiers()),
@@ -364,13 +365,12 @@ namespace CCEnvs.Reflection
         [DebuggerStepThrough]
         public T ChangeType<T>() => (T)ChangeType(typeof(T));
 
-        public T As<T>()
-        {
-            if (Target is null)
-                CC.Throw.InvalidCast(typeof(void), typeof(T));
-
-            return (T)Target;
-        }
+        /// <summary>
+        /// Cast target object in specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T? As<T>() => (T?)Target;
 
         public bool Equals(Reflected? other)
         {

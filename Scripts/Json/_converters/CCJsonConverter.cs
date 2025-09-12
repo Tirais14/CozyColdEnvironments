@@ -1,11 +1,13 @@
 using CCEnvs.Cacheables;
 using CCEnvs.Diagnostics;
 using CCEnvs.Json.Diagnsotics;
+using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 #nullable enable
 #pragma warning disable S2743
@@ -35,7 +37,7 @@ namespace CCEnvs.Json
                     return null;
 
                 if (isCacheable)
-                    JsonSerializerCache.Values.TryAdd(type, deserialized);
+                    JsonSerializerCache.Objects.TryAdd(type, deserialized);
             }
 
             return deserialized;
@@ -49,9 +51,9 @@ namespace CCEnvs.Json
 
             if (isCacheable
                 ||
-                JsonSerializerCache.Values.ContainsKey(type)
+                JsonSerializerCache.Objects.ContainsKey(type)
                 )
-                return JsonSerializerCache.Values.TryGetValue(type,
+                return JsonSerializerCache.Objects.TryGetValue(type,
                                                               out result);
 
             result = null;
@@ -120,7 +122,7 @@ namespace CCEnvs.Json
         private void CreateSerializerWithoutThisConverter(ref JsonSerializer serializer)
         {
             JsonSerializerSettings settings = JsonSettingsProvider.GetSettings();
-            settings.Converters.Remove(this);
+            settings.Converters = settings.Converters.RemoveElement(this).ToArray();
 
             serializer = JsonSerializer.CreateDefault(settings);
         }
@@ -130,7 +132,8 @@ namespace CCEnvs.Json
             JToken token = JToken.Load(reader);
 
             if (JsonSerializerDebug.IsEnabled)
-                CCDebug.PrintLog($"Deserializing token content => {token}", DebugContext.Additive(this));
+                CCDebug.PrintLog($"Deserializing token content => {token}",
+                                 new DebugContext(this).Additive());
 
             reader = token.CreateReader();
 

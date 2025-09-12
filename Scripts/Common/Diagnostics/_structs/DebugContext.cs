@@ -1,10 +1,10 @@
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public readonly struct DebugContext
+    public struct DebugContext
     {
         public object? Target { get; }
-        public DebugArguments Arguments { get; }
+        public DebugArguments Arguments { get; set; }
 
         public DebugContext(object? target = null, DebugArguments arguments = default)
         {
@@ -12,12 +12,21 @@ namespace CCEnvs.Diagnostics
             Arguments = arguments;
         }
 
-        public static DebugContext Additive(object? target = null)
+        public DebugContext Additive()
         {
-            return new DebugContext(target, DebugArguments.IsAdditive);
+            Arguments |= DebugArguments.IsAdditive;
+
+            return this;
         }
 
-        public void Deconstruct(out object? target, out DebugArguments arguments)
+        public DebugContext Editor()
+        {
+            Arguments |= DebugArguments.Editor;
+
+            return this;
+        }
+
+        public readonly void Deconstruct(out object? target, out DebugArguments arguments)
         {
             target = Target;
             arguments = Arguments;

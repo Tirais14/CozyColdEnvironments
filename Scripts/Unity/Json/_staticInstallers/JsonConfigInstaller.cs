@@ -16,6 +16,9 @@ namespace CCEnvs.Unity.Json
         [StaticInstallerMethod]
         private static void Main()
         {
+            if (!ReflectedType.DomainReload.IsReloaded)
+                return;
+
             JsonSettingsProvider.Converters.AddRange(
                 new Vector2Converter(),
                 new Vector2IntConverter(),
@@ -23,8 +26,6 @@ namespace CCEnvs.Unity.Json
                 new Vector3IntConverter(),
                 new PolymorphJsonConverter<IItemContainer>()
                 );
-
-            PolymorphJsonConverter.DefaultTypeBindings.Add<IItemContainer, ItemStack>();
         }
     }
 }

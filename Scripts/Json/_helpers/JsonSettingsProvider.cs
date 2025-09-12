@@ -9,16 +9,14 @@ namespace CCEnvs.Json
 {
     public static class JsonSettingsProvider
     {
-        public static JsonConverterCollection Converters { get; private set; } = new()
+        public static JsonConverterCollection Converters { get; } = new()
         {
             new TypeJsonConverter()
         };
 
         public static JsonSerializerSettings GetSettings()
         {
-            JsonSerializerSettings? defaultSettings = null;
-            if (JsonConvert.DefaultSettings != GetSettingsInternal)
-                defaultSettings = JsonConvert.DefaultSettings?.Invoke();
+            JsonSerializerSettings? defaultSettings = JsonConvert.DefaultSettings?.Invoke();
 
             defaultSettings ??= new JsonSerializerSettings();
 
@@ -34,11 +32,6 @@ namespace CCEnvs.Json
             defaultSettings.Error = JsonSerializerDebug.OnError;
 
             return defaultSettings;
-        }
-
-        private static JsonSerializerSettings GetSettingsInternal()
-        {
-            return GetSettings();
         }
     }
 }

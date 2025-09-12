@@ -7,6 +7,8 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using static CCEnvs.Json.Converters.PolymorphJsonConverter;
 
 #pragma warning disable S2743
 #pragma warning disable S2696
@@ -14,9 +16,7 @@ namespace CCEnvs.Json.Converters
 {
     public static class PolymorphJsonConverter
     {
-        public static Dictionary<Type, Type> DefaultTypeBindings { get; } = new(0);
-
-
+        public delegate Type TypeResolver(Type polymorphType, object criteria);
     }
 
     /// <summary>
@@ -25,8 +25,16 @@ namespace CCEnvs.Json.Converters
     /// <typeparam name="T"></typeparam>
     public class PolymorphJsonConverter<T> : CCJsonConverter<T>
     {
+
         private static int readInvokesCount;
         private static int writeInvokesCount;
+
+        private readonly Type[] types;
+
+        public PolymorphJsonConverter(params Type[] types)
+        {
+            this.types = types;
+        }
 
         private static Type GetConversationType(JsonSerializer serializer, JToken token)
         {
@@ -39,16 +47,18 @@ namespace CCEnvs.Json.Converters
             string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
             JToken? objectTypeToken = token[keyName];
 
-            if (objectTypeToken is null)
+            switch (serializer.Context.Context)
             {
-                if (PolymorphJsonConverter.DefaultTypeBindings.TryGetValue(
-                        typeof(T),
-                        out Type result)
-                        )
-                    return result;
-
-                throw new JsonSerializationException($"The converter needs at least one binding: {PolymorphJsonConverter.DefaultTypeBindings} or objectType key in json data to resolve conversation type.");
+                case Type type:
+                    return type;
+                case PolymorphConverterContext context:
+                    return context.DeserializedType;
+                default:
+                    break;
             }
+
+            if (objectTypeToken is null)
+                throw new JsonSerializationException($"{typeof(PolymorphJsonConverter<T>).GetFullName()} must contain any variant of resolving type method, such as: {nameof(Type)} in {nameof(StreamingContext)} or {nameof(PolymorphConverterContext)}");
 
             return objectTypeToken.ToObject<Type>(serializer)
                    ??
