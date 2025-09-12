@@ -1,7 +1,5 @@
 #nullable enable
-using CCEnvs.Cacheables;
 using CCEnvs.Diagnostics;
-using CCEnvs.Json.Diagnsotics;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using Newtonsoft.Json;
@@ -9,123 +7,26 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
+#pragma warning disable S2743
 #pragma warning disable S2696
 namespace CCEnvs.Json.Converters
 {
     public static class PolymorphJsonConverter
     {
         public static Dictionary<Type, Type> DefaultTypeBindings { get; } = new(0);
+
+
     }
 
-    public class PolymorphJsonConverter<T> : JsonConverter<T>
+    /// <summary>
+    /// Only converts specified type
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class PolymorphJsonConverter<T> : CCJsonConverter<T>
     {
-        private static int invokesCount;
-
-        public override T? ReadJson(JsonReader reader,
-                                    Type objectType,
-                                    T? existingValue,
-                                    bool hasExistingValue,
-                                    JsonSerializer serializer)
-        {
-            invokesCount++;
-
-            if (invokesCount > 3)
-                throw new JsonSerializationException("Prevented dead loop in polymorph converter.");
-
-            try
-            {
-                JToken token = ReadToken(ref reader);
-
-                if (JsonSerializerDebug.IsEnabled)
-                    CCDebug.PrintLog($"Deserializing token content => {token}", DebugContext.Additive(this));
-
-                Type conversationType = GetConversationType(serializer, token);
-                CreateSerializerWithoutThisConverter(conversationType, ref serializer);
-
-                if (JsonSerializerDebug.IsEnabled)
-                    CCDebug.PrintLog($"Conversation type = {conversationType.GetFullName()}. Result type = {objectType.GetFullName()}.", DebugContext.Additive(this));
-
-                if (conversationType.IsNotType(objectType))
-                    throw new JsonSerializationException($"Invalid conversation type = {conversationType.GetFullName()}.");
-
-                if (!TryGetByCache(conversationType,
-                                   out object? intermediate,
-                                   out bool isCacheable))
-                {
-                    intermediate = token.ToObject(conversationType, serializer);
-
-                    if (intermediate.IsNull())
-                        throw new JsonSerializationException("Intermediate deserialize returned null.");
-
-                    if (isCacheable)
-                        JsonSerializerCache.Values.TryAdd(conversationType, intermediate);
-                }
-
-                return CCConvert.ChangeType<T>(intermediate);
-            }
-            finally
-            {
-                invokesCount--;
-            }
-        }
-
-        public override void WriteJson(JsonWriter writer,
-                                       T? value,
-                                       JsonSerializer serializer)
-        {
-            if (value.IsNull())
-            {
-                writer.WriteNull();
-                return;
-            }
-
-            var dto = InstanceFactory.Create(((ITypeProvider)value).ObjectType,
-                new ExplicitArguments(new ExplicitArgument(value)),
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound
-                |
-                InstanceFactory.Parameters.NonPublic);
-
-            serializer.Serialize(writer, dto);
-        }
-
-        private static void CreateSerializerWithoutThisConverter(Type conversationType, ref JsonSerializer serializer)
-        {
-            JsonSerializerSettings settings = JsonSettingsProvider.GetSettings();
-            var edited = new CCJsonConverterCollection(settings.Converters);
-
-            IEnumerable<Type> conversationTypes = edited.Select(x =>
-            {
-                try
-                {
-                    return JsonConverterHelper.GetConversationType(x);
-                }
-                catch (NotSupportedException)
-                {
-                    return null!;
-                }
-            }).Where(x => x.IsNotNull());
-
-            Type elderConversationType = TypeHelper.GetElderType(conversationTypes);
-
-            edited.RemoveAllByType(elderConversationType, out _);
-
-            settings.Converters = edited;
-
-            serializer = JsonSerializer.CreateDefault(settings);
-        }
-
-        private static JToken ReadToken(ref JsonReader reader)
-        {
-            JToken token = JToken.Load(reader);
-            reader = token.CreateReader();
-
-            return token;
-        }
+        private static int readInvokesCount;
+        private static int writeInvokesCount;
 
         private static Type GetConversationType(JsonSerializer serializer, JToken token)
         {
@@ -154,21 +55,70 @@ namespace CCEnvs.Json.Converters
                    CC.Throw.InvalidCast(typeof(JToken)).As<Type>();
         }
 
-        private static bool TryGetByCache(Type conversationType,
-                                          [NotNullWhen(true)] out object? intermediate,
-                                          out bool isCacheable)
+        public override bool CanConvert(Type objectType)
         {
-            isCacheable = conversationType.IsCacheableType();
+            return objectType == typeof(T);
+        }
 
-            if (isCacheable
-                ||
-                JsonSerializerCache.Values.ContainsKey(conversationType)
-                )
-                return JsonSerializerCache.Values.TryGetValue(conversationType,
-                                                              out intermediate);
+        public override object? ReadJson(JsonReader reader,
+                                         Type objectType,
+                                         object? existingValue,
+                                         JsonSerializer serializer)
+        {
+            readInvokesCount++;
 
-            intermediate = null;
-            return false;
+            if (readInvokesCount > 3)
+                throw new JsonSerializationException("Prevented dead loop in polymorph converter.");
+
+            try
+            {
+                PrepareSerializer(ref reader, ref serializer, out JToken token);
+
+                Type conversationType = GetConversationType(serializer, token);
+                object? deserialized = DeserializeObject(conversationType, token, serializer);
+
+                if (deserialized is null)
+                    return null;
+
+                return CCConvert.ChangeType(deserialized, typeof(T));
+            }
+            finally
+            {
+                readInvokesCount--;
+            }
+        }
+
+        public override void WriteJson(JsonWriter writer,
+                                       object? value,
+                                       JsonSerializer serializer)
+        {
+            if (value.IsNull())
+            {
+                writer.WriteNull();
+                return;
+            }
+
+            writeInvokesCount++;
+
+            if (writeInvokesCount > 3)
+                throw new JsonSerializationException("Prevented dead loop in polymorph converter.");
+
+            try
+            {
+                var obj = InstanceFactory.Create(((ITypeProvider)value).ObjectType,
+                    new ExplicitArguments(new ExplicitArgument(value)),
+                    InstanceFactory.Parameters.CacheConstructor
+                    |
+                    InstanceFactory.Parameters.ThrowIfNotFound
+                    |
+                    InstanceFactory.Parameters.NonPublic);
+
+                serializer.Serialize(writer, obj);
+            }
+            finally
+            {
+                writeInvokesCount--;
+            }
         }
     }
 }

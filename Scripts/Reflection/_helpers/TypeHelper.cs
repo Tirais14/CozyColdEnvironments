@@ -2,6 +2,7 @@ using CCEnvs.Converting;
 using CCEnvs.Diagnostics;
 using QuikGraph;
 using QuikGraph.Algorithms;
+using QuikGraph.Algorithms.Search;
 using QuikGraph.Graphviz;
 using SuperLinq;
 using System;
@@ -60,6 +61,7 @@ namespace CCEnvs.Reflection
                 matches.AsReadOnly());
         }
 
+        [Obsolete("In developing")]
         /// <summary>
         /// Finds type with the largest number of base types
         /// </summary>
@@ -67,6 +69,8 @@ namespace CCEnvs.Reflection
         /// <returns></returns>
         public static Type GetElderType(IEnumerable<Type>? types, Type? restriction = null)
         {
+            throw new NotImplementedException("In developing");
+
             CC.Validate.CollectionArgument(nameof(types), types);
 
             IEnumerable<Type> ordered = from type in types
@@ -91,14 +95,17 @@ namespace CCEnvs.Reflection
         {
             CC.Validate.ArgumentNull(type, nameof(type));
 
-            if (type.IsInterface)
-                return GetInterfaceBaseTypes(type);
+            //if (type.IsInterface)
+            //    return GetInterfaceInheritancePath(type);
 
             return Collector.Collect(type, x => x.BaseType);
         }
 
-        public static Queue<Type> GetInterfaceBaseTypes(Type type)
+        [Obsolete("In developing")]
+        public static Queue<Type> GetInterfaceInheritancePath(Type type)
         {
+            throw new NotImplementedException("In developing");
+
             CC.Validate.ArgumentNull(type, nameof(type));
             CC.Validate.Argument(type,
                                  nameof(type),
@@ -143,22 +150,19 @@ namespace CCEnvs.Reflection
                 }
             }
 
-            TryFunc<Type, IEnumerable<Edge<Type>>> tryFindPath = graph.ShortestPathsDijkstra(edgeCost, type);
-
-            if (tryFindPath(type, out IEnumerable<Edge<Type>> rawPath))
-            {
-                CCDebug.PrintLog($"Path for interface type = {type.GetName()} is constructed.", DebugContext.Additive(typeof(TypeHelper)));
-
-                return reconstructPath(rawPath);
-            }
-
             var algorithm = new GraphvizAlgorithm<Type, Edge<Type>>(graph);
             CCDebug.PrintWarning(algorithm.Generate());
 
+            var bfs = new BreadthFirstSearchAlgorithm<Type, Edge<Type>>(graph);
+            var pathParts = new List<(Type, Type)>();
 
-            CCDebug.PrintWarning($"Path for interface type = {type.GetName()} is not constructed.", DebugContext.Additive(typeof(TypeHelper)));
+            bfs.TreeEdge += (x) => pathParts.Add((x.Source, x.Target));
+
+            bfs.Compute();
+
             return new Queue<Type>();
 
+            //===========================================
             static double edgeCost(Edge<Type> edge) => 1d;
 
             static Queue<Type> reconstructPath(IEnumerable<Edge<Type>> rawPath)

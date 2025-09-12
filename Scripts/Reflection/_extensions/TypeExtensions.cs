@@ -136,6 +136,11 @@ namespace CCEnvs.Reflection
             return matches.values.Count == matches.leftProcessedMemberCount;
         }
 
+        public static bool IsNotTypeBySemantics(this Type left, Type right)
+        {
+            return !left.IsTypeBySemantics(right);
+        }
+
         /// <summary>
         /// Correctly compares primitive number values
         /// </summary>

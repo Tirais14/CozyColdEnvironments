@@ -7,7 +7,17 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
-        public static T As<T>(this object obj) => (T)obj;
+        public static T As<T>(this object obj)
+        {
+            try
+            {
+                return (T)obj;
+            }
+            catch (InvalidCastException)
+            {
+                return CC.Throw.InvalidCast(obj.GetType(), typeof(T)).As<T>();
+            }
+        }
 
         public static bool IsEmptyObject<T>(this T? value)
         {

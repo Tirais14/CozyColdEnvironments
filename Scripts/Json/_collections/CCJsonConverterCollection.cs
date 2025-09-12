@@ -14,6 +14,7 @@ using static CCEnvs.Json.JsonConverterHelper;
 #nullable enable
 namespace CCEnvs.Json
 {
+    [Obsolete("In developing")]
     public class CCJsonConverterCollection 
         : IList<JsonConverter>, 
         IReadOnlyList<JsonConverter>

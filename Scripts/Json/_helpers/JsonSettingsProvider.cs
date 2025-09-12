@@ -9,7 +9,7 @@ namespace CCEnvs.Json
 {
     public static class JsonSettingsProvider
     {
-        public static CCJsonConverterCollection Converters { get; private set; } = new()
+        public static JsonConverterCollection Converters { get; private set; } = new()
         {
             new TypeJsonConverter()
         };
