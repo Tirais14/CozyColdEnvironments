@@ -120,6 +120,9 @@ namespace CCEnvs.Unity.ThreeD
         }
         public void Move(Vector2 rawInputValue)
         {
+            if (rawInputValue == Vector2.zero)
+                return;
+
             Move(rawInputValue.ToDirection2D());
         }
 

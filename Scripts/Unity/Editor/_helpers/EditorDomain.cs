@@ -1,35 +1,31 @@
 using CCEnvs.Diagnostics;
 using UnityEditor;
-using System.Linq;
-using System;
-using CCEnvs.Reflection;
-using CCEnvs.Unity.Attributes;
-using SuperLinq;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.EditorC
 {
     public static class EditorDomain
     {
-        public static bool IsReloaded { get; private set; }
+        public static int PlayModeEntranceCount { get; private set; }
+
+        public static bool IsFirstPlayModeEntrance => PlayModeEntranceCount == 1;
+
 
         [InitializeOnLoadMethod]
         public static void OnDomainReload()
         {
-            IsReloaded = true;
+            PlayModeEntranceCount = 0;
 
-            CCDebug.PrintLog($"{nameof(IsReloaded)} = true",
+            CCDebug.PrintLog($"{nameof(PlayModeEntranceCount)} is reseted.",
                              new DebugContext(typeof(EditorDomain)).Additive().Editor());
         }
 
         [InitializeOnEnterPlayMode]
         public static void OnPlayModeEnter()
         {
-            IsReloaded = false;
+            PlayModeEntranceCount++;
 
-            InvokeOnEnterPlayModeResetMethods();
-
-            CCDebug.PrintLog($"{nameof(IsReloaded)} = false",
+            CCDebug.PrintLog($"{nameof(PlayModeEntranceCount)} = {PlayModeEntranceCount}",
                              new DebugContext(typeof(EditorDomain)).Additive().Editor());
         }
 

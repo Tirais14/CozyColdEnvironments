@@ -17,9 +17,9 @@ namespace CCEnvs.Unity.Editor
         static AutoCompilingToggle()
         {
             if (!IsCompilationEnabled)
-                DisableAutoCompiling(isInternal: true);
+                DisableAutoCompiling(isInternal: false);
             else
-                EnableAutoCompiling(isInternal: true);
+                EnableAutoCompiling(isInternal: false);
         }
 
         [MenuItem("Editor/Compiling/Enable &e")]
@@ -28,9 +28,7 @@ namespace CCEnvs.Unity.Editor
             if (IsCompilationEnabled)
                 return;
 
-            EditorApplication.UnlockReloadAssemblies();
-
-            SetEnabled(isInternal: false);
+            EnableAutoCompiling(isInternal: false);
         }
 
         [MenuItem("Editor/Compiling/Disable &d")]
@@ -45,7 +43,7 @@ namespace CCEnvs.Unity.Editor
             PlayerPrefs.Save();
 
             if (!isInternal)
-                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling enabled.",
+                CCDebug.PrintLog($"Auto compiling enabled.",
                                  typeof(AutoCompilingToggle));
         }
 
@@ -55,7 +53,7 @@ namespace CCEnvs.Unity.Editor
             PlayerPrefs.Save();
 
             if (!isInternal)
-                CCDebug.PrintLog($"{nameof(AutoCompilingToggle)}: Auto compiling disabled.",
+                CCDebug.PrintLog($"Auto compiling disabled.",
                                  typeof(AutoCompilingToggle));
         }
 
@@ -71,6 +69,9 @@ namespace CCEnvs.Unity.Editor
 
         private static void DisableAutoCompiling(bool isInternal)
         {
+            if (!IsCompilationEnabled)
+                return;
+
             EditorApplication.LockReloadAssemblies();
 
             SetDisabled(isInternal);

@@ -90,12 +90,7 @@ namespace CCEnvs.Reflection
                                     bool throwOnError)
         {
 
-            Type[] foundTypes = (from module in assembly.GetModules()
-                                 select module.FindTypes(TypeFilter, parameters) into types
-                                 where types.IsNotEmpty()
-                                 from type in types
-                                 select type)
-                                 .ToArray();
+            Type[] foundTypes = FindTypesInternal(parameters).ToArray();
 
             if (foundTypes.IsEmpty())
             {
@@ -114,16 +109,19 @@ namespace CCEnvs.Reflection
         private static IEnumerable<Type> FindTypesInternal(TypeFinderParameters parameters)
         {
             return from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                   select FindType(assembly, parameters, throwOnError: false) into type
+                   where !parameters.HasAssemblyName
+                   ||
+                   assembly.GetName().Name.ContainsOrdinal(parameters.AssemblyName, parameters.IgnoreCase)
+                   select assembly.GetTypes() into types
+                   from type in types
                    where type is not null
+                   where !parameters.HasNamespace
+                   || 
+                   (type.Namespace ?? string.Empty).ContainsOrdinal(parameters.Namespace, parameters.IgnoreCase)
+                   where !parameters.HasTypeName
+                   || 
+                   parameters.TypeName.ContainsOrdinal(type.GetName(), parameters.IgnoreCase)
                    select type;
-        }
-
-        private static bool TypeFilter(Type type, object criteria)
-        {
-            var searchingParameters = (TypeFinderParameters)criteria;
-
-            return searchingParameters.IsMatch(type);
         }
     }
 }

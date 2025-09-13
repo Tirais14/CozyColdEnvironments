@@ -10,7 +10,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using static CCEnvs.BindingFlagsDefault;
 
 #pragma warning disable IDE1006
@@ -165,27 +164,33 @@ namespace CCEnvs.Reflection
             set
             {
                 target = value;
-                TargetType = target!.GetType();
+
+                if (value is not null)
+                    TargetType = target?.GetType()!;
             }
         }
         public Type TargetType { get; private set; }
         public Settings settings { get; }
         public bool IncludeNonPublic { get; }
 
-        public Reflected(Type targetType, Settings settings = default)
+        protected Reflected(Type targetType, object? target, Settings settings = default)
         {
-            target = null;
+            this.target = target;
             TargetType = targetType;
             this.settings = settings;
             IncludeNonPublic = settings.IsFlagSetted(Settings.IncludeNonPublic);
         }
 
-        public Reflected(object target, Settings settings = default)
+        public Reflected(Type targetType, Settings settings = default)
+            :
+            this(targetType, target: null, settings)
         {
-            this.target = target;
-            TargetType = target.GetType();
-            this.settings = settings;
-            IncludeNonPublic = settings.IsFlagSetted(Settings.IncludeNonPublic);
+        }
+
+        public Reflected(object target, Settings settings = default)
+            :
+            this(target.GetType(), target, settings)
+        {
         }
 
         public static Reflected T<T>(Settings settings = default)
@@ -398,6 +403,15 @@ namespace CCEnvs.Reflection
                 return IncludeNonPublic ? StaticAll : StaticPublic;
 
             return IncludeNonPublic ? All : AllPublic;
+        }
+    }
+
+    public class Reflected<T> : Reflected
+    {
+        public Reflected(object? target, Settings settings = Settings.None)
+            : 
+            base(typeof(T), target, settings)
+        {
         }
     }
 }

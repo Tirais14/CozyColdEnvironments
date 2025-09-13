@@ -120,6 +120,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             }
 
             registeredActions.TrimExcess();
+            CCDebug.PrintLog("Initialized", new DebugContext(GetType()).Additive());
         }
     }
 }

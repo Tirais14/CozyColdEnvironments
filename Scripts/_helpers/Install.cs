@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.Attributes;
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System;
@@ -12,6 +11,9 @@ namespace CCEnvs
     {
         public static void Static()
         {
+            if (!ReflectedType.EditorDomain.IsFirstPlayModeEntrance)
+                return;
+
             foreach (var installer in from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                       select assembly.GetTypes() into types
                                       from type in types
