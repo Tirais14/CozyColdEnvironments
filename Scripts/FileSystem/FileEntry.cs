@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public class FileEntry : FileSystemEntry
     {
@@ -23,7 +23,7 @@ namespace CCEnvs.FileSystem
         {
         }
 
-        public FileEntry(FSPath path) : base(path)
+        public FileEntry(Path path) : base(path)
         {
         }
 
@@ -41,7 +41,7 @@ namespace CCEnvs.FileSystem
             return CreateEntry(overwrite: false, pathParts);
         }
         /// <param name="overwrite">if false - throws exception if file exists</param>
-        public static FileEntry CreateEntry(FSPath path, bool overwrite = false)
+        public static FileEntry CreateEntry(Path path, bool overwrite = false)
         {
             return CreateEntry(overwrite, path.value);
         }

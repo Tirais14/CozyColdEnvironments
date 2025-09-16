@@ -6,6 +6,7 @@ namespace CCEnvs.Unity
         None,
         Update,
         FixedUpdate,
-        LateUpdate
+        LateUpdate,
+        Custom
     }
 }

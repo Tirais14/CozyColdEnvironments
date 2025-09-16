@@ -2,7 +2,7 @@
 using System;
 using CCEnvs.Attributes.Metadata;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public record ArgumentEntry : ScriptEntry, ITypeProvider
     {

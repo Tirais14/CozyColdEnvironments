@@ -54,13 +54,13 @@ namespace CCEnvs
 
         public static class Validate
         {
-            public static void ArgumentNull([NotNull] object? obj,
+            public static void ArgumentNull<T>([NotNull] T? obj,
                                             string paramName)
             {
                 if (obj.IsNull())
                     throw new ArgumentNullException(paramName);
             }
-            public static void ArgumentNullNested([NotNull] object? obj,
+            public static void ArgumentNullNested<T>([NotNull] T? obj,
                                                   params string[] complexParamName)
             {
                 if (obj.IsNull())

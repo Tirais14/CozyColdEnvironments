@@ -1,4 +1,4 @@
-using CCEnvs.FileSystem.ScriptUtils;
+using CCEnvs.Files.ScriptUtils;
 using CCEnvs.Unity;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 
 #nullable enable
 
-namespace CCEnvs.FileSystem.Editor
+namespace CCEnvs.Files.Editor
 {
     public sealed class DirectoryInfoFilesCreator : BaseSharpFileCreator<string>
     {
@@ -80,8 +80,8 @@ namespace CCEnvs.FileSystem.Editor
 
         private string GetFileName(string directory)
         {
-            if (IsEnum) return (Path.GetFileName(directory) + "Directories").DeleteWhitespaces();
-            else return (Path.GetFileName(directory) + "Directory").DeleteWhitespaces();
+            if (IsEnum) return (System.IO.Path.GetFileName(directory) + "Directories").DeleteWhitespaces();
+            else return (System.IO.Path.GetFileName(directory) + "Directory").DeleteWhitespaces();
         }
 
         private IField[] CreateFields(string[] childDirectories, string parentDirectory)
@@ -115,10 +115,10 @@ namespace CCEnvs.FileSystem.Editor
         private static string GetFieldName(string directory, string? parentDirectory = null)
         {
             var relativePath = parentDirectory.IsNotNullOrEmpty()
-                               ? Path.GetRelativePath(parentDirectory, directory)
+                               ? System.IO.Path.GetRelativePath(parentDirectory, directory)
                                : directory;
 
-            return relativePath.Replace(FSPath.Separators, '_').DeleteWhitespaces();
+            return relativePath.Replace(Path.Separators, '_').DeleteWhitespaces();
         }
 
         //private TypeData CreateEnumExtensionsClass(string enumTypeName)

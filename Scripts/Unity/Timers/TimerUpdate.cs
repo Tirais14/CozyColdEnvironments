@@ -5,17 +5,10 @@ namespace CCEnvs.Unity.Timers
 {
     public class TimerUpdate : TimerMono
     {
-        private void Update()
-        {
-            if (!IsActive)
-                return;
+        protected override float DeltaTime => Time.deltaTime;
 
-            timer.AddSeconds(Time.deltaTime);
-        }
+        public static TimerUpdate Create() => (TimerUpdate)Create(UpdateType.Update);
 
-        public static ITimer Create()
-        {
-            return Create(UpdateType.Update);
-        }
+        private void Update() => Main();
     }
 }

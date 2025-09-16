@@ -4,15 +4,15 @@ using System.Threading;
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public abstract class FileSystemEntry
     {
         private FileAttributes? attributes;
         private string? customName;
-        protected FSPath path;
+        protected Path path;
 
-        public FSPath Path {
+        public Path Path {
             get => path;
             set => SetPath(value);
         }
@@ -46,7 +46,7 @@ namespace CCEnvs.FileSystem
             SetPath(pathParts);
         }
 
-        protected FileSystemEntry(FSPath path, string? name = null)
+        protected FileSystemEntry(Path path, string? name = null)
         {
             SetPath(path);
             customName = name;
@@ -67,10 +67,10 @@ namespace CCEnvs.FileSystem
 
         public abstract void Save(bool overwrite = false);
 
-        public virtual void SetPath(FSPath path) => this.path = path;
+        public virtual void SetPath(Path path) => this.path = path;
         public void SetPath(string path)
         {
-            SetPath(new FSPath(path));
+            SetPath(new Path(path));
         }
         public void SetPath(params string[] pathParts)
         {
@@ -84,7 +84,7 @@ namespace CCEnvs.FileSystem
                 return;
             }
 
-            SetPath(new FSPath(pathParts));
+            SetPath(new Path(pathParts));
         }
 
         /// <param name="name"></param>

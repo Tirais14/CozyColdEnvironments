@@ -1,4 +1,4 @@
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public interface IFileText
     {

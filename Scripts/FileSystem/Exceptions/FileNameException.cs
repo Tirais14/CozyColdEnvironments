@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public class FileNameException : CCException
     {

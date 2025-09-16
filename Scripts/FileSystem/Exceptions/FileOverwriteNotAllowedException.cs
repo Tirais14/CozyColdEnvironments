@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public class FileOverwriteNotAllowedException : CCException
     {

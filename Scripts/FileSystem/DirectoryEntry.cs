@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public class DirectoryEntry : FileSystemEntry
     {
@@ -21,7 +21,7 @@ namespace CCEnvs.FileSystem
         {
         }
 
-        public DirectoryEntry(FSPath path) : base(path)
+        public DirectoryEntry(Path path) : base(path)
         {
         }
 
@@ -39,7 +39,7 @@ namespace CCEnvs.FileSystem
             return CreateEntry(overwrite: false, pathParts);
         }
         /// <param name="overwrite">if false - throws exception if file exists</param>
-        public static DirectoryEntry CreateEntry(FSPath path, bool overwrite = false)
+        public static DirectoryEntry CreateEntry(Path path, bool overwrite = false)
         {
             return CreateEntry(overwrite, path.value);
         }

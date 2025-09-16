@@ -5,17 +5,10 @@ namespace CCEnvs.Unity.Timers
 {
     public class TimerLateUpdate : TimerMono
     {
-        private void LateUpdate()
-        {
-            if (!IsActive)
-                return;
+        protected override float DeltaTime => Time.deltaTime;
 
-            timer.AddSeconds(Time.deltaTime);
-        }
+        private void LateUpdate() => Main();
 
-        public static ITimer Create()
-        {
-            return Create(UpdateType.LateUpdate);
-        }
+        public static ITimer Create() => Create(UpdateType.LateUpdate);
     }
 }

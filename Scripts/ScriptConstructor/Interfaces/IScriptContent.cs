@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 #nullable enable
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public interface IScriptContent
     {

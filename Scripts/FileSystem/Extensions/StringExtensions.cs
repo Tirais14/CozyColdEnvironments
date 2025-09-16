@@ -2,7 +2,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public static class StringExtensions
     {
@@ -19,6 +19,6 @@ namespace CCEnvs.FileSystem
         public static DirectoryEntry ToDirectoryEntry(this string str) => new(str);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static FSPath ToFilePath(this string str) => new(str);
+        public static Path ToFilePath(this string str) => new(str);
     }
 }

@@ -8,7 +8,7 @@ using System.Text;
 using CCEnvs.Attributes.Metadata;
 using CCEnvs.Reflection;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public abstract record ScriptEntry : IScriptContent, IAttributesProvider, IUsingsProvider
     {

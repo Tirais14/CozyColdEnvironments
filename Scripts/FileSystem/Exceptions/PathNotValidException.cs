@@ -2,7 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Extensions;
 
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public class PathNotValidException : CCException
     {

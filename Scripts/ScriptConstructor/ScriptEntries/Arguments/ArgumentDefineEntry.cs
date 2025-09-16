@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Metadata;
 
 #nullable enable
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public record ArgumentDefineEntry : ScriptEntry, ITypeProvider
     {

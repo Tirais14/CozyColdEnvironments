@@ -2,9 +2,9 @@
 using System;
 using System.Text;
 using CCEnvs.Reflection;
-using static CCEnvs.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.Files.ScriptUtils.Syntax;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public abstract record TypeEntry : ScriptEntry, IType
     {

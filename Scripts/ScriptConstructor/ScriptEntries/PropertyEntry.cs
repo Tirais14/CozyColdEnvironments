@@ -1,7 +1,7 @@
 #nullable enable
-using static CCEnvs.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.Files.ScriptUtils.Syntax;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public record PropertyEntry : ScriptEntry
     {

@@ -2,9 +2,9 @@
 
 using CCEnvs.Collections;
 using CCEnvs.Extensions;
-using CCEnvs.FileSystem.ScriptUtils;
+using CCEnvs.Files.ScriptUtils;
 
-namespace CCEnvs.FileSystem.Editor
+namespace CCEnvs.Files.Editor
 {
     public abstract class BaseSharpFileCreator<T>
     {

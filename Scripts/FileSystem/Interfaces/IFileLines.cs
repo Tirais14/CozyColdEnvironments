@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public interface IFileLines
     {

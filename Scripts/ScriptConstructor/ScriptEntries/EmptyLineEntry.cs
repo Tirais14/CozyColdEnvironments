@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public class EmptyLineEntry : IScriptContent
     {

@@ -7,9 +7,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
-using static CCEnvs.FileSystem.FSPath;
+using static CCEnvs.Files.Path;
 
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public static class FSPathHelper
     {
@@ -28,9 +28,9 @@ namespace CCEnvs.FileSystem
 
             path = Normalize(path);
 
-            if (Path.IsPathRooted(path) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (System.IO.Path.IsPathRooted(path) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                string root = Path.GetPathRoot(path)!;
+                string root = System.IO.Path.GetPathRoot(path)!;
 
                 if (root.Length > 0)
                 {
@@ -72,16 +72,16 @@ namespace CCEnvs.FileSystem
                 return path;
 
             return style switch {
-                PathStyle.Default => path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar),
+                PathStyle.Default => path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar),
                 PathStyle.Windows => path.Replace('/', '\\'),
                 PathStyle.Universal => path.Replace('\\', '/'),
                 _ => path,
             };
         }
 
-        public static FSPath SetStyle(FSPath path, PathStyle style)
+        public static Path SetStyle(Path path, PathStyle style)
         {
-            return new FSPath(style, path.value);
+            return new Path(style, path.value);
         }
 
         public static string Combine(PathStyle style, params string[] pathParts)
@@ -91,11 +91,11 @@ namespace CCEnvs.FileSystem
             if (pathParts.IsEmpty()) 
                 return string.Empty;
 
-            string combined = Path.Combine(pathParts);
+            string combined = System.IO.Path.Combine(pathParts);
 
             return SetStyle(combined, style);
         }
-        public static string Combine(PathStyle style, params FSPath[] pathParts)
+        public static string Combine(PathStyle style, params Path[] pathParts)
         {
             return Combine(style, pathParts.ToStringArray());
         }
@@ -116,14 +116,14 @@ namespace CCEnvs.FileSystem
             return Combine(style, parts);
         }
         /// <param name="style">if null, uses path style</param>
-        public static string Combine(FSPath path,
+        public static string Combine(Path path,
                                      IEnumerable<string> pathParts,
                                      PathStyle? style = null)
         {
             return Combine(path.value, pathParts, style ?? path.style);
         }
         public static string Combine(string path,
-                                     IEnumerable<FSPath> pathParts,
+                                     IEnumerable<Path> pathParts,
                                      PathStyle style = PathStyle.Default)
         {
 
@@ -131,8 +131,8 @@ namespace CCEnvs.FileSystem
             return Combine(path, pathParts.ToStringArray(), style);
         }
         /// <param name="style">if null, uses path style</param>
-        public static string Combine(FSPath path,
-                                     IEnumerable<FSPath> pathParts,
+        public static string Combine(Path path,
+                                     IEnumerable<Path> pathParts,
                                      PathStyle? style = null)
         {
             return Combine(path.value, pathParts, style ?? path.style);
@@ -150,7 +150,7 @@ namespace CCEnvs.FileSystem
 
             if (parts.IsEmpty())
                 return string.Empty;
-            else if (parts.Length == 1 && Path.IsPathRooted(path))
+            else if (parts.Length == 1 && System.IO.Path.IsPathRooted(path))
                 return parts[0];
 
             return Combine(style, parts[0..^1]);
@@ -186,13 +186,13 @@ namespace CCEnvs.FileSystem
             return Combine(style, proccessed.ToArray());
         }
         /// <param name="style">if null, uses path style</param>
-        public static FSPath RemoveLast(FSPath path,
+        public static Path RemoveLast(Path path,
                                         string toRemove,
                                         PathStyle? style = null)
         {
             string result = RemoveLast(path.value, toRemove, style ?? path.style);
 
-            return new FSPath(result);
+            return new Path(result);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -203,7 +203,7 @@ namespace CCEnvs.FileSystem
             if (path.IsEmpty())
                 return string.Empty;
 
-            return Path.GetFileName(path);
+            return System.IO.Path.GetFileName(path);
         }
 
         public static bool TryGetFilename(string path, [NotNullWhen(true)] out string? filename)

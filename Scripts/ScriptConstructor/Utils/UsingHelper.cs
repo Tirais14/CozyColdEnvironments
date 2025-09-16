@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using CCEnvs.Linq;
 
 #nullable enable
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public static class UsingHelper
     {

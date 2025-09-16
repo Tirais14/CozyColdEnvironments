@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     public static class FileSystemInfoExtensions
     {

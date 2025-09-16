@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     /// <summary>
     /// Enumerates all nested <see cref="IScriptContent"/> lines, attributes, usings values wtih selected type

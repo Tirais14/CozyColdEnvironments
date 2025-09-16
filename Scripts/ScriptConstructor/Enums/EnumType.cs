@@ -1,6 +1,6 @@
 using CCEnvs.Attributes.Metadata;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public enum EnumType
     {

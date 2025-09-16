@@ -1,6 +1,6 @@
 using CCEnvs.Common;
 using CCEnvs.Diagnostics;
-using CCEnvs.FileSystem;
+using CCEnvs.Files;
 using CCEnvs.Reflection;
 using CCEnvs.UnityEditor;
 using System;
@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.EditorC
                 }
             };
 
-        protected static FSPath SelectDirectory(string? defaultPath = null,
+        protected static Files.Path SelectDirectory(string? defaultPath = null,
                                                 string title = "Select Directory",
                                                 string? defaultName = null)
         {
@@ -50,10 +50,10 @@ namespace CCEnvs.Unity.EditorC
                 defaultPath ?? Application.dataPath,
                 defaultName ?? string.Empty);
 
-            return new FSPath(selectedDirectory);
+            return new Files.Path(selectedDirectory);
         }
 
-        protected static bool TrySelectDirectory(out FSPath selectedDirectory,
+        protected static bool TrySelectDirectory(out Files.Path selectedDirectory,
                                                  string? defaultPath = null,
                                                  string title = "Select Directory",
                                                  string? defaultName = null)

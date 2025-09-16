@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public sealed class ScriptFile : FileEntry
     {
@@ -91,7 +91,7 @@ namespace CCEnvs.FileSystem.ScriptUtils
             return UsingHelper.GetUsings(lines);
         }
 
-        public override void SetPath(FSPath path)
+        public override void SetPath(Path path)
         {
             if (path.Extension != Extension)
             {

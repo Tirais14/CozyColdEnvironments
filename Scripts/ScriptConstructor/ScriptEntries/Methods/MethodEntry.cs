@@ -1,11 +1,11 @@
 using System;
 using CCEnvs.Attributes.Metadata;
 using CCEnvs.Reflection;
-using static CCEnvs.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.Files.ScriptUtils.Syntax;
 
 #nullable enable
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public record MethodEntry : ScriptEntry,
         IMethod,

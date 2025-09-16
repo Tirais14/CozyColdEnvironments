@@ -7,8 +7,11 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
-        public static T As<T>(this object obj)
+        public static T As<T>(this object? obj)
         {
+            if (obj.IsNull())
+                return default!;
+
             try
             {
                 return (T)obj;

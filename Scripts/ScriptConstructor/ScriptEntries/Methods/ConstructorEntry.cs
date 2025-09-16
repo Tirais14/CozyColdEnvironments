@@ -5,10 +5,10 @@ using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static CCEnvs.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.Files.ScriptUtils.Syntax;
 
 #nullable enable
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public sealed record ConstructorEntry : ScriptEntry,
         IMethod,

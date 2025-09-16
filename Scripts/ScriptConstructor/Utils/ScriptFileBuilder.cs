@@ -3,7 +3,7 @@ using CCEnvs.Collections;
 using System;
 using System.Collections.Generic;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public static class ScriptFileBuilder
     {
@@ -54,7 +54,7 @@ namespace CCEnvs.FileSystem.ScriptUtils
 
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public static ScriptFile Build(FSPath pathWithFileName, ScriptContentList fileContent)
+        public static ScriptFile Build(Path pathWithFileName, ScriptContentList fileContent)
         {
             if (!pathWithFileName.IsValid)
                 throw new ArgumentException("Path is not valid.");

@@ -1,7 +1,7 @@
 #nullable enable
 using System;
-using static CCEnvs.FileSystem.ScriptUtils.Syntax;
-namespace CCEnvs.FileSystem.ScriptUtils
+using static CCEnvs.Files.ScriptUtils.Syntax;
+namespace CCEnvs.Files.ScriptUtils
 {
     public interface IType :
         IScriptContent,

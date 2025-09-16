@@ -1,6 +1,6 @@
 #nullable enable
 using CCEnvs.Diagnostics;
-using CCEnvs.FileSystem;
+using CCEnvs.Files;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using System;
@@ -15,7 +15,7 @@ namespace CCEnvs.Json
 {
     public static class JsonIDEWordDictionary
     {
-        public static async Task<FileEntry> Create(FSPath path,
+        public static async Task<FileEntry> Create(Files.Path path,
                                                    string[]? includeNamespaces = null,
                                                    string[]? excludeNamespaces = null)
         {

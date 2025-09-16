@@ -2,7 +2,7 @@
 using CCEnvs.Diagnostics;
 using System;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public static class EnumFieldHelper
     {

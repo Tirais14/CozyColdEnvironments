@@ -3,9 +3,9 @@
 using System;
 using System.Linq;
 using CCEnvs.Attributes.Metadata;
-using static CCEnvs.FileSystem.ScriptUtils.Syntax;
+using static CCEnvs.Files.ScriptUtils.Syntax;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public record EnumEntry : ScriptEntry, IType
     {

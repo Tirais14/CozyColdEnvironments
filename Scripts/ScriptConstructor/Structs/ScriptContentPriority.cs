@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public readonly struct ScriptContentPriority
     {

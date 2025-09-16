@@ -1,7 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 
-namespace CCEnvs.FileSystem.ScriptUtils
+namespace CCEnvs.Files.ScriptUtils
 {
     public interface IUsingsProvider
     {

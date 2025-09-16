@@ -6,38 +6,38 @@ using System.Runtime.CompilerServices;
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.FileSystem
+namespace CCEnvs.Files
 {
     /// <summary>
     /// Structure for convenient work with file system paths.
     /// Includes overrided operators.
     /// </summary>
-    public readonly struct FSPath : IEquatable<FSPath>
+    public readonly struct Path : IEquatable<Path>
     {
         public static char[] Separators => new char[] {
-            Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar
+            System.IO.Path.DirectorySeparatorChar,
+            System.IO.Path.AltDirectorySeparatorChar
         };
-        public static char DefaultDirectorySeparator => Path.DirectorySeparatorChar;
+        public static char DefaultDirectorySeparator => System.IO.Path.DirectorySeparatorChar;
 
         public readonly string value;
         public readonly PathStyle style;
 
         public readonly string FileName => FSPathHelper.GetFilename(value);
         public readonly bool HasFileName => FSPathHelper.GetFilename(value).IsNotNullOrEmpty();
-        public string Extension => Path.GetExtension(value);
+        public string Extension => System.IO.Path.GetExtension(value);
         public bool HasValue => !string.IsNullOrWhiteSpace(value);
         public bool IsValid {
             get {
                 return HasValue
                        &&
-                       !value.ContainsAny(Path.GetInvalidPathChars())
+                       !value.ContainsAny(System.IO.Path.GetInvalidPathChars())
                        &&
-                       !FileName.ContainsAny(Path.GetInvalidFileNameChars());
+                       !FileName.ContainsAny(System.IO.Path.GetInvalidFileNameChars());
             }
         }
 
-        public FSPath(PathStyle style, params string[] pathParts) : this()
+        public Path(PathStyle style, params string[] pathParts) : this()
         {
             this.style = style;
 
@@ -47,11 +47,11 @@ namespace CCEnvs.FileSystem
                 value = FSPathHelper.Combine(style, pathParts);
         }
 
-        public FSPath(params string[] pathParts) : this(PathStyle.Default, pathParts)
+        public Path(params string[] pathParts) : this(PathStyle.Default, pathParts)
         {
         }
 
-        public FSPath(FSPath path) : this(path.style, path.value)
+        public Path(Path path) : this(path.style, path.value)
         {
         }
 
@@ -59,66 +59,66 @@ namespace CCEnvs.FileSystem
         public readonly string[] Split() => FSPathHelper.Split(value);
 
         /// <summary>
-        /// Same as: (<see cref="FSPath"/> * <see cref="Style"/>)
+        /// Same as: (<see cref="Path"/> * <see cref="Style"/>)
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly FSPath With(PathStyle style)
+        public readonly Path With(PathStyle style)
         {
-            return new FSPath(style, value);
+            return new Path(style, value);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly FSPath With(string filename, PathStyle style)
+        public readonly Path With(string filename, PathStyle style)
         {
             string filenameChanged = FSPathHelper.SetFilename(value, filename);
 
-            return new FSPath(style, filenameChanged);
+            return new Path(style, filenameChanged);
         }
 
         /// <exception cref="StringArgumentException"></exception>
-        public readonly FSPath WithExtension(string extension)
+        public readonly Path WithExtension(string extension)
         {
             if (extension.IsNullOrEmpty())
                 throw new StringArgumentException(nameof(extension), extension);
 
-            string changed = Path.ChangeExtension(value, extension);
+            string changed = System.IO.Path.ChangeExtension(value, extension);
 
-            return new FSPath(style, changed);
+            return new Path(style, changed);
         }
 
         /// <summary>
         /// Changes filename in path
         /// </summary>
         /// <exception cref="StringArgumentException"></exception>
-        public readonly FSPath WithFileName(string filename)
+        public readonly Path WithFileName(string filename)
         {
             if (filename.IsNullOrEmpty())
                 throw new StringArgumentException(nameof(filename), filename);
 
             string changed = FSPathHelper.SetFilename(value, filename);
 
-            return new FSPath(style, changed);
+            return new Path(style, changed);
         }
 
-        public readonly FSPath WithPathParts(params string[] pathParts)
+        public readonly Path WithPathParts(params string[] pathParts)
         {
-            return new FSPath(style, pathParts);
+            return new Path(style, pathParts);
         }
-        public readonly FSPath WithPathParts(IEnumerable<string> pathParts)
+        public readonly Path WithPathParts(IEnumerable<string> pathParts)
         {
             return WithPathParts(pathParts.ToArray());
         }
-        public readonly FSPath WithPathParts(IEnumerable<FSPath> pathParts)
+        public readonly Path WithPathParts(IEnumerable<Path> pathParts)
         {
-            return new FSPath(style, pathParts.ToStringArray());
+            return new Path(style, pathParts.ToStringArray());
         }
-        public readonly FSPath WithPathParts(params FSPath[] pathParts)
+        public readonly Path WithPathParts(params Path[] pathParts)
         {
-            return WithPathParts((IEnumerable<FSPath>)pathParts);
+            return WithPathParts((IEnumerable<Path>)pathParts);
         }
 
         public readonly override int GetHashCode() => HashCode.Combine(value, style);
 
-        public readonly bool Equals(FSPath other)
+        public readonly bool Equals(Path other)
         {
             return value == other.value
                    &&
@@ -126,60 +126,60 @@ namespace CCEnvs.FileSystem
         }
         public readonly override bool Equals(object obj)
         {
-            return obj is FSPath path && Equals(path);
+            return obj is Path path && Equals(path);
         }
 
         public readonly override string ToString() => value ?? string.Empty;
 
-        public static FSPath operator +(FSPath a, string b)
+        public static Path operator +(Path a, string b)
         {
-            return new FSPath(FSPathHelper.Combine(a.value, b));
+            return new Path(FSPathHelper.Combine(a.value, b));
         }
-        public static FSPath operator +(FSPath a, IEnumerable<string> b)
+        public static Path operator +(Path a, IEnumerable<string> b)
         {
-            return new FSPath(FSPathHelper.Combine(a.value, b));
+            return new Path(FSPathHelper.Combine(a.value, b));
         }
-        public static FSPath operator +(FSPath a, FSPath b)
+        public static Path operator +(Path a, Path b)
         {
-            return new FSPath(FSPathHelper.Combine(a.value, b));
+            return new Path(FSPathHelper.Combine(a.value, b));
         }
-        public static FSPath operator +(FSPath a, IEnumerable<FSPath> b)
+        public static Path operator +(Path a, IEnumerable<Path> b)
         {
-            return new FSPath(FSPathHelper.Combine(a.value, b.ToStringArray()));
+            return new Path(FSPathHelper.Combine(a.value, b.ToStringArray()));
         }
 
-        public static FSPath operator -(FSPath a, string b)
+        public static Path operator -(Path a, string b)
         {
             return FSPathHelper.RemoveLast(a, b);
         }
-        public static FSPath operator -(FSPath a, FSPath b)
+        public static Path operator -(Path a, Path b)
         {
             return FSPathHelper.RemoveLast(a, b.value);
         }
 
-        public static FSPath operator *(FSPath a, PathStyle style)
+        public static Path operator *(Path a, PathStyle style)
         {
             return FSPathHelper.SetStyle(a, style);
         }
 
-        public static bool operator ==(FSPath a, FSPath b) => a.Equals(b);
+        public static bool operator ==(Path a, Path b) => a.Equals(b);
 
-        public static bool operator !=(FSPath a, FSPath b) => !a.Equals(b);
+        public static bool operator !=(Path a, Path b) => !a.Equals(b);
 
 
-        public static implicit operator string(FSPath fileSystemPath)
+        public static implicit operator string(Path fileSystemPath)
         {
             return fileSystemPath.value;
         }
 
-        public static explicit operator FileInfo(FSPath fileSystemPath)
+        public static explicit operator FileInfo(Path fileSystemPath)
         {
             string normalized = FSPathHelper.Normalize(fileSystemPath.value);
 
             return new FileInfo(normalized);
         }
 
-        public static explicit operator DirectoryInfo(FSPath fileSystemPath)
+        public static explicit operator DirectoryInfo(Path fileSystemPath)
         {
             string normalized = FSPathHelper.Normalize(fileSystemPath.value);
 
@@ -189,7 +189,7 @@ namespace CCEnvs.FileSystem
 
     public static class FSPathExtensions
     {
-        public static string[] ToStringArray(this IEnumerable<FSPath> paths)
+        public static string[] ToStringArray(this IEnumerable<Path> paths)
         {
             return paths.Select(x => x.ToString()).ToArray();
         }

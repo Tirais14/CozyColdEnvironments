@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 
 #nullable enable
-namespace CCEnvs.FileSystem.Json
+namespace CCEnvs.Files.Json
 {
     public class JsonFile : FileEntry
     {
@@ -16,11 +16,11 @@ namespace CCEnvs.FileSystem.Json
         {
         }
 
-        public JsonFile(FSPath path) : this(path.value)
+        public JsonFile(Path path) : this(path.value)
         {
         }
 
-        public override void SetPath(FSPath path)
+        public override void SetPath(Path path)
         {
             if (path.Extension != Extension)
             {

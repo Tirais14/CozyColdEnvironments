@@ -10,16 +10,16 @@ using System.Reflection;
 #pragma warning disable S3881
 namespace CCEnvs.Unity.Tickables
 {
-    public abstract class Ticker<T> 
+    public abstract class Ticker<TTickable> 
         :
         MonoCC,
-        ITicker<T>
+        ITicker<TTickable>
 
-        where T : ITickableBase
+        where TTickable : ITickableBase
     {
         private int tickablesCount;
 
-        protected readonly List<T> tickables = new();
+        protected readonly List<TTickable> tickables = new();
 
         public float TickablesCount => tickablesCount;
         public float DeltaTime { get; protected set; }
@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.Tickables
         public void Disable() => enabled = false;
 
         /// <exception cref="ArgumentNullException"></exception>
-        public IDisposable Register(T tickable)
+        public IDisposable Register(TTickable tickable)
         {
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable));
@@ -46,7 +46,7 @@ namespace CCEnvs.Unity.Tickables
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public bool Unregister(T tickable)
+        public bool Unregister(TTickable tickable)
         {
             if (tickable.IsNull())
                 return false;
@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.Tickables
                 Unregister(tickables[^1]);
         }
 
-        public bool IsRegistered(T tickable)
+        public bool IsRegistered(TTickable tickable)
         {
             return tickables.Contains(tickable);
         }
@@ -78,7 +78,7 @@ namespace CCEnvs.Unity.Tickables
         /// </summary>
         protected void DoTickablesTicks()
         {
-            T tickable;
+            TTickable tickable;
             for (int i = 0; i < tickablesCount; i++)
             {
                 tickable = tickables[i];
@@ -87,9 +87,9 @@ namespace CCEnvs.Unity.Tickables
             }
         }
 
-        protected abstract void DoTick(T tickable);
+        protected abstract void DoTick(TTickable tickable);
 
-        private static void TryVoidInjectedTicker(T tickable)
+        private static void TryVoidInjectedTicker(TTickable tickable)
         {
             Type tickableType = tickable.GetType();
             if (!TypeCache.Fields.TryGetValue(
@@ -108,7 +108,7 @@ namespace CCEnvs.Unity.Tickables
             tickerField.SetValue(tickable, null);
         }
 
-        private void TryInjectTicker(T tickable)
+        private void TryInjectTicker(TTickable tickable)
         {
             Type tickableType = tickable.GetType();
             if (!TypeCache.Fields.TryGetValue(
@@ -132,13 +132,13 @@ namespace CCEnvs.Unity.Tickables
             tickerField.SetValue(tickable, this);
         }
 
-        private void AddTickable(T tickable)
+        private void AddTickable(TTickable tickable)
         {
             tickables.Add(tickable);
             UpdateCount();
         }
 
-        private void RemoveTickable(T tickable)
+        private void RemoveTickable(TTickable tickable)
         {
             tickables.Remove(tickable);
             UpdateCount();
