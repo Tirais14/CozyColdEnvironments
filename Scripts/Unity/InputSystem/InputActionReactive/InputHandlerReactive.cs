@@ -27,6 +27,8 @@ namespace CCEnvs.Unity.InputSystem.Reactive
 
             if (autoSetProps)
                 SetProperties();
+
+            Enable();
         }
 
         /// <exception cref="StringArgumentException"></exception>
@@ -48,6 +50,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
                     item.Enable();
 
                 IsEnabled = true;
+                CCDebug.PrintLog("Enabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {
@@ -64,6 +67,8 @@ namespace CCEnvs.Unity.InputSystem.Reactive
                     item.Disable();
 
                 IsEnabled = false;
+
+                CCDebug.PrintLog("Disabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {

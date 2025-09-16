@@ -59,7 +59,7 @@ namespace CCEnvs.Async
 
             if (!isTaskTracking)
             {
-                Task.RunOnThreadPool(TrackTasks).Forget();
+                _ = Task.Run(TrackTasks);
                 isTaskTracking = true;
             }
         }

@@ -25,9 +25,6 @@ namespace CCEnvs.Unity.Editor
         [MenuItem("Editor/Compiling/Enable &e")]
         public static void EnableAutoCompiling()
         {
-            if (IsCompilationEnabled)
-                return;
-
             EnableAutoCompiling(isInternal: false);
         }
 
@@ -59,9 +56,6 @@ namespace CCEnvs.Unity.Editor
 
         private static void EnableAutoCompiling(bool isInternal)
         {
-            if (IsCompilationEnabled)
-                return;
-
             EditorApplication.UnlockReloadAssemblies();
 
             SetEnabled(isInternal);
@@ -69,9 +63,6 @@ namespace CCEnvs.Unity.Editor
 
         private static void DisableAutoCompiling(bool isInternal)
         {
-            if (!IsCompilationEnabled)
-                return;
-
             EditorApplication.LockReloadAssemblies();
 
             SetDisabled(isInternal);

@@ -27,6 +27,14 @@ namespace CCEnvs.Unity.GameSystems.Storages
             this.slots = new List<IItemSlot>(slots);
         }
 
+        public ItemStorage(int slotCount)
+            :
+            this(new IItemSlot[slotCount].Select(x => new ItemSlot(new ItemStack()))
+                                         .ToArray())
+        {
+
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IItemSlot GetSlot(int id) => slots[id];
 
