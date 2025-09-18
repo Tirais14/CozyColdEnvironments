@@ -22,16 +22,5 @@ namespace CCEnvs.Collections
 
             return index > -1 ? array[index] : default;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForEach<T>(this T[] array, Action<T> action) => Array.ForEach(array, action);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] ForEachQ<T>(this T[] array, Action<T> action)
-        {
-            Array.ForEach(array, action);
-
-            return array;
-        }
     }
 }

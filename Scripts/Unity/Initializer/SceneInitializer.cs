@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.Initables
                     throw new CCException($"{initableAsync.GetTypeName()} is already inited.");
 
                 var task = initableAsync.InitAsync();
-                CC.NeccesaryTasks.RegisterTask(task);
+                CCEnvs.CC.NeccesaryTasks.RegisterTask(task);
                 await task;
 
                 SetInited(initableAsync);

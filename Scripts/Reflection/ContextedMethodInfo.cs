@@ -13,7 +13,7 @@ namespace CCEnvs.Reflection
             value = method;
         }
 
-        public object Invoke(object[] arguments)
+        public object Invoke(params object[] arguments)
         {
             return value.Invoke(context, arguments);
         }

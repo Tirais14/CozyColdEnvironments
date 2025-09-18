@@ -11,6 +11,31 @@ namespace CCEnvs.Linq
 {
     public static class EnumerableQueries
     {
+        public static T[] ForEach<T>(this IEnumerable<T> values, Action<T> action)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Validate.ArgumentNull(action, nameof(action));
+
+            T[] materialized = values.ToArray();
+            int count = materialized.Length;
+            for (int i = 0; i < count; i++)
+                action(materialized[i]);
+
+            return materialized;
+        }
+
+        /// <summary>
+        /// Doesn't materialize collection
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Action<T>(this IEnumerable<T> values, Action<T> action)
+        {
+            return values.Select(x => { action(x); return x; });
+        }
+
         public static IEnumerable<T> RemoveElement<T>(this IEnumerable<T> values,
                                                       T removeValue)
         {

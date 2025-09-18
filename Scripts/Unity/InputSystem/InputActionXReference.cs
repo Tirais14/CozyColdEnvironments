@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace CCEnvs.InputSystem
+namespace CCEnvs.Unity.InputSystem
 {
     [Serializable]
     public class InputActionXReference

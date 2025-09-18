@@ -1,3 +1,4 @@
+using CCEnvs.Returnables;
 using System;
 
 #nullable enable
@@ -6,52 +7,36 @@ namespace CCEnvs.Disposables
 {
     public static class Subscription
     {
-        public delegate void Disposer<TObservable>(TObservable observable);
-        public delegate void Disposer<TObserver, TObservable>(TObserver observer,
-                                                              TObservable observable);
+        public delegate void Disposer();
+        public delegate void Disposer<in TObservable>(TObservable observable);
+        public delegate void Disposer<in TObserver, in TObservable>(TObserver observer,
+                                                                    TObservable observable);
 
-        public static Subscription<TObserver, TObservable> 
-            Create<TObserver, TObservable>(TObserver observer,
-                                           TObservable observable, 
-                                           Disposer<TObserver, TObservable> disposer)
+        public static ISubscription Create(Disposer disposer)
         {
-            return new Subscription<TObserver, TObservable>(disposer, observer, observable);
+            return Create(observable: default(Mock), (_) => disposer());
         }
-    }
-
-    public sealed class Subscription<TObservable>
-    :
-    ISubscription<TObservable>
-    {
-        private readonly Subscription.Disposer<TObservable> disposer;
-        private readonly TObservable observable;
-        private bool disposedValue;
-
-        public TObservable Observable => observable;
-
-        public Subscription(Subscription.Disposer<TObservable> disposer,
-                            TObservable observable)
+        public static ISubscription<TObservable> Create<TObservable>(
+            TObservable observable,
+            Disposer<TObservable> disposer)
         {
-            this.disposer = disposer;
-            this.observable = observable;
+            return new Subscription<Mock, TObservable>((_, x) => disposer(x),
+                                                       observer: default,
+                                                       observable);
         }
-
-        /// <exception cref="InvalidOperationException"></exception>
-        public void Dispose()
+        public static Subscription<TObserver, TObservable> Create<TObserver, TObservable>(
+            TObserver observer,
+            TObservable observable,
+            Disposer<TObserver, TObservable> disposer)
         {
-            if (disposedValue)
-                return;
-
-            disposer(observable);
-            GC.SuppressFinalize(this);
-
-            disposedValue = true;
+            return new Subscription<TObserver, TObservable>(disposer,
+                                                            observer,
+                                                            observable);
         }
     }
 
     public sealed class Subscription<TObserver, TObservable> 
-        : 
-        ISubscription<TObserver, TObservable>
+        : ISubscription<TObserver, TObservable>
     {
         private readonly Subscription.Disposer<TObserver, TObservable> disposer;
         private readonly TObserver observer;

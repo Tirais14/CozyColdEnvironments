@@ -4,7 +4,7 @@ using UnityEngine;
 #pragma warning disable S101
 namespace CCEnvs.Unity
 {
-    public static class UCC
+    public class UCC : MonoCCStatic<UCC>
     {
         public static class Tags
         {
@@ -12,19 +12,17 @@ namespace CCEnvs.Unity
             public const string GAME_OBJECT_OVERRIDE = "GameObjectOverride";
         }
 
-        public readonly static LazyCC<Sprite> ColorSprite = new(() =>
-        {
-            return Resources.Load<Sprite>("Textures/ColorSprite");
-        });
+        public static Sprite ColorSprite { get; private set; } = null!;
+        public static Sprite DummySprite { get; private set; } = null!;
+        public static Sprite ErrorSprite { get; private set; } = null!;
 
-        public readonly static LazyCC<Sprite> DummySprite = new(() =>
+        protected override void OnAwake()
         {
-            return Resources.Load<Sprite>("Textures/DummySprite");
-        });
+            base.OnAwake();
 
-        public readonly static LazyCC<Sprite> ErrorSprite = new(() =>
-        {
-            return Resources.Load<Sprite>("Textures/ErrorSprite");
-        });
+            ColorSprite = Resources.Load<Sprite>("Textures/ColorSprite");
+            DummySprite = Resources.Load<Sprite>("Textures/DummySprite");
+            ErrorSprite = Resources.Load<Sprite>("Textures/ErrorSprite");
+        }
     }
 }

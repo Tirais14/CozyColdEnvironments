@@ -3,7 +3,7 @@ using System;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CCEnvs.InputSystem
+namespace CCEnvs.Unity.InputSystem
 {
     public sealed class InputActionSubscription 
         : 

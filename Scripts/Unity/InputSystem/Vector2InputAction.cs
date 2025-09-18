@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using CCEnvs.Unity.Extensions;
 
 #nullable enable
-namespace CCEnvs.InputSystem
+namespace CCEnvs.Unity.InputSystem
 {
     public class Vector2InputAction : InputActionX<Vector2>
     {

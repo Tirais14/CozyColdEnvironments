@@ -1,6 +1,6 @@
 {
-    "name": "CCEnvs.InputSystem",
-    "rootNamespace": "CCEnvs.InputSystem",
+    "name": "CCEnvs.Unity.InputSystem",
+    "rootNamespace": "CCEnvs.Unity.InputSystem",
     "references": [
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",

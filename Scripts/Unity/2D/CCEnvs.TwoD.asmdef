@@ -3,7 +3,9 @@
     "rootNamespace": "CCEnvs.TwoD",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
-        "GUID:1898880136cb79448802a5416e8c3523"
+        "GUID:1898880136cb79448802a5416e8c3523",
+        "GUID:86090fba37b91534998945c10134b783",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

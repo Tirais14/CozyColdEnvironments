@@ -1,4 +1,4 @@
-using CCEnvs.InputSystem;
+using CCEnvs.Unity.InputSystem;
 using System;
 using static UnityEngine.InputSystem.InputAction;
 

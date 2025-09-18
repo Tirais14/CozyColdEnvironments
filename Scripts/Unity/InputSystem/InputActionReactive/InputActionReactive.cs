@@ -24,30 +24,30 @@ namespace CCEnvs.Unity.InputSystem.Reactive
         public InputAction Action { get; }
         public IObservable<CallbackContext> Raw => raw.AsObservable();
         public IObservable<CallbackContext> Started {
-            get => started.Skip(1).Where(x => !x.Equals(default(CallbackContext)));
+            get => started.Skip(1);
         }
         public IObservable<CallbackContext> Performed {
-            get => performed.Skip(1).Where(x => !x.Equals(default(CallbackContext)));
+            get => performed.Skip(1);
         }
         public IObservable<CallbackContext> Canceled {
-            get => canceled.Skip(1).Where(x => !x.Equals(default(CallbackContext)));
+            get => canceled.Skip(1);
         }
         public IObservable<bool> ButtonRaw => raw.Select(x => x.ReadValueAsButton());
         public IObservable<bool> ButtonStarted {
-            get => started.Skip(1).Select(x => x.ReadValueAsButton());
+            get => Started.Select(x => x.ReadValueAsButton());
         }
         public IObservable<bool> ButtonPerformed {
-            get => performed.Skip(1).Select(x => x.ReadValueAsButton());
+            get => Performed.Select(x => x.ReadValueAsButton());
         }
         public IObservable<bool> ButtonCanceled {
-            get => canceled.Skip(1).Select(x => x.ReadValueAsButton());
+            get => Canceled.Select(x => x.ReadValueAsButton());
         }
         public string ActionName => Action.name;
         public bool IsEnabled => Action.enabled;
 
         public InputActionReactive(InputAction inputAction)
         {
-            CC.Validate.ArgumentNull(inputAction, nameof(inputAction));
+            CCEnvs.CC.Validate.ArgumentNull(inputAction, nameof(inputAction));
 
             Action = inputAction;  
             Setup();

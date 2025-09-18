@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System.Linq;
@@ -41,5 +40,7 @@ namespace CCEnvs.Unity
                 return instance;
             }
         }
+
+        public static void TryInstantiateManual() => _ = Instance;
     }
 }

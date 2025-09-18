@@ -1,7 +1,7 @@
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace CCEnvs.InputSystem
+namespace CCEnvs.Unity.InputSystem
 {
     public class ButtonInputAction : InputActionX<bool>
     {

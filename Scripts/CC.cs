@@ -103,8 +103,8 @@ namespace CCEnvs
                     throw new StringException(value);
             }
 
-            public static void CollectionArgument(string paramName,
-                                                  [NotNull] IEnumerable? enumerable)
+            public static void CollectionArgument([NotNull] IEnumerable? enumerable,
+                                                  string paramName)
             {
                 if (CCEnumerable.IsNullOrEmpty(enumerable))
                     throw new CollectionArgumentException(paramName, enumerable);

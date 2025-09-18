@@ -1,0 +1,14 @@
+using CCEnvs.Attributes;
+using System;
+
+#nullable enable
+namespace CCEnvs.Unity.Attributes
+{
+    /// <summary>
+    /// Marks <see cref="MonoCCStatic"/> to create the instance before the first call
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class InstantCreationAttribute : Attribute, ICCAttribute
+    {
+    }
+}

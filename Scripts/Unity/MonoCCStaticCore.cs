@@ -1,5 +1,8 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
+using CCEnvs.Unity.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +21,10 @@ namespace CCEnvs.Unity
 
         protected override void OnAwake()
         {
-            if (FindObjectsByType<MonoCCStaticCore>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .Any(x => x != this))
-                throw new CCFrameworkException($"Cannot create more than one {nameof(MonoCCStaticCore)}.");
+            Validate();
+            Setup();
+            CreateInstantClasses();
 
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += (_, _) => instances.Clear();
             base.OnAwake();
         }
 
@@ -37,12 +37,16 @@ namespace CCEnvs.Unity
             if (instance == null)
                 GetOrCreateSelf();
 
-            if (!instance!.instances.TryGetValue(type, out MonoCCStatic? result))
-                return instance.GetOrCreateStatic(type);
+            if (!instance!.instances.TryGetValue(type, out MonoCCStatic? result)
+                || result == null
+                )
+                return instance.GetInstanceOf(type);
             if (result == null)
             {
-                instance.instances.Remove(type);
-                return instance.GetOrCreateStatic(type);
+                var created = instance.GetInstanceOf(type);
+                instance.instances[type] = created;
+
+                return created;
             }
 
             return result;
@@ -51,6 +55,37 @@ namespace CCEnvs.Unity
             where T : MonoCCStatic
         {
             return (T)GetInstance(typeof(T));
+        }
+
+        private void Validate()
+        {
+            if (FindObjectsByType<MonoCCStaticCore>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None).Any(x => x != this)
+                )
+                throw new CCFrameworkException($"Cannot create more than one {nameof(MonoCCStaticCore)}.");
+        }
+
+        private void Setup()
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += (_, _) => instances.Clear();
+        }
+
+        private void CreateInstantClasses()
+        {
+            int instantCreatedClassCount = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type.IsType<MonoCCStatic>())
+                .Where(type => type.IsDefined<InstantCreationAttribute>(inherit: false))
+                .ForEach(type => type.AsReflected()
+                                     .Method(nameof(MonoCCStatic<MonoCCStatic>.TryInstantiateManual))
+                                     .Invoke())
+                .Length;
+
+            CCDebug.PrintLog($"Instant created class count = {instantCreatedClassCount}.",
+                             new DebugContext(this).Additive());
         }
 
         private static void GetOrCreateSelf()
@@ -67,14 +102,17 @@ namespace CCEnvs.Unity
             instance = go.GetComponent<MonoCCStaticCore>();
         }
 
-        private MonoCCStatic GetOrCreateStatic(Type type)
+        private MonoCCStatic GetInstanceOf(Type type)
         {
             var value = (MonoCCStatic?)FindAnyObjectByType(type);
 
             if (value == null)
                 value = (MonoCCStatic)gameObject.AddComponent(type);
 
-            instances.Add(value.GetType(), value);
+            if (instances.ContainsKey(type))
+                instances[type] = value;
+            else
+                instances.Add(value.GetType(), value);
 
             return value;
         }
