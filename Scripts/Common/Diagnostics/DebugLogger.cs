@@ -169,23 +169,35 @@ namespace CCEnvs.Diagnostics
             }
         }
 
-        private static string GetMessage(object message, object? context)
+        private static string GetMessage(object target, object? context)
         {
-            message = (message?.ToString() ?? string.Empty).TrimEnd('.');
+            target = (target?.ToString() ?? string.Empty).TrimEnd('.');
 
             if (context is not null)
-            {
-                if (context is Object unityObj)
-                    return $"{unityObj.name}: {message}.";
-                else if (context is DebugContext debugContext
-                        &&
-                        debugContext.Target is not null)
-                    return $"{GetTypeName(debugContext.Target)}: {message}.";
-                else
-                    return $"{GetTypeName(context)}: {message}.";
-            }
+                return $"{GetContextInfo(context)}: {GetTargetInfo(target)}.";
 
-            return $"{message}.";
+            return $"{target}.";
+        }
+
+        private static string GetContextInfo(object context)
+        {
+            object? contextTarget = context;
+
+            if (context is DebugContext debugContext)
+                contextTarget = debugContext.Target;
+
+            if (contextTarget is null)
+                return string.Empty;
+
+            if (context is Object unityObj)
+                return $"{GetTypeName(unityObj)}({unityObj.name})";
+
+            return $"{GetTypeName(contextTarget)}";
+        }
+
+        private static string GetTargetInfo(object target)
+        {
+            return (target?.ToString() ?? string.Empty).TrimEnd('.');
         }
 
         private bool IsPrintAllowed(object? context)

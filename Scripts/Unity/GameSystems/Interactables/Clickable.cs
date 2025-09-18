@@ -1,25 +1,30 @@
-using CCEnvs.Observables;
+using CCEnvs.Diagnostics;
+using CCEnvs.Rx;
 using CCEnvs.Returnables;
 using System;
-using UnityEngine;
 using UnityEngine.Events;
 
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public class Clickable : Component, IClickable
+    public class Clickable : MonoCC, IClickable
     {
         private readonly Observable observable = new();
 
-        [SerializeField]
-        private UnityEvent onClick = new();
+        private UnityAction? onClick;
 
         public event UnityAction OnClick {
-            add => onClick.AddListener(value);
-            remove => onClick.RemoveListener(value);
+            add => onClick += value;
+            remove => onClick -= value;
         }
 
-        public virtual void Click() => onClick.Invoke();
+        public virtual void Click()
+        {
+            onClick?.Invoke();
+            observable.Publish();
+
+            CCDebug.PrintLog("Clicked", this);
+        }
 
         public IDisposable Subscribe(IObserver<Mock> observer)
         {

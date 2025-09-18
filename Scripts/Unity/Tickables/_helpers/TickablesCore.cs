@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.Tickables
 
             Instance.registeredTickers.Add(ticker.GetType(), ticker);
 
-            return new Subscription<ITicker>((x) => UnregisterTicker(x), ticker);
+            return Subscription.Create(ticker, (x) => UnregisterTicker(x));
         }
 
         public static bool UnregisterTicker(ITicker? ticker)
