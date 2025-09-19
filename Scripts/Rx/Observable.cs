@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
+using CCEnvs.Reflection;
 using CCEnvs.Returnables;
 using System;
 using System.Collections.Generic;
@@ -11,25 +12,41 @@ namespace CCEnvs.Rx
     {
         protected readonly List<IObserver<T>> observers = new();
 
-        private readonly T? value;
-        private readonly Func<T>? valueGetter;
-        private readonly bool useGetter;
-        private readonly List<ISubscription> subscriptions;
+        private readonly T? target;
+        private readonly object? targetRef;
+        private readonly TargetRefType targetRefType;
+        private readonly List<ISubscription> subscriptions = new();
 
         private volatile bool disposedValue;
 
-        public Observable(T value)
+        public Observable(T target)
         {
-            this.value = value;
-            useGetter = false;
+            this.target = target;
+            targetRefType = TargetRefType.Value;
         }
 
-        public Observable(Func<T> valueGetter)
+        public Observable(Func<T> targetGetter)
         {
-            CC.Validate.ArgumentNull(valueGetter, nameof(valueGetter));
+            CC.Validate.ArgumentNull(targetGetter, nameof(targetGetter));
 
-            this.valueGetter = valueGetter;
-            useGetter = true;
+            targetRef = targetGetter;
+            targetRefType = TargetRefType.Getter;
+        }
+
+        public Observable(ContextedFieldInfo targetContainer)
+        {
+            CC.Validate.ArgumentNull(targetContainer, nameof(targetContainer));
+
+            targetRef = targetContainer;
+            targetRefType = TargetRefType.Field;
+        }
+
+        public Observable(ContextedPropertyInfo targetContainer)
+        {
+            CC.Validate.ArgumentNull(targetContainer, nameof(targetContainer));
+
+            targetRef = targetContainer;
+            targetRefType = TargetRefType.Property;
         }
 
         public IDisposable Subscribe(IObserver<T> observer)
@@ -38,6 +55,7 @@ namespace CCEnvs.Rx
 
             observers.Add(observer);
             var subscription = Subscription.Create(observer, this, (x, _) => Unsubscribe(x));
+            subscriptions.Add(subscription);
             Publish();
 
             return subscription;
@@ -50,15 +68,29 @@ namespace CCEnvs.Rx
             observers.Remove(observer);
         }
 
+#pragma warning disable S127
         public void Publish()
         {
-            T tValue = useGetter ? valueGetter!() : value!;
+            T tTarget;
+
+            if (targetRefType == TargetRefType.Value)
+                tTarget = target!;
+            else
+            {
+                tTarget = targetRefType switch
+                {
+                    TargetRefType.Getter => targetRef.As<Func<T>>().Invoke(),
+                    TargetRefType.Field => targetRef.As<ContextedFieldInfo>().GetValue().As<T>(),
+                    TargetRefType.Property => targetRef.As<ContextedPropertyInfo>().GetValue().As<T>(),
+                    _ => throw new InvalidOperationException(targetRefType.ToString())
+                };
+            }
 
             for (int i = 0; i < observers.Count;)
             {
                 try
                 {
-                    observers[i].OnNext(tValue);
+                    observers[i].OnNext(tTarget);
                     i++;
                 }
                 catch (Exception ex)
@@ -68,8 +100,13 @@ namespace CCEnvs.Rx
                 }
             }
         }
+#pragma warning restore S127
 
-        public void Dispose() => Dispose(true);
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -78,27 +115,40 @@ namespace CCEnvs.Rx
 
             if (disposing)
                 subscriptions.ForEach(x => x.Dispose());
+
+            disposedValue = true;
+        }
+
+        private enum TargetRefType
+        {
+            None,
+            Value,
+            Getter,
+            Field,
+            Property
         }
     }
     public class Observable : Observable<Mock>, IObservable
     {
-        public Observable() : base(value: default)
+        public Observable() : base(target: default)
         {
         }
 
-        public static Observable<T> Create<T>(T value)
+        public static Observable<T> Create<T>(T target)
         {
-            return new Observable<T>(value);
+            return new Observable<T>(target);
         }
-        public static Observable<T> Create<T>(Func<T> valueGetter)
+        public static Observable<T> Create<T>(Func<T> targetGetter)
         {
-            return new Observable<T>(valueGetter);
+            return new Observable<T>(targetGetter);
         }
-
-        //public static Observable FromEvent(Action<Action> addAction,
-        //                                   Action<Action> removeAction)
-        //{
-        //    return 
-        //}
+        public static Observable<T> Create<T>(ContextedFieldInfo targetContainer)
+        {
+            return new Observable<T>(targetContainer);
+        }
+        public static Observable<T> Create<T>(ContextedPropertyInfo targetContainer)
+        {
+            return new Observable<T>(targetContainer);
+        }
     }
 }
