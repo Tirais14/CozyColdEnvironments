@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.FileSystem;
-using CCEnvs.FileSystem.ScriptUtils;
+using CCEnvs.Files.ScriptUtils;
 using CCEnvs.Unity.EditorC;
 using System;
 using System.Collections.Generic;
@@ -98,12 +97,12 @@ namespace CCEnvs.Unity.Json.EditorC
             return AddressableAssetSettingsDefaultObject.Settings;
         }
 
-        protected virtual FSPath SelectConstFileDirectoryPath()
+        protected virtual Files.Path SelectConstFileDirectoryPath()
         {
             return SelectDirectory(title: "Select const file directory path");
         }
 
-        protected virtual FSPath SelectEnumFileDirectoryPath()
+        protected virtual Files.Path SelectEnumFileDirectoryPath()
         {
             return SelectDirectory(title: "Select enum file directory path");
         }
@@ -145,7 +144,7 @@ namespace CCEnvs.Unity.Json.EditorC
                 NamespaceData.ToArray(),
                 GetClass().ToArray());
 
-            FSPath savePath = SelectConstFileDirectoryPath();
+            Files.Path savePath = SelectConstFileDirectoryPath();
 
             savePath += constFileName.value;
 
@@ -192,7 +191,7 @@ namespace CCEnvs.Unity.Json.EditorC
                 NamespaceData.ToArray(),
                 GetEnum().ToArray());
 
-            FSPath savePath = SelectEnumFileDirectoryPath();
+            Files.Path savePath = SelectEnumFileDirectoryPath();
 
             savePath += enumFileName.value;
 

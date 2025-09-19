@@ -1,4 +1,3 @@
-using CCEnvs.FileSystem;
 using CCEnvs.Unity.AddressableAssets;
 using CCEnvs.Unity.EditorC;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace CCEnvs.Unity.FileSystem.Json.UnityEditor
             return $"{groupName}_{assetType}_Database";
         }
 
-        protected void CreateDatabaseFiles(FSPath saveDirectory, AddressableAssetGroup group)
+        protected void CreateDatabaseFiles(Files.Path saveDirectory, AddressableAssetGroup group)
         {
             AddressableAssetEntry[] allGroupAssets = AddressableEditorUtility.GatherAllAssetsFromGroup(group);
 
@@ -38,11 +37,11 @@ namespace CCEnvs.Unity.FileSystem.Json.UnityEditor
             }
         }
 
-        protected virtual FSPath SelectSaveDirectory() => SelectDirectory();
+        protected virtual Files.Path SelectSaveDirectory() => SelectDirectory();
 
         protected virtual void OnCreateClick()
         {
-            FSPath savePath = SelectSaveDirectory();
+            Files.Path savePath = SelectSaveDirectory();
 
             if (!savePath.HasValue)
             {

@@ -1,21 +1,30 @@
+using CCEnvs.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.tvOS;
+using UnityEngine.Events;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.UI.Elements
 {
     /// <summary>
-    /// Ignores real indices of components
+    /// Ignores real indices of components.
+    /// Adapted to use with <see cref="Component"/> in <see cref="{T}"/>.
+    /// Do not attach any <see cref="Component"/> to the parent <see cref="GameObject"/> indirectly
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ListComponent<T> : MonoCC, IList<T>, ITrimmable
-        where T : Component
+    public class ListWindow<T> : Window, IList<T>, ITrimmable
     {
         private readonly List<T> inner = new();
 
         new private Transform transform = null!;
+
+        [field: SerializeField]
+        public UnityEvent<T> OnAdd { get; } = new();
+
+        [field: SerializeField]
+        public UnityEvent<T> OnRemove { get; } = new();
 
         public int Count => inner.Count;
         public T this[int index] {
@@ -33,6 +42,12 @@ namespace CCEnvs.Unity.UI
         {
             base.OnAwake();
             transform = base.transform;
+        }
+
+        protected override void OnStart()
+        {
+            base.OnStart();
+            GetComponentsInChildren<T>().ForEach(x => Add(x));
         }
 
         public void Add(T item)
@@ -96,17 +111,32 @@ namespace CCEnvs.Unity.UI
 
         private void AddInternal(T item)
         {
-            item.transform.parent = transform;
+            if (item is Component component)
+                component.transform.parent = transform;
+
+            OnAdd?.Invoke(item);
         }
 
         private void RemoveInternal(T item)
         {
-            if (DestroyGameObject)
-                Destroy(item.gameObject);
-            else
-                Destroy(item);
+            if (item is Component component)
+            {
+                if (DestroyGameObject)
+                    Destroy(component.gameObject);
+                else
+                    Destroy(component);
+            }
+
+            OnRemove?.Invoke(item);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+    /// <summary>
+    /// Ignores real indices of components. Adapted to use with <see cref="Component"/> in <see cref="{T}"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class ListWindow : ListWindow<Component>
+    {
     }
 }

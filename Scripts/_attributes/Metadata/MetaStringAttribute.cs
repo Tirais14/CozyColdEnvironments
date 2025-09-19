@@ -12,5 +12,11 @@ namespace CCEnvs.Attributes.Metadata
         public MetaStringAttribute(string value) : base(value)
         {
         }
+
+        public MetaStringAttribute()
+            :
+            this(string.Empty)
+        {
+        }
     }
 }

@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.FileSystem;
 using CCEnvs.Json;
 using UnityEngine;
+using CCEnvs.Files;
 
 #nullable enable
 #pragma warning disable S3168
@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Json.EditorC
 
         public static async void Create(string[]? includeNamespaces = null,
                                         string[]? excludeNamespaces = null,
-                                        FSPath path = default)
+                                        Files.Path path = default)
         {
             try
             {
@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.Json.EditorC
 
                 inProcess = true;
 
-                if (Equals(path, default(FSPath)))
+                if (Equals(path, default(Files.Path)))
                     path = Application.dataPath.ToFilePath() - "Assets" + "External" + "Json" + "dictionary_generated.txt";
 
                 await JsonIDEWordDictionary.Create(path,
