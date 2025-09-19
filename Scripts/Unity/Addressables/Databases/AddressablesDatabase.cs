@@ -1,68 +1,95 @@
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
-using CCEnvs.Unity.Initables;
+using CCEnvs.Reflection;
+using CCEnvs.Unity.AddrsAssets.Databases;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using Object = UnityEngine.Object;
 
 #nullable enable
-#pragma warning disable S2743
-namespace CCEnvs.Unity.AddrsAssets.Databases
+#pragma warning disable S3881
+namespace CCEnvs.Unity.AddrsAssets
 {
-    public abstract class AddressablesDatabase<T> 
-        :
-        MonoCCInitableAsync
-
-        where T : UnityEngine.Object
+    public class AddressablesDatabase<T> : IAddressablesDatabase<T>
+        where T : Object
     {
+        private readonly Dictionary<AssetKey, T> db = new();
+        private bool disposedValue;
         private AsyncOperationHandle<IList<T>> loadHandle;
 
-        [SerializeField]
-        protected string[] addressablesTags;
+        public Type AssetType { get; } = typeof(T);
 
-        protected override async UniTask OnInitAsync()
+        public async UniTask LoadAssets(AssetLabels assetLabels,
+                                        Func<Object, object?>? getUniqueIndentifier = null)
         {
+            CC.Validate.Argument(assetLabels,
+                                 nameof(assetLabels),
+                                 assetLabels.IsNotDefault());
+
             try
             {
-                IList<T> assets = await LoadDBAsync();
-                OnLoaded(assets);
+                loadHandle = await AddressableLoader.LoadAssetsByTagsAsync<T>(
+                    (x) => AddAsset(x, getUniqueIndentifier),
+                    assetLabels.ToArray());
             }
             catch (Exception ex)
             {
                 CCDebug.PrintException(ex);
             }
+
+            TrimExcessAsync().Timeout(TimeSpan.FromMinutes(20), DelayType.UnscaledDeltaTime)
+                             .Forget(ex => CCDebug.PrintException(ex));
         }
 
-        protected virtual void OnDestroy()
+        public T GetAsset(AssetKey key)
         {
-            RealeseAddressableLoadHanders();
+            CC.Validate.ArgumentNull(key, nameof(key));
+
+            return db[key];
         }
 
-        protected abstract void OnLoaded(IList<T> assets);
+        public IEnumerator<T> GetEnumerator() => db.Values.GetEnumerator();
 
-        protected void RealeseAddressableLoadHanders()
+        public void Dispose() => Dispose(disposing: true);
+
+        protected virtual void Dispose(bool disposing)
         {
-            if (loadHandle.IsNotDefault())
+            if (disposedValue)
+                return;
+
+            if (disposing)
                 loadHandle.Release();
+
+            disposedValue = true;
         }
 
-        private async UniTask<IList<T>> LoadDBAsync()
+        private async UniTask TrimExcessAsync()
         {
+            await UniTask.WaitUntil(() => loadHandle.IsDone);
+
+            db.TrimExcess();
+        }
+
+        private void AddAsset(T asset, Func<Object, object?>? getUniqueIndentifier)
+        {
+            object? uniqueIndentifier = null;
+
             try
             {
-                if (addressablesTags.IsNullOrEmpty())
-                    throw new CollectionException($"{nameof(addressablesTags)} cannot be null or empty.");
-
-                loadHandle = await AddressableLoader.LoadAssetsByTagsAsync<T>(addressablesTags);
-                return loadHandle.Result;
+                uniqueIndentifier = getUniqueIndentifier?.Invoke(asset);
             }
             catch (Exception ex)
             {
                 CCDebug.PrintException(ex);
-                return Array.Empty<T>();
             }
+
+            var assetKey = new AssetKey(asset, uniqueIndentifier);
+            db.Add(assetKey, asset);
+            CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded with key = {assetKey}", this);
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
