@@ -9,7 +9,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 #nullable enable
 #pragma warning disable S2743
-namespace CCEnvs.Unity.AddressableAssets.Databases
+namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public abstract class AddressablesDatabase<T> 
         :

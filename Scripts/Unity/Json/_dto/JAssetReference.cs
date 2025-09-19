@@ -4,7 +4,7 @@ using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.AddressableAssets;
+using CCEnvs.Unity.AddrsAssets;
 using Newtonsoft.Json;
 using System;
 using System.Linq;

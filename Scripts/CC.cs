@@ -69,18 +69,18 @@ namespace CCEnvs
 
             public static void Argument<T>(T value,
                                            string paramName,
-                                           Predicate<T> predicate,
+                                           bool mustBeTrue,
                                            string? message = null)
             {
-                if (!predicate(value))
+                if (!mustBeTrue)
                     throw new ArgumentException($"{paramName} = {value}. {message}");
             }
 
             public static void ArgumentNested<T>(T value,
-                                                 Predicate<T> predicate,
+                                                 bool mustBeTrue,
                                                  params string[] complexParamName)
             {
-                if (!predicate(value))
+                if (!mustBeTrue)
                     throw new ArgumentException($"{complexParamName.JoinStrings('.')} = {value}.");
             }
 

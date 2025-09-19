@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 using UnityEngine.AddressableAssets;
 
 #nullable enable
-namespace CCEnvs.Unity.AddressableAssets
+namespace CCEnvs.Unity.AddrsAssets
 {
     public static class AddressablesHelper
     {

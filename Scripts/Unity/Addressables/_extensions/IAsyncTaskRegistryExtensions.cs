@@ -2,7 +2,7 @@ using CCEnvs.Async;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 #nullable enable
-namespace CCEnvs.Unity.AddressableAssets
+namespace CCEnvs.Unity.AddrsAssets
 {
     public static class IAsyncTaskRegistryExtensions
     {

@@ -8,7 +8,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 
 #nullable enable
-namespace CCEnvs.Unity.AddressableAssets
+namespace CCEnvs.Unity.AddrsAssets
 {
     public static class AddressableLoader
     {

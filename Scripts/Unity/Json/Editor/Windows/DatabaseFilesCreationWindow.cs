@@ -1,4 +1,4 @@
-using CCEnvs.Unity.AddressableAssets;
+using CCEnvs.Unity.AddrsAssets;
 using CCEnvs.Unity.EditorC;
 using System.Collections.Generic;
 using UnityEditor;

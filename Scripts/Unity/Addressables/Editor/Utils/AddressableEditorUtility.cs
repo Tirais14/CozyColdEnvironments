@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 #nullable enable
 
-namespace CCEnvs.Unity.AddressableAssets
+namespace CCEnvs.Unity.AddrsAssets
 {
     public static class AddressableEditorUtility
     {
