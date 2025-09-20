@@ -1,51 +1,57 @@
-
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
 using CCEnvs.Unity.AddrsAssets;
+using CCEnvs.Unity.AddrsAssets.Databases;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE1006
 namespace CCEnvs.Json.AddressableAssets.Databases
 {
-    public abstract class JsonAddressablesDatabase<T> 
-        : AddressablesDatabase<T>
+    public abstract class JsonAddressablesDatabase<TKey, TValue> 
+        : Database<TKey, TValue>
     {
-        protected override void ProccessTextAssets(IList<TextAsset> textAssets)
+        public async UniTask LoadAssetsAsync(AssetLabels textAssetLabels,
+            UniqueIndentifierGetter? uniqueIndentifierGetter,
+            Func<TValue, TKey> keySelector)
         {
-            if (textAssets.IsNullOrEmpty())
-            {
-                CCDebug.PrintWarning("Not loaded any textAsset.", this);
-                return;
-            }
+            CC.Validate.ArgumentNull(keySelector, nameof(keySelector));
 
-            JsonSerializerSettings serializerSettings = GetSerializerSettings();
-            T deserialized = default!;
-            for (int i = 0; i < textAssets.Count; i++)
-            {
-                try
-                {
-                    deserialized = JsonConvert.DeserializeObject<T>(
-                        textAssets[i].text,
-                        serializerSettings)
-                        ??
-                        throw new CCException($"Error while deserializng object. Type = {typeof(T)}, data = {textAssets[i]}");
-                }
-                catch (InvalidCastException ex)
-                {
-                    CC.Throw.InvalidCast(typeof(T), "Most likely the polymorph coverter returned wrong value type", ex);
-                }
+            using var textAssets = new AddressablesDatabase<TextAsset>();
 
-                values.Add(GetItemID(deserialized), deserialized);
-            }
+            await textAssets!.LoadAssetsAsync(textAssetLabels, uniqueIndentifierGetter);
 
-            values.TrimExcess();
+            textAssets.Values.ForEach(item => Deserialize(item, keySelector));
+
+            TrimExcess();
         }
 
         /// <returns><see langword="null"/> for deleting any converter of <see langword="TItem"/> or value for override converter</returns>
         protected virtual object? GetConverter() => CC.EmptyObject;
+
+        private void Deserialize(TextAsset textAsset, Func<TValue, TKey> keySelector)
+        {
+            try
+            {
+                JsonSerializerSettings serializerSettings = GetSerializerSettings();
+
+                TValue deserialized = JsonConvert.DeserializeObject<TValue>(
+                    textAsset.text,
+                    serializerSettings)
+                    ??
+                    throw new CCException($"Error while deserializng object. Type = {typeof(TValue)}, data = {textAsset}");
+
+                Add(keySelector(deserialized), deserialized);
+            }
+            catch (InvalidCastException ex)
+            {
+                CC.Throw.InvalidCast(typeof(TValue), "Most likely the polymorph coverter returned wrong value type", ex);
+            }
+        }
 
         private JsonSerializerSettings GetSerializerSettings()
         {
@@ -62,7 +68,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             {
                 serializerSettings.Converters = JsonConverterCollectionHelper.RemoveByType(
                     serializerSettings.Converters,
-                    typeof(T));
+                    typeof(TValue));
             }
 
             return serializerSettings;

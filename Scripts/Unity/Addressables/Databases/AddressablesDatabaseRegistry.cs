@@ -1,10 +1,10 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Unity.AddrsAssets.Databases;
 using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using UnityEditor.VersionControl;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -19,6 +19,11 @@ namespace CCEnvs.Unity.AddrsAssets
         private bool disposedValue;
 
         public static AddressablesDatabaseRegistry Q => Instance;
+
+        public IEnumerable<AssetRegistryKey> Keys => databases.Keys;
+        public IEnumerable<IAddressablesDatabase> Values => databases.Values;
+        public int Count => databases.Count;
+        public IAddressablesDatabase this[AssetRegistryKey key] => databases[key];
 
         protected override void OnAwake()
         {
@@ -42,23 +47,106 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public bool UnregisterDatabase(AssetRegistryKey key) => databases.Remove(key);
 
+        public IAddressablesDatabase GetDatabase(AssetRegistryKey key) => databases[key];
+        public IAddressablesDatabase GetDatabase(Type assetType,
+                                                 object? uniqueIndentifier = null)
+        {
+            return GetDatabase(new AssetRegistryKey());
+        }
+        public T GetDatabase<T>(AssetRegistryKey key)
+            where T : IAddressablesDatabase
+        {
+            return GetDatabase(key).As<T>();
+        }
+        public T GetDatabase<T>(Type dbAssetType,
+                                object? uniqueIndentifier = null)
+            where T : IAddressablesDatabase
+        {
+            throw new NotImplementedException();
+        }
+
         public Object GetAsset(AssetRegistryKey key)
         {
             IAddressablesDatabase db = Instance.databases[key];
 
             return db.GetAsset(key.AssetKey);
         }
-
-        public T GetAsset<T>(AssetRegistryKey key)
+        public Object GetAsset(Type dbAssetType,
+                               string? assetName,
+                               int assetID,
+                               object? uniqueIndentifier = null)
         {
-            return GetAsset(key.With(typeof(T))).As<T>();
+            return GetAsset(new AssetRegistryKey(
+                new AssetKey(
+                    assetName,
+                    assetID,
+                    uniqueIndentifier),
+                dbAssetType));
+        }
+        public Object GetAsset(Type dbAssetType,
+                               string assetName,
+                               object? uniqueIndentifier = null)
+        {
+            return GetAsset(new AssetRegistryKey(
+                new AssetKey(
+                    assetName,
+                    uniqueIndentifier),
+                dbAssetType));
+        }
+        public Object GetAsset(Type dbAssetType,
+                               int assetID,
+                               object? uniqueIndentifier = null)
+        {
+            return GetAsset(new AssetRegistryKey(
+                new AssetKey(
+                    assetID,
+                    uniqueIndentifier),
+                dbAssetType));
+        }
+        public T GetAsset<T>(AssetRegistryKey key) => GetAsset(key).As<T>();
+        public T GetAsset<T>(Type? dbAssetType,
+                             string? assetName,
+                             int assetID,
+                             object? uniqueIndentifier = null)
+        {
+            return GetAsset<T>(new AssetRegistryKey(
+                new AssetKey(
+                    assetName,
+                    assetID,
+                    uniqueIndentifier),
+                dbAssetType ?? typeof(T)));
+        }
+        public T GetAsset<T>(Type? dbAssetType,
+                             string assetName,
+                             object? uniqueIndentifier = null)
+        {
+            return GetAsset<T>(new AssetRegistryKey(
+                new AssetKey(
+                    assetName,
+                    uniqueIndentifier),
+                dbAssetType ?? typeof(T)));
+        }
+        public T GetAsset<T>(Type? dbAssetType,
+                             int assetID,
+                             object? uniqueIndentifier = null)
+        {
+            return GetAsset<T>(new AssetRegistryKey(
+                new AssetKey(
+                    assetID,
+                    uniqueIndentifier),
+                dbAssetType ?? typeof(T)));
         }
 
         public void Dispose() => Dispose(disposing: true);
 
-        public IEnumerator<IAddressablesDatabase> GetEnumerator()
+        public IEnumerator<KeyValuePair<AssetRegistryKey, IAddressablesDatabase>> GetEnumerator()
         {
-            return databases.Values.GetEnumerator();
+            return databases.GetEnumerator();
+        }
+
+        public bool ContainsKey(AssetRegistryKey key)
+        {
+            return databases.ContainsKey(key);
         }
 
         protected abstract UniTask<KeyValuePair<AssetRegistryKey, IAddressablesDatabase>[]> GetDatabases();
@@ -84,5 +172,12 @@ namespace CCEnvs.Unity.AddrsAssets
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        bool IReadOnlyDictionary<AssetRegistryKey, IAddressablesDatabase>.TryGetValue(
+            AssetRegistryKey key,
+            out IAddressablesDatabase value)
+        {
+            return databases.TryGetValue(key, out value);
+        }
     }
 }

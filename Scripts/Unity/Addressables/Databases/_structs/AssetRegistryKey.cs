@@ -6,19 +6,19 @@ namespace CCEnvs.Unity.AddrsAssets
 {
     public readonly struct AssetRegistryKey : IEquatable<AssetRegistryKey>
     {
-        private readonly Type assetType;
+        private readonly Type dbAssetType;
         private readonly object? uniqueIndentifier;
 
         public AssetKey AssetKey { get; }
 
-        public AssetRegistryKey(AssetKey assetKey, Type assetType)
+        public AssetRegistryKey(AssetKey assetKey, Type dbAssetType)
             :
             this()
         {
-            CC.Validate.ArgumentNull(assetType, nameof(assetType));
+            CC.Validate.ArgumentNull(dbAssetType, nameof(dbAssetType));
 
-            this.AssetKey = assetKey;
-            this.assetType = assetType;
+            AssetKey = assetKey;
+            this.dbAssetType = dbAssetType;
         }
 
         public AssetRegistryKey(AssetKey assetKey,
@@ -63,7 +63,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public override string ToString()
         {
-            return $"{nameof(AddrsAssets.AssetKey)}: {AssetKey}. Database asset type = {assetType.FullName}; database unique indentifier = {uniqueIndentifier}";
+            return $"{nameof(AddrsAssets.AssetKey)}: {AssetKey}. Database asset type = {dbAssetType.FullName}; database unique indentifier = {uniqueIndentifier}";
         }
 
         public override int GetHashCode() => ToString().GetHashCode();

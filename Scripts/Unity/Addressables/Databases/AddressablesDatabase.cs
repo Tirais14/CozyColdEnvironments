@@ -16,18 +16,29 @@ using Object = UnityEngine.Object;
 #pragma warning disable S3881
 namespace CCEnvs.Unity.AddrsAssets
 {
-    public class AddressablesDatabase<T> : IAddressablesDatabase<T>
-        where T : Object
+    public class AddressablesDatabase<TAsset> : IAddressablesDatabase<TAsset>
+        where TAsset : Object
     {
-        private readonly Dictionary<AssetKey, T> db = new();
+        private readonly Dictionary<AssetKey, TAsset> db;
+        private readonly List<AsyncOperationHandle<IList<TAsset>>> loadHandles = new(0);
         private bool disposedValue;
-        private AsyncOperationHandle<IList<T>> loadHandle;
 
-        public Type AssetType { get; } = typeof(T);
+        public Type AssetType { get; } = typeof(TAsset);
         public IEnumerable<AssetKey> Keys => db.Keys;
-        public IEnumerable<T> Values => db.Values;
+        public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
-        public T this[AssetKey key] => db[key];
+        public TAsset this[AssetKey key] => db[key];
+
+        public AddressablesDatabase(int capacity) => db = new(capacity);
+
+        public AddressablesDatabase() : this(capacity: 0)
+        {
+        }
+
+        public AddressablesDatabase(IEnumerable<KeyValuePair<AssetKey, TAsset>> values)
+        {
+            db = new Dictionary<AssetKey, TAsset>(values);
+        }
 
         public void AddAssets(IEnumerable<KeyValuePair<AssetKey, Object>> items)
         {
@@ -35,8 +46,8 @@ namespace CCEnvs.Unity.AddrsAssets
 
             try
             {
-                IEnumerable<KeyValuePair<AssetKey, T>> casted = items.SelectValue(
-                    x => x.As<T>()).AsEnumerable();
+                IEnumerable<KeyValuePair<AssetKey, TAsset>> casted = items.SelectValue(
+                    x => x.As<TAsset>()).AsEnumerable();
 
                 db.AddRange(casted);
             }
@@ -46,21 +57,20 @@ namespace CCEnvs.Unity.AddrsAssets
             }
         }
 
-        public async UniTask LoadAssets(AssetLabels assetLabels,
-                                        Func<Object, object?>? getUniqueIndentifier = null)
+        public async UniTask LoadAssetsAsync(AssetLabels assetLabels,
+            UniqueIndentifierGetter? uniqueIndentifierGetter = null)
         {
-            CC.Validate.Argument(loadHandle,
-                                 nameof(loadHandle),
-                                 loadHandle.IsDefault());
             CC.Validate.Argument(assetLabels,
                                  nameof(assetLabels),
                                  assetLabels.IsNotDefault());
 
             try
             {
-                loadHandle = await AddressableLoader.LoadAssetsByTagsAsync<T>(
-                    (x) => OnAssetLoaded(x, getUniqueIndentifier),
+                var handle = await AddressableLoader.LoadAssetsByTagsAsync<TAsset>(
+                    (x) => OnAssetLoaded(x, uniqueIndentifierGetter),
                     assetLabels.ToArray());
+
+                loadHandles.Add(handle);
             }
             catch (Exception ex)
             {
@@ -71,16 +81,20 @@ namespace CCEnvs.Unity.AddrsAssets
                                 .Forget(ex => CCDebug.PrintException(ex));
         }
 
-        public T GetAsset(AssetKey key)
+        public TAsset GetAsset(AssetKey key)
         {
             CC.Validate.ArgumentNull(key, nameof(key));
 
             return db[key];
         }
+        public T GetAsset<T>(AssetKey key)
+        {
+            return GetAsset(key).As<T>();
+        }
 
-        public async UniTask<IAddressablesDatabase<TNew>> ConvertTo<TNew>(
-            DbItemConverter<T, TNew> dbItemConverter,
-            DbConverter<T, TNew> dbConverter,
+        public async UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
+            DbItemConverter<TAsset, TNew> dbItemConverter,
+            DbConverter<TAsset, TNew> dbConverter,
             bool disposePreviousDb)
             where TNew : Object
         {
@@ -107,7 +121,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public void Dispose() => Dispose(disposing: true);
 
-        public IEnumerator<KeyValuePair<AssetKey, T>> GetEnumerator() => db.GetEnumerator();
+        public IEnumerator<KeyValuePair<AssetKey, TAsset>> GetEnumerator() => db.GetEnumerator();
 
         protected virtual void Dispose(bool disposing)
         {
@@ -115,18 +129,26 @@ namespace CCEnvs.Unity.AddrsAssets
                 return;
 
             if (disposing)
-                loadHandle.Release();
+            {
+                db.Clear();
+                db.TrimExcess();
+
+                loadHandles.ForEach(x => x.Release());
+                loadHandles.Clear();
+                loadHandles.TrimExcess();
+            }
 
             disposedValue = true;
         }
 
-        protected virtual void OnAssetLoaded(T asset, Func<Object, object?>? getUniqueIndentifier)
+        protected virtual void OnAssetLoaded(TAsset asset,
+            UniqueIndentifierGetter? uniqueIndentifierGetter)
         {
             object? uniqueIndentifier = null;
 
             try
             {
-                uniqueIndentifier = getUniqueIndentifier?.Invoke(asset);
+                uniqueIndentifier = uniqueIndentifierGetter?.Invoke(asset);
             }
             catch (Exception ex)
             {
@@ -140,13 +162,16 @@ namespace CCEnvs.Unity.AddrsAssets
 
         private async UniTask TrimExcessOnLoaded()
         {
-            await UniTask.WaitUntil(() => loadHandle.IsDone);
+            await UniTask.WaitUntil(() => loadHandles.All(handle => handle.IsDone));
 
             db.TrimExcess();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        bool IReadOnlyDictionary<AssetKey, T>.TryGetValue(AssetKey key, out T value) => db.TryGetValue(key, out value);
+        bool IReadOnlyDictionary<AssetKey, TAsset>.TryGetValue(AssetKey key, out TAsset value)
+        {
+            return db.TryGetValue(key, out value);
+        }
     }
 }

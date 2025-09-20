@@ -6,23 +6,35 @@ namespace CCEnvs.Unity.AddrsAssets
 {
     public readonly struct AssetKey : IEquatable<AssetKey>
     {
-        private readonly string objName;
+        private readonly string? objName;
         private readonly int objID;
         private readonly object? uniqueIndentifier;
 
-        public AssetKey(string objName, int objID) : this()
+        public AssetKey(string? objName, int objID) : this()
         {
             this.objName = objName;
             this.objID = objID;
         }
 
-        public AssetKey(string objName,
-                        int objID,
-                        object? uniqueIndentifier)
+        public AssetKey(string? objName,
+                int objID,
+                object? uniqueIndentifier)
             :
             this(objName, objID)
         {
             this.uniqueIndentifier = uniqueIndentifier;
+        }
+
+        public AssetKey(string objName, object? uniqueIndentifier = null)
+            :
+            this(objName, objID: int.MinValue, uniqueIndentifier)
+        {
+        }
+
+        public AssetKey(int objID, object? uniqueIndentifier = null)
+            :
+            this(objName: null, objID, uniqueIndentifier)
+        {
         }
 
         public AssetKey(Object asset, object? uniqueIndentifier)
