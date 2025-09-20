@@ -19,6 +19,8 @@ namespace CCEnvs
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
         public static string WordSeparator { get; set; } = "_";
 
+        public static Result DoNothing() => new();
+
         public static class Create 
         {
             public static T[] Array<T>(params T[] values) => values;

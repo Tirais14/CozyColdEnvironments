@@ -9,8 +9,22 @@ using System.Linq;
 
 namespace CCEnvs.Linq
 {
-    public static class EnumerableQueries
+    public static class IEnumerableQueries
     {
+        public static IEnumerable<KeyValuePair<TKey, T>> SelectValue<TKey, TValue, T>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source,
+            Func<TValue, T> selector)
+        {
+            return source.Select(x => new KeyValuePair<TKey, T>(x.Key, selector(x.Value)));
+        }
+
+        public static IEnumerable<KeyValuePair<T, TValue>> SelectKey<TKey, TValue, T>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source,
+            Func<TKey, T> selector)
+        {
+            return source.Select(x => new KeyValuePair<T, TValue>(selector(x.Key), x.Value));
+        }
+
         public static T[] ForEach<T>(this IEnumerable<T> values, Action<T> action)
         {
             CC.Validate.ArgumentNull(values, nameof(values));

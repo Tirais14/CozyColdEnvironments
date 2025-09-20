@@ -109,7 +109,7 @@ namespace CCEnvs.Reflection
             CC.Validate.ArgumentNull(type, nameof(type));
             CC.Validate.Argument(type,
                                  nameof(type),
-                                 x => type.IsInterface,
+                                 type.IsInterface,
                                  "Type is not interface");
 
             var graph = new AdjacencyGraph<Type, Edge<Type>>();

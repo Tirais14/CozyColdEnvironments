@@ -231,7 +231,7 @@ namespace CCEnvs.Reflection
 
         public static string GetShortName(Type type)
         {
-            CC.Validate.Argument(type, nameof(type), x => !x.IsGenericType);
+            CC.Validate.Argument(type, nameof(type), !type.IsGenericType);
 
             if (type == typeof(short))
                 return "short";

@@ -40,21 +40,5 @@ namespace CCEnvs.Collections
         {
             dictionary.Add(item.Key, item.Value);
         }
-
-        public static void AddRange<TKey, TValue>(
-            this Dictionary<TKey, TValue> dictionary,
-            IEnumerable<KeyValuePair<TKey, TValue>> items)
-        {
-            foreach (var item in items)
-                dictionary.Add(item);
-        }
-
-        public static void AddRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
-                                                  KeyValuePair<TKey, TValue>[] items)
-        {
-            int itemsCount = items.Length;
-            for (int i = 0; i < itemsCount; i++)
-                dictionary.Add(items[i]);
-        }
     }
 }

@@ -37,7 +37,7 @@ namespace CCEnvs
                 return result;
 
             //Until this line converstaion could be done with abstraction
-            CC.Validate.Argument(toType, nameof(toType), x => !x.IsAbstract && !x.IsInterface);
+            CC.Validate.Argument(toType, nameof(toType), !toType.IsAbstract && !toType.IsInterface);
 
             CreateByFactory();
 

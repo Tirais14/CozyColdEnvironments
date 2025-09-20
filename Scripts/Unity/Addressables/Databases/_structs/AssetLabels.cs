@@ -2,15 +2,20 @@ using CCEnvs.Linq;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets
 {
-    public readonly struct AssetLabels : IEquatable<AssetLabels>
+    [Serializable]
+    public struct AssetLabels : IEquatable<AssetLabels>, ISerializationCallbackReceiver
     {
-        public ReadOnlyCollection<string> Labels { get; }
+        [SerializeField]
+        private string[]? labels;
 
-        public AssetLabels(params string[] labels)
+        public ReadOnlyCollection<string> Labels { get; private set; }
+
+        public AssetLabels(params string[] labels) : this()
         {
             Labels = new ReadOnlyCollection<string>(labels);
         }
@@ -25,22 +30,32 @@ namespace CCEnvs.Unity.AddrsAssets
             return !(left == right);
         }
 
-        public string[] ToArray() => Labels.ToArray();
+        public static implicit operator string[](AssetLabels assetLabels)
+        {
+            return assetLabels.Labels.ToArray();
+        }
 
-        public bool Equals(AssetLabels other)
+        public readonly string[] ToArray() => Labels.ToArray();
+
+        public readonly bool Equals(AssetLabels other)
         {
             return Labels.SequenceEqual(other.Labels);
         }
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is AssetLabels typed && Equals(typed);
         }
 
-        public override int GetHashCode() => Labels.ToHashCode();
+        public readonly override int GetHashCode() => Labels.ToHashCode();
 
-        public static implicit operator string[](AssetLabels assetLabels)
+        readonly void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            return assetLabels.Labels.ToArray();
+            CC.DoNothing();
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            Labels = new ReadOnlyCollection<string>(labels);
         }
     }
 }

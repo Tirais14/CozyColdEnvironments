@@ -1,7 +1,11 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.AddrsAssets.Databases;
 using Cysharp.Threading.Tasks;
+using LinqAF;
+using Cysharp.Threading.Tasks.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,10 +24,34 @@ namespace CCEnvs.Unity.AddrsAssets
         private AsyncOperationHandle<IList<T>> loadHandle;
 
         public Type AssetType { get; } = typeof(T);
+        public IEnumerable<AssetKey> Keys => db.Keys;
+        public IEnumerable<T> Values => db.Values;
+        public int Count => db.Count;
+        public T this[AssetKey key] => db[key];
+
+        public void AddAssets(IEnumerable<KeyValuePair<AssetKey, Object>> items)
+        {
+            CC.Validate.ArgumentNull(items, nameof(items));
+
+            try
+            {
+                IEnumerable<KeyValuePair<AssetKey, T>> casted = items.SelectValue(
+                    x => x.As<T>()).AsEnumerable();
+
+                db.AddRange(casted);
+            }
+            catch (Exception ex)
+            {
+                CCDebug.PrintException(ex);
+            }
+        }
 
         public async UniTask LoadAssets(AssetLabels assetLabels,
                                         Func<Object, object?>? getUniqueIndentifier = null)
         {
+            CC.Validate.Argument(loadHandle,
+                                 nameof(loadHandle),
+                                 loadHandle.IsDefault());
             CC.Validate.Argument(assetLabels,
                                  nameof(assetLabels),
                                  assetLabels.IsNotDefault());
@@ -31,7 +59,7 @@ namespace CCEnvs.Unity.AddrsAssets
             try
             {
                 loadHandle = await AddressableLoader.LoadAssetsByTagsAsync<T>(
-                    (x) => AddAsset(x, getUniqueIndentifier),
+                    (x) => OnAssetLoaded(x, getUniqueIndentifier),
                     assetLabels.ToArray());
             }
             catch (Exception ex)
@@ -39,8 +67,8 @@ namespace CCEnvs.Unity.AddrsAssets
                 CCDebug.PrintException(ex);
             }
 
-            TrimExcessAsync().Timeout(TimeSpan.FromMinutes(20), DelayType.UnscaledDeltaTime)
-                             .Forget(ex => CCDebug.PrintException(ex));
+            TrimExcessOnLoaded().Timeout(TimeSpan.FromMinutes(3), DelayType.UnscaledDeltaTime)
+                                .Forget(ex => CCDebug.PrintException(ex));
         }
 
         public T GetAsset(AssetKey key)
@@ -50,9 +78,36 @@ namespace CCEnvs.Unity.AddrsAssets
             return db[key];
         }
 
-        public IEnumerator<T> GetEnumerator() => db.Values.GetEnumerator();
+        public async UniTask<IAddressablesDatabase<TNew>> ConvertTo<TNew>(
+            DbItemConverter<T, TNew> dbItemConverter,
+            DbConverter<T, TNew> dbConverter,
+            bool disposePreviousDb)
+            where TNew : Object
+        {
+            CC.Validate.ArgumentNull(dbConverter, nameof(dbConverter));
+            CC.Validate.ArgumentNull(dbItemConverter, nameof(dbItemConverter));
+
+            var converesationTasks = db.Values.Select(x => dbItemConverter(x)).ToArray();
+            var newDb = new AddressablesDatabase<TNew>();
+            var converted = await converesationTasks.ToUniTaskAsyncEnumerable()
+                                                    .SelectAwait(async task => await task)
+                                                    .ToArrayAsync();
+
+            if (disposePreviousDb)
+                Dispose();
+
+            newDb.AddAssets(converted.SelectValue(x => (Object)x));
+
+            return newDb;
+        }
+
+        public bool ContainsKey(AssetKey key) => db.ContainsKey(key);
+
+        public void TrimExcess() => db.TrimExcess();
 
         public void Dispose() => Dispose(disposing: true);
+
+        public IEnumerator<KeyValuePair<AssetKey, T>> GetEnumerator() => db.GetEnumerator();
 
         protected virtual void Dispose(bool disposing)
         {
@@ -65,14 +120,7 @@ namespace CCEnvs.Unity.AddrsAssets
             disposedValue = true;
         }
 
-        private async UniTask TrimExcessAsync()
-        {
-            await UniTask.WaitUntil(() => loadHandle.IsDone);
-
-            db.TrimExcess();
-        }
-
-        private void AddAsset(T asset, Func<Object, object?>? getUniqueIndentifier)
+        protected virtual void OnAssetLoaded(T asset, Func<Object, object?>? getUniqueIndentifier)
         {
             object? uniqueIndentifier = null;
 
@@ -90,6 +138,15 @@ namespace CCEnvs.Unity.AddrsAssets
             CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded with key = {assetKey}", this);
         }
 
+        private async UniTask TrimExcessOnLoaded()
+        {
+            await UniTask.WaitUntil(() => loadHandle.IsDone);
+
+            db.TrimExcess();
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        bool IReadOnlyDictionary<AssetKey, T>.TryGetValue(AssetKey key, out T value) => db.TryGetValue(key, out value);
     }
 }

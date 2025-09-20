@@ -1,5 +1,6 @@
-using CCEnvs.AddressableAssets.Databases;
+
 using CCEnvs.Diagnostics;
+using CCEnvs.Unity.AddrsAssets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,13 +10,9 @@ using UnityEngine;
 #pragma warning disable IDE1006
 namespace CCEnvs.Json.AddressableAssets.Databases
 {
-    public abstract class JsonAddressablesDatabase<TId, TItem> 
-        : TextAddressablesDatabase
+    public abstract class JsonAddressablesDatabase<T> 
+        : AddressablesDatabase<T>
     {
-        private readonly Dictionary<TId, TItem> values = new();
-
-        protected IReadOnlyDictionary<TId, TItem> db => values;
-
         protected override void ProccessTextAssets(IList<TextAsset> textAssets)
         {
             if (textAssets.IsNullOrEmpty())
@@ -25,20 +22,20 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             }
 
             JsonSerializerSettings serializerSettings = GetSerializerSettings();
-            TItem deserialized = default!;
+            T deserialized = default!;
             for (int i = 0; i < textAssets.Count; i++)
             {
                 try
                 {
-                    deserialized = JsonConvert.DeserializeObject<TItem>(
+                    deserialized = JsonConvert.DeserializeObject<T>(
                         textAssets[i].text,
                         serializerSettings)
                         ??
-                        throw new CCException($"Error while deserializng object. Type = {typeof(TItem)}, data = {textAssets[i]}");
+                        throw new CCException($"Error while deserializng object. Type = {typeof(T)}, data = {textAssets[i]}");
                 }
                 catch (InvalidCastException ex)
                 {
-                    CC.Throw.InvalidCast(typeof(TItem), "Most likely the polymorph coverter returned wrong value type", ex);
+                    CC.Throw.InvalidCast(typeof(T), "Most likely the polymorph coverter returned wrong value type", ex);
                 }
 
                 values.Add(GetItemID(deserialized), deserialized);
@@ -46,8 +43,6 @@ namespace CCEnvs.Json.AddressableAssets.Databases
 
             values.TrimExcess();
         }
-
-        protected abstract TId GetItemID(TItem item);
 
         /// <returns><see langword="null"/> for deleting any converter of <see langword="TItem"/> or value for override converter</returns>
         protected virtual object? GetConverter() => CC.EmptyObject;
@@ -67,7 +62,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
             {
                 serializerSettings.Converters = JsonConverterCollectionHelper.RemoveByType(
                     serializerSettings.Converters,
-                    typeof(TItem));
+                    typeof(T));
             }
 
             return serializerSettings;

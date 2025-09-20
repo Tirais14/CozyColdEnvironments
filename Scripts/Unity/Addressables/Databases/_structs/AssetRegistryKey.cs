@@ -1,3 +1,4 @@
+using CCEnvs.Unity.AddrsAssets.Databases;
 using System;
 
 #nullable enable
@@ -27,6 +28,13 @@ namespace CCEnvs.Unity.AddrsAssets
             this(assetKey, assetType)
         {
             this.uniqueIndentifier = uniqueIndentifier;
+        }
+
+        public static AssetRegistryKey From(IAddressablesDatabase database)
+        {
+            CC.Validate.ArgumentNull(database, nameof(database));
+
+            return new AssetRegistryKey(assetKey: default, database.AssetType);
         }
 
         public static bool operator ==(AssetRegistryKey left, AssetRegistryKey right)
