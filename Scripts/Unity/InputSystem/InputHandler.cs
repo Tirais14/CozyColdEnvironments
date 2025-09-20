@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.InputSystem
         IDisposableContainer,
         ISwitchable
     {
-        private readonly DisposableCollection disposables = new();
+        private readonly CCEnvs.Disposables.Disposables disposables = new();
 
         protected InputActionMap actionMap = null!;
 

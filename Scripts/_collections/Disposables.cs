@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace CCEnvs.Disposables
 {
-    public sealed class DisposableCollection : IDisposableCollection
+    public sealed class Disposables : IDisposableCollection
     {
         private readonly List<IDisposable> disposables;
 
@@ -15,14 +15,14 @@ namespace CCEnvs.Disposables
 
         bool ICollection<IDisposable>.IsReadOnly => false;
 
-        public DisposableCollection() => disposables = new List<IDisposable>();
+        public Disposables() => disposables = new List<IDisposable>();
 
-        public DisposableCollection(int capacity)
+        public Disposables(int capacity)
         {
             disposables = new List<IDisposable>(capacity);
         }
 
-        public DisposableCollection(IEnumerable<IDisposable> collection)
+        public Disposables(IEnumerable<IDisposable> collection)
         {
             disposables = new List<IDisposable>(collection);
         }

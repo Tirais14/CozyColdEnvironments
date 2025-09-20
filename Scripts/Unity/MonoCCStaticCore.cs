@@ -104,6 +104,10 @@ namespace CCEnvs.Unity
 
         private MonoCCStatic GetInstanceOf(Type type)
         {
+            CC.Validate.Argument(type,
+                                 nameof(type),
+                                 !type.IsAbstract && !type.IsInterface,
+                                 "Type is abstract and cannot be added.");
             var value = (MonoCCStatic?)FindAnyObjectByType(type);
 
             if (value == null)

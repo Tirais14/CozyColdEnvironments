@@ -15,5 +15,6 @@ namespace CCEnvs.Reflection
         public void SetValue(object newValue) => value.SetValue(context, newValue);
 
         public object GetValue() => value.GetValue(context);
+        public T GetValue<T>() => value.GetValue(context).As<T>();
     }
 }

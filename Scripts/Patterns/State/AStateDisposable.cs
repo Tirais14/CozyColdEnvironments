@@ -11,7 +11,7 @@ namespace CCEnvs.Patterns.States
 
         where T : IStateMachine
     {
-        private readonly DisposableCollection disposables = new();
+        private readonly Disposables.Disposables disposables = new();
         private bool disposedValue;
 
         protected AStateDisposable(T stateMachine) : base(stateMachine)

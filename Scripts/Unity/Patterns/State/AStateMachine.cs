@@ -23,7 +23,7 @@ namespace CCEnvs.Patterns.States
 
         where TIdle : IState
     {
-        private readonly DisposableCollection disposables = new();
+        private readonly Disposables.Disposables disposables = new();
 
         private bool disposedValue;
         private Dictionary<Type, Action>? forceStopableStates;
