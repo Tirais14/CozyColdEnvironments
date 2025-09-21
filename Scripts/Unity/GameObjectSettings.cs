@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -15,7 +14,6 @@ namespace CCEnvs.Unity
 
         [Min(1E-06f)]
         [field: SerializeField]
-        [JsonProperty("scale")]
         public Vector3 Scale { get; set; } = Vector3.one;
 
         /// <exception cref="ArgumentNullException"></exception>

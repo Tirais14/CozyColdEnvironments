@@ -34,6 +34,7 @@ namespace CCEnvs.Unity.Timers
             get => timer.Options;
             set => timer.Options = value;
         }
+        public bool IsUnscaledDeltaTime { get; set; }
         protected abstract float DeltaTime { get; }
 
         protected static ITimer Create(UpdateType updateType)

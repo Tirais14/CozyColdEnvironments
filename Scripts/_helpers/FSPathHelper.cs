@@ -5,8 +5,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using SuperLinq;
 using static CCEnvs.Files.Path;
 
 namespace CCEnvs.Files
@@ -91,9 +94,21 @@ namespace CCEnvs.Files
             if (pathParts.IsEmpty()) 
                 return string.Empty;
 
-            string combined = System.IO.Path.Combine(pathParts);
+            IEnumerable<string> temp = pathParts;
+            char directorySeparator = GetDirectorySeparator(style);
 
-            return SetStyle(combined, style);
+            if (temp.First().Any(x => x == System.IO.Path.VolumeSeparatorChar))
+                temp = temp.InsertElementAt(1, directorySeparator.ToString());
+
+            StringBuilder sb = temp.Aggregate(new StringBuilder(), (builder, x) =>
+            {
+                builder.Append(x);
+                builder.Append(directorySeparator);
+
+                return builder;
+            });
+
+            return SetStyle(sb.ToString(), style);
         }
         public static string Combine(PathStyle style, params Path[] pathParts)
         {
@@ -170,7 +185,11 @@ namespace CCEnvs.Files
                 throw new StringArgumentException(nameof(toRemove), toRemove);
 
             string[] parts = Split(path);
-            List<string> proccessed = new();
+
+            if (parts.IsEmpty())
+                return path;
+
+            List<string> proccessed = new(parts.Length - 1);
             bool isPartRemoved = false;
             for (int i = parts.Length - 1; i > -1; i--)
             {
@@ -183,6 +202,7 @@ namespace CCEnvs.Files
                 proccessed.Add(parts[i]);
             }
 
+            proccessed.Reverse();
             return Combine(style, proccessed.ToArray());
         }
         /// <param name="style">if null, uses path style</param>

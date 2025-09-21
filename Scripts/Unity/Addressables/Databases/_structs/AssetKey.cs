@@ -1,33 +1,35 @@
 using System;
+using System.Diagnostics;
 using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets
 {
+    [DebuggerDisplay("HashCode: {GetHashCode()}; String {ToString()}")]
     public readonly struct AssetKey : IEquatable<AssetKey>
     {
-        private readonly string? objName;
-        private readonly int objID;
-        private readonly object? uniqueIndentifier;
+        public string? AssetName { get; }
+        public int? AssetID { get; }
+        public object? UniqueIdentifier { get; }
 
-        public AssetKey(string? objName, int objID) : this()
+        public AssetKey(string? assetName, int? assetID) : this()
         {
-            this.objName = objName;
-            this.objID = objID;
+            AssetName = assetName;
+            AssetID = assetID;
         }
 
         public AssetKey(string? objName,
-                int objID,
-                object? uniqueIndentifier)
+                        int? objID,
+                        object? uniqueIndentifier)
             :
             this(objName, objID)
         {
-            this.uniqueIndentifier = uniqueIndentifier;
+            UniqueIdentifier = uniqueIndentifier;
         }
 
         public AssetKey(string objName, object? uniqueIndentifier = null)
             :
-            this(objName, objID: int.MinValue, uniqueIndentifier)
+            this(objName, objID: default, uniqueIndentifier)
         {
         }
 
@@ -38,17 +40,17 @@ namespace CCEnvs.Unity.AddrsAssets
         }
 
         public AssetKey(Object asset, object? uniqueIndentifier)
+            :
+            this()
         {
             CC.Validate.ArgumentNull(asset, nameof(asset));
 
-            objName = asset.name;
+            AssetName = asset.name;
 
             if (asset is IIDMarked idMarked)
-                objID = idMarked.ObjectID;
-            else
-                objID = int.MinValue;
+                AssetID = idMarked.ObjectID;
 
-            this.uniqueIndentifier = uniqueIndentifier;
+            UniqueIdentifier = uniqueIndentifier;
         }
 
         public AssetKey(Object asset)
@@ -68,20 +70,40 @@ namespace CCEnvs.Unity.AddrsAssets
             return !(left == right);
         }
 
+        public AssetKey With(string? assetName)
+        {
+            return new AssetKey(assetName, AssetID, UniqueIdentifier);
+        }
+        public AssetKey With(int? assetID)
+        {
+            return new AssetKey(AssetName, assetID, UniqueIdentifier);
+        }
+        public AssetKey With(object? uniqueIdentifier)
+        {
+            return new AssetKey(AssetName, AssetID, uniqueIdentifier);
+        }
+
         public bool Equals(AssetKey other)
         {
-            return ToString() == other.ToString();
+            return AssetName == other.AssetName
+                   &&
+                   AssetID == other.AssetID
+                   &&
+                   UniqueIdentifier == other.UniqueIdentifier;
         }
         public override bool Equals(object obj)
         {
             return obj is AssetKey typed && Equals(typed);
         }
 
-        public override int GetHashCode() => ToString().GetHashCode();
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(AssetName, AssetID, UniqueIdentifier);
+        }
 
         public override string ToString()
         {
-            return $"Object name = {objName}; object ID = {objID}; unique indentifier = {uniqueIndentifier}";
+            return $"{nameof(AssetName)}: {AssetName} | {nameof(AssetID)}: {AssetID} | {nameof(UniqueIdentifier)}: {UniqueIdentifier}";
         }
     }
 }

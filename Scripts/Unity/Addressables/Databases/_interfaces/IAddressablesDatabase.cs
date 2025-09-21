@@ -17,7 +17,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
     public interface IAddressablesDatabase
         : IDisposable,
-        IEnumerable
+        IEnumerable,
+        ILoadable
     {
         object this[AssetKey key] { get; }
 

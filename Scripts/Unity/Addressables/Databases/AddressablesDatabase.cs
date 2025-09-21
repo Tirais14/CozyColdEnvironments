@@ -4,8 +4,8 @@ using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.AddrsAssets.Databases;
 using Cysharp.Threading.Tasks;
-using LinqAF;
 using Cysharp.Threading.Tasks.Linq;
+using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,23 +19,34 @@ namespace CCEnvs.Unity.AddrsAssets
     public class AddressablesDatabase<TAsset> : IAddressablesDatabase<TAsset>
         where TAsset : Object
     {
+        private readonly System.Diagnostics.Stopwatch stopwatch = new();
         private readonly Dictionary<AssetKey, TAsset> db;
         private readonly List<AsyncOperationHandle<IList<TAsset>>> loadHandles = new(0);
         private bool disposedValue;
+
+        public event Action<ILoadable> OnStartLoading = null!;
+        public event Action<ILoadable> OnLoaded = null!;
 
         public Type AssetType { get; } = typeof(TAsset);
         public IEnumerable<AssetKey> Keys => db.Keys;
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
+        public bool IsLoaded => Count > 0;
         public TAsset this[AssetKey key] => db[key];
 
-        public AddressablesDatabase(int capacity) => db = new(capacity);
+        public AddressablesDatabase(int capacity)
+        {
+            db = new(capacity);
+            BindEvents();
+        }
 
-        public AddressablesDatabase() : this(capacity: 0)
+        public AddressablesDatabase() : this(capacity: 4)
         {
         }
 
         public AddressablesDatabase(IEnumerable<KeyValuePair<AssetKey, TAsset>> values)
+            :
+            this()
         {
             db = new Dictionary<AssetKey, TAsset>(values);
         }
@@ -66,6 +77,8 @@ namespace CCEnvs.Unity.AddrsAssets
 
             try
             {
+                OnStartLoading(this);
+
                 var handle = await AddressableLoader.LoadAssetsByTagsAsync<TAsset>(
                     (x) => OnAssetLoaded(x, uniqueIndentifierGetter),
                     assetLabels.ToArray());
@@ -76,7 +89,11 @@ namespace CCEnvs.Unity.AddrsAssets
             {
                 CCDebug.PrintException(ex);
             }
-
+            finally
+            {
+                OnLoaded(this);
+            }
+            
             TrimExcessOnLoaded().Timeout(TimeSpan.FromMinutes(3), DelayType.UnscaledDeltaTime)
                                 .Forget(ex => CCDebug.PrintException(ex));
         }
@@ -157,7 +174,23 @@ namespace CCEnvs.Unity.AddrsAssets
 
             var assetKey = new AssetKey(asset, uniqueIndentifier);
             db.Add(assetKey, asset);
-            CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded with key = {assetKey}", this);
+            CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded. assetKey: {assetKey}", this);
+        }
+
+        private void BindEvents()
+        {
+            OnStartLoading += (x) =>
+            {
+                CCDebug.PrintLog("Loading started.", x);
+                stopwatch.Start();
+            };
+
+            OnLoaded += (x) =>
+            {
+                stopwatch.Stop();
+                CCDebug.PrintLog($"Loading finished in {stopwatch.Elapsed.Seconds} seconds.", x);
+                stopwatch.Reset();
+            };
         }
 
         private async UniTask TrimExcessOnLoaded()

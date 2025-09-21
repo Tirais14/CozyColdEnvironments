@@ -5,7 +5,7 @@ namespace CCEnvs.Unity.Timers
 {
     public class TimerFixedUpdate : TimerMono
     {
-        protected override float DeltaTime => Time.deltaTime;
+        protected override float DeltaTime => IsUnscaledDeltaTime ? Time.fixedUnscaledDeltaTime : Time.fixedDeltaTime;
 
         private void FixedUpdate() => Main();
 

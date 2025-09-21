@@ -6,47 +6,54 @@ using Object = UnityEngine.Object;
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public interface IAddressablesDatabaseRegistry 
-        : IReadOnlyDictionary<AssetRegistryKey, IAddressablesDatabase>,
-        IDisposable
+        : IReadOnlyDictionary<AssetDatabaseKey, IAddressablesDatabase>,
+        IDisposable,
+        ILoadable
     {
-        void RegisterDatabase(AssetRegistryKey key, IAddressablesDatabase database);
+        void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database);
 
-        bool UnregisterDatabase(AssetRegistryKey key);
+        bool UnregisterDatabase(AssetDatabaseKey key);
 
-        IAddressablesDatabase GetDatabase(AssetRegistryKey key);
+        IAddressablesDatabase GetDatabase(AssetDatabaseKey key);
         IAddressablesDatabase GetDatabase(Type assetType, object? uniqueIndentifier = null);
-        T GetDatabase<T>(AssetRegistryKey key)
+        T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase;
         T GetDatabase<T>(Type dbAssetType, object? uniqueIndentifier = null) 
             where T : IAddressablesDatabase;
 
-        Object GetAsset(AssetRegistryKey key);
+        Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey);
         Object GetAsset(Type dbAssetType,
                         string? assetName,
-                        int assetID,
-                        object? uniqueIndentifier = null);
+                        int? assetID,
+                        object? dbUniqueIdentifier = null,
+                        object? assetUniqueIdentifier = null);
         Object GetAsset(Type dbAssetType,
                         string assetName,
-                        object? uniqueIndentifier = null);
+                        object? dbUniqueIdentifier = null,
+                        object? assetUniqueIdentifier = null);
         Object GetAsset(Type dbAssetType,
                         int assetID,
-                        object? uniqueIndentifier = null);
-        T GetAsset<T>(AssetRegistryKey key);
+                        object? dbUniqueIdentifier = null,
+                        object? assetUniqueIdentifier = null);
+        T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         /// <param name="uniqueIndentifier">Any object which used as ID</param>
-        T GetAsset<T>(Type? dbAssetType,
-                      string? assetName,
-                      int assetID,
-                      object? uniqueIndentifier = null);
+        T GetAsset<T>(string? assetName,
+                      int? assetID,
+                      Type? dbAssetType = null,
+                      object? dbUniqueIdentifier = null,
+                      object? assetUniqueIdentifier = null);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         /// <param name="uniqueIndentifier">Any object which used as ID</param>
-        T GetAsset<T>(Type? dbAssetType,
-                      string assetName,
-                      object? uniqueIndentifier = null);
+        T GetAsset<T>(string assetName,
+                      Type? dbAssetType = null,
+                      object? dbUniqueIdentifier = null,
+                      object? assetUniqueIdentifier = null);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         /// <param name="uniqueIndentifier">Any object which used as ID</param>
-        T GetAsset<T>(Type? dbAssetType,
-                      int assetID,
-                      object? uniqueIndentifier = null);
+        T GetAsset<T>(int assetID,
+                      Type? dbAssetType = null,
+                      object? dbUniqueIdentifier = null,
+                      object? assetUniqueIdentifier = null);
     }
 }

@@ -7,6 +7,10 @@ using System.Collections;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 using static CCEnvs.Unity.AddrsAssets.AddressablesDatabaseRegistry;
+using System.Threading;
+using System.Timers;
+using CCEnvs.Unity.Timers;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3881
@@ -17,14 +21,13 @@ namespace CCEnvs.Unity.AddrsAssets
     {
         internal class AddressablesDatabaseRegistryReflected : Reflected
         {
-            public Dictionary<AssetRegistryKey, IAddressablesDatabase> databases { get; }
+            public Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases { get; }
 
-            public AddressablesDatabaseRegistryReflected(object target,
-                                                         Settings settings = Settings.None)
+            public AddressablesDatabaseRegistryReflected(object target)
                 :
-                base(target, settings)
+                base(target, Settings.IncludeNonPublic)
             {
-                databases = Field("databases").GetValue<Dictionary<AssetRegistryKey, IAddressablesDatabase>>();
+                databases = Field("databases").GetValue<Dictionary<AssetDatabaseKey, IAddressablesDatabase>>();
             }
         }
     }
@@ -34,20 +37,35 @@ namespace CCEnvs.Unity.AddrsAssets
 
         where TThis : MonoCCStatic, IAddressablesDatabaseRegistry
     {
-        private readonly Dictionary<AssetRegistryKey, IAddressablesDatabase> databases = new();
+        private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
+        protected Action<ILoadable> onStartLoading;
+        protected Action<ILoadable> onLoaded;
+        private TimerUpdate timer;
         private AddressablesDatabaseRegistryReflected thisReflected = null!;
         private bool disposedValue;
 
+        public event Action<ILoadable> OnStartLoading {
+            add => onStartLoading += value;
+            remove => onStartLoading = (onStartLoading - value)!;
+        }
+        public event Action<ILoadable> OnLoaded {
+            add => onLoaded += value;
+            remove => onLoaded = (onLoaded - value)!;
+        }
+
         public static TThis Q => Instance;
-        public IEnumerable<AssetRegistryKey> Keys => databases.Keys;
+        public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
         public IEnumerable<IAddressablesDatabase> Values => databases.Values;
         public int Count => databases.Count;
-        public IAddressablesDatabase this[AssetRegistryKey key] => databases[key];
+        public bool IsLoaded => Count > 0;
+        public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
 
         protected override void OnAwake()
         {
             base.OnAwake();
             thisReflected = new AddressablesDatabaseRegistryReflected(this);
+            timer = TimerUpdate.Create();
+            timer.IsUnscaledDeltaTime = true;
             try
             {
                 var task = RegisterDatabases();
@@ -57,22 +75,24 @@ namespace CCEnvs.Unity.AddrsAssets
             {
                 throw;
             }
+
+            BindEvents();
         }
 
-        public void RegisterDatabase(AssetRegistryKey key, IAddressablesDatabase database)
+        public void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database)
         {
             thisReflected.databases.Add(key, database);
         }
 
-        public bool UnregisterDatabase(AssetRegistryKey key) => databases.Remove(key);
+        public bool UnregisterDatabase(AssetDatabaseKey key) => databases.Remove(key);
 
-        public IAddressablesDatabase GetDatabase(AssetRegistryKey key) => databases[key];
+        public IAddressablesDatabase GetDatabase(AssetDatabaseKey key) => databases[key];
         public IAddressablesDatabase GetDatabase(Type assetType,
                                                  object? uniqueIndentifier = null)
         {
-            return GetDatabase(new AssetRegistryKey());
+            return GetDatabase(new AssetDatabaseKey());
         }
-        public T GetDatabase<T>(AssetRegistryKey key)
+        public T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase
         {
             return GetDatabase(key).As<T>();
@@ -81,97 +101,100 @@ namespace CCEnvs.Unity.AddrsAssets
                                 object? uniqueIndentifier = null)
             where T : IAddressablesDatabase
         {
-            return GetDatabase(new AssetRegistryKey(
-                assetKey: default,
-                dbAssetType,
-                uniqueIndentifier)).As<T>();
+            return GetDatabase(new AssetDatabaseKey(dbAssetType, uniqueIndentifier)).As<T>();
         }
 
-        public Object GetAsset(AssetRegistryKey key)
+        public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
         {
-            IAddressablesDatabase db = thisReflected.databases[key];
+            IAddressablesDatabase db = thisReflected.databases[dbKey];
 
-            return db.GetAsset(key.AssetKey);
+            return db.GetAsset(assetkey);
         }
         public Object GetAsset(Type dbAssetType,
                                string? assetName,
-                               int assetID,
-                               object? uniqueIndentifier = null)
+                               int? assetID,
+                               object? dbUniqueIdentifier = null,
+                               object? assetUniqueIdentifier = null)
         {
-            return GetAsset(new AssetRegistryKey(
-                new AssetKey(
-                    assetName,
-                    assetID,
-                    uniqueIndentifier),
-                dbAssetType));
+            return GetAsset(new AssetDatabaseKey(dbAssetType, dbUniqueIdentifier),
+                new AssetKey(assetName,
+                             assetID,
+                             assetUniqueIdentifier));
         }
         public Object GetAsset(Type dbAssetType,
                                string assetName,
-                               object? uniqueIndentifier = null)
+                               object? dbUniqueIdentifier = null,
+                               object? assetUniqueIdentifier = null)
         {
-            return GetAsset(new AssetRegistryKey(
-                new AssetKey(
-                    assetName,
-                    uniqueIndentifier),
-                dbAssetType));
+            return GetAsset(new AssetDatabaseKey(dbAssetType, dbUniqueIdentifier),
+                new AssetKey(assetName, assetUniqueIdentifier));
         }
         public Object GetAsset(Type dbAssetType,
                                int assetID,
-                               object? uniqueIndentifier = null)
+                               object? dbUniqueIdentifier = null,
+                               object? assetUniqueIdentifier = null)
         {
-            return GetAsset(new AssetRegistryKey(
-                new AssetKey(
-                    assetID,
-                    uniqueIndentifier),
-                dbAssetType));
+            return GetAsset(new AssetDatabaseKey(dbAssetType, dbUniqueIdentifier), 
+                new AssetKey(assetID, assetUniqueIdentifier));
         }
-        public T GetAsset<T>(AssetRegistryKey key) => GetAsset(key).As<T>();
-        public T GetAsset<T>(Type? dbAssetType,
-                             string? assetName,
-                             int assetID,
-                             object? uniqueIndentifier = null)
+        public T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey) => GetAsset(dbKey, assetkey).As<T>();
+        public T GetAsset<T>(string? assetName,
+                             int? assetID,
+                             Type? dbAssetType = null,
+                             object? dbUniqueIdentifier = null,
+                             object? assetUniqueIdentifier = null)
         {
-            return GetAsset<T>(new AssetRegistryKey(
-                new AssetKey(
-                    assetName,
-                    assetID,
-                    uniqueIndentifier),
-                dbAssetType ?? typeof(T)));
+            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbUniqueIdentifier),
+                new AssetKey(assetName,
+                             assetID,
+                             assetUniqueIdentifier));
         }
-        public T GetAsset<T>(Type? dbAssetType,
-                             string assetName,
-                             object? uniqueIndentifier = null)
+        public T GetAsset<T>(string assetName,
+                             Type? dbAssetType = null,
+                             object? dbUniqueIdentifier = null,
+                             object? assetUniqueIdentifier = null)
         {
-            return GetAsset<T>(new AssetRegistryKey(
-                new AssetKey(
-                    assetName,
-                    uniqueIndentifier),
-                dbAssetType ?? typeof(T)));
+            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbUniqueIdentifier),
+                new AssetKey(assetName, assetUniqueIdentifier));
         }
-        public T GetAsset<T>(Type? dbAssetType,
-                             int assetID,
-                             object? uniqueIndentifier = null)
+        public T GetAsset<T>(int assetID,
+                             Type? dbAssetType = null,
+                             object? dbUniqueIdentifier = null,
+                             object? assetUniqueIdentifier = null)
         {
-            return GetAsset<T>(new AssetRegistryKey(
-                new AssetKey(
-                    assetID,
-                    uniqueIndentifier),
-                dbAssetType ?? typeof(T)));
+            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbUniqueIdentifier),
+                new AssetKey(assetID, assetUniqueIdentifier));
         }
 
         public void Dispose() => Dispose(disposing: true);
 
-        public IEnumerator<KeyValuePair<AssetRegistryKey, IAddressablesDatabase>> GetEnumerator()
+        public IEnumerator<KeyValuePair<AssetDatabaseKey, IAddressablesDatabase>> GetEnumerator()
         {
             return databases.GetEnumerator();
         }
 
-        public bool ContainsKey(AssetRegistryKey key)
+        public bool ContainsKey(AssetDatabaseKey key)
         {
             return databases.ContainsKey(key);
         }
 
-        protected abstract UniTask<KeyValuePair<AssetRegistryKey, IAddressablesDatabase>[]> GetDatabases();
+        protected void BindEvents()
+        {
+            onStartLoading += (x) =>
+            {
+                timer.StartTimer();
+                CCDebug.PrintLog("Loading started", x);
+            };
+
+            onLoaded += (x) =>
+            {
+                timer.StopTimer();
+                CCDebug.PrintLog($"Loading finished in {timer.GetTimeSpan().Seconds} seconds.", x);
+                timer.ResetTimer();
+            };
+        }
+
+        protected abstract UniTask<KeyValuePair<AssetDatabaseKey, IAddressablesDatabase>[]> GetDatabases();
 
         protected virtual void Dispose(bool disposing)
         {
@@ -195,8 +218,8 @@ namespace CCEnvs.Unity.AddrsAssets
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        bool IReadOnlyDictionary<AssetRegistryKey, IAddressablesDatabase>.TryGetValue(
-            AssetRegistryKey key,
+        bool IReadOnlyDictionary<AssetDatabaseKey, IAddressablesDatabase>.TryGetValue(
+            AssetDatabaseKey key,
             out IAddressablesDatabase value)
         {
             return databases.TryGetValue(key, out value);

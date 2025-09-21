@@ -39,7 +39,14 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public readonly bool Equals(AssetLabels other)
         {
-            return Labels.SequenceEqual(other.Labels);
+            if (Labels == other.Labels)
+                return true;
+
+            return Labels is not null
+                   &&
+                   other.Labels is not null
+                   && 
+                   Labels.SequenceEqual(other.Labels);
         }
         public readonly override bool Equals(object obj)
         {
@@ -47,6 +54,11 @@ namespace CCEnvs.Unity.AddrsAssets
         }
 
         public readonly override int GetHashCode() => Labels.ToHashCode();
+
+        public readonly override string ToString()
+        {
+            return $"{nameof(Labels)}: {Labels.JoinStrings(", ")}";
+        }
 
         readonly void ISerializationCallbackReceiver.OnBeforeSerialize()
         {

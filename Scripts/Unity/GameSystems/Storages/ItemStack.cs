@@ -2,7 +2,6 @@
 using System;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using Newtonsoft.Json;
 
 namespace CCEnvs.Unity.GameSystems.Storages
 {
@@ -10,29 +9,14 @@ namespace CCEnvs.Unity.GameSystems.Storages
     {
         public static ItemStack Empty => new();
 
-#if NEWTONSOFT_JSON
-        [JsonProperty]
-#endif
         public IStorageItem Item { get; private set; } = new StorageItem();
 
-#if NEWTONSOFT_JSON
-        [JsonProperty]
-#endif
         public int ItemCount { get; private set; }
 
-#if NEWTONSOFT_JSON
-        [JsonProperty]
-#endif
         public int MaxItemCount { get; private set; }
 
-#if NEWTONSOFT_JSON
-        [JsonIgnore]
-#endif
         public bool HasItem => Item.IsNotNull() && ItemCount > 0;
 
-#if NEWTONSOFT_JSON
-        [JsonIgnore]
-#endif
         public bool IsContainerFull => ItemCount >= MaxItemCount;
 
         public ItemStack(int maxItemCount)
