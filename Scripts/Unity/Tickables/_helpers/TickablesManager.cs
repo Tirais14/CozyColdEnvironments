@@ -1,30 +1,20 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.Attributes;
 using CCEnvs.Utils;
+using LinqAF;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.Unity.Tickables
 {
     public sealed class TickablesManager : MonoCCStatic<TickablesManager>
     {
-        private readonly static NullReferenceException instanceException = new("Cannot find any ticker.");
-
-        private readonly Dictionary<Type, ITicker> registeredTickers = new();
-
-        protected override void OnAwake()
-        {
-            base.OnAwake();
-
-            DontDestroyOnLoad(gameObject);
-            //OnInstantiated += TryRegisterTickable;
-        }
+        private readonly Dictionary<Type, ITicker> tickers = new();
 
         protected override void OnStart()
         {
@@ -32,6 +22,8 @@ namespace CCEnvs.Unity.Tickables
 
             RegisterTickers();
             RegisterTickables();
+
+            SceneManager.sceneLoaded += (_, _) => RegisterTickables();
         }
 
         public static bool IsTickerRegistered(ITicker? ticker)
@@ -39,39 +31,21 @@ namespace CCEnvs.Unity.Tickables
             if (ticker.IsNull())
                 return false;
 
-            return Instance.registeredTickers.ContainsKey(ticker.GetType());
+            return Instance.tickers.ContainsKey(ticker.GetType());
         }
 
-        public static bool IsTickableRegistered(ITickableBase? tickable)
-        {
-            if (tickable.IsNull())
-                return false;
-            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
-            {
-                CCDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesManager)}. Return false.", Instance);
-                return false;
-            }
-
-            if (!Instance.registeredTickers.TryGetValue(tickerType,
-                                                        out ITicker? ticker)
-                )
-                return false;
-
-            return ticker.IsRegistered(tickable);
-        }
-
-        /// <param name="ticker"></param>
-        /// <returns>Disposable subscription</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="CannotRegisterTickerException"></exception>
         public static IDisposable RegisterTicker(ITicker ticker)
         {
-            if (ticker.IsNull())
-                throw new ArgumentNullException(nameof(ticker));
-            if (IsTickerRegistered(ticker))
-                throw new ArgumentException($"{ticker.GetTypeName()} already registered.");
+            CC.Validate.ArgumentNull(ticker, nameof(ticker));
 
-            Instance.registeredTickers.Add(ticker.GetType(), ticker);
+            if (IsTickerRegistered(ticker))
+                throw new CannotRegisterTickerException(
+                    "Already registered.",
+                    ticker.GetType());
+
+            Instance.tickers.Add(ticker.GetType(), ticker);
+            CCDebug.PrintLog($"Registered ticker: {ticker.GetType().GetName()}.");
 
             return Subscription.Create(ticker, (x) => UnregisterTicker(x));
         }
@@ -81,49 +55,83 @@ namespace CCEnvs.Unity.Tickables
             if (ticker.IsNull())
                 return false;
 
-            return Instance.registeredTickers.Remove(ticker.GetType());
+            return Instance.tickers.Remove(ticker.GetType());
         }
 
-        public static IDisposable RegisterTickable(ITickableBase tickable, Type tickerType)
+        public static bool IsTickableRegistered<T>(T? tickable)
+            where T : ITickableBase
+        {
+            if (tickable.IsNull()
+                ||
+                !Tickable.TryGetTickerType(tickable, out Type? tickerType)
+                ||
+                !Instance.tickers.TryGetValue(tickerType, out ITicker? ticker))
+                return false;
+
+            return ticker.IsRegistered(tickable);
+        }
+
+        /// <exception cref="CannotRegisterTickableException"></exception>
+        public static IDisposable RegisterTickable<T>(T tickable, Type tickerType)
+            where T : ITickableBase
         {
             CC.Validate.ArgumentNull(tickable, nameof(tickable));
             CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
 
-            if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker? ticker))
-                throw new LogicException($"Cannot find ticker of type: {tickerType.GetName()}.");
+            if (!Instance.tickers.TryGetValue(tickerType, out ITicker? ticker))
+                throw new CannotRegisterTickableException(
+                    $"Not found ticker: {tickerType.GetName()}.",
+                    tickable.GetType());
 
-            return ticker.Register(tickable);
+            var result = ticker.Register(tickable);
+            CCDebug.PrintLog($"Registered tickable: {tickable.GetType().GetFullName()} to {tickerType.GetName()}.");
+
+            return result;
         }
 
-        public static IDisposable RegisterTickable(ITickableBase tickable)
+        public static IDisposable RegisterTickable<T>(T tickable)
+            where T : ITickableBase
         {
             CC.Validate.ArgumentNull(tickable, nameof(tickable));
+
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
-                throw new ArgumentException($"{tickable.GetType()} cannot be implcitly registered in {nameof(TickablesManager)}.");
+                throw new CannotRegisterTickableException(
+                    "Cannot resolve ticker type.",
+                    tickable.GetType());
 
             return RegisterTickable(tickable, tickerType);
         }
 
-        public static bool UnregisterTickable(ITickableBase? tickable)
+        public static bool UnregisterTickable<T>(T tickable, Type tickerType)
+            where T : ITickableBase
         {
-            if (tickable.IsNull())
-                return false;
-            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
-                throw new ArgumentException($"Tickable cannot be register by {nameof(TickablesManager)}.");
-            if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker ticker))
-                throw new ArgumentException($"Cannot find {tickerType.GetName()}");
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+            CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
 
-            return ticker.Unregister(tickable);
+            var result = Instance.tickers[tickerType].Unregister(tickable);
+            CCDebug.PrintLog($"Unregistered tickable: {tickable.GetType().GetFullName()} from {tickerType.GetName()}.");
+
+            return result;
+        }
+
+        public static bool UnregisterTickable<T>(T? tickable)
+            where T : ITickableBase
+        {
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+
+            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
+                return false;
+
+            return UnregisterTickable(tickable, tickerType);
         }
 
         public static int RegisterTickers()
         {
-            var tickers = UObjectFinder.FindObjectsByType<ITicker>(FindObjectsInactive.Include);
+            CCDebug.PrintLog("Registering tickers started.", Instance);
+            var stopwatch = new Stopwatch();
 
-            if (tickers.IsEmpty())
-                return 0;
-
-            var tickersFiltered = tickers.Where(x => !IsTickerRegistered(x));
+            var tickersFiltered = UObjectFinder.FindObjectsByType<ITicker>(FindObjectsInactive.Include)
+                .Where(ticker => !IsTickerRegistered(ticker));
 
             int registeredCount = 0;
             foreach (var ticker in tickersFiltered)
@@ -132,29 +140,29 @@ namespace CCEnvs.Unity.Tickables
                 registeredCount++;
             }
 
+            CCDebug.PrintLog($"Registering tickers finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", Instance);
             return registeredCount;
         }
 
         public static int RegisterTickables()
         {
-            var tickables = UObjectFinder.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include);
+            CCDebug.PrintLog("Registering tickables started.", Instance);
+            var stopwatch = new Stopwatch();
 
-            if (tickables.IsEmpty())
-                return 0;
-
-             var tickablesFiltered = from x in tickables
-                                     select (x, attribute: x.GetType().GetCustomAttribute<TickerTypeAttribute>())
-                                     into pair
-                                     where pair.attribute != null && !IsTickableRegistered(pair.x)
-                                     select pair.x;
+            var toRegister =
+               from tickable in UObjectFinder.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include)
+               select (tickable, state: Tickable.TryGetTickerType(tickable, out Type? tickerType), tickerType) into item
+               where item.state && !IsTickableRegistered(item.tickable)
+               select item;
 
             int registeredCount = 0;
-            foreach (var tickable in tickablesFiltered)
+            foreach (var (tickable, _, tickerType) in toRegister)
             {
-                RegisterTickable(tickable);
+                RegisterTickable(tickable, tickerType);
                 registeredCount++;
             }
 
+            CCDebug.PrintLog($"Registering tickables finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", Instance);
             return registeredCount;
         }
     }

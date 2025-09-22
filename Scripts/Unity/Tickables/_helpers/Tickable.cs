@@ -12,8 +12,9 @@ namespace CCEnvs.Unity.Tickables
 {
     public static class Tickable
     {
-        public static bool TryGetTickerType(ITickableBase tickable,
+        public static bool TryGetTickerType<T>(T tickable,
             [NotNullWhen(true)] out Type? result)
+            where T : ITickableBase
         {
             result = null;
 
@@ -31,8 +32,9 @@ namespace CCEnvs.Unity.Tickables
             return result is not null;
         }
 
-        public static bool TryGetTickerTypeByInterfaces(ITickableBase tickable,
+        public static bool TryGetTickerTypeByInterfaces<T>(T tickable,
             [NotNullWhen(true)] out Type? result)
+            where T : ITickableBase
         {
             if (tickable.IsNull())
                 throw new ArgumentNullException(nameof(tickable));
@@ -53,8 +55,9 @@ namespace CCEnvs.Unity.Tickables
             return result is not null;
         }
 
-        public static bool TryGetTickerTypeAttribute(ITickableBase? tickable,
+        public static bool TryGetTickerTypeAttribute<T>(T? tickable,
             [NotNullWhen(true)] out TickerTypeAttribute? result)
+            where T : ITickableBase
         {
             if (tickable.IsNull())
             {
@@ -66,7 +69,8 @@ namespace CCEnvs.Unity.Tickables
                 .Is<TickerTypeAttribute>(out result);
         }
 
-        public static bool HasTickerInfo(ITickableBase? tickable)
+        public static bool HasTickerInfo<T>(T? tickable)
+            where T : ITickableBase
         {
             if (tickable.IsNull())
                 return false;
