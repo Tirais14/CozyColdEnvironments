@@ -221,6 +221,10 @@ namespace CCEnvs.Reflection
 
             return new ContextedFieldInfo(Target, found);
         }
+        public ContextedFieldInfo<T> Field<T>(string name)
+        {
+            return Field(name).Convert<T>();
+        }
         public ContextedFieldInfo Field(Type type)
         {
             CC.Validate.ArgumentNull(type, nameof(type));
@@ -250,6 +254,7 @@ namespace CCEnvs.Reflection
 
             return new ContextedFieldInfo(Target, found);
         }
+        public ContextedFieldInfo<T> Field<T>() => Field(typeof(T)).Convert<T>();
 
         /// <exception cref="PropertyNotFoundException"></exception>
         public ContextedPropertyInfo Property(string name)
@@ -274,6 +279,10 @@ namespace CCEnvs.Reflection
                     .TryCacheMember();
 
             return new ContextedPropertyInfo(Target, found);
+        }
+        public ContextedPropertyInfo<T> Property<T>(string name)
+        {
+            return Property(name).Convert<T>();
         }
         public ContextedPropertyInfo Property(Type type)
         {
@@ -305,6 +314,10 @@ namespace CCEnvs.Reflection
                     .TryCacheMember();
 
             return new ContextedPropertyInfo(Target, found);
+        }
+        public ContextedPropertyInfo<T> Property<T>()
+        {
+            return Property(typeof(T)).Convert<T>();
         }
 
         /// <exception cref="MethodNotFoundException"></exception>

@@ -1,10 +1,8 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.TypeMatching;
+using LinqAF;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 
 #nullable enable
@@ -12,72 +10,70 @@ namespace CCEnvs.Unity.Tickables
 {
     public static class Tickable
     {
+        public const string TICKER_PROPERTY_NAME = "t_Ticker";
+        public const string TICKER_SUBSCRIPTION_PROPERTY_NAME = "t_Subscription";
+
+        public static bool HasTickerInfo<T>(T? tickable)
+            where T : ITickableBase
+        {
+            if (tickable.IsNull() || !TryGetTickerType(tickable, out _))
+                return false;
+
+            return true;
+        }
+
+        public static Type GetTickerType<T>(T tickable)
+            where T : ITickableBase
+        {
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+
+            if (GetTickerTypeAttribute(tickable) is TickerTypeAttribute attribute)
+                return attribute.TickerType;
+
+            return GetTickerTypeByInterfaces(tickable)
+                   ?? 
+                   throw new CCException($"Cannot resolve ticker type of tickable: {tickable.GetType().GetName()}. Specify explicitly.");
+        }
+
         public static bool TryGetTickerType<T>(T tickable,
             [NotNullWhen(true)] out Type? result)
             where T : ITickableBase
         {
-            result = null;
-
-            if (tickable.IsNull())
-                return false;
-
-            if (TryGetTickerTypeAttribute(tickable, out TickerTypeAttribute? attribute))
+            try
             {
-                result = attribute.TickerType;
-                return true;
+                result = GetTickerType(tickable);
             }
-
-            TryGetTickerTypeByInterfaces(tickable, out result);
-
-            return result is not null;
-        }
-
-        public static bool TryGetTickerTypeByInterfaces<T>(T tickable,
-            [NotNullWhen(true)] out Type? result)
-            where T : ITickableBase
-        {
-            if (tickable.IsNull())
-                throw new ArgumentNullException(nameof(tickable));
-
-            IEnumerable<Type> intefaceTypes =
-                from x in TypeHelper.CollectBaseTypes(tickable.GetType())
-                select x.GetInterfaces() into types
-                from t in types
-                select t;
-
-            result = (from x in intefaceTypes
-                      where x.IsType<ITickable>()
-                      where x.IsGenericType
-                      select x.GetGenericArguments() into types
-                      from t in types
-                      select t).FirstOrDefault();
-
-            return result is not null;
-        }
-
-        public static bool TryGetTickerTypeAttribute<T>(T? tickable,
-            [NotNullWhen(true)] out TickerTypeAttribute? result)
-            where T : ITickableBase
-        {
-            if (tickable.IsNull())
+            catch (CCException)
             {
                 result = null;
                 return false;
             }
 
-            return tickable.GetType().GetCustomAttribute(typeof(TickerTypeAttribute))
-                .Is<TickerTypeAttribute>(out result);
+            return result is not null;
         }
 
-        public static bool HasTickerInfo<T>(T? tickable)
+        private static Type? GetTickerTypeByInterfaces<T>(T tickable)
             where T : ITickableBase
         {
-            if (tickable.IsNull())
-                return false;
-            if (!TryGetTickerType(tickable, out _))
-                return false;
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
 
-            return true;
+            return (from baseType in TypeHelper.CollectBaseTypes(tickable.GetType())
+                    select baseType.GetInterfaces() into ifaces
+                    from iface in ifaces
+                    where iface.IsType<ITickableBase>()
+                    where iface.IsGenericType
+                    select iface.GetGenericArguments() into genericArgs
+                    from genericArg in genericArgs
+                    select genericArg)
+                    .FirstOrDefault();
+        }
+
+        private static TickerTypeAttribute? GetTickerTypeAttribute<T>(T? tickable)
+            where T : ITickableBase
+        {
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+
+            return tickable.GetType().GetCustomAttribute<TickerTypeAttribute>();
         }
     }
 }

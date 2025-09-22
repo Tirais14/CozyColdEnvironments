@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Reflection;
 using System;
 
 namespace CCEnvs.Unity.Tickables
@@ -7,12 +8,40 @@ namespace CCEnvs.Unity.Tickables
     {
         bool IsTickableEnabled { get; set; }
 
-        IDisposable RegisterBy(Type tickerType)
+        IDisposable Register(Type tickerType)
         {
-            TickablesManager.Re
+            CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
+
+            var susbcription = TickablesManager.RegisterTickable(this, tickerType);
+
+            this.AsReflected()
+                .Property<IDisposable>(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
+                .SetValue(susbcription);
+
+            return susbcription;
+        }
+        IDisposable Register()
+        {
+            return Register(Tickable.GetTickerType(this));
         }
 
-        void UnregisterBy(Type tickerType);
+        bool Unregister()
+        {
+            if (this.AsReflected()
+                    .Property<IDisposable>(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
+                    .GetValue() is not IDisposable subscription
+                     )
+                return TickablesManager.UnregisterTickable(this);
+
+            subscription.Dispose();
+            return true;
+        }
+        bool Unregister(Type fromTickerType)
+        {
+            CC.Validate.ArgumentNull(fromTickerType, nameof(fromTickerType));
+
+            return TickablesManager.UnregisterTickable(this, fromTickerType);
+        }
 
         void OnRegister()
         {

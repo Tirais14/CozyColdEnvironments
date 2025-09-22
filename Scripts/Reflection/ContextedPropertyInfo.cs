@@ -1,10 +1,10 @@
 #nullable enable
+using CCEnvs.Attributes;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 
 namespace CCEnvs.Reflection
 {
-    public class ContextedPropertyInfo : ContextedMemberInfo
+    public class ContextedPropertyInfo<T> : ContextedMemberInfo
     {
         public readonly PropertyInfo value;
 
@@ -13,8 +13,27 @@ namespace CCEnvs.Reflection
             value = property;
         }
 
-        public object GetValue() => value.GetValue(context);
+        public static implicit operator ContextedPropertyInfo(ContextedPropertyInfo<T> source)
+        {
+            return new ContextedPropertyInfo(source.context, source.value);
+        }
 
-        public void SetValue(object newValue) => value.SetValue(context, newValue); 
+        public T GetValue() => (T)value.GetValue(context);
+
+        public void SetValue(T newValue) => value.SetValue(context, newValue); 
+    }
+    public class ContextedPropertyInfo : ContextedPropertyInfo<object>
+    {
+        public ContextedPropertyInfo(object? context, PropertyInfo property)
+            : 
+            base(context, property)
+        {
+        }
+
+        [Converter]
+        public ContextedPropertyInfo<T> Convert<T>()
+        {
+            return new ContextedPropertyInfo<T>(context, value);
+        }
     }
 }
