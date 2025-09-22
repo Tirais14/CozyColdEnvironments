@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Reflection.Data;
+using System;
 using System.Reflection;
 
 namespace CCEnvs.Reflection
@@ -21,6 +22,16 @@ namespace CCEnvs.Reflection
         public object Invoke(ExplicitArguments args)
         {
             return value.Invoke(context, (object?[])args);
+        }
+
+        public Delegate CreateDelegate(Type delegateType)
+        {
+            return value.CreateDelegate(delegateType, context);
+        }
+        public T CreateDelegate<T>()
+            where T : Delegate
+        {
+            return (T)CreateDelegate(typeof(T));
         }
     }
 }

@@ -93,22 +93,29 @@ namespace CCEnvs.Files
                 throw new ArgumentNullException(nameof(pathParts));
             if (pathParts.IsEmpty()) 
                 return string.Empty;
+            if (pathParts.Length == 1)
+                return SetStyle(pathParts[0], style);
 
-            IEnumerable<string> temp = pathParts;
+            char[] directorySeparartors = Enumerable.Empty<char>()
+                .Append(GetDirectorySeparator(PathStyle.Windows))
+                .Append(GetDirectorySeparator(PathStyle.Universal))
+                .ToArray();
+
+            IEnumerable<IEnumerable<char>> temp = pathParts.SelectMany(part => Split(part))
+                .Select(part => (IEnumerable<char>)part)
+                .Select(part => part.Where(x => !directorySeparartors.Contains(x)));
+
             char directorySeparator = GetDirectorySeparator(style);
-
-            if (temp.First().Any(x => x == System.IO.Path.VolumeSeparatorChar))
-                temp = temp.InsertElementAt(1, directorySeparator.ToString());
 
             StringBuilder sb = temp.Aggregate(new StringBuilder(), (builder, x) =>
             {
-                builder.Append(x);
+                builder.Append(x.ToArray());
                 builder.Append(directorySeparator);
 
                 return builder;
             });
 
-            return SetStyle(sb.ToString(), style);
+            return SetStyle(sb.ToString().TrimEnd(directorySeparator), style);
         }
         public static string Combine(PathStyle style, params Path[] pathParts)
         {

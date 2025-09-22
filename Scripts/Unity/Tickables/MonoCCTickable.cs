@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.Tickables
         protected override void OnAwake()
         {
             base.OnAwake();
-            TickablesCore.RegisterTickable(this);
+            TickablesManager.RegisterTickable(this);
         }
 
         protected virtual void OnRegisterInternal()

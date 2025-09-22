@@ -102,7 +102,7 @@ namespace CCEnvs.Files
 
         public void RestoreDefaultName() => customName = null;
 
-        public bool Delete()
+        public virtual bool Delete()
         {
             if (File.Exists(Path))
             {

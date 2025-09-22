@@ -65,7 +65,7 @@ namespace CCEnvs.Unity.AddrsAssets
             base.OnAwake();
             thisReflected = new AddressablesDatabaseRegistryReflected(this);
             timer = TimerUpdate.Create();
-            timer.IsUnscaledDeltaTime = true;
+            timer.IsUnscaledInterval = true;
             try
             {
                 var task = RegisterDatabases();

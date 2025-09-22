@@ -5,7 +5,7 @@ namespace CCEnvs.Unity.Timers
 {
     public class TimerLateUpdate : TimerMono
     {
-        protected override float DeltaTime => IsUnscaledDeltaTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        protected override float DeltaTime => IsUnscaledInterval ? Time.unscaledDeltaTime : Time.deltaTime;
 
         private void LateUpdate() => Main();
 

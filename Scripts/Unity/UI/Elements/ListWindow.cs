@@ -1,4 +1,5 @@
 using CCEnvs.Linq;
+using CCEnvs.Unity.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace CCEnvs.Unity.UI.Elements
         protected override void OnStart()
         {
             base.OnStart();
-            GetComponentsInChildren<T>().ForEach(x => Add(x));
+            this.GetAssignedObjectsInChildren<T>().ForEach(x => Add(x));
         }
 
         public void Add(T item)

@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using QuikGraph.Algorithms.ShortestPath;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -75,14 +76,18 @@ namespace CCEnvs.Linq
             int i = 0;
             foreach (var value in values)
             {
-                i++;
                 if (i == position)
                 {
                     inserted = true;
                     yield return newValue;
+
+                    i++;
+                    yield return value;
                 }
                 else
                     yield return value;
+
+                i++;
             }
 
 #pragma warning disable S112
@@ -101,11 +106,12 @@ namespace CCEnvs.Linq
             int i = 0;
             foreach (var value in values)
             {
-                i++;
                 if (i == position)
                     removed = true;
                 else
                     yield return value;
+
+                i++;
             }
 
 #pragma warning disable S112

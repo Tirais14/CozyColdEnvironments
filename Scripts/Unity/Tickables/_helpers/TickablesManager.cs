@@ -1,7 +1,7 @@
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
+using CCEnvs.Unity.Attributes;
 using CCEnvs.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Tickables
 {
-    public class TickablesCore : MonoCCStatic<TickablesCore>
+    public sealed class TickablesManager : MonoCCStatic<TickablesManager>
     {
         private readonly static NullReferenceException instanceException = new("Cannot find any ticker.");
 
@@ -36,8 +36,6 @@ namespace CCEnvs.Unity.Tickables
 
         public static bool IsTickerRegistered(ITicker? ticker)
         {
-            Validate();
-
             if (ticker.IsNull())
                 return false;
 
@@ -46,13 +44,11 @@ namespace CCEnvs.Unity.Tickables
 
         public static bool IsTickableRegistered(ITickableBase? tickable)
         {
-            Validate();
-
             if (tickable.IsNull())
                 return false;
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
             {
-                CCDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesCore)}. Return false.", Instance);
+                CCDebug.PrintWarning($"Tickable cannot be register by {nameof(TickablesManager)}. Return false.", Instance);
                 return false;
             }
 
@@ -70,8 +66,6 @@ namespace CCEnvs.Unity.Tickables
         /// <exception cref="ArgumentException"></exception>
         public static IDisposable RegisterTicker(ITicker ticker)
         {
-            Validate();
-
             if (ticker.IsNull())
                 throw new ArgumentNullException(nameof(ticker));
             if (IsTickerRegistered(ticker))
@@ -84,39 +78,38 @@ namespace CCEnvs.Unity.Tickables
 
         public static bool UnregisterTicker(ITicker? ticker)
         {
-            Validate();
-
             if (ticker.IsNull())
                 return false;
 
             return Instance.registeredTickers.Remove(ticker.GetType());
         }
 
-
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        public static IDisposable RegisterTickable(ITickableBase tickable)
+        public static IDisposable RegisterTickable(ITickableBase tickable, Type tickerType)
         {
-            Validate();
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+            CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
 
-            if (tickable.IsNull())
-                throw new ArgumentNullException(nameof(tickable));
-            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
-                throw new ArgumentException($"Tickable cannot be register by {nameof(TickablesCore)}.");
-            if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker ticker))
-                throw new ArgumentException($"Cannot find {tickerType.GetName()}");
+            if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker? ticker))
+                throw new LogicException($"Cannot find ticker of type: {tickerType.GetName()}.");
 
             return ticker.Register(tickable);
         }
 
+        public static IDisposable RegisterTickable(ITickableBase tickable)
+        {
+            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+            if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
+                throw new ArgumentException($"{tickable.GetType()} cannot be implcitly registered in {nameof(TickablesManager)}.");
+
+            return RegisterTickable(tickable, tickerType);
+        }
+
         public static bool UnregisterTickable(ITickableBase? tickable)
         {
-            Validate();
-
             if (tickable.IsNull())
                 return false;
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
-                throw new ArgumentException($"Tickable cannot be register by {nameof(TickablesCore)}.");
+                throw new ArgumentException($"Tickable cannot be register by {nameof(TickablesManager)}.");
             if (!Instance.registeredTickers.TryGetValue(tickerType, out ITicker ticker))
                 throw new ArgumentException($"Cannot find {tickerType.GetName()}");
 
@@ -125,8 +118,6 @@ namespace CCEnvs.Unity.Tickables
 
         public static int RegisterTickers()
         {
-            Validate();
-
             var tickers = UObjectFinder.FindObjectsByType<ITicker>(FindObjectsInactive.Include);
 
             if (tickers.IsEmpty())
@@ -146,8 +137,6 @@ namespace CCEnvs.Unity.Tickables
 
         public static int RegisterTickables()
         {
-            Validate();
-
             var tickables = UObjectFinder.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include);
 
             if (tickables.IsEmpty())
@@ -167,23 +156,6 @@ namespace CCEnvs.Unity.Tickables
             }
 
             return registeredCount;
-        }
-
-        //private static void TryRegisterTickable(MonoX value)
-        //{
-        //    if (value.IsNot<ITickableBase>(out var tickable))
-        //        return;
-
-        //    if (!Tickable.HasTickerInfo(tickable))
-        //        return;
-
-        //    RegisterTickable(tickable);
-        //}
-
-        private static void Validate()
-        {
-            if (Instance == null)
-                throw instanceException;
         }
     }
 }

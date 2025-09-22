@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using UnityEngine;
-using CCEnvs.Unity;
 
 namespace CCEnvs.Unity.Timers
 {
@@ -14,28 +13,24 @@ namespace CCEnvs.Unity.Timers
         public const string TIMERS_LATE_UPDATE_OBJ_NAME = "___Timers_LateUpdate";
         public const string TIMERS_CUSTOM_UPDATE_OBJ_NAME = "___Timers_CustomUpdate";
 
-        protected readonly TimerManual timer = new();
+        protected readonly TimerBase timer = new();
 
-        public event Action OnTargetReached {
-            add => timer.OnTargetReached += value;
-            remove => timer.OnTargetReached -= value;
-        }
-
-        public ITimer Timer => timer;
-        public float Seconds => timer.Seconds;
-        public float TargetValue {
-            get => timer.TargetValue;
-            set => timer.TargetValue = value;
-        }
-        public bool TargetValueReached => timer.TargetValueReached;
-        public bool IsActive => timer.IsActive;
-        public bool IsOnTargetReachedInvoked => timer.IsOnTargetReachedInvoked;
         public TimerOptions Options {
             get => timer.Options;
             set => timer.Options = value;
         }
-        public bool IsUnscaledDeltaTime { get; set; }
-        protected abstract float DeltaTime { get; }
+        public IObservable<TimeSpan> OnTargetReached => timer.OnTargetReached;
+        public IObservable<TimeSpan> OnTick => timer.OnTick;
+
+        public bool TargetReached => timer.TargetReached;
+        public bool IsEnabled => timer.IsEnabled;
+        public bool IsUnscaledInterval { get; set; }
+        public TimeSpan Elapsed => timer.Elapsed;
+        public TimeSpan? Target {
+            get => timer.Target;
+            set => timer.Target = value;
+        }
+        public abstract TimeSpan Interval { get; }
 
         protected static ITimer Create(UpdateType updateType)
         {
@@ -97,12 +92,10 @@ namespace CCEnvs.Unity.Timers
             return timersGO;
         }
 
-        public TimeSpan GetTimeSpan() => timer.GetTimeSpan();
-
         public ITimer StartTimer()
         {
             timer.StartTimer();
-            enabled = IsActive;
+            enabled = IsEnabled;
 
             return this;
         }
@@ -110,7 +103,7 @@ namespace CCEnvs.Unity.Timers
         public ITimer StopTimer()
         {
             timer.StopTimer();
-            enabled = IsActive;
+            enabled = IsEnabled;
 
             return this;
         }
@@ -120,12 +113,6 @@ namespace CCEnvs.Unity.Timers
             return timer.ResetTimer();
         }
 
-        protected void Main()
-        {
-            if (!IsActive)
-                return;
-
-            timer.AddSeconds(Time.deltaTime);
-        }
+        protected void Main() => timer.DoTick();
     }
 }

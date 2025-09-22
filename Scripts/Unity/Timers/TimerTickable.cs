@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Timers
     public class TimerTickable : ATimerTickable, ITickable
     {
         bool ITickableBase.IsTickableEnabled {
-            get => IsActive;
+            get => IsEnabled;
             set
             {
                 if (value)

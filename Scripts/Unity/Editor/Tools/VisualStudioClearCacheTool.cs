@@ -1,5 +1,10 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Files;
+using SuperLinq;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,13 +18,16 @@ namespace CCEnvs.Unity.EditorC
         {
             try
             {
-                Path rootPath = Application.dataPath.ToFilePath() - "Assets" + ".vs";
+                Files.Path rootPath = Application.dataPath.ToFilePath() - "Assets" + ".vs";
 
                 CCDebug.PrintLog($"Deleting {rootPath}.", new DebugContext(typeof(VisualStudioClearCacheTool)).Additive().Editor());
-                var directory = new DirectoryEntry(rootPath);
+                var directory = new DirectoryInfo(rootPath);
 
                 if (directory.Exists)
-                    directory.Delete();
+                {
+                    FileInfo[] files = directory.GetFiles("*", SearchOption.AllDirectories);
+                    files.ForEach(x => x.Delete());
+                }
             }
             catch (System.Exception ex)
             {

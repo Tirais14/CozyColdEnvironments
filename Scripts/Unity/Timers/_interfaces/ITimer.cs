@@ -1,3 +1,5 @@
+using CCEnvs.Returnables;
+using CCEnvs.Rx;
 using System;
 
 #nullable enable
@@ -5,13 +7,16 @@ namespace CCEnvs.Unity.Timers
 {
     public interface ITimer
     {
-        event Action OnTargetReached;
+        /// <summary>Input is <see cref="Interval"/></summary>
+        IObservable<TimeSpan> OnTick { get; }
+        /// <summary>Input is <see cref="Elapsed"/></summary>
+        IObservable<TimeSpan> OnTargetReached { get; }
 
-        float Seconds { get; }
-        float TargetValue { get; set; }
-        bool TargetValueReached { get; }
-        bool IsActive { get; }
-        bool IsOnTargetReachedInvoked { get; }
+        TimeSpan Elapsed { get; }
+        TimeSpan? Target { get; set; }
+        TimeSpan Interval { get; }
+        bool TargetReached { get; }
+        bool IsEnabled { get; }
         TimerOptions Options { get; set; }
 
         ITimer StartTimer();
@@ -19,7 +24,5 @@ namespace CCEnvs.Unity.Timers
         ITimer StopTimer();
 
         ITimer ResetTimer();
-
-        TimeSpan GetTimeSpan();
     }
 }
