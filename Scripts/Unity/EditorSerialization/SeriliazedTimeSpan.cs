@@ -1,4 +1,3 @@
-using NaughtyAttributes;
 using System;
 using UnityEngine;
 
@@ -6,38 +5,47 @@ using UnityEngine;
 #pragma warning disable IDE0044
 namespace CCEnvs.Unity.EditorSerialization
 {
-    public record SeriliazedTimeSpan : IConvertibleCC<TimeSpan>
+    [Serializable]
+    public struct SeriliazedTimeSpan : IConvertibleCC<TimeSpan>
     {
         [SerializeField]
+        [Tooltip("Do not select Tick, for this was specified SerializedTimeSpan.Ticks")]
         private TimeUnit timeUnit;
 
-        [ShowIf(nameof(timeUnit), TimeUnit.Tick)]
-        private long ticks;
+        [SerializeField]
+        private float value;
 
-        [ShowIf(nameof(timeUnit), TimeUnit.Millisecond)]
-        private double milliseconds;
+        public static implicit operator TimeSpan(SeriliazedTimeSpan source)
+        {
+            return source.Convert();
+        }
 
-        [ShowIf(nameof(timeUnit), TimeUnit.Second)]
-        private double seconds;
-
-        [ShowIf(nameof(timeUnit), TimeUnit.Minute)]
-        private double minutes;
-
-        [ShowIf(nameof(timeUnit), TimeUnit.Hour)]
-        private double hours;
-
-        public TimeSpan Convert()
+        public readonly TimeSpan Convert()
         {
             return timeUnit switch
             {
-                TimeUnit.Tick => TimeSpan.FromTicks(ticks),
-                TimeUnit.Millisecond => TimeSpan.FromMilliseconds(milliseconds),
-                TimeUnit.Second => TimeSpan.FromSeconds(seconds),
-                TimeUnit.Minute => TimeSpan.FromMinutes(minutes),
-                TimeUnit.Hour => TimeSpan.FromHours(hours),
+                TimeUnit.Millisecond => TimeSpan.FromMilliseconds(value),
+                TimeUnit.Second => TimeSpan.FromSeconds(value),
+                TimeUnit.Minute => TimeSpan.FromMinutes(value),
+                TimeUnit.Hour => TimeSpan.FromHours(value),
                 _ => throw new InvalidOperationException(timeUnit.ToString())
             };
+        }
 
+        public struct Ticks : IConvertibleCC<TimeSpan>
+        {
+            [SerializeField]
+            private long tickCount;
+
+            public static implicit operator TimeSpan(Ticks source)
+            {
+                return source.Convert();
+            }
+
+            public TimeSpan Convert()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
