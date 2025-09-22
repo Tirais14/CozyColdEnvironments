@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 #nullable enable
@@ -5,7 +6,11 @@ namespace CCEnvs.Unity.Timers
 {
     public class TimerFixedUpdate : TimerMono
     {
-        protected override float DeltaTime => IsUnscaledInterval ? Time.fixedUnscaledDeltaTime : Time.fixedDeltaTime;
+        public override TimeSpan Interval => IsUnscaledInterval
+            ? 
+            TimeSpan.FromSeconds(Time.fixedUnscaledDeltaTime)
+            : 
+            TimeSpan.FromSeconds(Time.fixedDeltaTime);
 
         private void FixedUpdate() => Main();
 

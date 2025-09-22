@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 #nullable enable
@@ -5,7 +6,11 @@ namespace CCEnvs.Unity.Timers
 {
     public class TimerLateUpdate : TimerMono
     {
-        protected override float DeltaTime => IsUnscaledInterval ? Time.unscaledDeltaTime : Time.deltaTime;
+        public override TimeSpan Interval => IsUnscaledInterval
+            ?
+            TimeSpan.FromSeconds(Time.unscaledDeltaTime)
+            : 
+            TimeSpan.FromSeconds(Time.deltaTime);
 
         private void LateUpdate() => Main();
 

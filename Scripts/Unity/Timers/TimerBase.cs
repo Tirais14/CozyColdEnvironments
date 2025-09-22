@@ -135,7 +135,7 @@ namespace CCEnvs.Unity.Timers
             {
                 if (OnTargetReached is not null)
                 {
-                    OnTargetReached();
+                    OnTargetReached.As<Observable<TimeSpan>>().Publish();
                     isOnTargetReachedInvoked = true;
                 }
 

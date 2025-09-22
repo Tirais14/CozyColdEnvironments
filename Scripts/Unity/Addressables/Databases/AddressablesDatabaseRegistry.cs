@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.AddrsAssets
                 :
                 base(target, Settings.IncludeNonPublic)
             {
-                databases = Field("databases").GetValue<Dictionary<AssetDatabaseKey, IAddressablesDatabase>>();
+                databases = Field<Dictionary<AssetDatabaseKey, IAddressablesDatabase>>("databases").GetValue();
             }
         }
     }
@@ -189,7 +189,7 @@ namespace CCEnvs.Unity.AddrsAssets
             onLoaded += (x) =>
             {
                 timer.StopTimer();
-                CCDebug.PrintLog($"Loading finished in {timer.GetTimeSpan().Seconds} seconds.", x);
+                CCDebug.PrintLog($"Loading finished in {timer.Elapsed.TotalSecondsF()} seconds.", x);
                 timer.ResetTimer();
             };
         }
