@@ -6,7 +6,7 @@ namespace CCEnvs.Unity.EditorSerialization
         /// <summary>
         /// It doesn't work in the editor on purpose.
         /// </summary>
-        public static void SetNull<T>(ref T? fieldValue)
+        public static void SetDefault<T>(ref T? fieldValue)
         {
 #if !UNITY_EDITOR
             fieldValue = default

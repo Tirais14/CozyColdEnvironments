@@ -8,7 +8,7 @@ namespace CCEnvs.Json.DTO
 {
     [JsonObject]
     [Serializable]
-    public struct Vector2IntDto : IJsonDto, IConvertibleCC<Vector2Int>
+    public struct Vector2IntDto : IJsonDto, ITransformable<Vector2Int>
     {
         [JsonProperty]
         public int x;
@@ -20,6 +20,6 @@ namespace CCEnvs.Json.DTO
             return new Vector2Int(dto.x, dto.y);
         }
 
-        public readonly Vector2Int Convert() => new(x, y);
+        public readonly Vector2Int DoTransform() => new(x, y);
     }
 }

@@ -89,9 +89,9 @@ namespace CCEnvs
 
             bool TryConvertByInterface()
             {
-                if (target is IConvertibleCC convertible)
+                if (target is ITransformable convertible)
                 {
-                    result = convertible.Convert();
+                    result = convertible.DoTransform();
 
                     return result is not null && result.GetType().IsType(toType);
                 }
@@ -127,7 +127,7 @@ namespace CCEnvs
                 }
                 catch (CCException ex)
                 {
-                    throw new InvalidCastException($"Cannot convert {targetType.GetName()} to {toType.GetName()}. Object must be implement one of the conversation variants: {nameof(IConvertibleCC)}, {nameof(ConverterAttribute)}, explicit/implicit overloaded cast operator, {nameof(IConvertible)}, constructor of {targetType.GetName()} which input takes in argument {toType.GetName()}.", ex);
+                    throw new InvalidCastException($"Cannot convert {targetType.GetName()} to {toType.GetName()}. Object must be implement one of the conversation variants: {nameof(ITransformable)}, {nameof(ConverterAttribute)}, explicit/implicit overloaded cast operator, {nameof(IConvertible)}, constructor of {targetType.GetName()} which input takes in argument {toType.GetName()}.", ex);
                 }
             }
         }

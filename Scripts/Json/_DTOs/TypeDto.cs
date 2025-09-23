@@ -7,7 +7,7 @@ namespace CCEnvs.Json.DTO
 {
     [JsonObject]
     [Serializable]
-    public record TypeDto : IJsonDto, IConvertibleCC<Type>
+    public record TypeDto : IJsonDto, ITransformable<Type>
     {
         [JsonProperty]
         public string? AssemblyName { get; set; } = string.Empty;
@@ -32,7 +32,7 @@ namespace CCEnvs.Json.DTO
             TypeName = type.Name;
         }
 
-        public Type Convert()
+        public Type DoTransform()
         {
             return TypeFinder.FindTypeInAppDomain(
                 new TypeFinderParameters

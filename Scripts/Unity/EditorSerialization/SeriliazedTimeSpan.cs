@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    public struct SeriliazedTimeSpan : IConvertibleCC<TimeSpan>
+    public struct SeriliazedTimeSpan : ITransformable<TimeSpan>
     {
         [SerializeField]
         [Tooltip("Do not select Tick, for this was specified SerializedTimeSpan.Ticks")]
@@ -17,10 +17,10 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public static implicit operator TimeSpan(SeriliazedTimeSpan source)
         {
-            return source.Convert();
+            return source.DoTransform();
         }
 
-        public readonly TimeSpan Convert()
+        public readonly TimeSpan DoTransform()
         {
             return timeUnit switch
             {
@@ -32,17 +32,17 @@ namespace CCEnvs.Unity.EditorSerialization
             };
         }
 
-        public struct Ticks : IConvertibleCC<TimeSpan>
+        public struct Ticks : ITransformable<TimeSpan>
         {
             [SerializeField]
             private long tickCount;
 
             public static implicit operator TimeSpan(Ticks source)
             {
-                return source.Convert();
+                return source.DoTransform();
             }
 
-            public TimeSpan Convert()
+            public TimeSpan DoTransform()
             {
                 throw new NotImplementedException();
             }
