@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +10,6 @@ namespace CCEnvs.Unity.EditorSerialization
     /// Anonymous serialized type with intermediate value as serializable.
     /// Erase in runtime <see cref="input"/> value and restores it before serializing from <see cref="Output"/>
     /// </summary>
-    [Serializable]
     public class Serialized<TSerializable, TOutput> 
         : IEditorSerialized<TOutput>,
         ISerializationCallbackReceiver
@@ -27,8 +27,8 @@ namespace CCEnvs.Unity.EditorSerialization
         public Serialized(Converter<TSerializable, TOutput> inputToOutput,
             Converter<TOutput, TSerializable> outputToInput)
         {
-            CC.Validate.ArgumentNull(inputToOutput, nameof(inputToOutput));
-            CC.Validate.ArgumentNull(outputToInput, nameof(outputToInput));
+            CCDebug.PrintException(new ArgumentNullException(nameof(inputToOutput)));
+            CCDebug.PrintException(new ArgumentNullException(nameof(outputToInput)));
 
             this.inputToOutput = inputToOutput;
             this.outputToInput = outputToInput;
@@ -54,21 +54,35 @@ namespace CCEnvs.Unity.EditorSerialization
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            if (inputErased)
-                input = outputToInput(Output);
+            try
+            {
+                if (inputErased && Output is not null)
+                    input = outputToInput(Output);
 
-            OnBeforeSerialize();
+                OnBeforeSerialize();
+            }
+            catch (Exception ex)
+            {
+                CCDebug.PrintException(ex);
+            }
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            Output = inputToOutput(input);
+            try
+            {
+                Output = inputToOutput(input);
 
-            OnAfterDeserialize();
+                OnAfterDeserialize();
 #if !UNITY_EDITOR
-            EditorSerializing.SetDefault(ref input!);
-            inputErased = true;
+                EditorSerializing.SetDefault(ref input!);
+                inputErased = true;
 #endif
+            }
+            catch (Exception ex)
+            {
+                CCDebug.PrintException(ex);
+            }
         }
     }
 }

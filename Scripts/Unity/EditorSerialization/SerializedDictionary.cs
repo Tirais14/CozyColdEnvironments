@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using LinqAF;
 using SuperLinq;
 using System;
@@ -13,7 +14,7 @@ namespace CCEnvs.Unity.EditorSerialization
         public SerializedDictionary()
             :
             base(input => new Dictionary<TKey, TValue>(input.Select(x => x.ToKeyValuePair()).AsEnumerable()),
-                output => output.Select(x => x.ToTuple().ToSerializedTuple()).ToArray())
+                 output => output.Select(x => x.ToTuple().ToSerializedTuple()).ToArray())
         {
         }
 
@@ -21,7 +22,14 @@ namespace CCEnvs.Unity.EditorSerialization
         {
             base.OnBeforeSerialize();
 
-            input = input.DistinctBy(pair => pair.item1).ToArray(); //by key
+            try
+            {
+                input = input?.DistinctBy(pair => pair.item1).ToArray()!; //by key
+            }
+            catch (Exception ex)
+            {
+                CCDebug.PrintException(ex);
+            }
         }
     }
 }

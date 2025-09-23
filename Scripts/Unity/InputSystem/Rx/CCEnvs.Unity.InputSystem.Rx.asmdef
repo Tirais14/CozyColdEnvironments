@@ -18,9 +18,7 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "SuperLinq.dll",
-        "LinqAF.dll",
-        "System.Collections.Immutable.dll",
-        "System.Collections.Immutable.FSR.dll"
+        "LinqAF.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

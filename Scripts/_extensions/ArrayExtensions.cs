@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.Diagnostics
+namespace CCEnvs
 {
     public static class ArrayExtensions
     {
@@ -15,7 +14,12 @@ namespace CCEnvs.Diagnostics
 
             return ((IEnumerable<T>)values).GetEnumerator();
         }
-
+    }
+}
+namespace CCEnvs.Diagnostics
+{
+    public static class ArrayExtensions
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmpty<T>(this T[] array) => array.Length == 0;
 

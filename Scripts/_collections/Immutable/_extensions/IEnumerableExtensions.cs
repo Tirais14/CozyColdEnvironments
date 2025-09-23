@@ -1,0 +1,15 @@
+#nullable enable
+using System.Collections.Generic;
+
+namespace CCEnvs.Collections.Immutable
+{
+    public static class IEnumerableExtensions
+    {
+        public static ImmutableArray<T> ToImmutableArray<T>(this IEnumerable<T> source)
+        {
+            CC.Validate.ArgumentNull(source, nameof(source));
+
+            return new ImmutableArray<T>(source);
+        }
+    }
+}

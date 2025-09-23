@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using System;
 using UnityEngine;
 
@@ -13,17 +14,31 @@ namespace CCEnvs.Unity.EditorSerialization
         private TimeUnit timeUnit;
 
         [SerializeField]
-        private float value;
+        private float time;
 
         public readonly TimeSpan Output {
-            get => timeUnit switch
+            get
             {
-                TimeUnit.Millisecond => TimeSpan.FromMilliseconds(value),
-                TimeUnit.Second => TimeSpan.FromSeconds(value),
-                TimeUnit.Minute => TimeSpan.FromMinutes(value),
-                TimeUnit.Hour => TimeSpan.FromHours(value),
-                _ => throw new InvalidOperationException(timeUnit.ToString())
-            };
+                if (timeUnit == TimeUnit.None
+                    || 
+                    timeUnit == TimeUnit.Day
+                    || 
+                    timeUnit == TimeUnit.Tick
+                    )
+                {
+                    CCDebug.PrintError($"Invalid data. {nameof(timeUnit)}: {timeUnit}.");
+                    return TimeSpan.Zero;
+                } 
+
+                return timeUnit switch
+                {
+                    TimeUnit.Millisecond => TimeSpan.FromMilliseconds(time),
+                    TimeUnit.Second => TimeSpan.FromSeconds(time),
+                    TimeUnit.Minute => TimeSpan.FromMinutes(time),
+                    TimeUnit.Hour => TimeSpan.FromHours(time),
+                    _ => TimeSpan.Zero
+                };
+            }
         }
 
         public static implicit operator TimeSpan(SeriliazedTimeSpan source)

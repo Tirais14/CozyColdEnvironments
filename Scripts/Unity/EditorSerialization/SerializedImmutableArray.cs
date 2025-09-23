@@ -1,6 +1,6 @@
+#if IMMUTABLE_COLLECTIONS
 using LinqAF;
-using System;
-using System.Collections.Immutable;
+using System
 
 #nullable enable
 namespace CCEnvs.Unity.EditorSerialization
@@ -12,6 +12,8 @@ namespace CCEnvs.Unity.EditorSerialization
             : 
             base(input => input.ToImmutableArray(), output => output.ToArray())
         {
+            Queue
         }
     }
 }
+#endif //IMMUTABLE_COLLECTIONS
