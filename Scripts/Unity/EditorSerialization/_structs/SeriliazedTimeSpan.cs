@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    public struct SeriliazedTimeSpan : ITransformable<TimeSpan>
+    public struct SeriliazedTimeSpan : IEditorSerialized<TimeSpan>
     {
         [SerializeField]
         [Tooltip("Do not select Tick, for this was specified SerializedTimeSpan.Ticks")]
@@ -15,14 +15,8 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField]
         private float value;
 
-        public static implicit operator TimeSpan(SeriliazedTimeSpan source)
-        {
-            return source.DoTransform();
-        }
-
-        public readonly TimeSpan DoTransform()
-        {
-            return timeUnit switch
+        public readonly TimeSpan Output {
+            get => timeUnit switch
             {
                 TimeUnit.Millisecond => TimeSpan.FromMilliseconds(value),
                 TimeUnit.Second => TimeSpan.FromSeconds(value),
@@ -32,19 +26,22 @@ namespace CCEnvs.Unity.EditorSerialization
             };
         }
 
-        public struct Ticks : ITransformable<TimeSpan>
+        public static implicit operator TimeSpan(SeriliazedTimeSpan source)
+        {
+            return source.Output;
+        }
+
+        public struct Ticks : IEditorSerialized<TimeSpan>
         {
             [SerializeField]
             private long tickCount;
 
+            public readonly TimeSpan Output => TimeSpan.FromTicks(tickCount);
+
+
             public static implicit operator TimeSpan(Ticks source)
             {
-                return source.DoTransform();
-            }
-
-            public TimeSpan DoTransform()
-            {
-                throw new NotImplementedException();
+                return source.Output;
             }
         }
     }

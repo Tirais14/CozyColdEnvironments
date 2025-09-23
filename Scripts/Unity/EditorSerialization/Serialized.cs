@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -10,14 +11,14 @@ namespace CCEnvs.Unity.EditorSerialization
     /// </summary>
     [Serializable]
     public class Serialized<TSerializable, TOutput> 
-        : ITransformable<TOutput>,
+        : IEditorSerialized<TOutput>,
         ISerializationCallbackReceiver
     {
+        [SerializeField]
+        protected TSerializable input = default!;
+
         private readonly Converter<TSerializable, TOutput> inputToOutput;
         private readonly Converter<TOutput, TSerializable> outputToInput;
-
-        [SerializeField]
-        private TSerializable input = default!;
 
         private bool inputErased;
 
@@ -38,19 +39,33 @@ namespace CCEnvs.Unity.EditorSerialization
             return source.Output;
         }
 
-        TOutput ITransformable<TOutput>.DoTransform() => Output;
+        public override string ToString()
+        {
+            return $"{nameof(input)}: {input} |{nameof(Output)}: {Output}";
+        }
+
+        protected virtual void OnBeforeSerialize()
+        {
+        }
+
+        protected virtual void OnAfterDeserialize()
+        {
+        }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
             if (inputErased)
                 input = outputToInput(Output);
+
+            OnBeforeSerialize();
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             Output = inputToOutput(input);
 
-#if UNITY_EDITOR
+            OnAfterDeserialize();
+#if !UNITY_EDITOR
             EditorSerializing.SetDefault(ref input!);
             inputErased = true;
 #endif

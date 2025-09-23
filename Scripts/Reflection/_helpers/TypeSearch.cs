@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace CCEnvs.Reflection
 {
-    public static class TypeFinder
+    public static class TypeSearch
     {
         public static Type[] FindTypesInAppDomain(TypeFinderParameters parameters)
         {

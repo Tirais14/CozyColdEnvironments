@@ -76,7 +76,7 @@ namespace CCEnvs.Unity.Extenject
         protected InjectionWrapping(FindAnyObjectByType findAnyObjectByType,
             GetComponent getComponent)
         {
-            var fromComponent = UObjectFinder.FindObjectByType(getComponent.type, FindObjectsSortMode.None) as Component;
+            var fromComponent = SceneObjectSearch.FindObjectByType(getComponent.type, FindObjectsSortMode.None) as Component;
 
             if (fromComponent.IsNull())
                 throw new ObjectNotFoundException(getComponent.type);

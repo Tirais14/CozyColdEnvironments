@@ -4,7 +4,7 @@ namespace CCEnvs.Unity
     /// <summary>
     /// !Destroys gameObject after installing
     /// </summary>
-    public class UCCStaticInstaller : MonoCCStatic<UCCStaticInstaller>
+    public class StaticInstaller : MonoCCStatic<StaticInstaller>
     {
         protected override void OnAwake()
         {

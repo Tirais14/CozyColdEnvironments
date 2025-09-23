@@ -14,7 +14,7 @@ namespace CCEnvs.ReflectedTypes
 
         public EditorDomainReflected()
             :
-            base(TypeFinder.FindTypeInAppDomain(new TypeFinderParameters
+            base(TypeSearch.FindTypeInAppDomain(new TypeFinderParameters
             {
                 AssemblyName = new OperatorChain(nameof(CCEnvs), "Unity", "Editor"),
                 TypeName = "EditorDomain",

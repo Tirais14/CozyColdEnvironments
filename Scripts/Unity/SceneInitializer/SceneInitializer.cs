@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.Initables
             var allInitables = new ConcurrentDictionary<Type, IInitableBase>();
 
             IInitable[] inits =
-                UObjectFinder.FindObjectsByType<IInitable>(findObjectsInactive)
+                SceneObjectSearch.FindObjectsByType<IInitable>(findObjectsInactive)
                 .Where(x => x.GetType().IsDefinedAny(inherit: true,
                                                      typeof(InitAttribute),
                                                      typeof(InitFirstAttribute),
@@ -87,7 +87,7 @@ namespace CCEnvs.Unity.Initables
                                                      ).ToArray();
 
             IInitableAsync[] initsAsync =
-                UObjectFinder.FindObjectsByType<IInitableAsync>(findObjectsInactive)
+                SceneObjectSearch.FindObjectsByType<IInitableAsync>(findObjectsInactive)
                 .Where(x => x.GetType().IsDefinedAny(inherit: true,
                                                      typeof(InitAsyncAttribute),
                                                      typeof(InitAsyncFirstAttribute),

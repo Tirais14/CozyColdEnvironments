@@ -1,5 +1,3 @@
-using CCEnvs.Diagnostics;
-using QuikGraph.Algorithms.ShortestPath;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,11 +5,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 
 #nullable enable
-
 namespace CCEnvs.Linq
 {
-    public static class IEnumerableQueries
+    public static class IEnumerableQuries
     {
+        public static IEnumerable<KeyValuePair<TKey, TValue>> AsKeyValuePairs<TKey, TValue>(
+            this IEnumerable<(TKey, TValue)> source)
+        {
+            return source.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2));
+        }
+
         public static IEnumerable<KeyValuePair<TKey, T>> SelectValue<TKey, TValue, T>(
             this IEnumerable<KeyValuePair<TKey, TValue>> source,
             Func<TValue, T> selector)
