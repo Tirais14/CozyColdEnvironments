@@ -11,5 +11,11 @@ namespace CCEnvs.Collections.Immutable
 
             return new ImmutableArray<T>(source);
         }
+
+        public static ImmutableDictionary<TKey, TValue> ToImmutableDictionary<TKey, TValue>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source)
+        {
+            return new ImmutableDictionary<TKey, TValue>(source);
+        }
     }
 }

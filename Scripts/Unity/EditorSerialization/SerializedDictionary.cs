@@ -12,10 +12,20 @@ namespace CCEnvs.Unity.EditorSerialization
         : Serialized<SerializedTuple<TKey, TValue>[], Dictionary<TKey, TValue>>
     {
         public SerializedDictionary()
-            :
-            base(input => new Dictionary<TKey, TValue>(input.Select(x => x.ToKeyValuePair()).AsEnumerable()),
-                 output => output.Select(x => x.ToTuple().ToSerializedTuple()).ToArray())
         {
+        }
+
+        protected override SerializedTuple<TKey, TValue>[] GetInput()
+        {
+            return Output.Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
+                         .ToArray();
+        }
+
+        protected override Dictionary<TKey, TValue> GetOutput()
+        {
+            return new Dictionary<TKey, TValue>(
+                input.Select(x => new KeyValuePair<TKey, TValue>(x.item1, x.item2))
+                    .AsEnumerable());
         }
 
         protected override void OnBeforeSerialize()
@@ -24,7 +34,9 @@ namespace CCEnvs.Unity.EditorSerialization
 
             try
             {
-                input = input?.DistinctBy(pair => pair.item1).ToArray()!; //by key
+                input = input?.DistinctBy(pair => pair.item1).ToArray() //by key
+                        ?? 
+                        Array.Empty<SerializedTuple<TKey, TValue>>();
             }
             catch (Exception ex)
             {

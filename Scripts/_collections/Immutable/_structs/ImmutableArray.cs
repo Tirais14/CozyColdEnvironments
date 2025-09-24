@@ -50,11 +50,6 @@ namespace CCEnvs.Collections.Immutable
             inner = collection.ToArray();
         }
 
-        public static explicit operator T[](ImmutableArray<T> source)
-        {
-            return source.ToArray();
-        }
-
         public static bool operator ==(ImmutableArray<T> left, ImmutableArray<T> right)
         {
             return left.Equals(right);
@@ -64,39 +59,41 @@ namespace CCEnvs.Collections.Immutable
             return !(left == right);
         }
 
-        public static ImmutableArray<T> operator +(ImmutableArray<T> left,
-                                                   ImmutableArray<T> right)
-        {
-            return new ImmutableArray<T>(left.Concat(right));
-        }
-
         [Converter]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] ToArray() => inner.ToArray();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item) => Array.IndexOf(inner, item);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => Array.IndexOf(inner, item) > -1;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(T[] array, int arrayIndex)
         {
             inner.CopyTo(array, arrayIndex);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ImmutableArray<T> other)
         {
             return inner.Equals(other.inner);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
             return obj is ImmutableArray<T> typed && Equals(typed);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             return HashCode.Combine(inner);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator<T> GetEnumerator()
         {
             return inner?.GetEnumeratorT() ?? Enumerable.Empty<T>().GetEnumerator();

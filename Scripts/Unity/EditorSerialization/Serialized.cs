@@ -1,38 +1,25 @@
+using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.EditorSerialization
 {
-    /// <summary>
-    /// Anonymous serialized type with intermediate value as serializable.
-    /// Erase in runtime <see cref="input"/> value and restores it before serializing from <see cref="Output"/>
-    /// </summary>
-    public class Serialized<TSerializable, TOutput> 
+    public abstract class Serialized<TSerializable, TOutput> 
         : IEditorSerialized<TOutput>,
+        ITransformable<TOutput>,
         ISerializationCallbackReceiver
     {
         [SerializeField]
         protected TSerializable input = default!;
 
-        private readonly Converter<TSerializable, TOutput> inputToOutput;
-        private readonly Converter<TOutput, TSerializable> outputToInput;
+        //private readonly Converter<TSerializable, TOutput> inputToOutput;
+        //private readonly Converter<TOutput, TSerializable> outputToInput;
 
         private bool inputErased;
 
-        public TOutput Output { get; private set; } = default!;
-
-        public Serialized(Converter<TSerializable, TOutput> inputToOutput,
-            Converter<TOutput, TSerializable> outputToInput)
-        {
-            CCDebug.PrintException(new ArgumentNullException(nameof(inputToOutput)));
-            CCDebug.PrintException(new ArgumentNullException(nameof(outputToInput)));
-
-            this.inputToOutput = inputToOutput;
-            this.outputToInput = outputToInput;
-        }
+        public TOutput Output { [Converter] get; private set; } = default!;
 
         public static implicit operator TOutput(Serialized<TSerializable, TOutput> source)
         {
@@ -44,6 +31,10 @@ namespace CCEnvs.Unity.EditorSerialization
             return $"{nameof(input)}: {input} |{nameof(Output)}: {Output}";
         }
 
+        protected abstract TOutput GetOutput();
+
+        protected abstract TSerializable GetInput();
+
         protected virtual void OnBeforeSerialize()
         {
         }
@@ -52,12 +43,14 @@ namespace CCEnvs.Unity.EditorSerialization
         {
         }
 
+        TOutput ITransformable<TOutput>.DoTransform() => Output;
+
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
             try
             {
                 if (inputErased && Output is not null)
-                    input = outputToInput(Output);
+                    input = GetInput();
 
                 OnBeforeSerialize();
             }
@@ -71,7 +64,7 @@ namespace CCEnvs.Unity.EditorSerialization
         {
             try
             {
-                Output = inputToOutput(input);
+                Output = GetOutput();
 
                 OnAfterDeserialize();
 #if !UNITY_EDITOR

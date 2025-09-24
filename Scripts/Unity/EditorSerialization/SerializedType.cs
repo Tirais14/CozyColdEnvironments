@@ -8,24 +8,18 @@ namespace CCEnvs.Unity.EditorSerialization
     [Serializable]
     public class SerializedType : Serialized<TypeInfo, Type>
     {
-        public SerializedType()
-            :
-            base(FindTypeByName, output => new TypeInfo(output.Name, output.GetName()))
-        {
-        }
-
-        public static implicit operator Type?(SerializedType value)
-        {
-            return value.Output;
-        }
-
-        private static Type FindTypeByName(TypeInfo input)
+        protected override Type GetOutput()
         {
             return TypeSearch.FindTypeInAppDomain(new TypeFinderParameters
             {
                 Namespace = input.Namespace,
                 TypeName = input.TypeName,
             });
+        }
+
+        protected override TypeInfo GetInput()
+        {
+            return new TypeInfo(Output.GetName(), Output.Namespace);
         }
     }
 }

@@ -7,57 +7,55 @@ using UnityEngine;
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    public struct SeriliazedTimeSpan : IEditorSerialized<TimeSpan>
+    public class SeriliazedTimeSpan 
+        : IEditorSerialized<TimeSpan>,
+        ITransformable<TimeSpan>,
+        ISerializationCallbackReceiver
     {
-        [SerializeField]
-        [Tooltip("Do not select Tick, for this was specified SerializedTimeSpan.Ticks")]
-        private TimeUnit timeUnit;
+        [SerializeField, Min(0)]
+        private int ticks;
 
-        [SerializeField]
-        private float time;
+        [SerializeField, Min(0)]
+        private int milliseconds;
 
-        public readonly TimeSpan Output {
-            get
-            {
-                if (timeUnit == TimeUnit.None
-                    || 
-                    timeUnit == TimeUnit.Day
-                    || 
-                    timeUnit == TimeUnit.Tick
-                    )
-                {
-                    CCDebug.PrintError($"Invalid data. {nameof(timeUnit)}: {timeUnit}.");
-                    return TimeSpan.Zero;
-                } 
+        [SerializeField, Min(0f)]
+        private float seconds;
 
-                return timeUnit switch
-                {
-                    TimeUnit.Millisecond => TimeSpan.FromMilliseconds(time),
-                    TimeUnit.Second => TimeSpan.FromSeconds(time),
-                    TimeUnit.Minute => TimeSpan.FromMinutes(time),
-                    TimeUnit.Hour => TimeSpan.FromHours(time),
-                    _ => TimeSpan.Zero
-                };
-            }
-        }
+        [SerializeField, Min(0f)]
+        private float minutes;
+
+        [SerializeField, Min(0f)]
+        private float hours;
+
+        [SerializeField, Min(0f)]
+        private float days;
+
+        public TimeSpan Output { get; private set; }
 
         public static implicit operator TimeSpan(SeriliazedTimeSpan source)
         {
             return source.Output;
         }
 
-        public struct Ticks : IEditorSerialized<TimeSpan>
+        TimeSpan ITransformable<TimeSpan>.DoTransform() => Output;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            [SerializeField]
-            private long tickCount;
+        }
 
-            public readonly TimeSpan Output => TimeSpan.FromTicks(tickCount);
-
-
-            public static implicit operator TimeSpan(Ticks source)
-            {
-                return source.Output;
-            }
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            Output = TimeSpan.FromTicks(ticks) 
+                     +
+                     TimeSpan.FromMilliseconds(milliseconds)
+                     + 
+                     TimeSpan.FromSeconds(seconds)
+                     + 
+                     TimeSpan.FromMinutes(minutes)
+                     + 
+                     TimeSpan.FromHours(hours)
+                     + 
+                     TimeSpan.FromDays(days);
         }
     }
 }
