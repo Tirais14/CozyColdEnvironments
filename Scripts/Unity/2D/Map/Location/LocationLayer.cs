@@ -13,7 +13,7 @@ namespace CCEnvs.TwoD.Map
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Tilemap))]
-    public class LocationLayer : MonoCC, ILocationLayer
+    public class LocationLayer : CCBehaviour, ILocationLayer
     {
         private Map<ILocationCell> cellMap = null!;
 

@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 #nullable enable
 namespace CCEnvs.Unity.Tickables
 {
-    public sealed class TickablesManager : MonoCCStatic<TickablesManager>
+    public sealed class TickablesManager : CCBehaviourStatic<TickablesManager>
     {
         private readonly Dictionary<Type, ITicker> tickers = new();
 

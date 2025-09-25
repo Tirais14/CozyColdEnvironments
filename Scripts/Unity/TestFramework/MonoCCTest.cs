@@ -7,7 +7,7 @@ using CCEnvs.Reflection;
 
 namespace CCEnvs.Unity.Tests
 {
-    public abstract class MonoCCTest : MonoCC
+    public abstract class MonoCCTest : CCBehaviour
     {
         protected Type thisType;
 

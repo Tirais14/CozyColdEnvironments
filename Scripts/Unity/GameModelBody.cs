@@ -9,7 +9,7 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [RequireComponent(typeof(MeshRenderer))]
-    public class GameModelBody : MonoCC
+    public class GameModelBody : CCBehaviour
     {
         private Collider? m_Collider;
         private Rigidbody? m_RigidBody;

@@ -7,7 +7,7 @@ using UnityEngine.Events;
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public class Clickable : MonoCC, IClickable
+    public class Clickable : CCBehaviour, IClickable
     {
         private readonly Observable observable = new();
 

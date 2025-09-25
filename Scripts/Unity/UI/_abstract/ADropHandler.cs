@@ -8,7 +8,7 @@ namespace CCEnvs.Unity.UI
 {
     public abstract class ADropHandler<TReciever>
         :
-        MonoCC,
+        CCBehaviour,
         IDropHandler
 
         where TReciever : Component, IView

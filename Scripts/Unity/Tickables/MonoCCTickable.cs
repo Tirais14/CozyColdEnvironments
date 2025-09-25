@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Tickables
 {
     public class MonoCCTickable
         :
-        MonoCC,
+        CCBehaviour,
         ITickableBase
     {
         private ITicker? ticker;

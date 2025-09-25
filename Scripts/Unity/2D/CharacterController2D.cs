@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.TwoD
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public sealed class CharacterController2D : MonoCC
+    public sealed class CharacterController2D : CCBehaviour
     {
         [GetBySelfAttribute]
         private Rigidbody2D rigidbody2DComponent = null!;

@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 #nullable enable
 namespace CCEnvs.Unity.Initables
 {
-    public abstract class MonoCCInitableAsync : MonoCC, IInitableAsync
+    public abstract class MonoCCInitableAsync : CCBehaviour, IInitableAsync
     {
         public bool IsInited { get; private set; }
 

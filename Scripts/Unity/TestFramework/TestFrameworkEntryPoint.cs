@@ -11,7 +11,7 @@ using CCEnvs.Reflection;
 namespace CCEnvs.Unity.Tests
 {
     [DefaultExecutionOrder(-2)]
-    public class TestFrameworkEntryPoint : MonoCC
+    public class TestFrameworkEntryPoint : CCBehaviour
     {
         private Assembly testsAssembly = null!;
         private MonoCCTest[] monoTests = null!;

@@ -6,7 +6,7 @@ using UnityEngine;
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity
 {
-    public class GameModel : MonoCC
+    public class GameModel : CCBehaviour
     {
         public Transform Anchor { get; private set; } = null!;
         public GameModelBody Body { get; private set; } = null!;

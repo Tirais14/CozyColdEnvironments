@@ -6,7 +6,7 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Unity.Disposables
 {
-    public sealed class GameObjectDisposablesObserver : MonoCC
+    public sealed class GameObjectDisposablesObserver : CCBehaviour
     {
         public const int SKIP_FRAMES_COUNT = 9;
 

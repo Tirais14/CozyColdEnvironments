@@ -14,7 +14,7 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.UI
 {
     [RequireComponent(typeof(GraphicRaycaster))]
-    public sealed class CanvasRaycaster : MonoCC, ICanvasRaycaster
+    public sealed class CanvasRaycaster : CCBehaviour, ICanvasRaycaster
     {
         private readonly List<RaycastResult> raycastResults = new();
         private PointerEventData pointerEventData = null!;

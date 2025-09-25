@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.InputSystem
 {
     public class InputHandler 
         :
-        MonoCC,
+        CCBehaviour,
         IInputHandler,
         IDisposableContainer,
         ISwitchable

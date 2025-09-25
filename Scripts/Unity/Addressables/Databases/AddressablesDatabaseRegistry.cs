@@ -32,10 +32,10 @@ namespace CCEnvs.Unity.AddrsAssets
         }
     }
     public abstract class AddressablesDatabaseRegistry<TThis>
-        : MonoCCStatic<TThis>,
+        : CCBehaviourStatic<TThis>,
         IAddressablesDatabaseRegistry
 
-        where TThis : MonoCCStatic, IAddressablesDatabaseRegistry
+        where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
         private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
         protected Action<ILoadable> onStartLoading;

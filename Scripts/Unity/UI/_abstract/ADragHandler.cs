@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public abstract class ADragHandler<T> : MonoCC,
+    public abstract class ADragHandler<T> : CCBehaviour,
         IBeginDragHandler,
         IDragHandler
 

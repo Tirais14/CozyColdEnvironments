@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Tickables
 {
     public abstract class Ticker<TTickable> 
         :
-        MonoCC,
+        CCBehaviour,
         ITicker<TTickable>
 
         where TTickable : ITickableBase

@@ -6,9 +6,9 @@ using System.Linq;
 namespace CCEnvs.Unity
 {
     /// <summary>
-    /// Do not add this or derived from this component! On scene must be only one <see cref="MonoCCStaticCore"/>
+    /// Do not add this or derived from this component! On scene must be only one <see cref="CCBehaviourStaticKernel"/>
     /// </summary>
-    public abstract class MonoCCStatic : MonoCC
+    public abstract class CCBehaviourStatic : CCBehaviour
     {
         protected override void OnAwake()
         {
@@ -24,10 +24,10 @@ namespace CCEnvs.Unity
         }
     }
     /// <summary>
-    /// Do not add this or derived from this component! On scene must be only one <see cref="MonoCCStaticCore"/>
+    /// Do not add this or derived from this component! On scene must be only one <see cref="CCBehaviourStaticKernel"/>
     /// </summary>
-    public abstract class MonoCCStatic<TThis> : MonoCCStatic
-        where TThis : MonoCCStatic
+    public abstract class CCBehaviourStatic<TThis> : CCBehaviourStatic
+        where TThis : CCBehaviourStatic
     {
         private static TThis? instance;
 
@@ -35,12 +35,10 @@ namespace CCEnvs.Unity
             get
             {
                 if (instance == null)
-                    instance = MonoCCStaticCore.GetInstance<TThis>();
+                    instance = CCBehaviourStaticKernel.GetInstance<TThis>();
 
                 return instance;
             }
         }
-
-        public static void TryInstantiateManual() => _ = Instance;
     }
 }

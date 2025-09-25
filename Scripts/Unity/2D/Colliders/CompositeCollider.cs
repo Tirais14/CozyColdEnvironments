@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.TwoD.Colliders
 {
-    public abstract class CompositeCollider<TCollider> : MonoCC, ICompositeCollider<TCollider>
+    public abstract class CompositeCollider<TCollider> : CCBehaviour, ICompositeCollider<TCollider>
         where TCollider : Collider2D
     {
         protected readonly List<Collider2D> overlaps = new();

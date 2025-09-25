@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.UI.Elements
 {
     [DisallowMultipleComponent]
-    public class Window : MonoCC, IOpenable
+    public class Window : CCBehaviour, IOpenable
     {
         public bool IsOpened { get; private set; }
 

@@ -13,11 +13,11 @@ using UnityEngine.SceneManagement;
 namespace CCEnvs.Unity
 {
     [DefaultExecutionOrder(-10)]
-    public sealed class MonoCCStaticCore : MonoCC
+    public sealed class CCBehaviourStaticKernel : CCBehaviour
     {
-        private static MonoCCStaticCore instance = null!;
+        private static CCBehaviourStaticKernel instance = null!;
 
-        private readonly Dictionary<Type, MonoCCStatic> instances = new();
+        private readonly Dictionary<Type, CCBehaviourStatic> instances = new();
 
         protected override void OnAwake()
         {
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static MonoCCStatic GetInstance(Type type)
+        public static CCBehaviourStatic GetInstance(Type type)
         {
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
@@ -37,7 +37,7 @@ namespace CCEnvs.Unity
             if (instance == null)
                 GetOrCreateSelf();
 
-            if (!instance!.instances.TryGetValue(type, out MonoCCStatic? result)
+            if (!instance!.instances.TryGetValue(type, out CCBehaviourStatic? result)
                 || result == null
                 )
                 return instance.GetInstanceOf(type);
@@ -52,17 +52,17 @@ namespace CCEnvs.Unity
             return result;
         }
         public static T GetInstance<T>()
-            where T : MonoCCStatic
+            where T : CCBehaviourStatic
         {
             return (T)GetInstance(typeof(T));
         }
 
         private void Validate()
         {
-            if (FindObjectsByType<MonoCCStaticCore>(
+            if (FindObjectsByType<CCBehaviourStaticKernel>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None).Any(x => x != this)
                 )
-                throw new CCFrameworkException($"Cannot create more than one {nameof(MonoCCStaticCore)}.");
+                throw new CCFrameworkException($"Cannot create more than one {nameof(CCBehaviourStaticKernel)}.");
         }
 
         private void Setup()
@@ -74,15 +74,15 @@ namespace CCEnvs.Unity
 
         private void CreateInstantClasses()
         {
-            int instantCreatedClassCount = AppDomain.CurrentDomain
-                .GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type => type.IsType<MonoCCStatic>())
-                .Where(type => type.IsDefined<InstantCreationAttribute>(inherit: false))
-                .ForEach(type => type.AsReflected()
-                                     .Method(nameof(MonoCCStatic<MonoCCStatic>.TryInstantiateManual))
-                                     .Invoke())
-                .Length;
+            int instantCreatedClassCount =
+                (from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                 select assembly.GetTypes() into types
+                 from type in types
+                 where type.IsType<CCBehaviourStatic>()
+                 where type.IsDefined<InstantCreationAttribute>(inherit: false)
+                 select type)
+                 .ForEach(type => GetInstance(type))
+                 .Length;
 
             CCDebug.PrintLog($"Instant created class count = {instantCreatedClassCount}.",
                              new DebugContext(this).Additive());
@@ -90,28 +90,28 @@ namespace CCEnvs.Unity
 
         private static void GetOrCreateSelf()
         {
-            if (FindAnyObjectByType<MonoCCStaticCore>(FindObjectsInactive.Include)
-                .Is<MonoCCStaticCore>(out var found)
+            if (FindAnyObjectByType<CCBehaviourStaticKernel>(FindObjectsInactive.Include)
+                .Is<CCBehaviourStaticKernel>(out var found)
                 )
             {
                 instance = found;
                 return;
             }
 
-            var go = new GameObject("___StaticCore", typeof(MonoCCStaticCore));
-            instance = go.GetComponent<MonoCCStaticCore>();
+            var go = new GameObject("___StaticCore", typeof(CCBehaviourStaticKernel));
+            instance = go.GetComponent<CCBehaviourStaticKernel>();
         }
 
-        private MonoCCStatic GetInstanceOf(Type type)
+        private CCBehaviourStatic GetInstanceOf(Type type)
         {
             CC.Validate.Argument(type,
                                  nameof(type),
                                  !type.IsAbstract && !type.IsInterface,
                                  "Type is abstract and cannot be added.");
-            var value = (MonoCCStatic?)FindAnyObjectByType(type);
+            var value = (CCBehaviourStatic?)FindAnyObjectByType(type);
 
             if (value == null)
-                value = (MonoCCStatic)gameObject.AddComponent(type);
+                value = (CCBehaviourStatic)gameObject.AddComponent(type);
 
             if (instances.ContainsKey(type))
                 instances[type] = value;

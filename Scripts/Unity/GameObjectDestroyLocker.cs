@@ -2,7 +2,7 @@
 
 namespace CCEnvs.Unity
 {
-    public sealed class GameObjectDestroyLocker : MonoCC
+    public sealed class GameObjectDestroyLocker : CCBehaviour
     {
         protected override void OnAwake()
         {

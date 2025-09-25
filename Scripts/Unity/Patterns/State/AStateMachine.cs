@@ -17,7 +17,7 @@ namespace CCEnvs.Patterns.States
     /// <typeparam name="TIdle">Default state</typeparam>
     public abstract class AStateMachine<TIdle> 
         :
-        MonoCC,
+        CCBehaviour,
         IStateMachine,
         IDisposableContainer
 

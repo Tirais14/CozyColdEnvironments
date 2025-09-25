@@ -4,7 +4,7 @@ using CCEnvs.Unity.UI;
 
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public abstract class AView<T> : MonoCC, IView
+    public abstract class AView<T> : CCBehaviour, IView
         where T : IViewModel
     {
         private LazyCC<T> viewModelLazy = null!;

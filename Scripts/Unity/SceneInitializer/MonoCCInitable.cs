@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Unity.Initables
 {
-    public abstract class MonoCCInitable : MonoCC, IInitable
+    public abstract class MonoCCInitable : CCBehaviour, IInitable
     {
         public bool IsInited { get; private set; }
 

@@ -47,6 +47,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
             AssetName = asset.name;
 
+
             if (asset is IIDMarked<int> idMarked)
                 AssetID = idMarked.ID;
 

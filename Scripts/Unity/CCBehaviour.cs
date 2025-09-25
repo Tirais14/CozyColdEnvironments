@@ -10,7 +10,7 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-    public class MonoCC : MonoBehaviour
+    public class CCBehaviour : MonoBehaviour
     {
         //public static event Action<MonoX>? OnInstantiated;
 

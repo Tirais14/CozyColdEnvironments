@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.UI
 {
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
-    public class CanvasController : MonoCC, ICanvasController
+    public class CanvasController : CCBehaviour, ICanvasController
     {
         [SerializeField]
         private InputActionReference m_PointerInput = null!;

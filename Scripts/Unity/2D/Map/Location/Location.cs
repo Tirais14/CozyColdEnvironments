@@ -10,7 +10,7 @@ namespace CCEnvs.TwoD.Map
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Grid))]
-    public class Location : MonoCC, ILocation
+    public class Location : CCBehaviour, ILocation
     {
         private ILocationLayer[] layers = null!;
 

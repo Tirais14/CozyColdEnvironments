@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 namespace CCEnvs.UnityEditor
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(MonoCC), editorForChildClasses: true)]
+    [CustomEditor(typeof(CCBehaviour), editorForChildClasses: true)]
     public class MonoCCEdtior : global::UnityEditor.Editor
     {
         private VisualElement root = null!;

@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Diagnostics
     /// <summary>
     /// !Editor only
     /// </summary>
-    public sealed class GizmosDrawer : MonoCC
+    public sealed class GizmosDrawer : CCBehaviour
     {
         private static GizmosDrawer? instanceInternal;
 

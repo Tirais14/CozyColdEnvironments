@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Timers
 {
     [DisallowMultipleComponent]
-    public abstract class TimerMono : MonoCC, ITimer
+    public abstract class TimerMono : CCBehaviour, ITimer
     {
         public const string TIMERS_OBJ_NAME = "___Timers";
         public const string TIMERS_UPDATE_OBJ_NAME = "___Timers_Update";
