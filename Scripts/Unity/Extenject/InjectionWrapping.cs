@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.Extenject
         /// <exception cref="ObjectNotFoundException"></exception>
         protected InjectionWrapping(FindAnyObjectByType findAnyObjectByType)
         {
-            Value = Object.FindAnyObjectByType(typeof(T)).IsQ<T>()!;
+            Value = Object.FindAnyObjectByType(typeof(T)).AsOrDefault<T>()!;
 
             if (Value.IsNull())
                 throw new ObjectNotFoundException(typeof(T));
@@ -98,7 +98,7 @@ namespace CCEnvs.Unity.Extenject
         {
             var go = GameObject.Find(gameObjectName);
 
-            Value = go.GetComponent(typeof(T)).IsQ<T>()!;
+            Value = go.GetComponent(typeof(T)).AsOrDefault<T>()!;
 
             if (Value.IsNull())
                 throw new ObjectNotFoundException(typeof(T));

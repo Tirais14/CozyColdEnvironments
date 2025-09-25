@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Conversations;
 using System;
 
 namespace CCEnvs.Json.DTO
@@ -11,12 +12,12 @@ namespace CCEnvs.Json.DTO
     {
         public static object? ConvertTo(this IJsonDto? value, Type toType)
         {
-            return CCConvert.ChangeType(value, toType);
+            return TypeTransformer.DoTransform(value, toType);
         }
 
         public static T? ConvertTo<T>(this IJsonDto? value)
         {
-            return CCConvert.ChangeType<T>(value);
+            return TypeTransformer.DoTransform<T>(value);
         }
     }
 }

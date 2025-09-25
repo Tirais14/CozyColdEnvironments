@@ -59,7 +59,7 @@ namespace CCEnvs.Reflection
         {
             return HashCode.Combine(obj.Name,
                                     obj.GetParameters().AsCCParameters(),
-                                    obj.GetGenericArguments().Select(x => x.Name).ToHashCode());
+                                    obj.GetGenericArguments().Select(x => x.Name).SequenceToHashCode());
         }
     }
 }

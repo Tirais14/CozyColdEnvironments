@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
@@ -33,11 +34,12 @@ namespace CCEnvs.Unity.AddrsAssets
                     string.Empty);
             }
 
-            IList<IResourceLocation> locations = handle.Result;
-
             //distinct without equality comparer
-            var locationsFilterd = locations.GroupBy(x => (x.PrimaryKey, x.ResourceType))
-                                       .Select(x => x.First());
+            var locationsFilterd = from location in handle.Result
+                                   where location.ResourceType.IsType(assetType)
+                                   group location by (location.PrimaryKey, location.ResourceType) into locGroups
+                                   select locGroups.First() into location
+                                   select location;
 
             return Addressables.ResourceManager.CreateCompletedOperation(
                 (IList<IResourceLocation>)locationsFilterd.ToList(),

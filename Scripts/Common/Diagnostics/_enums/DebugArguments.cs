@@ -7,13 +7,14 @@ namespace CCEnvs.Diagnostics
     public enum DebugArguments
     {
         None,
+        Default = None,
         /// <summary>
         /// Marks log message as additive. These messages can be turned off by separate setting
         /// </summary>
-        IsAdditive,
+        IsAdditive = 1,
         /// <summary>
         /// Marks log message as editor only. These messages can be turned off by separate setting
         /// </summary>
-        Editor
+        Editor = 2
     }
 }

@@ -9,11 +9,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
-namespace CCEnvs
+namespace CCEnvs.Conversations
 {
-    public static class CCConvert
+    public static class TypeTransformer
     {
-        public static object ChangeType(object target, Type toType)
+        /// <summary>
+        /// Tries to convert type by <see cref="ITransformable"/>,
+        /// overloaded cast operator, method marked with <see cref="ConverterAttribute"/>
+        /// and returns specified type, <see cref="Convert"/> or throws exception
+        /// </summary>
+        /// <exception cref="InvalidCastException"></exception>
+        public static object DoTransform(object target, Type toType)
         {
             CC.Validate.ArgumentNull(target, nameof(target));
             CC.Validate.ArgumentNull(toType, nameof(toType));
@@ -131,33 +137,11 @@ namespace CCEnvs
                 }
             }
         }
+        /// <inheritdoc cref="DoTransform(object, Type)"/>
         [DebuggerStepThrough]
-        public static T ChangeType<T>(object target)
+        public static T DoTransform<T>(object target)
         {
-            return (T)ChangeType(target, typeof(T));
-        }
-        [DebuggerStepThrough]
-
-        /// <exception cref="ArgumentException"></exception>
-        public static object ChangeType(ITypeProvider target)
-        {
-            CC.Validate.ArgumentNull(target, nameof(target));
-            if (target.ObjectType is null)
-                throw new ArgumentException(nameof(target.ObjectType));
-
-            return ChangeType(target, target.ObjectType);
-        }
-        [DebuggerStepThrough]
-        /// <exception cref="ArgumentException"></exception>
-        public static T ChangeType<T>(ITypeProvider target)
-        {
-            CC.Validate.ArgumentNull(target, nameof(target));
-            if (target.ObjectType is null)
-                throw new ArgumentException(nameof(target.ObjectType));
-            if (target.ObjectType.IsNotType(typeof(T)))
-                throw new ArgumentException(nameof(target.ObjectType));
-
-            return (T)ChangeType(target, target.ObjectType);
+            return (T)DoTransform(target, typeof(T));
         }
 
         private static bool TryGetCastOperator(Type ofType,

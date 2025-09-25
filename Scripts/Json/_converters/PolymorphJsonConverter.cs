@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
@@ -6,9 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using static CCEnvs.Json.Converters.PolymorphJsonConverter;
 
 #pragma warning disable S2743
 #pragma warning disable S2696
@@ -39,9 +38,9 @@ namespace CCEnvs.Json.Converters
         private static Type GetConversationType(JsonSerializer serializer, JToken token)
         {
 
-            NamingStrategy namingStrategy = (NamingStrategy)serializer.ContractResolver
+            NamingStrategy namingStrategy = serializer.ContractResolver
                                                 .AsReflected()
-                                                .Property(nameof(NamingStrategy))
+                                                .Property<NamingStrategy>()
                                                 .GetValue();
 
             string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
@@ -90,7 +89,7 @@ namespace CCEnvs.Json.Converters
                 if (deserialized is null)
                     return null;
 
-                return CCConvert.ChangeType(deserialized, typeof(T));
+                return TypeTransformer.DoTransform(deserialized, typeof(T));
             }
             finally
             {

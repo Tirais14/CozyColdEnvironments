@@ -1,4 +1,4 @@
-using CCEnvs.Converting;
+using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.TypeMatching;
@@ -20,7 +20,7 @@ namespace CCEnvs.Patterns.Composite
 
         public Composite(T[] childs) => AddRange(childs);
 
-        public void Add(object value) => Add(value.ChangeType<T>()!);
+        public void Add(object value) => Add(value.TransformType<T>()!);
 
         /// <exception cref="ArgumentException"></exception>
         public void Add(T value)
@@ -34,7 +34,7 @@ namespace CCEnvs.Patterns.Composite
             childsCount = childs.Count;
         }
 
-        public void Remove(object? value) => Remove(value.IsQ<T>()!);
+        public void Remove(object? value) => Remove(value.AsOrDefault<T>()!);
 
         public void Remove(T? value)
         {
@@ -45,7 +45,7 @@ namespace CCEnvs.Patterns.Composite
             childsCount = childs.Count;
         }
 
-        public void AddRange(params object[] values) => AddRange(values.ChangeType<T[]>()!);
+        public void AddRange(params object[] values) => AddRange(values.TransformType<T[]>()!);
 
         public void AddRange(params T[] values)
         {
@@ -55,7 +55,7 @@ namespace CCEnvs.Patterns.Composite
             }
         }
 
-        public void RemoveRange(params object?[] values) => RemoveRange(values.ChangeType<T[]>()!);
+        public void RemoveRange(params object?[] values) => RemoveRange(values.TransformType<T[]>()!);
 
         public void RemoveRange(params T?[] values)
         {

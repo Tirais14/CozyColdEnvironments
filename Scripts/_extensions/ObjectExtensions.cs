@@ -1,12 +1,71 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs
 {
     public static class ObjectExtensions
     {
+        /// <summary>
+        /// Also checks for unity null
+        /// </summary>
+        public static bool IsDefault([NotNullWhen(false)] this object? value,
+            EqualsDefaultOption option = EqualsDefaultOption.None)
+        {
+            if (value.IsNull())
+                return true;
+
+            Type type = value.GetType();
+            if (type.IsClass)
+                return false;
+
+            if (!TypeCache.DefaultValues.TryGetValue(type, out object? defaultValue))
+            {
+                defaultValue = Activator.CreateInstance(type, nonPublic: true);
+                TypeCache.TryCacheDefaultValue(type, defaultValue);
+            }
+
+            if (value.Equals(defaultValue))
+                return true;
+
+            if (value is string str)
+            {
+                return option switch
+                {
+                    EqualsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
+                    EqualsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
+                    _ => throw new InvalidOperationException(),
+                };
+            }
+
+            return false;
+        }
+        public static bool IsDefault([NotNullWhen(false)] this object? obj,
+            object[] customDefaultValues,
+            EqualsDefaultOption option = EqualsDefaultOption.None)
+        {
+            if (obj.IsDefault(option) || customDefaultValues.Contains(obj))
+                return true;
+
+            return false;
+        }
+
+        /// <summary>Inverted</summary>
+        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
+            EqualsDefaultOption option = EqualsDefaultOption.None)
+        {
+            return !obj.IsDefault(option);
+        }
+        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
+            object[] customDefaultValues,
+            EqualsDefaultOption option = EqualsDefaultOption.None)
+        {
+            return !obj.IsDefault(customDefaultValues, option);
+        }
+
         public static T As<T>(this object? obj)
         {
             if (obj.IsNull())
@@ -20,6 +79,16 @@ namespace CCEnvs
             {
                 return CC.Throw.InvalidCast(obj.GetType(), typeof(T)).As<T>();
             }
+        }
+
+        public static T? AsOrDefault<T>(this object? obj)
+        {
+            return obj is T typedObj ? typedObj : default;
+        }
+
+        public static TValue? AsOrDefault<TObj, TValue>(this TObj? obj)
+        {
+            return obj is TValue typedObj ? typedObj : default;
         }
 
         public static bool IsEmptyObject<T>(this T? value)
@@ -99,62 +168,23 @@ namespace CCEnvs.TypeMatching
         {
             return !obj.Is(out result);
         }
-
-        public static T? IsQ<T>(this object? obj)
-        {
-            return obj is T typedObj ? typedObj : default;
-        }
-
-        public static TValue? IsQ<TObj, TValue>(this TObj? obj)
-        {
-            return obj is TValue typedObj ? typedObj : default;
-        }
     }
 }
 
-namespace CCEnvs.Converting
+namespace CCEnvs.Conversations
 {
     public static class ObjectExtensions
     {
-        /// <summary>
-        /// Same as the <see cref="Convert.ChangeType(object, Type)"/>
-        /// </summary>
-        public static object ChangeType(this object obj, Type conversionType)
+        /// <inheritdoc cref="TypeTransformer.DoTransform(object, Type)"/>
+        public static object TransformType(this object obj, Type conversionType)
         {
-            return System.Convert.ChangeType(obj, conversionType);
+            return TypeTransformer.DoTransform(obj, conversionType);
         }
 
-        /// <summary>
-        /// Same as the <see cref="Convert.ChangeType(object, Type)"/>
-        /// </summary>
-        public static T ChangeType<T>(this object obj)
+        /// <inheritdoc cref="TypeTransformer.DoTransform(object, Type)"/>
+        public static T TransformType<T>(this object obj)
         {
-            return (T)System.Convert.ChangeType(obj, typeof(T));
-        }
-
-        /// <summary>
-        /// Same as the <see cref="Convert.ChangeType(object, Type)"/> but in <see langword="try"/>-<see langword="catch"/>
-        /// </summary>
-        public static bool TryChangeType(this object obj,
-                                         Type conversionType,
-                                         [NotNullWhen(true)] out object? result)
-        {
-            if (obj.GetType() == conversionType)
-            {
-                result = obj;
-                return true;
-            }
-
-            try
-            {
-                result = Convert.ChangeType(obj, conversionType);
-                return true;
-            }
-            catch (Exception)
-            {
-                result = null;
-                return false;
-            }
+            return obj.TransformType<T>();
         }
     }
 }

@@ -8,6 +8,61 @@ namespace CCEnvs.Diagnostics
 {
     public static class ObjectExtensions
     {
+        public static Result PrintLog(this object? source,
+                                      object message,
+                                      DebugArguments args = DebugArguments.Default) 
+        {
+            CC.Validate.ArgumentNull(message, nameof(message));
+
+            CCDebug.PrintLog(message, new DebugContext(source, args));
+
+            return default;
+        }
+
+        public static Result PrintWarning(this object? source,
+                                          object message,
+                                          DebugArguments args = DebugArguments.Default)
+        {
+            CC.Validate.ArgumentNull(message, nameof(message));
+
+            CCDebug.PrintWarning(message, new DebugContext(source, args));
+
+            return default;
+        }
+
+        public static Result PrintError(this object? source,
+                                        object message,
+                                        DebugArguments args = DebugArguments.Default)
+        {
+            CC.Validate.ArgumentNull(message, nameof(message));
+
+            CCDebug.PrintError(message, new DebugContext(source, args));
+
+            return default;
+        }
+
+        public static Result PrintException(this object? source,
+                                            Exception exception,
+                                            DebugArguments args = DebugArguments.Default)
+        {
+            CC.Validate.ArgumentNull(exception, nameof(exception));
+
+            CCDebug.PrintException(exception, new DebugContext(source, args));
+
+            return default;
+        }
+
+        public static Result PrintExceptionAsLog(this object? source,
+                                                 Exception exception,
+                                                 DebugArguments args = DebugArguments.Default)
+        {
+            CC.Validate.ArgumentNull(exception, nameof(exception));
+
+            CCDebug.PrintExceptionAsLog(exception, new DebugContext(source, args));
+
+            return default;
+        }
+
         /// <summary>Checks for unity or system <see langword="null"/></summary>
         public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
         {
@@ -26,65 +81,6 @@ namespace CCEnvs.Diagnostics
         public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj)
         {
             return !new NullValidator<T>(obj).IsNull;
-        }
-
-        /// <summary>
-        /// Also checks for unity null
-        /// </summary>
-        public static bool IsDefault([NotNullWhen(false)] this object? value,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            if (value.IsNull())
-                return true;
-
-            Type type = value.GetType();
-            if (type.IsClass)
-                return false;
-
-            if (!TypeCache.DefaultValues.TryGetValue(type, out object? defaultValue))
-            {
-                defaultValue = Activator.CreateInstance(type, nonPublic: true);
-                TypeCache.TryCacheDefaultValue(type, defaultValue);
-            }
-
-            if (value.Equals(defaultValue))
-                return true;
-
-            if (value is string str)
-            {
-                return option switch
-                {
-                    EqualsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
-                    EqualsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
-                    _ => throw new InvalidOperationException(),
-                };
-            }
-
-            return false;
-        }
-        public static bool IsDefault([NotNullWhen(false)] this object? obj,
-            object[] customDefaultValues,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            if (obj.IsDefault(option))
-                return true;
-            else if (customDefaultValues.Contains(obj))
-                return true;
-
-            return false;
-        }
-
-        /// <summary>Inverted</summary>
-        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            return !obj.IsDefault(option);
-        }
-        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            object[] customDefaultValues,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            return !obj.IsDefault(customDefaultValues, option);
         }
     }
 }

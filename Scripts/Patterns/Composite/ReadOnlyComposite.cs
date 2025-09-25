@@ -30,7 +30,7 @@ namespace CCEnvs.Patterns.Composite
 
         public T GetChild(int index) => childs[index];
 
-        public bool Contains(object? value) => Contains(value.IsQ<T>());
+        public bool Contains(object? value) => Contains(value.AsOrDefault<T>());
 
         public virtual bool Contains(T? value)
         {

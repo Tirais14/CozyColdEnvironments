@@ -35,7 +35,7 @@ namespace CCEnvs.Utils
             return FindObjectsByTypeInternal(typeof(T),
                                              findObjectsInactive,
                                              sortMode).FirstOrDefault()
-                                                      .IsQ<T>();
+                                                      .AsOrDefault<T>();
         }
 
         public static T? FindObjectByType<T>(
@@ -44,7 +44,7 @@ namespace CCEnvs.Utils
             return FindObjectsByTypeInternal(typeof(T),
                                              FindObjectsInactive.Exclude,
                                              sortMode).FirstOrDefault()
-                                                                                              .IsQ<T>();
+                                                                                              .AsOrDefault<T>();
         }
 
         public static object[] FindObjectsByType(Type type,

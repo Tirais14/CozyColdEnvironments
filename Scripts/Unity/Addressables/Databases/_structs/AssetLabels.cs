@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.AddrsAssets
             return obj is AssetLabels typed && Equals(typed);
         }
 
-        public readonly override int GetHashCode() => Labels.ToHashCode();
+        public readonly override int GetHashCode() => Labels.SequenceToHashCode();
 
         public readonly override string ToString()
         {

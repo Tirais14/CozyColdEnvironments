@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Cacheables;
 using CCEnvs.Common;
+using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection.Data;
@@ -373,7 +374,7 @@ namespace CCEnvs.Reflection
             if (Target is null)
                 CC.Throw.InvalidCast(toType, "Cannot not convert null object.");
 
-            Target = CCConvert.ChangeType(Target, toType);
+            Target = TypeTransformer.DoTransform(Target, toType);
 
             if (Target is null)
                 throw new DataAccessException(nameof(Target));

@@ -1,3 +1,4 @@
+using CCEnvs.Conversations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -42,17 +43,17 @@ namespace CCEnvs.Linq
             return materialized;
         }
 
-        /// <summary>
-        /// Doesn't materialize collection
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="values"></param>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Action<T>(this IEnumerable<T> values, Action<T> action)
-        {
-            return values.Select(x => { action(x); return x; });
-        }
+        ///// <summary>
+        ///// Doesn't materialize collection
+        ///// </summary>
+        ///// <typeparam name="T"></typeparam>
+        ///// <param name="values"></param>
+        ///// <param name="action"></param>
+        ///// <returns></returns>
+        //public static IEnumerable<T> Action<T>(this IEnumerable<T> values, Action<T> action)
+        //{
+        //    return values.Select(x => { action(x); return x; });
+        //}
 
         public static IEnumerable<T> RemoveElement<T>(this IEnumerable<T> values,
                                                       T removeValue)
@@ -123,7 +124,7 @@ namespace CCEnvs.Linq
 #pragma warning restore S112
         }
 
-        public static int ToHashCode<T>(this IEnumerable<T> values)
+        public static int SequenceToHashCode<T>(this IEnumerable<T> values)
         {
             CC.Validate.ArgumentNull(values, nameof(values));
 
@@ -166,48 +167,48 @@ namespace CCEnvs.Linq
             return new ReadOnlyCollection<T>(value.ToArray());
         }
 
-        public static IEnumerable<TResult> ChangeTypes<TResult>(this IEnumerable value)
+        public static IEnumerable<TResult> DoTransformTypes<TResult>(this IEnumerable value)
         {
             CC.Validate.ArgumentNull(value, nameof(value));
 
             foreach (var item in value)
-                yield return (TResult)CCConvert.ChangeType(item, typeof(TResult));
+                yield return (TResult)TypeTransformer.DoTransform(item, typeof(TResult));
         }
 
-        /// <summary>
-        /// Only invokes action
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="values"></param>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Before<T>(this IEnumerable<T> values, Action action)
-        {
-            CC.Validate.ArgumentNull(values, nameof(values));
-            CC.Validate.ArgumentNull(action, nameof(action));
+        ///// <summary>
+        ///// Only invokes action
+        ///// </summary>
+        ///// <typeparam name="T"></typeparam>
+        ///// <param name="values"></param>
+        ///// <param name="action"></param>
+        ///// <returns></returns>
+        //public static IEnumerable<T> Before<T>(this IEnumerable<T> values, Action action)
+        //{
+        //    CC.Validate.ArgumentNull(values, nameof(values));
+        //    CC.Validate.ArgumentNull(action, nameof(action));
 
-            action();
+        //    action();
 
-            return values;
-        }
-        /// <summary>
-        /// Only invokes action
-        /// </summary>
-        /// <typeparam name="T0"></typeparam>
-        /// <param name="values"></param>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        public static IEnumerable<T0> Before<T0, T1>(this IEnumerable<T0> values,
-                                                     T1 arg,
-                                                     Action<T1> action)
-        {
-            CC.Validate.ArgumentNull(values, nameof(values));
-            CC.Validate.ArgumentNull(action, nameof(action));
+        //    return values;
+        //}
+        ///// <summary>
+        ///// Only invokes action
+        ///// </summary>
+        ///// <typeparam name="T0"></typeparam>
+        ///// <param name="values"></param>
+        ///// <param name="action"></param>
+        ///// <returns></returns>
+        //public static IEnumerable<T0> Before<T0, T1>(this IEnumerable<T0> values,
+        //                                             T1 arg,
+        //                                             Action<T1> action)
+        //{
+        //    CC.Validate.ArgumentNull(values, nameof(values));
+        //    CC.Validate.ArgumentNull(action, nameof(action));
 
-            action(arg);
+        //    action(arg);
 
-            return values;
-        }
+        //    return values;
+        //}
 
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> values)
         {

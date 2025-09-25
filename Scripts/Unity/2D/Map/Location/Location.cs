@@ -31,7 +31,7 @@ namespace CCEnvs.TwoD.Map
 
         public T? GetLayer<T>(int index) where T : ILocationLayer
         {
-            return GetLayer(index).IsQ<T>();
+            return GetLayer(index).AsOrDefault<T>();
         }
 
         public bool TryGetLayer<T>(int index, [NotNullWhen(true)] out T? result)

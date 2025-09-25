@@ -26,6 +26,16 @@ namespace CCEnvs.Diagnostics
             return this;
         }
 
+        /// <summary>
+        /// It's mock, for short return
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T As<T>()
+        {
+            return default!;
+        }
+
         public readonly void Deconstruct(out object? target, out DebugArguments arguments)
         {
             target = Target;
