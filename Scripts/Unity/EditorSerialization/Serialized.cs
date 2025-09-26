@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.EditorSerialization
         : IEditorSerialized<TOutput>,
         ITransformable<TOutput>
     {
-        public TOutput Output { [Converter] get; protected set; } = default!;
+        public TOutput Value { [Converter] get; protected set; } = default!;
 
         protected Serialized()
         {
@@ -21,15 +21,15 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected Serialized(TOutput defaultValue)
         {
-            Output = defaultValue;
+            Value = defaultValue;
         }
 
         public static implicit operator TOutput(Serialized<TOutput> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
-        TOutput ITransformable<TOutput>.DoTransform() => Output;
+        TOutput ITransformable<TOutput>.DoTransform() => Value;
     }
     [Serializable]
     public abstract class Serialized<TInput, TOutput> 
@@ -56,12 +56,12 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public static implicit operator TOutput(Serialized<TInput, TOutput> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
         public override string ToString()
         {
-            return $"{nameof(input)}: {input} |{nameof(Output)}: {Output}";
+            return $"{nameof(input)}: {input} |{nameof(Value)}: {Value}";
         }
 
         protected abstract TOutput ConvertToOutput(TInput input);
@@ -80,8 +80,8 @@ namespace CCEnvs.Unity.EditorSerialization
         {
             try
             {
-                if (inputErased && Output is not null)
-                    input = ConvertToInput(Output);
+                if (inputErased && Value is not null)
+                    input = ConvertToInput(Value);
 
                 OnBeforeSerialize();
             }
@@ -95,7 +95,7 @@ namespace CCEnvs.Unity.EditorSerialization
         {
             try
             {
-                Output = ConvertToOutput(input);
+                Value = ConvertToOutput(input);
 
                 OnAfterDeserialize();
 #if !UNITY_EDITOR

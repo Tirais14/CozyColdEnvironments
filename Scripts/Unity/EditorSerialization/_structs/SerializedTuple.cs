@@ -73,7 +73,7 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField]
         public T2 item2;
 
-        public readonly (T1, T2) Output => (item1, item2);
+        public readonly (T1, T2) Value => (item1, item2);
 
         public SerializedTuple(T1 item1, T2 item2)
         {
@@ -83,7 +83,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public static implicit operator (T1, T2)(SerializedTuple<T1, T2> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
         public static explicit operator KeyValuePair<T1, T2>(SerializedTuple<T1, T2> source)
@@ -114,7 +114,7 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField]
         public T3 item3;
 
-        public readonly (T1, T2, T3) Output => (item1, item2, item3);
+        public readonly (T1, T2, T3) Value => (item1, item2, item3);
 
         public SerializedTuple(T1 item1, T2 item2, T3 item3)
         {
@@ -125,7 +125,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public static implicit operator (T1, T2, T3)(SerializedTuple<T1, T2, T3> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
         public readonly void Deconstruct(out T1 item1, out T2 item2, out T3 item3)
@@ -150,7 +150,7 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField]
         public T4 item4;
 
-        public readonly (T1, T2, T3, T4) Output => (item1, item2, item3, item4);
+        public readonly (T1, T2, T3, T4) Value => (item1, item2, item3, item4);
 
         public SerializedTuple(T1 item1, T2 item2, T3 item3, T4 item4)
         {
@@ -163,7 +163,7 @@ namespace CCEnvs.Unity.EditorSerialization
         public static implicit operator (T1, T2, T3, T4)(
             SerializedTuple<T1, T2, T3, T4> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
         public readonly void Deconstruct(out T1 item1,
@@ -195,7 +195,7 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField]
         public T5 item5;
 
-        public readonly (T1, T2, T3, T4, T5) Output => (item1, item2, item3, item4, item5);
+        public readonly (T1, T2, T3, T4, T5) Value => (item1, item2, item3, item4, item5);
 
         public SerializedTuple(T1 item1, T2 item2, T3 item3, T4 item4, T5 item5)
         {
@@ -209,7 +209,7 @@ namespace CCEnvs.Unity.EditorSerialization
         public static implicit operator (T1, T2, T3, T4, T5)(
             SerializedTuple<T1, T2, T3, T4, T5> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
         public readonly void Deconstruct(out T1 item1,
@@ -246,7 +246,7 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField]
         public T6 item6;
 
-        public readonly (T1, T2, T3, T4, T5, T6) Output => (item1, item2, item3, item4, item5, item6);
+        public readonly (T1, T2, T3, T4, T5, T6) Value => (item1, item2, item3, item4, item5, item6);
 
         public SerializedTuple(T1 item1, T2 item2, T3 item3, T4 item4, T5 item5, T6 item6)
         {
@@ -261,7 +261,7 @@ namespace CCEnvs.Unity.EditorSerialization
         public static implicit operator (T1, T2, T3, T4, T5, T6)(
             SerializedTuple<T1, T2, T3, T4, T5, T6> source)
         {
-            return source.Output;
+            return source.Value;
         }
 
         public readonly void Deconstruct(out T1 item1,

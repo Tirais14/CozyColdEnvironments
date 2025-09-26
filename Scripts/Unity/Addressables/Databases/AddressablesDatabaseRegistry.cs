@@ -1,16 +1,14 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.AddrsAssets.Databases;
+using CCEnvs.Unity.Timers;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Object = UnityEngine.Object;
 using static CCEnvs.Unity.AddrsAssets.AddressablesDatabaseRegistry;
-using System.Threading;
-using System.Timers;
-using CCEnvs.Unity.Timers;
-using CCEnvs.Diagnostics;
+using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S3881
@@ -32,7 +30,7 @@ namespace CCEnvs.Unity.AddrsAssets
         }
     }
     public abstract class AddressablesDatabaseRegistry<TThis>
-        : CCBehaviourStatic<TThis>,
+        : CCBehaviourStaticQ<TThis>,
         IAddressablesDatabaseRegistry
 
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
@@ -53,7 +51,6 @@ namespace CCEnvs.Unity.AddrsAssets
             remove => onLoaded = (onLoaded - value)!;
         }
 
-        public static TThis Q => Self;
         public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
         public IEnumerable<IAddressablesDatabase> Values => databases.Values;
         public int Count => databases.Count;
@@ -112,58 +109,48 @@ namespace CCEnvs.Unity.AddrsAssets
         }
         public Object GetAsset(Type dbAssetType,
                                string? assetName,
-                               int? assetID,
-                               object? dbUniqueIdentifier = null,
-                               object? assetUniqueIdentifier = null)
+                               object? assetID,
+                               object? dbID = null)
         {
-            return GetAsset(new AssetDatabaseKey(dbAssetType, dbUniqueIdentifier),
-                new AssetKey(assetName,
-                             assetID,
-                             assetUniqueIdentifier));
+            return GetAsset(new AssetDatabaseKey(dbAssetType, dbID),
+                new AssetKey(assetName, assetID));
         }
         public Object GetAsset(Type dbAssetType,
                                string assetName,
-                               object? dbUniqueIdentifier = null,
-                               object? assetUniqueIdentifier = null)
+                               object? dbID = null)
         {
-            return GetAsset(new AssetDatabaseKey(dbAssetType, dbUniqueIdentifier),
-                new AssetKey(assetName, assetUniqueIdentifier));
+            return GetAsset(new AssetDatabaseKey(dbAssetType, dbID),
+                new AssetKey(assetName));
         }
         public Object GetAsset(Type dbAssetType,
-                               int assetID,
-                               object? dbUniqueIdentifier = null,
-                               object? assetUniqueIdentifier = null)
+                               object assetID,
+                               object? dbID = null)
         {
-            return GetAsset(new AssetDatabaseKey(dbAssetType, dbUniqueIdentifier), 
-                new AssetKey(assetID, assetUniqueIdentifier));
+            return GetAsset(new AssetDatabaseKey(dbAssetType, dbID),
+                AssetKey.ByID(assetID));
         }
         public T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey) => GetAsset(dbKey, assetkey).As<T>();
         public T GetAsset<T>(string? assetName,
-                             int? assetID,
+                             object? assetID,
                              Type? dbAssetType = null,
-                             object? dbUniqueIdentifier = null,
-                             object? assetUniqueIdentifier = null)
+                             object? dbID = null)
         {
-            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbUniqueIdentifier),
-                new AssetKey(assetName,
-                             assetID,
-                             assetUniqueIdentifier));
+            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
+                new AssetKey(assetName, assetID));
         }
         public T GetAsset<T>(string assetName,
                              Type? dbAssetType = null,
-                             object? dbUniqueIdentifier = null,
-                             object? assetUniqueIdentifier = null)
+                             object? dbID = null)
         {
-            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbUniqueIdentifier),
-                new AssetKey(assetName, assetUniqueIdentifier));
+            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
+                new AssetKey(assetName));
         }
-        public T GetAsset<T>(int assetID,
+        public T GetAsset<T>(object assetID,
                              Type? dbAssetType = null,
-                             object? dbUniqueIdentifier = null,
-                             object? assetUniqueIdentifier = null)
+                             object? dbID = null)
         {
-            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbUniqueIdentifier),
-                new AssetKey(assetID, assetUniqueIdentifier));
+            return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
+                AssetKey.ByID(assetID));
         }
 
         public void Dispose() => Dispose(disposing: true);

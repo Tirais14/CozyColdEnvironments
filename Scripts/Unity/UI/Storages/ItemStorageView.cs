@@ -14,20 +14,11 @@ namespace CCEnvs.Unity.UI.Storages
         where TViewModel : IItemStorageViewModel<TModel>
         where TModel : IItemStorageReactive
     {
-        public ComponentCache Cache { get; private set; } = null!;
-
-        protected override void OnAwake()
-        {
-            base.OnAwake();
-
-            Cache = this.GetCache();
-        }
-
         protected override void OnStart()
         {
             base.OnStart();
 
-            viewModel.IsOpenedView.Subscribe(x => Cache.gameObject.SetActive(x)).AddTo(this);
+            viewModel.IsOpenedView.Subscribe(x => gameObject.SetActive(x)).AddTo(this);
         }
 
         protected override TViewModel CreateViewModel()

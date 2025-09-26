@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.EditorSerialization
         protected override FieldInfo ConvertToOutput(
             SerializedTuple<SerializedType, string, MemberBindings> input)
         {
-            return input.item1.Output.GetField(input.item2, input.item3.Unfold())
+            return input.item1.Value.GetField(input.item2, input.item3.Unfold())
                    ?? 
                    throw new FieldNotFoundException(input.item1, input.item2, input.item3.Unfold());
         }

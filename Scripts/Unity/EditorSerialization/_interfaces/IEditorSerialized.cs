@@ -9,8 +9,8 @@ namespace CCEnvs.Unity.EditorSerialization
     }
     public interface IEditorSerialized<out T> : IEditorSerialized
     {
-        new T Output { get; }
+        new T Value { get; }
 
-        object IEditorSerialized.Output => Output!;
+        object IEditorSerialized.Output => Value!;
     }
 }

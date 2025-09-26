@@ -24,36 +24,30 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey);
         Object GetAsset(Type dbAssetType,
                         string? assetName,
-                        int? assetID,
-                        object? dbUniqueIdentifier = null,
-                        object? assetUniqueIdentifier = null);
+                        object? assetID,
+                        object? dbID = null);
         Object GetAsset(Type dbAssetType,
                         string assetName,
-                        object? dbUniqueIdentifier = null,
-                        object? assetUniqueIdentifier = null);
+                        object? dbID = null);
         Object GetAsset(Type dbAssetType,
-                        int assetID,
-                        object? dbUniqueIdentifier = null,
-                        object? assetUniqueIdentifier = null);
+                        object assetID,
+                        object? dbID = null);
         T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         /// <param name="uniqueIndentifier">Any object which used as ID</param>
         T GetAsset<T>(string? assetName,
-                      int? assetID,
+                      object? assetID,
                       Type? dbAssetType = null,
-                      object? dbUniqueIdentifier = null,
-                      object? assetUniqueIdentifier = null);
+                      object? dbID = null);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         /// <param name="uniqueIndentifier">Any object which used as ID</param>
         T GetAsset<T>(string assetName,
                       Type? dbAssetType = null,
-                      object? dbUniqueIdentifier = null,
-                      object? assetUniqueIdentifier = null);
+                      object? dbID = null);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         /// <param name="uniqueIndentifier">Any object which used as ID</param>
-        T GetAsset<T>(int assetID,
+        T GetAsset<T>(object assetID,
                       Type? dbAssetType = null,
-                      object? dbUniqueIdentifier = null,
-                      object? assetUniqueIdentifier = null);
+                      object? dbID = null);
     }
 }

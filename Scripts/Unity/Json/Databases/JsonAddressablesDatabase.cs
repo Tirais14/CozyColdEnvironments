@@ -16,14 +16,13 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         : Database<TKey, TValue>
     {
         public async UniTask LoadAssetsAsync(AssetLabels textAssetLabels,
-            UniqueIndentifierGetter? uniqueIndentifierGetter,
             Func<TValue, TKey> keySelector)
         {
             CC.Validate.ArgumentNull(keySelector, nameof(keySelector));
 
             using var textAssets = new AddressablesDatabase<TextAsset>();
 
-            await textAssets!.LoadAssetsAsync(textAssetLabels, uniqueIndentifierGetter);
+            await textAssets!.LoadAssetsAsync(textAssetLabels);
 
             textAssets.Values.ForEach(item => Deserialize(item, keySelector));
 

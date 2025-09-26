@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected override SerializedTuple<SerializedType, Reflected.Settings> ConvertToInput(Reflected output)
         {
-            return SerializedTuple.Create(new SerializedType(), Output.settings);
+            return SerializedTuple.Create(new SerializedType(), Value.settings);
         }
 
         protected override Reflected ConvertToOutput(SerializedTuple<SerializedType, Reflected.Settings> input)

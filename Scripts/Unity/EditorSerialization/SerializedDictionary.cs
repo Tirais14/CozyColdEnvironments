@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected override SerializedTuple<TKey, TValue>[] ConvertToInput(Dictionary<TKey, TValue> output)
         {
-            return Output.Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
+            return Value.Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
                          .ToArray();
         }
 

@@ -1,4 +1,3 @@
-using CCEnvs.UI;
 using CCEnvs.Unity.ComponentSetter;
 using TMPro;
 using UnityEngine;

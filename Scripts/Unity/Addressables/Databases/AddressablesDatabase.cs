@@ -32,6 +32,8 @@ namespace CCEnvs.Unity.AddrsAssets
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
         public bool IsLoaded => Count > 0;
+        public Func<Object, AssetKey>? KeyFactory { get; set; }
+        public Func<Object, object?>? IDFactory { get; set; }
         public TAsset this[AssetKey key] => db[key];
 
         public AddressablesDatabase(int capacity)
@@ -51,16 +53,36 @@ namespace CCEnvs.Unity.AddrsAssets
             db = new Dictionary<AssetKey, TAsset>(values);
         }
 
-        public void AddAssets(IEnumerable<KeyValuePair<AssetKey, Object>> items)
+        public void AddAsset(TAsset asset)
         {
-            CC.Validate.ArgumentNull(items, nameof(items));
+            CC.Validate.ArgumentNull(asset, nameof(asset));
 
             try
             {
-                IEnumerable<KeyValuePair<AssetKey, TAsset>> casted = items.SelectValue(
-                    x => x.As<TAsset>()).AsEnumerable();
+                AssetKey key;
+                if (KeyFactory is not null)
+                    key = KeyFactory(asset);
+                else if (IDFactory is not null)
+                    key = new AssetKey(asset.name, IDFactory(asset));
+                else
+                    key = new AssetKey(asset);
 
-                db.AddRange(casted);
+                db.Add(key, asset);
+                CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded. {nameof(AssetKey)}: {key}", this);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
+        }
+
+        public void AddAssets(IEnumerable<TAsset> assets)
+        {
+            CC.Validate.ArgumentNull(assets, nameof(assets));
+
+            try
+            {
+                assets.ForEach(AddAsset);
             }
             catch (Exception ex)
             {
@@ -68,8 +90,7 @@ namespace CCEnvs.Unity.AddrsAssets
             }
         }
 
-        public async UniTask LoadAssetsAsync(AssetLabels assetLabels,
-            UniqueIndentifierGetter? uniqueIndentifierGetter = null)
+        public async UniTask LoadAssetsAsync(AssetLabels assetLabels)
         {
             CC.Validate.Argument(assetLabels,
                                  nameof(assetLabels),
@@ -80,7 +101,7 @@ namespace CCEnvs.Unity.AddrsAssets
                 OnStartLoading(this);
 
                 var handle = await AddressableLoader.LoadAssetsByTagsAsync<TAsset>(
-                    (x) => OnAssetLoaded(x, uniqueIndentifierGetter),
+                    callback: AddAsset,
                     assetLabels.ToArray());
 
                 loadHandles.Add(handle);
@@ -110,8 +131,8 @@ namespace CCEnvs.Unity.AddrsAssets
         }
 
         public async UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
-            DbItemConverter<TAsset, TNew> dbItemConverter,
-            DbConverter<TAsset, TNew> dbConverter,
+            ConverterAsync<TAsset, TNew> dbItemConverter,
+            ConverterAsync<TAsset, TNew> dbConverter,
             bool disposePreviousDb)
             where TNew : Object
         {
@@ -127,7 +148,7 @@ namespace CCEnvs.Unity.AddrsAssets
             if (disposePreviousDb)
                 Dispose();
 
-            newDb.AddAssets(converted.SelectValue(x => (Object)x));
+            newDb.AddAssets(converted);
 
             return newDb;
         }
@@ -156,25 +177,6 @@ namespace CCEnvs.Unity.AddrsAssets
             }
 
             disposedValue = true;
-        }
-
-        protected virtual void OnAssetLoaded(TAsset asset,
-            UniqueIndentifierGetter? uniqueIndentifierGetter)
-        {
-            object? uniqueIndentifier = null;
-
-            try
-            {
-                uniqueIndentifier = uniqueIndentifierGetter?.Invoke(asset);
-            }
-            catch (Exception ex)
-            {
-                CCDebug.PrintException(ex);
-            }
-
-            var assetKey = new AssetKey(asset, uniqueIndentifier);
-            db.Add(assetKey, asset);
-            CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded. assetKey: {assetKey}", this);
         }
 
         private void BindEvents()

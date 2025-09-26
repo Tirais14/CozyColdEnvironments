@@ -1,9 +1,12 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable S101
 namespace CCEnvs.Unity
 {
+    public delegate UniTask<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
+
     public class UCC : CCBehaviourStatic<UCC>
     {
         public static class Tags

@@ -1,4 +1,7 @@
+using CCEnvs.Linq;
 using Cysharp.Threading.Tasks;
+using DG.Tweening.Core;
+using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,25 +10,20 @@ using Object = UnityEngine.Object;
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
-    public delegate UniTask<KeyValuePair<AssetKey, TNew>> DbItemConverter<TPrevious, TNew>(TPrevious prevItem)
-        where TPrevious : Object
-        where TNew : Object;
-    public delegate UniTask<IAddressablesDatabase<TNew>> DbConverter<TPrevious, TNew>(IAddressablesDatabase<TPrevious> prevDb)
-        where TPrevious : Object
-        where TNew : Object;
-    public delegate object? UniqueIndentifierGetter(Object obj);
-
     public interface IAddressablesDatabase
         : IDisposable,
         IEnumerable,
         ILoadable
     {
+        Func<Object, AssetKey>? KeyFactory { get; set; }
+        Func<Object, object?>? IDFactory { get; set; }
         object this[AssetKey key] { get; }
 
-        void AddAssets(IEnumerable<KeyValuePair<AssetKey, Object>> items);
+        void AddAsset(Object asset);
 
-        UniTask LoadAssetsAsync(AssetLabels assetLabels,
-                                UniqueIndentifierGetter? uniqueIndentifierGetter = null);
+        void AddAssets(IEnumerable<Object> assets);
+
+        UniTask LoadAssetsAsync(AssetLabels assetLabels);
 
         Type AssetType { get; }
 
@@ -35,20 +33,38 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     }
     public interface IAddressablesDatabase<TAsset>
         : IAddressablesDatabase,
-        IReadOnlyDictionary<AssetKey, TAsset>, 
+        IReadOnlyDictionary<AssetKey, TAsset>,
         ITrimmable
 
         where TAsset : Object
     {
         object IAddressablesDatabase.this[AssetKey key] => this[key];
 
+        void AddAsset(TAsset asset);
+
+        void AddAssets(IEnumerable<TAsset> assets);
+
         new TAsset GetAsset(AssetKey key);
+
+        void IAddressablesDatabase.AddAsset(Object asset)
+        {
+            CC.Validate.ArgumentNull(asset, nameof(asset));
+
+            AddAsset(asset.As<TAsset>());
+        }
+
+        void IAddressablesDatabase.AddAssets(IEnumerable<Object> assets)
+        {
+            CC.Validate.ArgumentNull(assets, nameof(assets));
+
+            AddAssets(assets.Select(x => x.As<TAsset>()).AsEnumerable());
+        }
 
         Object IAddressablesDatabase.GetAsset(AssetKey key) => GetAsset(key);
 
         UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
-            DbItemConverter<TAsset, TNew> dbItemConverter,
-            DbConverter<TAsset, TNew> dbConverter,
+            ConverterAsync<TAsset, TNew> dbItemConverter,
+            ConverterAsync<TAsset, TNew> dbConverter,
             bool disposePreviousDb)
             where TNew : Object;
     }

@@ -8,9 +8,12 @@ using CCEnvs.Returnables;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace CCEnvs
 {
+    public delegate Task<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
+
     public static class CC
     {
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
@@ -56,6 +59,7 @@ namespace CCEnvs
 
         public static class Validate
         {
+            /// <exception cref="ArgumentNullException"></exception>
             public static void ArgumentNull<T>([NotNull] T? obj,
                                             string paramName)
             {

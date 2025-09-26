@@ -1,19 +1,20 @@
+using LinqAF;
 using UnityEngine;
-using System;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
     public static class ComponentExtensions
     {
-        /// <exception cref="ArgumentNullException"></exception>
-        public static ComponentCache GetCache(this Component value)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
+        //public static void ConfiguredDestroy(this Component source)
+        //{
+        //    CC.Validate.ArgumentNull(source, nameof(source));
 
-            return new ComponentCache(value.transform, value.gameObject);
-        }
+        //    if (source.GetComponents<Component>().Any(x => !x.GetType().Namespace.StartsWith("Unity")))
+        //        Object.Destroy(source);
+
+        //    Object.Destroy(source.gameObject);
+        //}
     }
 }
 

@@ -9,37 +9,28 @@ namespace CCEnvs.Unity.AddrsAssets
     public readonly struct AssetKey : IEquatable<AssetKey>
     {
         public string? AssetName { get; }
-        public int? AssetID { get; }
-        public object? UniqueIdentifier { get; }
+        public object? AssetID { get; }
 
-        public AssetKey(string? assetName, int? assetID) : this()
+        public AssetKey(string? assetName,
+                        object? assetID)
         {
             AssetName = assetName;
             AssetID = assetID;
         }
 
-        public AssetKey(string? objName,
-                        int? objID,
-                        object? uniqueIndentifier)
+        public AssetKey(string assetName)
             :
-            this(objName, objID)
-        {
-            UniqueIdentifier = uniqueIndentifier;
-        }
-
-        public AssetKey(string objName, object? uniqueIndentifier = null)
-            :
-            this(objName, objID: default, uniqueIndentifier)
+            this(assetName, assetID: null)
         {
         }
 
-        public AssetKey(int objID, object? uniqueIndentifier = null)
+        public AssetKey(object assetID)
             :
-            this(objName: null, objID, uniqueIndentifier)
+            this(assetName: null, assetID)
         {
         }
 
-        public AssetKey(Object asset, object? uniqueIndentifier)
+        public AssetKey(Object asset)
             :
             this()
         {
@@ -47,18 +38,15 @@ namespace CCEnvs.Unity.AddrsAssets
 
             AssetName = asset.name;
 
-
-            if (asset is IIDMarked<int> idMarked)
+            if (asset is IIDMarked idMarked)
                 AssetID = idMarked.ID;
-
-            UniqueIdentifier = uniqueIndentifier;
         }
 
-        public AssetKey(Object asset)
-            :
-            this(asset, uniqueIndentifier: null)
+        public static AssetKey ByID(object id)
         {
+            CC.Validate.ArgumentNull(id, nameof(id));
 
+            return new AssetKey(id);
         }
 
         public static bool operator ==(AssetKey left, AssetKey right)
@@ -73,24 +61,18 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public AssetKey With(string? assetName)
         {
-            return new AssetKey(assetName, AssetID, UniqueIdentifier);
+            return new AssetKey(assetName, AssetID);
         }
-        public AssetKey With(int? assetID)
+        public AssetKey With(object? assetID)
         {
-            return new AssetKey(AssetName, assetID, UniqueIdentifier);
-        }
-        public AssetKey With(object? uniqueIdentifier)
-        {
-            return new AssetKey(AssetName, AssetID, uniqueIdentifier);
+            return new AssetKey(AssetName, assetID);
         }
 
         public bool Equals(AssetKey other)
         {
             return AssetName == other.AssetName
                    &&
-                   AssetID == other.AssetID
-                   &&
-                   UniqueIdentifier == other.UniqueIdentifier;
+                   AssetID == other.AssetID;
         }
         public override bool Equals(object obj)
         {
@@ -99,12 +81,12 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(AssetName, AssetID, UniqueIdentifier);
+            return HashCode.Combine(AssetName, AssetID);
         }
 
         public override string ToString()
         {
-            return $"{nameof(AssetName)}: {AssetName} | {nameof(AssetID)}: {AssetID} | {nameof(UniqueIdentifier)}: {UniqueIdentifier}";
+            return $"{nameof(AssetName)}: {AssetName} | {nameof(AssetID)}: {AssetID}.";
         }
     }
 }

@@ -13,22 +13,22 @@ namespace CCEnvs.Unity.EditorSerialization
         ISerializationCallbackReceiver
     {
         [SerializeField, Min(0)]
-        private int ticks;
+        private long ticks;
 
         [SerializeField, Min(0)]
         private int milliseconds;
 
         [SerializeField, Min(0f)]
-        private float seconds;
+        private double seconds;
 
         [SerializeField, Min(0f)]
-        private float minutes;
+        private double minutes;
 
         [SerializeField, Min(0f)]
-        private float hours;
+        private double hours;
 
         [SerializeField, Min(0f)]
-        private float days;
+        private double days;
 
         public SerializedTimeSpan()
         {
@@ -36,17 +36,24 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public SerializedTimeSpan(TimeSpan defaultOutput)
         {
-            Output = defaultOutput;
+            ticks = defaultOutput.Ticks;
+            milliseconds = defaultOutput.Milliseconds;
+            seconds = defaultOutput.TotalSeconds;
+            minutes = defaultOutput.TotalMinutes;
+            hours = defaultOutput.TotalHours;
+            days = defaultOutput.TotalDays;
+
+            Value = defaultOutput;
         }
 
-        public TimeSpan Output { get; private set; }
+        public TimeSpan Value { get; private set; }
 
         public static implicit operator TimeSpan(SerializedTimeSpan source)
         {
-            return source.Output;
+            return source.Value;
         }
 
-        TimeSpan ITransformable<TimeSpan>.DoTransform() => Output;
+        TimeSpan ITransformable<TimeSpan>.DoTransform() => Value;
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
@@ -54,7 +61,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            Output = TimeSpan.FromTicks(ticks) 
+            Value = TimeSpan.FromTicks(ticks) 
                      +
                      TimeSpan.FromMilliseconds(milliseconds)
                      + 

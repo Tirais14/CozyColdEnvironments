@@ -10,6 +10,15 @@ namespace CCEnvs.Collections
 {
     public static class ICollectionExtensions
     {
+        public static bool TryAdd<T>(this ICollection<T> source, T value)
+        {
+            if (source.Contains(value))
+                return false;
+
+            source.Add(value);
+            return true;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetCountOrZero(this ICollection? collection)
         {

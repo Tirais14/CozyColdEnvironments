@@ -15,7 +15,6 @@ namespace CCEnvs.Unity.Scenes
             CC.Validate.ArgumentNull(func, nameof(func));
 
             var rSceneManager = typeof(SceneManager).AsReflected();
-
             var sceneLoadedEvent = rSceneManager.Event<UnityAction<Scene, LoadSceneMode>>(nameof(SceneManager.sceneLoaded));
 
             return Subscription.FromEvent((_, _) => func.DynamicInvoke(), sceneLoadedEvent);
@@ -27,7 +26,6 @@ namespace CCEnvs.Unity.Scenes
             CC.Validate.ArgumentNull(func, nameof(func));
 
             var rSceneManager = typeof(SceneManager).AsReflected();
-
             var activeSceneChangedEvent = rSceneManager.Event<UnityAction<Scene, Scene>>(nameof(SceneManager.activeSceneChanged));
 
             return Subscription.FromEvent((_, _) => func.DynamicInvoke(), activeSceneChangedEvent);
