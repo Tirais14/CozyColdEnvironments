@@ -176,7 +176,11 @@ namespace CCEnvs.Unity.AddrsAssets
                                bool ignoreCase = false,
                                bool throwIfNotFound = false)
         {
-            return FindAsset(assetName, ignoreCase, throwIfNotFound).As<T>();
+            return throwIfNotFound
+                   ?
+                   FindAsset(assetName, ignoreCase, throwIfNotFound).As<T>()
+                   :
+                   FindAsset(assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
         }
         public TAsset? FindAsset(object assetID, bool throwIfNotFound = false)
         {
@@ -191,7 +195,11 @@ namespace CCEnvs.Unity.AddrsAssets
         }
         public T? FindAsset<T>(object assetID, bool throwIfNotFound = false)
         {
-            return FindAsset(assetID, throwIfNotFound).As<T>();
+            return throwIfNotFound
+                   ?
+                   FindAsset(assetID, throwIfNotFound).As<T>()
+                   :
+                   FindAsset(assetID, throwIfNotFound).AsOrDefault<T>();
         }
 
         public TAsset GetAsset(AssetKey key)

@@ -26,11 +26,17 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         UniTask LoadAssetsAsync(AssetLabels assetLabels);
 
-        AssetKey? FindAssetKey(string assetName, bool ignoreCase = false, bool throwIfNotFound = false);
+        AssetKey? FindAssetKey(string assetName,
+                               bool ignoreCase = false,
+                               bool throwIfNotFound = false);
         AssetKey? FindAssetKey(object assetID, bool throwIfNotFound = false);
 
-        Object? FindAsset(string assetName, bool ignoreCase = false, bool throwIfNotFound = false);
-        T? FindAsset<T>(string assetName, bool ignoreCase = false, bool throwIfNotFound = false);
+        Object? FindAsset(string assetName,
+                          bool ignoreCase = false,
+                          bool throwIfNotFound = false);
+        T? FindAsset<T>(string assetName,
+                        bool ignoreCase = false,
+                        bool throwIfNotFound = false);
         Object? FindAsset(object assetID, bool throwIfNotFound = false);
         T? FindAsset<T>(object assetID, bool throwIfNotFound = false);
 
@@ -50,8 +56,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         void AddAssets(IEnumerable<TAsset> assets);
 
-        new TAsset? FindAsset(string assetName, bool ignoreCase = false);
-        new TAsset? FindAsset(object assetID);
+        new TAsset? FindAsset(string assetName,
+                              bool ignoreCase = false,
+                              bool throwIfNotFound = false);
+        new TAsset? FindAsset(object assetID, bool throwIfNotFound = false);
 
         new TAsset GetAsset(AssetKey key);
 
@@ -69,11 +77,16 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AddAssets(assets.Select(x => x.As<TAsset>()).AsEnumerable());
         }
 
-        Object? IAddressablesDatabase.FindAsset(string assetName, bool ignoreCase = false)
+        Object? IAddressablesDatabase.FindAsset(string assetName,
+                                                bool ignoreCase,
+                                                bool throwIfNotFound)
         {
-            return FindAsset(assetName, ignoreCase);
+            return FindAsset(assetName, ignoreCase, throwIfNotFound);
         }
-        Object? IAddressablesDatabase.FindAsset(object assetID) => FindAsset(assetID);
+        Object? IAddressablesDatabase.FindAsset(object assetID, bool throwIfNotFound)
+        {
+            return FindAsset(assetID, throwIfNotFound);
+        }
 
         Object IAddressablesDatabase.GetAsset(AssetKey key) => GetAsset(key);
 
