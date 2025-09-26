@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -107,7 +109,7 @@ namespace CCEnvs.Unity
             CC.Validate.Argument(type,
                                  nameof(type),
                                  !type.IsAbstract && !type.IsInterface,
-                                 "Type is abstract and cannot be added.");
+                                 "Type is abstract.");
             var value = (CCBehaviourStatic?)FindAnyObjectByType(type);
 
             if (value == null)

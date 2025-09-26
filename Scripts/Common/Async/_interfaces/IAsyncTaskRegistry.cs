@@ -20,6 +20,6 @@ namespace CCEnvs.Async
 
         void RegisterTask(Task task);
 
-        void RegisterTask(Func<bool> waitUntilFalse);
+        void RegisterTask(Func<bool> waitUntil);
     }
 }

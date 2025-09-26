@@ -6,10 +6,22 @@ using System.Linq;
 namespace CCEnvs.Unity
 {
     /// <summary>
-    /// Do not add this or derived from this component! On scene must be only one <see cref="CCBehaviourStaticKernel"/>
+    /// Same as the singleton. Auto initalizes on scene with the first member access or instant by the <see cref="Attributes.InstantCreationAttribute"/>
     /// </summary>
     public abstract class CCBehaviourStatic : CCBehaviour
     {
+        private CCBehaviourStatic? self;
+
+        protected CCBehaviourStatic Self {
+            get
+            {
+                if (self == null)
+                    self = CCBehaviourStaticKernel.GetInstance(GetType());
+
+                return self;
+            }
+        }
+
         protected override void OnAwake()
         {
             base.OnAwake();
@@ -20,7 +32,10 @@ namespace CCEnvs.Unity
             {
                 CCDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
                 Destroy(this);
+                return;
             }
+
+            this.PrintLog("Awaked");
         }
     }
     /// <summary>
@@ -29,15 +44,15 @@ namespace CCEnvs.Unity
     public abstract class CCBehaviourStatic<TThis> : CCBehaviourStatic
         where TThis : CCBehaviourStatic
     {
-        private static TThis? instance;
+        private static TThis? self;
 
-        protected static TThis Instance {
+        new protected static TThis Self {
             get
             {
-                if (instance == null)
-                    instance = CCBehaviourStaticKernel.GetInstance<TThis>();
+                if (self == null)
+                    self = CCBehaviourStaticKernel.GetInstance<TThis>();
 
-                return instance;
+                return self;
             }
         }
     }

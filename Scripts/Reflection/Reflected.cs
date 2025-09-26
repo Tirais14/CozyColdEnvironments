@@ -7,7 +7,7 @@ using CCEnvs.Linq;
 using CCEnvs.Reflection.Data;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -28,137 +28,20 @@ namespace CCEnvs.Reflection
             Default = IncludeNonPublic | OnlyStaticWhenTargetIsNull,
             None = 0,
             IncludeNonPublic = 1,
-            OnlyStaticWhenTargetIsNull = 2
+            OnlyStaticWhenTargetIsNull = 2,
+            DisallowCaching = 4
         }
-
-        private ReadOnlyCollection<FieldInfo>? allFields;
-        private ReadOnlyCollection<PropertyInfo>? allProperties;
-        private ReadOnlyCollection<MethodInfo>? allMethods;
-        private ReadOnlyCollection<EventInfo>? allEvents;
-
-        private ReadOnlyCollection<FieldInfo>? publicFields;
-        private ReadOnlyCollection<PropertyInfo>? publicProperties;
-        private ReadOnlyCollection<MethodInfo>? publicMethods;
-        private ReadOnlyCollection<EventInfo>? publicEvents;
-
-        private ReadOnlyCollection<FieldInfo>? nonPublicFields;
-        private ReadOnlyCollection<PropertyInfo>? nonPublicProperties;
-        private ReadOnlyCollection<MethodInfo>? nonPublicMethods;
-        private ReadOnlyCollection<EventInfo>? nonPublicEvents;
 
         private object? target;
 
-        public ReadOnlyCollection<FieldInfo> AllFields {
-            get
-            {
-                allFields ??= new ReadOnlyCollection<FieldInfo>(
-                    TargetType.ForceGetFields(GetBindingFlags()));
-
-                return allFields;
-            }
-        }
-
-        public ReadOnlyCollection<PropertyInfo> AllProperties {
-            get
-            {
-                allProperties ??= new ReadOnlyCollection<PropertyInfo>(
-                    TargetType.ForceGetProperties(GetBindingFlags()));
-
-                return allProperties;
-            }
-        }
-
-        public ReadOnlyCollection<MethodInfo> AllMethods {
-            get
-            {
-                allMethods ??= new ReadOnlyCollection<MethodInfo>(
-                    TargetType.ForceGetMethods(GetBindingFlags()));
-
-                return allMethods;
-            }
-        }
-
-        public ReadOnlyCollection<EventInfo> AllEvents {
-            get
-            {
-                allEvents ??= new ReadOnlyCollection<EventInfo>(
-                    TargetType.ForceGetMembers<EventInfo>(GetBindingFlags()));
-
-                return allEvents;
-            }
-        }
-
-        public ReadOnlyCollection<FieldInfo> PublicFields {
-            get
-            {
-                publicFields ??= AllFields.Where(x => x.IsPublic).AsReadOnly();
-
-                return publicFields;
-            }
-        }
-
-        public ReadOnlyCollection<PropertyInfo> PublicProperties {
-            get
-            {
-                publicProperties ??= AllProperties.Where(x => x.GetAccessors().Any(x => x.IsPublic)).AsReadOnly();
-
-                return publicProperties;
-            }
-        }
-
-        public ReadOnlyCollection<MethodInfo> PublicMethods {
-            get
-            {
-                publicMethods ??= AllMethods.Where(x => x.IsPublic).AsReadOnly();
-
-                return publicMethods;
-            }
-        }
-
-        public ReadOnlyCollection<EventInfo> PublicEvents {
-            get
-            {
-                publicEvents ??= AllEvents.Where(x => x.AddMethod.IsPublic || x.RemoveMethod.IsPublic).AsReadOnly();
-
-                return publicEvents;
-            }
-        }
-
-        public ReadOnlyCollection<FieldInfo> NonPublicFields {
-            get
-            {
-                nonPublicFields ??= AllFields.Where(x => !x.IsPublic).AsReadOnly();
-
-                return nonPublicFields;
-            }
-        }
-
-        public ReadOnlyCollection<PropertyInfo> NonPublicProperties {
-            get
-            {
-                nonPublicProperties ??= AllProperties.Where(x => x.GetAccessors().All(x => !x.IsPublic)).AsReadOnly();
-
-                return nonPublicProperties;
-            }
-        }
-
-        public ReadOnlyCollection<MethodInfo> NonPublicMethods {
-            get
-            {
-                nonPublicMethods ??= AllMethods.Where(x => !x.IsPublic).AsReadOnly();
-
-                return nonPublicMethods;
-            }
-        }
-
-        public ReadOnlyCollection<EventInfo> NonPublicEvents {
-            get
-            {
-                nonPublicEvents ??= AllEvents.Where(x => !x.AddMethod.IsPublic && !x.RemoveMethod.IsPublic).AsReadOnly();
-
-                return nonPublicEvents;
-            }
-        }
+        public LazyCC<ImmutableArray<FieldInfo>> AllFields { get; }
+        public LazyCC<ImmutableArray<PropertyInfo>> AllProperties { get; }
+        public LazyCC<ImmutableArray<MethodInfo>> AllMethods { get; }
+        public LazyCC<ImmutableArray<EventInfo>> AllEvents { get; }
+        public LazyCC<ImmutableArray<FieldInfo>> PublicFields { get;}
+        public LazyCC<ImmutableArray<PropertyInfo>> PublicProperties { get; }
+        public LazyCC<ImmutableArray<MethodInfo>> PublicMethods { get; }
+        public LazyCC<ImmutableArray<EventInfo>> PublicEvents { get;}
 
         public object? Target {
             get => target;
@@ -172,14 +55,27 @@ namespace CCEnvs.Reflection
         }
         public Type TargetType { get; private set; }
         public Settings settings { get; }
-        public bool IncludeNonPublic { get; }
+        public bool IncludeNonPublic { get;}
+        public bool DisallowCaching { get; }
 
         protected Reflected(Type targetType, object? target, Settings settings = default)
         {
             this.target = target;
             TargetType = targetType;
             this.settings = settings;
+
             IncludeNonPublic = settings.IsFlagSetted(Settings.IncludeNonPublic);
+            DisallowCaching = settings.IsFlagSetted(Settings.DisallowCaching);
+
+            AllFields = new LazyCC<ImmutableArray<FieldInfo>>(() => TargetType.ForceGetFields(GetBindingFlags()).ToImmutableArray());
+            AllProperties = new LazyCC<ImmutableArray<PropertyInfo>>(() => TargetType.ForceGetProperties(GetBindingFlags()).ToImmutableArray());
+            AllMethods = new LazyCC<ImmutableArray<MethodInfo>>(() => TargetType.ForceGetMethods(GetBindingFlags()).ToImmutableArray());
+            AllEvents = new LazyCC<ImmutableArray<EventInfo>>(() => TargetType.ForceGetMembers<EventInfo>(GetBindingFlags()).ToImmutableArray());
+
+            PublicFields = new LazyCC<ImmutableArray<FieldInfo>>(() => AllFields.Value.Where(field => field.IsPublic).ToImmutableArray());
+            PublicProperties = new LazyCC<ImmutableArray<PropertyInfo>>(() => AllProperties.Value.Where(prop => prop.GetMethod.IsPublic).ToImmutableArray());
+            PublicMethods = new LazyCC<ImmutableArray<MethodInfo>>(() => AllMethods.Value.Where(method => method.IsPublic).ToImmutableArray());
+            PublicEvents = new LazyCC<ImmutableArray<EventInfo>>(() => AllEvents.Value.Where(ev => ev.AddMethod.IsPublic || ev.RemoveMethod.IsPublic).ToImmutableArray());
         }
 
         public Reflected(Type targetType, Settings settings = default)
@@ -214,7 +110,7 @@ namespace CCEnvs.Reflection
         {
             CC.Validate.StringArgument(name, nameof(name));
 
-            IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
+            IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields.Value : PublicFields.Value;
 
             FieldInfo found = fields.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
                               ??
@@ -236,7 +132,7 @@ namespace CCEnvs.Reflection
                 )
                 return new ContextedFieldInfo(Target, found);
 
-            IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields : PublicFields;
+            IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields.Value : PublicFields.Value;
 
             FieldInfo[] filteredFields = (from field in fields
                                           where field.FieldType.IsType(type)
@@ -270,9 +166,9 @@ namespace CCEnvs.Reflection
 
             IEnumerable<PropertyInfo> props = IncludeNonPublic
                                               ? 
-                                              AllProperties
+                                              AllProperties.Value
                                               : 
-                                              PublicProperties;
+                                              PublicProperties.Value;
 
             found = (props.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
                     ??
@@ -297,9 +193,9 @@ namespace CCEnvs.Reflection
 
             IEnumerable<PropertyInfo> props = IncludeNonPublic
                                               ?
-                                              AllProperties
+                                              AllProperties.Value
                                               :
-                                              PublicProperties;
+                                              PublicProperties.Value;
 
             props = (from prop in props
                      where prop.PropertyType.IsType(type)
@@ -336,9 +232,9 @@ namespace CCEnvs.Reflection
 
             IEnumerable<MethodInfo> methods = IncludeNonPublic
                                               ?
-                                              AllMethods
+                                              AllMethods.Value
                                               :
-                                              PublicMethods;
+                                              PublicMethods.Value;
 
             found = ((from method in methods
                       where method.Name.EqualsOrdinal(name)
@@ -352,22 +248,28 @@ namespace CCEnvs.Reflection
             return new ContextedMethodInfo(Target, found);
         }
 
-        public EventInfo Event(string name)
+        public ContextedEventInfo Event(string name)
         {
             CC.Validate.StringArgument(name, nameof(name));
 
             IEnumerable<EventInfo> events = IncludeNonPublic
                                             ?
-                                            AllEvents
+                                            AllEvents.Value
                                             :
-                                            PublicEvents;
+                                            PublicEvents.Value;
 
-            return events.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
-                   ?? 
-                   throw new EventNotFoundException(TargetType, name, GetBindingFlags());
+            return new ContextedEventInfo(Target, 
+                   events.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+                   ??
+                   throw new EventNotFoundException(TargetType, name, GetBindingFlags()));
+        }
+        public ContextedEventInfo<T> Event<T>(string name)
+            where T : Delegate
+        {
+            return Event(name).Convert<T>();
         }
 
-        public object ChangeType(Type toType)
+        public object TransformType(Type toType)
         {
             CC.Validate.ArgumentNull(toType, nameof(toType));
 
@@ -382,7 +284,7 @@ namespace CCEnvs.Reflection
             return Target;
         }
         [DebuggerStepThrough]
-        public T ChangeType<T>() => (T)ChangeType(typeof(T));
+        public T TransformType<T>() => (T)TransformType(typeof(T));
 
         /// <summary>
         /// Cast target object in specified type

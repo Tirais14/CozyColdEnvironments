@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    public class SeriliazedTimeSpan 
+    public class SerializedTimeSpan 
         : IEditorSerialized<TimeSpan>,
         ITransformable<TimeSpan>,
         ISerializationCallbackReceiver
@@ -30,9 +30,18 @@ namespace CCEnvs.Unity.EditorSerialization
         [SerializeField, Min(0f)]
         private float days;
 
+        public SerializedTimeSpan()
+        {
+        }
+
+        public SerializedTimeSpan(TimeSpan defaultOutput)
+        {
+            Output = defaultOutput;
+        }
+
         public TimeSpan Output { get; private set; }
 
-        public static implicit operator TimeSpan(SeriliazedTimeSpan source)
+        public static implicit operator TimeSpan(SerializedTimeSpan source)
         {
             return source.Output;
         }

@@ -8,7 +8,15 @@ namespace CCEnvs.Unity.EditorSerialization
     [Serializable]
     public class SerializedType : Serialized<TypeInfo, Type>
     {
-        protected override Type GetOutput()
+        public SerializedType()
+        {
+        }
+
+        public SerializedType(Type defaultValue) : base(defaultValue)
+        {
+        }
+
+        protected override Type ConvertToOutput(TypeInfo input)
         {
             return TypeSearch.FindTypeInAppDomain(new TypeFinderParameters
             {
@@ -17,9 +25,9 @@ namespace CCEnvs.Unity.EditorSerialization
             });
         }
 
-        protected override TypeInfo GetInput()
+        protected override TypeInfo ConvertToInput(Type output)
         {
-            return new TypeInfo(Output.GetName(), Output.Namespace);
+            return new TypeInfo(output.GetName(), output.Namespace);
         }
     }
 }

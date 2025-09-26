@@ -4,24 +4,57 @@ using System;
 using UnityEngine;
 
 #nullable enable
+#pragma warning disable IDE0044
+#pragma warning disable S3459
 namespace CCEnvs.Unity.EditorSerialization
 {
-    public abstract class Serialized<TSerializable, TOutput> 
+    [Serializable]
+    public abstract class Serialized<TOutput>
         : IEditorSerialized<TOutput>,
-        ITransformable<TOutput>,
+        ITransformable<TOutput>
+    {
+        public TOutput Output { [Converter] get; protected set; } = default!;
+
+        protected Serialized()
+        {
+        }
+
+        protected Serialized(TOutput defaultValue)
+        {
+            Output = defaultValue;
+        }
+
+        public static implicit operator TOutput(Serialized<TOutput> source)
+        {
+            return source.Output;
+        }
+
+        TOutput ITransformable<TOutput>.DoTransform() => Output;
+    }
+    [Serializable]
+    public abstract class Serialized<TInput, TOutput> 
+        : Serialized<TOutput>,
         ISerializationCallbackReceiver
     {
         [SerializeField]
-        protected TSerializable input = default!;
-
-        //private readonly Converter<TSerializable, TOutput> inputToOutput;
-        //private readonly Converter<TOutput, TSerializable> outputToInput;
+        protected TInput input = default!;
 
         private bool inputErased;
 
-        public TOutput Output { [Converter] get; private set; } = default!;
+        protected virtual bool EraseInputOnSerialized => true;
 
-        public static implicit operator TOutput(Serialized<TSerializable, TOutput> source)
+        protected Serialized()
+        {
+        }
+
+        protected Serialized(TOutput defaultValue)
+            :
+            base(defaultValue)
+        {
+        }
+
+
+        public static implicit operator TOutput(Serialized<TInput, TOutput> source)
         {
             return source.Output;
         }
@@ -31,9 +64,9 @@ namespace CCEnvs.Unity.EditorSerialization
             return $"{nameof(input)}: {input} |{nameof(Output)}: {Output}";
         }
 
-        protected abstract TOutput GetOutput();
+        protected abstract TOutput ConvertToOutput(TInput input);
 
-        protected abstract TSerializable GetInput();
+        protected abstract TInput ConvertToInput(TOutput output);
 
         protected virtual void OnBeforeSerialize()
         {
@@ -43,14 +76,12 @@ namespace CCEnvs.Unity.EditorSerialization
         {
         }
 
-        TOutput ITransformable<TOutput>.DoTransform() => Output;
-
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
             try
             {
                 if (inputErased && Output is not null)
-                    input = GetInput();
+                    input = ConvertToInput(Output);
 
                 OnBeforeSerialize();
             }
@@ -64,12 +95,15 @@ namespace CCEnvs.Unity.EditorSerialization
         {
             try
             {
-                Output = GetOutput();
+                Output = ConvertToOutput(input);
 
                 OnAfterDeserialize();
 #if !UNITY_EDITOR
-                EditorSerializing.SetDefault(ref input!);
-                inputErased = true;
+                if (EraseInputOnSerialized)
+                {
+                    EditorSerializing.SetDefault(ref input!);
+                    inputErased = true;
+                }
 #endif
             }
             catch (Exception ex)

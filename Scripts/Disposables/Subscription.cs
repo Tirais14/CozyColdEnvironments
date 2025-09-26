@@ -1,5 +1,6 @@
 using CCEnvs.Returnables;
 using System;
+using System.Reflection;
 
 #nullable enable
 #pragma warning disable S3881
@@ -33,6 +34,16 @@ namespace CCEnvs.Disposables
                                                             observer,
                                                             observable);
         }
+
+        public static ISubscription<TDelegate, ContextedEventInfo<TDelegate>> FromEvent<TDelegate>(
+            TDelegate eventHanlder,
+            ContextedEventInfo<TDelegate> eventInfo)
+            where TDelegate : Delegate
+        {
+            CC.Validate.ArgumentNull(eventInfo, nameof(eventInfo));
+
+            return Create(eventHanlder, eventInfo, static (del, ev) => ev.RemoveEventHanlder(del));
+        }
     }
 
     public sealed class Subscription<TObserver, TObservable> 
@@ -50,6 +61,8 @@ namespace CCEnvs.Disposables
                             TObserver observer,
                             TObservable observable)
         {
+            CC.Validate.ArgumentNull(disposer, nameof(disposer));
+
             this.disposer = disposer;
             this.observer = observer;
             this.observable = observable;

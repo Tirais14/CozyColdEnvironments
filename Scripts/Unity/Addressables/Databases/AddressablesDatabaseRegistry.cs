@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.AddrsAssets
             remove => onLoaded = (onLoaded - value)!;
         }
 
-        public static TThis Q => Instance;
+        public static TThis Q => Self;
         public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
         public IEnumerable<IAddressablesDatabase> Values => databases.Values;
         public int Count => databases.Count;

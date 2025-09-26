@@ -8,8 +8,8 @@ namespace CCEnvs.Unity.EditorSerialization
     [Serializable]
     public class SerializedImmutableArray<T> : Serialized<T[], ImmutableArray<T>>
     {
-        protected override T[] GetInput() => Output.ToArray();
+        protected override T[] ConvertToInput(ImmutableArray<T> output) => Output.ToArray();
 
-        protected override ImmutableArray<T> GetOutput() => input.ToImmutableArray();
+        protected override ImmutableArray<T> ConvertToOutput(T[] input) => input.ToImmutableArray();
     }
 }

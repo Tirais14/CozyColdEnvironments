@@ -1,10 +1,10 @@
 #nullable enable
+using CCEnvs.Reflection;
 using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Timers
 {
-    [DisallowMultipleComponent]
     public abstract class TimerMono : CCBehaviour, ITimer
     {
         public const string TIMERS_OBJ_NAME = "___Timers";
@@ -32,18 +32,27 @@ namespace CCEnvs.Unity.Timers
         }
         public abstract TimeSpan Interval { get; }
 
-        protected static ITimer Create(UpdateType updateType)
+        /// <param name="creationType">Cannot be null if <see cref="UpdateType.Custom"/></param>
+        public static ITimer Create(UpdateType updateType, Type? creationType = null)
         {
             var timersGO = GetOrCreateTimersObject();
 
+            if (creationType is not null && creationType.IsNotType<ITimer>())
+                throw new ArgumentException(nameof(creationType));
+
             return updateType switch
             {
-                UpdateType.Update => timersGO.Find(TIMERS_UPDATE_OBJ_NAME)!.AddComponent<TimerUpdate>(),
-                UpdateType.FixedUpdate => timersGO.Find(TIMERS_FIXED_UPDATE_OBJ_NAME)!.AddComponent<TimerFixedUpdate>(),
-                UpdateType.LateUpdate => timersGO.Find(TIMERS_LATE_UPDATE_OBJ_NAME)!.AddComponent<TimerLateUpdate>(),
-                UpdateType.Custom => timersGO.Find(TIMERS_CUSTOM_UPDATE_OBJ_NAME)!.AddComponent<ATimerTickable>(),
+                UpdateType.Update => (ITimer)timersGO.Find(TIMERS_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerUpdate)),
+                UpdateType.FixedUpdate => (ITimer)timersGO.Find(TIMERS_FIXED_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerFixedUpdate)),
+                UpdateType.LateUpdate => (ITimer)timersGO.Find(TIMERS_LATE_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerLateUpdate)),
+                UpdateType.Custom => (ITimer)timersGO.Find(TIMERS_CUSTOM_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? throw new ArgumentNullException(nameof(creationType))),
                 _ => throw new InvalidOperationException($"{nameof(updateType)} = {updateType}."),
             };
+        }
+        public static T Create<T>(UpdateType updateType, Type? creationType = null)
+            where T : ITimer
+        {
+            return (T)Create(updateType, creationType);
         }
 
         private static bool IsValidTimersObject(GameObject go)

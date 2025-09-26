@@ -15,13 +15,13 @@ namespace CCEnvs.Unity.EditorSerialization
         {
         }
 
-        protected override SerializedTuple<TKey, TValue>[] GetInput()
+        protected override SerializedTuple<TKey, TValue>[] ConvertToInput(Dictionary<TKey, TValue> output)
         {
             return Output.Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
                          .ToArray();
         }
 
-        protected override Dictionary<TKey, TValue> GetOutput()
+        protected override Dictionary<TKey, TValue> ConvertToOutput(SerializedTuple<TKey, TValue>[] input)
         {
             return new Dictionary<TKey, TValue>(
                 input.Select(x => new KeyValuePair<TKey, TValue>(x.item1, x.item2))
@@ -30,8 +30,6 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected override void OnBeforeSerialize()
         {
-            base.OnBeforeSerialize();
-
             try
             {
                 input = input?.DistinctBy(pair => pair.item1).ToArray() //by key
@@ -42,6 +40,8 @@ namespace CCEnvs.Unity.EditorSerialization
             {
                 CCDebug.PrintException(ex);
             }
+
+            base.OnBeforeSerialize();
         }
     }
 }
