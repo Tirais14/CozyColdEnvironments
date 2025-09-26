@@ -36,6 +36,8 @@ namespace CCEnvs.Unity.AddrsAssets
         public Func<Object, object?>? IDFactory { get; set; }
         public TAsset this[AssetKey key] => db[key];
 
+        IEnumerable<Object> IAddressablesDatabase.Values => db.Values;
+
         public AddressablesDatabase(int capacity)
         {
             db = new(capacity);
@@ -117,6 +119,79 @@ namespace CCEnvs.Unity.AddrsAssets
             
             TrimExcessOnLoaded().Timeout(TimeSpan.FromMinutes(3), DelayType.UnscaledDeltaTime)
                                 .Forget(ex => CCDebug.PrintException(ex));
+        }
+
+        public AssetKey? FindAssetKey(string assetName,
+                                      bool ignoreCase = false,
+                                      bool throwIfNotFound = false)
+        {
+            CC.Validate.StringArgument(assetName, nameof(assetName));
+
+            assetName = ignoreCase ? assetName.ToLower() : assetName;
+
+            foreach (var key in db.Keys)
+            {
+                if (key.AssetName is not null
+                    &&
+                    (ignoreCase ? key.AssetName.ToLower() : key.AssetName).StartsWith(assetName)
+                    )
+                    return key;
+            }
+
+            if (throwIfNotFound)
+                throw new AssetNotFoundException(assetName, ignoreCase);
+
+            return null;
+        }
+        public AssetKey? FindAssetKey(object assetID, bool throwIfNotFound = false)
+        {
+            CC.Validate.ArgumentNull(assetID, nameof(assetID));
+
+            foreach (var key in db.Keys)
+            {
+                if (key.AssetID is not null && assetID.Equals(assetID))
+                    return key;
+            }
+
+            if (throwIfNotFound)
+                throw new AssetNotFoundException(assetID);
+
+            return null;
+        }
+
+        public TAsset? FindAsset(string assetName,
+                                 bool ignoreCase = false,
+                                 bool throwIfNotFound = false)
+        {
+            CC.Validate.StringArgument(assetName, nameof(assetName));
+
+            AssetKey? key = FindAssetKey(assetName, ignoreCase, throwIfNotFound);
+
+            if (key is null)
+                return null;
+
+            return db[key.Value];
+        }
+        public T? FindAsset<T>(string assetName,
+                               bool ignoreCase = false,
+                               bool throwIfNotFound = false)
+        {
+            return FindAsset(assetName, ignoreCase, throwIfNotFound).As<T>();
+        }
+        public TAsset? FindAsset(object assetID, bool throwIfNotFound = false)
+        {
+            CC.Validate.ArgumentNull(assetID, nameof(assetID));
+
+            AssetKey? key = FindAssetKey(assetID, throwIfNotFound);
+
+            if (key is null)
+                return null;
+
+            return db[key.Value];
+        }
+        public T? FindAsset<T>(object assetID, bool throwIfNotFound = false)
+        {
+            return FindAsset(assetID, throwIfNotFound).As<T>();
         }
 
         public TAsset GetAsset(AssetKey key)

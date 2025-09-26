@@ -4,9 +4,12 @@ using CCEnvs.Reflection;
 using CCEnvs.Unity.AddrsAssets.Databases;
 using CCEnvs.Unity.Timers;
 using Cysharp.Threading.Tasks;
+using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using static CCEnvs.Unity.AddrsAssets.AddressablesDatabaseRegistry;
 using Object = UnityEngine.Object;
 
@@ -56,6 +59,8 @@ namespace CCEnvs.Unity.AddrsAssets
         public int Count => databases.Count;
         public bool IsLoaded => Count > 0;
         public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
+        public IAddressablesDatabase this[Type dbAssetType] => GetDatabase(dbAssetType);
+        public IAddressablesDatabase this[Type dbAssetType, object dbID] => GetDatabase(dbAssetType, dbID);
 
         protected override void OnAwake()
         {
@@ -99,6 +104,81 @@ namespace CCEnvs.Unity.AddrsAssets
             where T : IAddressablesDatabase
         {
             return GetDatabase(new AssetDatabaseKey(dbAssetType, uniqueIndentifier)).As<T>();
+        }
+
+        public IAddressablesDatabase? FindDatabase(Type assetType, bool throwIfNotFound = false)
+        {
+            CC.Validate.ArgumentNull(assetType, nameof(assetType));
+
+            var result = Values.FirstOrDefault(db => db.AssetType == assetType);
+
+            if (throwIfNotFound && result is null)
+                throw new DatabaseNotFoundException(assetType);
+
+            return result;
+        }
+
+        /// <exception cref="AssetNotFoundException"></exception>
+        public AssetKey? FindAssetKey(Type dbAssetType,
+                                      string assetName,
+                                      bool ignoreCase = false,
+                                      bool throwIfNotFound = false)
+        {
+            var result = FindDatabase(dbAssetType, throwIfNotFound)
+                ?.FindAssetKey(assetName, ignoreCase);
+
+            return result;
+
+        }
+        /// <exception cref="AssetNotFoundException"></exception>
+        public AssetKey? FindAssetKey(Type dbAssetType,
+                                      object assetID,
+                                      bool throwIfNotFound = false)
+        {
+            var result = FindDatabase(dbAssetType, throwIfNotFound)
+                ?.FindAssetKey(assetID, throwIfNotFound);
+
+            return result;
+        }
+
+        public Object? FindAsset(Type dbAssetType,
+                                 string assetName,
+                                 bool ignoreCase = false,
+                                 bool throwIfNotFound = false)
+        {
+            var result = FindDatabase(dbAssetType, throwIfNotFound)
+                ?.FindAsset(assetName, ignoreCase, throwIfNotFound);
+
+            return result;
+        }
+        public Object? FindAsset(Type dbAssetType,
+                                 object assetID,
+                                 bool throwIfNotFound = false)
+        {
+            var result = FindDatabase(dbAssetType, throwIfNotFound)?.FindAsset(assetID);
+
+            return result;
+        }
+        public T? FindAsset<T>(Type dbAssetType,
+                               string assetName,
+                               bool ignoreCase = false,
+                               bool throwIfNotFound = false)
+        {
+            return throwIfNotFound
+                   ? 
+                   FindAsset(dbAssetType, assetName, ignoreCase, throwIfNotFound).As<T>()
+                   :
+                   FindAsset(dbAssetType, assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
+        }
+        public T? FindAsset<T>(Type dbAssetType,
+                               object assetID,
+                               bool throwIfNotFound = false)
+        {
+            return throwIfNotFound
+                   ?
+                   FindAsset(dbAssetType, assetID, throwIfNotFound).As<T>()
+                   :
+                   FindAsset(dbAssetType, assetID, throwIfNotFound).AsOrDefault<T>();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)

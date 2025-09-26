@@ -1,6 +1,4 @@
-using CCEnvs.Linq;
 using Cysharp.Threading.Tasks;
-using DG.Tweening.Core;
 using LinqAF;
 using System;
 using System.Collections;
@@ -15,8 +13,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IEnumerable,
         ILoadable
     {
+        Type AssetType { get; }
         Func<Object, AssetKey>? KeyFactory { get; set; }
         Func<Object, object?>? IDFactory { get; set; }
+        IEnumerable<AssetKey> Keys { get; }
+        IEnumerable<Object> Values { get; }
         object this[AssetKey key] { get; }
 
         void AddAsset(Object asset);
@@ -25,10 +26,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         UniTask LoadAssetsAsync(AssetLabels assetLabels);
 
-        Type AssetType { get; }
+        AssetKey? FindAssetKey(string assetName, bool ignoreCase = false, bool throwIfNotFound = false);
+        AssetKey? FindAssetKey(object assetID, bool throwIfNotFound = false);
+
+        Object? FindAsset(string assetName, bool ignoreCase = false, bool throwIfNotFound = false);
+        T? FindAsset<T>(string assetName, bool ignoreCase = false, bool throwIfNotFound = false);
+        Object? FindAsset(object assetID, bool throwIfNotFound = false);
+        T? FindAsset<T>(object assetID, bool throwIfNotFound = false);
 
         Object GetAsset(AssetKey key);
-
         T GetAsset<T>(AssetKey key);
     }
     public interface IAddressablesDatabase<TAsset>
@@ -43,6 +49,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         void AddAsset(TAsset asset);
 
         void AddAssets(IEnumerable<TAsset> assets);
+
+        new TAsset? FindAsset(string assetName, bool ignoreCase = false);
+        new TAsset? FindAsset(object assetID);
 
         new TAsset GetAsset(AssetKey key);
 
@@ -59,6 +68,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             AddAssets(assets.Select(x => x.As<TAsset>()).AsEnumerable());
         }
+
+        Object? IAddressablesDatabase.FindAsset(string assetName, bool ignoreCase = false)
+        {
+            return FindAsset(assetName, ignoreCase);
+        }
+        Object? IAddressablesDatabase.FindAsset(object assetID) => FindAsset(assetID);
 
         Object IAddressablesDatabase.GetAsset(AssetKey key) => GetAsset(key);
 

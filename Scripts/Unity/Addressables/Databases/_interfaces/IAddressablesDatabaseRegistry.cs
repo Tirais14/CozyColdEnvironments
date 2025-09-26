@@ -1,3 +1,4 @@
+using CCEnvs.Unity.ComponentSetter;
 using System;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
@@ -10,9 +11,37 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IDisposable,
         ILoadable
     {
+        IAddressablesDatabase this[Type dbAssetType] { get; }
+        IAddressablesDatabase this[Type dbAssetType, object dbID] { get; }
+
         void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database);
 
         bool UnregisterDatabase(AssetDatabaseKey key);
+
+        IAddressablesDatabase? FindDatabase(Type assetType, bool throwIfNotFound = false);
+
+        AssetKey? FindAssetKey(Type dbAssetType,
+                               string assetName,
+                               bool ignoreCase = false,
+                               bool throwIfNotFound = false);
+        AssetKey? FindAssetKey(Type dbAssetType,
+                               object assetID,
+                               bool throwIfNotFound = false);
+
+        Object? FindAsset(Type dbAssetType,
+                          string assetName,
+                          bool ignoreCase = false,
+                          bool throwIfNotFound = false);
+        Object? FindAsset(Type dbAssetType,
+                          object assetID,
+                          bool throwIfNotFound = false);
+        T? FindAsset<T>(Type dbAssetType,
+                        string assetName,
+                        bool ignoreCase = false,
+                        bool throwIfNotFound = false);
+        T? FindAsset<T>(Type dbAssetType,
+                        object assetID,
+                        bool throwIfNotFound = false);
 
         IAddressablesDatabase GetDatabase(AssetDatabaseKey key);
         IAddressablesDatabase GetDatabase(Type assetType, object? uniqueIndentifier = null);
