@@ -1,8 +1,8 @@
 #nullable enable
 
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components.Specialized
 {
-    public sealed class GameObjectDestroyLocker : CCBehaviour
+    public sealed class DontDestroyOnLoad : CCBehaviour
     {
         protected override void OnAwake()
         {

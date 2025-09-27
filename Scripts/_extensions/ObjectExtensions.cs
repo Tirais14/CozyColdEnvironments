@@ -29,13 +29,13 @@ namespace CCEnvs
         }
 
         public static bool TrySwitch<T, TResult>(this T? source,
-            [NotNullIfNotNull(nameof(result))] out TResult? result,
+            out TResult result,
             params (Predicate<T?> predicate, Func<T, TResult> func)[] conditions)
         {
             CC.Validate.ArgumentNull(conditions, nameof(conditions));
             if (conditions.IsEmpty())
             {
-                result = default;
+                result = default!;
                 return false;
             }
 

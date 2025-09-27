@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components
 {
     [RequireComponent(typeof(MeshRenderer))]
     public class GameModelBody : CCBehaviour

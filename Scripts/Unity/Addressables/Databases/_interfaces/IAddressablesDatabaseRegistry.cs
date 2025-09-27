@@ -18,6 +18,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         bool UnregisterDatabase(AssetDatabaseKey key);
 
         IAddressablesDatabase? FindDatabase(Type assetType, bool throwIfNotFound = false);
+        T? FindDatabase<T>(Type assetType, bool throwIfNotFound = false)
+            where T : IAddressablesDatabase;
 
         AssetKey? FindAssetKey(Type dbAssetType,
                                string assetName,
@@ -43,10 +45,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                         bool throwIfNotFound = false);
 
         IAddressablesDatabase GetDatabase(AssetDatabaseKey key);
-        IAddressablesDatabase GetDatabase(Type assetType, object? uniqueIndentifier = null);
+        IAddressablesDatabase GetDatabase(Type assetType, object? dbID = null);
         T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase;
-        T GetDatabase<T>(Type dbAssetType, object? uniqueIndentifier = null) 
+        T GetDatabase<T>(Type dbAssetType, object? dbID = null) 
             where T : IAddressablesDatabase;
 
         Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey);

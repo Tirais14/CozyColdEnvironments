@@ -7,7 +7,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components
 {
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class CCBehaviour : MonoBehaviour
@@ -22,6 +22,7 @@ namespace CCEnvs.Unity
 
         protected virtual void OnAwake()
         { 
+
         }
 
         protected virtual void OnStart()

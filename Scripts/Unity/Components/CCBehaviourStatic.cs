@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System.Linq;
 
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components
 {
     /// <summary>
     /// Same as the singleton. Auto initalizes on scene with the first member access or instant by the <see cref="Attributes.InstantCreationAttribute"/>

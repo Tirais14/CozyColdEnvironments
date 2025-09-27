@@ -1,6 +1,6 @@
 {
-    "name": "CCEnvs.UniRx",
-    "rootNamespace": "CCEnvs.UniRx",
+    "name": "CCEnvs.Unity.UniRx",
+    "rootNamespace": "CCEnvs.Unity.UniRx",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",

@@ -103,7 +103,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public IAddressablesDatabase GetDatabase(AssetDatabaseKey key) => databases[key];
         public IAddressablesDatabase GetDatabase(Type assetType,
-                                                 object? uniqueIndentifier = null)
+                                                 object? dbID = null)
         {
             return GetDatabase(new AssetDatabaseKey());
         }
@@ -129,6 +129,11 @@ namespace CCEnvs.Unity.AddrsAssets
                 throw new DatabaseNotFoundException(assetType);
 
             return result;
+        }
+        public T? FindDatabase<T>(Type assetType, bool throwIfNotFound = false)
+            where T : IAddressablesDatabase
+        {
+            return FindDatabase(assetType, throwIfNotFound).AsOrDefault<T>();
         }
 
         /// <exception cref="AssetNotFoundException"></exception>

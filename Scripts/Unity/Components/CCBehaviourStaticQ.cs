@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components
 {
     public class CCBehaviourStaticQ<TThis> : CCBehaviourStatic<TThis>
         where TThis : CCBehaviourStatic

@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components
 {
     public class GameModel : CCBehaviour
     {

@@ -17,7 +17,7 @@ namespace CCEnvs
             return ObjectExtensions.TrySwitch(source, convertedConditions);
         }
         public static bool TrySwitchType<TResult>(this Type source,
-            [NotNullIfNotNull(nameof(result))] out TResult? result,
+            out TResult result,
             params (Type onType, Func<Type, TResult> func)[] conditions)
         {
             CC.Validate.ArgumentNull(source, nameof(source));
