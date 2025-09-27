@@ -22,6 +22,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void Close()
         {
+            OnOpenInternal();
             OnClose.As<Rx.Observable<Window>>().Publish();
             gameObject.SetActive(false);
         }
@@ -29,6 +30,7 @@ namespace CCEnvs.Unity.UI.Elements
         public virtual void Open()
         {
             gameObject.SetActive(true);
+            OnCloseInternal();
             OnOpen.As<Rx.Observable<Window>>().Publish();
         }
 
@@ -37,6 +39,14 @@ namespace CCEnvs.Unity.UI.Elements
             gameObject.SetActive(!IsOpened);
 
             return gameObject.activeSelf;
+        }
+
+        protected virtual void OnOpenInternal()
+        {
+        }
+
+        protected virtual void OnCloseInternal()
+        {
         }
     }
 }

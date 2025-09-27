@@ -9,6 +9,49 @@ namespace CCEnvs
 {
     public static class ObjectExtensions
     {
+        public static bool TrySwitch<T>(this T? source,
+            params (Predicate<T?> predicate, Action<T> action)[] conditions)
+        {
+            CC.Validate.ArgumentNull(conditions, nameof(conditions));
+            if (conditions.IsEmpty())
+                return false;
+
+            foreach (var (predicate, action) in conditions)
+            {
+                if (predicate(source))
+                {
+                    action(source!);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool TrySwitch<T, TResult>(this T? source,
+            [NotNullIfNotNull(nameof(result))] out TResult? result,
+            params (Predicate<T?> predicate, Func<T, TResult> func)[] conditions)
+        {
+            CC.Validate.ArgumentNull(conditions, nameof(conditions));
+            if (conditions.IsEmpty())
+            {
+                result = default;
+                return false;
+            }
+
+            foreach ((Predicate<T?> predicate, Func<T, TResult> func) in conditions)
+            {
+                if (predicate(source))
+                {
+                    result = func(source!);
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
         /// <summary>
         /// Also checks for unity null
         /// </summary>

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 namespace CCEnvs
 {
     public delegate Task<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
+    public delegate void ActionPredicated<T>(Predicate<T> predicate, T value);
 
     public static class CC
     {
@@ -109,6 +110,7 @@ namespace CCEnvs
                     throw new StringException(value);
             }
 
+            /// <exception cref="CollectionArgumentException"></exception>
             public static void CollectionArgument([NotNull] IEnumerable? enumerable,
                                                   string paramName)
             {

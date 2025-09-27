@@ -9,7 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
+using UnityEngine;
 using static CCEnvs.Unity.AddrsAssets.AddressablesDatabaseRegistry;
 using Object = UnityEngine.Object;
 
@@ -79,6 +79,19 @@ namespace CCEnvs.Unity.AddrsAssets
             }
 
             BindEvents();
+        }
+
+        private static Type ResolveType<T>()
+        {
+            var gType = typeof(T);
+
+            if (!gType.TrySwitchType(out Type result,
+                (onType: typeof(ScriptableObject), _ => typeof(ScriptableObject)),
+                (onType: typeof(GameObject), _ => typeof(GameObject)))
+                )
+                return gType;
+
+            return result;
         }
 
         public void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database)
@@ -159,26 +172,30 @@ namespace CCEnvs.Unity.AddrsAssets
 
             return result;
         }
-        public T? FindAsset<T>(Type dbAssetType,
-                               string assetName,
+        public T? FindAsset<T>(string assetName,
+                               Type? dbAssetType = null,
                                bool ignoreCase = false,
                                bool throwIfNotFound = false)
         {
+            dbAssetType = ResolveType<T>();
+
             return throwIfNotFound
                    ? 
                    FindAsset(dbAssetType, assetName, ignoreCase, throwIfNotFound).As<T>()
                    :
                    FindAsset(dbAssetType, assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
         }
-        public T? FindAsset<T>(Type dbAssetType,
-                               object assetID,
+        public T? FindAsset<T>(object assetID,
+                               Type? dbAssetType = null,
                                bool throwIfNotFound = false)
         {
+            dbAssetType = ResolveType<T>();
+
             return throwIfNotFound
                    ?
-                   FindAsset(dbAssetType, assetID, throwIfNotFound).As<T>()
+                   FindAsset(dbAssetType!, assetID, throwIfNotFound).As<T>()
                    :
-                   FindAsset(dbAssetType, assetID, throwIfNotFound).AsOrDefault<T>();
+                   FindAsset(dbAssetType!, assetID, throwIfNotFound).AsOrDefault<T>();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
@@ -215,6 +232,8 @@ namespace CCEnvs.Unity.AddrsAssets
                              Type? dbAssetType = null,
                              object? dbID = null)
         {
+            dbAssetType = ResolveType<T>();
+
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 new AssetKey(assetName, assetID));
         }
@@ -222,6 +241,8 @@ namespace CCEnvs.Unity.AddrsAssets
                              Type? dbAssetType = null,
                              object? dbID = null)
         {
+            dbAssetType = ResolveType<T>();
+
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 new AssetKey(assetName));
         }
@@ -229,6 +250,8 @@ namespace CCEnvs.Unity.AddrsAssets
                              Type? dbAssetType = null,
                              object? dbID = null)
         {
+            dbAssetType = ResolveType<T>();
+
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 AssetKey.ByID(assetID));
         }

@@ -1,4 +1,3 @@
-using CCEnvs.Unity.ComponentSetter;
 using System;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
@@ -35,12 +34,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         Object? FindAsset(Type dbAssetType,
                           object assetID,
                           bool throwIfNotFound = false);
-        T? FindAsset<T>(Type dbAssetType,
-                        string assetName,
+        T? FindAsset<T>(string assetName,
+                        Type? dbAssetType = null,
                         bool ignoreCase = false,
                         bool throwIfNotFound = false);
-        T? FindAsset<T>(Type dbAssetType,
-                        object assetID,
+        T? FindAsset<T>(object assetID,
+                        Type? dbAssetType = null,
                         bool throwIfNotFound = false);
 
         IAddressablesDatabase GetDatabase(AssetDatabaseKey key);
@@ -63,18 +62,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                         object? dbID = null);
         T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
-        /// <param name="uniqueIndentifier">Any object which used as ID</param>
         T GetAsset<T>(string? assetName,
                       object? assetID,
                       Type? dbAssetType = null,
                       object? dbID = null);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
-        /// <param name="uniqueIndentifier">Any object which used as ID</param>
         T GetAsset<T>(string assetName,
                       Type? dbAssetType = null,
                       object? dbID = null);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
-        /// <param name="uniqueIndentifier">Any object which used as ID</param>
         T GetAsset<T>(object assetID,
                       Type? dbAssetType = null,
                       object? dbID = null);

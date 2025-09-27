@@ -10,9 +10,14 @@ namespace CCEnvs.Unity.AddrsAssets
         {
         }
 
-        public AssetNotFoundException(string assetName, bool ignoreCase, Exception? innerException = null)
+        public AssetNotFoundException(string? assetName, bool ignoreCase, Exception? innerException = null)
             : 
             base($"{nameof(assetName)}: {assetName} | {nameof(ignoreCase)}: {ignoreCase}.", innerException)
+        {
+        }
+        public AssetNotFoundException(AssetKey key, bool ignoreCase = false, Exception? innerException = null)
+            :
+            this(key.AssetName, ignoreCase, innerException)
         {
         }
 

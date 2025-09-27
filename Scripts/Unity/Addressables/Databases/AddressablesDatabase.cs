@@ -170,7 +170,7 @@ namespace CCEnvs.Unity.AddrsAssets
             if (key is null)
                 return null;
 
-            return db[key.Value];
+            return GetAsset(key.Value);
         }
         public T? FindAsset<T>(string assetName,
                                bool ignoreCase = false,
@@ -191,7 +191,7 @@ namespace CCEnvs.Unity.AddrsAssets
             if (key is null)
                 return null;
 
-            return db[key.Value];
+            return GetAsset(key.Value);
         }
         public T? FindAsset<T>(object assetID, bool throwIfNotFound = false)
         {
@@ -206,7 +206,10 @@ namespace CCEnvs.Unity.AddrsAssets
         {
             CC.Validate.ArgumentNull(key, nameof(key));
 
-            return db[key];
+            if (!db.TryGetValue(key, out TAsset asset))
+                throw new AssetNotFoundException(key);
+
+            return asset;
         }
         public T GetAsset<T>(AssetKey key)
         {
