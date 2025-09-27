@@ -3,6 +3,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System.Linq;
 
+#pragma warning disable IDE1006
 namespace CCEnvs.Unity.Components
 {
     /// <summary>
@@ -10,15 +11,15 @@ namespace CCEnvs.Unity.Components
     /// </summary>
     public abstract class CCBehaviourStatic : CCBehaviour
     {
-        private CCBehaviourStatic? self;
+        private CCBehaviourStatic? _self;
 
-        protected CCBehaviourStatic Self {
+        protected CCBehaviourStatic self {
             get
             {
-                if (self == null)
-                    self = CCBehaviourStaticKernel.GetInstance(GetType());
+                if (_self == null)
+                    _self = CCBehaviourStaticKernel.GetInstance(GetType());
 
-                return self;
+                return _self;
             }
         }
 
@@ -44,15 +45,15 @@ namespace CCEnvs.Unity.Components
     public abstract class CCBehaviourStatic<TThis> : CCBehaviourStatic
         where TThis : CCBehaviourStatic
     {
-        private static TThis? self;
+        private static TThis? _self;
 
-        protected static new TThis Self {
+        protected static new TThis self {
             get
             {
-                if (self == null)
-                    self = CCBehaviourStaticKernel.GetInstance<TThis>();
+                if (_self == null)
+                    _self = CCBehaviourStaticKernel.GetInstance<TThis>();
 
-                return self;
+                return _self;
             }
         }
     }

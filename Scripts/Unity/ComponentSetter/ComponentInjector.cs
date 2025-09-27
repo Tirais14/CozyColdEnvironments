@@ -7,15 +7,20 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using CCEnvs.Unity.Components;
 
 #nullable enable
 
-namespace CCEnvs.Unity.ComponentSetter
+namespace CCEnvs.Unity.Injections
 {
-    public static class GetComponentByAttributeHelper
+    /// <summary>
+    /// Collect all components by <see cref="GetComponentAttribute"/> and setts to it fields or properties.
+    /// <see cref="CCBehaviour"/> already contains implements this.
+    /// </summary>
+    public static class ComponentInjector
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static void SetMembers(Component target)
+        public static void Inject(Component target)
         {
             if (target == null)
                 throw new ArgumentNullException(nameof(target));

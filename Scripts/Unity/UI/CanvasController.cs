@@ -1,5 +1,5 @@
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Injections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;

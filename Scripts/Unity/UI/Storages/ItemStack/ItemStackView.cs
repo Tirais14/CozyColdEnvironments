@@ -1,7 +1,7 @@
 using CCEnvs.Attributes;
 using CCEnvs.Reflection.Data;
 using CCEnvs.UI;
-using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;

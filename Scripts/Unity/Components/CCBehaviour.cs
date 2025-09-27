@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Injections;
 using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
 using System;
@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.Components
             cGameObject = new LazyCC<GameObject>(() => gameObject);
 
             //Sets component fields and props marked by specical attribute
-            GetComponentByAttributeHelper.SetMembers(this);
+            ComponentInjector.Inject(this);
 
             OnAwake();
         }

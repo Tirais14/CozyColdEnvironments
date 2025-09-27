@@ -17,7 +17,8 @@
         "SuperLinq.Async.dll",
         "QuikGraph.dll",
         "QuikGraph.Graphviz.dll",
-        "System.Collections.Immutable.dll"
+        "System.Collections.Immutable.dll",
+        "System.Reactive.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

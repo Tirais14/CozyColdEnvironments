@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.ComponentSetter
+namespace CCEnvs.Unity.Injections
 {
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponent"/>. Calls in <see cref="CCBehaviour.Awake"/>

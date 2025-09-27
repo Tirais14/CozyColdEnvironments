@@ -5,7 +5,7 @@ namespace CCEnvs.Unity.UniRx
 {
     public interface IToggleableRx : IToggleable
     {
-        IReactiveProperty<bool> IsEnabledRx { get; }
+        global::UniRx.IReactiveProperty<bool> IsEnabledRx { get; }
 
         bool IToggleable.IsEnabled {
             get => IsEnabledRx.Value;

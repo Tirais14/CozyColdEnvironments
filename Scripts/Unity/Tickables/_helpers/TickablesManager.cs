@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Tickables
             if (ticker.IsNull())
                 return false;
 
-            return Self.tickers.ContainsKey(ticker.GetType());
+            return self.tickers.ContainsKey(ticker.GetType());
         }
 
         /// <exception cref="CannotRegisterTickerException"></exception>
@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.Tickables
                     "Already registered.",
                     ticker.GetType());
 
-            Self.tickers.Add(ticker.GetType(), ticker);
+            self.tickers.Add(ticker.GetType(), ticker);
             CCDebug.PrintLog($"Registered ticker: {ticker.GetType().GetName()}.");
 
             return Subscription.Create(ticker, (x) => UnregisterTicker(x));
@@ -56,7 +56,7 @@ namespace CCEnvs.Unity.Tickables
             if (ticker.IsNull())
                 return false;
 
-            return Self.tickers.Remove(ticker.GetType());
+            return self.tickers.Remove(ticker.GetType());
         }
 
         public static bool IsTickableRegistered<T>(T? tickable)
@@ -66,7 +66,7 @@ namespace CCEnvs.Unity.Tickables
                 ||
                 !Tickable.TryGetTickerType(tickable, out Type? tickerType)
                 ||
-                !Self.tickers.TryGetValue(tickerType, out ITicker? ticker))
+                !self.tickers.TryGetValue(tickerType, out ITicker? ticker))
                 return false;
 
             return ticker.IsRegistered(tickable);
@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.Tickables
             CC.Validate.ArgumentNull(tickable, nameof(tickable));
             CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
 
-            if (!Self.tickers.TryGetValue(tickerType, out ITicker? ticker))
+            if (!self.tickers.TryGetValue(tickerType, out ITicker? ticker))
                 throw new CannotRegisterTickableException(
                     $"Not found ticker: {tickerType.GetName()}.",
                     tickable.GetType());
@@ -109,7 +109,7 @@ namespace CCEnvs.Unity.Tickables
             CC.Validate.ArgumentNull(tickable, nameof(tickable));
             CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
 
-            var result = Self.tickers[tickerType].Unregister(tickable);
+            var result = self.tickers[tickerType].Unregister(tickable);
             CCDebug.PrintLog($"Unregistered tickable: {tickable.GetType().GetFullName()} from {tickerType.GetName()}.");
 
             return result;
@@ -128,7 +128,7 @@ namespace CCEnvs.Unity.Tickables
 
         public static int RegisterTickers()
         {
-            CCDebug.PrintLog("Registering tickers started.", Self);
+            CCDebug.PrintLog("Registering tickers started.", self);
             var stopwatch = new Stopwatch();
 
             WhereEnumerable<ITicker, IdentityEnumerable<ITicker, ITicker[], ArrayBridger<ITicker>, ArrayEnumerator<ITicker>>, ArrayEnumerator<ITicker>> tickersFiltered = SceneObjectSearch.FindObjectsByType<ITicker>(FindObjectsInactive.Include)
@@ -141,13 +141,13 @@ namespace CCEnvs.Unity.Tickables
                 registeredCount++;
             }
 
-            CCDebug.PrintLog($"Registering tickers finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", Self);
+            CCDebug.PrintLog($"Registering tickers finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", self);
             return registeredCount;
         }
 
         public static int RegisterTickables()
         {
-            CCDebug.PrintLog("Registering tickables started.", Self);
+            CCDebug.PrintLog("Registering tickables started.", self);
             var stopwatch = new Stopwatch();
 
             SelectWhereEnumerable<(ITickableBase tickable, bool state, Type tickerType), ITickableBase, IdentityEnumerable<ITickableBase, ITickableBase[], ArrayBridger<ITickableBase>, ArrayEnumerator<ITickableBase>>, ArrayEnumerator<ITickableBase>, SingleProjection<(ITickableBase tickable, bool state, Type tickerType), ITickableBase>, SinglePredicate<(ITickableBase tickable, bool state, Type tickerType)>> toRegister =
@@ -163,7 +163,7 @@ namespace CCEnvs.Unity.Tickables
                 registeredCount++;
             }
 
-            CCDebug.PrintLog($"Registering tickables finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", Self);
+            CCDebug.PrintLog($"Registering tickables finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", self);
             return registeredCount;
         }
     }

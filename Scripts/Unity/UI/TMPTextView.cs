@@ -1,4 +1,4 @@
-using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Injections;
 using TMPro;
 using UnityEngine;
 

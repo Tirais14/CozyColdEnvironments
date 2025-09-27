@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public abstract class AEntryPointBehaviour : CCBehaviourStatic
+    public abstract class ASceneEntryPoint : CCBehaviourStatic
     {
         private int frames;
 
@@ -23,7 +23,7 @@ namespace CCEnvs.Unity
         private void Update()
         {
             if (frames >= 10) //some frames delay
-                Destroy(this);
+                Destroy(gameObject);
 
             frames++;
         }

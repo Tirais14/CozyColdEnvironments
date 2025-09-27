@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Collections;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Injections;
 using System;
 using System.Linq;
 using UnityEngine;

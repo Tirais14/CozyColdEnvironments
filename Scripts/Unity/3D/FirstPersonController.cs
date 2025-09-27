@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.ComponentSetter;
+using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Extensions;
 using CCEnvs.Unity.Linq;
 using UniRx;
