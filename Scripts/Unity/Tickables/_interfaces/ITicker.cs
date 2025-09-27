@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.Tickables
 
         IDisposable ITicker.Register(ITickableBase tickable)
         {
-            if (tickable.IsNot<T>(out var typed))
+            if (tickable.IsNot<T>(out T? typed))
                 throw new ArgumentException($"Expected tickable type = {typeof(T).GetName()}.");
 
             return Register(typed);
@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.Tickables
 
         bool ITicker.Unregister(ITickableBase? tickable)
         {
-            if (tickable.IsNot<T>(out var typed))
+            if (tickable.IsNot<T>(out T? typed))
                 return false;
 
             return Unregister(typed);

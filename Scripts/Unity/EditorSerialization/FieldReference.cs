@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.EditorSerialization
             SerializedTuple<SerializedType, string, MemberBindings> input)
         {
             return input.item1.Value.GetField(input.item2, input.item3.Unfold())
-                   ?? 
+                   ??
                    throw new FieldNotFoundException(input.item1, input.item2, input.item3.Unfold());
         }
     }

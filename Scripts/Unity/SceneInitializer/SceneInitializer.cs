@@ -1,5 +1,4 @@
 using CCEnvs.Collections;
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
@@ -38,7 +37,7 @@ namespace CCEnvs.Unity.Initables
                 if (initableAsync.IsInited)
                     throw new CCException($"{initableAsync.GetTypeName()} is already inited.");
 
-                var task = initableAsync.InitAsync();
+                UniTask task = initableAsync.InitAsync();
                 CCEnvs.CC.NeccesaryTasks.RegisterTask(task);
                 await task;
 
@@ -116,8 +115,8 @@ namespace CCEnvs.Unity.Initables
                 x => x.Name == nameof(IInitableBase.IsInited)
                 &&
                 x.PropertyType == typeof(bool)
-                ) 
-                ?? 
+                )
+                ??
                 throw new PropertyNotFoundException(initable.GetType(), nameof(IInitableBase.IsInited));
 
             if (isInitedProp.SetMethod is null)
@@ -150,7 +149,7 @@ namespace CCEnvs.Unity.Initables
             return inits.Where(x => x.GetType().IsDefined<InitAfterTypeAttribute>(inherit: true))
                         .Select(x =>
                         {
-                            var attribute = x.GetType().GetCustomAttribute<InitAfterTypeAttribute>();
+                            InitAfterTypeAttribute attribute = x.GetType().GetCustomAttribute<InitAfterTypeAttribute>();
 
                             return (x, attribute);
                         }).ToArray();
@@ -162,7 +161,7 @@ namespace CCEnvs.Unity.Initables
                         .ToArray();
         }
 
-        private static(IInitable value, InitAfterTypeAttribute attribute)[] 
+        private static (IInitable value, InitAfterTypeAttribute attribute)[]
             ResolveAfterTypeInits(
             IReadOnlyList<(IInitable value, InitAfterTypeAttribute attribute)> toProccess,
             IReadOnlyList<IInitable> proccessed
@@ -303,7 +302,7 @@ namespace CCEnvs.Unity.Initables
             }
 
             return results.ToArray();
-        } 
+        }
 
         private static (IInitableAsync initableAsync, InitAsyncAfterTypeAttribute attribute)[]
             GetInitsAsyncAfterType(List<IInitableAsync> initablesAsync)
@@ -318,7 +317,7 @@ namespace CCEnvs.Unity.Initables
                     &&
                     initableAsync.GetType()
                     .GetCustomAttribute<InitAsyncAfterTypeAttribute>()
-                    .Is<InitAsyncAfterTypeAttribute>(out var attribute))
+                    .Is<InitAsyncAfterTypeAttribute>(out InitAsyncAfterTypeAttribute? attribute))
                 {
                     initablesFirstAsync.Add((initablesAsync[i], attribute));
                     initablesAsync.RemoveAt(i);

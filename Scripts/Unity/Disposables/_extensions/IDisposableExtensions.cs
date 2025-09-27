@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.Disposables
             if (component == null)
                 throw new ArgumentNullException(nameof(component));
 
-            if (!component.TryGetComponent<GameObjectDisposablesObserver>(out var observer))
+            if (!component.TryGetComponent<GameObjectDisposablesObserver>(out GameObjectDisposablesObserver? observer))
                 observer = component.gameObject.AddComponent<GameObjectDisposablesObserver>();
 
             observer.BindDisposable(value);
@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.Disposables
             if (gameObject == null)
                 throw new ArgumentNullException(nameof(gameObject));
 
-            if (!gameObject.TryGetComponent<GameObjectDisposablesObserver>(out var observer))
+            if (!gameObject.TryGetComponent<GameObjectDisposablesObserver>(out GameObjectDisposablesObserver? observer))
                 observer = gameObject.AddComponent<GameObjectDisposablesObserver>();
 
             observer.BindDisposable(value);

@@ -52,7 +52,7 @@ namespace CCEnvs.Unity
             int overlapsCount = overlaps!.Count;
             for (int i = 0; i < overlapsCount; i++)
             {
-                if (overlaps[i].TryGetComponent<T>(out var result) && !excludeObjs.Contains(result))
+                if (overlaps[i].TryGetComponent<T>(out T? result) && !excludeObjs.Contains(result))
                 {
                     results.Add(result);
                 }

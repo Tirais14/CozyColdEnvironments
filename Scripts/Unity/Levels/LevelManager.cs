@@ -1,5 +1,6 @@
 using CCEnvs.Async;
 using CCEnvs.Diagnostics;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
 using Cysharp.Threading.Tasks;
 using System;

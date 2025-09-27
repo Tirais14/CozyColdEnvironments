@@ -1,8 +1,8 @@
+using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using CCEnvs.Reflection;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -30,7 +30,7 @@ namespace CCEnvs.Unity
                 return false;
 
             bool exclude = IsExcludeType(type);
-            bool removeByType = typesToRemove.IsNotNullOrEmpty() 
+            bool removeByType = typesToRemove.IsNotNullOrEmpty()
                                 &&
                                 typesToRemove.Any(x => type.IsType(x));
             if (!exclude && removeByType)
@@ -51,7 +51,7 @@ namespace CCEnvs.Unity
             if (type is null)
                 return false;
 
-            bool excludeByType = typesToExclude.IsNotNullOrEmpty() 
+            bool excludeByType = typesToExclude.IsNotNullOrEmpty()
                                  &&
                                  typesToExclude.Any(x => type.IsType(x));
             if (excludeByType)

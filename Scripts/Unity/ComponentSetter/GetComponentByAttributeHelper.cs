@@ -1,4 +1,3 @@
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Diagnostics;
@@ -34,7 +33,7 @@ namespace CCEnvs.Unity.ComponentSetter
                 SetProps(target, props);
         }
 
-        private static (FieldInfo, GetComponentAttribute)[]GetAttributedFields(
+        private static (FieldInfo, GetComponentAttribute)[] GetAttributedFields(
             Component source)
         {
             FieldInfo[] fields = source.GetType()

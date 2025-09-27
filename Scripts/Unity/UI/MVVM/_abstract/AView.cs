@@ -1,6 +1,5 @@
 #nullable enable 
-using CCEnvs.Unity;
-using CCEnvs.Unity.UI;
+using CCEnvs.Unity.Components;
 
 namespace CCEnvs.Unity.UI.MVVM
 {

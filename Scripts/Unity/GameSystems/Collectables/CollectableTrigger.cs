@@ -1,5 +1,5 @@
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.GameSystems.Storages;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables

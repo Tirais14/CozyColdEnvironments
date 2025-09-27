@@ -9,6 +9,6 @@ namespace CCEnvs.Unity.ComponentSetter
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class GetByParentAttribute : GetComponentAttribute
     {
-    
+
     }
 }

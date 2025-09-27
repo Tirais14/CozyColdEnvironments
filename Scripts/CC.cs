@@ -15,6 +15,11 @@ namespace CCEnvs
     public delegate Task<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
     public delegate void ActionPredicated<T>(Predicate<T> predicate, T value);
 
+    /// <summary>
+    /// Must be null after call
+    /// </summary>
+    public delegate void SingleUseAction();
+
     public static class CC
     {
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();

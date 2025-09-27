@@ -2,6 +2,7 @@ using CCEnvs.Cacheables;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
+using CCEnvs.Unity.Components;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,7 +11,7 @@ using System.Reflection;
 #pragma warning disable S3881
 namespace CCEnvs.Unity.Tickables
 {
-    public abstract class Ticker<TTickable> 
+    public abstract class Ticker<TTickable>
         :
         CCBehaviour,
         ITicker<TTickable>

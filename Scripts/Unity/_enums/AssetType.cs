@@ -1,7 +1,7 @@
+using CCEnvs.Attributes.Metadata;
 using System;
 using UnityEditor;
 using UnityEngine;
-using CCEnvs.Attributes.Metadata;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -27,7 +27,8 @@ namespace CCEnvs.Unity
     public static class AssetTypeNameExtensions
     {
         public static Type? ToSystemType(this AssetType assetType) =>
-            assetType switch {
+            assetType switch
+            {
                 AssetType.Generic => typeof(Object),
                 AssetType.GameObject => typeof(GameObject),
                 AssetType.ScriptableObject => typeof(ScriptableObject),

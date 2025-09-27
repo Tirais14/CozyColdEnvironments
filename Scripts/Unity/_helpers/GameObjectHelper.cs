@@ -1,8 +1,8 @@
+using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using CCEnvs.Reflection;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -15,7 +15,7 @@ namespace CCEnvs.Unity
             if (gameObject == null)
                 throw new ArgumentNullException(nameof(gameObject));
 
-            var monos = gameObject.GetComponents<MonoBehaviour>();
+            MonoBehaviour[] monos = gameObject.GetComponents<MonoBehaviour>();
             for (int i = 0; i < monos.Length; i++)
                 monos[i].enabled = true;
         }
@@ -25,7 +25,7 @@ namespace CCEnvs.Unity
             if (gameObject == null)
                 throw new ArgumentNullException(nameof(gameObject));
 
-            var monos = gameObject.GetComponents<MonoBehaviour>();
+            MonoBehaviour[] monos = gameObject.GetComponents<MonoBehaviour>();
             for (int i = 0; i < monos.Length; i++)
                 monos[i].enabled = false;
         }
@@ -114,7 +114,7 @@ namespace CCEnvs.Unity
 
             void AddToResults()
             {
-                foreach (var item in toStack)
+                foreach (Component item in toStack)
                 {
                     addedComponentTypes.Add(item.GetType());
                     results.Push(item);

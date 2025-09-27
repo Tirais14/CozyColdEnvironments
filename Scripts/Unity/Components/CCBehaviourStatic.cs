@@ -46,7 +46,7 @@ namespace CCEnvs.Unity.Components
     {
         private static TThis? self;
 
-        new protected static TThis Self {
+        protected static new TThis Self {
             get
             {
                 if (self == null)

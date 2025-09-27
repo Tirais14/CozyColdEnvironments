@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Components
         [GetBySelf]
         public MeshFilter meshFilter { get; private set; } = null!;
 
-        new public Collider collider {
+        public new Collider collider {
             get
             {
                 if (m_Collider == null)
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Components
 
         public bool HasCollider => collider != null;
 
-        new public Rigidbody rigidbody {
+        public new Rigidbody rigidbody {
             get
             {
                 if (m_RigidBody == null)

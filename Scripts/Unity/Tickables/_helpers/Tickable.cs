@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.Tickables
                 return attribute.TickerType;
 
             return GetTickerTypeByInterfaces(tickable)
-                   ?? 
+                   ??
                    throw new CCException($"Cannot resolve ticker type of tickable: {tickable.GetType().GetName()}. Specify explicitly.");
         }
 

@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.EditorSerialization
             try
             {
                 input = input?.DistinctBy(pair => pair.item1).ToArray() //by key
-                        ?? 
+                        ??
                         Array.Empty<SerializedTuple<TKey, TValue>>();
             }
             catch (Exception ex)

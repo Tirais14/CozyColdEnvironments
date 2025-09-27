@@ -1,10 +1,10 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
 
 #nullable enable
 
@@ -369,7 +369,7 @@ namespace CCEnvs.Unity.Extensions
 
         private static object[] GetAssignedObjectsInternal(this GameObject gameObject,
                                                            Type targetType,
-                                                           bool includeInactive, 
+                                                           bool includeInactive,
                                                            FindMode findMode,
                                                            bool onlyFirst)
         {
@@ -397,7 +397,8 @@ namespace CCEnvs.Unity.Extensions
                 }
             }
 
-            Component[] gameObjectComponents = findMode switch {
+            Component[] gameObjectComponents = findMode switch
+            {
                 FindMode.InChilds => gameObject.GetComponentsInChildren(typeof(Component),
                                                                         includeInactive),
 

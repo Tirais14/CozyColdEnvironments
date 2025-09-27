@@ -1,5 +1,3 @@
-using CCEnvs.Linq;
-using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Extensions;
 using System;
 using System.Collections.Generic;
@@ -87,14 +85,14 @@ namespace CCEnvs.Utils
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            GameObject[] gameObjects = 
+            GameObject[] gameObjects =
                 Object.FindObjectsByType<GameObject>(findObjectsInactive, sortMode);
 
             int gameObjectsCount = gameObjects.Length;
             List<object> results = new();
             for (int i = 0; i < gameObjectsCount; i++)
             {
-                if (gameObjects[i].TryGetAssignedObjects(type, out var result))
+                if (gameObjects[i].TryGetAssignedObjects(type, out object[]? result))
                 {
                     results.AddRange(result);
                     if (onlyFirst)

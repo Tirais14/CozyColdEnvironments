@@ -1,4 +1,5 @@
 using CCEnvs.Attributes;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Diagnostics;
 using CCEnvs.Unity.Extensions;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace CCEnvs.Unity.UI
 
             raycaster = canvasController.RaycasterCanvas;
 
-            onEndFirstFrame += () => draggable.gameObject.SetActive(false);
+            OnEndFrame += () => draggable.gameObject.SetActive(false);
 
             draggable.OnEndDragEvent += EndDrag;
         }

@@ -1,7 +1,4 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Linq;
-using CCEnvs.TypeMatching;
-using CCEnvs.Unity;
+using CCEnvs.Unity.Components;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 

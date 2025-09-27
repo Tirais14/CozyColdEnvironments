@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using System;
 using UnityEngine;
 
@@ -7,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    public class SerializedTimeSpan 
+    public class SerializedTimeSpan
         : IEditorSerialized<TimeSpan>,
         ITransformable<TimeSpan>,
         ISerializationCallbackReceiver
@@ -61,16 +60,16 @@ namespace CCEnvs.Unity.EditorSerialization
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            Value = TimeSpan.FromTicks(ticks) 
+            Value = TimeSpan.FromTicks(ticks)
                      +
                      TimeSpan.FromMilliseconds(milliseconds)
-                     + 
+                     +
                      TimeSpan.FromSeconds(seconds)
-                     + 
+                     +
                      TimeSpan.FromMinutes(minutes)
-                     + 
+                     +
                      TimeSpan.FromHours(hours)
-                     + 
+                     +
                      TimeSpan.FromDays(days);
         }
     }

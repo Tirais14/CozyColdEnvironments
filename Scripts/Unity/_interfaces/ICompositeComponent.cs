@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -16,7 +15,7 @@ namespace CCEnvs.Unity
         T Part0 { get; }
         T1 Part1 { get; }
     }
-    public interface ICompositeComponent<out T, out T1, out T2> 
+    public interface ICompositeComponent<out T, out T1, out T2>
         : ICompositeComponent<T, T1>
         where T : Component
         where T1 : Component

@@ -7,9 +7,9 @@ namespace CCEnvs.Unity.Timers
     public class TimerFixedUpdate : TimerMono
     {
         public override TimeSpan Interval => IsUnscaledInterval
-            ? 
+            ?
             TimeSpan.FromSeconds(Time.fixedUnscaledDeltaTime)
-            : 
+            :
             TimeSpan.FromSeconds(Time.fixedDeltaTime);
 
         private void FixedUpdate() => Main();

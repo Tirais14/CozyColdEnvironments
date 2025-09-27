@@ -2,6 +2,7 @@
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable S2325 // Methods and properties that don't access instance data should be static
 
+using CCEnvs.Unity.Components;
 using System;
 using UnityEngine;
 

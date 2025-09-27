@@ -1,4 +1,6 @@
 #nullable enable
+using CCEnvs.Unity.Components;
+
 namespace CCEnvs.Unity.Initables
 {
     public abstract class MonoCCInitable : CCBehaviour, IInitable

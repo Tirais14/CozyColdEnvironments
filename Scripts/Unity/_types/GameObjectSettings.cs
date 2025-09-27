@@ -5,9 +5,9 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public sealed record GameObjectSettings 
-        : 
-        IGameObjectSettings, 
+    public sealed record GameObjectSettings
+        :
+        IGameObjectSettings,
         IEquatable<GameObjectSettings>
     {
         public static GameObjectSettings Default { get; } = new();

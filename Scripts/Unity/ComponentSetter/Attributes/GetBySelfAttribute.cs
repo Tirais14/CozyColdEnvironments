@@ -6,14 +6,14 @@ namespace CCEnvs.Unity.ComponentSetter
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponent"/>. Calls in <see cref="CCBehaviour.Awake"/>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field 
-                    | 
+    [AttributeUsage(AttributeTargets.Field
+                    |
                     AttributeTargets.Property,
-        Inherited = true, 
+        Inherited = true,
         AllowMultiple = false
         )]
     public class GetBySelfAttribute : GetComponentAttribute
     {
-    
+
     }
 }

@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Reflection;
+using CCEnvs.Unity.Components;
 using System;
 using UnityEngine;
 
@@ -35,7 +36,7 @@ namespace CCEnvs.Unity.Timers
         /// <param name="creationType">Cannot be null if <see cref="UpdateType.Custom"/></param>
         public static ITimer Create(UpdateType updateType, Type? creationType = null)
         {
-            var timersGO = GetOrCreateTimersObject();
+            GameObject timersGO = GetOrCreateTimersObject();
 
             if (creationType is not null && creationType.IsNotType<ITimer>())
                 throw new ArgumentException(nameof(creationType));

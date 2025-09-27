@@ -1,10 +1,9 @@
 #nullable enable
-using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Factory;
 using CCEnvs.Reflection;
-using CCEnvs.Unity;
+using CCEnvs.Unity.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +14,7 @@ using UnityEditor;
 namespace CCEnvs.Patterns.States
 {
     /// <typeparam name="TIdle">Default state</typeparam>
-    public abstract class AStateMachine<TIdle> 
+    public abstract class AStateMachine<TIdle>
         :
         CCBehaviour,
         IStateMachine,

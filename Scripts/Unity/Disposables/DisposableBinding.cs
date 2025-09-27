@@ -1,7 +1,7 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3881

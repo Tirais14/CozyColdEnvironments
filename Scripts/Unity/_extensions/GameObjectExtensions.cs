@@ -1,4 +1,5 @@
 using CCEnvs.TypeMatching;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -35,7 +36,7 @@ namespace CCEnvs.Unity
             settings.ApplyTo(value);
         }
 
-        public static GameObject[] GetChilds(this GameObject value) 
+        public static GameObject[] GetChilds(this GameObject value)
         {
             return value.transform.GetChilds().Select(x => x.gameObject).ToArray();
         }
@@ -85,7 +86,7 @@ namespace CCEnvs.Unity
 }
 namespace CCEnvs.Unity.Special
 {
-    public static class GameObjectExtensions 
+    public static class GameObjectExtensions
     {
         /// <returns>Overrided or default <see cref="Transform"/></returns>
         /// <exception cref="System.ArgumentNullException"></exception>
@@ -94,7 +95,7 @@ namespace CCEnvs.Unity.Special
             if (value == null)
                 throw new System.ArgumentNullException(nameof(value));
 
-            if (value.GetOverridedTransform().Is<Transform>(out var result))
+            if (value.GetOverridedTransform().Is<Transform>(out Transform? result))
                 return result;
 
             return value.transform;
@@ -111,7 +112,7 @@ namespace CCEnvs.Unity.Special
 
             if (childs.Select(x => x.transform)
                       .FirstOrDefault(x => x.CompareTag(UCC.Tags.TRANSFORM_OVERRIDE))
-                .IsNot<Transform>(out var result)
+                .IsNot<Transform>(out Transform? result)
                 &&
                 throwIfNotFound
                 )
@@ -127,7 +128,7 @@ namespace CCEnvs.Unity.Special
             if (value == null)
                 throw new System.ArgumentNullException(nameof(value));
 
-            if (value.GetOverridedGameObject().Is<GameObject>(out var result))
+            if (value.GetOverridedGameObject().Is<GameObject>(out GameObject? result))
                 return result;
 
             return value;
@@ -143,7 +144,7 @@ namespace CCEnvs.Unity.Special
             GameObject[] childs = value.GetAllChilds();
 
             if (childs.FirstOrDefault(x => x.CompareTag(UCC.Tags.TRANSFORM_OVERRIDE))
-                .IsNot<GameObject>(out var result)
+                .IsNot<GameObject>(out GameObject? result)
                 &&
                 throwIfNotFound
                 )

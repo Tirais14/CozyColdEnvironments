@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.EditorSerialization
         TOutput ITransformable<TOutput>.DoTransform() => Value;
     }
     [Serializable]
-    public abstract class Serialized<TInput, TOutput> 
+    public abstract class Serialized<TInput, TOutput>
         : Serialized<TOutput>,
         ISerializationCallbackReceiver
     {

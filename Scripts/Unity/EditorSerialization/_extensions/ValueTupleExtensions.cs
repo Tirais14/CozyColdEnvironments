@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using UnityEngine;
-
 #nullable enable
 namespace CCEnvs.Unity.EditorSerialization
 {
@@ -43,7 +40,7 @@ namespace CCEnvs.Unity.EditorSerialization
                 source.Item2,
                 source.Item3,
                 source.Item4,
-                source.Item5, 
+                source.Item5,
                 source.Item6);
         }
     }

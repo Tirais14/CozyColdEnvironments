@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Tickables
         {
             CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
 
-            var susbcription = TickablesManager.RegisterTickable(this, tickerType);
+            IDisposable susbcription = TickablesManager.RegisterTickable(this, tickerType);
 
             this.AsReflected()
                 .Property<IDisposable>(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)

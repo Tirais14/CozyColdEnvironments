@@ -6,12 +6,12 @@ using UnityEngine;
 #pragma warning disable S4035
 namespace CCEnvs.Unity.GameSystems.Storages
 {
-    public class StorageItem 
+    public class StorageItem
         :
         IStorageItem,
         IEquatable<IStorageItem>
     {
-        public readonly static StorageItem Null = new();
+        public static readonly StorageItem Null = new();
 
         public string Name { get; } = "NullItem";
         public int ID { get; } = int.MinValue;

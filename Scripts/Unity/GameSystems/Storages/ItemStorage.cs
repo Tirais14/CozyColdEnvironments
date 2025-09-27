@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Storages
@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             IEnumerable<IItemSlot> slotsWithItem = slots.Where(x => x.HasItem && x.IsSameItem(item));
             int totalCount = 0;
-            foreach (var stack in slotsWithItem)
+            foreach (IItemSlot stack in slotsWithItem)
             {
                 totalCount += stack.ItemCount;
 
@@ -270,7 +270,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public bool TryGetSuitableSlot(IStorageItem item,
                                        [NotNullWhen(true)] out T? result)
         {
-            bool success = storage.TryGetSuitableSlot(item, out IItemSlot ? nonTyped);
+            bool success = storage.TryGetSuitableSlot(item, out IItemSlot? nonTyped);
 
             result = (T?)nonTyped;
 

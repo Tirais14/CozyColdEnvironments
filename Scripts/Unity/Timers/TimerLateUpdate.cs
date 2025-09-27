@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Timers
         public override TimeSpan Interval => IsUnscaledInterval
             ?
             TimeSpan.FromSeconds(Time.unscaledDeltaTime)
-            : 
+            :
             TimeSpan.FromSeconds(Time.deltaTime);
 
         private void LateUpdate() => Main();

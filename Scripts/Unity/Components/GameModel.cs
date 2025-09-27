@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.Components
 
         public static GameModel Create(GameObject gameObject)
         {
-            if (!gameObject.TryGetComponent<GameModel>(out var gameModel))
+            if (!gameObject.TryGetComponent<GameModel>(out GameModel? gameModel))
                 throw new ArgumentException($"Cannot find {nameof(GameModel)}.");
 
             return gameModel;
@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Components
             if (body == null)
                 throw new ArgumentNullException(nameof(body));
 
-            Transform bodyTransform = body.BaseCache.transform;
+            Transform bodyTransform = body.cTransform;
 
             Destroy(Body.gameObject);
             Body = body;

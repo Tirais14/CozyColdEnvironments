@@ -1,14 +1,13 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Attributes;
+using CCEnvs.Unity.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -93,7 +92,7 @@ namespace CCEnvs.Unity
         private static void GetOrCreateSelf()
         {
             if (FindAnyObjectByType<CCBehaviourStaticKernel>(FindObjectsInactive.Include)
-                .Is<CCBehaviourStaticKernel>(out var found)
+                .Is<CCBehaviourStaticKernel>(out CCBehaviourStaticKernel found)
                 )
             {
                 instance = found;

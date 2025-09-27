@@ -93,7 +93,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         public readonly void Deconstruct(out T1 item1, out T2 item2)
         {
-            item1 = this.item1; 
+            item1 = this.item1;
             item2 = this.item2;
         }
 
