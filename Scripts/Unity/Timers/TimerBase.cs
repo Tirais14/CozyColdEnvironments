@@ -1,9 +1,9 @@
 using CCEnvs.Common;
 using CCEnvs.Diagnostics;
 using CCEnvs.Returnables;
-using CCEnvs.Rx;
 using System;
 using System.Diagnostics;
+using UniRx;
 
 #nullable enable
 #pragma warning disable S2328
@@ -11,12 +11,14 @@ namespace CCEnvs.Unity.Timers
 {
     public sealed class TimerBase : IObserver, ITimer, IEquatable<TimerBase>
     {
+        private readonly Subject<TimeSpan> onTargetReached = new();
+        private readonly Subject<TimeSpan> onTick = new();
         private Stopwatch? intervalWatch;
         private bool isOnTargetReachedInvoked;
         private TimeSpan? interval;
 
-        public IObservable<TimeSpan> OnTargetReached { get; }
-        public IObservable<TimeSpan> OnTick { get; }
+        public IObservable<TimeSpan> OnTargetReached => onTargetReached.AsObservable();
+        public IObservable<TimeSpan> OnTick => onTick.AsObservable();
 
         public TimerOptions Options { get; set; }
         public TimeSpan Elapsed { get; private set; } = TimeSpan.Zero;
@@ -25,10 +27,6 @@ namespace CCEnvs.Unity.Timers
         public bool TargetReached => Target is null || Target.Value >= Elapsed;
         public bool IsEnabled { get; private set; }
 
-        public TimerBase()
-        {
-            OnTick = new Observable<TimeSpan>(Elapsed);
-        }
 
         public static implicit operator bool(TimerBase timer)
         {
@@ -124,7 +122,7 @@ namespace CCEnvs.Unity.Timers
 
             Elapsed = Elapsed.Add(Interval);
 
-            ((Observable<TimeSpan>)OnTick).Publish();
+            onTick.OnNext(Interval);
 
             if (!TargetReached && isOnTargetReachedInvoked)
                 isOnTargetReachedInvoked = false;
@@ -135,7 +133,7 @@ namespace CCEnvs.Unity.Timers
             {
                 if (OnTargetReached is not null)
                 {
-                    OnTargetReached.As<Observable<TimeSpan>>().Publish();
+                    onTargetReached.OnNext(Elapsed);
                     isOnTargetReachedInvoked = true;
                 }
 

@@ -6,7 +6,7 @@ namespace CCEnvs.Unity.UI.Storages
     public interface IItemStorageReactive 
         :
         IItemStorage, 
-        IOpenableReactive
+        IOpenableRx
     {
     }
     public interface IItemStorageReactive<T> 

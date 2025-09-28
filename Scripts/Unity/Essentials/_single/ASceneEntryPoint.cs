@@ -5,12 +5,10 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Essentials
 {
     public abstract class ASceneEntryPoint : CCBehaviourStatic
     {
-        private int frames;
-
         protected override void OnAwake()
         {
             base.OnAwake();
@@ -18,14 +16,6 @@ namespace CCEnvs.Unity
 
             SceneInitializer.InitAllObjectsAsync(FindObjectsInactive.Exclude)
                 .Forget(ex => this.PrintException(ex));
-        }
-
-        private void Update()
-        {
-            if (frames >= 10) //some frames delay
-                Destroy(gameObject);
-
-            frames++;
         }
     }
 }

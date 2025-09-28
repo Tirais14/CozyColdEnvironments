@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.EditorSerialization
         : IEditorSerialized<TOutput>,
         ITransformable<TOutput>
     {
-        public TOutput Value { [Converter] get; protected set; } = default!;
+        public virtual TOutput Value { [Converter] get; protected set; } = default!;
 
         protected Serialized()
         {

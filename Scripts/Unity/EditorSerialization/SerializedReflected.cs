@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected override Reflected ConvertToOutput(SerializedTuple<SerializedType, Reflected.Settings> input)
         {
-            return new Reflected(input.item1, input.item2);
+            return new Reflected(input.Value.Item1, input.Value.Item2);
         }
     }
 }

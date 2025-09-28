@@ -1,12 +1,12 @@
 #nullable enable
-using CCEnvs.Returnables;
 using System;
+using UniRx;
 using UnityEngine.Events;
 
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public interface IClickable : IObservable<Mock>
+    public interface IClickable : IObservable<Unit>
     {
         event UnityAction OnClick;
 

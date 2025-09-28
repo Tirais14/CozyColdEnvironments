@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         public bool IsOpened => isOpenedReactive.Value;
 
-        public IReadOnlyReactiveProperty<bool> IsOpenedReactive => isOpenedReactive;
+        public IReadOnlyReactiveProperty<bool> IsOpenedRx => isOpenedReactive;
 
         public ItemStorageReactive(IItemSlot[] slots) : base(slots)
         {
@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         public bool IsOpened => isOpenedReactive.Value;
 
-        public IReadOnlyReactiveProperty<bool> IsOpenedReactive => isOpenedReactive;
+        public IReadOnlyReactiveProperty<bool> IsOpenedRx => isOpenedReactive;
 
         public ItemStorageReactive(T[] slots) : base(slots)
         {

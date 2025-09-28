@@ -21,18 +21,18 @@ namespace CCEnvs.Unity.EditorSerialization
                          .ToArray();
         }
 
-        protected override Dictionary<TKey, TValue> ConvertToOutput(SerializedTuple<TKey, TValue>[] input)
+        protected override Dictionary<TKey, TValue> ConvertToOutput(
+            SerializedTuple<TKey, TValue>[] input)
         {
             return new Dictionary<TKey, TValue>(
-                input.Select(x => new KeyValuePair<TKey, TValue>(x.item1, x.item2))
-                    .AsEnumerable());
+                input.Select(x => x.Value.ToKeyValuePair()).AsEnumerable());
         }
 
         protected override void OnBeforeSerialize()
         {
             try
             {
-                input = input?.DistinctBy(pair => pair.item1).ToArray() //by key
+                input = input?.DistinctBy(pair => pair.Value.Item1).ToArray() //by key
                         ??
                         Array.Empty<SerializedTuple<TKey, TValue>>();
             }

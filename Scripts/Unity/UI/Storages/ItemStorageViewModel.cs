@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         where T : IItemStorageReactive
     {
-        public IReadOnlyReactiveProperty<bool> IsOpenedView => model.IsOpenedReactive;
+        public IReadOnlyReactiveProperty<bool> IsOpenedView => model.IsOpenedRx;
 
         public ItemStorageViewModel(T model) : base(model)
         {

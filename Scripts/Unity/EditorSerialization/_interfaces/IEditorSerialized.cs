@@ -3,12 +3,12 @@ namespace CCEnvs.Unity.EditorSerialization
 {
     public interface IEditorSerialized
     {
-        object Output { get; }
+        object Value { get; }
     }
     public interface IEditorSerialized<out T> : IEditorSerialized
     {
         new T Value { get; }
 
-        object IEditorSerialized.Output => Value!;
+        object IEditorSerialized.Value => Value!;
     }
 }

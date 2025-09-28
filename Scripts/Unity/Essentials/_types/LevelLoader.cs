@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 #nullable enable
 #pragma warning disable S1117
-namespace CCEnvs.Unity.Levels
+namespace CCEnvs.Unity.Essentials
 {
     /// <summary>
     /// Have similar methods as <see cref="SceneManager"/>, but awaits tasks in <see cref="TaskRegistries"/> before the new scene loaded and unloaded

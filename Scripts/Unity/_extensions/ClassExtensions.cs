@@ -6,7 +6,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity.Extensions
+namespace CCEnvs.Unity
 {
     public static class ClassExtensions
     {
@@ -24,6 +24,7 @@ namespace CCEnvs.Unity.Extensions
             return obj;
         }
 
+        [Obsolete("Waiting refactoring")]
         public static T ThrowIfNull<T, TException>(this T? obj, TException exception)
          where T : class
          where TException : Exception
@@ -34,9 +35,11 @@ namespace CCEnvs.Unity.Extensions
             return obj;
         }
 
+        [Obsolete("Waiting refactoring")]
         public static T ThrowIfNull<T>(this T? obj, string message)
             where T : class => obj.ThrowIfNull(new NullReferenceException(message));
 
+        [Obsolete("Waiting refactoring")]
         public static T ThrowIfNull<T>(this T? obj)
             where T : class => obj.ThrowIfNull(new NullReferenceException());
 

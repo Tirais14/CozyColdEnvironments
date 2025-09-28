@@ -3,6 +3,7 @@
     "rootNamespace": "CCEnvs.Unity.UI",
     "references": [
         "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:560b04d1a97f54a4e82edc0cbbb69285",
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
         "GUID:5fc19e916dbec2e4eb8fe60a0c56b165",
@@ -10,7 +11,6 @@
         "GUID:85b85b04efd76f34b82b37eea16f951d",
         "GUID:86090fba37b91534998945c10134b783",
         "GUID:70c5325f05596aa46a0416b206c7ad6e",
-        "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
         "GUID:593a5b492d29ac6448b1ebf7f035ef33",
         "GUID:5c01796d064528144a599661eaab93a6"
