@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [Serializable]
     public struct AssetLabels : IEquatable<AssetLabels>, ISerializationCallbackReceiver

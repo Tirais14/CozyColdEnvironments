@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.Essentials
     public record LevelLoadInfo
     {
         [field: SerializeField]
-        public StringOrNumber SceneKey { get; private set; }
+        public StringOrInteger SceneKey { get; private set; }
 
         [field: SerializeField]
         public LoadSceneMode LoadMode { get; private set; } = LoadSceneMode.Single;

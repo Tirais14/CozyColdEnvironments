@@ -1,9 +1,8 @@
-using CCEnvs.Unity.AddrsAssets.Databases;
 using System;
 using System.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
     public readonly struct AssetDatabaseKey : IEquatable<AssetDatabaseKey>

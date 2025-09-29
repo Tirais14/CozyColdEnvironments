@@ -2,6 +2,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System.Linq;
+using UnityEngine;
 
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity.Components
@@ -31,7 +32,8 @@ namespace CCEnvs.Unity.Components
                                   UnityEngine.FindObjectsSortMode.None)
                 .Any(x => x != this))
             {
-                CCDebug.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.", this);
+                this.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.");
+                this.PrintLog(StackTraceUtility.ExtractStackTrace());
                 Destroy(this);
                 return;
             }

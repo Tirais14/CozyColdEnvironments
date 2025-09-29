@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String {ToString()}")]
     public readonly struct AssetKey : IEquatable<AssetKey>

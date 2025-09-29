@@ -15,6 +15,8 @@ namespace CCEnvs.Unity.UI.Elements
         private readonly Subject<Window> onOpen = new();
         private readonly Subject<Window> onClose = new();
 
+        protected virtual bool OpenOnStart => false;
+
         public bool IsOpened { get; private set; }
 
         public IObservable<IWindow> OnOpen => onOpen.AsObservable();
@@ -24,7 +26,10 @@ namespace CCEnvs.Unity.UI.Elements
         {
             base.OnStart();
 
-            Close();
+            if (OpenOnStart)
+                Open();
+            else
+                Close();
         }
 
         public virtual bool CanOpen(out string message)
@@ -49,9 +54,9 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void Open()
         {
-            if (!CanOpen(out))
+            if (!CanOpen(out string message))
             {
-                this.PrintWarning("Cannot be opened.");
+                this.PrintWarning($"Cannot be opened. {message}");
                 return;
             }
 

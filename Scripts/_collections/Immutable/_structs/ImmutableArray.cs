@@ -16,15 +16,17 @@ namespace CCEnvs.Collections.Immutable
         public static ImmutableArray<T> Empty { get; } = new(Array.Empty<T>(), empty: true);
 
         private readonly static NotSupportedException readonlyCollectionException = new("Collection is readonly.");
-        private readonly T[] inner;
+        private readonly T[]? inner;
+
+        private T[] Inner => inner ?? Array.Empty<T>();
 
         public T this[int index] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => inner[index];
+            get => Inner[index];
         }
         public int Length {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => inner.Length;
+            get => Inner.Length;
         }
 
         int ICollection<T>.Count => Length;
@@ -33,7 +35,7 @@ namespace CCEnvs.Collections.Immutable
 
         T IList<T>.this[int index] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => inner[index];
+            get => Inner[index];
             set => throw readonlyCollectionException; }
 
         private ImmutableArray(T[] array, bool empty)
@@ -61,24 +63,24 @@ namespace CCEnvs.Collections.Immutable
 
         [Converter]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T[] ToArray() => inner.ToArray();
+        public T[] ToArray() => Inner.ToArray();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int IndexOf(T item) => Array.IndexOf(inner, item);
+        public int IndexOf(T item) => Array.IndexOf(Inner, item);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(T item) => Array.IndexOf(inner, item) > -1;
+        public bool Contains(T item) => Array.IndexOf(Inner, item) > -1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(T[] array, int arrayIndex)
         {
-            inner.CopyTo(array, arrayIndex);
+            Inner.CopyTo(array, arrayIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ImmutableArray<T> other)
         {
-            return inner.Equals(other.inner);
+            return Inner.Equals(other.Inner);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,13 +92,13 @@ namespace CCEnvs.Collections.Immutable
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
-            return HashCode.Combine(inner);
+            return HashCode.Combine(Inner);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator<T> GetEnumerator()
         {
-            return inner?.GetEnumeratorT() ?? Enumerable.Empty<T>().GetEnumerator();
+            return Inner?.GetEnumeratorT() ?? Enumerable.Empty<T>().GetEnumerator();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

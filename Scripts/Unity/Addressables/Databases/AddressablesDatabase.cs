@@ -1,20 +1,19 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.AddrsAssets.Databases;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public class AddressablesDatabase<TAsset> : IAddressablesDatabase<TAsset>
         where TAsset : Object
@@ -27,11 +26,11 @@ namespace CCEnvs.Unity.AddrsAssets
         public event Action<ILoadable> OnStartLoading = null!;
         public event Action<ILoadable> OnLoaded = null!;
 
-        public Type AssetType { get; } = typeof(TAsset);
         public IEnumerable<AssetKey> Keys => db.Keys;
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
         public bool IsLoaded => Count > 0;
+        public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
         public Func<Object, object?>? IDFactory { get; set; }
         public TAsset this[AssetKey key] => db[key];
@@ -102,9 +101,9 @@ namespace CCEnvs.Unity.AddrsAssets
             {
                 OnStartLoading(this);
 
-                var handle = await AddressableLoader.LoadAssetsByTagsAsync<TAsset>(
-                    callback: AddAsset,
-                    assetLabels.ToArray());
+                var handle = await AddressableLoader.LoadAssetsByLabelsAsync<TAsset>(
+                    assetLabels.ToArray(),
+                    callback: AddAsset);
 
                 loadHandles.Add(handle);
             }

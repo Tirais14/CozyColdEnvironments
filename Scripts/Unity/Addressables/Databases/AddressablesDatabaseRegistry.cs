@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.AddrsAssets.Databases;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Timers;
 using Cysharp.Threading.Tasks;
@@ -9,15 +8,14 @@ using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using static CCEnvs.Unity.AddrsAssets.AddressablesDatabaseRegistry;
+using static CCEnvs.Unity.AddrsAssets.Databases.AddressablesDatabaseRegistry;
 using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S3881
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     internal static class AddressablesDatabaseRegistry
     {
