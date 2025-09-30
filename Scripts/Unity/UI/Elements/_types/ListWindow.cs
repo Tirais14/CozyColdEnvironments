@@ -1,13 +1,14 @@
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Extensions;
-using LinqAF;
+using ZLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
@@ -29,8 +30,12 @@ namespace CCEnvs.Unity.UI.Elements
         [field: SerializeField]
         public UnityEvent<T> OnRemove { get; } = new();
 
-        public IEnumerable<GameObject> GameObjects => gameObjects.AsEnumerable();
-        public IEnumerable<Component> ItemsAsComponents => inner.Select(x => x.As<Component>()).AsEnumerable();
+        public IEnumerable<GameObject> GameObjects {
+            get => gameObjects.AsEnumerable();
+        }
+        public IEnumerable<Component> ItemsAsComponents {
+            get => inner.AsValueEnumerable().Select(x => x.As<Component>()).AsEnumerable();
+        }
         public int Count => inner.Count;
         public T this[int index] {
             get => inner[index];

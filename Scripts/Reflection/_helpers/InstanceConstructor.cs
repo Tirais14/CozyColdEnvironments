@@ -22,7 +22,7 @@ namespace CCEnvs.Reflection
 
             results = TypeSearch.FindTypesInAppDomain(new TypeFinderParameters
             {
-                DefinedAttributeTypes = CC.Create.Array(typeof(ConstructorOfTypeAttribute))
+                DefinedAttributeTypes = Range.From(typeof(ConstructorOfTypeAttribute))
             });
 
             constructorTypes.Add(constructableType, results);

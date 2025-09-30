@@ -1,8 +1,9 @@
 using CCEnvs.Diagnostics;
-using LinqAF;
+using ZLinq;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
+using CCEnvs.Linq;
 
 #nullable enable
 namespace CCEnvs.Unity.EditorSerialization
@@ -17,22 +18,23 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected override SerializedTuple<TKey, TValue>[] ConvertToInput(Dictionary<TKey, TValue> output)
         {
-            return Value.Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
-                         .ToArray();
+            return Value.AsValueEnumerable()
+                        .Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
+                        .ToArray();
         }
 
         protected override Dictionary<TKey, TValue> ConvertToOutput(
             SerializedTuple<TKey, TValue>[] input)
         {
             return new Dictionary<TKey, TValue>(
-                input.Select(x => x.Value.ToKeyValuePair()).AsEnumerable());
+                input.AsValueEnumerable().Select(x => x.Value.ToKeyValuePair()).AsEnumerable());
         }
 
         protected override void OnBeforeSerialize()
         {
             try
             {
-                input = input?.DistinctBy(pair => pair.Value.Item1).ToArray() //by key
+                input = input.AsValueEnumerable().DistinctBy(pair => pair.Value.Item1).ToArray() //by key
                         ??
                         Array.Empty<SerializedTuple<TKey, TValue>>();
             }

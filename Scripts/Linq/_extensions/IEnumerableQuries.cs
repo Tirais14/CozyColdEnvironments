@@ -4,16 +4,30 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+#if Z_LINQ
+using ZLinq;
+#endif
 
 #nullable enable
 namespace CCEnvs.Linq
 {
     public static class IEnumerableQuries
     {
+#if Z_LINQ
+        public static IEnumerable<T> AsEnumerable<TEnumerator, T>(
+            this ValueEnumerable<TEnumerator, T> source)
+            where TEnumerator : struct, IValueEnumerator<T>
+        {
+            CC.Validate.ArgumentNull(source, nameof(source));
+
+            return new ZLinqEnumerable<TEnumerator, T>(source.Enumerator);
+        }
+#endif
+
         public static IEnumerable<KeyValuePair<TKey, TValue>> AsKeyValuePairs<TKey, TValue>(
             this IEnumerable<(TKey, TValue)> source)
         {
-            return source.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2));
+            return source.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2)).Where(x => true);
         }
 
         public static IEnumerable<KeyValuePair<TKey, T>> SelectValue<TKey, TValue, T>(

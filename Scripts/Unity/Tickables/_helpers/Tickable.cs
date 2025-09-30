@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using LinqAF;
+using ZLinq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -57,7 +57,7 @@ namespace CCEnvs.Unity.Tickables
         {
             CC.Validate.ArgumentNull(tickable, nameof(tickable));
 
-            return (from baseType in TypeHelper.CollectBaseTypes(tickable.GetType())
+            return (from baseType in TypeHelper.CollectBaseTypes(tickable.GetType()).AsValueEnumerable()
                     select baseType.GetInterfaces() into ifaces
                     from iface in ifaces
                     where iface.IsType<ITickableBase>()

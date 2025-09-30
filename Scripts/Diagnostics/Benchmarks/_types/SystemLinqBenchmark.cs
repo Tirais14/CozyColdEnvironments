@@ -8,7 +8,7 @@ namespace CCEnvs.Diagnostics.Benchmarks
     {
         public SystemLinqBenchmark(IEnumerable<T> collection) : base(collection)
         {
-            TestName = nameof(System.Linq);
+            TestName = new OperatorChain(nameof(System), nameof(System.Linq));
 
             Action = () =>
             {

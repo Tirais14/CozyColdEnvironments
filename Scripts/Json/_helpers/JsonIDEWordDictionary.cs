@@ -178,7 +178,7 @@ namespace CCEnvs.Json
             if (upper.Length > 1)
             {
                 upper = upper.Select(x => char.ToLower(x)).ToArray();
-                upper = upper.Concat(CC.Create.Array(char.ToUpper(str[upper.Length]))).ToArray();
+                upper = upper.Concat(Range.From(char.ToUpper(str[upper.Length]))).ToArray();
                 str = str[(upper.Length + 1)..];
 
                 for (int i = (upper.Length) - (1); i >= 0; i--)

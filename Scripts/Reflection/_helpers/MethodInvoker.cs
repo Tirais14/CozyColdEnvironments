@@ -26,7 +26,7 @@ namespace CCEnvs.Reflection
                 bindingFlags,
                 binder: null,
                 args.GetTypes(),
-                CC.Create.Array(args.GetParameterModifiers()))
+                Range.From(args.GetParameterModifiers()))
                 ??
                 throw new MethodNotFoundException(
                     target.Type,

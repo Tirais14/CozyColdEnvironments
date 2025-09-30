@@ -19,9 +19,12 @@
         "SuperLinq.Async.dll",
         "QuikGraph.dll",
         "QuikGraph.Graphviz.dll",
-        "Ensure.That.dll",
         "Humanizer.dll",
-        "StringExtensions.dll"
+        "StringExtensions.dll",
+        "ZLinq.dll",
+        "ZLinq.FileSystem.dll",
+        "ZLinq.Json.dll",
+        "ZString.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

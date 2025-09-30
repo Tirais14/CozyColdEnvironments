@@ -3,7 +3,7 @@ using CCEnvs.Disposables;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CCEnvs.Utils;
-using LinqAF;
+using ZLinq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -131,7 +131,8 @@ namespace CCEnvs.Unity.Tickables
             CCDebug.PrintLog("Registering tickers started.", self);
             var stopwatch = new Stopwatch();
 
-            WhereEnumerable<ITicker, IdentityEnumerable<ITicker, ITicker[], ArrayBridger<ITicker>, ArrayEnumerator<ITicker>>, ArrayEnumerator<ITicker>> tickersFiltered = SceneObjectSearch.FindObjectsByType<ITicker>(FindObjectsInactive.Include)
+            var tickersFiltered = SceneObjectSearch.FindObjectsByType<ITicker>(FindObjectsInactive.Include)
+                .AsValueEnumerable()
                 .Where(ticker => !IsTickerRegistered(ticker));
 
             int registeredCount = 0;
@@ -150,8 +151,8 @@ namespace CCEnvs.Unity.Tickables
             CCDebug.PrintLog("Registering tickables started.", self);
             var stopwatch = new Stopwatch();
 
-            SelectWhereEnumerable<(ITickableBase tickable, bool state, Type tickerType), ITickableBase, IdentityEnumerable<ITickableBase, ITickableBase[], ArrayBridger<ITickableBase>, ArrayEnumerator<ITickableBase>>, ArrayEnumerator<ITickableBase>, SingleProjection<(ITickableBase tickable, bool state, Type tickerType), ITickableBase>, SinglePredicate<(ITickableBase tickable, bool state, Type tickerType)>> toRegister =
-               from tickable in SceneObjectSearch.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include)
+            var toRegister =
+               from tickable in SceneObjectSearch.FindObjectsByType<ITickableBase>(FindObjectsInactive.Include).AsValueEnumerable()
                select (tickable, state: Tickable.TryGetTickerType(tickable, out Type? tickerType), tickerType) into item
                where item.state && !IsTickableRegistered(item.tickable)
                select item;

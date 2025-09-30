@@ -105,7 +105,7 @@ namespace CCEnvs.Json
             if (converter is null)
                 throw new ArgumentNullException(nameof(converter));
 
-            return RemoveByType(converters, converter).Concat(CC.Create.Array(converter))
+            return RemoveByType(converters, converter).Concat(Range.From(converter))
                                                       .ToArray();
         }
     }

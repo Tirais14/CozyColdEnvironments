@@ -18,10 +18,13 @@
     "precompiledReferences": [
         "QuikGraph.dll",
         "QuikGraph.Graphviz.dll",
-        "LinqAF.dll",
         "SuperLinq.dll",
         "System.Collections.Immutable.dll",
-        "System.Reactive.dll"
+        "System.Reactive.dll",
+        "ZLinq.dll",
+        "ZLinq.FileSystem.dll",
+        "ZLinq.Json.dll",
+        "ZString.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

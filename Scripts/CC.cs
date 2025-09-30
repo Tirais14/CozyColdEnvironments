@@ -30,11 +30,6 @@ namespace CCEnvs
 
         public static Result DoNothing() => new();
 
-        public static class Create 
-        {
-            public static T[] Array<T>(params T[] values) => values;
-        }
-
 #pragma warning disable S112
         public static class Throw
         {

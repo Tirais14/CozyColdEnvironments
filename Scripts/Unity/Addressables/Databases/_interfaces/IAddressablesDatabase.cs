@@ -1,8 +1,9 @@
 using Cysharp.Threading.Tasks;
-using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -74,7 +75,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             CC.Validate.ArgumentNull(assets, nameof(assets));
 
-            AddAssets(assets.Select(x => x.As<TAsset>()).AsEnumerable());
+            AddAssets(assets.Select(x => x.As<TAsset>()));
         }
 
         Object? IAddressablesDatabase.FindAsset(string assetName,

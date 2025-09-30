@@ -71,7 +71,7 @@ namespace CCEnvs.Conversations
                              select method)
                              .FirstOrDefault();
 
-                    result = found.Invoke(null!, CC.Create.Array(target));
+                    result = found.Invoke(null!, Range.From(target));
                 }
                 else
                     result = found.Invoke(target, CC.EmptyArguments);
@@ -85,7 +85,7 @@ namespace CCEnvs.Conversations
                                        toType,
                                        out MethodInfo? conversationOperator))
                 {
-                    result = conversationOperator.Invoke(null, CC.Create.Array(target));
+                    result = conversationOperator.Invoke(null, Range.From(target));
 
                     return result is not null;
                 }

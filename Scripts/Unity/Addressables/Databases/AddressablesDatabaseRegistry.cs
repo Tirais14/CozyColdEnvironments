@@ -4,7 +4,7 @@ using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Timers;
 using Cysharp.Threading.Tasks;
-using LinqAF;
+using ZLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -122,7 +122,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             CC.Validate.ArgumentNull(assetType, nameof(assetType));
 
-            var result = Values.FirstOrDefault(db => db.AssetType == assetType);
+            var result = Values.AsValueEnumerable().FirstOrDefault(db => db.AssetType == assetType);
 
             if (throwIfNotFound && result is null)
                 throw new DatabaseNotFoundException(assetType);

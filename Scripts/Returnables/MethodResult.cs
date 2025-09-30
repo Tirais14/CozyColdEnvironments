@@ -106,7 +106,7 @@ namespace CCEnvs.Returnables
         public MethodResult(bool isValidResults, T0 result0)
             :
             base(isValidResults,
-                 CC.Create.Array(new TypeValuePair(typeof(T0), result0)))
+                 Range.From(new TypeValuePair(typeof(T0), result0)))
         {
             Result0 = result0;
         }
@@ -135,8 +135,8 @@ namespace CCEnvs.Returnables
         public MethodResult(bool isValidResults, T0 result0, T1 result1)
             :
             base(isValidResults,
-                 CC.Create.Array(new TypeValuePair(typeof(T0), result0),
-                                 new TypeValuePair(typeof(T1), result1)))
+                 Range.From(new TypeValuePair(typeof(T0), result0),
+                            new TypeValuePair(typeof(T1), result1)))
         {
             Result1 = result1;
         }
@@ -174,9 +174,9 @@ namespace CCEnvs.Returnables
                             T2 result2)
             :
             base(isValidResults,
-                 CC.Create.Array(new TypeValuePair(typeof(T0), result0),
-                                 new TypeValuePair(typeof(T1), result1),
-                                 new TypeValuePair(typeof(T2), result2)))
+                 Range.From(new TypeValuePair(typeof(T0), result0),
+                            new TypeValuePair(typeof(T1), result1),
+                            new TypeValuePair(typeof(T2), result2)))
         {
             Result2 = result2;
         }

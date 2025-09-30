@@ -27,7 +27,7 @@ namespace CCEnvs.Files.Editor
         }
 
         protected BaseSharpFileCreator(T value, bool isEnum, params string[] namespaceParts) :
-            this(CC.Create.Array(value), isEnum, namespaceParts)
+            this(Range.From(value), isEnum, namespaceParts)
         {
         }
 

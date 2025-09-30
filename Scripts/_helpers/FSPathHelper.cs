@@ -131,9 +131,9 @@ namespace CCEnvs.Files
         {
 
 
-            string[] parts = CC.Create.Array(path)
-                                      .Concat(pathParts)
-                                      .ToArray();
+            string[] parts = Range.From(path)
+                                  .Concat(pathParts)
+                                  .ToArray();
 
             return Combine(style, parts);
         }

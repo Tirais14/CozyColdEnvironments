@@ -3,12 +3,11 @@ using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
-using LinqAF;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -224,7 +223,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             CC.Validate.ArgumentNull(dbConverter, nameof(dbConverter));
             CC.Validate.ArgumentNull(dbItemConverter, nameof(dbItemConverter));
 
-            var converesationTasks = db.Values.Select(x => dbItemConverter(x)).ToArray();
+            var converesationTasks = db.Values.AsValueEnumerable()
+                                              .Select(x => dbItemConverter(x))
+                                              .ToArray();
+
             var newDb = new AddressablesDatabase<TNew>();
             var converted = await converesationTasks.ToUniTaskAsyncEnumerable()
                                                     .SelectAwait(async task => await task)
@@ -282,7 +284,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         private async UniTask TrimExcessOnLoaded()
         {
-            await UniTask.WaitUntil(() => loadHandles.All(handle => handle.IsDone));
+            await UniTask.WaitUntil(() => loadHandles.AsValueEnumerable().All(handle => handle.IsDone));
 
             db.TrimExcess();
         }

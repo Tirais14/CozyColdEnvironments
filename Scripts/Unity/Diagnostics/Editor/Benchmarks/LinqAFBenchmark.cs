@@ -2,6 +2,7 @@
 
 using CCEnvs.Diagnostics.Benchmarks;
 using LinqAF;
+using System;
 using System.Collections.Generic;
 
 namespace CCEnvs.Unity.Diagnostics.EditorC.Benchmarks
