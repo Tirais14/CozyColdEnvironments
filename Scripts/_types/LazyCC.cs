@@ -3,6 +3,10 @@ using System.Threading;
 
 namespace CCEnvs
 {
+    /// <summary>
+    /// Same as <see cref="System.Lazy{T}"/>, but implements implicit conversation operator
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class LazyCC<T> : System.Lazy<T>
     {
         public LazyCC()

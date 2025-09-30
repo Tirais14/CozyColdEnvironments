@@ -213,8 +213,7 @@ namespace CCEnvs
                 foreach (var createdProp in createdProps)
                 {
                     if (props.Find(x => x.Name.Equals(createdProp.Name))
-                        is PropertyInfo foundProp
-                        )
+                        is PropertyInfo foundProp)
                         createdProp.SetValue(created, foundProp.GetValue(data));
                 }
             }

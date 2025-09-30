@@ -1,9 +1,13 @@
 #nullable enable
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using SuperLinq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace CCEnvs.Reflection
 {
@@ -13,7 +17,7 @@ namespace CCEnvs.Reflection
         {
             CC.Validate.ArgumentNull(parameters, nameof(parameters));
 
-            return FindTypesInternal(parameters).ToArray();
+            return FindTypesInternal(parameters);
         }
 
         /// <exception cref="CannotResolvedException"></exception>
@@ -26,7 +30,7 @@ namespace CCEnvs.Reflection
                                           nameof(parameters),
                                           nameof(parameters.TypeName));
 
-            Type[] foundTypes = FindTypesInternal(parameters).ToArray();
+            Type[] foundTypes = FindTypesInternal(parameters);
 
             if (foundTypes.IsEmpty())
             {
@@ -85,43 +89,52 @@ namespace CCEnvs.Reflection
             return result != null;
         }
 
-        public static Type FindType(Assembly assembly,
-                                    TypeFinderParameters parameters,
-                                    bool throwOnError)
+        private static Type[] FindTypesInternal(TypeFinderParameters parameters)
         {
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            Type[] foundTypes = FindTypesInternal(parameters).ToArray();
-
-            if (foundTypes.IsEmpty())
+            bool hasAssemblyNameFilter = parameters.HasAssemblyName;
+            var allTypes = new ConcurrentBag<IEnumerable<Type>>();
+            Parallel.ForEach(assemblies, (assembly) =>
             {
-                if (throwOnError)
-                    throw new TypeNotFoundException(parameters);
-                else
-                    return null!;
-            }
+                if (hasAssemblyNameFilter)
+                {
+                    var assemblyName = assembly.GetName();
 
-            if (foundTypes.Length > 1 && throwOnError)
-                throw new CannotResolvedException(nameof(Type));
+                    if (assemblyName.Name.IsNullOrEmpty()
+                        ||
+                        !assembly.GetName().Name.ContainsOrdinal(parameters.AssemblyName, parameters.IgnoreCase)
+                        )
+                        return;
+                }
 
-            return foundTypes[0];
-        }
+                try
+                {
+                    allTypes.Add(assembly.GetTypes());
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    allTypes.Add(ex.Types.Where(type => type is not null));
+                    typeof(TypeSearch).PrintException(ex);
+                }
+            });
 
-        private static IEnumerable<Type> FindTypesInternal(TypeFinderParameters parameters)
-        {
-            return from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                   where !parameters.HasAssemblyName
-                   ||
-                   assembly.GetName().Name.ContainsOrdinal(parameters.AssemblyName, parameters.IgnoreCase)
-                   select assembly.GetTypes() into types
-                   from type in types
-                   where type is not null
-                   where !parameters.HasNamespace
-                   || 
-                   (type.Namespace ?? string.Empty).ContainsOrdinal(parameters.Namespace, parameters.IgnoreCase)
-                   where !parameters.HasTypeName
-                   || 
-                   parameters.TypeName.ContainsOrdinal(type.GetName(), parameters.IgnoreCase)
-                   select type;
+            bool hasNamespaceFilter = parameters.HasNamespace;
+            bool hasTypeNameFilter = parameters.HasTypeName;
+
+            IEnumerable<Type> filteredTypes = allTypes.SelectMany(x => x);
+
+            if (hasNamespaceFilter)
+                filteredTypes = filteredTypes.Where(
+                    type => type.Namespace is not null
+                    && 
+                    type.Namespace.ContainsOrdinal(parameters.Namespace, parameters.IgnoreCase));
+
+            if (hasTypeNameFilter)
+                filteredTypes = filteredTypes.Where(
+                    type => type.GetName().ContainsOrdinal(parameters.TypeName, parameters.IgnoreCase));
+
+            return filteredTypes.ToArray();
         }
     }
 }

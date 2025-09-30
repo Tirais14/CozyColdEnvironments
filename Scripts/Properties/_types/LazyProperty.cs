@@ -1,9 +1,12 @@
 #nullable enable
 using System;
-using System.Linq;
 
 namespace CCEnvs.Properties
 {
+    /// <summary>
+    /// Have similar functionality as <see cref="Lazy{T}"/>, but also have ability to override default value and recreate main value if it's default.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class LazyProperty<T> : ILazyProperty<T>
     {
         private readonly T defaultValue = default!;
@@ -30,7 +33,7 @@ namespace CCEnvs.Properties
         }
         public bool RecreateValueIfDefault { get; }
         public bool ValueCreated { get; private set; }
-        public bool HasValue => _value.IsNotDefault(Range.From(defaultValue).Cast<object>().ToArray());
+        public bool HasValue => _value.IsNotDefault(Range.From((object)defaultValue!));
 
         public LazyProperty(T value)
         {

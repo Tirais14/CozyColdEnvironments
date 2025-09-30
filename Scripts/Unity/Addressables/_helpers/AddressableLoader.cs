@@ -1,9 +1,10 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
-using LinqAF;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
@@ -33,21 +34,33 @@ namespace CCEnvs.Unity.AddrsAssets
 
             bool hasTypeFilter = assetType is not null;
 
-            IEnumerable<IResourceLocation> locationsFilterd = FilterByType();
             ResolvePriorities();
-            locationsFilterd = Distinct();
 
-            bool hasPriorities = loadPriorities.IsNotNull() && loadPriorities.IsNotEmpty();
+            int count = handle.Result.Count;
+            var locations = new List<IResourceLocation>();
+            IResourceLocation location;
+            for (int i = 0; i < count; i++)
+            {
+                location = handle.Result[i];
 
-            locationsFilterd = OrderByPriorities();
+                if (hasTypeFilter
+                    && 
+                    location.ResourceType.IsNotType(assetType!)
+                    )
+                    continue;
+
+                locations.Add(location);
+            }
+
+            locations.Sort((x, y) => loadPriorities![x.ResourceType].CompareTo(loadPriorities[y.ResourceType]));
 
             return Addressables.ResourceManager.CreateCompletedOperation(
-                (IList<IResourceLocation>)locationsFilterd.ToList(),
+                locations.As<IList<IResourceLocation>>(),
                 string.Empty);
 
             void ResolvePriorities()
             {
-                Type[] resourceTypes = AddressablesHelper.GetResourceTypes(locationsFilterd);
+                Type[] resourceTypes = AddressablesHelper.GetResourceTypes(handle.Result);
                 var priorities = AddressablesHelper.GetLoadPriorites(resourceTypes);
 
                 if (loadPriorities.IsNullOrEmpty())
@@ -72,46 +85,6 @@ namespace CCEnvs.Unity.AddrsAssets
 
                 failed = default;
                 return true;
-            }
-
-            IEnumerable<IResourceLocation> FilterByType()
-            {
-                if (hasTypeFilter)
-                {
-                    return handle.Result.Where(
-                        location => location.ResourceType.IsType(assetType))
-                        .AsEnumerable();
-                }
-
-                return handle.Result;
-            }
-
-            IEnumerable<IResourceLocation> OrderByPriorities()
-            {
-                if (hasPriorities)
-                {
-                    return (from location in locationsFilterd
-                            select (location, priority: loadPriorities!.ContainsKey(location.ResourceType)
-                                                        ?
-                                                        loadPriorities[location.ResourceType]
-                                                        :
-                                                        0) into prioritized
-                            orderby prioritized.priority
-                            select prioritized.location)
-                            .AsEnumerable();
-
-                }
-
-                return locationsFilterd;
-            }
-
-            IEnumerable<IResourceLocation> Distinct()
-            {
-                return (from location in locationsFilterd
-                        group location by location.PrimaryKey into g
-                        select g.First() into location
-                        select location)
-                        .AsEnumerable();
             }
         }
 

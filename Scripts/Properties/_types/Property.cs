@@ -1,6 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
-
 namespace CCEnvs.Properties
 {
     public class Property<T> : IProperty<T>
