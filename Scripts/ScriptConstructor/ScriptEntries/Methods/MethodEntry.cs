@@ -1,7 +1,7 @@
 using System;
 using CCEnvs.Attributes.Metadata;
 using CCEnvs.Reflection;
-using static CCEnvs.Files.ScriptUtils.Syntax;
+using static CCEnvs.Syntax;
 
 #nullable enable
 

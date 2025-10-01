@@ -1,5 +1,5 @@
 #nullable enable
-using static CCEnvs.Files.ScriptUtils.Syntax;
+using static CCEnvs.Syntax;
 
 namespace CCEnvs.Files.ScriptUtils
 {

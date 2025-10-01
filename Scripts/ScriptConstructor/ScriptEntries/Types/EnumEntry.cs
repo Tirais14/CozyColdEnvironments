@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using CCEnvs.Attributes.Metadata;
-using static CCEnvs.Files.ScriptUtils.Syntax;
+using static CCEnvs.Syntax;
 
 namespace CCEnvs.Files.ScriptUtils
 {

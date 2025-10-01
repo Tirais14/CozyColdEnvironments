@@ -5,7 +5,7 @@ using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static CCEnvs.Files.ScriptUtils.Syntax;
+using static CCEnvs.Syntax;
 
 #nullable enable
 namespace CCEnvs.Files.ScriptUtils

@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 using CCEnvs.Reflection;
-using static CCEnvs.Files.ScriptUtils.Syntax;
+using static CCEnvs.Syntax;
 
 namespace CCEnvs.Files.ScriptUtils
 {

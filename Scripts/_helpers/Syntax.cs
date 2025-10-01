@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+#nullable enable
 using CCEnvs.Attributes.Metadata;
 using CCEnvs.Extensions;
+using Cysharp.Text;
+using System;
 
-#nullable enable
-
-namespace CCEnvs.Files.ScriptUtils
+namespace CCEnvs
 {
     public static class Syntax
     {
@@ -69,6 +66,15 @@ namespace CCEnvs.Files.ScriptUtils
         public static string ConvertToConstFieldName(string str)
         {
             return str.InsertWhitespacesByCase().Replace(' ', '_').ToUpper();
+        }
+
+        public static string Chain(params string[] values)
+        {
+            var sb = ZString.CreateStringBuilder();
+
+            sb.AppendJoin('.', values);
+
+            return sb.ToString();
         }
     }
 }

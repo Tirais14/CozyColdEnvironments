@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static CCEnvs.Unity.AddrsAssets.Databases.AddressablesDatabaseRegistry;
 using Object = UnityEngine.Object;
+using System.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3881
@@ -37,10 +38,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
-        private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
         protected Action<ILoadable> onStartLoading;
         protected Action<ILoadable> onLoaded;
-        private TimerUpdate timer;
+
+        private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
+        private Stopwatch? stopwatch;
         private AddressablesDatabaseRegistryReflected thisReflected = null!;
         private bool disposedValue;
 
@@ -65,8 +67,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             base.OnAwake();
             thisReflected = new AddressablesDatabaseRegistryReflected(this);
-            timer = TimerUpdate.Create();
-            timer.IsUnscaledInterval = true;
             try
             {
                 var task = RegisterDatabases();
@@ -112,10 +112,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return GetDatabase(key).As<T>();
         }
         public T GetDatabase<T>(Type dbAssetType,
-                                object? uniqueIndentifier = null)
+                                object? dbID = null)
             where T : IAddressablesDatabase
         {
-            return GetDatabase(new AssetDatabaseKey(dbAssetType, uniqueIndentifier)).As<T>();
+            return GetDatabase(new AssetDatabaseKey(dbAssetType, dbID)).As<T>();
         }
 
         public IAddressablesDatabase? FindDatabase(Type assetType, bool throwIfNotFound = false)
@@ -276,15 +276,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             onStartLoading += (x) =>
             {
-                timer.StartTimer();
+                stopwatch ??= new Stopwatch();
+                stopwatch.Start();
                 CCDebug.PrintLog("Loading started", x);
             };
 
             onLoaded += (x) =>
             {
-                timer.StopTimer();
-                CCDebug.PrintLog($"Loading finished in {timer.Elapsed.TotalSecondsF()} seconds.", x);
-                timer.ResetTimer();
+                stopwatch!.Stop();
+                CCDebug.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalSecondsF()} seconds.", x);
             };
         }
 

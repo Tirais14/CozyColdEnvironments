@@ -1,4 +1,4 @@
-using static CCEnvs.Files.ScriptUtils.Syntax;
+using static CCEnvs.Syntax;
 
 #nullable enable
 namespace CCEnvs.Files.ScriptUtils
