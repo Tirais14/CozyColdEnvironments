@@ -3,12 +3,83 @@ using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CCEnvs.Conversations;
+using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs
 {
     public static class ObjectExtensions
     {
+        public static T IfDefault<T>(this T? source, T value)
+        {
+            if (source.IsDefault())
+                return value;
+
+            return source;
+        }
+        public static T IfDefault<T>(this T? source, Func<T> factory)
+        {
+            CC.Validate.ArgumentNull(factory, nameof(factory));
+
+            if (source.IsDefault())
+                return factory();
+
+            return source;
+        }
+        public static TOutput IfDefault<TInput, TOutput>(this TInput? source, TOutput output)
+        {
+            if (source.IsDefault())
+                return output;
+
+            try
+            {
+                return source.TransformType<TOutput>();
+            }
+            catch (Exception ex)
+            {
+                typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
+            }
+
+            return source.As<TOutput>();
+        }
+        public static TOutput IfDefault<TInput, TOutput>(this TInput? source,
+            Func<TOutput> factory)
+        {
+            if (source.IsDefault())
+                return factory();
+
+            try
+            {
+                return source.TransformType<TOutput>();
+            }
+            catch (Exception ex)
+            {
+                typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
+            }
+
+            return source.As<TOutput>();
+        }
+
+        public static TOutput IfNotDefault<TInput, TOutput>(
+            this TInput? source,
+            TOutput output,
+            TOutput? ifDefault = default)
+        {
+            if (source.IsNotDefault())
+                return output;
+
+            return ifDefault;
+
+        }
+
+        public static bool Any<T>(this T? source, params T?[] values)
+        {
+            CC.Validate.ArgumentNull(values, nameof(values));
+
+            return values.Any(x => EqualityComparer<T>.Default.Equals(source!, x!));
+        }
+
         public static bool TrySwitch<T>(this T? source,
             params (Predicate<T?> predicate, Action<T> action)[] conditions)
         {

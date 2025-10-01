@@ -43,6 +43,7 @@ namespace CCEnvs.Unity
         public static T ThrowIfNull<T>(this T? obj)
             where T : class => obj.ThrowIfNull(new NullReferenceException());
 
+        [Obsolete("Use IfDefault instead")]
         public static T IfNull<T>(this T? obj, T value)
             where T : class
         {
@@ -51,6 +52,7 @@ namespace CCEnvs.Unity
 
             return obj;
         }
+        [Obsolete("Use IfDefault instead")]
         public static T IfNull<T>(this T? obj, Func<T> action)
             where T : class
         {
@@ -60,6 +62,7 @@ namespace CCEnvs.Unity
             return obj;
         }
 
+        [Obsolete("Use IfDefault instead")]
         public static void IfNotNull<T>(this T? obj, Action<T> action)
             where T : class
         {
@@ -67,6 +70,7 @@ namespace CCEnvs.Unity
                 action(obj);
         }
 
+        [Obsolete("Use IfDefault instead")]
         public static T? IfNotNull<T>(this T? obj, Func<T, T> action, T? ifNull = default!)
             where T : class
         {
@@ -76,6 +80,7 @@ namespace CCEnvs.Unity
             return ifNull;
         }
 
+        [Obsolete("Use IfDefault instead")]
         public static T IfNotNull<T>(this T? obj, Func<T, T> action, Func<T> ifNull)
             where T : class
         {
@@ -85,6 +90,7 @@ namespace CCEnvs.Unity
             return ifNull();
         }
 
+        [Obsolete("Use IfDefault instead")]
         public static TOut? IfNotNull<TIn, TOut>(this TIn? obj, Func<TIn, TOut> action, TOut? ifNull = default)
             where TIn : class
         {
@@ -94,6 +100,7 @@ namespace CCEnvs.Unity
             return ifNull;
         }
 
+        [Obsolete("Use IfDefault instead")]
         public static TOut IfNotNull<TIn, TOut>(this TIn? obj, Func<TIn, TOut> action, Func<TOut> ifNull)
             where TIn : class
         {

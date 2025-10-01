@@ -41,6 +41,9 @@ namespace CCEnvs.Unity.UI.Elements
             get => inner[index];
             set => inner[index] = value;
         }
+
+        protected override bool OpenOnStart => true;
+
         bool ICollection<T>.IsReadOnly => false;
 
         protected override void OnStart()

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 
 #nullable enable
 namespace CCEnvs.Async
@@ -12,102 +13,74 @@ namespace CCEnvs.Async
     public sealed class AsyncTaskRegistry : IAsyncTaskRegistry
     {
 #if UNI_TASK
-        private readonly List<UniTask> tasks = new();
-#else
-        private readonly List<Task> tasks = new();
+        private readonly List<UniTask> uniTasks = new();
 #endif
+        private readonly List<Task> tasks = new();
+        private readonly List<ValueTask> valueTasks = new();
+        private readonly Timer timer = new(1000)
+        {
+            AutoReset = true
+        };
+        private int timerTriggeredTimes;
 
-        private readonly object lockObject = new();
-        private bool isTaskTracking;
-
-        public event Action? OnTasksCompleted;
-
-        public int TaskCount => tasks.Count;
-        public bool HasTasks => isTaskTracking || tasks.Any();
+        public int TaskCount => tasks.Count + uniTasks.Count + valueTasks.Count;
+        public bool HasTasks => tasks.Any() || uniTasks.Any() || valueTasks.Any();
+        public bool IsRunning => timer.Enabled && HasTasks;
 
 #if UNI_TASK
-        /// <exception cref="ArgumentException"></exception>
         public void RegisterTask(UniTask task)
         {
-            if (task.Equals(default(UniTask)))
-                throw new ArgumentException(nameof(task));
+            if (task.Status == UniTaskStatus.Succeeded
+                ||
+                task.Status == UniTaskStatus.Faulted
+                ||
+                task.Status == UniTaskStatus.Canceled
+                )
+                return;
 
-            tasks.Add(task);
-
-            if (!isTaskTracking)
-            {
-                UniTask.RunOnThreadPool(TrackTasks).Forget();
-                isTaskTracking = true;
-            }
+            uniTasks.Add(task);
+            TryStartTimer();
         }
-        /// <exception cref="ArgumentNullException"></exception>
+#endif
+
+        public void RegisterTask(ValueTask task)
+        {
+            if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
+                return;
+
+            valueTasks.Add(task);
+            TryStartTimer();
+        }
+
         public void RegisterTask(Task task)
         {
             if (task is null)
                 throw new ArgumentNullException(nameof(task));
-
-            RegisterTask(task.AsUniTask());
-        }
-#else
-        /// <exception cref="ArgumentException"></exception>
-        public void RegisterTask(Task task)
-        {
-            if (task.Equals(default(Task)))
-                throw new ArgumentException(nameof(task));
+            if (task.IsFaulted || task.IsCompleted || task.IsCanceled)
+                return;
 
             tasks.Add(task);
-
-            if (!isTaskTracking)
-            {
-                _ = Task.Run(TrackTasks);
-                isTaskTracking = true;
-            }
-        }
-#endif
-
-        /// <exception cref="ArgumentNullException"></exception>
-        public void RegisterTask(Func<bool> waitUntilFalse)
-        {
-            if (waitUntilFalse is null)
-                throw new ArgumentNullException(nameof(waitUntilFalse));
-
-#if UNI_TASK
-            RegisterTask(UniTask.RunOnThreadPool(waitUntilFalse));
-#else
-            RegisterTask(Task.Run(waitUntilFalse));
-#endif
+            TryStartTimer();
         }
 
-        private void TrackTasks()
+        private void TryStartTimer()
         {
-            while (tasks.Count > 0)
-            {
-#if UNI_TASK
-                UniTask task;
-#else
-                Task task;
-#endif
-                int count = tasks.Count;
-                for (int i = 0; i < count; i++)
-                {
-                    task = tasks[i];
-                    if (task.Status == UniTaskStatus.Succeeded ||
-                        task.Status == UniTaskStatus.Faulted ||
-                        task.Status == UniTaskStatus.Canceled
-                        )
-                    {
-                        tasks.RemoveAt(i);
-                        count--;
-                    }
-                }
-            }
+            if (IsRunning)
+                return;
 
-            lock (lockObject)
-            {
-                isTaskTracking = false;
-            }
+            timerTriggeredTimes = 0;
 
-            OnTasksCompleted?.Invoke();
+            timer.Start();
+            timer.Elapsed += (_, _) =>
+            {
+                if (HasTasks)
+                    return;
+
+                timerTriggeredTimes++;
+
+                if (timerTriggeredTimes > 1)
+                    timer.Stop();
+            };
         }
     }
 }
