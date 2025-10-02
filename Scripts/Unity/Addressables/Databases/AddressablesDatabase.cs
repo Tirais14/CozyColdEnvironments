@@ -4,9 +4,11 @@ using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Humanizer;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
 using Object = UnityEngine.Object;
@@ -23,17 +25,22 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         private readonly List<AsyncOperationHandle<IList<TAsset>>> loadHandles = new(0);
         private bool disposedValue;
 
-        public event Action<ILoadable> OnStartLoading = null!;
-        public event Action<ILoadable> OnLoaded = null!;
+        public event Action OnStartLoading = null!;
+        public event Action OnLoaded = null!;
 
         public IEnumerable<AssetKey> Keys => db.Keys;
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
-        public bool IsLoaded => Count > 0;
+        public bool IsLoading => loadHandles.Any(x => !x.IsDone);
+        public bool IsLoaded => !IsLoading && Count > 0;
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
         public Func<Object, object?>? IDFactory { get; set; }
+        public int LoadPriority { get; set; }
         public TAsset this[AssetKey key] => db[key];
+        public TAsset this[object assetID] => FindAsset(assetID, throwIfNotFound: true)!;
+        public TAsset this[string assetName, bool ingoreCase] => FindAsset(assetName, ingoreCase, throwIfNotFound: true)!;
+        public TAsset this[string assetName] => FindAsset(assetName, throwIfNotFound: true)!;
 
         IEnumerable<Object> IAddressablesDatabase.Values => db.Values;
 
@@ -69,7 +76,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                     key = new AssetKey(asset);
 
                 db.Add(key, asset);
-                CCDebug.PrintLog($"Asset {asset.GetType().GetFullName()} loaded. {nameof(AssetKey)}: {key}", this);
+                this.PrintLog($"Asset {asset.GetType().GetFullName()} loaded. {nameof(AssetKey)}: {key}.");
             }
             catch (Exception ex)
             {
@@ -83,23 +90,24 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             try
             {
-                assets.ForEach(AddAsset);
+                foreach (var asset in assets)
+                    AddAsset(asset);
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                this.PrintException(ex);
             }
         }
 
         public async UniTask LoadAssetsAsync(AssetLabels assetLabels)
         {
             CC.Guard.Argument(assetLabels,
-                                 nameof(assetLabels),
-                                 assetLabels.IsNotDefault());
+                              nameof(assetLabels),
+                              assetLabels.IsNotDefault());
 
             try
             {
-                OnStartLoading(this);
+                OnStartLoading();
 
                 var handle = await AddressableLoader.LoadAssetsByLabelsAsync<TAsset>(
                     assetLabels.ToArray(),
@@ -109,15 +117,47 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                this.PrintException(ex);
             }
             finally
             {
-                OnLoaded(this);
+                OnLoaded();
             }
             
             TrimExcessOnLoaded().Timeout(3.Minutes(), DelayType.UnscaledDeltaTime)
                                 .Forget(ex => CCDebug.PrintException(ex));
+        }
+
+        public IAddressablesDatabase TakePart(Type assetType)
+        {
+            var newDB = InstanceFactory.Create(typeof(AddressablesDatabase<>).MakeGenericType(assetType))
+                                       .As<IAddressablesDatabase>();
+
+            this.AsReflected().CopyTypeDataTo(newDB, nameof(KeyFactory), nameof(IDFactory));
+
+            var assets = db.AsValueEnumerable()
+                           .GroupBy(x => x.Value.GetType())
+                           .First(x => x.Key == assetType)
+                           .Select(x => x)
+                           .Do(x => db.Remove(x.Key))
+                           .Select(x => x.Value);
+
+            newDB.AddAssets(assets);
+            return newDB;
+        }
+
+        public IAddressablesDatabase<T> TakePart<T>() where T : Object
+        {
+            return TakePart(typeof(T)).As<IAddressablesDatabase<T>>();
+        }
+
+        public IAddressablesDatabase[] SplitByType()
+        {
+            return db.Values.AsValueEnumerable()
+                            .Select(x => x.GetType())
+                            .Distinct()
+                            .Select(assetType => TakePart(assetType))
+                            .ToArray();
         }
 
         public AssetKey? FindAssetKey(string assetName,
@@ -269,16 +309,16 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         private void BindEvents()
         {
-            OnStartLoading += (x) =>
+            OnStartLoading += () =>
             {
-                CCDebug.PrintLog("Loading started.", x);
+                this.PrintLog("Loading started.");
                 stopwatch.Start();
             };
 
-            OnLoaded += (x) =>
+            OnLoaded += () =>
             {
                 stopwatch.Stop();
-                CCDebug.PrintLog($"Loading finished in {stopwatch.Elapsed.Seconds} seconds.", x);
+                this.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalMilliseconds} ms.");
                 stopwatch.Reset();
             };
         }

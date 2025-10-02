@@ -19,13 +19,28 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         Func<Object, object?>? IDFactory { get; set; }
         IEnumerable<AssetKey> Keys { get; }
         IEnumerable<Object> Values { get; }
+        int LoadPriority { get; }
         object this[AssetKey key] { get; }
+        Object this[string assetName] { get; }
+        Object this[string assetName, bool ingoreCase] { get; }
+        Object this[object assetID] { get; }
 
         void AddAsset(Object asset);
 
         void AddAssets(IEnumerable<Object> assets);
 
         UniTask LoadAssetsAsync(AssetLabels assetLabels);
+
+        IAddressablesDatabase TakePart(Type assetType);
+        /// <summary>
+        /// Creates new <see cref="IAddressablesDatabase"/> with specified type, and delete it items from current
+        /// </summary>
+        IAddressablesDatabase<T> TakePart<T>() where T : Object;
+
+        /// <summary>
+        /// Do <see cref="TakePart{T}"/> for all types in database
+        /// </summary>
+        IAddressablesDatabase[] SplitByType();
 
         AssetKey? FindAssetKey(string assetName,
                                bool ignoreCase = false,
@@ -52,6 +67,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         where TAsset : Object
     {
         object IAddressablesDatabase.this[AssetKey key] => this[key];
+        new TAsset this[string assetName] { get; }
+        new TAsset this[string assetName, bool ingoreCase] { get; }
+        new TAsset this[object assetID] { get; }
+
+        Object IAddressablesDatabase.this[string assetName] => this[assetName];
+        Object IAddressablesDatabase.this[string assetName, bool ingoreCase] => this[assetName, ingoreCase];
+        Object IAddressablesDatabase.this[object assetID] => this[assetID];
 
         void AddAsset(TAsset asset);
 

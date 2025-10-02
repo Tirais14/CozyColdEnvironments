@@ -1,9 +1,11 @@
 #if UNI_TASK
 using Cysharp.Threading.Tasks;
+
 #endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -23,8 +25,13 @@ namespace CCEnvs.Async
         };
         private int timerTriggeredTimes;
 
+#if UNI_TASK
         public int TaskCount => tasks.Count + uniTasks.Count + valueTasks.Count;
         public bool HasTasks => tasks.Any() || uniTasks.Any() || valueTasks.Any();
+#else
+        public int TaskCount => tasks.Count + valueTasks.Count;
+        public bool HasTasks => tasks.Any() || valueTasks.Any();
+#endif
         public bool IsRunning => timer.Enabled && HasTasks;
 
 #if UNI_TASK
@@ -39,6 +46,7 @@ namespace CCEnvs.Async
                 return;
 
             uniTasks.Add(task);
+            task.ToObservable().Subscribe(_ => uniTasks.Remove(task));
             TryStartTimer();
         }
         public void RegisterTask<T>(UniTask<T> task)
@@ -53,6 +61,7 @@ namespace CCEnvs.Async
                 return;
 
             valueTasks.Add(task);
+            task.AsTask().ToObservable().Subscribe(_ => valueTasks.Remove(task));
             TryStartTimer();
         }
         public void RegisterTask<T>(ValueTask<T> task)
@@ -68,6 +77,7 @@ namespace CCEnvs.Async
                 return;
 
             tasks.Add(task);
+            task.ToObservable().Subscribe(_ => tasks.Remove(task));
             TryStartTimer();
         }
 

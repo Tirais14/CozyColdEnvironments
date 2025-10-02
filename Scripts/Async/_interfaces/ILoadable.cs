@@ -5,9 +5,10 @@ namespace CCEnvs
 {
     public interface ILoadable
     {
-        event Action<ILoadable> OnStartLoading;
-        event Action<ILoadable> OnLoaded;
+        event Action OnStartLoading;
+        event Action OnLoaded;
 
+        bool IsLoading { get; }
         bool IsLoaded { get; }
     }
 }

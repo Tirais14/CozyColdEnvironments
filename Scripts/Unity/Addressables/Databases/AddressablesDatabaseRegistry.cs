@@ -1,11 +1,12 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
+using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
-using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using UnityEngine;
 using ZLinq;
 using Object = UnityEngine.Object;
@@ -21,26 +22,18 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
-        protected Action<ILoadable> onStartLoading;
-        protected Action<ILoadable> onLoaded;
-
         private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
         private Stopwatch? stopwatch;
         private bool disposedValue;
 
-        public event Action<ILoadable> OnStartLoading {
-            add => onStartLoading += value;
-            remove => onStartLoading = (onStartLoading - value)!;
-        }
-        public event Action<ILoadable> OnLoaded {
-            add => onLoaded += value;
-            remove => onLoaded = (onLoaded - value)!;
-        }
+        public event Action? OnStartLoading;
+        public event Action? OnLoaded;
 
         public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
         public IEnumerable<IAddressablesDatabase> Values => databases.Values;
         public int Count => databases.Count;
-        public bool IsLoaded => Count > 0;
+        public bool IsLoading => databases.Values.Any(db => db.IsLoading);
+        public bool IsLoaded => !IsLoading && Count > 0;
         public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
         public IAddressablesDatabase this[Type dbAssetType] => GetDatabase(dbAssetType);
         public IAddressablesDatabase this[Type dbAssetType, object dbID] => GetDatabase(dbAssetType, dbID);
@@ -48,35 +41,17 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         protected override void OnAwake()
         {
             base.OnAwake();
-            try
-            {
-                var task = RegisterDatabases();
-                CC.NeccesaryTasks.RegisterTask(task);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
 
             BindEvents();
-        }
-
-        private static Type ResolveType<T>()
-        {
-            var gType = typeof(T);
-
-            if (!gType.TrySwitchType(out Type result,
-                (onType: typeof(ScriptableObject), _ => typeof(ScriptableObject)),
-                (onType: typeof(GameObject), _ => typeof(GameObject)))
-                )
-                return gType;
-
-            return result;
         }
 
         public void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database)
         {
             databases.Add(key, database);
+        }
+        public void RegisterDatabase(IAddressablesDatabase database)
+        {
+            databases.Add(new AssetDatabaseKey(database.AssetType), database);
         }
 
         public bool UnregisterDatabase(AssetDatabaseKey key) => databases.Remove(key);
@@ -103,7 +78,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
 
-            var result = Values.AsValueEnumerable().FirstOrDefault(db => db.AssetType == assetType);
+            var result = Values.AsValueEnumerable()
+                               .FirstOrDefault(db => db.AssetType == assetType)
+                               .ToEitherSingleTyped(Values.AsValueEnumerable().FirstOrDefault(db => db.AssetType.IsType(assetType)))
+                               .Resolved;
 
             if (throwIfNotFound && result is null)
                 throw new DatabaseNotFoundException(assetType);
@@ -253,23 +231,37 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return databases.ContainsKey(key);
         }
 
+        protected virtual Type ResolveType<T>()
+        {
+            var gType = typeof(T);
+
+            if (FindDatabase(gType, throwIfNotFound: false) is not null)
+                return gType;
+
+            if (!gType.TrySwitchType(out Type result,
+                (onType: typeof(ScriptableObject), _ => typeof(ScriptableObject)),
+                (onType: typeof(GameObject), _ => typeof(GameObject)))
+                )
+                return gType;
+
+            return result;
+        }
+
         protected void BindEvents()
         {
-            onStartLoading += (x) =>
+            OnStartLoading += () =>
             {
                 stopwatch ??= new Stopwatch();
                 stopwatch.Start();
-                CCDebug.PrintLog("Loading started", x);
+                this.PrintLog("Loading started");
             };
 
-            onLoaded += (x) =>
+            OnLoaded += () =>
             {
                 stopwatch!.Stop();
-                CCDebug.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalSecondsF()} seconds.", x);
+                this.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalSeconds} seconds.");
             };
         }
-
-        protected abstract UniTask<KeyValuePair<AssetDatabaseKey, IAddressablesDatabase>[]> GetDatabases();
 
         protected virtual void Dispose(bool disposing)
         {
@@ -284,11 +276,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             }
 
             disposedValue = true;
-        }
-
-        private async UniTask RegisterDatabases()
-        {
-            (await GetDatabases()).ForEach(db => RegisterDatabase(db.Key, db.Value));
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

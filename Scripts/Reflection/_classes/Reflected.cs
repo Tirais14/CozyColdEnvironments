@@ -11,6 +11,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using ZLinq.Linq;
 using static CCEnvs.BindingFlagsDefault;
 
 #pragma warning disable IDE1006
@@ -350,11 +351,39 @@ namespace CCEnvs.Reflection
         public T TransformType<T>() => (T)TransformType(typeof(T));
 
         /// <summary>
-        /// Cast target object in specified type
+        /// Cast instance object in specified type
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public T? As<T>() => (T?)Instance;
+
+        public void CopyTypeDataTo(Reflected reflected)
+        {
+            foreach (var field in (IncludeNonPublic ? AllFields.Value : PublicFields.Value).Where(field => !field.IsInitOnly))
+                reflected.Field(field.Name).SetValue(field.GetValue(Instance));
+        }
+        public void CopyTypeDataTo(Reflected reflected, params string[] fieldOrPropNames)
+        {
+            (from field in (IncludeNonPublic ? AllFields.Value : PublicFields.Value)
+             where !field.IsInitOnly
+             where fieldOrPropNames.Contains(field.Name)
+             select field)
+             .ForEach(field => reflected.Field(field.Name).SetValue(field.GetValue(Instance)));
+
+            (from prop in (IncludeNonPublic ? AllProperties.Value : PublicProperties.Value)
+             where prop.SetMethod is not null
+             where fieldOrPropNames.Contains(prop.Name)
+             select prop)
+             .ForEach(prop => reflected.Property(prop.Name).SetValue(prop.GetValue(Instance)));
+        }
+        public void CopyTypeDataTo(object otherInstance)
+        {
+            CopyTypeDataTo(otherInstance.AsReflected());
+        }
+        public void CopyTypeDataTo(object otherInstance, params string[] fieldOrPropNames)
+        {
+            CopyTypeDataTo(otherInstance.AsReflected(), fieldOrPropNames);
+        }
 
         public bool Equals(Reflected? other)
         {
