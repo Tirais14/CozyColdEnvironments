@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CCEnvs.Reflection
 {
-    public record TypeFinderParameters
+    public record TypeSearchArguments
     {
         public string AssemblyName { get; set; } = string.Empty;
         public string Namespace { get; set; } = string.Empty;

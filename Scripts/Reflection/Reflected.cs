@@ -32,7 +32,7 @@ namespace CCEnvs.Reflection
             DisallowCaching = 4
         }
 
-        private object? target;
+        private object? instance;
 
         public LazyCC<ImmutableArray<FieldInfo>> AllFields { get; }
         public LazyCC<ImmutableArray<PropertyInfo>> AllProperties { get; }
@@ -43,34 +43,27 @@ namespace CCEnvs.Reflection
         public LazyCC<ImmutableArray<MethodInfo>> PublicMethods { get; }
         public LazyCC<ImmutableArray<EventInfo>> PublicEvents { get;}
 
-        public object? Target {
-            get => target;
+        public object? Instance {
+            get => instance;
             set
             {
-                target = value;
+                instance = value;
 
                 if (value is not null)
-                    TargetType = target?.GetType()!;
+                    InstanceType = instance?.GetType()!;
             }
         }
-        public Type TargetType { get; private set; }
+        public Type InstanceType { get; private set; } = null!;
         public Settings settings { get; }
-        public bool IncludeNonPublic { get;}
-        public bool DisallowCaching { get; }
+        public bool IncludeNonPublic => settings.IsFlagSetted(Settings.IncludeNonPublic);
+        public bool DisallowCaching => settings.IsFlagSetted(Settings.DisallowCaching);
 
-        protected Reflected(Type targetType, object? target, Settings settings = default)
+        protected Reflected()
         {
-            this.target = target;
-            TargetType = targetType;
-            this.settings = settings;
-
-            IncludeNonPublic = settings.IsFlagSetted(Settings.IncludeNonPublic);
-            DisallowCaching = settings.IsFlagSetted(Settings.DisallowCaching);
-
-            AllFields = new LazyCC<ImmutableArray<FieldInfo>>(() => TargetType.ForceGetFields(GetBindingFlags()).ToImmutableArray());
-            AllProperties = new LazyCC<ImmutableArray<PropertyInfo>>(() => TargetType.ForceGetProperties(GetBindingFlags()).ToImmutableArray());
-            AllMethods = new LazyCC<ImmutableArray<MethodInfo>>(() => TargetType.ForceGetMethods(GetBindingFlags()).ToImmutableArray());
-            AllEvents = new LazyCC<ImmutableArray<EventInfo>>(() => TargetType.ForceGetMembers<EventInfo>(GetBindingFlags()).ToImmutableArray());
+            AllFields = new LazyCC<ImmutableArray<FieldInfo>>(() => InstanceType.ForceGetFields(GetBindingFlags()).ToImmutableArray());
+            AllProperties = new LazyCC<ImmutableArray<PropertyInfo>>(() => InstanceType.ForceGetProperties(GetBindingFlags()).ToImmutableArray());
+            AllMethods = new LazyCC<ImmutableArray<MethodInfo>>(() => InstanceType.ForceGetMethods(GetBindingFlags()).ToImmutableArray());
+            AllEvents = new LazyCC<ImmutableArray<EventInfo>>(() => InstanceType.ForceGetMembers<EventInfo>(GetBindingFlags()).ToImmutableArray());
 
             PublicFields = new LazyCC<ImmutableArray<FieldInfo>>(() => AllFields.Value.Where(field => field.IsPublic).ToImmutableArray());
             PublicProperties = new LazyCC<ImmutableArray<PropertyInfo>>(() => AllProperties.Value.Where(prop => prop.GetMethod.IsPublic).ToImmutableArray());
@@ -78,29 +71,83 @@ namespace CCEnvs.Reflection
             PublicEvents = new LazyCC<ImmutableArray<EventInfo>>(() => AllEvents.Value.Where(ev => ev.AddMethod.IsPublic || ev.RemoveMethod.IsPublic).ToImmutableArray());
         }
 
-        public Reflected(Type targetType, Settings settings = default)
+        public Reflected(Type instanceType)
             :
-            this(targetType, target: null, settings)
-        {
+            this()
+        {            
+            InstanceType = instanceType;
         }
 
-        public Reflected(object target, Settings settings = default)
+        public Reflected(Type instanceType, object? instance)
             :
-            this(target.GetType(), target, settings)
+            this(instanceType)
+        {
+            this.instance = instance;
+        }
+
+        public Reflected(Type instanceType, Settings settings)
+            :
+            this(instanceType)
+        {
+            this.settings = settings;
+        }
+
+        public Reflected(Type instanceType, object? instance, Settings settings)
+            :
+            this(instanceType, settings)
+        {
+            this.instance = instance;
+        }
+
+        public Reflected(TypeSearchArguments typeSearchArguments)
+            :
+            this()
+        {
+            InstanceType = TypeSearch.FindTypeInAppDomain(typeSearchArguments, throwOnError: true);
+        }
+
+        public Reflected(TypeSearchArguments typeSearchArguments, object? instance)
+            :
+            this(typeSearchArguments)
+        {
+            this.instance = instance;
+        }
+
+        public Reflected(TypeSearchArguments typeSearchArguments, object? instance, Settings settings)
+            :
+            this(typeSearchArguments, instance)
+        {
+            this.settings = settings;
+        }
+
+        public Reflected(TypeSearchArguments typeSearchArguments, Settings settings)
+            :
+            this(typeSearchArguments)
+        {
+            this.settings = settings;
+        }
+
+        public Reflected(object instance)
+            :
+            this(instance?.GetType() ?? throw new ArgumentNullException(nameof(instance)), instance)
         {
         }
 
-        public static Reflected T<T>(Settings settings = default)
+        public Reflected(object instance, Settings setttings)
+            :
+            this(instance?.GetType() ?? throw new ArgumentNullException(nameof(instance)), instance, setttings)
         {
-            return new Reflected(typeof(T), settings);
         }
 
-        public static bool operator ==(Reflected left, Reflected right)
+        public static bool operator ==(Reflected? left, Reflected? right)
         {
-            return ReferenceEquals(left, right) || left.Equals(right);
+            if (ReferenceEquals(left, right))
+                return true;
+
+            return left is not null && left.Equals(right);
         }
 
-        public static bool operator !=(Reflected left, Reflected right)
+        public static bool operator !=(Reflected? left, Reflected? right)
         {
             return !(left == right);
         }
@@ -110,13 +157,24 @@ namespace CCEnvs.Reflection
         {
             CC.Validate.StringArgument(name, nameof(name));
 
+            if (TypeCache.Fields.TryGetValue(
+                    new FieldKey(InstanceType, name),
+                    out FieldInfo found)
+                    )
+                return new ContextedFieldInfo(Instance, found);
+
             IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields.Value : PublicFields.Value;
 
-            FieldInfo found = fields.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
-                              ??
-                              throw new FieldNotFoundException(TargetType, name, GetBindingFlags());
+            found = fields.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+                           ??
+                           throw new FieldNotFoundException(InstanceType, name, GetBindingFlags());
 
-            return new ContextedFieldInfo(Target, found);
+            if (!DisallowCaching)
+                found.TryCacheMember();
+
+            return new ContextedFieldInfo(Instance, found);
+
+
         }
         public ContextedFieldInfo<T> Field<T>(string name)
         {
@@ -127,10 +185,10 @@ namespace CCEnvs.Reflection
             CC.Validate.ArgumentNull(type, nameof(type));
 
             if (TypeCache.Fields.TryGetValue(
-                new FieldKey(TargetType, type),
-                out FieldInfo found)
-                )
-                return new ContextedFieldInfo(Target, found);
+                    new FieldKey(InstanceType, type),
+                    out FieldInfo found)
+                    )
+                return new ContextedFieldInfo(Instance, found);
 
             IEnumerable<FieldInfo> fields = IncludeNonPublic ? AllFields.Value : PublicFields.Value;
 
@@ -142,14 +200,16 @@ namespace CCEnvs.Reflection
                 &&
                 fields.FirstOrDefault(x => x.FieldType == type) is FieldInfo preciseMatch
                 )
-                return new ContextedFieldInfo(Target, preciseMatch);
+                return new ContextedFieldInfo(Instance, preciseMatch);
 
-            found = (fields.FirstOrDefault()
+            found = fields.FirstOrDefault()
                     ??
-                    throw new FieldNotFoundException(TargetType, type, GetBindingFlags()))
-                    .TryCacheMember();
+                    throw new FieldNotFoundException(InstanceType, type, GetBindingFlags());
 
-            return new ContextedFieldInfo(Target, found);
+            if (!DisallowCaching)
+                found.TryCacheMember();
+
+            return new ContextedFieldInfo(Instance, found);
         }
         public ContextedFieldInfo<T> Field<T>() => Field(typeof(T)).Convert<T>();
 
@@ -159,10 +219,10 @@ namespace CCEnvs.Reflection
             CC.Validate.StringArgument(name, nameof(name));
 
             if (TypeCache.Properties.TryGetValue(
-                new FieldKey(TargetType, name),
-                out PropertyInfo found)
-                )
-                return new ContextedPropertyInfo(Target, found);
+                    new FieldKey(InstanceType, name),
+                    out PropertyInfo found)
+                    )
+                return new ContextedPropertyInfo(Instance, found);
 
             IEnumerable<PropertyInfo> props = IncludeNonPublic
                                               ? 
@@ -170,12 +230,14 @@ namespace CCEnvs.Reflection
                                               : 
                                               PublicProperties.Value;
 
-            found = (props.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
+            found = props.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
                     ??
-                    throw new PropertyNotFoundException(TargetType, name, GetBindingFlags()))
-                    .TryCacheMember();
+                    throw new PropertyNotFoundException(InstanceType, name, GetBindingFlags());
 
-            return new ContextedPropertyInfo(Target, found);
+            if (!DisallowCaching)
+                found.TryCacheMember();
+
+            return new ContextedPropertyInfo(Instance, found);
         }
         public ContextedPropertyInfo<T> Property<T>(string name)
         {
@@ -186,10 +248,10 @@ namespace CCEnvs.Reflection
             CC.Validate.ArgumentNull(type, nameof(type));
 
             if (TypeCache.Properties.TryGetValue(
-                    new FieldKey(TargetType, type),
+                    new FieldKey(InstanceType, type),
                     out PropertyInfo found)
                     )
-                return new ContextedPropertyInfo(Target, found);
+                return new ContextedPropertyInfo(Instance, found);
 
             IEnumerable<PropertyInfo> props = IncludeNonPublic
                                               ?
@@ -197,20 +259,19 @@ namespace CCEnvs.Reflection
                                               :
                                               PublicProperties.Value;
 
-            props = (from prop in props
-                     where prop.PropertyType.IsType(type)
-                     select prop)
-                     .ToArray();
+            props = props.Where(prop => prop.PropertyType.IsType(type)).ToArray();
 
             if (props.FirstOrDefault(x => x.PropertyType == type) is PropertyInfo preciseMatch)
-                return new ContextedPropertyInfo(Target, preciseMatch);
+                return new ContextedPropertyInfo(Instance, preciseMatch);
 
-            found = (props.FirstOrDefault()
+            found = props.FirstOrDefault()
                     ??
-                    throw new PropertyNotFoundException(TargetType, type, GetBindingFlags()))
-                    .TryCacheMember();
+                    throw new PropertyNotFoundException(InstanceType, type, GetBindingFlags());
 
-            return new ContextedPropertyInfo(Target, found);
+            if (!DisallowCaching)
+                found.TryCacheMember();
+
+            return new ContextedPropertyInfo(Instance, found);
         }
         public ContextedPropertyInfo<T> Property<T>()
         {
@@ -225,10 +286,10 @@ namespace CCEnvs.Reflection
             CC.Validate.StringArgument(name, nameof(name));
 
             if (TypeCache.Methods.TryGetValue(
-                new MethodKey(TargetType, (CCParameters)args, args.GetParameterModifiers()),
+                new MethodKey(InstanceType, (CCParameters)args, args.GetParameterModifiers()),
                 out MethodInfo found)
                 )
-                return new ContextedMethodInfo(Target, found);
+                return new ContextedMethodInfo(Instance, found);
 
             IEnumerable<MethodInfo> methods = IncludeNonPublic
                                               ?
@@ -236,16 +297,18 @@ namespace CCEnvs.Reflection
                                               :
                                               PublicMethods.Value;
 
-            found = ((from method in methods
-                      where method.Name.EqualsOrdinal(name)
-                      where method.GetCCParameters(ignoreOptionalParameters) == ((CCParameters)args)
-                      select method)
+            found = (from method in methods
+                     where method.Name.EqualsOrdinal(name)
+                     where method.GetCCParameters(ignoreOptionalParameters) == ((CCParameters)args)
+                     select method)
                      .FirstOrDefault()
                      ??
-                     throw new MethodNotFoundException(TargetType, name, GetBindingFlags()))
-                     .TryCacheMember();
+                     throw new MethodNotFoundException(InstanceType, name, GetBindingFlags());
 
-            return new ContextedMethodInfo(Target, found);
+            if (!DisallowCaching)
+                found.TryCacheMember();
+
+            return new ContextedMethodInfo(Instance, found);
         }
 
         public ContextedEventInfo Event(string name)
@@ -258,10 +321,10 @@ namespace CCEnvs.Reflection
                                             :
                                             PublicEvents.Value;
 
-            return new ContextedEventInfo(Target, 
+            return new ContextedEventInfo(Instance, 
                    events.FirstOrDefault(x => x.Name.EqualsOrdinal(name))
                    ??
-                   throw new EventNotFoundException(TargetType, name, GetBindingFlags()));
+                   throw new EventNotFoundException(InstanceType, name, GetBindingFlags()));
         }
         public ContextedEventInfo<T> Event<T>(string name)
             where T : Delegate
@@ -273,15 +336,15 @@ namespace CCEnvs.Reflection
         {
             CC.Validate.ArgumentNull(toType, nameof(toType));
 
-            if (Target is null)
+            if (Instance is null)
                 CC.Throw.InvalidCast(toType, "Cannot not convert null object.");
 
-            Target = TypeTransformer.DoTransform(Target, toType);
+            Instance = TypeTransformer.DoTransform(Instance, toType);
 
-            if (Target is null)
-                throw new DataAccessException(nameof(Target));
+            if (Instance is null)
+                throw new DataAccessException(nameof(Instance));
 
-            return Target;
+            return Instance;
         }
         [DebuggerStepThrough]
         public T TransformType<T>() => (T)TransformType(typeof(T));
@@ -291,28 +354,25 @@ namespace CCEnvs.Reflection
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T? As<T>() => (T?)Target;
+        public T? As<T>() => (T?)Instance;
 
         public bool Equals(Reflected? other)
         {
             if (other is null)
                 return false;
 
-            return Equals(TargetType, other.TargetType)
-                   && 
-                   TargetType.Equals(other.TargetType);
+            return Equals(InstanceType, other.InstanceType)
+                   &&
+                   Equals(Instance, other.Instance);
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is Reflected typed && Equals(typed);
-        }
+        public override bool Equals(object obj) => Equals(obj as Reflected);
 
-        public override int GetHashCode() => HashCode.Combine(Target, TargetType);
+        public override int GetHashCode() => HashCode.Combine(Instance, InstanceType);
 
         private BindingFlags GetBindingFlags()
         {
-            if (Target is null
+            if (Instance is null
                 && 
                 settings.IsFlagSetted(Settings.OnlyStaticWhenTargetIsNull)
                 )
@@ -324,9 +384,15 @@ namespace CCEnvs.Reflection
 
     public class Reflected<T> : Reflected
     {
-        public Reflected(object? target, Settings settings = Settings.None)
-            : 
-            base(typeof(T), target, settings)
+        public Reflected() : base(typeof(T))
+        {
+        }
+
+        public Reflected(object? instance) : base(typeof(T), instance)
+        {
+        }
+
+        public Reflected(object? instance, Settings setttings) : base(typeof(T), instance, setttings)
         {
         }
     }

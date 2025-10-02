@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
         protected override Type ConvertToOutput(TypeInfo input)
         {
-            return TypeSearch.FindTypeInAppDomain(new TypeFinderParameters
+            return TypeSearch.FindTypeInAppDomain(new TypeSearchArguments
             {
                 Namespace = input.Namespace,
                 TypeName = input.TypeName,

@@ -20,7 +20,7 @@ namespace CCEnvs.Reflection
             if (constructorTypes.TryGetValue(constructableType, out Type[] results))
                 return results;
 
-            results = TypeSearch.FindTypesInAppDomain(new TypeFinderParameters
+            results = TypeSearch.FindTypesInAppDomain(new TypeSearchArguments
             {
                 DefinedAttributeTypes = Range.From(typeof(ConstructorOfTypeAttribute))
             });

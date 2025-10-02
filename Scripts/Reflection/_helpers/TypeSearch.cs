@@ -13,7 +13,7 @@ namespace CCEnvs.Reflection
 {
     public static class TypeSearch
     {
-        public static Type[] FindTypesInAppDomain(TypeFinderParameters parameters)
+        public static Type[] FindTypesInAppDomain(TypeSearchArguments parameters)
         {
             CC.Validate.ArgumentNull(parameters, nameof(parameters));
 
@@ -22,13 +22,13 @@ namespace CCEnvs.Reflection
 
         /// <exception cref="CannotResolvedException"></exception>
         /// <exception cref="TypeNotFoundException"></exception>
-        public static Type FindTypeInAppDomain(TypeFinderParameters parameters,
+        public static Type FindTypeInAppDomain(TypeSearchArguments parameters,
                                                bool throwOnError = true)
         {
             CC.Validate.ArgumentNull(parameters, nameof(parameters));
             CC.Validate.StringArgumentNested(parameters.TypeName,
-                                          nameof(parameters),
-                                          nameof(parameters.TypeName));
+                                             nameof(parameters),
+                                             nameof(parameters.TypeName));
 
             Type[] foundTypes = FindTypesInternal(parameters);
 
@@ -81,7 +81,7 @@ namespace CCEnvs.Reflection
             }
         }
 
-        public static bool TryFindTypeInAppDomain(TypeFinderParameters parameters,
+        public static bool TryFindTypeInAppDomain(TypeSearchArguments parameters,
                                                   out Type? result)
         {
             result = FindTypeInAppDomain(parameters, throwOnError: false);
@@ -89,7 +89,7 @@ namespace CCEnvs.Reflection
             return result != null;
         }
 
-        private static Type[] FindTypesInternal(TypeFinderParameters parameters)
+        private static Type[] FindTypesInternal(TypeSearchArguments parameters)
         {
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 

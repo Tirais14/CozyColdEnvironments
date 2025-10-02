@@ -41,6 +41,10 @@ namespace CCEnvs.Async
             uniTasks.Add(task);
             TryStartTimer();
         }
+        public void RegisterTask<T>(UniTask<T> task)
+        {
+            RegisterTask((UniTask)task);
+        }
 #endif
 
         public void RegisterTask(ValueTask task)
@@ -50,6 +54,10 @@ namespace CCEnvs.Async
 
             valueTasks.Add(task);
             TryStartTimer();
+        }
+        public void RegisterTask<T>(ValueTask<T> task)
+        {
+            RegisterTask(task.AsTask());
         }
 
         public void RegisterTask(Task task)
@@ -68,8 +76,6 @@ namespace CCEnvs.Async
             if (IsRunning)
                 return;
 
-            timerTriggeredTimes = 0;
-
             timer.Start();
             timer.Elapsed += (_, _) =>
             {
@@ -79,7 +85,10 @@ namespace CCEnvs.Async
                 timerTriggeredTimes++;
 
                 if (timerTriggeredTimes > 1)
+                {
                     timer.Stop();
+                    timerTriggeredTimes = 0;
+                }
             };
         }
     }

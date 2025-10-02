@@ -14,9 +14,11 @@ namespace CCEnvs.Async
 
 #if UNI_TASK
         void RegisterTask(UniTask task);
+        void RegisterTask<T>(UniTask<T> task);
 #endif
 
         void RegisterTask(ValueTask task);
+        void RegisterTask<T>(ValueTask<T> task);
 
         void RegisterTask(Task task);
     }

@@ -35,7 +35,7 @@ namespace CCEnvs.Json.DTO
         public Type DoTransform()
         {
             return TypeSearch.FindTypeInAppDomain(
-                new TypeFinderParameters
+                new TypeSearchArguments
                 {
                     AssemblyName = AssemblyName,
                     Namespace = Namespace,

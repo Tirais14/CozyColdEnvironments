@@ -5,6 +5,6 @@ namespace CCEnvs
 {
     public static class ReflectedType
     {
-        public static EditorDomainReflected EditorDomain => new();
+        public static EditorDomainReflected EditorDomain { get; } = new();
     }
 }

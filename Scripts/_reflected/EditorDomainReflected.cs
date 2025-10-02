@@ -4,6 +4,7 @@ namespace CCEnvs.ReflectedTypes
 {
     public sealed class EditorDomainReflected : Reflected
     {
+#if UNITY_EDITOR
         public int PlayModeEntranceCount {
             get => Property(nameof(PlayModeEntranceCount)).GetValue().As<int>();
         }
@@ -11,16 +12,23 @@ namespace CCEnvs.ReflectedTypes
         public bool IsFirstPlayModeEntrance {
             get => Property(nameof(IsFirstPlayModeEntrance)).GetValue().As<bool>();
         }
+#else
+        public int PlayModeEntranceCount => 1;
 
+        public bool IsFirstPlayModeEntrance => true;
+#endif
+
+#if UNITY_EDITOR
         public EditorDomainReflected()
             :
-            base(TypeSearch.FindTypeInAppDomain(new TypeFinderParameters
+            base(TypeSearch.FindTypeInAppDomain(new TypeSearchArguments
             {
-                AssemblyName = new OperatorChain(nameof(CCEnvs), "Unity", "Editor"),
+                AssemblyName = Syntax.Chain(nameof(CCEnvs), "Unity", "Editor"),
                 TypeName = "EditorDomain",
-            }, throwOnError: false),
-            target: null)
+            }, throwOnError: true),
+            instance: null)
         {
         }
+#endif
     }
 }
