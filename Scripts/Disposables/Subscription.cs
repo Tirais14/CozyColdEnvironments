@@ -40,7 +40,7 @@ namespace CCEnvs.Disposables
             ContextedEventInfo<TDelegate> eventInfo)
             where TDelegate : Delegate
         {
-            CC.Validate.ArgumentNull(eventInfo, nameof(eventInfo));
+            CC.Guard.NullArgument(eventInfo, nameof(eventInfo));
 
             return Create(eventHanlder, eventInfo, static (del, ev) => ev.RemoveEventHanlder(del));
         }
@@ -61,7 +61,7 @@ namespace CCEnvs.Disposables
                             TObserver observer,
                             TObservable observable)
         {
-            CC.Validate.ArgumentNull(disposer, nameof(disposer));
+            CC.Guard.NullArgument(disposer, nameof(disposer));
 
             this.disposer = disposer;
             this.observer = observer;

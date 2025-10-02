@@ -31,11 +31,11 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             Enable();
         }
 
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         public IInputActionReactive GetInputAction(string inputName)
         {
             if (inputName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(inputName), inputName);
+                throw new EmptyStringArgumentException(nameof(inputName), inputName);
             if (!registeredActions.TryGetValue(inputName, out IInputActionReactive result))
                 throw new ArgumentException($"Cannot find input action with name {inputName}.");
 

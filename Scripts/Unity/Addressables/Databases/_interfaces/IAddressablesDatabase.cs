@@ -66,14 +66,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         void IAddressablesDatabase.AddAsset(Object asset)
         {
-            CC.Validate.ArgumentNull(asset, nameof(asset));
+            CC.Guard.NullArgument(asset, nameof(asset));
 
             AddAsset(asset.As<TAsset>());
         }
 
         void IAddressablesDatabase.AddAssets(IEnumerable<Object> assets)
         {
-            CC.Validate.ArgumentNull(assets, nameof(assets));
+            CC.Guard.NullArgument(assets, nameof(assets));
 
             AddAssets(assets.Select(x => x.As<TAsset>()));
         }

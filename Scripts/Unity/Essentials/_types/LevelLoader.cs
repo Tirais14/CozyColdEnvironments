@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.Essentials
             LoadSceneParameters loadParams,
             Action<AsyncOperation>? beforeLoading = null)
         {
-            CC.Validate.ArgumentNull(sceneKey, nameof(sceneKey));
+            CC.Guard.NullArgument(sceneKey, nameof(sceneKey));
 
             if (IsBusy())
                 return default;
@@ -106,7 +106,7 @@ namespace CCEnvs.Unity.Essentials
 
         public static async UniTask UnloadLevelAsync(object sceneKey)
         {
-            CC.Validate.ArgumentNull(sceneKey, nameof(sceneKey));
+            CC.Guard.NullArgument(sceneKey, nameof(sceneKey));
 
             if (IsBusy())
                 return;

@@ -32,7 +32,7 @@ namespace CCEnvs.Unity
         {
             if (string.IsNullOrEmpty(fullPath))
             {
-                throw new StringArgumentException(fullPath);
+                throw new EmptyStringArgumentException(fullPath);
             }
 
             List<T> loadedObjectsList = new();

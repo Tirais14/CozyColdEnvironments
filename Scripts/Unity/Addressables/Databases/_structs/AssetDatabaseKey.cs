@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             :
             this()
         {
-            CC.Validate.ArgumentNull(dbAssetType, nameof(dbAssetType));
+            CC.Guard.NullArgument(dbAssetType, nameof(dbAssetType));
 
             DbAssetType = dbAssetType;
         }

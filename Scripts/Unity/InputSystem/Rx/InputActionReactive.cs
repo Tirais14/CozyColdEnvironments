@@ -47,7 +47,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
 
         public InputActionReactive(InputAction inputAction)
         {
-            CCEnvs.CC.Validate.ArgumentNull(inputAction, nameof(inputAction));
+            CCEnvs.CC.Guard.NullArgument(inputAction, nameof(inputAction));
 
             Action = inputAction;  
             Setup();

@@ -20,7 +20,7 @@ namespace CCEnvs
         }
         public static T IfDefault<T>(this T? source, Func<T> factory)
         {
-            CC.Validate.ArgumentNull(factory, nameof(factory));
+            CC.Guard.NullArgument(factory, nameof(factory));
 
             if (source.IsDefault())
                 return factory();
@@ -73,17 +73,10 @@ namespace CCEnvs
 
         }
 
-        public static bool Any<T>(this T? source, params T?[] values)
-        {
-            CC.Validate.ArgumentNull(values, nameof(values));
-
-            return values.Any(x => EqualityComparer<T>.Default.Equals(source!, x!));
-        }
-
         public static bool TrySwitch<T>(this T? source,
             params (Predicate<T?> predicate, Action<T> action)[] conditions)
         {
-            CC.Validate.ArgumentNull(conditions, nameof(conditions));
+            CC.Guard.NullArgument(conditions, nameof(conditions));
             if (conditions.IsEmpty())
                 return false;
 
@@ -103,7 +96,7 @@ namespace CCEnvs
             out TResult result,
             params (Predicate<T?> predicate, Func<T, TResult> func)[] conditions)
         {
-            CC.Validate.ArgumentNull(conditions, nameof(conditions));
+            CC.Guard.NullArgument(conditions, nameof(conditions));
             if (conditions.IsEmpty())
             {
                 result = default!;
@@ -205,6 +198,12 @@ namespace CCEnvs
             return obj is TValue typedObj ? typedObj : default;
         }
 
+        /// <summary>
+        /// Checks for <see cref="CC.EmptyObject"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static bool IsEmptyObject<T>(this T? value)
         {
             if (value is null)

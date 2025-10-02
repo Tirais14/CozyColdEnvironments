@@ -27,7 +27,7 @@ namespace CCEnvs.Collections
 
         object IDatabase.GetValue(object key)
         {
-            CC.Validate.ArgumentNull(key, nameof(key));
+            CC.Guard.NullArgument(key, nameof(key));
             if (key is not TKey typed)
                 return CC.Throw.InvalidCast(key.GetType(), typeof(TKey));
 

@@ -8,7 +8,7 @@ namespace CCEnvs.Linq
     {
         public static IEnumerable<T> Unindex<T>(this IEnumerable<(int index, T value)> values)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             foreach (var (_, value) in values)
                 yield return value;
@@ -18,7 +18,7 @@ namespace CCEnvs.Linq
             int index,
             T newValue)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             bool inserted = false;
             int i = 0;
@@ -49,7 +49,7 @@ namespace CCEnvs.Linq
             int index,
             T removedValue)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             bool removed = false;
             int i = 0;

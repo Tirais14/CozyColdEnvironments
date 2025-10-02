@@ -9,7 +9,7 @@ namespace CCEnvs.Async
     {
         public static async Task WaitWhile(Func<bool> func, CancellationToken cancellationToken = default)
         {
-            CC.Validate.ArgumentNull(func, nameof(func));
+            CC.Guard.NullArgument(func, nameof(func));
 
             while (func())
             {

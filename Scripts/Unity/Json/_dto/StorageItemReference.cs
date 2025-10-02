@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.Json
         protected virtual void ValidateOnDeserialized()
         {
             if (ID < 1)
-                throw new CCInvalidDataException(ID, nameof(ID));
+                throw new IncorrectDataException(ID);
         }
 
         [OnDeserialized]

@@ -7,7 +7,7 @@ namespace CCEnvs.Collections.Immutable
     {
         public static ImmutableArray<T> ToImmutableArray<T>(this IEnumerable<T> source)
         {
-            CC.Validate.ArgumentNull(source, nameof(source));
+            CC.Guard.NullArgument(source, nameof(source));
 
             return new ImmutableArray<T>(source);
         }

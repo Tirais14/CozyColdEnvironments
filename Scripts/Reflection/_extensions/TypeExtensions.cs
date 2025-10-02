@@ -38,7 +38,7 @@ namespace CCEnvs.Reflection
 
         public static int GetParentsCount(this Type value, bool trimCache = false)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             if (baseTypeCountCache.TryGetValue(value, out int count))
                 return count;
@@ -56,7 +56,7 @@ namespace CCEnvs.Reflection
 
         public static Reflected AsReflected(this Type value)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             return new Reflected(value);
         }
@@ -128,8 +128,8 @@ namespace CCEnvs.Reflection
 
         public static bool IsTypeBySemantics(this Type left, Type right)
         {
-            CC.Validate.ArgumentNull(left, nameof(left));
-            CC.Validate.ArgumentNull(right, nameof(right));
+            CC.Guard.NullArgument(left, nameof(left));
+            CC.Guard.NullArgument(right, nameof(right));
 
             MemberMatches matches = TypeHelper.GetMemberMatches(left, right);
 
@@ -221,7 +221,7 @@ namespace CCEnvs.Reflection
         public static string GetFullName(this Type value,
             TypeNameConvertingAttributes nameAttributes = TypeNameConvertingAttributes.Default)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             if (value.Namespace.IsNotNullOrEmpty())
                 return value.Namespace + '.' + value.GetName(nameAttributes);
@@ -231,7 +231,7 @@ namespace CCEnvs.Reflection
 
         public static string GetShortName(Type type)
         {
-            CC.Validate.Argument(type, nameof(type), !type.IsGenericType);
+            CC.Guard.Argument(type, nameof(type), !type.IsGenericType);
 
             if (type == typeof(short))
                 return "short";

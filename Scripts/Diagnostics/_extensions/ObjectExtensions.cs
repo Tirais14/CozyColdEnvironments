@@ -10,7 +10,7 @@ namespace CCEnvs.Diagnostics
                                       object message,
                                       DebugArguments args = DebugArguments.Default) 
         {
-            CC.Validate.ArgumentNull(message, nameof(message));
+            CC.Guard.NullArgument(message, nameof(message));
 
             CCDebug.PrintLog(message, new DebugContext(source, args));
 
@@ -21,7 +21,7 @@ namespace CCEnvs.Diagnostics
                                           object message,
                                           DebugArguments args = DebugArguments.Default)
         {
-            CC.Validate.ArgumentNull(message, nameof(message));
+            CC.Guard.NullArgument(message, nameof(message));
 
             CCDebug.PrintWarning(message, new DebugContext(source, args));
 
@@ -32,7 +32,7 @@ namespace CCEnvs.Diagnostics
                                         object message,
                                         DebugArguments args = DebugArguments.Default)
         {
-            CC.Validate.ArgumentNull(message, nameof(message));
+            CC.Guard.NullArgument(message, nameof(message));
 
             CCDebug.PrintError(message, new DebugContext(source, args));
 
@@ -43,7 +43,7 @@ namespace CCEnvs.Diagnostics
                                             Exception exception,
                                             DebugArguments args = DebugArguments.Default)
         {
-            CC.Validate.ArgumentNull(exception, nameof(exception));
+            CC.Guard.NullArgument(exception, nameof(exception));
 
             CCDebug.PrintException(exception, new DebugContext(source, args));
 
@@ -54,7 +54,7 @@ namespace CCEnvs.Diagnostics
                                                  Exception exception,
                                                  DebugArguments args = DebugArguments.Default)
         {
-            CC.Validate.ArgumentNull(exception, nameof(exception));
+            CC.Guard.NullArgument(exception, nameof(exception));
 
             CCDebug.PrintExceptionAsLog(exception, new DebugContext(source, args));
 

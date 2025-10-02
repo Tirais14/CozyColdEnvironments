@@ -1,6 +1,6 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Unity.Initables
@@ -16,11 +16,9 @@ namespace CCEnvs.Unity.Initables
         /// <exception cref="ArgumentException"></exception>
         public InitAfterTypeAttribute(params Type[] types)
         {
-            for (int i = 0; i < types.Length; i++)
-            {
-                if (types[i].IsNotType<IInitable>())
-                    throw new CollectionItemException($"{types[i].GetName()} is not {nameof(IInitable)}.", i);
-            }
+            CC.Guard.CollectionArgument(types, nameof(types));
+            if (types.Any(x => x.IsNotType<IInitable>()))
+                throw new ArgumentException("Invalid type in collection.");
 
             ObjectTypes = types;
         }

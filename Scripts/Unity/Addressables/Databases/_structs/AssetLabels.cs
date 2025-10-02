@@ -1,23 +1,22 @@
 using CCEnvs.Linq;
+using CCEnvs.Unity.EditorSerialization;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [Serializable]
-    public struct AssetLabels : IEquatable<AssetLabels>, ISerializationCallbackReceiver
+    public struct AssetLabels : IEquatable<AssetLabels>
     {
-        [SerializeField]
-        private string[]? labels;
-
-        public ReadOnlyCollection<string> Labels { get; private set; }
+        [field: SerializeField]
+        public SerializedImmutableArray<string> Labels { get; private set; }
 
         public AssetLabels(params string[] labels) : this()
         {
-            Labels = new ReadOnlyCollection<string>(labels);
+            Labels = new SerializedImmutableArray<string>(labels);
         }
 
         public static bool operator ==(AssetLabels left, AssetLabels right)
@@ -32,10 +31,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public static implicit operator string[](AssetLabels assetLabels)
         {
-            return assetLabels.Labels.ToArray();
+            return assetLabels.Labels.Value.ToArray();
         }
 
-        public readonly string[] ToArray() => Labels.ToArray();
+        public readonly string[] ToArray() => Labels.Value.ToArray();
 
         public readonly bool Equals(AssetLabels other)
         {
@@ -46,28 +45,18 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    &&
                    other.Labels is not null
                    && 
-                   Labels.SequenceEqual(other.Labels);
+                   Labels.Value.AsValueEnumerable().SequenceEqual(other.Labels.Value);
         }
         public readonly override bool Equals(object obj)
         {
             return obj is AssetLabels typed && Equals(typed);
         }
 
-        public readonly override int GetHashCode() => Labels.SequenceToHashCode();
+        public readonly override int GetHashCode() => Labels.Value.SequenceToHashCode();
 
         public readonly override string ToString()
         {
-            return $"{nameof(Labels)}: {Labels.JoinStrings(", ")}";
-        }
-
-        readonly void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-            CC.DoNothing();
-        }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            Labels = new ReadOnlyCollection<string>(labels);
+            return $"{nameof(Labels)}: {Labels.Value.JoinStrings(", ")}";
         }
     }
 }

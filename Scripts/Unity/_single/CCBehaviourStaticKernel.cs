@@ -63,7 +63,7 @@ namespace CCEnvs.Unity
             if (FindObjectsByType<CCBehaviourStaticKernel>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None).Any(x => x != this)
                 )
-                throw new CCFrameworkException($"Cannot create more than one {nameof(CCBehaviourStaticKernel)}.");
+                throw new CCException($"Cannot create more than one {nameof(CCBehaviourStaticKernel)}.");
         }
 
         private void Setup()
@@ -105,7 +105,7 @@ namespace CCEnvs.Unity
 
         private CCBehaviourStatic GetInstanceOf(Type type)
         {
-            CC.Validate.Argument(type,
+            CC.Guard.Argument(type,
                                  nameof(type),
                                  !type.IsAbstract && !type.IsInterface,
                                  "Type is abstract.");

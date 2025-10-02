@@ -21,8 +21,8 @@ namespace CCEnvs.Conversations
         /// <exception cref="InvalidCastException"></exception>
         public static object DoTransform(object target, Type toType)
         {
-            CC.Validate.ArgumentNull(target, nameof(target));
-            CC.Validate.ArgumentNull(toType, nameof(toType));
+            CC.Guard.NullArgument(target, nameof(target));
+            CC.Guard.NullArgument(toType, nameof(toType));
 
             if (target.IsType(toType))
                 return target;
@@ -43,7 +43,7 @@ namespace CCEnvs.Conversations
                 return result;
 
             //Until this line converstaion could be done with abstraction
-            CC.Validate.Argument(toType, nameof(toType), !toType.IsAbstract && !toType.IsInterface);
+            CC.Guard.Argument(toType, nameof(toType), !toType.IsAbstract && !toType.IsInterface);
 
             CreateByFactory();
 

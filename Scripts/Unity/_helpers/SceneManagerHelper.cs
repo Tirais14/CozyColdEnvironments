@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Scenes
         public static ISubscription BindToSceneLoaded<TDelegate>(TDelegate func)
             where TDelegate : Delegate
         {
-            CC.Validate.ArgumentNull(func, nameof(func));
+            CC.Guard.NullArgument(func, nameof(func));
 
             Reflected rSceneManager = typeof(SceneManager).AsReflected();
             ContextedEventInfo<UnityAction<Scene, LoadSceneMode>> sceneLoadedEvent = rSceneManager.Event<UnityAction<Scene, LoadSceneMode>>(nameof(SceneManager.sceneLoaded));
@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.Scenes
         public static ISubscription BindToActiveSceneChanged<TDelegate>(TDelegate func)
             where TDelegate : Delegate
         {
-            CC.Validate.ArgumentNull(func, nameof(func));
+            CC.Guard.NullArgument(func, nameof(func));
 
             Reflected rSceneManager = typeof(SceneManager).AsReflected();
             ContextedEventInfo<UnityAction<Scene, Scene>> activeSceneChangedEvent = rSceneManager.Event<UnityAction<Scene, Scene>>(nameof(SceneManager.activeSceneChanged));

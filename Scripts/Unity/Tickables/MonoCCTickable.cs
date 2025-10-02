@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Tickables
             get
             {
                 if (ticker.IsNull())
-                    throw new DataAccessException("Tickable not registered in any ticker.");
+                    throw new MissingDataException("Tickable not registered in any ticker.");
 
                 return ticker;
             }

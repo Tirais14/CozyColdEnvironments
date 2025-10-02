@@ -1,70 +1,47 @@
 #nullable enable
-using CCEnvs.Language;
 using System;
-using System.Collections.Generic;
 
 namespace CCEnvs
 {
-    //public readonly struct Either<L, R> : IEquatable<Either<L, R>>
-    //{
-    //    public static Either<L, R> Default => new();
+    public readonly struct Either<L, R> : IEquatable<Either<L, R>>
+    {
+        private readonly Predicate<R> predicate;
 
-    //    private readonly L left;
-    //    private readonly R right;
+        public L Left { get; }
+        public R Right { get; }
 
-    //    public object Value { get; }
-    //    public bool HasValue => Value.IsNotDefault();
+        public bool IsLeft => !IsRight;
+        public bool IsRight => predicate(Right);
 
-    //    public Either(L left, R right)
-    //    {
-    //        if (getLeft)
-    //        {
+        public Either(L left, R right, Predicate<R> predicate)
+        {
+            Left = left;
+            Right = right;
+            this.predicate = predicate;
+        }
 
-    //        }    
+        public static bool operator ==(Either<L, R> left, Either<L, R> right)
+        {
+            return left.Equals(right);
+        }
 
-    //        this.right = right.ToOption();
-    //    }
+        public static bool operator !=(Either<L, R> left, Either<L, R> right)
+        {
+            return !(left == right);
+        }
 
-    //    public static implicit operator T(Option<T> source)
-    //    {
-    //        return source.Value!;
-    //    }
+        public bool Equals(Either<L, R> other)
+        {
+            throw new NotImplementedException();
+        }
+        public override bool Equals(object obj)
+        {
+            return obj is Either<L, R> typed && Equals(typed);
+        }
 
-    //    public static bool operator ==(Option<T> left, Option<T> right)
-    //    {
-    //        return left.Equals(right);
-    //    }
-
-    //    public static bool operator !=(Option<T> left, Option<T> right)
-    //    {
-    //        return !(left == right);
-    //    }
-
-    //    public Option<T> Set(T value) => new(value);
-
-    //    public Option<T> Reset() => new(Default);
-
-    //    public override string ToString()
-    //    {
-    //        return $"{nameof(Value)}: {Value}; {nameof(DefaultValue)}: {DefaultValue}; {nameof(HasValue)}: {HasValue}";
-    //    }
-
-    //    public bool Equals(Option<T> other)
-    //    {
-    //        var comparer = EqualityComparer<T>.Default;
-
-    //        return comparer.Equals(Value!, other.Value!)
-    //               &&
-    //               comparer.Equals(DefaultValue!, other.DefaultValue!);
-    //    }
-    //    public override bool Equals(object obj)
-    //    {
-    //        return obj is Option<T> typed && Equals(typed);
-    //    }
-
-    //    public override int GetHashCode()
-    //    {
-    //        return HashCode.Combine(DefaultValue, Value);
-    //    }
-    //}
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(predicate, Left, Right);
+        }
+    }
 }

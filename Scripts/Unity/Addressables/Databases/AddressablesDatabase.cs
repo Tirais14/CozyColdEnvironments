@@ -3,6 +3,7 @@ using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using Humanizer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void AddAsset(TAsset asset)
         {
-            CC.Validate.ArgumentNull(asset, nameof(asset));
+            CC.Guard.NullArgument(asset, nameof(asset));
 
             try
             {
@@ -78,7 +79,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void AddAssets(IEnumerable<TAsset> assets)
         {
-            CC.Validate.ArgumentNull(assets, nameof(assets));
+            CC.Guard.NullArgument(assets, nameof(assets));
 
             try
             {
@@ -92,7 +93,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public async UniTask LoadAssetsAsync(AssetLabels assetLabels)
         {
-            CC.Validate.Argument(assetLabels,
+            CC.Guard.Argument(assetLabels,
                                  nameof(assetLabels),
                                  assetLabels.IsNotDefault());
 
@@ -115,7 +116,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 OnLoaded(this);
             }
             
-            TrimExcessOnLoaded().Timeout(TimeSpan.FromMinutes(3), DelayType.UnscaledDeltaTime)
+            TrimExcessOnLoaded().Timeout(3.Minutes(), DelayType.UnscaledDeltaTime)
                                 .Forget(ex => CCDebug.PrintException(ex));
         }
 
@@ -123,7 +124,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                                       bool ignoreCase = false,
                                       bool throwIfNotFound = false)
         {
-            CC.Validate.StringArgument(assetName, nameof(assetName));
+            CC.Guard.StringArgument(assetName, nameof(assetName));
 
             assetName = ignoreCase ? assetName.ToLower() : assetName;
 
@@ -143,7 +144,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
         public AssetKey? FindAssetKey(object assetID, bool throwIfNotFound = false)
         {
-            CC.Validate.ArgumentNull(assetID, nameof(assetID));
+            CC.Guard.NullArgument(assetID, nameof(assetID));
 
             foreach (var key in db.Keys)
             {
@@ -161,7 +162,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                                  bool ignoreCase = false,
                                  bool throwIfNotFound = false)
         {
-            CC.Validate.StringArgument(assetName, nameof(assetName));
+            CC.Guard.StringArgument(assetName, nameof(assetName));
 
             AssetKey? key = FindAssetKey(assetName, ignoreCase, throwIfNotFound);
 
@@ -182,7 +183,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
         public TAsset? FindAsset(object assetID, bool throwIfNotFound = false)
         {
-            CC.Validate.ArgumentNull(assetID, nameof(assetID));
+            CC.Guard.NullArgument(assetID, nameof(assetID));
 
             AssetKey? key = FindAssetKey(assetID, throwIfNotFound);
 
@@ -202,7 +203,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public TAsset GetAsset(AssetKey key)
         {
-            CC.Validate.ArgumentNull(key, nameof(key));
+            CC.Guard.NullArgument(key, nameof(key));
 
             if (!db.TryGetValue(key, out TAsset asset))
                 throw new AssetNotFoundException(key);
@@ -220,8 +221,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             bool disposePreviousDb)
             where TNew : Object
         {
-            CC.Validate.ArgumentNull(dbConverter, nameof(dbConverter));
-            CC.Validate.ArgumentNull(dbItemConverter, nameof(dbItemConverter));
+            CC.Guard.NullArgument(dbConverter, nameof(dbConverter));
+            CC.Guard.NullArgument(dbItemConverter, nameof(dbItemConverter));
 
             var converesationTasks = db.Values.AsValueEnumerable()
                                               .Select(x => dbItemConverter(x))

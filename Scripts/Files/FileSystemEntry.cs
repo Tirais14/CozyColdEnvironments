@@ -92,7 +92,7 @@ namespace CCEnvs.Files
         {
             if (name.IsNullOrEmpty())
             {
-                throw new StringArgumentException(nameof(name), name);
+                throw new EmptyStringArgumentException(nameof(name), name);
             }
 
             customName = name;

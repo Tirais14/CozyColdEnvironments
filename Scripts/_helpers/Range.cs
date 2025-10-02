@@ -5,7 +5,7 @@ namespace CCEnvs
     {
         public static T[] From<T>(params T[] values)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             return values;
         }

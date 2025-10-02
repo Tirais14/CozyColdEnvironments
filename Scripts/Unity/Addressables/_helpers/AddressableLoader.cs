@@ -15,14 +15,13 @@ namespace CCEnvs.Unity.AddrsAssets
 {
     public static class AddressableLoader
     {
-        /// <exception cref="CollectionArgumentException"></exception>
+        /// <exception cref="EmptyCollectionArgumentException"></exception>
         public static async UniTask<AsyncOperationHandle<IList<IResourceLocation>>>LoadResourceLocationsByLabelsAsync(
             string[] labels,
             Type? assetType = null,
             IReadOnlyDictionary<Type, int>? loadPriorities = null)
         {
-            if (labels.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(labels), labels);
+            CC.Guard.CollectionArgument(labels, nameof(labels));
 
             var handle = Addressables.LoadResourceLocationsAsync(labels,
                 Addressables.MergeMode.Intersection);
@@ -88,15 +87,14 @@ namespace CCEnvs.Unity.AddrsAssets
             }
         }
 
-        /// <exception cref="CollectionArgumentException"></exception>
+        /// <exception cref="EmptyCollectionArgumentException"></exception>
         public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsByLabelsAsync<T>(
             string[] labels,
             IReadOnlyDictionary<Type, int>? loadPriorities = null,
             Action<T>? callback = null)
             where T : Object
         {
-            if (labels.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(labels), labels);
+            CC.Guard.CollectionArgument(labels, nameof(labels));
 
             var locationsHandle = await LoadResourceLocationsByLabelsAsync(labels, typeof(T), loadPriorities);
 

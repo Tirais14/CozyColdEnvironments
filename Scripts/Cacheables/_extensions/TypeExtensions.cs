@@ -7,7 +7,7 @@ namespace CCEnvs.Cacheables
     {
         public static bool IsCacheableType(this Type value)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             return Cacheable.IsCacheable(value);
         }

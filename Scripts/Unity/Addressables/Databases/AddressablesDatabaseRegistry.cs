@@ -1,37 +1,20 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Timers;
 using Cysharp.Threading.Tasks;
-using ZLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using static CCEnvs.Unity.AddrsAssets.Databases.AddressablesDatabaseRegistry;
-using Object = UnityEngine.Object;
 using System.Diagnostics;
+using UnityEngine;
+using ZLinq;
+using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S3881
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
-    internal static class AddressablesDatabaseRegistry
-    {
-        internal class AddressablesDatabaseRegistryReflected : Reflected
-        {
-            public Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases { get; }
-
-            public AddressablesDatabaseRegistryReflected(object target)
-                :
-                base(target, Settings.IncludeNonPublic)
-            {
-                databases = Field<Dictionary<AssetDatabaseKey, IAddressablesDatabase>>("databases").GetValue();
-            }
-        }
-    }
     public abstract class AddressablesDatabaseRegistry<TThis>
         : CCBehaviourStaticQ<TThis>,
         IAddressablesDatabaseRegistry
@@ -43,7 +26,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
         private Stopwatch? stopwatch;
-        private AddressablesDatabaseRegistryReflected thisReflected = null!;
         private bool disposedValue;
 
         public event Action<ILoadable> OnStartLoading {
@@ -66,7 +48,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         protected override void OnAwake()
         {
             base.OnAwake();
-            thisReflected = new AddressablesDatabaseRegistryReflected(this);
             try
             {
                 var task = RegisterDatabases();
@@ -95,7 +76,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database)
         {
-            thisReflected.databases.Add(key, database);
+            databases.Add(key, database);
         }
 
         public bool UnregisterDatabase(AssetDatabaseKey key) => databases.Remove(key);
@@ -120,7 +101,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public IAddressablesDatabase? FindDatabase(Type assetType, bool throwIfNotFound = false)
         {
-            CC.Validate.ArgumentNull(assetType, nameof(assetType));
+            CC.Guard.NullArgument(assetType, nameof(assetType));
 
             var result = Values.AsValueEnumerable().FirstOrDefault(db => db.AssetType == assetType);
 
@@ -204,7 +185,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
         {
-            IAddressablesDatabase db = thisReflected.databases[dbKey];
+            IAddressablesDatabase db = databases[dbKey];
 
             return db.GetAsset(assetkey);
         }

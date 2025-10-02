@@ -12,7 +12,7 @@ namespace CCEnvs
         public static Assembly[] FindAssemblies(string partialName, bool throwIfNotFound = true)
         {
             if (partialName.IsNullOrWhiteSpace())
-                throw new StringArgumentException(nameof(partialName), partialName);
+                throw new EmptyStringArgumentException(nameof(partialName), partialName);
 
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies().Concat(AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()).Distinct().ToArray();
 
@@ -28,7 +28,7 @@ namespace CCEnvs
         public static Assembly GetAssembly(string fullName, bool throwIfNotFound = true)
         {
             if (fullName.IsNullOrWhiteSpace())
-                throw new StringArgumentException(nameof(fullName), fullName);
+                throw new EmptyStringArgumentException(nameof(fullName), fullName);
 
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies().Concat(AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()).Distinct().ToArray();
 

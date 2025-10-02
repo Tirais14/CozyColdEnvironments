@@ -36,10 +36,6 @@ namespace CCEnvs.Unity
             params T[] excludeObjs)
             where T : class
         {
-            if (excludeObjs.HasNullElement())
-            {
-                throw new CollectionItemException();
-            }
             if (overlaps == null)
             {
                 return false;

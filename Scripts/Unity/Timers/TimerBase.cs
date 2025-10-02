@@ -90,7 +90,7 @@ namespace CCEnvs.Unity.Timers
                 return;
             }
 
-            CC.Validate.Argument(newInterval,
+            CC.Guard.Argument(newInterval,
                                  nameof(newInterval),
                                  newInterval > TimeSpan.Zero);
 

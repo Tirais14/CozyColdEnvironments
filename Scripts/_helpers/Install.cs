@@ -11,7 +11,7 @@ namespace CCEnvs
     {
         public static void Static()
         {
-            if (!ReflectedType.EditorDomain.IsFirstPlayModeEntrance)
+            if (!UnityEditorDomain.IsFirstPlayModeEntrance)
                 return;
 
             foreach (var installer in from assembly in AppDomain.CurrentDomain.GetAssemblies()

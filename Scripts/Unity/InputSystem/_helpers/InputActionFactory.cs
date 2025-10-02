@@ -82,7 +82,7 @@ namespace CCEnvs.Unity.InputSystem
             return new InputActionX<T>(inputAction);
         }
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         public static IInputAction<T> Create<T>(InputActionMap actionMap,
                                                 string actionName)
             where T : struct
@@ -90,7 +90,7 @@ namespace CCEnvs.Unity.InputSystem
             if (actionMap is null)
                 throw new ArgumentNullException(nameof(actionMap));
             if (actionName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(actionName), actionName);
+                throw new EmptyStringArgumentException(nameof(actionName), actionName);
 
             InputAction input = actionMap.FindAction(actionName, throwIfNotFound: true);
 
@@ -98,7 +98,7 @@ namespace CCEnvs.Unity.InputSystem
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         public static IInputAction<T> Create<T>(InputActionAsset inputActions,
                                                 string actionMapName,
                                                 string actionName)
@@ -107,9 +107,9 @@ namespace CCEnvs.Unity.InputSystem
             if (inputActions == null)
                 throw new ArgumentNullException(nameof(inputActions));
             if (actionMapName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(actionMapName), actionMapName);
+                throw new EmptyStringArgumentException(nameof(actionMapName), actionMapName);
             if (actionName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(actionName), actionName);
+                throw new EmptyStringArgumentException(nameof(actionName), actionName);
 
             InputActionMap actionMap = inputActions.FindActionMap(actionMapName,
                                                            throwIfNotFound: true);

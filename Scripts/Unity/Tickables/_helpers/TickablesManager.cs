@@ -38,7 +38,7 @@ namespace CCEnvs.Unity.Tickables
         /// <exception cref="CannotRegisterTickerException"></exception>
         public static IDisposable RegisterTicker(ITicker ticker)
         {
-            CC.Validate.ArgumentNull(ticker, nameof(ticker));
+            CC.Guard.NullArgument(ticker, nameof(ticker));
 
             if (IsTickerRegistered(ticker))
                 throw new CannotRegisterTickerException(
@@ -76,8 +76,8 @@ namespace CCEnvs.Unity.Tickables
         public static IDisposable RegisterTickable<T>(T tickable, Type tickerType)
             where T : ITickableBase
         {
-            CC.Validate.ArgumentNull(tickable, nameof(tickable));
-            CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
+            CC.Guard.NullArgument(tickable, nameof(tickable));
+            CC.Guard.NullArgument(tickerType, nameof(tickerType));
 
             if (!self.tickers.TryGetValue(tickerType, out ITicker? ticker))
                 throw new CannotRegisterTickableException(
@@ -93,7 +93,7 @@ namespace CCEnvs.Unity.Tickables
         public static IDisposable RegisterTickable<T>(T tickable)
             where T : ITickableBase
         {
-            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+            CC.Guard.NullArgument(tickable, nameof(tickable));
 
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
                 throw new CannotRegisterTickableException(
@@ -106,8 +106,8 @@ namespace CCEnvs.Unity.Tickables
         public static bool UnregisterTickable<T>(T tickable, Type tickerType)
             where T : ITickableBase
         {
-            CC.Validate.ArgumentNull(tickable, nameof(tickable));
-            CC.Validate.ArgumentNull(tickerType, nameof(tickerType));
+            CC.Guard.NullArgument(tickable, nameof(tickable));
+            CC.Guard.NullArgument(tickerType, nameof(tickerType));
 
             var result = self.tickers[tickerType].Unregister(tickable);
             CCDebug.PrintLog($"Unregistered tickable: {tickable.GetType().GetFullName()} from {tickerType.GetName()}.");
@@ -118,7 +118,7 @@ namespace CCEnvs.Unity.Tickables
         public static bool UnregisterTickable<T>(T? tickable)
             where T : ITickableBase
         {
-            CC.Validate.ArgumentNull(tickable, nameof(tickable));
+            CC.Guard.NullArgument(tickable, nameof(tickable));
 
             if (!Tickable.TryGetTickerType(tickable, out Type? tickerType))
                 return false;

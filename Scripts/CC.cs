@@ -58,70 +58,57 @@ namespace CCEnvs
         }
 #pragma warning restore S112
 
-        public static class Validate
+        public static class Guard
         {
             /// <exception cref="ArgumentNullException"></exception>
-            public static void ArgumentNull<T>([NotNull] T? obj,
-                                            string paramName)
+            public static void NullArgument<T>([NotNull] T? obj,
+                                               string paramName)
             {
                 if (obj.IsNull())
                     throw new ArgumentNullException(paramName);
             }
-            public static void ArgumentNullNested<T>([NotNull] T? obj,
-                                                  params string[] complexParamName)
-            {
-                if (obj.IsNull())
-                    throw new ArgumentNullException(complexParamName.JoinStrings('.'));
-            }
 
+            /// <exception cref="ArgumentException"></exception>
             public static void Argument<T>(T value,
                                            string paramName,
                                            bool mustBeTrue,
                                            string? message = null)
             {
                 if (!mustBeTrue)
-                    throw new ArgumentException($"{paramName} = {value}. {message}");
+                    throw new ArgumentException(message, paramName);
             }
 
-            public static void ArgumentNested<T>(T value,
-                                                 bool mustBeTrue,
-                                                 params string[] complexParamName)
-            {
-                if (!mustBeTrue)
-                    throw new ArgumentException($"{complexParamName.JoinStrings('.')} = {value}.");
-            }
-
+            /// <exception cref="EmptyStringArgumentException"></exception>
             public static void StringArgument([NotNull] string? value, string paramName)
             {
-                if (value.IsNullOrEmpty())
-                    throw new StringArgumentException(paramName, value);
+                NullArgument(value, paramName);
+
+                if (value == string.Empty)
+                    throw new EmptyStringArgumentException(paramName, value);
             }
 
-            public static void StringArgumentNested([NotNull] string? value,
-                                                    params string[] nameParts)
+            /// <exception cref="EmptyStringException"></exception>
+            public static void String(string value)
             {
                 if (value.IsNullOrEmpty())
-                    throw new StringArgumentException(nameParts.JoinStrings('.'), value);
+                    throw new EmptyStringException(value);
             }
 
-            public static void String([NotNull] string? value)
-            {
-                if (value.IsNullOrEmpty())
-                    throw new StringException(value);
-            }
-
-            /// <exception cref="CollectionArgumentException"></exception>
+            /// <exception cref="EmptyCollectionArgumentException"></exception>
             public static void CollectionArgument([NotNull] IEnumerable? enumerable,
                                                   string paramName)
             {
+                NullArgument(enumerable, paramName);
+
                 if (CCEnumerable.IsNullOrEmpty(enumerable))
-                    throw new CollectionArgumentException(paramName, enumerable);
+                    throw new EmptyCollectionArgumentException(paramName);
             }
 
-            public static void Collection([NotNull] IEnumerable? enumerable)
+            /// <exception cref="EmptyCollectionException"></exception>
+            public static void Collection(IEnumerable enumerable)
             {
-                if (CCEnumerable.IsNullOrEmpty(enumerable))
-                    throw new CollectionException(enumerable);
+                if (CCEnumerable.IsEmpty(enumerable))
+                    throw new EmptyCollectionException();
             }
         }
     }

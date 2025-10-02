@@ -63,12 +63,11 @@ namespace CCEnvs.Unity.Disposables
         /// </summary>
         /// <param name="component">if null, binds to game object destroy trigger</param>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="CollectionArgumentException"></exception>
+        /// <exception cref="EmptyCollectionArgumentException"></exception>
         public void BindDisposables(Component? component,
                                     params IDisposable[] disposables)
         {
-            if (disposables.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(disposables), disposables);
+            CC.Guard.CollectionArgument(disposables, nameof(disposables));
 
             for (int i = 0; i < disposables.Length; i++)
                 bindings.Add(new DisposableBinding(component, disposables[i]));

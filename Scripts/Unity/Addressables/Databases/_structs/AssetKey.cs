@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             :
             this()
         {
-            CC.Validate.ArgumentNull(asset, nameof(asset));
+            CC.Guard.NullArgument(asset, nameof(asset));
 
             AssetName = asset.name;
 
@@ -44,7 +44,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public static AssetKey ByID(object id)
         {
-            CC.Validate.ArgumentNull(id, nameof(id));
+            CC.Guard.NullArgument(id, nameof(id));
 
             return new AssetKey(id);
         }

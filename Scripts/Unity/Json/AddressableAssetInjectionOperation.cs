@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.Json
         /// <exception cref="NotSupportedException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="TypeCastException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
         public AddressableAssetInjectionOperation(Func<object> getTarget,
                                                   UnityEngine.Object injection,
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Json
             if (injection.GetType().IsNotType(injectionMemberValueType))
                 CC.Throw.InvalidCast(injection.GetType(), injectionMemberValueType);
             if (injectionMemberName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(injectionMemberName), injectionMemberName);
+                throw new EmptyStringArgumentException(nameof(injectionMemberName), injectionMemberName);
             if (injectionMemberType != MemberType.Field
                 ||
                 injectionMemberType != MemberType.Property

@@ -16,7 +16,7 @@ namespace CCEnvs
                                            string other,
                                            bool ignoreCase = false)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             return value.Equals(other, ignoreCase ?
                 StringComparison.InvariantCultureIgnoreCase
@@ -28,7 +28,7 @@ namespace CCEnvs
                                          string other,
                                          bool ignoreCase = false)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             return value.Contains(other, ignoreCase ?
                 StringComparison.OrdinalIgnoreCase
@@ -40,7 +40,7 @@ namespace CCEnvs
                                              string other,
                                              bool ignoreCase = false)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             return value.Contains(other, ignoreCase ?
                 StringComparison.InvariantCultureIgnoreCase
@@ -52,7 +52,7 @@ namespace CCEnvs
                                            string other,
                                            bool ignoreCase = false)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             return value.Contains(other, ignoreCase ?
                 StringComparison.OrdinalIgnoreCase

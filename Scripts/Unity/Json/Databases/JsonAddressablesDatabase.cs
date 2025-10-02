@@ -18,7 +18,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
         public async UniTask LoadAssetsAsync(AssetLabels textAssetLabels,
             Func<TValue, TKey> keySelector)
         {
-            CC.Validate.ArgumentNull(keySelector, nameof(keySelector));
+            CC.Guard.NullArgument(keySelector, nameof(keySelector));
 
             using var textAssets = new AddressablesDatabase<TextAsset>();
 

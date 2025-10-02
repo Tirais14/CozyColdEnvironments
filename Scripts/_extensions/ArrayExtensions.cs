@@ -10,7 +10,7 @@ namespace CCEnvs
     {
         public static IEnumerator<T> GetEnumeratorT<T>(this T[] values)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             return ((IEnumerable<T>)values).GetEnumerator();
         }

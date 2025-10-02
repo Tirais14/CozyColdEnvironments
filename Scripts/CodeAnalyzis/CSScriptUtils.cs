@@ -20,8 +20,8 @@ namespace CCEnvs.CodeAnalyzis
 
         public static async ValueTask AddMissingUsingsAsync(string filePath, params Type[] forTypes)
         {
-            CC.Validate.StringArgument(filePath, nameof(filePath));
-            CC.Validate.ArgumentNull(forTypes, nameof(forTypes));
+            CC.Guard.StringArgument(filePath, nameof(filePath));
+            CC.Guard.NullArgument(forTypes, nameof(forTypes));
             if (forTypes.IsEmpty())
                 return;
 
@@ -42,7 +42,7 @@ namespace CCEnvs.CodeAnalyzis
 
         public static async ValueTask<string[]> GetUsingsFromFileAsync(string filePath)
         {
-            CC.Validate.StringArgument(filePath, nameof(filePath));
+            CC.Guard.StringArgument(filePath, nameof(filePath));
 
             using var reader = new StreamReader(filePath);
 
@@ -53,7 +53,7 @@ namespace CCEnvs.CodeAnalyzis
 
         public static async ValueTask<string[]> ReadFileAsync(string filePath)
         {
-            CC.Validate.StringArgument(filePath, nameof(filePath));
+            CC.Guard.StringArgument(filePath, nameof(filePath));
 
             using var reader = new StreamReader(filePath);
             var lines = new List<string>();
@@ -74,7 +74,7 @@ namespace CCEnvs.CodeAnalyzis
 
         public static bool IsUsingDefine(string line)
         {
-            CC.Validate.ArgumentNull(line, nameof(line));
+            CC.Guard.NullArgument(line, nameof(line));
 
             return Regex.IsMatch(line, @"(^s*)(\w*)(s*$)");
         }

@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Reflection.Data;
 using System;
 using System.Reflection;
@@ -13,10 +12,9 @@ namespace CCEnvs.Reflection
                                      ExplicitArguments args = default,
                                      params Type[] genericParams)
         {
-            CC.Validate.ArgumentNullNested(target.Type,
-                                           nameof(target),
-                                           nameof(target.Type));
-            CC.Validate.StringArgument(methodName, nameof(methodName));
+            CC.Guard.NullArgument(target.Type,
+                                  Syntax.Chain(nameof(target), nameof(target.Type)));
+            CC.Guard.StringArgument(methodName, nameof(methodName));
 
             BindingFlags bindingFlags = BindingFlagsDefault.All;
 

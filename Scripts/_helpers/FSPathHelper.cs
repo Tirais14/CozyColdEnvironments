@@ -56,14 +56,14 @@ namespace CCEnvs.Files
             return path.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        /// <exception cref="CCInvalidDataException"></exception>
+        /// <exception cref="IncorrectDataException"></exception>
         public static char GetDirectorySeparator(PathStyle style = PathStyle.Default)
         {
             return style switch {
                 PathStyle.Default => DefaultDirectorySeparator,
                 PathStyle.Windows => '\\',
                 PathStyle.Universal => '/',
-                _ => throw new CCInvalidDataException(style, nameof(style)),
+                _ => throw new IncorrectDataException(style),
             };
         }
 
@@ -179,7 +179,7 @@ namespace CCEnvs.Files
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         public static string RemoveLast(string path,
                                         string toRemove,
                                         PathStyle style = PathStyle.Default)
@@ -189,7 +189,7 @@ namespace CCEnvs.Files
             if (path.IsEmpty())
                 return string.Empty;
             if (toRemove.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(toRemove), toRemove);
+                throw new EmptyStringArgumentException(nameof(toRemove), toRemove);
 
             string[] parts = Split(path);
 
@@ -240,14 +240,14 @@ namespace CCEnvs.Files
             return filename.IsNotNullOrEmpty();
         }
 
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public static string SetFilename(string path,
                                          string filename,
                                          PathStyle style = PathStyle.Default)
         {
             if (path.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(path));
+                throw new EmptyStringArgumentException(nameof(path));
             if (filename is null)
                 throw new ArgumentNullException(nameof(filename));
 

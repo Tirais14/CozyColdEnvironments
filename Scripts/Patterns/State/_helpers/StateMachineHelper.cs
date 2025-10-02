@@ -12,18 +12,15 @@ namespace CCEnvs.Patterns.States
     public static class StateMachineHelper
     {
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="CollectionArgumentException"></exception>
+        /// <exception cref="EmptyCollectionArgumentException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public static void InjectStates(IStateMachine stateMachine,
                                         FieldInfo[] stateFields,
                                         IState[] states)
         {
-            if (stateMachine.IsNull())
-                throw new ArgumentNullException(nameof(stateMachine));
-            if (stateFields.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(stateFields), stateFields);
-            if (states.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(states), states);
+            CC.Guard.NullArgument(stateMachine, nameof(stateMachine));
+            CC.Guard.CollectionArgument(stateFields, nameof(stateFields));
+            CC.Guard.CollectionArgument(states, nameof(states));
             if (stateFields.Length != states.Length)
                 throw new ArgumentException("Arrays must be the same length.");
 
@@ -54,10 +51,8 @@ namespace CCEnvs.Patterns.States
         public static IState[] CreateStates(IFactory<Type, IState> factory,
                                             Type[] stateTypes)
         {
-            if (factory.IsNull())
-                throw new ArgumentNullException(nameof(factory));
-            if (stateTypes.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(stateTypes), stateTypes);
+            CC.Guard.NullArgument(factory, nameof(factory));
+            CC.Guard.CollectionArgument(stateTypes, nameof(stateTypes));
 
             return stateTypes.Select(x => factory.Create(x)).ToArray();
         }
@@ -68,9 +63,10 @@ namespace CCEnvs.Patterns.States
             if (stateMachine.IsNull())
                 throw new ArgumentNullException(nameof(stateMachine));
 
-            return (from x in stateMachine.GetType().ForceGetFields(BindingFlagsDefault.InstanceAll)
-                    where x.FieldType.IsType<IState>() && x.FieldType != typeof(IState)
-                    select x).ToArray();
+            return stateMachine.GetType()
+                               .ForceGetFields(BindingFlagsDefault.InstanceAll)
+                               .Where(x => x.FieldType.IsType<IState>() && x.FieldType != typeof(IState))
+                               .ToArray();
         }
     }
 }

@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.Json
         private void Validate(StreamingContext _)
         {
             if (ObjectType.IsNotType<IItemStack>())
-                CCDebug.PrintException(new DataAccessException(ObjectType, nameof(ObjectType)));
+                CCDebug.PrintException(new IncorrectDataException(ObjectType));
         }
     }
     public record IItemContainerDto<T> : IItemContainerDto

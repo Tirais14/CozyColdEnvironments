@@ -74,11 +74,11 @@ namespace CCEnvs.Files
             return new Path(style, filenameChanged);
         }
 
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         public readonly Path WithExtension(string extension)
         {
             if (extension.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(extension), extension);
+                throw new EmptyStringArgumentException(nameof(extension), extension);
 
             string changed = System.IO.Path.ChangeExtension(value, extension);
 
@@ -88,11 +88,11 @@ namespace CCEnvs.Files
         /// <summary>
         /// Changes filename in path
         /// </summary>
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         public readonly Path WithFileName(string filename)
         {
             if (filename.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(filename), filename);
+                throw new EmptyStringArgumentException(nameof(filename), filename);
 
             string changed = FSPathHelper.SetFilename(value, filename);
 

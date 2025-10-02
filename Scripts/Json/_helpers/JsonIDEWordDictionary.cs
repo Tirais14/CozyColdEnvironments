@@ -19,8 +19,8 @@ namespace CCEnvs.Json
                                                    string[]? includeNamespaces = null,
                                                    string[]? excludeNamespaces = null)
         {
-            CC.Validate.Argument(path, nameof(path), path.IsNotDefault());
-            CC.Validate.ArgumentNested(path, path.HasFileName, nameof(path));
+            CC.Guard.Argument(path, nameof(path), path.IsNotDefault());
+            CC.Guard.Argument(path, nameof(path), path.HasFileName);
             var directory = new DirectoryEntry(path - path.FileName);
 
             if (!directory.Exists)

@@ -21,8 +21,8 @@ namespace CCEnvs.Reflection
         public static MemberMatches GetMemberMatches(Type left,
                                                      Type right)
         {
-            CC.Validate.ArgumentNull(left, nameof(left));
-            CC.Validate.ArgumentNull(right, nameof(right));
+            CC.Guard.NullArgument(left, nameof(left));
+            CC.Guard.NullArgument(right, nameof(right));
 
             BindingFlags bindings = BindingFlagsDefault.All;
             var comparer = new MemberEqualityComparer();
@@ -71,7 +71,7 @@ namespace CCEnvs.Reflection
         {
             throw new NotImplementedException("In developing");
 
-            CC.Validate.CollectionArgument(types, nameof(types));
+            CC.Guard.CollectionArgument(types, nameof(types));
 
             IEnumerable<Type> ordered = from type in types
                                         orderby type.GetParentsCount() descending
@@ -93,7 +93,7 @@ namespace CCEnvs.Reflection
         /// <exception cref="ArgumentNullException"></exception>
         public static Queue<Type> CollectBaseTypes(Type type)
         {
-            CC.Validate.ArgumentNull(type, nameof(type));
+            CC.Guard.NullArgument(type, nameof(type));
 
             //if (type.IsInterface)
             //    return GetInterfaceInheritancePath(type);
@@ -106,8 +106,8 @@ namespace CCEnvs.Reflection
         {
             throw new NotImplementedException("In developing");
 
-            CC.Validate.ArgumentNull(type, nameof(type));
-            CC.Validate.Argument(type,
+            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.Argument(type,
                                  nameof(type),
                                  type.IsInterface,
                                  "Type is not interface");

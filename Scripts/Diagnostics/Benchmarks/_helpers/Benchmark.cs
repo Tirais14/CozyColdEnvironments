@@ -7,7 +7,7 @@ namespace CCEnvs.Diagnostics.Benchmarks
     {
         public static BenchmarkResult Action(Action action, int repeats = 1, string testName = "")
         {
-            CC.Validate.ArgumentNull(action, nameof(action));
+            CC.Guard.NullArgument(action, nameof(action));
 
             if (repeats < 1)
                 repeats = 1;
@@ -30,7 +30,7 @@ namespace CCEnvs.Diagnostics.Benchmarks
 
         public static void Print(BenchmarkResult benchmarkResult)
         {
-            CC.Validate.ArgumentNull(benchmarkResult, nameof(benchmarkResult));
+            CC.Guard.NullArgument(benchmarkResult, nameof(benchmarkResult));
 
             typeof(Benchmark).PrintLog(benchmarkResult);
         }

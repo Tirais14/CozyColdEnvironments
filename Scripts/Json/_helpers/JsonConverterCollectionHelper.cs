@@ -49,7 +49,7 @@ namespace CCEnvs.Json
             }
 
             if (genericArguments is null && throwOnError)
-                throw new Diagnostics.DataAccessException(null, $"Cannot resolve type for non generic {nameof(JsonConverter)}.");
+                throw new MissingDataException($"Cannot resolve type for non generic {nameof(JsonConverter)}.");
 
             return null;
         }

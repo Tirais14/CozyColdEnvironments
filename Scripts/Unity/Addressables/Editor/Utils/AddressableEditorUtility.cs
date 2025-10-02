@@ -29,13 +29,13 @@ namespace CCEnvs.Unity.AddrsAssets
             return labelStringBuilder.ToString();
         }
 
-        /// <exception cref="StringException"></exception>
+        /// <exception cref="EmptyStringException"></exception>
         public static AddressableAssetGroup GetAddressableAssetGroup(string groupName,
             StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
         {
             if (string.IsNullOrEmpty(groupName))
             {
-                throw new StringArgumentException(nameof(groupName), groupName);
+                throw new EmptyStringArgumentException(nameof(groupName), groupName);
             }
 
             bool filter(AddressableAssetGroup group) =>

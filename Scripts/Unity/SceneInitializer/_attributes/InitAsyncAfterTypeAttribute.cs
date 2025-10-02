@@ -1,7 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.TypeMatching;
 using System;
-using System.Linq;
 
 namespace CCEnvs.Unity.Initables
 {
@@ -10,14 +8,11 @@ namespace CCEnvs.Unity.Initables
     {
         public Type[] InitableTypes { get; }
 
-        /// <exception cref="CollectionArgumentException"></exception>
+        /// <exception cref="EmptyCollectionArgumentException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public InitAsyncAfterTypeAttribute(params Type[] types)
         {
-            if (types.IsNullOrEmpty())
-                throw new CollectionArgumentException(nameof(types), types);
-            if (types.Any(x => x.IsNot<IInitableAsync>()))
-                throw new ArgumentException($"Has not {nameof(IInitableAsync)} object.");
+            CC.Guard.CollectionArgument(types, nameof(types));
 
             InitableTypes = types;
         }

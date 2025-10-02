@@ -18,7 +18,7 @@ namespace CCEnvs.Linq
             this ValueEnumerable<TEnumerator, T> source)
             where TEnumerator : struct, IValueEnumerator<T>
         {
-            CC.Validate.ArgumentNull(source, nameof(source));
+            CC.Guard.NullArgument(source, nameof(source));
 
             return new ZLinqEnumerable<TEnumerator, T>(source.Enumerator);
         }
@@ -46,8 +46,8 @@ namespace CCEnvs.Linq
 
         public static T[] ForEach<T>(this IEnumerable<T> values, Action<T> action)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
-            CC.Validate.ArgumentNull(action, nameof(action));
+            CC.Guard.NullArgument(values, nameof(values));
+            CC.Guard.NullArgument(action, nameof(action));
 
             T[] materialized = values.ToArray();
             int count = materialized.Length;
@@ -72,7 +72,7 @@ namespace CCEnvs.Linq
         public static IEnumerable<T> RemoveElement<T>(this IEnumerable<T> values,
                                                       T removeValue)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             foreach (var value in values)
             {
@@ -88,7 +88,7 @@ namespace CCEnvs.Linq
             int position,
             T newValue)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             bool inserted = false;
             int i = 0;
@@ -118,7 +118,7 @@ namespace CCEnvs.Linq
             this IEnumerable<T> values,
             int position)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             bool removed = false;
             int i = 0;
@@ -140,7 +140,7 @@ namespace CCEnvs.Linq
 
         public static int SequenceToHashCode<T>(this IEnumerable<T> values)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             var hash = new HashCode();
             foreach ( var item in values)
@@ -153,8 +153,8 @@ namespace CCEnvs.Linq
             this IEnumerable<TValue> values,
             Func<TValue, TKey> keySelector)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
-            CC.Validate.ArgumentNull(keySelector, nameof(keySelector));
+            CC.Guard.NullArgument(values, nameof(values));
+            CC.Guard.NullArgument(keySelector, nameof(keySelector));
 
             foreach (var value in values)
                 yield return new KeyValuePair<TKey, TValue>(keySelector(value), value);
@@ -173,7 +173,7 @@ namespace CCEnvs.Linq
 
         public static ReadOnlyCollection<T> AsReadOnly<T>(this IEnumerable<T> value)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             if (value is IList<T> list)
                 return new ReadOnlyCollection<T>(list);
@@ -183,7 +183,7 @@ namespace CCEnvs.Linq
 
         public static IEnumerable<TResult> DoTransformTypes<TResult>(this IEnumerable value)
         {
-            CC.Validate.ArgumentNull(value, nameof(value));
+            CC.Guard.NullArgument(value, nameof(value));
 
             foreach (var item in value)
                 yield return (TResult)TypeTransformer.DoTransform(item, typeof(TResult));
@@ -236,7 +236,7 @@ namespace CCEnvs.Linq
 
         public static Queue<T> ToQueue<T>(this IEnumerable<T> values)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             var results = new Queue<T>();   
             foreach (var value in values)
@@ -247,7 +247,7 @@ namespace CCEnvs.Linq
 
         public static Stack<T> ToStack<T>(this IEnumerable<T> values)
         {
-            CC.Validate.ArgumentNull(values, nameof(values));
+            CC.Guard.NullArgument(values, nameof(values));
 
             var results = new Stack<T>();
             foreach (var value in values)

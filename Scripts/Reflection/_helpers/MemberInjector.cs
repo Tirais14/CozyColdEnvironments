@@ -9,7 +9,7 @@ namespace CCEnvs.Reflection.Injections
 {
     public static class MemberInjector
     {
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         /// <exception cref="MemberNotFoundException"></exception>
         public static bool InjectField(TypeValuePair target,
                                        string fieldName,
@@ -17,7 +17,7 @@ namespace CCEnvs.Reflection.Injections
                                        InjectionOptions options = InjectionOptions.Default)
         {
             if (fieldName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(fieldName), fieldName);
+                throw new EmptyStringArgumentException(nameof(fieldName), fieldName);
 
             DeconstructOptions(options, out bool throwIfFailed, out bool cacheField);
             BindingFlags bindingFlags = ResolveBindingFlags(target);
@@ -58,7 +58,7 @@ namespace CCEnvs.Reflection.Injections
             return InjectField(new TypeValuePair(target), fieldName, value, options);
         }
 
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         /// <exception cref="MemberNotFoundException"></exception>
         /// <exception cref="NullReferenceException"></exception>
         public static bool InjectProperty(TypeValuePair target,
@@ -67,7 +67,7 @@ namespace CCEnvs.Reflection.Injections
                                           InjectionOptions options = InjectionOptions.Default)
         {
             if (propName.IsNullOrEmpty())
-                throw new StringArgumentException(nameof(propName), propName);
+                throw new EmptyStringArgumentException(nameof(propName), propName);
 
             DeconstructOptions(options, out bool throwIfFailed, out bool cacheProp);
             BindingFlags bindingFlags = ResolveBindingFlags(target);

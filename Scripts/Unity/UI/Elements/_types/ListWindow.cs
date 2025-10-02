@@ -54,7 +54,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         private static T[] GetComponentsFrom(GameObject gameObject)
         {
-            CC.Validate.ArgumentNull(gameObject, nameof(gameObject));
+            CC.Guard.NullArgument(gameObject, nameof(gameObject));
 
             if (!gameObject.TryGetAssignedObjects<T>(out var results))
                 throw new CCEnvs.Diagnostics.CCException($"Added item must contain on GameObject at least one component with type: {typeof(T).GetName()}.");
@@ -64,7 +64,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void Add(T item)
         {
-            CC.Validate.ArgumentNull(item, nameof(item));
+            CC.Guard.NullArgument(item, nameof(item));
 
             inner.Add(item);
             AddInternal(item);
@@ -76,7 +76,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void Insert(int index, T item)
         {
-            CC.Validate.ArgumentNull(item, nameof(item));
+            CC.Guard.NullArgument(item, nameof(item));
 
             inner.Insert(index, item);
             AddInternal(item);

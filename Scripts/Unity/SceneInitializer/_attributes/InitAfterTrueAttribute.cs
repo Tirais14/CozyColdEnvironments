@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Initables
         public bool TypeDeclaredOnly { get; }
 
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="StringArgumentException"></exception>
+        /// <exception cref="EmptyStringArgumentException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public InitAfterTrueAttribute(Type type,
                                       string memberName,
@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.Initables
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
             if (memberName.IsNullOrWhiteSpace())
-                throw new StringArgumentException(nameof(memberName), memberName);
+                throw new EmptyStringArgumentException(nameof(memberName), memberName);
             if (type.IsNotType<UnityEngine.Object>())
                 throw new ArgumentException("Type must be UnityEngine.Object inherited.");
             if (memberType == MemberType.Undefined
