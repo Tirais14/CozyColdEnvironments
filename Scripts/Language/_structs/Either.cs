@@ -1,80 +1,56 @@
 #nullable enable
 using System;
 
-namespace CCEnvs
+namespace CCEnvs.Language
 {
-    public readonly struct Either<T> : IEquatable<Either<T>>
-    {
-        private readonly Predicate<T> chooseRight;
-
-        public T Left { get; }
-        public T Right { get; }
-
-        public bool IsLeft => !IsRight;
-        public bool IsRight => chooseRight(Right);
-        public T Resolved => IsRight ? Right! : Left!;
-
-        public Either(T left, T right)
-        {
-            Left = left;
-            Right = right;
-            chooseRight = (x) => x.IsNotDefault();
-        }
-
-        public Either(T left, T right, Predicate<T> chooseRight)
-            :
-            this(left, right)
-        {
-            this.chooseRight = chooseRight;
-        }
-
-        public static bool operator ==(Either<T> left, Either<T> right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Either<T> left, Either<T> right)
-        {
-            return !(left == right);
-        }
-
-        public bool Equals(Either<T> other)
-        {
-            throw new NotImplementedException();
-        }
-        public override bool Equals(object obj)
-        {
-            return obj is Either<T> typed && Equals(typed);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(chooseRight, Left, Right);
-        }
-    }
     public readonly struct Either<L, R> : IEquatable<Either<L, R>>
     {
-        private readonly Predicate<R> chooseRight;
+        private readonly Func<L> leftGetter;
+        private readonly Func<R> rightGetter;
+        private readonly Func<bool> leftIsValid;
 
-        public L Left { get; }
-        public R Right { get; }
+        public L Left => leftGetter();
+        public R Right => rightGetter();
 
-        public bool IsLeft => !IsRight;
-        public bool IsRight => chooseRight(Right);
-        public object Resolved => IsRight ? Right! : Left!;
+        public bool IsLeft => leftIsValid();
+        public bool IsRight => !IsLeft;
 
-        public Either(L left, R right)
+        public Either(Func<L> leftGetter, Func<R> rightGetter, Func<bool> leftIsValid)
         {
-            Left = left;
-            Right = right;
-            chooseRight = (x) => x.IsNotDefault();
+            this.leftGetter = leftGetter;
+            this.rightGetter = rightGetter;
+            this.leftIsValid = leftIsValid;
         }
 
-        public Either(L left, R right, Predicate<R> chooseRight)
+        public Either(Func<L> leftGetter, Func<R> rightGetter)
+            :
+            this(leftGetter, rightGetter, () => leftGetter().IsNotDefault())
+        {
+        }
+
+        public Either(L left, Func<R> rightGetter)
+            :
+            this(() => left, rightGetter, () => left.IsNotDefault())
+        {
+        }
+
+        public Either(Func<L> leftGetter, R right)
+            :
+            this(leftGetter, () => right, () => leftGetter().IsNotDefault())
+        {
+        }
+
+        public Either(L left, R right)
+            :
+            this(() => left, () => right)
+        {
+        }
+
+        public Either(L left, R right, Func<bool> leftIsValid)
             :
             this(left, right)
         {
-            this.chooseRight = chooseRight;
+            this.leftIsValid = leftIsValid;
         }
 
         public static bool operator ==(Either<L, R> left, Either<L, R> right)
@@ -87,11 +63,16 @@ namespace CCEnvs
             return !(left == right);
         }
 
-        public T Resolve<T>() => Resolved.As<T>();
+        public object Resolve() => IsLeft ? Left! : Right!;
+        public T Resolve<T>() => IsLeft ? Left.As<T>() : Right.As<T>();
 
         public bool Equals(Either<L, R> other)
         {
-            throw new NotImplementedException();
+            return leftGetter == other.leftGetter
+                   &&
+                   rightGetter == other.rightGetter
+                   &&
+                   leftIsValid == other.leftIsValid;
         }
         public override bool Equals(object obj)
         {
@@ -100,7 +81,7 @@ namespace CCEnvs
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(chooseRight, Left, Right);
+            return HashCode.Combine(leftGetter, rightGetter, leftIsValid);
         }
     }
 }

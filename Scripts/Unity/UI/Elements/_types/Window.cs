@@ -47,7 +47,6 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void Close()
         {
-            OnOpenInternal();
             onClose.OnNext(this);
             gameObject.SetActive(false);
         }
@@ -61,7 +60,6 @@ namespace CCEnvs.Unity.UI.Elements
             }
 
             gameObject.SetActive(true);
-            OnCloseInternal();
             onOpen.OnNext(this);
         }
 
@@ -70,14 +68,6 @@ namespace CCEnvs.Unity.UI.Elements
             gameObject.SetActive(!IsOpened);
 
             return gameObject.activeSelf;
-        }
-
-        protected virtual void OnOpenInternal()
-        {
-        }
-
-        protected virtual void OnCloseInternal()
-        {
         }
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine.Events;
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public interface IClickable : IObservable<Unit>
+    public interface IWorldButton : IObservable<Unit>
     {
         event UnityAction OnClick;
 

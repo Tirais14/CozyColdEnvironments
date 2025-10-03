@@ -70,7 +70,44 @@ namespace CCEnvs
                 return output;
 
             return ifDefault;
+        }
 
+        public static T? IfNotDefault<T>(
+            this T? source,
+            Action<T> action)
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+
+            if (source.IsNotDefault())
+                action(source);
+
+            return source;
+        }
+
+        public static T? IfNotDefault<T>(
+            this T? source,
+            Func<T, T> action)
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+
+            if (source.IsNotDefault())
+                return action(source);
+
+            return source;
+        }
+
+        public static TOutput IfNotDefault<TInput, TOutput>(
+            this TInput source,
+            Func<TInput, TOutput> action,
+            Func<TInput, TOutput> ifDefaultAction)
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+            CC.Guard.NullArgument(ifDefaultAction, nameof(ifDefaultAction));
+
+            if (source.IsNotDefault())
+                return action(source);
+
+            return ifDefaultAction(source);
         }
 
         public static bool TrySwitch<T>(this T? source,

@@ -7,7 +7,7 @@ using UnityEngine.Events;
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public class Clickable : CCBehaviour, IClickable
+    public class WorldButton : CCBehaviour, IWorldButton
     {
         private IObservable<Unit> observable = null!;
 
