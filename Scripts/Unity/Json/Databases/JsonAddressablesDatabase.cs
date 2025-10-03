@@ -24,7 +24,7 @@ namespace CCEnvs.Json.AddressableAssets.Databases
 
             await textAssets!.LoadAssetsAsync(textAssetLabels);
 
-            textAssets.Values.ForEach(item => Deserialize(item, keySelector));
+            textAssets.Values.CForEach(item => Deserialize(item, keySelector));
 
             TrimExcess();
         }

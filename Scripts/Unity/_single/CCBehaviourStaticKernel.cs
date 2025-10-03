@@ -82,7 +82,7 @@ namespace CCEnvs.Unity
                  where type.IsType<CCBehaviourStatic>()
                  where type.IsDefined<InstantCreationAttribute>(inherit: false)
                  select type)
-                 .ForEach(type => GetInstance(type))
+                 .CForEach(type => GetInstance(type))
                  .Length;
 
             CCDebug.PrintLog($"Instant created class count = {instantCreatedClassCount}.",

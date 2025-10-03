@@ -44,7 +44,7 @@ namespace CCEnvs.Linq
             return source.Select(x => new KeyValuePair<T, TValue>(selector(x.Key), x.Value));
         }
 
-        public static T[] ForEach<T>(this IEnumerable<T> values, Action<T> action)
+        public static T[] CForEach<T>(this IEnumerable<T> values, Action<T> action)
         {
             CC.Guard.NullArgument(values, nameof(values));
             CC.Guard.NullArgument(action, nameof(action));

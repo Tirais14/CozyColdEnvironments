@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CCEnvs.Language
 {
-    public readonly struct Option<T> : IEquatable<Option<T>>
+    public readonly struct Option<T> : IOptional<T>, IEquatable<Option<T>>
     {
         public static Option<T> Default => new();
 
@@ -28,6 +28,11 @@ namespace CCEnvs.Language
         public static implicit operator T(Option<T> source)
         {
             return source.Value!;
+        }
+
+        public static implicit operator bool(Option<T> source)
+        {
+            return source.HasValue;
         }
 
         public static bool operator ==(Option<T> left, Option<T> right)

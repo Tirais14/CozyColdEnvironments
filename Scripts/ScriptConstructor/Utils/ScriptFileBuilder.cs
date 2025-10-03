@@ -43,7 +43,7 @@ namespace CCEnvs.Files.ScriptUtils
                 return new ScriptContentList();
 
             var contentLines = new List<IScriptContent>();
-            contentParts.ForEach(x => contentLines.AddRange(x));
+            contentParts.CForEach(x => contentLines.AddRange(x));
 
             return BuildContent(contentLines, resolveUsings);
         }

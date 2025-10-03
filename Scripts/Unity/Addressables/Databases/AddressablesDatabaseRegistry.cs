@@ -1,7 +1,9 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
+using CCEnvs.ZLinqExt;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -80,8 +82,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             var result = Values.AsValueEnumerable()
                                .FirstOrDefault(db => db.AssetType == assetType)
-                               .ToEitherSingleTyped(Values.AsValueEnumerable().FirstOrDefault(db => db.AssetType.IsType(assetType)))
-                               .Resolved;
+                               .ToEither(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
+                               .Resolve<IAddressablesDatabase>();
 
             if (throwIfNotFound && result is null)
                 throw new DatabaseNotFoundException(assetType);
@@ -244,7 +246,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             if (disposing)
             {
-                databases.Values.ForEach(x => x.Dispose());
+                databases.Values.CForEach(x => x.Dispose());
                 databases.Clear();
                 databases.TrimExcess();
             }

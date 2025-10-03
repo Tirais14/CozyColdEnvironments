@@ -368,13 +368,13 @@ namespace CCEnvs.Reflection
              where !field.IsInitOnly
              where fieldOrPropNames.Contains(field.Name)
              select field)
-             .ForEach(field => reflected.Field(field.Name).SetValue(field.GetValue(Instance)));
+             .CForEach(field => reflected.Field(field.Name).SetValue(field.GetValue(Instance)));
 
             (from prop in (IncludeNonPublic ? AllProperties.Value : PublicProperties.Value)
              where prop.SetMethod is not null
              where fieldOrPropNames.Contains(prop.Name)
              select prop)
-             .ForEach(prop => reflected.Property(prop.Name).SetValue(prop.GetValue(Instance)));
+             .CForEach(prop => reflected.Property(prop.Name).SetValue(prop.GetValue(Instance)));
         }
         public void CopyTypeDataTo(object otherInstance)
         {
