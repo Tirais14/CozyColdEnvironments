@@ -21,6 +21,8 @@ namespace CCEnvs.Diagnostics
 
         void PrintExceptionAsLog(Exception exception, object? context = null);
 
+        void PrintExceptionAsWarning(Exception exception, object? context = null);
+
         void AssertLog(bool condition, object message, object? context);
 
         void AssertWarning(bool condition, object message, object? context);

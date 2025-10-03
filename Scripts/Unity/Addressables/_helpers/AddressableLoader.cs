@@ -1,10 +1,8 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
@@ -18,109 +16,106 @@ namespace CCEnvs.Unity.AddrsAssets
         /// <exception cref="EmptyCollectionArgumentException"></exception>
         public static async UniTask<AsyncOperationHandle<IList<IResourceLocation>>>LoadResourceLocationsByLabelsAsync(
             string[] labels,
-            Type? assetType = null,
-            IReadOnlyDictionary<Type, int>? loadPriorities = null)
+            Type? assetType = null)
         {
             CC.Guard.CollectionArgument(labels, nameof(labels));
 
-            var handle = Addressables.LoadResourceLocationsAsync(labels,
-                Addressables.MergeMode.Intersection);
-
-            await handle;
-
-            if (!IsValidOperation(out var failedHandle))
-                return failedHandle;
-
-            bool hasTypeFilter = assetType is not null;
-
-            ResolvePriorities();
-
-            int count = handle.Result.Count;
-            var locations = new List<IResourceLocation>();
-            IResourceLocation location;
-            for (int i = 0; i < count; i++)
+            try
             {
-                location = handle.Result[i];
+                var handle = Addressables.LoadResourceLocationsAsync(labels,
+                    Addressables.MergeMode.Intersection);
 
-                if (hasTypeFilter
-                    && 
-                    location.ResourceType.IsNotType(assetType!)
-                    )
-                    continue;
+                await handle;
 
-                locations.Add(location);
-            }
+                if (!isValidOperation(out var failedHandle))
+                    return failedHandle;
 
-            locations.Sort((x, y) => loadPriorities![x.ResourceType].CompareTo(loadPriorities[y.ResourceType]));
+                bool hasTypeFilter = assetType is not null;
 
-            return Addressables.ResourceManager.CreateCompletedOperation(
-                locations.As<IList<IResourceLocation>>(),
-                string.Empty);
-
-            void ResolvePriorities()
-            {
-                Type[] resourceTypes = AddressablesHelper.GetResourceTypes(handle.Result);
-                var priorities = AddressablesHelper.GetLoadPriorites(resourceTypes);
-
-                if (loadPriorities.IsNullOrEmpty())
-                    loadPriorities = priorities;
-                else
-                    loadPriorities = new Dictionary<Type, int>(loadPriorities.Concat(priorities).AsEnumerable());
-            }
-
-            bool IsValidOperation(out AsyncOperationHandle<IList<IResourceLocation>> failed)
-            {
-                if (handle.Status != AsyncOperationStatus.Succeeded
-                    ||
-                    !handle.IsValid())
+                int count = handle.Result.Count;
+                var locations = new List<IResourceLocation>();
+                IResourceLocation location;
+                for (int i = 0; i < count; i++)
                 {
-                    handle.Release();
-                    failed = Addressables.ResourceManager.CreateCompletedOperation(
-                        (IList<IResourceLocation>)Array.Empty<IResourceLocation>(),
-                        string.Empty);
+                    location = handle.Result[i];
 
-                    return false;
+                    if (hasTypeFilter
+                        &&
+                        location.ResourceType.IsNotType(assetType!)
+                        )
+                        continue;
+
+                    locations.Add(location);
                 }
 
-                failed = default;
-                return true;
+                return Addressables.ResourceManager.CreateCompletedOperation(
+                    locations.As<IList<IResourceLocation>>(),
+                    string.Empty);
+
+                bool isValidOperation(out AsyncOperationHandle<IList<IResourceLocation>> failed)
+                {
+                    if (handle.Status != AsyncOperationStatus.Succeeded
+                        ||
+                        !handle.IsValid())
+                    {
+                        handle.Release();
+                        failed = Addressables.ResourceManager.CreateCompletedOperation(
+                            (IList<IResourceLocation>)Array.Empty<IResourceLocation>(),
+                            string.Empty);
+
+                        return false;
+                    }
+
+                    failed = default;
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
         /// <exception cref="EmptyCollectionArgumentException"></exception>
         public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsByLabelsAsync<T>(
             string[] labels,
-            IReadOnlyDictionary<Type, int>? loadPriorities = null,
             Action<T>? callback = null)
             where T : Object
         {
             CC.Guard.CollectionArgument(labels, nameof(labels));
 
-            var locationsHandle = await LoadResourceLocationsByLabelsAsync(labels, typeof(T), loadPriorities);
-
-            IList<IResourceLocation> locations = await locationsHandle;
-
-            if (!IsValidOperation(out var failedResourcesHandle))
-                return failedResourcesHandle;
-
-            return Addressables.LoadAssetsAsync(locations, callback);
-
-            bool IsValidOperation(out AsyncOperationHandle<IList<T>> failed)
+            try
             {
-                if (locationsHandle.Status != AsyncOperationStatus.Succeeded 
-                    ||
-                    !locationsHandle.IsValid())
+                var locationsHandle = await LoadResourceLocationsByLabelsAsync(labels, typeof(T));
+
+                IList<IResourceLocation> locations = await locationsHandle;
+
+                if (!isValidOperation(out var failedResourcesHandle))
+                    return failedResourcesHandle;
+
+                return Addressables.LoadAssetsAsync(locations, callback);
+
+                bool isValidOperation(out AsyncOperationHandle<IList<T>> failed)
                 {
-                    locationsHandle.Release();
-                    failed = Addressables.ResourceManager.CreateCompletedOperation(
-                        (IList<T>)Array.Empty<T>(),
-                        string.Empty);
+                    if (locationsHandle.Status != AsyncOperationStatus.Succeeded
+                        ||
+                        !locationsHandle.IsValid())
+                    {
+                        locationsHandle.Release();
+                        failed = Addressables.ResourceManager.CreateCompletedOperation(
+                            (IList<T>)Array.Empty<T>(),
+                            string.Empty);
 
-                    return false;
+                        return false;
+                    }
+
+                    failed = default;
+                    return true;
                 }
-
-                failed = default;
-                return true;
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
     }

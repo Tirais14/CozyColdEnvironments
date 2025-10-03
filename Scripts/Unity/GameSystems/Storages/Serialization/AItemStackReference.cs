@@ -1,18 +1,21 @@
 using CCEnvs.Unity.EditorSerialization;
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #nullable enable
+#pragma warning disable S1144
 namespace CCEnvs.Unity.GameSystems.Storages.Serialization
 {
     [Serializable]
     public abstract class AItemStackReference : ITransformable<ItemStack>
     {
-        [SerializeField]
-        protected StringOrInteger itemKey;
+        [field: SerializeField]
+        public StringOrInteger ItemKey { get; private set; }
 
-        [SerializeField]
-        protected int itemCount;
+        [field: SerializeField]
+        public int ItemCount { get; private set; }
+
 
         public static implicit operator ItemStack(AItemStackReference source)
         {

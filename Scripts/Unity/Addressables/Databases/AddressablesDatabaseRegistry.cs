@@ -140,25 +140,21 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                                bool ignoreCase = false,
                                bool throwIfNotFound = false)
         {
-            dbAssetType = ResolveType<T>();
-
             return throwIfNotFound
                    ? 
-                   FindAsset(dbAssetType, assetName, ignoreCase, throwIfNotFound).As<T>()
+                   FindAsset(dbAssetType ?? typeof(T), assetName, ignoreCase, throwIfNotFound).As<T>()
                    :
-                   FindAsset(dbAssetType, assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
+                   FindAsset(dbAssetType ?? typeof(T), assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
         }
         public T? FindAsset<T>(object assetID,
                                Type? dbAssetType = null,
                                bool throwIfNotFound = false)
         {
-            dbAssetType = ResolveType<T>();
-
             return throwIfNotFound
                    ?
-                   FindAsset(dbAssetType!, assetID, throwIfNotFound).As<T>()
+                   FindAsset(dbAssetType ?? typeof(T), assetID, throwIfNotFound).As<T>()
                    :
-                   FindAsset(dbAssetType!, assetID, throwIfNotFound).AsOrDefault<T>();
+                   FindAsset(dbAssetType ?? typeof(T), assetID, throwIfNotFound).AsOrDefault<T>();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
@@ -195,8 +191,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                              Type? dbAssetType = null,
                              object? dbID = null)
         {
-            dbAssetType = ResolveType<T>();
-
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 new AssetKey(assetName, assetID));
         }
@@ -204,8 +198,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                              Type? dbAssetType = null,
                              object? dbID = null)
         {
-            dbAssetType = ResolveType<T>();
-
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 new AssetKey(assetName));
         }
@@ -213,8 +205,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                              Type? dbAssetType = null,
                              object? dbID = null)
         {
-            dbAssetType = ResolveType<T>();
-
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 AssetKey.ByID(assetID));
         }
@@ -229,22 +219,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public bool ContainsKey(AssetDatabaseKey key)
         {
             return databases.ContainsKey(key);
-        }
-
-        protected virtual Type ResolveType<T>()
-        {
-            var gType = typeof(T);
-
-            if (FindDatabase(gType, throwIfNotFound: false) is not null)
-                return gType;
-
-            if (!gType.TrySwitchType(out Type result,
-                (onType: typeof(ScriptableObject), _ => typeof(ScriptableObject)),
-                (onType: typeof(GameObject), _ => typeof(GameObject)))
-                )
-                return gType;
-
-            return result;
         }
 
         protected void BindEvents()

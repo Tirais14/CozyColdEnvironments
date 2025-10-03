@@ -19,7 +19,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         Func<Object, object?>? IDFactory { get; set; }
         IEnumerable<AssetKey> Keys { get; }
         IEnumerable<Object> Values { get; }
-        int LoadPriority { get; }
         object this[AssetKey key] { get; }
         Object this[string assetName] { get; }
         Object this[string assetName, bool ingoreCase] { get; }

@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -46,7 +45,6 @@ namespace CCEnvs.Async
                 return;
 
             uniTasks.Add(task);
-            task.ToObservable().Subscribe(_ => uniTasks.Remove(task));
             TryStartTimer();
         }
         public void RegisterTask<T>(UniTask<T> task)
@@ -61,7 +59,6 @@ namespace CCEnvs.Async
                 return;
 
             valueTasks.Add(task);
-            task.AsTask().ToObservable().Subscribe(_ => valueTasks.Remove(task));
             TryStartTimer();
         }
         public void RegisterTask<T>(ValueTask<T> task)
@@ -77,7 +74,6 @@ namespace CCEnvs.Async
                 return;
 
             tasks.Add(task);
-            task.ToObservable().Subscribe(_ => tasks.Remove(task));
             TryStartTimer();
         }
 
@@ -98,6 +94,11 @@ namespace CCEnvs.Async
                 {
                     timer.Stop();
                     timerTriggeredTimes = 0;
+#if UNI_TASK
+                    uniTasks.Clear();
+#endif
+                    tasks.Clear();
+                    valueTasks.Clear();
                 }
             };
         }

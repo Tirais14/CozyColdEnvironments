@@ -24,7 +24,12 @@
         "ZLinq.dll",
         "ZLinq.FileSystem.dll",
         "ZLinq.Json.dll",
-        "ZString.dll"
+        "ZString.dll",
+        "System.Linq.Async.dll",
+        "System.Linq.Async.Queryable.dll",
+        "SuperLinq.Async.dll",
+        "StringExtensions.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

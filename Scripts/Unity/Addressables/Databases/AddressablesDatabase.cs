@@ -36,7 +36,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
         public Func<Object, object?>? IDFactory { get; set; }
-        public int LoadPriority { get; set; }
         public TAsset this[AssetKey key] => db[key];
         public TAsset this[object assetID] => FindAsset(assetID, throwIfNotFound: true)!;
         public TAsset this[string assetName, bool ingoreCase] => FindAsset(assetName, ingoreCase, throwIfNotFound: true)!;
@@ -76,7 +75,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                     key = new AssetKey(asset);
 
                 db.Add(key, asset);
-                this.PrintLog($"Asset {asset.GetType().GetFullName()} loaded. {nameof(AssetKey)}: {key}.");
+                this.PrintLog($"Asset {asset.GetType().GetFullName()} added to {GetType().GetName()}. {nameof(AssetKey)}: {key}.");
             }
             catch (Exception ex)
             {
@@ -145,7 +144,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             newDB.AddAssets(assets);
             return newDB;
         }
-
         public IAddressablesDatabase<T> TakePart<T>() where T : Object
         {
             return TakePart(typeof(T)).As<IAddressablesDatabase<T>>();

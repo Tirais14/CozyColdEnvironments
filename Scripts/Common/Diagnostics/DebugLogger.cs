@@ -76,6 +76,18 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
+        public void PrintExceptionAsWarning(Exception exception, object? context = null)
+        {
+            if (!IsPrintAllowed(context))
+                return;
+
+#if UNITY_2017_1_OR_NEWER
+            Debug.LogWarning($"{exception.GetType().Name}: {exception.Message}", context as Object);
+#else
+            System.Diagnostics.Debug.WriteLine(message);
+#endif
+        }
+
         public void PrintException(Exception exception, object? context = null)
         {
             if (!IsPrintAllowed(context))

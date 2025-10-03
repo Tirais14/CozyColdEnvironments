@@ -26,10 +26,16 @@ namespace CCEnvs.Diagnostics
             Logger.PrintError(message, context);
         }
 
-        public static void PrintExceptionAsLog(Exception exception,
-                                               object? context = null)
+        public static void PrintExceptionAsLog(Exception exception, 
+            object? context = null)
         {
             Logger.PrintExceptionAsLog(exception, context);
+        }
+
+        public static void PrintExceptionAsWarning(Exception exception,
+            object? context = null)
+        {
+            Logger.PrintExceptionAsWarning(exception, context);
         }
 
         public static void PrintException(Exception exception,
