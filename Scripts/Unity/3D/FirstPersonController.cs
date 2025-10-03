@@ -1,8 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Extensions;
-using CCEnvs.Unity.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -164,8 +162,7 @@ namespace CCEnvs.Unity.ThreeD
 
         private void IsOnSufaceObserver()
         {
-            var raycastOrigin = transform.position.Q()
-                                                  .SetY(transform.position.y + RAYCAST_SURFACE_OFFSET);
+            var raycastOrigin = transform.position.SetY(transform.position.y + RAYCAST_SURFACE_OFFSET);
 
             if (!Physics.Raycast(raycastOrigin,
                                  Vector3.down,
@@ -187,7 +184,7 @@ namespace CCEnvs.Unity.ThreeD
         private void SnapToSurface()
         {
             float lerpedY = Mathf.Lerp(rigidBody.position.y, surfaceHit.point.y, 0.01f);
-            rigidBody.MovePosition(rigidBody.position.Q().SetY(lerpedY));
+            rigidBody.MovePosition(rigidBody.position.SetY(lerpedY));
         }
     }
 }

@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 #nullable enable
 namespace CCEnvs.Utils
 {
-    public static class SceneObjectSearch
+    public static class SceneSearch
     {
         public static object? FindObjectByType(Type type,
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude,

@@ -60,7 +60,7 @@ namespace CCEnvs.Unity.UI.Elements
         public GameObject TakeGameObject(int index)
         {
             GameObject result = inner[index].go;
-            result.transform.parent = null;
+            result.transform.SetParent(null);
             RemoveAt(index);
 
             return result;
@@ -146,6 +146,11 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void TrimExcess() => inner.TrimExcess();
 
+        public IEnumerator<(GameObject go, IList<T> values)> GetEnumerator()
+        {
+            return inner.GetEnumerator();
+        }
+
         private bool TryAdd(GameObject gameObject,
             out (GameObject go, IList<T> values) added)
         {
@@ -157,7 +162,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             added = (gameObject, results);
             inner.Add(added);
-            gameObject.transform.parent = transform;
+            gameObject.transform.SetParent(transform);
             return true;
         }
         private bool TryAdd(T item, out (GameObject go, IList<T> values) added)
@@ -231,11 +236,6 @@ namespace CCEnvs.Unity.UI.Elements
         bool ICollection<(GameObject go, IList<T> values)>.Remove((GameObject go, IList<T> values) item)
         {
             return inner.Remove(item);
-        }
-
-        IEnumerator<(GameObject go, IList<T> values)> IEnumerable<(GameObject go, IList<T> values)>.GetEnumerator()
-        {
-            return inner.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => inner.GetEnumerator();
