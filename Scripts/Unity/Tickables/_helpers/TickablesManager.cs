@@ -17,9 +17,9 @@ namespace CCEnvs.Unity.Tickables
     {
         private readonly Dictionary<Type, ITicker> tickers = new();
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             RegisterTickers();
             RegisterTickables();

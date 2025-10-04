@@ -4,6 +4,7 @@ using SuperLinq;
 using System;
 using System.Collections.Generic;
 using CCEnvs.Linq;
+using CCEnvs;
 
 #nullable enable
 namespace CCEnvs.Unity.EditorSerialization
@@ -27,7 +28,7 @@ namespace CCEnvs.Unity.EditorSerialization
             SerializedTuple<TKey, TValue>[] input)
         {
             return new Dictionary<TKey, TValue>(
-                input.AsValueEnumerable().Select(x => x.Value.ToKeyValuePair()).AsEnumerable());
+                input.ZL().Select(x => x.Value.ToKeyValuePair()).ToArrayPool().Array);
         }
 
         protected override void OnBeforeSerialize()

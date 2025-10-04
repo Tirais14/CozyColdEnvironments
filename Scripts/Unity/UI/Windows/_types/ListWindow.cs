@@ -1,6 +1,5 @@
 using CCEnvs.Linq;
 using CCEnvs.Unity.Extensions;
-using CCEnvs.ZLinqExt;
 using SuperLinq;
 using System;
 using System.Collections;
@@ -11,7 +10,7 @@ using UnityEngine.Events;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI.Windows
 {
     /// <inheritdoc cref="IListWindow"/>
     /// <summary>
@@ -29,9 +28,9 @@ namespace CCEnvs.Unity.UI.Elements
         [field: SerializeField]
         public UnityEvent<T> OnRemove { get; } = new();
 
-        public IEnumerable<GameObject> GameObjects => inner.ZL().Select(item => item.go).AsEnumerable();
-        public IEnumerable<T> Values => inner.ZL().SelectMany(item => item.values).AsEnumerable();
-        public bool DestroyGameObjectIfLastComponentRemoved { get; set; }
+        public IEnumerable<GameObject> GameObjects => inner.Select(item => item.go);
+        public IEnumerable<T> Values => inner.SelectMany(item => item.values);
+        public bool DestroyGameObjectIfLastComponentRemoved { get; set; } = true;
         public int Count => inner.Count;
         public T[] this[int index] => inner[index].values.ToArray();
         public T this[int index, bool _] => inner[index].values[0];
@@ -44,9 +43,9 @@ namespace CCEnvs.Unity.UI.Elements
             set => inner[index] = value; 
         }
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             AddChildrens();
         }
@@ -90,7 +89,9 @@ namespace CCEnvs.Unity.UI.Elements
         /// </summary>
         public void Clear()
         {
-            GameObjects.ForEach(go => Remove(go));
+            using var temp = GameObjects.ToArrayPooled();
+
+            temp.Values.ForEach((x) => Remove(x));
         }
 
         public bool Contains(T item)

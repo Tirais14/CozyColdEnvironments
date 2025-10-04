@@ -1,10 +1,10 @@
-using CCEnvs.Unity.UI.Elements;
+using CCEnvs.Unity.UI.Windows;
 using TMPro;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI.Windows
 {
     public abstract class ALoadingScreen : Window, ILoadingScreen
     {

@@ -33,9 +33,9 @@ namespace CCEnvs.Patterns.States
 
         public bool IsIdle => IsExecuting(IdleState);
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             if (autoCreateStatesByFactory)
                 CreateStatesByFactory();

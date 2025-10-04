@@ -3,13 +3,11 @@ using CCEnvs.Language;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
-using CCEnvs.ZLinqExt;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using UnityEngine;
 using ZLinq;
 using Object = UnityEngine.Object;
 
@@ -40,9 +38,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public IAddressablesDatabase this[Type dbAssetType] => GetDatabase(dbAssetType);
         public IAddressablesDatabase this[Type dbAssetType, object dbID] => GetDatabase(dbAssetType, dbID);
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             BindEvents();
         }
@@ -82,7 +80,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             var result = Values.AsValueEnumerable()
                                .FirstOrDefault(db => db.AssetType == assetType)
-                               .ToEither(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
+                               .Either(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
                                .Resolve<IAddressablesDatabase>();
 
             if (throwIfNotFound && result is null)

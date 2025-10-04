@@ -5,7 +5,7 @@ using System;
 using UniRx;
 using UnityEngine;
 
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI.Windows
 {
     [DisallowMultipleComponent]
     public class Window : CCBehaviour, IWindow
@@ -22,9 +22,9 @@ namespace CCEnvs.Unity.UI.Elements
         public IObservable<IWindow> OnOpen => onOpen.AsObservable();
         public IObservable<IWindow> OnClose => onClose.AsObservable();
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             if (OpenOnStart)
                 Open();

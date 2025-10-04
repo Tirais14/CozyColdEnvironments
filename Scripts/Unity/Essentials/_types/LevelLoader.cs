@@ -37,9 +37,9 @@ namespace CCEnvs.Unity.Essentials
         public static bool InProcess { get; private set; }
         public static bool IsReady => TaskRegistries.IsEmpty() || !TaskRegistries.Any(x => x.HasTasks);
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             TaskRegistries.Add(CC.NeccesaryTasks);
         }

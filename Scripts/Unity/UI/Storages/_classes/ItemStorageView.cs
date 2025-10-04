@@ -14,9 +14,9 @@ namespace CCEnvs.Unity.UI.Storages
         where TViewModel : IItemStorageViewModel<TModel>
         where TModel : IItemStorageReactive
     {
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             viewModel.IsOpenedView.Subscribe(x => gameObject.SetActive(x)).AddTo(this);
         }

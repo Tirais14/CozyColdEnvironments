@@ -3,14 +3,13 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
 
+#pragma warning disable IDE1006
 namespace CCEnvs.Unity.Components
 {
-    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class CCBehaviour : MonoBehaviour
     {
         private SingleUseAction? onEndFrame;
@@ -33,30 +32,17 @@ namespace CCEnvs.Unity.Components
         /// <summary>Cached</summary>
         public LazyCC<GameObject> cGameObject { get; private set; } = null!;
 
-        protected virtual void OnAwake()
-        {
-
-        }
-
-        protected virtual void OnStart()
-        {
-        }
-
-        protected void Awake()
+        protected virtual void Awake()
         {
             cTransform = new LazyCC<Transform>(() => transform);
             cGameObject = new LazyCC<GameObject>(() => gameObject);
 
             //Sets component fields and props marked by specical attribute
             ComponentInjector.Inject(this);
-
-            OnAwake();
         }
 
-        protected void Start()
+        protected virtual void Start()
         {
-            OnStart();
-            //Checks field and props marked by RequiredAttribute
             MemberValidator.ValidateInstance(this);
         }
 

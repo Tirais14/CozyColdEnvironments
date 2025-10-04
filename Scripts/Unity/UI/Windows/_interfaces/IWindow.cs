@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.UI.Windows
 {
     public interface IWindow : IOpenable
     {

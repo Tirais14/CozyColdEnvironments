@@ -17,9 +17,9 @@ namespace CCEnvs.TwoD.Map
         public ILocationLayer this[int index] => layers[index];
         public int LayersCount => layers.Length;
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             SetLayers();
         }

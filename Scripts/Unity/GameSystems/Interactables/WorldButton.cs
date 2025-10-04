@@ -18,9 +18,9 @@ namespace CCEnvs.Unity.GameSystems.Interactables
             remove => onClick -= value;
         }
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             observable = Observable.FromEvent<UnityAction>(
                 (x) => () => x(),

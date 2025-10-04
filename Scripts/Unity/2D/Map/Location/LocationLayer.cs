@@ -32,9 +32,9 @@ namespace CCEnvs.TwoD.Map
             set => SetCell(pos, value);
         }
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             tilemapTileChanged += OnTilemapTileChanged;
         }

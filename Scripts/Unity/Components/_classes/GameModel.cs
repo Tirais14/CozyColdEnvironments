@@ -11,9 +11,9 @@ namespace CCEnvs.Unity.Components
         public Transform Anchor { get; private set; } = null!;
         public GameModelBody Body { get; private set; } = null!;
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             Anchor = transform.Find("Anchor");
             Body = GetComponentInChildren<GameModelBody>();

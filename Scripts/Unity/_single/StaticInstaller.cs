@@ -8,9 +8,9 @@ namespace CCEnvs.Unity
     /// </summary>
     public class StaticInstaller : CCBehaviourStatic<StaticInstaller>
     {
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
             Install.Static();
 
             Destroy(gameObject);

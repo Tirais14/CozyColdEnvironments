@@ -32,9 +32,9 @@ namespace CCEnvs.Unity.Tickables
             }
         }
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
             TickablesManager.RegisterTickable(this);
         }
 

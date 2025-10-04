@@ -8,9 +8,9 @@ namespace CCEnvs.Unity.TwoD.Colliders
     public class AttackZoneTrigger : CompositeCollider<PolygonCollider2D>,
         ICompositeTrigger<Direction2D, PolygonCollider2D>
     {
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
             AddColliders();
             ConvertCollidersToTriggers();
             DisableTriggers();

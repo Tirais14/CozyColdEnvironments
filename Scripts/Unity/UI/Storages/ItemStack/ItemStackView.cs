@@ -27,9 +27,9 @@ namespace CCEnvs.Unity.UI.Storages
         [SerializeField]
         protected ATextView? textView;
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             if (textView != null)
                 viewModel.CounterView.Subscribe(x => textView.Text = x).AddTo(this);

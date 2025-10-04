@@ -82,8 +82,6 @@ namespace CCEnvs.Disposables
                 disposables[i].Dispose();
 
             Clear();
-
-            GC.SuppressFinalize(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

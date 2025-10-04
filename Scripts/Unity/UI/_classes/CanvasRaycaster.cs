@@ -25,9 +25,9 @@ namespace CCEnvs.Unity.UI
         [GetBySelf]
         public GraphicRaycaster RaycasterGraphic { get; private set; } = null!;
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             if (EventSys == null)
                 EventSys = EventSystem.current;

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using ZLinq;
 using ZLinq.Linq;
 
-namespace CCEnvs.ZLinqExt
+namespace CCEnvs
 {
     public static class ValueEnumerable
     {

@@ -14,9 +14,9 @@ namespace CCEnvs.Unity.Tests
 
         public abstract bool IsEnabled { get; }
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             thisType = GetType();
         }

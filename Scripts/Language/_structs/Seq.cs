@@ -2,7 +2,6 @@ using Cysharp.Text;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 #nullable enable annotations
 namespace CCEnvs.Language
@@ -15,19 +14,29 @@ namespace CCEnvs.Language
         public T Item2 { get; }
         public T Item3 { get; }
         public T Item4 { get; }
-        public int Count { get; }
+        public T Item5 { get; }
+        public T Item6 { get; }
+        public int Count {
+            get
+            {
+                int count = 0;
+                ForEach((_) => count++);
+
+                return count;
+            }
+        }
+        public int Length => 6;
         public T this[int index] {
             get
             {
-                if (index >= Count)
-                    return CC.Throw.IndexOutOfRange(index).As<T>();
-
                 return index switch
                 {
                     0 => Item1,
                     1 => Item2,
                     2 => Item3,
                     3 => Item4,
+                    4 => Item5,
+                    5 => Item6,
                     _ => CC.Throw.IndexOutOfRange(index).As<T>(),
                 };
             }
@@ -61,6 +70,20 @@ namespace CCEnvs.Language
             Item4 = item4;
         }
 
+        public Seq(T item1, T item2, T item3, T item4, T item5)
+            :
+            this(item1, item2, item3, item4)
+        {
+            Item5 = item5;
+        }
+
+        public Seq(T item1, T item2, T item3, T item4, T item5, T item6)
+            :
+            this(item1, item2, item3, item4)
+        {
+            Item6 = item6;
+        }
+
         public static explicit operator T[](Seq<T> source)
         {
             return source.ToArray();
@@ -76,13 +99,17 @@ namespace CCEnvs.Language
             return !(left == right);
         }
 
-        public Seq<T> SetItem1(T item1) => new(item1, Item2, Item3, Item4);
+        public Seq<T> SetItem1(T item1) => new(item1, Item2, Item3, Item4, Item5, Item6);
 
-        public Seq<T> SetItem2(T item2) => new(Item1, item2, Item3, Item4);
+        public Seq<T> SetItem2(T item2) => new(Item1, item2, Item3, Item4, Item5, Item6);
 
-        public Seq<T> SetItem3(T item3) => new(Item1, Item2, item3, Item4);
+        public Seq<T> SetItem3(T item3) => new(Item1, Item2, item3, Item4, Item5, Item6);
 
-        public Seq<T> SetItem4(T item4) => new(Item1, Item2, Item3, item4);
+        public Seq<T> SetItem4(T item4) => new(Item1, Item2, Item3, item4, Item5, Item6);
+
+        public Seq<T> SetItem5(T item5) => new(Item1, Item2, Item3, Item5, item5, Item6);
+
+        public Seq<T> SetItem6(T item6) => new(Item1, Item2, Item3, Item4, Item5, item6);
 
         public Seq<T> Reset() => Empty;
 
@@ -90,7 +117,7 @@ namespace CCEnvs.Language
         {
             var sb = ZString.CreateStringBuilder();
 
-            sb.AppendJoin("; ", this);
+            sb.AppendJoin("; ", this.As<IEnumerable<T>>());
 
             return sb.ToString();
         }
@@ -105,7 +132,11 @@ namespace CCEnvs.Language
                    &&
                    comparer.Equals(Item3, other.Item3)
                    &&
-                   comparer.Equals(Item4, other.Item4);
+                   comparer.Equals(Item4, other.Item4)
+                   &&
+                   comparer.Equals(Item5, other.Item5)
+                   &&
+                   comparer.Equals(Item6, other.Item6);
         }
         public override bool Equals(object obj)
         {
@@ -114,8 +145,47 @@ namespace CCEnvs.Language
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Item1, Item2, Item3, Item4);
+            return HashCode.Combine(Item1, Item2, Item3, Item4, Item5, Item6);
         }
+
+        public void For(Action<T, int> action, bool skipDefault)
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+
+            T item;
+            for (int i = 0; i < Length; i++)
+            {
+                item = this[i];
+                if (skipDefault && item.IsDefault())
+                    continue;
+
+                action(item, i);
+            }
+        }
+        public void For(Action<T, int> action) => For(action, skipDefault: true);
+
+        public void ForEach(Action<T> action, bool skipDefault)
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+
+            For((x, _) => action(x), skipDefault);
+        }
+        public void ForEach(Action<T> action) => ForEach(action, skipDefault: true);
+
+        public T[] ToArray(bool skipDefault)
+        {
+            return ToList(skipDefault).ToArray();
+        }
+        public T[] ToArray() => ToArray(skipDefault: true);
+
+        public List<T> ToList(bool skipDefault)
+        {
+            var list = new List<T>(Length);
+            ForEach(x => list.Add(x), skipDefault);
+
+            return list;
+        }
+        public List<T> ToList() => ToList(skipDefault: true);
 
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
 
@@ -144,13 +214,16 @@ namespace CCEnvs.Language
 
             public bool MoveNext()
             {
-                if (pos >= seq.Count)
+                while (pos < seq.Count)
                 {
-                    Current = default!;
-                    return false;
+                    Current = seq[pos++];
+                    if (Current.IsNotDefault())
+                        break;
                 }
 
-                Current = seq[pos++];
+                if (pos >= seq.Count && Current.IsDefault())
+                    return false;
+
                 return true;
             }
 

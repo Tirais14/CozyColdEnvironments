@@ -44,6 +44,24 @@ namespace CCEnvs.Language
         {
             return new Either<L, R>(left, right, leftIsValid);
         }
+
+        public static bool IsItemValid<T>(Func<T> valueGetter)
+        {
+            T left = valueGetter();
+
+            if (left is IOptional optional)
+                return optional.HasValue;
+
+            return left.IsNotDefault();
+        }
+
+        public static bool IsItemValid<T>(T value)
+        {
+            if (value is IOptional optional)
+                return optional.HasValue;
+
+            return value.IsNotDefault();
+        }
     }
     public readonly struct Either<L, R> : IEquatable<Either<L, R>>
     {
@@ -66,7 +84,7 @@ namespace CCEnvs.Language
 
         public Either(Func<L> leftGetter, Func<R> rightGetter)
             :
-            this(leftGetter, rightGetter, () => IsValidLeftAction(leftGetter))
+            this(leftGetter, rightGetter, () => Either.IsItemValid(leftGetter))
         {
         }
 
@@ -78,7 +96,7 @@ namespace CCEnvs.Language
 
         public Either(L left, Func<R> rightGetter)
             :
-            this(() => left, rightGetter, () => IsValidLeftAction(left))
+            this(() => left, rightGetter, () => Either.IsItemValid(left))
         {
         }
 
@@ -90,7 +108,7 @@ namespace CCEnvs.Language
 
         public Either(Func<L> leftGetter, R right)
             :
-            this(leftGetter, () => right, () => IsValidLeftAction(leftGetter))
+            this(leftGetter, () => right, () => Either.IsItemValid(leftGetter))
         {
         }
 
@@ -117,26 +135,21 @@ namespace CCEnvs.Language
             return !(left == right);
         }
 
-        private static bool IsValidLeftAction(Func<L> leftGetter)
-        {
-            L left = leftGetter();
-
-            if (left is IOptional optional)
-                return optional.HasValue;
-
-            return left.IsNotDefault();
-        }
-
-        private static bool IsValidLeftAction(L left)
-        {
-            if (left is IOptional optional)
-                return optional.HasValue;
-
-            return left.IsNotDefault();
-        }
-
         public object Resolve() => IsLeft ? Left! : Right!;
         public T Resolve<T>() => IsLeft ? Left.As<T>() : Right.As<T>();
+
+        public void Continue<T>(Action<T> action)
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+
+            action(Resolve<T>());
+        }
+        public TOut Continue<T, TOut>(Func<T, TOut> func)
+        {
+            CC.Guard.NullArgument(func, nameof(func));
+
+            return func(Resolve<T>());
+        }
 
         public bool Equals(Either<L, R> other)
         {

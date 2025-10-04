@@ -4,9 +4,9 @@ namespace CCEnvs.Unity.Components.Specialized
 {
     public sealed class DontDestroyOnLoad : CCBehaviour
     {
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             if (transform.parent == null)
                 DontDestroyOnLoad(gameObject);

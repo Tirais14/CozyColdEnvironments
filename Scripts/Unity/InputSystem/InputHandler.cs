@@ -33,9 +33,9 @@ namespace CCEnvs.Unity.InputSystem
 
         public bool IsEnabled => actionMap.enabled;
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
             actionMap = inputs.FindActionMap(actionMapName, throwIfNotFound: true);
 
             InitInputActionProperties();

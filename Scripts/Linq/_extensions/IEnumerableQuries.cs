@@ -1,5 +1,6 @@
 using CCEnvs.Conversations;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,16 +14,10 @@ namespace CCEnvs.Linq
 {
     public static class IEnumerableQuries
     {
-#if Z_LINQ
-        public static IEnumerable<T> AsEnumerable<TEnumerator, T>(
-            this ValueEnumerable<TEnumerator, T> source)
-            where TEnumerator : struct, IValueEnumerator<T>
+        public static PooledArray<T> ToArrayPooled<T>(this IEnumerable<T> source)
         {
-            CC.Guard.NullArgument(source, nameof(source));
-
-            return new ZLinqEnumerable<TEnumerator, T>(source.Enumerator);
+            return new PooledArray<T>(source);
         }
-#endif
 
         public static IEnumerable<KeyValuePair<TKey, TValue>> AsKeyValuePairs<TKey, TValue>(
             this IEnumerable<(TKey, TValue)> source)

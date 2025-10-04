@@ -19,9 +19,9 @@ namespace CCEnvs.Unity.UI
 
         protected IDropHandler dropHandler;
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             dropHandler = (recieverView.GetViewModel() as IDropHandler)!;
 

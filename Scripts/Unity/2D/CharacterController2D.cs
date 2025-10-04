@@ -18,9 +18,9 @@ namespace CCEnvs.Unity.TwoD
         public Collider2D Collider2D => collider2DComponent;
         public Vector2 Position => transform.position;
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
             Setup();
         }
 

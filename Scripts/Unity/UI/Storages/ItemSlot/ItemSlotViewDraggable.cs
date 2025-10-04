@@ -29,9 +29,9 @@ namespace CCEnvs.Unity.UI.Storages
             remove => onEndDragEvent -= value;
         }
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             transform = base.transform;
         }

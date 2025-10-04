@@ -5,12 +5,13 @@ using System;
 namespace CCEnvs.Attributes.Metadata
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
-    public class MetaTypeAttribute : MetadataAttribute
+    public class MetaTypeAttribute : Attribute, IMetdataAttribute<Type>
     {
-        public Type Value => (Type)rawData;
+        public Type Value { get; }
 
-        public MetaTypeAttribute(Type type) : base(type)
+        public MetaTypeAttribute(Type value)
         {
+            Value = value;
         }
     }
 }

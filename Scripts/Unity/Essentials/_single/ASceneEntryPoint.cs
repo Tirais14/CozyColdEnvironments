@@ -9,9 +9,9 @@ namespace CCEnvs.Unity.Essentials
 {
     public abstract class ASceneEntryPoint : CCBehaviourStatic
     {
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
             Install.Static();
 
             SceneInitializer.InitAllObjectsAsync(FindObjectsInactive.Exclude)

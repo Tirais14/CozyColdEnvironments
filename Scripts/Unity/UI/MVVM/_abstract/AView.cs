@@ -10,9 +10,9 @@ namespace CCEnvs.Unity.UI.MVVM
 
         protected T viewModel => viewModelLazy.Value;
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             viewModelLazy ??= new LazyCC<T>(CreateViewModel);
         }

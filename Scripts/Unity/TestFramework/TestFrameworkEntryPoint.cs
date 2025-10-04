@@ -23,12 +23,12 @@ namespace CCEnvs.Unity.Tests
         [field: SerializeField]
         public bool IsEnabled { get; set; } = true;
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
             if (!IsEnabled)
                 return;
 
-            base.OnAwake();
+            base.Awake();
 
             testsAssembly = AssemblyHelper.GetAssembly(testsAssemblyName, throwIfNotFound: true);
 
@@ -37,12 +37,12 @@ namespace CCEnvs.Unity.Tests
             monoTests = GetComponents<MonoCCTest>().Where(x => x.IsEnabled).ToArray();
         }
 
-        protected override void OnStart()
+        protected override void Start()
         {
             if (!IsEnabled)
                 return;
 
-            base.OnStart();
+            base.Start();
 
             StartCoroutine(RunTest(RunMonoTests));
         }

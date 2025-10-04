@@ -20,13 +20,13 @@ namespace CCEnvs.Unity
 
         private readonly Dictionary<Type, CCBehaviourStatic> instances = new();
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
             Validate();
             Setup();
             CreateInstantClasses();
 
-            base.OnAwake();
+            base.Awake();
         }
 
         /// <exception cref="ArgumentNullException"></exception>

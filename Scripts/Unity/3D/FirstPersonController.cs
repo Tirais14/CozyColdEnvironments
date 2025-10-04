@@ -75,9 +75,9 @@ namespace CCEnvs.Unity.ThreeD
         [field: SerializeField]
         public LayerMask SurfaceMask { get; set; }
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             characterCameraTransform = characterCamera.transform;
             BindReactiveProps();

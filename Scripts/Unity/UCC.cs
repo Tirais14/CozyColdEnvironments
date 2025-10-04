@@ -20,9 +20,9 @@ namespace CCEnvs.Unity
         public static Sprite DummySprite { get; private set; } = null!;
         public static Sprite ErrorSprite { get; private set; } = null!;
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
 
             ColorSprite = Resources.Load<Sprite>("Textures/ColorSprite");
             DummySprite = Resources.Load<Sprite>("Textures/DummySprite");

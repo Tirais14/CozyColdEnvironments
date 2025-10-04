@@ -13,9 +13,9 @@ namespace CCEnvs.Unity.Essentials
         [SerializeField]
         protected LevelLoadOrder? levelLoadOrder;
 
-        protected override async void OnStart()
+        protected override async void Start()
         {
-            base.OnStart();
+            base.Start();
 
             Setup();
             await LoadEssentials();

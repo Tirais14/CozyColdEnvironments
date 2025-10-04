@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.UI.Windows
 {
     /// <summary>
     /// Like basic list, but adapdted for using with <see cref="Component"/>.

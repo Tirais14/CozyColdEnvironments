@@ -24,9 +24,9 @@ namespace CCEnvs.Unity.Components
             }
         }
 
-        protected override void OnAwake()
+        protected override void Awake()
         {
-            base.OnAwake();
+            base.Awake();
             if (FindObjectsByType(GetType(),
                                   UnityEngine.FindObjectsInactive.Include,
                                   UnityEngine.FindObjectsSortMode.None)

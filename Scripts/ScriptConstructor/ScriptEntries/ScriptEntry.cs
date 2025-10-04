@@ -108,10 +108,10 @@ namespace CCEnvs.Files.ScriptUtils
             string result;
 
             if (value.IsFlags())
-                result = value.GetMetaStringByFlags(useDefaultStringsIfNotFound: true)
+                result = value.GetMetaStrings(throwIfNotFound: false)
                               .JoinStrings(' ');
             else
-                result = value.TryGetMetaString();
+                result = value.GetMetaString(throwIfNotFound: false);
 
             if (result.IsNullOrEmpty())
                 return string.Empty;

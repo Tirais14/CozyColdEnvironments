@@ -21,9 +21,9 @@ namespace CCEnvs.Unity.UI
 
         protected virtual bool CanBeginDrag => true;
 
-        protected override void OnStart()
+        protected override void Start()
         {
-            base.OnStart();
+            base.Start();
 
             var canvasController = this.GetAssignedObjectInParent<ICanvasController>()
                                        .ThrowIfNull(new ObjectNotFoundException(typeof(ICanvasController)));

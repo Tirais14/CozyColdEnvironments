@@ -57,20 +57,36 @@ namespace CCEnvs.Attributes.Metadata
 {
     public static class MemberInfoExtensions
     {
-        public static MetadataAttribute[] GetMetadata(this MemberInfo member,
+        public static IMetdataAttribute[] GetMetadata(this MemberInfo member,
                                                       bool throwIfNotFound = true)
         {
-            var attributes = member.GetCustomAttributes<MetadataAttribute>().ToArray();
+            var attributes = member.GetCustomAttributes().OfType<IMetdataAttribute>().ToArray();
 
             if (attributes.IsNullOrEmpty())
             {
                 if (throwIfNotFound)
                     throw new MetadataAttributeNotFoundException(member);
                 else
-                    return Array.Empty<MetadataAttribute>();
+                    return Array.Empty<IMetdataAttribute>();
             }
 
             return attributes;
+        }
+        public static T[] GetMetadata<T>(this MemberInfo member,
+                                         bool throwIfNotFound = true)
+            where T : IMetdataAttribute
+        {
+            var results = member.GetMetadata().OfType<T>().ToArray();
+
+            if (results.IsNullOrEmpty())
+            {
+                if (throwIfNotFound)
+                    throw new MetadataAttributeNotFoundException(member);
+                else
+                    return Array.Empty<T>();
+            }
+
+            return results;
         }
     }
 }
