@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>SuperLinq.Async</id>
+    <version>6.4.0</version>
+    <title>SuperLinq.Async</title>
+    <authors>SuperLinq Developers</authors>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <readme>readme.md</readme>
+    <description>This project enhances Async LINQ to Objects with the following methods: AggregateRight, AssertCount, AtLeast, AtMost, Choose, CollectionEqual, CompareCount, ConcurrentMerge, Consume, CountBetween, CountBy, CountDown, DenseRank, DenseRankBy, DistinctBy, ElementAt, EndsWith, Exactly, ExceptBy, FallbackIfEmpty, FillBackward, FillForward, Fold, From, Generate, GroupAdjacent, Index, IndexBy, Insert, Interleave, OrderBy, Pad, PadStart, PartialSort, PartialSortBy, Random, Rank, RankBy, RunLengthEncode, ScanBy, ScanRight, Segment, Sequence, SkipUntil, SortedMerge, Split, StartsWith, TagFirstLast, Take, TakeEvery, TakeUntil, ThenBy, Where, Window, WindowLeft, WindowRight, ZipLongest, ZipMap, ZipShortest</description>
+    <copyright>Portions © 2008 Jonathan Skeet. Portions © 2009 Atif Aziz, Chris Ammerman, Konrad Rudolph. Portions © 2010 Johannes Rudolph, Leopold Bushkin. Portions © 2015 Felipe Sateler, “sholland”. Portions © 2016 Andreas Gullberg Larsen, Leandro F. Vieira (leandromoh). Portions © 2017 Jonas Nyrup (jnyrup). Portions © 2022 Turning Code, LLC Portions © 2022 Amichai Mantinband Portions © Microsoft. All rights reserved.</copyright>
+    <tags>linq extensions async</tags>
+    <repository type="git" url="https://github.com/viceroypenguin/SuperLinq" branch="refs/tags/v6.4.0" commit="7cf112f224207ababefd22babba6f319d3e4f1c6" />
+    <dependencies>
+      <group targetFramework=".NETCoreApp3.1">
+        <dependency id="SuperLinq" version="6.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Linq.Async" version="6.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0">
+        <dependency id="SuperLinq" version="6.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Linq.Async" version="6.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="SuperLinq" version="6.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Linq.Async" version="6.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net9.0">
+        <dependency id="SuperLinq" version="6.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Linq.Async" version="6.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net10.0">
+        <dependency id="SuperLinq" version="6.4.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="SuperLinq" version="6.4.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.HashCode" version="6.0.0" exclude="Build,Analyzers" />
+        <dependency id="System.Linq.Async" version="6.0.1" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.6.3" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

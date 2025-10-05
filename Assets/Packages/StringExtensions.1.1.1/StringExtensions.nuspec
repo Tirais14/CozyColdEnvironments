@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>StringExtensions</id>
+    <version>1.1.1</version>
+    <authors>Koen Bekkenutte</authors>
+    <owners>Koen Bekkenutte</owners>
+    <projectUrl>https://github.com/kbekkenutte/StringExtensions</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The String Extensions project aims to provide a more complete String type experience by adding extension methods (including overloads of existing methods) providing commonly required functionality in a well-tested and well-documented fashion.</description>
+    <releaseNotes>Include documentation</releaseNotes>
+    <tags>string extensions stringextensions string.extensions</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
