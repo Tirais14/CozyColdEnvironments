@@ -17,13 +17,13 @@ namespace CCEnvs.Language
     {
         public static Seq<T> Empty => new();
 
-        public readonly T Item1 { get; }
-        public readonly T Item2 { get; }
-        public readonly T Item3 { get; }
-        public readonly T Item4 { get; }
-        public readonly T Item5 { get; }
-        public readonly T Item6 { get; }
-        public readonly int Count { get; }
+        public readonly T Item1;
+        public readonly T Item2;
+        public readonly T Item3;
+        public readonly T Item4;
+        public readonly T Item5;
+        public readonly T Item6;
+        public readonly int Count;
         public readonly int Length => 6;
         public readonly bool IsEmpty => Count == 0;
         public IEqualityComparer<T> EqualityComparer { get; set; }
@@ -45,6 +45,8 @@ namespace CCEnvs.Language
                 };
             }
         }
+
+        readonly int IReadOnlyCollection<T>.Count => Count;
 
         public Seq(T item1)
             :
@@ -87,6 +89,31 @@ namespace CCEnvs.Language
             this(item1, item2, item3, item4, item5)
         {
             Item6 = item6;
+        }
+
+        public static explicit operator (T, T)(Seq<T> source)
+        {
+            return (source.Item1, source.Item2);
+        }
+
+        public static explicit operator (T, T, T)(Seq<T> source)
+        {
+            return (source.Item1, source.Item2, source.Item3);
+        }
+
+        public static explicit operator (T, T, T, T)(Seq<T> source)
+        {
+            return (source.Item1, source.Item2, source.Item3, source.Item4);
+        }
+
+        public static explicit operator (T, T, T, T, T)(Seq<T> source)
+        {
+            return (source.Item1, source.Item2, source.Item3, source.Item4, source.Item5);
+        }
+
+        public static explicit operator (T, T, T, T, T, T)(Seq<T> source)
+        {
+            return (source.Item1, source.Item2, source.Item3, source.Item4, source.Item5, source.Item6);
         }
 
         public static explicit operator T[](Seq<T> source)
@@ -248,7 +275,7 @@ namespace CCEnvs.Language
             return -1;
         }
 
-        public readonly Seq<T> Reset() => Empty;
+        public readonly Seq<T> Clear() => Empty;
 
         public readonly override string ToString()
         {
@@ -261,19 +288,17 @@ namespace CCEnvs.Language
 
         public readonly bool Equals(Seq<T> other)
         {
-            var comparer = EqualityComparer<T>.Default;
-
-            return comparer.Equals(Item1, other.Item1)
+            return EqualityComparer.Equals(Item1, other.Item1)
                    &&
-                   comparer.Equals(Item2, other.Item2)
+                   EqualityComparer.Equals(Item2, other.Item2)
                    &&
-                   comparer.Equals(Item3, other.Item3)
+                   EqualityComparer.Equals(Item3, other.Item3)
                    &&
-                   comparer.Equals(Item4, other.Item4)
+                   EqualityComparer.Equals(Item4, other.Item4)
                    &&
-                   comparer.Equals(Item5, other.Item5)
+                   EqualityComparer.Equals(Item5, other.Item5)
                    &&
-                   comparer.Equals(Item6, other.Item6);
+                   EqualityComparer.Equals(Item6, other.Item6);
         }
         public readonly override bool Equals(object obj)
         {
