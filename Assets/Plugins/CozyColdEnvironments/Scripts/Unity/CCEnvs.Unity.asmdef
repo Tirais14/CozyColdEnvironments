@@ -1,0 +1,38 @@
+{
+    "name": "CCEnvs.Unity",
+    "rootNamespace": "CCEnvs.Unity",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:5fc19e916dbec2e4eb8fe60a0c56b165",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:5c01796d064528144a599661eaab93a6",
+        "GUID:4129704b5a1a13841ba16f230bf24a57",
+        "GUID:560b04d1a97f54a4e82edc0cbbb69285",
+        "GUID:49b49c76ee64f6b41bf28ef951cb0e50",
+        "GUID:e6234d6c1f7bf4e4db20eddc411c00b8"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Collections.Immutable.dll",
+        "System.Reactive.dll",
+        "QuikGraph.dll",
+        "QuikGraph.Graphviz.dll",
+        "SuperLinq.dll",
+        "SuperLinq.Async.dll",
+        "ZLinq.dll",
+        "ZLinq.FileSystem.dll",
+        "ZLinq.Json.dll",
+        "ZString.dll",
+        "System.Linq.Async.dll",
+        "StringExtensions.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll",
+        "Humanizer.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

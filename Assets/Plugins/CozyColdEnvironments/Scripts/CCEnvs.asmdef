@@ -1,0 +1,33 @@
+{
+    "name": "CCEnvs",
+    "rootNamespace": "CCEnvs",
+    "references": [
+        "GUID:5fc19e916dbec2e4eb8fe60a0c56b165"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Linq.Async.dll",
+        "System.Linq.Async.Queryable.dll",
+        "System.Reactive.dll",
+        "System.Collections.Immutable.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll",
+        "Microsoft.Bcl.HashCode.dll",
+        "SuperLinq.dll",
+        "SuperLinq.Async.dll",
+        "QuikGraph.dll",
+        "QuikGraph.Graphviz.dll",
+        "Humanizer.dll",
+        "StringExtensions.dll",
+        "ZLinq.dll",
+        "ZLinq.FileSystem.dll",
+        "ZLinq.Json.dll",
+        "ZString.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

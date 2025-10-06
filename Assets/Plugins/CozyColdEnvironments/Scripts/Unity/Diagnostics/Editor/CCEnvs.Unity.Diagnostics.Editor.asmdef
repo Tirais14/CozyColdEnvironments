@@ -1,0 +1,19 @@
+{
+    "name": "CCEnvs.Unity.Diagnostics.Editor",
+    "rootNamespace": "CCEnvs.Unity.Diagnostics.EditorC",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:1898880136cb79448802a5416e8c3523"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

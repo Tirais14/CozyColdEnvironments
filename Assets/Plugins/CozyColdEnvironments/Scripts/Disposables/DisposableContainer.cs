@@ -1,0 +1,30 @@
+using System;
+
+#pragma warning disable S3881
+#nullable enable
+namespace CCEnvs.Disposables
+{
+    public class DisposableContainer : IDisposableContainer
+    {
+        private bool disposedValue;
+
+        protected readonly Disposables disposables = new();
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+                return;
+
+            if (disposing)
+                disposables.Dispose();
+
+            disposedValue = true;
+        }
+    }
+}
