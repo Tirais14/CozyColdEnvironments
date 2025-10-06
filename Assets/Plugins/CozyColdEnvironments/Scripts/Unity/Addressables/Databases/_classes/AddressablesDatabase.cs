@@ -1,15 +1,13 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
-using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
-using Humanizer;
 using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
 using Object = UnityEngine.Object;
@@ -37,6 +35,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
         public Func<Object, object?>? IDFactory { get; set; }
+        public Func<string, string>? AssetNameProcessor { get; set; } = DefaultAssetNameProcessor;
         public TAsset this[AssetKey key] => db[key];
         public TAsset this[object assetID] => FindAsset(assetID, throwIfNotFound: true)!;
         public TAsset this[string assetName, bool ingoreCase] => FindAsset(assetName, ingoreCase, throwIfNotFound: true)!;
@@ -60,19 +59,18 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             db = new Dictionary<AssetKey, TAsset>(values);
         }
 
+        public static string DefaultAssetNameProcessor(string assetName)
+        {
+            return assetName.Delete("(Clone)");
+        }
+
         public void AddAsset(TAsset asset)
         {
             CC.Guard.NullArgument(asset, nameof(asset));
 
             try
             {
-                AssetKey key;
-                if (KeyFactory is not null)
-                    key = KeyFactory(asset);
-                else if (IDFactory is not null)
-                    key = new AssetKey(asset.name, IDFactory(asset));
-                else
-                    key = new AssetKey(asset);
+                AssetKey key = KeyFactory is null ? CreateAssetKey(asset) : KeyFactory(asset);
 
                 db.Add(key, asset);
                 this.PrintLog($"Asset {asset.GetType().GetFullName()} added. {nameof(AssetKey)}: {key}.");
@@ -180,7 +178,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             foreach (var key in db.Keys)
             {
-                if (key.AssetID is not null && assetID.Equals(assetID))
+                if (key.AssetID is not null && key.AssetID.Equals(assetID))
                     return key;
             }
 
@@ -323,6 +321,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             stopwatch.Stop();
             this.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalMilliseconds} ms.");
             stopwatch.Reset();
+        }
+
+        protected AssetKey CreateAssetKey(Object asset)
+        {
+            string assetName = AssetNameProcessor?.Invoke(asset.name) ?? asset.name;
+            object? id = IDFactory?.Invoke(asset);
+
+            return new AssetKey(assetName, id);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

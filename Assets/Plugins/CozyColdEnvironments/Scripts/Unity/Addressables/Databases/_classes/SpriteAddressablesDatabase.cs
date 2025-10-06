@@ -1,9 +1,8 @@
 using CCEnvs.Diagnostics;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using SuperLinq;
 using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.U2D;
@@ -17,6 +16,22 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         /// Loads <see cref="Texture2D"/> and converts to the <see cref="Sprite"/>
         /// </summary>
         public bool TexturesAsSprites { get; set; }
+
+        public SpriteAddressablesDatabase()
+        {
+        }
+
+        public SpriteAddressablesDatabase(int capacity)
+            :
+            base(capacity)
+        {
+        }
+
+        public SpriteAddressablesDatabase(IEnumerable<KeyValuePair<AssetKey, Sprite>> values)
+            :
+            base(values)
+        {
+        }
 
         public override async UniTask LoadAssetsAsync(AssetLabels assetLabels)
         {

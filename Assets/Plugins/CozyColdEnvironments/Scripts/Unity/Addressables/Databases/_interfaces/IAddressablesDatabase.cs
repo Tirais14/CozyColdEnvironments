@@ -17,6 +17,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         Type AssetType { get; }
         Func<Object, AssetKey>? KeyFactory { get; set; }
         Func<Object, object?>? IDFactory { get; set; }
+        Func<string, string>? AssetNameProcessor { get; set; }
         IEnumerable<AssetKey> Keys { get; }
         IEnumerable<Object> Values { get; }
         object this[AssetKey key] { get; }

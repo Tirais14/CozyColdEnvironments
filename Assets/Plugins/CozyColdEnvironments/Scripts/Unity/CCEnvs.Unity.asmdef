@@ -29,7 +29,8 @@
         "System.Linq.Async.dll",
         "StringExtensions.dll",
         "Microsoft.Bcl.AsyncInterfaces.dll",
-        "Humanizer.dll"
+        "Humanizer.dll",
+        "Microsoft.Extensions.ObjectPool.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

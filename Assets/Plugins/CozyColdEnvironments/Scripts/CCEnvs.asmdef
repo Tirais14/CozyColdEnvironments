@@ -10,7 +10,6 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "System.Linq.Async.dll",
-        "System.Linq.Async.Queryable.dll",
         "System.Reactive.dll",
         "System.Collections.Immutable.dll",
         "Microsoft.Bcl.AsyncInterfaces.dll",
@@ -24,7 +23,9 @@
         "ZLinq.dll",
         "ZLinq.FileSystem.dll",
         "ZLinq.Json.dll",
-        "ZString.dll"
+        "ZString.dll",
+        "Microsoft.Extensions.ObjectPool.dll",
+        "Microsoft.Extensions.Primitives.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
