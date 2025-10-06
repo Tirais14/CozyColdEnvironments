@@ -4,21 +4,30 @@ using System.Collections;
 using System.Collections.Generic;
 
 #nullable enable annotations
+#pragma warning disable S3267
 namespace CCEnvs.Language
 {
-    public readonly struct Seq<T> : IReadOnlyList<T>, IEquatable<Seq<T>>
+    /// <summary>
+    /// Has only 6 slots.
+    /// Functional analog of array, to minimize memory allocations.
+    /// Equals by items.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public struct Seq<T> : IReadOnlyList<T>, IEquatable<Seq<T>>
     {
         public static Seq<T> Empty => new();
 
-        public T Item1 { get; }
-        public T Item2 { get; }
-        public T Item3 { get; }
-        public T Item4 { get; }
-        public T Item5 { get; }
-        public T Item6 { get; }
-        public int Count { get; }
-        public int Length => 6;
-        public T this[int index] {
+        public readonly T Item1 { get; }
+        public readonly T Item2 { get; }
+        public readonly T Item3 { get; }
+        public readonly T Item4 { get; }
+        public readonly T Item5 { get; }
+        public readonly T Item6 { get; }
+        public readonly int Count { get; }
+        public readonly int Length => 6;
+        public readonly bool IsEmpty => Count == 0;
+        public IEqualityComparer<T> EqualityComparer { get; set; }
+        public readonly T this[int index] {
             get
             {
                 if (index >= Count)
@@ -42,6 +51,7 @@ namespace CCEnvs.Language
             this()
         {
             Item1 = item1;
+            EqualityComparer = EqualityComparer<T>.Default;
         }
 
         public Seq(T item1, T item2)
@@ -74,7 +84,7 @@ namespace CCEnvs.Language
 
         public Seq(T item1, T item2, T item3, T item4, T item5, T item6)
             :
-            this(item1, item2, item3, item4)
+            this(item1, item2, item3, item4, item5)
         {
             Item6 = item6;
         }
@@ -94,27 +104,153 @@ namespace CCEnvs.Language
             return !(left == right);
         }
 
-        public Seq<T> SetItem1(T item1) => new(item1, Item2, Item3, Item4, Item5, Item6);
-
-        public Seq<T> SetItem2(T item2) => new(Item1, item2, Item3, Item4, Item5, Item6);
-
-        public Seq<T> SetItem3(T item3) => new(Item1, Item2, item3, Item4, Item5, Item6);
-
-        public Seq<T> SetItem4(T item4) => new(Item1, Item2, Item3, item4, Item5, Item6);
-
-        public Seq<T> SetItem5(T item5) => new(Item1, Item2, Item3, Item5, item5, Item6);
-
-        public Seq<T> SetItem6(T item6) => new(Item1, Item2, Item3, Item4, Item5, item6);
-
-        public Seq<T> Append(T item)
+        public readonly Seq<T> SetItem1(T item1)
         {
-            if (Count >= Length)
-                throw new Diagnostics.LogicException("Sequence is fu");
+            return Count switch
+            {
+                0 => new Seq<T>(item1),
+                1 => new Seq<T>(item1, Item2),
+                2 => new Seq<T>(item1, Item2, Item3),
+                3 => new Seq<T>(item1, Item2, Item3, Item4),
+                4 => new Seq<T>(item1, Item2, Item3, Item4, Item5),
+                5 => new Seq<T>(item1, Item2, Item3, Item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
         }
 
-        public Seq<T> Reset() => Empty;
+        public readonly Seq<T> SetItem2(T item2)
+        {
+            return Count switch
+            {
+                1 => new Seq<T>(Item1, item2),
+                2 => new Seq<T>(Item1, item2, Item3),
+                3 => new Seq<T>(Item1, item2, Item3, Item4),
+                4 => new Seq<T>(Item1, item2, Item3, Item4, Item5),
+                5 => new Seq<T>(Item1, item2, Item3, Item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
+        }
 
-        public override string ToString()
+        public readonly Seq<T> SetItem3(T item3)
+        {
+            return Count switch
+            {
+                2 => new Seq<T>(Item1, Item2, item3),
+                3 => new Seq<T>(Item1, Item2, item3, Item4),
+                4 => new Seq<T>(Item1, Item2, item3, Item4, Item5),
+                5 => new Seq<T>(Item1, Item2, item3, Item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
+        }
+
+        public readonly Seq<T> SetItem4(T item4)
+        {
+            return Count switch
+            {
+                3 => new Seq<T>(Item1, Item2, Item3, item4),
+                4 => new Seq<T>(Item1, Item2, Item3, item4, Item5),
+                5 => new Seq<T>(Item1, Item2, Item3, item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
+        }
+
+        public readonly Seq<T> SetItem5(T item5)
+        {
+            return Count switch
+            {
+                4 => new Seq<T>(Item1, Item2, Item3, Item4, item5),
+                5 => new Seq<T>(Item1, Item2, Item3, Item4, item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
+        }
+
+        public readonly Seq<T> SetItem6(T item6)
+        {
+            return Count switch
+            {
+                5 => new Seq<T>(Item1, Item2, Item3, Item4, Item5, item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
+        }
+
+        public readonly Seq<T> SetValue(int index, T item)
+        {
+            return index switch
+            {
+                0 => SetItem1(item),
+                1 => SetItem2(item),
+                2 => SetItem3(item),
+                3 => SetItem4(item),
+                4 => SetItem5(item),
+                5 => SetItem6(item),
+                _ => CC.Throw.IndexOutOfRange(index).As<Seq<T>>(),
+            };
+        }
+
+        public readonly Seq<T> Append(T item)
+        {
+            if (Count >= Length)
+                throw new Diagnostics.LogicException("Cannot add item. Sequence is full.");
+
+            return Count switch
+            {
+                0 => SetItem1(item),
+                1 => SetItem2(item),
+                2 => SetItem3(item),
+                3 => SetItem4(item),
+                4 => SetItem5(item),
+                5 => SetItem6(item),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+            };
+        }
+
+        public readonly Seq<T> Remove(T toRemove)
+        {
+            if (IsEmpty)
+                return Empty;
+
+            Seq<T> result = Empty;
+            foreach (var item in this)
+            {
+                if (EqualityComparer.Equals(item, toRemove))
+                    continue;
+
+                result.Append(item);
+            }
+
+            return result;
+        }
+        public readonly Seq<T> RemoveAt(int index)
+        {
+            if (IsEmpty)
+                return Empty;
+
+            Seq<T> result = Empty;
+            for (int i = 0; i < Count; i++)
+            {
+                if (i == index)
+                    continue;
+
+                result.Append(this[i]);
+            }
+
+            return result;
+        }
+
+        public readonly int IndexOf(T value)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                if (EqualityComparer.Equals(value, this[i]))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public readonly Seq<T> Reset() => Empty;
+
+        public readonly override string ToString()
         {
             var sb = ZString.CreateStringBuilder();
 
@@ -123,7 +259,7 @@ namespace CCEnvs.Language
             return sb.ToString();
         }
 
-        public bool Equals(Seq<T> other)
+        public readonly bool Equals(Seq<T> other)
         {
             var comparer = EqualityComparer<T>.Default;
 
@@ -139,73 +275,122 @@ namespace CCEnvs.Language
                    &&
                    comparer.Equals(Item6, other.Item6);
         }
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is Seq<T> typed && Equals(typed);
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(Item1, Item2, Item3, Item4, Item5, Item6);
         }
 
-        public Seq<TOut> Cast<TOut>()
-        {
-
-        }
-
-        public void For(Action<T, int> action)
+        public readonly void For(Action<T, int> action)
         {
             CC.Guard.NullArgument(action, nameof(action));
 
-            T item;
-            for (int i = 0; i < Length; i++)
-            {
-                item = this[i];
-
-                action(item, i);
-            }
+            for (int i = 0; i < Count; i++)
+                action(this[i], i);
         }
-        public void For<TOut>(Func<T, int, TOut> func, bool skipDefault)
+        public readonly Seq<TOut> For<TOut>(Func<T, int, TOut> func)
         {
             CC.Guard.NullArgument(func, nameof(func));
 
-            T item;
-            for (int i = 0; i < Length; i++)
-            {
-                item = this[i];
-                if (skipDefault && item.IsDefault())
-                    continue;
+            var result = Seq<TOut>.Empty;
+            for (int i = 0; i < Count; i++)
+                result = result.Append(func(this[i], i));
 
-                func(item, i);
-            }
+            return result;
         }
 
-        public void ForEach(Action<T> action)
+        public readonly void ForEach(Action<T> action)
         {
             CC.Guard.NullArgument(action, nameof(action));
 
-            For((x, _) => action(x), skipDefault);
+            foreach (var item in this)
+                action(item);
+        }
+        public readonly Seq<TOut> ForEach<TOut>(Func<T, TOut> func)
+        {
+            CC.Guard.NullArgument(func, nameof(func));
+
+            var result = Seq<TOut>.Empty;
+            foreach (var item in this)
+                result.Append(func(item));
+
+            return result;
         }
 
-        public T[] ToArray(bool skipDefault)
+        public readonly bool Contains(T value)
         {
-            return ToList(skipDefault).ToArray();
-        }
-        public T[] ToArray() => ToArray(skipDefault: true);
+            if (IsEmpty)
+                return false;
 
-        public List<T> ToList(bool skipDefault)
+            foreach (var item in this)
+            {
+                if (EqualityComparer.Equals(item, value))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public readonly bool All(Predicate<T> predicate)
         {
-            var list = new List<T>(Length);
-            ForEach(x => list.Add(x), skipDefault);
+            CC.Guard.NullArgument(predicate, nameof(predicate));
+            if (IsEmpty)
+                return false;
+
+            foreach (var item in this)
+            {
+                if (!predicate(item))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public readonly bool Any(Predicate<T> predicate)
+        {
+            CC.Guard.NullArgument(predicate, nameof(predicate));
+            if (IsEmpty)
+                return false;
+
+            foreach (var item in this)
+            {
+                if (predicate(item))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public readonly Seq<TOut> Cast<TOut>()
+        {
+            return ForEach((x) => x.As<TOut>());
+        }
+
+        public readonly T[] ToArray()
+        {
+            var arr = new T[Count];
+            for (int i = 0; i < Count; i++)
+                arr[i] = this[i];
+
+            return arr;
+        }
+
+        public readonly List<T> ToList()
+        {
+            var list = new List<T>(Count);
+            for (int i = 0; i < Count; i++)
+                list[i] = this[i];
 
             return list;
         }
-        public List<T> ToList() => ToList(skipDefault: true);
 
-        public IEnumerator<T> GetEnumerator() => new Enumerator(this);
+        public readonly IEnumerator<T> GetEnumerator() => new Enumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public struct Enumerator : IEnumerator<T>
         {
