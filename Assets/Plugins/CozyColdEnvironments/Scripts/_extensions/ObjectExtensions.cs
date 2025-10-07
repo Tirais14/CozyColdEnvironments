@@ -61,7 +61,7 @@ namespace CCEnvs
             return source.As<TOutput>();
         }
 
-        public static TOutput IfNotDefault<TInput, TOutput>(
+        public static TOutput? IfNotDefault<TInput, TOutput>(
             this TInput? source,
             TOutput output,
             TOutput? ifDefault = default)

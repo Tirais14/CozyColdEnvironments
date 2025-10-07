@@ -6,7 +6,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.ThreeD
+namespace CCEnvs.Unity.U3D
 {
     [RequireComponent(typeof(Rigidbody))]
     public class FirstPersonController : GameModel

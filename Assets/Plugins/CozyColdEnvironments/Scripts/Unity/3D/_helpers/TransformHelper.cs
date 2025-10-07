@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.ThreeD
+namespace CCEnvs.Unity.U3D
 {
     public static class TransformHelper
     {

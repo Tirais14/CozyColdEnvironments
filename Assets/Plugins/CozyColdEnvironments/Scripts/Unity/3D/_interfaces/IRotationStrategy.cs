@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.ThreeD
+namespace CCEnvs.Unity.U3D
 {
     public interface IRotationStrategy
     {

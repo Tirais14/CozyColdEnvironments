@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S1244
-namespace CCEnvs.Unity.ThreeD
+namespace CCEnvs.Unity.U3D
 {
     public static class RigidBodyHelper
     {

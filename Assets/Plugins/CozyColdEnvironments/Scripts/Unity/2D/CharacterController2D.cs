@@ -3,7 +3,7 @@ using CCEnvs.Unity.Injections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.TwoD
+namespace CCEnvs.Unity.U2D
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public sealed class CharacterController2D : CCBehaviour

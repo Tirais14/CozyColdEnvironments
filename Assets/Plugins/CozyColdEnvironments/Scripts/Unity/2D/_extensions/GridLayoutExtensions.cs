@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace CCEnvs.Unity.TwoD
+namespace CCEnvs.Unity.U2D
 {
     public static class GridLayoutExtensions
     {
