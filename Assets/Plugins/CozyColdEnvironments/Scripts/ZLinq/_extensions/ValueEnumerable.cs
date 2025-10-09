@@ -1,4 +1,5 @@
 #if Z_LINQ
+using CCEnvs.Collections;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -10,6 +11,22 @@ namespace CCEnvs
 {
     public static class ValueEnumerable
     {
+        public static T[] ForEach<TEnumerator, T>(this ValueEnumerable<TEnumerator, T> source,
+            Action<T> action)
+            where TEnumerator : struct, IValueEnumerator<T>
+        {
+            CC.Guard.NullArgument(action, nameof(action));
+
+            var list = new TempList<T>();
+            foreach (var item in source)
+            {
+                action(item);
+                list.Add(item);
+            }
+
+            return list;
+        }
+
         /// <summary>
         /// Shortcut to <see cref="ZLinq.ValueEnumerable.AsValueEnumerable(IEnumerable)"/>
         /// </summary>

@@ -14,13 +14,13 @@ namespace CCEnvs.Collections
 
             return new EnumeratorEnumerable<T>(value);
         }
-        public static EnumeratorEnumerable<T> AsEnumerable<TEnumerator, T>(this TEnumerator value)
-            where TEnumerator : IEnumerator<T>
+        public static EnumeratorEnumerable<TEnumerator, T> AsEnumerable<TEnumerator, T>(this TEnumerator value)
+            where TEnumerator : struct, IEnumerator<T>
         {
             if (value.IsNull())
                 throw new System.ArgumentNullException(nameof(value));
 
-            return new EnumeratorEnumerable<T>(value);
+            return new EnumeratorEnumerable<TEnumerator, T>(value);
         }
     }
 }

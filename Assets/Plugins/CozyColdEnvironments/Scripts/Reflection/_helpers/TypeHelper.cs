@@ -107,7 +107,7 @@ namespace CCEnvs.Reflection
             throw new NotImplementedException("In developing");
 
             CC.Guard.NullArgument(type, nameof(type));
-            CC.Guard.Argument(type,
+            CC.Guard.ArgumentObsolete(type,
                                  nameof(type),
                                  type.IsInterface,
                                  "Type is not interface");

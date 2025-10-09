@@ -19,7 +19,8 @@
         "System.Collections.Immutable.dll",
         "ZLinq.dll",
         "SuperLinq.dll",
-        "Humanizer.dll"
+        "Humanizer.dll",
+        "C5.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

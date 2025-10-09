@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
@@ -7,7 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
 using Object = UnityEngine.Object;
@@ -23,6 +23,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
         private readonly Dictionary<AssetKey, TAsset> db;
         private bool disposedValue;
+        private int loadingCount;
 
         public event Action OnStartLoading = null!;
         public event Action OnLoaded = null!;
@@ -30,7 +31,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public IEnumerable<AssetKey> Keys => db.Keys;
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
-        public bool IsLoading => loadHandles.Any(x => !x.IsDone);
+        public bool IsLoading => loadingCount > 0;
         public bool IsLoaded => !IsLoading && Count > 0;
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
@@ -96,17 +97,21 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             }
         }
 
-        public virtual async UniTask LoadAssetsAsync(AssetLabels assetLabels)
+        public async UniTask LoadAssetsAsync<TAnyAsset>(AssetLabels assetLabels,
+            Func<TAnyAsset, TAsset[]> converter)
+            where TAnyAsset : Object
         {
-            CC.Guard.Argument(assetLabels,
-                              nameof(assetLabels),
-                              assetLabels.IsNotDefault());
+            CC.Guard.Argument(assetLabels.IsDefault(), nameof(assetLabels));
 
             try
             {
+                loadingCount++;
                 OnStartLoadingInternal();
 
-                await LoadAssetsInternalAsync(assetLabels.ToArray());
+                var handle = await AddressableLoader.LoadAssetsPrioritizedAsync<TAnyAsset>(assetLabels);
+
+                loadHandles.Add(handle);
+                handle.Result.ZL().SelectMany(x => converter(x)).ForEach(AddAsset);
             }
             catch (Exception ex)
             {
@@ -114,9 +119,20 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             }
             finally
             {
+                loadingCount--;
                 OnLoadedInternal();
                 TrimExcess();
             }
+        }
+
+        public async UniTask LoadAssetsAsync<TSub>(AssetLabels assetLabels)
+            where TSub : TAsset
+        {
+            await LoadAssetsAsync<TSub>(assetLabels, (x) => Range.From(x));
+        }
+        public virtual async UniTask LoadAssetsAsync(AssetLabels assetLabels)
+        {
+            await LoadAssetsAsync<TAsset>(assetLabels);
         }
 
         public IAddressablesDatabase CutByType(Type assetType)
@@ -295,15 +311,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             }
 
             disposedValue = true;
-        }
-
-        protected virtual async UniTask LoadAssetsInternalAsync(string[] labels)
-        {
-            var handle = await AddressableLoader.LoadAssetsByLabelsAsync<TAsset>(
-                labels,
-                callback: AddAsset);
-
-            loadHandles.Add(handle);
         }
 
         protected virtual void OnStartLoadingInternal()

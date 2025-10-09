@@ -25,7 +25,8 @@
         "ZLinq.Json.dll",
         "ZString.dll",
         "Microsoft.Extensions.ObjectPool.dll",
-        "Microsoft.Extensions.Primitives.dll"
+        "Microsoft.Extensions.Primitives.dll",
+        "C5.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

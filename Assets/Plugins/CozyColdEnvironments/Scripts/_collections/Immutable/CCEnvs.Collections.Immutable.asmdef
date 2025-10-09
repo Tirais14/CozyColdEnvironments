@@ -11,7 +11,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": false,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!SYSTEM_COLLECTIONS_IMMUTABLE"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

@@ -105,7 +105,7 @@ namespace CCEnvs.Unity
 
         private CCBehaviourStatic GetInstanceOf(Type type)
         {
-            CC.Guard.Argument(type,
+            CC.Guard.ArgumentObsolete(type,
                                  nameof(type),
                                  !type.IsAbstract && !type.IsInterface,
                                  "Type is abstract.");

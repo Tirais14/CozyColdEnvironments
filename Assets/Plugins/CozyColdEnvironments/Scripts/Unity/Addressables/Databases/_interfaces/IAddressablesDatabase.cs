@@ -66,14 +66,24 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         where TAsset : Object
     {
+        new IEnumerable<AssetKey> Keys { get; }
+        new IEnumerable<TAsset> Values { get; }
+        new TAsset this[AssetKey key] { get; }
+
         object IAddressablesDatabase.this[AssetKey key] => this[key];
         new TAsset this[string assetName] { get; }
         new TAsset this[string assetName, bool ingoreCase] { get; }
         new TAsset this[object assetID] { get; }
 
+        IEnumerable<AssetKey> IAddressablesDatabase.Keys => Keys;
+        IEnumerable<Object> IAddressablesDatabase.Values => Values;
         Object IAddressablesDatabase.this[string assetName] => this[assetName];
         Object IAddressablesDatabase.this[string assetName, bool ingoreCase] => this[assetName, ingoreCase];
         Object IAddressablesDatabase.this[object assetID] => this[assetID];
+
+        UniTask LoadAssetsAsync<TSub>(AssetLabels assetLabels) where TSub : TAsset;
+        UniTask LoadAssetsAsync<TAnyAsset>(AssetLabels assetLabels, Func<TAnyAsset, TAsset[]> converter)
+            where TAnyAsset : Object;
 
         void AddAsset(TAsset asset);
 

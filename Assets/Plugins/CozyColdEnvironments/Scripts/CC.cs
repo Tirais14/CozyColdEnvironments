@@ -69,10 +69,20 @@ namespace CCEnvs
             }
 
             /// <exception cref="ArgumentException"></exception>
-            public static void Argument<T>(T value,
-                                           string paramName,
-                                           bool mustBeTrue,
-                                           string? message = null)
+            public static void Argument(bool mustBeFalse,
+                                        string paramName,
+                                        string? message = null)
+            {
+                if (mustBeFalse)
+                    throw new ArgumentException(message, paramName);
+            }
+
+            [Obsolete("Use Argument instead.")]
+            /// <exception cref="ArgumentException"></exception>
+            public static void ArgumentObsolete<T>(T value,
+                                                   string paramName,
+                                                   bool mustBeTrue,
+                                                   string? message = null)
             {
                 if (!mustBeTrue)
                     throw new ArgumentException(message, paramName);

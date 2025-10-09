@@ -43,7 +43,7 @@ namespace CCEnvs.Conversations
                 return result;
 
             //Until this line converstaion could be done with abstraction
-            CC.Guard.Argument(toType, nameof(toType), !toType.IsAbstract && !toType.IsInterface);
+            CC.Guard.ArgumentObsolete(toType, nameof(toType), !toType.IsAbstract && !toType.IsInterface);
 
             CreateByFactory();
 

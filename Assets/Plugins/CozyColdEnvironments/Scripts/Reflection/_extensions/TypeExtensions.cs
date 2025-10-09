@@ -231,7 +231,7 @@ namespace CCEnvs.Reflection
 
         public static string GetShortName(Type type)
         {
-            CC.Guard.Argument(type, nameof(type), !type.IsGenericType);
+            CC.Guard.ArgumentObsolete(type, nameof(type), !type.IsGenericType);
 
             if (type == typeof(short))
                 return "short";

@@ -1,4 +1,3 @@
-using CCEnvs.Attributes.Metadata;
 using System;
 
 namespace CCEnvs.Attributes.Metadata

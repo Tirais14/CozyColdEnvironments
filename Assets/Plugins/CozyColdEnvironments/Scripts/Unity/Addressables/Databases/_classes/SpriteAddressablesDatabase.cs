@@ -1,8 +1,11 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using Cysharp.Threading.Tasks;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
+using TreeEditor;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.U2D;
@@ -33,62 +36,34 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
         }
 
-        public override async UniTask LoadAssetsAsync(AssetLabels assetLabels)
-        {
-            CC.Guard.Argument(assetLabels,
-                              nameof(assetLabels),
-                              assetLabels.IsNotDefault());
-
-            try
-            {
-                OnStartLoadingInternal();
-
-                await LoadAssetsInternalAsync(assetLabels.ToArray());
-
-                AsyncOperationHandle handle = await AddressableLoader.LoadAssetsByLabelsAsync<SpriteAtlas>(
-                    assetLabels.ToArray(),
-                    AddAtlasAsset);
-
-                loadHandles.Add(handle);
-
-                if (TexturesAsSprites)
-                {
-                    handle = await AddressableLoader.LoadAssetsByLabelsAsync<Texture2D>(
-                        assetLabels.ToArray(),
-                        AddTextureAsset);
-
-                    loadHandles.Add(handle);
-                }
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
-            finally
-            {
-                OnLoadedInternal();
-                TrimExcess();
-            }
-        }
-
-        private void AddAtlasAsset(SpriteAtlas atlas)
+        private static Sprite[] ConvertAtlasAsset(SpriteAtlas atlas)
         {
             var sprites = new Sprite[atlas.spriteCount];
 
             atlas.GetSprites(sprites);
 
-            sprites.ForEach(AddAsset);
+            return sprites;
         }
 
-        private void AddTextureAsset(Texture2D texture)
+        private static Sprite[] ConvertTextureAsset(Texture2D texture)
         {
-            var sprite = Sprite.Create(
+            return Sprite.Create(
                 texture,
                 new Rect(x: 0f, y: 0f, texture.width, texture.height),
                 new Vector2(texture.width / 2, texture.height / 2),
-                texture.GetPixels().Length);
+                texture.GetPixels().Length).ToSeq().ToArray();
+        }
 
-            AddAsset(sprite);
+        public override async UniTask LoadAssetsAsync(AssetLabels assetLabels)
+        {
+            var tasks = new TempList<UniTask>()
+            {
+                base.LoadAssetsAsync(assetLabels),
+                LoadAssetsAsync<SpriteAtlas>(assetLabels, ConvertAtlasAsset),
+                TexturesAsSprites ? LoadAssetsAsync<Texture2D>(assetLabels, ConvertTextureAsset) : UniTask.CompletedTask
+            };
+
+            await UniTask.WhenAll((UniTask[])tasks);
         }
     }
 }

@@ -12,11 +12,24 @@ namespace CCEnvs.Diagnostics
         {
         }
 
-        public CCException(string message,
-                           Exception? innerException = null)
+        public CCException(Exception? innerException)
             :
-            base(message,
-                 innerException)
+            base(string.Empty, innerException)
+        {
+
+        }
+
+        public CCException(string message)
+            :
+            base(message)
+        {
+
+        }
+
+        public CCException(string message,
+                           Exception? innerException)
+            :
+            base(message, innerException)
         {
         }
     }
