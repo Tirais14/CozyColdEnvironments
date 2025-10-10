@@ -2,8 +2,10 @@
 using C5;
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.Collections.Unsafe;
 using CCEnvs.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace CCEnvs
@@ -42,12 +44,12 @@ namespace CCEnvs
             if (values.IsEmpty())
                 return Array.Empty<PrioritizedValue<T>>();
 
-            var list = new TempList<PrioritizedValue<T>>(values.Length);
+            var list = new List<PrioritizedValue<T>>(values.Length);
 
             foreach (var item in values)
                 list.Add(new PrioritizedValue<T>(item, priorityGetter(item)));
 
-            return list;
+            return list.GetInternalArray();
         }
 
 #if C5

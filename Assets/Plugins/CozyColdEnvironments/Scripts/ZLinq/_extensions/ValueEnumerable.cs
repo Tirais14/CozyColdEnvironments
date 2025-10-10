@@ -1,5 +1,6 @@
 #if Z_LINQ
 using CCEnvs.Collections;
+using CCEnvs.Collections.Unsafe;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -17,14 +18,14 @@ namespace CCEnvs
         {
             CC.Guard.NullArgument(action, nameof(action));
 
-            var list = new TempList<T>();
+            var list = new List<T>();
             foreach (var item in source)
             {
                 action(item);
                 list.Add(item);
             }
 
-            return list;
+            return list.ToArray();
         }
 
         /// <summary>

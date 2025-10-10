@@ -55,7 +55,7 @@ namespace CCEnvs.Reflection
             }
         }
         public Type InstanceType { get; private set; } = null!;
-        public Settings settings { get; }
+        public Settings settings { get; } = Settings.Default;
         public bool IncludeNonPublic => settings.IsFlagSetted(Settings.IncludeNonPublic);
         public bool DisallowCaching => settings.IsFlagSetted(Settings.DisallowCaching);
 
@@ -134,9 +134,9 @@ namespace CCEnvs.Reflection
         {
         }
 
-        public Reflected(object instance, Settings setttings)
+        public Reflected(object instance, Settings settings)
             :
-            this(instance?.GetType() ?? throw new ArgumentNullException(nameof(instance)), instance, setttings)
+            this(instance?.GetType() ?? throw new ArgumentNullException(nameof(instance)), instance, settings)
         {
         }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Collections
 {
+    [Obsolete("Cause issues", true)]
     public class LimitedList<T> : ListBase<T>, IReadOnlyList<T>, ICollection<T>
     {
         public static LimitedList<T> Empty { get; } = new();

@@ -60,6 +60,11 @@ namespace CCEnvs
 
         public static class Guard
         {
+            public static void Source<T>([NotNull] T? obj)
+            {
+                NullArgument(obj, "source");
+            }
+
             /// <exception cref="ArgumentNullException"></exception>
             public static void NullArgument<T>([NotNull] T? obj,
                                                string paramName)

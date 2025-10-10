@@ -1,4 +1,6 @@
 using CCEnvs.Collections;
+using CCEnvs.Collections.Performance;
+using CCEnvs.Collections.Unsafe;
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using Cysharp.Threading.Tasks;
@@ -56,14 +58,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public override async UniTask LoadAssetsAsync(AssetLabels assetLabels)
         {
-            var tasks = new TempList<UniTask>()
+            var tasks = new List<UniTask>()
             {
                 base.LoadAssetsAsync(assetLabels),
                 LoadAssetsAsync<SpriteAtlas>(assetLabels, ConvertAtlasAsset),
                 TexturesAsSprites ? LoadAssetsAsync<Texture2D>(assetLabels, ConvertTextureAsset) : UniTask.CompletedTask
             };
 
-            await UniTask.WhenAll((UniTask[])tasks);
+            await UniTask.WhenAll(tasks.GetInternalArraySegment());
         }
     }
 }

@@ -125,7 +125,7 @@ namespace CCEnvs.Unity.AddrsAssets
                 orderby prioritized
                 select Addressables.LoadAssetAsync<T>(prioritized.Value);
 
-            var tasks = new TempList<UniTask<T>>(locationsHandle.Result.Count);
+            var tasks = new List<UniTask<T>>(locationsHandle.Result.Count);
             foreach (var assetHandle in assetHandles)
             {
                 if (callback is not null)

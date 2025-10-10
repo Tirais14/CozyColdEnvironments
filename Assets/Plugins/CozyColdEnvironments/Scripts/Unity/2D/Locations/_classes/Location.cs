@@ -12,7 +12,7 @@ using UnityEngine.Tilemaps;
 namespace CCEnvs.U2D.Locations
 {
     [RequireComponent(typeof(Tilemap))]
-    public class Location<T> : CCBehaviour, ILocation<T>, ISerializationCallbackReceiver
+    public class Location<T> : CCBehaviour, ILocation<T>
         where T : ICell
     {
         [SerializeField]
@@ -30,7 +30,7 @@ namespace CCEnvs.U2D.Locations
 
         public BoundsInt Bounds {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _bounds ? _bounds.Value : Map.cellBounds;
+            get => _bounds.HasValue ? _bounds.Value : Map.cellBounds;
         }
 
         public T this[Vector3Int pos] {
@@ -56,6 +56,8 @@ namespace CCEnvs.U2D.Locations
         protected override void Start()
         {
             base.Start();
+
+            cells = new MapInt<T>(Bounds);
             InitCells();
         }
 
@@ -76,15 +78,6 @@ namespace CCEnvs.U2D.Locations
 
                 this.PrintLog($"Cell inited; position: {pos}; tile: {cell.GetTile().IfNotDefault(x => x.name, (_) => "none")}.");
             }
-        }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-        }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            cells = new MapInt<T>(Bounds);
         }
     }
     public class Location : Location<Cell>

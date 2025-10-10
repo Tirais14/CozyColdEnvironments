@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Collections.ObjectModel
 {
+    [Obsolete("Cause issues", true)]
     public class ListBase<T> : ReadOnlyListBase<T>, IList<T>
     {
         protected int pointer = -1;
