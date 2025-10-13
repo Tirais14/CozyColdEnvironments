@@ -16,11 +16,11 @@ namespace CCEnvs.Files.Json
         {
         }
 
-        public JsonFile(Path path) : this(path.value)
+        public JsonFile(PathEntry path) : this(path.value)
         {
         }
 
-        public override void SetPath(Path path)
+        public override void SetPath(PathEntry path)
         {
             if (path.Extension != Extension)
             {

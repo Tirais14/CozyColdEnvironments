@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Json.EditorC
 
         public static async void Create(string[]? includeNamespaces = null,
                                         string[]? excludeNamespaces = null,
-                                        Files.Path path = default)
+                                        Files.PathEntry path = default)
         {
             try
             {
@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.Json.EditorC
 
                 inProcess = true;
 
-                if (Equals(path, default(Files.Path)))
+                if (Equals(path, default(Files.PathEntry)))
                     path = Application.dataPath.ToFilePath() - "Assets" + "External" + "Json" + "dictionary_generated.txt";
 
                 await JsonIDEWordDictionary.Create(path,

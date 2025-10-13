@@ -1,5 +1,9 @@
 using System;
+#if UNITY_2017_1_OR_NEWER
 using Unity.Collections.LowLevel.Unsafe;
+#else
+using System.Runtime.CompilerServices;
+#endif
 
 #nullable enable
 namespace CCEnvs.Common

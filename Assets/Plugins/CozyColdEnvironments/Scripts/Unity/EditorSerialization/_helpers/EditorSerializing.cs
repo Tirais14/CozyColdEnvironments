@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.EditorSerialization
         public static void SetDefault<T>(ref T? fieldValue)
         {
 #if !UNITY_EDITOR
-            fieldValue = default
+            fieldValue = default;
 #endif
         }
     }

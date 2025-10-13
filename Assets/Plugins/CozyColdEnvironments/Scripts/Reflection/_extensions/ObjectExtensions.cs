@@ -19,23 +19,30 @@ namespace CCEnvs.Reflection
             return !value.IsType(other);
         }
 
-        public static Reflected AsReflected(this object value, bool nonPublic)
+        public static Reflected AsReflected(this object source, bool nonPublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
             Reflected.Settings settings = Reflected.Settings.Default;
 
             if (nonPublic)
                 settings |= Reflected.Settings.IncludeNonPublic;
 
-            return new Reflected(value, settings);
+            return new Reflected(source, settings);
         }
 
-        public static Reflected AsReflected(this object value)
+        public static Reflected AsReflectedNonCacheable(this object source)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return new Reflected(value);
+            return new Reflected(source, Reflected.Settings.Default & ~Reflected.Settings.DisallowCaching);
+        }
+
+        public static Reflected AsReflected(this object source)
+        {
+            CC.Guard.NullArgument(source, nameof(source));
+
+            return new Reflected(source);
         }
     }
 }

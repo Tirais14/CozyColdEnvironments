@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.FileSystem.Json.UnityEditor
             return $"{groupName}_{assetType}_Database";
         }
 
-        protected void CreateDatabaseFiles(Files.Path saveDirectory, AddressableAssetGroup group)
+        protected void CreateDatabaseFiles(Files.PathEntry saveDirectory, AddressableAssetGroup group)
         {
             AddressableAssetEntry[] allGroupAssets = AddressableEditorUtility.GatherAllAssetsFromGroup(group);
 
@@ -37,11 +37,11 @@ namespace CCEnvs.Unity.FileSystem.Json.UnityEditor
             }
         }
 
-        protected virtual Files.Path SelectSaveDirectory() => SelectDirectory();
+        protected virtual Files.PathEntry SelectSaveDirectory() => SelectDirectory();
 
         protected virtual void OnCreateClick()
         {
-            Files.Path savePath = SelectSaveDirectory();
+            Files.PathEntry savePath = SelectSaveDirectory();
 
             if (!savePath.HasValue)
             {

@@ -15,7 +15,7 @@ namespace CCEnvs.Json
 {
     public static class JsonIDEWordDictionary
     {
-        public static async Task<FileEntry> Create(Files.Path path,
+        public static async Task<FileEntry> Create(Files.PathEntry path,
                                                    string[]? includeNamespaces = null,
                                                    string[]? excludeNamespaces = null)
         {

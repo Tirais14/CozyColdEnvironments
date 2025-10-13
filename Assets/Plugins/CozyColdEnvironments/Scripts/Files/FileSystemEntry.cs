@@ -10,9 +10,9 @@ namespace CCEnvs.Files
     {
         private FileAttributes? attributes;
         private string? customName;
-        protected Path path;
+        protected PathEntry path;
 
-        public Path Path {
+        public PathEntry Path {
             get => path;
             set => SetPath(value);
         }
@@ -46,7 +46,7 @@ namespace CCEnvs.Files
             SetPath(pathParts);
         }
 
-        protected FileSystemEntry(Path path, string? name = null)
+        protected FileSystemEntry(PathEntry path, string? name = null)
         {
             SetPath(path);
             customName = name;
@@ -67,10 +67,10 @@ namespace CCEnvs.Files
 
         public abstract void Save(bool overwrite = false);
 
-        public virtual void SetPath(Path path) => this.path = path;
+        public virtual void SetPath(PathEntry path) => this.path = path;
         public void SetPath(string path)
         {
-            SetPath(new Path(path));
+            SetPath(new PathEntry(path));
         }
         public void SetPath(params string[] pathParts)
         {
@@ -84,7 +84,7 @@ namespace CCEnvs.Files
                 return;
             }
 
-            SetPath(new Path(pathParts));
+            SetPath(new PathEntry(pathParts));
         }
 
         /// <param name="name"></param>

@@ -55,7 +55,7 @@ namespace CCEnvs.Files.ScriptUtils
 
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public static ScriptFile Build(Path pathWithFileName, ScriptContentList fileContent)
+        public static ScriptFile Build(PathEntry pathWithFileName, ScriptContentList fileContent)
         {
             if (!pathWithFileName.IsValid)
                 throw new ArgumentException("Path is not valid.");

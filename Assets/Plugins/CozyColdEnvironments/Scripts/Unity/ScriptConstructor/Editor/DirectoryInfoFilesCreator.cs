@@ -53,7 +53,7 @@ namespace CCEnvs.Files.Editor
             foreach (var directory in values)
             {
                 childDirectories = Directory.GetDirectories(directory, "*", SearchOption.AllDirectories).
-                                   Select(x => FSPathHelper.SetStyle(x, PathStyle.Universal)).
+                                   Select(x => PathHelper.SetStyle(x, PathStyle.Universal)).
                                    ToArray();
 
                 if (excludeDirectories.IsNotNullOrEmpty())
@@ -118,7 +118,7 @@ namespace CCEnvs.Files.Editor
                                ? System.IO.Path.GetRelativePath(parentDirectory, directory)
                                : directory;
 
-            return relativePath.Replace(Path.Separators, '_').DeleteWhitespaces();
+            return relativePath.Replace(PathEntry.Separators, '_').DeleteWhitespaces();
         }
 
         //private TypeData CreateEnumExtensionsClass(string enumTypeName)

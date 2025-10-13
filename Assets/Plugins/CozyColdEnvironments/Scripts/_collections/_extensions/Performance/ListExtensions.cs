@@ -37,7 +37,7 @@ namespace CCEnvs.Collections.Performance
 
         public static ArraySegment<T> GetInternalArraySegment<T>(this List<T> source)
         {
-            CC.Guard.Source(source);
+            CC.Guard.SourceArg(source);
 
             return new ArraySegment<T>(source.GetInternalArray(), 0, source.Count);
         }

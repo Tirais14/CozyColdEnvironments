@@ -91,7 +91,7 @@ namespace CCEnvs.Files.ScriptUtils
             return UsingHelper.GetUsings(lines);
         }
 
-        public override void SetPath(Path path)
+        public override void SetPath(PathEntry path)
         {
             if (path.Extension != Extension)
             {

@@ -19,6 +19,6 @@ namespace CCEnvs.Files
         public static DirectoryEntry ToDirectoryEntry(this string str) => new(str);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Path ToFilePath(this string str) => new(str);
+        public static PathEntry ToFilePath(this string str) => new(str);
     }
 }

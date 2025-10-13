@@ -1,5 +1,4 @@
 #nullable enable
-
 using CCEnvs.Async;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
@@ -22,6 +21,9 @@ namespace CCEnvs
 
     public static class CC
     {
+        public const string FULL_NAME = "CozyColdEnvironments";
+        public const string COPYRIGHT_STAMP = "@Tirais: " + FULL_NAME;
+
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
         public static AsyncTaskRegistry BackgroundTasks { get; } = new();
         public static object EmptyObject { get; } = new object();
@@ -60,7 +62,7 @@ namespace CCEnvs
 
         public static class Guard
         {
-            public static void Source<T>([NotNull] T? obj)
+            public static void SourceArg<T>([NotNull] T? obj)
             {
                 NullArgument(obj, "source");
             }

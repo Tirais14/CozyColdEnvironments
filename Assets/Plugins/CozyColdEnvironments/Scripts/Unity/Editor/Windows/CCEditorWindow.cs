@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.EditorC
                 }
             };
 
-        protected static Files.Path SelectDirectory(string? defaultPath = null,
+        protected static Files.PathEntry SelectDirectory(string? defaultPath = null,
                                                 string title = "Select Directory",
                                                 string? defaultName = null)
         {
@@ -50,10 +50,10 @@ namespace CCEnvs.Unity.EditorC
                 defaultPath ?? Application.dataPath,
                 defaultName ?? string.Empty);
 
-            return new Files.Path(selectedDirectory);
+            return new Files.PathEntry(selectedDirectory);
         }
 
-        protected static bool TrySelectDirectory(out Files.Path selectedDirectory,
+        protected static bool TrySelectDirectory(out Files.PathEntry selectedDirectory,
                                                  string? defaultPath = null,
                                                  string title = "Select Directory",
                                                  string? defaultName = null)

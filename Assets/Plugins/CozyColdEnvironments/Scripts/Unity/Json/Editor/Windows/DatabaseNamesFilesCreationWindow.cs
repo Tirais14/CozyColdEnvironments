@@ -97,12 +97,12 @@ namespace CCEnvs.Unity.Json.EditorC
             return AddressableAssetSettingsDefaultObject.Settings;
         }
 
-        protected virtual Files.Path SelectConstFileDirectoryPath()
+        protected virtual Files.PathEntry SelectConstFileDirectoryPath()
         {
             return SelectDirectory(title: "Select const file directory path");
         }
 
-        protected virtual Files.Path SelectEnumFileDirectoryPath()
+        protected virtual Files.PathEntry SelectEnumFileDirectoryPath()
         {
             return SelectDirectory(title: "Select enum file directory path");
         }
@@ -144,7 +144,7 @@ namespace CCEnvs.Unity.Json.EditorC
                 NamespaceData.ToArray(),
                 GetClass().ToArray());
 
-            Files.Path savePath = SelectConstFileDirectoryPath();
+            Files.PathEntry savePath = SelectConstFileDirectoryPath();
 
             savePath += constFileName.value;
 
@@ -191,7 +191,7 @@ namespace CCEnvs.Unity.Json.EditorC
                 NamespaceData.ToArray(),
                 GetEnum().ToArray());
 
-            Files.Path savePath = SelectEnumFileDirectoryPath();
+            Files.PathEntry savePath = SelectEnumFileDirectoryPath();
 
             savePath += enumFileName.value;
 

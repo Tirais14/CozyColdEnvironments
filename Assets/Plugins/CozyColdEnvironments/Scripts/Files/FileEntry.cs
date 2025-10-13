@@ -23,7 +23,7 @@ namespace CCEnvs.Files
         {
         }
 
-        public FileEntry(Path path) : base(path)
+        public FileEntry(PathEntry path) : base(path)
         {
         }
 
@@ -41,7 +41,7 @@ namespace CCEnvs.Files
             return CreateEntry(overwrite: false, pathParts);
         }
         /// <param name="overwrite">if false - throws exception if file exists</param>
-        public static FileEntry CreateEntry(Path path, bool overwrite = false)
+        public static FileEntry CreateEntry(PathEntry path, bool overwrite = false)
         {
             return CreateEntry(overwrite, path.value);
         }

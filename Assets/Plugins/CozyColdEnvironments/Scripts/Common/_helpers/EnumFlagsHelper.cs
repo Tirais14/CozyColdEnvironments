@@ -1,5 +1,9 @@
 using System;
+#if UNITY_2017_1_OR_NEWER
 using Unity.Collections.LowLevel.Unsafe;
+#else
+using System.Runtime.CompilerServices;
+#endif
 
 #nullable enable
 namespace CCEnvs.Common
@@ -12,7 +16,12 @@ namespace CCEnvs.Common
                                                   bool isToSet)
             where T : unmanaged, Enum
         {
+
+#if UNITY_2017_1_OR_NEWER
             return UnsafeUtility.SizeOf<T>() switch
+#else
+            return Unsafe.SizeOf<T>() switch
+#endif
             {
                 1 => SetFlagByteInternal(value, flag, isToSet),
                 2 => SetFlagInt16Internal(value, flag, isToSet),
@@ -40,7 +49,11 @@ namespace CCEnvs.Common
             else
                 valueByte &= (byte)~flagByte;
 
+#if UNITY_2017_1_OR_NEWER
             return UnsafeUtility.As<byte, T>(ref valueByte);
+#else
+            return Unsafe.As<byte, T>(ref valueByte);
+#endif
         }
         private unsafe static T SetFlagInt16Internal<T>(T value,
                                                         T flag,
@@ -51,8 +64,8 @@ namespace CCEnvs.Common
             ushort valueByte = UnsafeUtility.As<T, ushort>(ref value);
             ushort flagByte = UnsafeUtility.As<T, ushort>(ref flag);
 #else
-            ushort valueByte = Unsafe.As<T, byte>(ref value);
-            ushort flagByte = Unsafe.As<T, byte>(ref flag);
+            ushort valueByte = Unsafe.As<T, ushort>(ref value);
+            ushort flagByte = Unsafe.As<T, ushort>(ref flag);
 #endif
 
             if (isToSet)
@@ -60,7 +73,11 @@ namespace CCEnvs.Common
             else
                 valueByte &= (ushort)~flagByte;
 
+#if UNITY_2017_1_OR_NEWER
             return UnsafeUtility.As<ushort, T>(ref valueByte);
+#else
+            return Unsafe.As<ushort, T>(ref valueByte);
+#endif
         }
         private unsafe static T SetFlagInt32Internal<T>(T value,
                                                         T flag,
@@ -71,8 +88,8 @@ namespace CCEnvs.Common
             uint valueByte = UnsafeUtility.As<T, uint>(ref value);
             uint flagByte = UnsafeUtility.As<T, uint>(ref flag);
 #else
-            uint valueByte = Unsafe.As<T, byte>(ref value);
-            uint flagByte = Unsafe.As<T, byte>(ref flag);
+            uint valueByte = Unsafe.As<T, uint>(ref value);
+            uint flagByte = Unsafe.As<T, uint>(ref flag);
 #endif
 
             if (isToSet)
@@ -80,7 +97,11 @@ namespace CCEnvs.Common
             else
                 valueByte &= ~flagByte;
 
+#if UNITY_2017_1_OR_NEWER
             return UnsafeUtility.As<uint, T>(ref valueByte);
+#else
+            return Unsafe.As<uint, T>(ref valueByte);
+#endif
         }
         private unsafe static T SetFlagInt64Internal<T>(T value,
                                                         T flag,
@@ -91,8 +112,8 @@ namespace CCEnvs.Common
             ulong valueByte = UnsafeUtility.As<T, ulong>(ref value);
             ulong flagByte = UnsafeUtility.As<T, ulong>(ref flag);
 #else
-            ulong valueByte = Unsafe.As<T, byte>(ref value);
-            ulong flagByte = Unsafe.As<T, byte>(ref flag);
+            ulong valueByte = Unsafe.As<T, ulong>(ref value);
+            ulong flagByte = Unsafe.As<T, ulong>(ref flag);
 #endif
 
             if (isToSet)
@@ -100,7 +121,11 @@ namespace CCEnvs.Common
             else
                 valueByte &= ~flagByte;
 
+#if UNITY_2017_1_OR_NEWER
             return UnsafeUtility.As<ulong, T>(ref valueByte);
+#else
+            return Unsafe.As<ulong, T>(ref valueByte);
+#endif
         }
     }
 }

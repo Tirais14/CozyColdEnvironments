@@ -72,7 +72,7 @@ namespace CCEnvs.Diagnostics
 #if UNITY_2017_1_OR_NEWER
             Debug.Log($"{exception.GetType().Name}: {exception.Message}", context as Object);
 #else
-            System.Diagnostics.Debug.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(exception.Message);
 #endif
         }
 
@@ -84,7 +84,7 @@ namespace CCEnvs.Diagnostics
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning($"{exception.GetType().Name}: {exception.Message}", context as Object);
 #else
-            System.Diagnostics.Debug.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(exception.Message);
 #endif
         }
 
@@ -96,7 +96,7 @@ namespace CCEnvs.Diagnostics
 #if UNITY_2017_1_OR_NEWER
             Debug.LogException(exception, context as Object);
 #else
-            System.Diagnostics.Debug.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(exception.Message);
 #endif
         }
 

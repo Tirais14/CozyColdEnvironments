@@ -10,11 +10,10 @@ using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using SuperLinq;
-using static CCEnvs.Files.Path;
 
 namespace CCEnvs.Files
 {
-    public static class FSPathHelper
+    public static class PathHelper
     {
         public static string Normalize(string path)
         {
@@ -60,7 +59,7 @@ namespace CCEnvs.Files
         public static char GetDirectorySeparator(PathStyle style = PathStyle.Default)
         {
             return style switch {
-                PathStyle.Default => DefaultDirectorySeparator,
+                PathStyle.Default => PathEntry.DefaultDirectorySeparator,
                 PathStyle.Windows => '\\',
                 PathStyle.Universal => '/',
                 _ => throw new IncorrectDataException(style),
@@ -80,11 +79,6 @@ namespace CCEnvs.Files
                 PathStyle.Universal => path.Replace('\\', '/'),
                 _ => path,
             };
-        }
-
-        public static Path SetStyle(Path path, PathStyle style)
-        {
-            return new Path(style, path.value);
         }
 
         public static string Combine(PathStyle style, params string[] pathParts)
@@ -117,10 +111,7 @@ namespace CCEnvs.Files
 
             return SetStyle(sb.ToString().TrimEnd(directorySeparator), style);
         }
-        public static string Combine(PathStyle style, params Path[] pathParts)
-        {
-            return Combine(style, pathParts.ToStringArray());
-        }
+
         public static string Combine(params string[] pathParts)
         {
             return Combine(PathStyle.Default, pathParts);
@@ -136,28 +127,6 @@ namespace CCEnvs.Files
                                   .ToArray();
 
             return Combine(style, parts);
-        }
-        /// <param name="style">if null, uses path style</param>
-        public static string Combine(Path path,
-                                     IEnumerable<string> pathParts,
-                                     PathStyle? style = null)
-        {
-            return Combine(path.value, pathParts, style ?? path.style);
-        }
-        public static string Combine(string path,
-                                     IEnumerable<Path> pathParts,
-                                     PathStyle style = PathStyle.Default)
-        {
-
-
-            return Combine(path, pathParts.ToStringArray(), style);
-        }
-        /// <param name="style">if null, uses path style</param>
-        public static string Combine(Path path,
-                                     IEnumerable<Path> pathParts,
-                                     PathStyle? style = null)
-        {
-            return Combine(path.value, pathParts, style ?? path.style);
         }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -213,14 +182,7 @@ namespace CCEnvs.Files
             return Combine(style, proccessed.ToArray());
         }
         /// <param name="style">if null, uses path style</param>
-        public static Path RemoveLast(Path path,
-                                        string toRemove,
-                                        PathStyle? style = null)
-        {
-            string result = RemoveLast(path.value, toRemove, style ?? path.style);
 
-            return new Path(result);
-        }
 
         /// <exception cref="ArgumentNullException"></exception>
         public static string GetFilename(string path)
