@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.Unity.Json.EditorC
 {
-    public abstract class DatabaseNamesFilesCreationWindow : CCEditorWindow
+    public abstract class DatabaseNamesFilesCreationWindow : CCEditorWindowObsolete
     {
         [Flags]
         protected enum FileTypes

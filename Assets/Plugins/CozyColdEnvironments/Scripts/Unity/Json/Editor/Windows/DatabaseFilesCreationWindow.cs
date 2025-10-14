@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 namespace CCEnvs.Unity.FileSystem.Json.UnityEditor
 {
-    public abstract class DatabaseFilesCreationWindow : CCEditorWindow
+    public abstract class DatabaseFilesCreationWindow : CCEditorWindowObsolete
     {
         protected Toggle overwriteToggle = null!;
         protected Button createButton = null!;

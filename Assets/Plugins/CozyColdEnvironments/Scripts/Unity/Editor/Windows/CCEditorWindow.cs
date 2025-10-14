@@ -1,115 +1,38 @@
-using CCEnvs.Common;
-using CCEnvs.Diagnostics;
-using CCEnvs.Files;
 using CCEnvs.Reflection;
-using CCEnvs.UnityEditor;
+using SuperLinq;
 using System;
-using System.IO;
+using System.Linq;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
-
+#pragma warning disable IDE1006
 namespace CCEnvs.Unity.EditorC
 {
     public abstract class CCEditorWindow : EditorWindow
     {
-        protected Type windowType = null!;
-        protected VisualElement root = null!;
+        protected VisualElement root => rootVisualElement;
 
-        protected virtual void ConstructUIElements() => SetRoot();
-
-        protected virtual void AddUIElements() => EditorHelper.AddUIElementsByReflection(GetType(), this, root);
-
-        protected void SetRoot() => root ??= rootVisualElement;
-
-        protected VisualElement GetEmptyElement(float height) => new() {
-            style = { height = height }
-        };
-
-        protected VisualElement GetSeparatorElement(
-            float height = 2,
-            Color? backgroundColor = null,
-            float marginTop = 5,
-            float marginBottom = 5) => new() {
-                style = {
-                    height = height,
-                    backgroundColor = backgroundColor ?? Color.gray,
-                    marginTop = marginTop,
-                    marginBottom = marginBottom
-                }
-            };
-
-        protected static Files.PathEntry SelectDirectory(string? defaultPath = null,
-                                                string title = "Select Directory",
-                                                string? defaultName = null)
+        public virtual void CreateGUI()
         {
-            string selectedDirectory = EditorUtility.OpenFolderPanel(
-                title,
-                defaultPath ?? Application.dataPath,
-                defaultName ?? string.Empty);
-
-            return new Files.PathEntry(selectedDirectory);
+            CreateElements();
+            InitElements();
         }
 
-        protected static bool TrySelectDirectory(out Files.PathEntry selectedDirectory,
-                                                 string? defaultPath = null,
-                                                 string title = "Select Directory",
-                                                 string? defaultName = null)
-        {
-            selectedDirectory = SelectDirectory(defaultPath, title, defaultName);
+        protected abstract void CreateElements();
 
-            return string.IsNullOrWhiteSpace(selectedDirectory);
+        protected virtual IndexValuePair<VisualElement>[] GetSeparators()
+        {
+            return Array.Empty<IndexValuePair<VisualElement>>();
         }
 
-        protected void Abort(string? message = null)
+        private void InitElements()
         {
-            CCDebug.PrintLog($"{windowType.GetName()}: Proccess aborted. {message}", this);
-        }
-
-        protected bool TryAbortByDirectoryPath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
+            foreach (var item in from field in this.AsReflectedNonCacheable().AllFields.Value
+                                 where field.FieldType.IsType<VisualElement>()
+                                 select field.GetValue(this).As<VisualElement>())
             {
-                Abort($"Path: \"{path}\" is null or empty.");
-                return true;
-            }
-            if (Directory.Exists(path))
-            {
-                Abort($"Selected file path: \"{path}\" doesn't exist.");
-                return true;
-            }
-
-            return false;
-        }
-        protected bool TryAbortByFilePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                Abort($"Path: \"{path}\" is null or empty.");
-                return true;
-            }
-            if (File.Exists(path))
-            {
-                Abort($"Selected file path: \"{path}\" doesn't exist.");
-                return true;
-            }
-
-            return false;
-        }
-
-        protected virtual void CreateGUI()
-        {
-            try
-            {
-                windowType = GetType();
-                ConstructUIElements();
-                AddUIElements();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
+                root.Add(item);
             }
         }
     }
