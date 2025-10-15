@@ -2,26 +2,26 @@ using CCEnvs.Attributes.Metadata;
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.U2D;
 using Object = UnityEngine.Object;
 
 #nullable enable
 
 namespace CCEnvs.Unity
 {
-    [Flags]
     public enum AssetType
     {
-        [MetaString("")]
         None,
+        Object,
+        Prefab,
 
-        [MetaString("UnityObject")]
-        Generic,
+        [MetaString("Scriptable Object")]
+        ScriptableObject,
 
-        [MetaString("Prefab")]
-        GameObject = 2,
-
-        ScriptableObject = 4,
-        Scene = 8
+        Texture2D,
+        Sprite,
+        SpriteAtlas,
+        Scene,
     }
 
     public static class AssetTypeNameExtensions
@@ -29,11 +29,14 @@ namespace CCEnvs.Unity
         public static Type? ToSystemType(this AssetType assetType) =>
             assetType switch
             {
-                AssetType.Generic => typeof(Object),
-                AssetType.GameObject => typeof(GameObject),
+                AssetType.Object => typeof(Object),
+                AssetType.Prefab => typeof(GameObject),
                 AssetType.ScriptableObject => typeof(ScriptableObject),
                 AssetType.Scene => typeof(SceneAsset),
-                _ => null,
+                AssetType.Texture2D => typeof(Texture2D),
+                AssetType.Sprite => typeof(Sprite),
+                AssetType.SpriteAtlas => typeof(SpriteAtlas),
+                _ => throw new InvalidOperationException(assetType.ToString()),
             };
     }
 }

@@ -1,4 +1,3 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.AddrsAssets.Databases;
@@ -22,12 +21,13 @@ namespace CCEnvs.Unity.AddrsAssets
         /// <exception cref="EmptyCollectionArgumentException"></exception>
         public static async UniTask<AsyncOperationHandle<IList<IResourceLocation>>> LoadLocationsAsync(
             string[] labels,
+            Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection,
             Type? assetType = null)
         {
             CC.Guard.CollectionArgument(labels, nameof(labels));
 
             var handle = Addressables.LoadResourceLocationsAsync(labels,
-                Addressables.MergeMode.Intersection);
+                mergeMode);
 
             await handle;
 
@@ -77,12 +77,13 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsAsync<T>(
             AssetLabels labels,
-            Action<T>? callback = null)
+            Action<T>? callback = null,
+            Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
             where T : Object
         {
             CC.Guard.Argument(labels.IsDefault(), nameof(labels));
 
-            var locationsHandle = await LoadLocationsAsync(labels, typeof(T));
+            var locationsHandle = await LoadLocationsAsync(labels, mergeMode, assetType: typeof(T));
 
             IList<IResourceLocation> locations = await locationsHandle;
 
@@ -112,12 +113,13 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsPrioritizedAsync<T>(
             AssetLabels labels,
-            Action<T>? callback = null)
+            Action<T>? callback = null,
+            Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
             where T : Object
         {
             CC.Guard.Argument(labels.IsDefault(), nameof(labels));
 
-            var locationsHandle = await LoadLocationsAsync(labels, typeof(T));
+            var locationsHandle = await LoadLocationsAsync(labels, mergeMode, assetType: typeof(T));
 
             var assetHandles =
                 from loc in locationsHandle.Result.ZL()

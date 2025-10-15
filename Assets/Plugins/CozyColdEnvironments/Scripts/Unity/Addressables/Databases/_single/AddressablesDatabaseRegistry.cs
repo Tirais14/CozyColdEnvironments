@@ -56,13 +56,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             TryLoadByOrder();
         }
 
-        public void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database)
-        {
-            databases.Add(key, database);
-        }
         public void RegisterDatabase(IAddressablesDatabase database)
         {
-            databases.Add(new AssetDatabaseKey(database.AssetType), database);
+            databases.Add(new AssetDatabaseKey(database.AssetType, database.ID), database);
         }
 
         public bool UnregisterDatabase(AssetDatabaseKey key) => databases.Remove(key);

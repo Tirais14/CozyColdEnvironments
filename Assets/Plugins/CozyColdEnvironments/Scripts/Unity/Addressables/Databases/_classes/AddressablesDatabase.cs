@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
 using Object = UnityEngine.Object;
@@ -122,7 +123,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 loadingCount++;
                 OnStartLoadingInternal();
 
-                var handle = await AddressableLoader.LoadAssetsPrioritizedAsync<TAnyAsset>(assetLabels);
+                var handle = await AddressableLoader.LoadAssetsPrioritizedAsync<TAnyAsset>(
+                    assetLabels,
+                    mergeMode: assetLabels.MustBeAll
+                               ?
+                               Addressables.MergeMode.Intersection
+                               :
+                               Addressables.MergeMode.Union);
 
                 loadHandles.Add(handle);
                 handle.Result.ZL().SelectMany(x => converter(x)).ForEach(AddAsset);

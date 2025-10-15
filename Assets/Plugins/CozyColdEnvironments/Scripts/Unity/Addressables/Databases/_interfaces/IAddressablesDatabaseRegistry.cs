@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IAddressablesDatabase this[Type dbAssetType] { get; }
         IAddressablesDatabase this[Type dbAssetType, object dbID] { get; }
 
-        void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database);
+        void RegisterDatabase(IAddressablesDatabase database);
 
         bool UnregisterDatabase(AssetDatabaseKey key);
 

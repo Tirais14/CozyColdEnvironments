@@ -157,7 +157,7 @@ namespace CCEnvs.Unity.AddrsAssets
             }
 
             Dictionary<AssetType, List<AddressableAssetEntry>> addressablesDictionary = new(){
-                { AssetType.GameObject, new List<AddressableAssetEntry>() },
+                { AssetType.Prefab, new List<AddressableAssetEntry>() },
                 { AssetType.ScriptableObject, new List<AddressableAssetEntry>() },
                 { AssetType.Scene, new List<AddressableAssetEntry>() },
                 { AssetType.Generic, new List<AddressableAssetEntry>() },
@@ -169,7 +169,7 @@ namespace CCEnvs.Unity.AddrsAssets
                 targetObject = addressableAssetEntry.TargetAsset;
                 if (targetObject is GameObject)
                 {
-                    addressablesDictionary[AssetType.GameObject].Add(addressableAssetEntry);
+                    addressablesDictionary[AssetType.Prefab].Add(addressableAssetEntry);
                 }
                 else if (targetObject is ScriptableObject)
                 {
