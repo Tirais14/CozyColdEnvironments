@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Components
         }
         public static GameModelBody Create(GameObject? parent = null)
         {
-            return Create(parent.IfNotNull(x => x.transform));
+            return Create(parent != null ? parent.transform : null);
         }
 
         public GameModelBody SetMesh(Mesh? mesh)

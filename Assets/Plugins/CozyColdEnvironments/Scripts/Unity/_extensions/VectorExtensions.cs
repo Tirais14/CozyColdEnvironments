@@ -7,6 +7,31 @@ namespace CCEnvs.Unity
 {
     public static class Vector2Extensions
     {
+        public static Direction2D ToDirection(this Vector2 source)
+        {
+            float x = source.normalized.x;
+            float y = source.normalized.y;
+            if (x.NotNearlyEquals(0) && y.NotNearlyEquals(0))
+            {
+                if (x > 0 && y > 0) { return Direction2D.RightUp; }
+                else if (x < 0 && y > 0) { return Direction2D.LeftUp; }
+                else if (x > 0 && y < 0) { return Direction2D.RightDown; }
+                else if (x < 0 && y < 0) { return Direction2D.LeftDown; }
+            }
+            else if (x.NotNearlyEquals(0) && y.NearlyEquals(0))
+            {
+                if (x > 0) { return Direction2D.Right; }
+                else if (x < 0) { return Direction2D.Left; }
+            }
+            else if (x.NearlyEquals(0) && y.NotNearlyEquals(0))
+            {
+                if (y > 0) { return Direction2D.Up; }
+                else if (y < 0) { return Direction2D.Down; }
+            }
+
+            return Direction2D.None;
+        }
+
         public static Vector2 SetX(this Vector2 source, float value)
         {
             source.x = value;

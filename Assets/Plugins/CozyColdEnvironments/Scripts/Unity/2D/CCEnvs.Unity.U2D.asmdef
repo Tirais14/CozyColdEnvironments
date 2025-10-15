@@ -1,6 +1,6 @@
 {
-    "name": "CCEnvs.U2D",
-    "rootNamespace": "CCEnvs.U2D",
+    "name": "CCEnvs.Unity.U2D",
+    "rootNamespace": "CCEnvs.Unity.U2D",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
         "GUID:5fc19e916dbec2e4eb8fe60a0c56b165",

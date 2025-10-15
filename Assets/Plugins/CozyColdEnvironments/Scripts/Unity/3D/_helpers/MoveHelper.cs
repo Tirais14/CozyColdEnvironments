@@ -4,7 +4,7 @@ using UnityEngine;
 #pragma warning disable S1244
 namespace CCEnvs.Unity.U3D
 {
-    public static class RigidBodyHelper
+    public static class MoveHelper
     {
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentException"></exception>

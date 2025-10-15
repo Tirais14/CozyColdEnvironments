@@ -27,8 +27,7 @@ namespace CCEnvs.Unity.UI.Storages
             model.ItemCountReactive.Subscribe(x => counterView.Value = x.ToString())
                                    .AddTo(this);
 
-            model.ItemReactive.Subscribe(x => iconView.Value = x.IfNotNull(x => x.Icon)
-                                                                .IfNull(UCC.ErrorSprite))
+            model.ItemReactive.Subscribe(x => iconView.Value = x == null ? UCC.ErrorSprite : x.Icon)
                               .AddTo(this);
         }
     }

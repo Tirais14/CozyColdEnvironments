@@ -1,4 +1,5 @@
 using System;
+using CCEnvs.Attributes;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets
@@ -9,13 +10,12 @@ namespace CCEnvs.Unity.AddrsAssets
     /// Zero is default priority
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public class LoadPriorityAttribute : Attribute
+    public class LoadPriorityAttribute : PriorityAttribute
     {
-        public int Priority { get; }
-
         public LoadPriorityAttribute(int priority)
+            :
+            base(priority)
         {
-            Priority = priority;
         }
     }
 }

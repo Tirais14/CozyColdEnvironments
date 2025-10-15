@@ -1,22 +1,5 @@
 using UnityEngine;
 
-#nullable enable
-namespace CCEnvs.Unity
-{
-    public static class ComponentExtensions
-    {
-        //public static void ConfiguredDestroy(this Component source)
-        //{
-        //    CC.Validate.ArgumentNull(source, nameof(source));
-
-        //    if (source.GetComponents<Component>().Any(x => !x.GetType().Namespace.StartsWith("Unity")))
-        //        Object.Destroy(source);
-
-        //    Object.Destroy(source.gameObject);
-        //}
-    }
-}
-
 namespace CCEnvs.Unity.Special
 {
     public static class ComponentExtensions

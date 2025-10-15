@@ -6,7 +6,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Utils
+namespace CCEnvs
 {
     public static class SceneSearch
     {

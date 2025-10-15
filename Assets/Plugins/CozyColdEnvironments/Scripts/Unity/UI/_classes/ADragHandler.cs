@@ -25,8 +25,8 @@ namespace CCEnvs.Unity.UI
         {
             base.Start();
 
-            var canvasController = this.GetAssignedObjectInParent<ICanvasController>()
-                                       .ThrowIfNull(new ObjectNotFoundException(typeof(ICanvasController)));
+            var canvasController = this.GetAssignedObjectInParent<ICanvasController>();
+            ObjectNotFoundException.ThrowIfDefault(canvasController);
 
             raycaster = canvasController.RaycasterCanvas;
 

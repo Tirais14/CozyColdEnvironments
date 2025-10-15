@@ -1,7 +1,5 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Diagnostics;
-using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -22,92 +20,6 @@ namespace CCEnvs.Unity
             }
 
             return obj;
-        }
-
-        [Obsolete("Waiting refactoring")]
-        public static T ThrowIfNull<T, TException>(this T? obj, TException exception)
-         where T : class
-         where TException : Exception
-        {
-            if (obj.IsNull())
-                throw exception;
-
-            return obj;
-        }
-
-        [Obsolete("Waiting refactoring")]
-        public static T ThrowIfNull<T>(this T? obj, string message)
-            where T : class => obj.ThrowIfNull(new NullReferenceException(message));
-
-        [Obsolete("Waiting refactoring")]
-        public static T ThrowIfNull<T>(this T? obj)
-            where T : class => obj.ThrowIfNull(new NullReferenceException());
-
-        [Obsolete("Use IfDefault instead")]
-        public static T IfNull<T>(this T? obj, T value)
-            where T : class
-        {
-            if (obj.IsNull())
-                return value;
-
-            return obj;
-        }
-        [Obsolete("Use IfDefault instead")]
-        public static T IfNull<T>(this T? obj, Func<T> action)
-            where T : class
-        {
-            if (obj.IsNull())
-                return action();
-
-            return obj;
-        }
-
-        [Obsolete("Use IfDefault instead")]
-        public static void IfNotNull<T>(this T? obj, Action<T> action)
-            where T : class
-        {
-            if (obj.IsNotNull())
-                action(obj);
-        }
-
-        [Obsolete("Use IfDefault instead")]
-        public static T? IfNotNull<T>(this T? obj, Func<T, T> action, T? ifNull = default!)
-            where T : class
-        {
-            if (obj.IsNotNull())
-                return action(obj);
-
-            return ifNull;
-        }
-
-        [Obsolete("Use IfDefault instead")]
-        public static T IfNotNull<T>(this T? obj, Func<T, T> action, Func<T> ifNull)
-            where T : class
-        {
-            if (obj.IsNotNull())
-                return action(obj);
-
-            return ifNull();
-        }
-
-        [Obsolete("Use IfDefault instead")]
-        public static TOut? IfNotNull<TIn, TOut>(this TIn? obj, Func<TIn, TOut> action, TOut? ifNull = default)
-            where TIn : class
-        {
-            if (obj.IsNotNull())
-                return action(obj);
-
-            return ifNull;
-        }
-
-        [Obsolete("Use IfDefault instead")]
-        public static TOut IfNotNull<TIn, TOut>(this TIn? obj, Func<TIn, TOut> action, Func<TOut> ifNull)
-            where TIn : class
-        {
-            if (obj.IsNotNull())
-                return action(obj);
-
-            return ifNull();
         }
     }
 }
