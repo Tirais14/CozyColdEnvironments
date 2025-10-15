@@ -12,7 +12,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     public interface IAddressablesDatabase
         : IDisposable,
         IEnumerable,
-        ILoadable
+        ILoadable,
+        IIDMarked
     {
         Type AssetType { get; }
         Func<Object, AssetKey>? KeyFactory { get; set; }

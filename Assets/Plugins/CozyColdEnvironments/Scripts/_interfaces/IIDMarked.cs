@@ -3,7 +3,7 @@ namespace CCEnvs
 {
     public interface IIDMarked
     {
-        object ID { get; }
+        object? ID { get; }
     }
     public interface IIDMarked<out T> : IIDMarked
     {

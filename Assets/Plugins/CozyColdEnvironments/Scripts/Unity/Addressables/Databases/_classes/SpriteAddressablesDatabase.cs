@@ -1,15 +1,8 @@
-using CCEnvs.Collections;
 using CCEnvs.Collections.Performance;
-using CCEnvs.Collections.Unsafe;
-using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using Cysharp.Threading.Tasks;
-using SuperLinq;
-using System;
 using System.Collections.Generic;
-using TreeEditor;
 using UnityEngine;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.U2D;
 
 #nullable enable
@@ -22,13 +15,21 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         /// </summary>
         public bool TexturesAsSprites { get; set; }
 
-        public SpriteAddressablesDatabase()
+        public SpriteAddressablesDatabase(object? id, int capacity) : base(id, capacity)
         {
         }
 
         public SpriteAddressablesDatabase(int capacity)
             :
             base(capacity)
+        {
+        }
+
+        public SpriteAddressablesDatabase(object? id) : base(id)
+        {
+        }
+
+        public SpriteAddressablesDatabase()
         {
         }
 

@@ -28,6 +28,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public event Action OnStartLoading = null!;
         public event Action OnLoaded = null!;
 
+        public object? ID { get; private set; } = null;
         public IEnumerable<AssetKey> Keys => db.Keys;
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
@@ -44,9 +45,22 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         IEnumerable<Object> IAddressablesDatabase.Values => db.Values;
 
-        public AddressablesDatabase(int capacity)
+        public AddressablesDatabase(object? id, int capacity)
         {
-            db = new(capacity);
+            ID = id;
+            db = new Dictionary<AssetKey, TAsset>(capacity);
+        }
+
+        public AddressablesDatabase(int capacity)
+            :
+            this(id: null, capacity)
+        {
+        }
+
+        public AddressablesDatabase(object? id)
+            :
+            this(id, 4)
+        {
         }
 
         public AddressablesDatabase() : this(capacity: 4)

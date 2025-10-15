@@ -85,11 +85,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return GetDatabase(new AssetDatabaseKey(dbAssetType, dbID)).As<T>();
         }
 
-        public IAddressablesDatabase? FindDatabase(Type assetType, bool throwIfNotFound = false)
+        public IAddressablesDatabase? FindDatabase(Type assetType,
+                                                   bool throwIfNotFound = false)
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
 
-            var result = Values.AsValueEnumerable()
+            var result = Values.ZL()
                                .FirstOrDefault(db => db.AssetType == assetType)
                                .Either(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
                                .Resolve<IAddressablesDatabase>();
@@ -99,10 +100,34 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return result;
         }
-        public T? FindDatabase<T>(Type assetType, bool throwIfNotFound = false)
+        public IAddressablesDatabase? FindDatabase(Type assetType,
+                                                   object? dbID,
+                                                   bool throwIfNotFound = false)
+        {
+            CC.Guard.NullArgument(assetType, nameof(assetType));
+
+            var result = Values.ZL()
+                               .FirstOrDefault(db => db.AssetType == assetType && db.ID == dbID)
+                               .Either(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
+                               .Resolve<IAddressablesDatabase>();
+
+            if (throwIfNotFound && result is null)
+                throw new DatabaseNotFoundException(assetType);
+
+            return result;
+        }
+        public T? FindDatabase<T>(Type assetType,
+                                  bool throwIfNotFound = false)
             where T : IAddressablesDatabase
         {
             return FindDatabase(assetType, throwIfNotFound).AsOrDefault<T>();
+        }
+        public T? FindDatabase<T>(Type assetType,
+                                  object? dbID,
+                                  bool throwIfNotFound = false)
+            where T : IAddressablesDatabase
+        {
+            return FindDatabase(assetType, dbID, throwIfNotFound).AsOrDefault<T>();
         }
 
         /// <exception cref="AssetNotFoundException"></exception>
@@ -146,26 +171,112 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return result;
         }
+        public Object? FindAsset(Type dbAssetType,
+                                 string assetName,
+                                 object? dbID,
+                                 bool ignoreCase = false,
+                                 bool throwIfNotFound = false)
+        {
+            IAddressablesDatabase db;
+            if (!throwIfNotFound)
+            {
+                try
+                {
+                    db = GetDatabase(dbAssetType, dbID);
+                }
+                catch (DatabaseNotFoundException)
+                {
+                    return null;
+                }
+            }
+            else
+                db = GetDatabase(dbAssetType, dbID);
+
+            return db.FindAsset(assetName,
+                                ignoreCase,
+                                throwIfNotFound);
+        }
+        public Object? FindAsset(Type dbAssetType,
+                                 object assetID,
+                                 object? dbID,
+                                 bool throwIfNotFound = false)
+        {
+            IAddressablesDatabase db;
+            if (!throwIfNotFound)
+            {
+                try
+                {
+                    db = GetDatabase(dbAssetType, dbID);
+                }
+                catch (DatabaseNotFoundException)
+                {
+                    return null;
+                }
+            }
+            else
+                db = GetDatabase(dbAssetType, dbID);
+
+            return db.FindAsset(assetID, throwIfNotFound);
+        }
+
         public T? FindAsset<T>(string assetName,
                                Type? dbAssetType = null,
                                bool ignoreCase = false,
                                bool throwIfNotFound = false)
         {
+            var result = FindAsset(dbAssetType ?? typeof(T), assetName, ignoreCase, throwIfNotFound);
+
             return throwIfNotFound
-                   ? 
-                   FindAsset(dbAssetType ?? typeof(T), assetName, ignoreCase, throwIfNotFound).As<T>()
+                   ?
+                   result.As<T>()
                    :
-                   FindAsset(dbAssetType ?? typeof(T), assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
+                   result.AsOrDefault<T>();
         }
         public T? FindAsset<T>(object assetID,
                                Type? dbAssetType = null,
                                bool throwIfNotFound = false)
         {
+            var result = FindAsset(dbAssetType ?? typeof(T), assetID, throwIfNotFound);
+
             return throwIfNotFound
                    ?
-                   FindAsset(dbAssetType ?? typeof(T), assetID, throwIfNotFound).As<T>()
+                   result.As<T>()
                    :
-                   FindAsset(dbAssetType ?? typeof(T), assetID, throwIfNotFound).AsOrDefault<T>();
+                   result.AsOrDefault<T>();
+        }
+        public T? FindAsset<T>(string assetName,
+                               object? dbID,
+                               Type? dbAssetType = null,
+                               bool ignoreCase = false,
+                               bool throwIfNotFound = false)
+        {
+            var result = FindAsset(dbAssetType ?? typeof(T),
+                                   assetName,
+                                   dbID,
+                                   ignoreCase,
+                                   throwIfNotFound);
+
+            return throwIfNotFound
+                   ?
+                   result.As<T>()
+                   :
+                   result.AsOrDefault<T>();
+        }
+        public T? FindAsset<T>(object assetID,
+                               object? dbID,
+                               Type? dbAssetType = null,
+                               bool throwIfNotFound = false)
+        {
+            var result = FindAsset(dbAssetType ?? typeof(T),
+                                   assetID,
+                                   dbID,
+                                   throwIfNotFound);
+
+            return throwIfNotFound 
+                   ? 
+                   result.As<T>()
+                   : 
+                   result.AsOrDefault<T>();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
