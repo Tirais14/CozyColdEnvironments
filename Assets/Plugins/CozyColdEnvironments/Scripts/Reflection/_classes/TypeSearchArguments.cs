@@ -7,11 +7,11 @@ namespace CCEnvs.Reflection
     public record TypeSearchArguments
     {
         public string AssemblyName { get; set; } = string.Empty;
-        public string Namespace { get; set; } = string.Empty;
+        public string NamespaceName { get; set; } = string.Empty;
         public string TypeName { get; set; } = string.Empty;
         public bool IgnoreCase { get; set; }
         public bool HasAssemblyName => AssemblyName.IsNotNullOrEmpty();
-        public bool HasNamespace => Namespace.IsNotNullOrEmpty();
+        public bool HasNamespaceName => NamespaceName.IsNotNullOrEmpty();
         public bool HasTypeName => TypeName.IsNotNullOrEmpty();
         public Type[] DefinedAttributeTypes { get; set; } = Type.EmptyTypes;
 
@@ -28,8 +28,8 @@ namespace CCEnvs.Reflection
             if (!result)
                 return false;
 
-            if (HasNamespace && type.Namespace.IsNotNullOrEmpty())
-                result = type.Namespace.ContainsOrdinal(Namespace, IgnoreCase);
+            if (HasNamespaceName && type.Namespace.IsNotNullOrEmpty())
+                result = type.Namespace.ContainsOrdinal(NamespaceName, IgnoreCase);
 
             if (!result)
                 return false;

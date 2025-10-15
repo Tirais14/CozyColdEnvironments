@@ -1,15 +1,19 @@
 using System;
 using System.Diagnostics;
 using Object = UnityEngine.Object;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String {ToString()}")]
-    public readonly struct AssetKey : IEquatable<AssetKey>
+    public struct AssetKey : IEquatable<AssetKey>
     {
-        public string? AssetName { get; }
-        public object? AssetID { get; }
+        [field: SerializeField]
+        public string? AssetName { get; private set; }
+
+        [field: SerializeField]
+        public object? AssetID { get; private set; }
 
         public AssetKey(string? assetName,
                         object? assetID)

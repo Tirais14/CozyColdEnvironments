@@ -8,15 +8,26 @@ namespace CCEnvs.Unity.EditorSerialization
     public struct TypeInfo
     {
         [field: SerializeField]
+        public string Assembly { get; private set; }
+
+        [field: SerializeField]
         public string Namespace { get; private set; }
 
         [field: SerializeField]
         public string TypeName { get; private set; }
 
-        public TypeInfo(string @namespace, string typeName)
+        [field: SerializeField]
+        public bool IgnoreCase { get; private set; }
+
+        public TypeInfo(string typeName,
+                        string? assembly = null,
+                        string? namespaceName = null,
+                        bool ignoreCase = false)
         {
-            Namespace = @namespace;
+            Assembly = assembly ?? string.Empty;
+            Namespace = namespaceName ?? string.Empty;
             TypeName = typeName;
+            IgnoreCase = ignoreCase;
         }
     }
 }

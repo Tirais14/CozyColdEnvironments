@@ -14,9 +14,18 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [field: SerializeField]
         public SerializedImmutableArray<string> Labels { get; private set; }
 
-        public AssetLabels(params string[] labels) : this()
+        [field: SerializeField]
+        public bool MustBeAll { get; private set; }
+
+        public AssetLabels(bool mustBeAll, params string[] labels) : this()
         {
             Labels = new SerializedImmutableArray<string>(labels);
+            MustBeAll = mustBeAll;
+        }
+        public AssetLabels(params string[] labels)
+            :
+            this(mustBeAll: true, labels)
+        {
         }
 
         public static bool operator ==(AssetLabels left, AssetLabels right)

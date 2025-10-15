@@ -38,7 +38,7 @@ namespace CCEnvs.Json.DTO
                 new TypeSearchArguments
                 {
                     AssemblyName = AssemblyName,
-                    Namespace = Namespace,
+                    NamespaceName = Namespace,
                     TypeName = TypeName,
                 },
                 throwOnError: true);

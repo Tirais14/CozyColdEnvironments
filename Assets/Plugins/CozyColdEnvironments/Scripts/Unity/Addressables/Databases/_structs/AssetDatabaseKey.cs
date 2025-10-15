@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 
 #nullable enable
+
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]

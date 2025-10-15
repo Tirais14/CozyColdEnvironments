@@ -1,14 +1,17 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Linq;
-using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
+using Cysharp.Threading.Tasks;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using UnityEngine;
 using ZLinq;
 using Object = UnityEngine.Object;
 
@@ -24,26 +27,33 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
         private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
+
+        [SerializeField]
+        [Tooltip("All loading tasks will be registered in CC.NeccessaryTasks")]
+        private AddressablesDatabaseLoadInfo[] loadOrder;
+
         private Stopwatch? stopwatch;
         private bool disposedValue;
 
         public event Action? OnStartLoading;
         public event Action? OnLoaded;
 
+        public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
+        public IAddressablesDatabase this[Type dbAssetType] => GetDatabase(dbAssetType);
+        public IAddressablesDatabase this[Type dbAssetType, object dbID] => GetDatabase(dbAssetType, dbID);
+
         public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
         public IEnumerable<IAddressablesDatabase> Values => databases.Values;
         public int Count => databases.Count;
         public bool IsLoading => databases.Values.Any(db => db.IsLoading);
         public bool IsLoaded => !IsLoading && Count > 0;
-        public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
-        public IAddressablesDatabase this[Type dbAssetType] => GetDatabase(dbAssetType);
-        public IAddressablesDatabase this[Type dbAssetType, object dbID] => GetDatabase(dbAssetType, dbID);
 
         protected override void Awake()
         {
             base.Awake();
 
             BindEvents();
+            TryLoadByOrder();
         }
 
         public void RegisterDatabase(AssetDatabaseKey key, IAddressablesDatabase database)
@@ -251,6 +261,24 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             }
 
             disposedValue = true;
+        }
+
+        private void TryLoadByOrder()
+        {
+            if (loadOrder.IsNullOrEmpty())
+                return;
+
+            var tasks = (from loadInfo in loadOrder
+                         select (loadInfo, value: loadInfo.GetDatabaseType()) into dbType
+                         select (dbType.loadInfo, value: InstanceFactory.Create(
+                             dbType.value,
+                             parameters: InstanceFactory.Parameters.ThrowIfNotFound)
+                         .As<IAddressablesDatabase>()) into db
+                         select (value: db.value.LoadAssetsAsync(db.loadInfo.AssetLabels), db: db.value)
+                         ).Do(task => RegisterDatabase(task.db))
+                         .Select(task => task.value);
+
+            tasks.ForEach(CC.NeccesaryTasks.RegisterTask);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
