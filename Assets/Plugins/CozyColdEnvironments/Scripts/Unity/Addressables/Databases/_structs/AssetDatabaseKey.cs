@@ -1,3 +1,4 @@
+using CCEnv;
 using System;
 using System.Diagnostics;
 
@@ -6,10 +7,14 @@ using System.Diagnostics;
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
-    public readonly struct AssetDatabaseKey : IEquatable<AssetDatabaseKey>
+    public readonly struct AssetDatabaseKey
+        : IEquatable<AssetDatabaseKey>, 
+        IIDMarked<UniID>
     {
-        public Type DbAssetType { get; }
-        public object? UniqueIndentifier { get; }
+        public Type AssetType { get; }
+        public UniID DatabaseID { get; }
+
+        UniID IIDMarked<UniID>.ID => DatabaseID;
 
         public AssetDatabaseKey(Type dbAssetType)
             :
@@ -17,25 +22,25 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             CC.Guard.NullArgument(dbAssetType, nameof(dbAssetType));
 
-            DbAssetType = dbAssetType;
+            AssetType = dbAssetType;
         }
 
         public AssetDatabaseKey(Type assetType,
-                                object? uniqueIndentifier)
+                                UniID id)
             :
             this(assetType)
         {
-            UniqueIndentifier = uniqueIndentifier;
+            DatabaseID = id;
         }
 
-        public AssetDatabaseKey(IAddressablesDatabase database, object? uniqueIndentifier)
+        public AssetDatabaseKey(IAddressablesDatabase database, UniID id)
             :
-            this(database.AssetType, uniqueIndentifier)
+            this(database.AssetType, id)
         {
         }
         public AssetDatabaseKey(IAddressablesDatabase database)
             :
-            this(database, uniqueIndentifier: null)
+            this(database, id: default)
         {
         }
 
@@ -51,19 +56,19 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public AssetDatabaseKey With(Type assetType)
         {
-            return new AssetDatabaseKey(assetType, UniqueIndentifier);
+            return new AssetDatabaseKey(assetType, DatabaseID);
         }
 
-        public AssetDatabaseKey With(object? uniqueIdentifier)
+        public AssetDatabaseKey With(UniID id)
         {
-            return new AssetDatabaseKey(DbAssetType, uniqueIdentifier);
+            return new AssetDatabaseKey(AssetType, id);
         }
 
         public bool Equals(AssetDatabaseKey other)
         {
-            return DbAssetType == other.DbAssetType
+            return AssetType == other.AssetType
                    && 
-                   UniqueIndentifier == other.UniqueIndentifier;
+                   DatabaseID == other.DatabaseID;
         }
         public override bool Equals(object obj)
         {
@@ -72,12 +77,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(DbAssetType, UniqueIndentifier);
+            return HashCode.Combine(AssetType, DatabaseID);
         }
 
         public override string ToString()
         {
-            return $"{nameof(DbAssetType)}: {DbAssetType} | {nameof(UniqueIndentifier)}: {UniqueIndentifier}";
+            return $"{nameof(AssetType)}: {AssetType}; {nameof(DatabaseID)}: {DatabaseID};";
         }
     }
 }

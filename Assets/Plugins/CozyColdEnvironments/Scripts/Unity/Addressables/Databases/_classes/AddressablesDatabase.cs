@@ -1,5 +1,5 @@
+using CCEnv;
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public event Action OnStartLoading = null!;
         public event Action OnLoaded = null!;
 
-        public object? ID { get; private set; } = null;
+        public UniID ID { get; private set; }
         public IEnumerable<AssetKey> Keys => db.Keys;
         public IEnumerable<TAsset> Values => db.Values;
         public int Count => db.Count;
@@ -37,16 +37,20 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public bool IsLoaded => !IsLoading && Count > 0;
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
-        public Func<Object, object?>? IDFactory { get; set; }
+        public Func<Object, int>? IDFactory { get; set; }
         public Func<string, string>? AssetNameProcessor { get; set; } = DefaultAssetNameProcessor;
         public TAsset this[AssetKey key] => db[key];
-        public TAsset this[object assetID] => FindAsset(assetID, throwIfNotFound: true)!;
-        public TAsset this[string assetName, bool ingoreCase] => FindAsset(assetName, ingoreCase, throwIfNotFound: true)!;
-        public TAsset this[string assetName] => FindAsset(assetName, throwIfNotFound: true)!;
+        public TAsset this[string assetName, int assetID] {
+            get => this[new AssetKey(assetName, assetID)];
+        }
+        public TAsset this[string assetName] {
+            get => this[new AssetKey(assetName)];
+        }
+        public TAsset this[int assetID] {
+            get => this[new AssetKey(assetID)];
+        }
 
-        IEnumerable<Object> IAddressablesDatabase.Values => db.Values;
-
-        public AddressablesDatabase(object? id, int capacity)
+        public AddressablesDatabase(UniID id, int capacity)
         {
             ID = id;
             db = new Dictionary<AssetKey, TAsset>(capacity);
@@ -54,11 +58,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public AddressablesDatabase(int capacity)
             :
-            this(id: null, capacity)
+            this(id: default, capacity)
         {
         }
 
-        public AddressablesDatabase(object? id)
+        public AddressablesDatabase(UniID id)
             :
             this(id, 4)
         {
@@ -209,13 +213,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return null;
         }
-        public AssetKey? FindAssetKey(object assetID, bool throwIfNotFound = false)
+        public AssetKey? FindAssetKey(int assetID, bool throwIfNotFound = false)
         {
             CC.Guard.NullArgument(assetID, nameof(assetID));
 
             foreach (var key in db.Keys)
             {
-                if (key.AssetID is not null && key.AssetID.Equals(assetID))
+                if (key.AssetID == assetID)
                     return key;
             }
 
@@ -248,7 +252,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    :
                    FindAsset(assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
         }
-        public TAsset? FindAsset(object assetID, bool throwIfNotFound = false)
+        public TAsset? FindAsset(int assetID, bool throwIfNotFound = false)
         {
             CC.Guard.NullArgument(assetID, nameof(assetID));
 
@@ -259,7 +263,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return GetAsset(key.Value);
         }
-        public T? FindAsset<T>(object assetID, bool throwIfNotFound = false)
+        public T? FindAsset<T>(int assetID, bool throwIfNotFound = false)
         {
             return throwIfNotFound
                    ?
@@ -277,9 +281,38 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return asset;
         }
+        public TAsset GetAsset(string assetName)
+        {
+            return GetAsset(new AssetKey(assetName));
+        }
+
+        public TAsset GetAsset(string assetName, int assetID)
+        {
+            return GetAsset(new AssetKey(assetName, assetID));
+        }
+
+        public TAsset GetAsset(int assetID)
+        {
+            return GetAsset(new AssetKey(assetID));
+        }
+
         public T GetAsset<T>(AssetKey key)
         {
             return GetAsset(key).As<T>();
+        }
+        public T GetAsset<T>(string assetName)
+        {
+            return GetAsset<T>(new AssetKey(assetName));
+        }
+
+        public T GetAsset<T>(string assetName, int assetID)
+        {
+            return GetAsset<T>(new AssetKey(assetName, assetID));
+        }
+
+        public T GetAsset<T>(int assetID)
+        {
+            return GetAsset<T>(new AssetKey(assetID));
         }
 
         public async UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
@@ -354,7 +387,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         protected AssetKey CreateAssetKey(Object asset)
         {
             string assetName = AssetNameProcessor?.Invoke(asset.name) ?? asset.name;
-            object? id = IDFactory?.Invoke(asset);
+            int id = IDFactory?.Invoke(asset) ?? default;
 
             return new AssetKey(assetName, id);
         }

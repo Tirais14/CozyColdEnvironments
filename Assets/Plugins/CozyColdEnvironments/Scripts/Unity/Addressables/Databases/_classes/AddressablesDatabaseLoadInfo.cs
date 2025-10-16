@@ -1,3 +1,4 @@
+using CCEnv;
 using CCEnvs.Unity.EditorSerialization;
 using System;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     {
         [SerializeField]
         [Tooltip("Often implied category. If null or empty will be used this.name without \"LoadInfo\" suffix if exists.")]
-        private SerializedOption<string> ID;
+        private SerializedOption<UniID> ID;
 
         [SerializeField]
         private SerializedType databaseType = new(false);
@@ -23,7 +24,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public AssetLabels AssetLabels { get; private set; }
 
         public AssetDatabaseKey AssetDatabaseKey {
-            get => ID ? new(AssetType, ID.Value) : new(AssetType, name);
+            get => ID ? new(AssetType, ID.Value) : new(AssetType, new UniID(name));
         }
 
         public Type GetDatabaseType()

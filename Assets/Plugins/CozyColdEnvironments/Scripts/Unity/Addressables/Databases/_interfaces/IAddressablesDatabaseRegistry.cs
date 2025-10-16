@@ -1,3 +1,4 @@
+using CCEnv;
 using System;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
@@ -11,7 +12,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         ILoadable
     {
         IAddressablesDatabase this[Type dbAssetType] { get; }
-        IAddressablesDatabase this[Type dbAssetType, object dbID] { get; }
+        IAddressablesDatabase this[Type dbAssetType, UniID dbID] { get; }
+        IAddressablesDatabase this[Type dbAssetType, int num0] { get; }
+        IAddressablesDatabase this[Type dbAssetType, int num0, int num1] { get; }
+        IAddressablesDatabase this[Type dbAssetType, string str0] { get; }
+        IAddressablesDatabase this[Type dbAssetType, string str0, string str1] { get; }
+        IAddressablesDatabase this[Type dbAssetType, int num0, string str0] { get; }
+        IAddressablesDatabase this[Type dbAssetType, int num0, int num1, string str0, string str1] { get; }
+        IAddressablesDatabase this[Type dbAssetType, Enum value] { get; }
+        IAddressablesDatabase this[Type dbAssetType, Enum value, Enum value1] { get; }
 
         void RegisterDatabase(IAddressablesDatabase database);
 
@@ -20,14 +29,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IAddressablesDatabase? FindDatabase(Type assetType,
                                             bool throwIfNotFound = false);
         IAddressablesDatabase? FindDatabase(Type assetType,
-                                            object? dbID,
+                                            UniID dbID,
                                             bool throwIfNotFound = false);
 
         T? FindDatabase<T>(Type assetType,
                            bool throwIfNotFound = false)
             where T : IAddressablesDatabase;
         T? FindDatabase<T>(Type assetType,
-                           object? dbID,
+                           UniID dbID,
                            bool throwIfNotFound = false)
             where T : IAddressablesDatabase;
 
@@ -36,7 +45,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                                bool ignoreCase = false,
                                bool throwIfNotFound = false);
         AssetKey? FindAssetKey(Type dbAssetType,
-                               object assetID,
+                               int assetID,
                                bool throwIfNotFound = false);
 
         Object? FindAsset(Type dbAssetType,
@@ -44,66 +53,66 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                           bool ignoreCase = false,
                           bool throwIfNotFound = false);
         Object? FindAsset(Type dbAssetType,
-                          object assetID,
+                          int assetID,
                           bool throwIfNotFound = false);
         Object? FindAsset(Type dbAssetType,
                           string assetName,
-                          object? dbID,
+                          UniID dbID,
                           bool ignoreCase = false,
                           bool throwIfNotFound = false);
         Object? FindAsset(Type dbAssetType,
-                          object assetID,
-                          object? dbID,
+                          int assetID,
+                          UniID dbID,
                           bool throwIfNotFound = false);
 
         T? FindAsset<T>(string assetName,
                         Type? dbAssetType = null,
                         bool ignoreCase = false,
                         bool throwIfNotFound = false);
-        T? FindAsset<T>(object assetID,
+        T? FindAsset<T>(int assetID,
                         Type? dbAssetType = null,
                         bool throwIfNotFound = false);
         T? FindAsset<T>(string assetName,
-                        object? dbID,
+                        UniID dbID,
                         Type? dbAssetType = null,
                         bool ignoreCase = false,
                         bool throwIfNotFound = false);
-        T? FindAsset<T>(object assetID,
-                        object? dbID,
+        T? FindAsset<T>(int assetID,
+                        UniID dbID,
                         Type? dbAssetType = null,
                         bool throwIfNotFound = false);
 
         IAddressablesDatabase GetDatabase(AssetDatabaseKey key);
-        IAddressablesDatabase GetDatabase(Type assetType, object? dbID = null);
+        IAddressablesDatabase GetDatabase(Type assetType, UniID dbID = default);
         T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase;
-        T GetDatabase<T>(Type dbAssetType, object? dbID = null) 
+        T GetDatabase<T>(Type dbAssetType, UniID dbID = default) 
             where T : IAddressablesDatabase;
 
         Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey);
         Object GetAsset(Type dbAssetType,
                         string? assetName,
-                        object? assetID,
-                        object? dbID = null);
+                        int assetID,
+                        UniID dbID = default);
         Object GetAsset(Type dbAssetType,
                         string assetName,
-                        object? dbID = null);
+                        UniID dbID = default);
         Object GetAsset(Type dbAssetType,
-                        object assetID,
-                        object? dbID = null);
+                        int assetID,
+                        UniID dbID = default);
         T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         T GetAsset<T>(string? assetName,
-                      object? assetID,
+                      int assetID,
                       Type? dbAssetType = null,
-                      object? dbID = null);
+                      UniID dbID = default);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
         T GetAsset<T>(string assetName,
                       Type? dbAssetType = null,
-                      object? dbID = null);
+                      UniID dbID = default);
         /// <param name="dbAssetType"> if null would be used <see cref="{T}"/></param>
-        T GetAsset<T>(object assetID,
+        T GetAsset<T>(int assetID,
                       Type? dbAssetType = null,
-                      object? dbID = null);
+                      UniID dbID = default);
     }
 }

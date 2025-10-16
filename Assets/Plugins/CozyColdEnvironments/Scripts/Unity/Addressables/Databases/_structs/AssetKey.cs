@@ -1,22 +1,18 @@
 using System;
 using System.Diagnostics;
 using Object = UnityEngine.Object;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String {ToString()}")]
-    public struct AssetKey : IEquatable<AssetKey>
+    public readonly struct AssetKey : IEquatable<AssetKey>
     {
-        [field: SerializeField]
-        public string? AssetName { get; private set; }
-
-        [field: SerializeField]
-        public object? AssetID { get; private set; }
+        public string? AssetName { get; }
+        public int AssetID { get; }
 
         public AssetKey(string? assetName,
-                        object? assetID)
+                        int assetID)
         {
             AssetName = assetName;
             AssetID = assetID;
@@ -24,11 +20,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public AssetKey(string assetName)
             :
-            this(assetName, assetID: null)
+            this(assetName, assetID: default)
         {
         }
 
-        public AssetKey(object assetID)
+        public AssetKey(int assetID)
             :
             this(assetName: null, assetID)
         {
@@ -43,14 +39,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AssetName = asset.name;
 
             if (asset is IIDMarked idMarked)
-                AssetID = idMarked.ID;
-        }
-
-        public static AssetKey ByID(object id)
-        {
-            CC.Guard.NullArgument(id, nameof(id));
-
-            return new AssetKey(id);
+                AssetID = idMarked.ID.AsOrDefault<int>();
         }
 
         public static bool operator ==(AssetKey left, AssetKey right)
@@ -67,7 +56,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             return new AssetKey(assetName, AssetID);
         }
-        public AssetKey With(object? assetID)
+        public AssetKey With(int assetID)
         {
             return new AssetKey(AssetName, assetID);
         }
@@ -90,7 +79,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public override string ToString()
         {
-            return $"{nameof(AssetName)}: {AssetName} | {nameof(AssetID)}: {AssetID}.";
+            return $"{nameof(AssetName)}: {AssetName}; {nameof(AssetID)}: {AssetID};";
         }
     }
 }

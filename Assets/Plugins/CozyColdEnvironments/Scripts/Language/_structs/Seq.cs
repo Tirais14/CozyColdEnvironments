@@ -91,32 +91,32 @@ namespace CCEnvs.Language
             Item6 = item6;
         }
 
-        public static explicit operator (T, T)(Seq<T> source)
+        public static explicit operator (T, T)(in Seq<T> source)
         {
             return (source.Item1, source.Item2);
         }
 
-        public static explicit operator (T, T, T)(Seq<T> source)
+        public static explicit operator (T, T, T)(in Seq<T> source)
         {
             return (source.Item1, source.Item2, source.Item3);
         }
 
-        public static explicit operator (T, T, T, T)(Seq<T> source)
+        public static explicit operator (T, T, T, T)(in Seq<T> source)
         {
             return (source.Item1, source.Item2, source.Item3, source.Item4);
         }
 
-        public static explicit operator (T, T, T, T, T)(Seq<T> source)
+        public static explicit operator (T, T, T, T, T)(in Seq<T> source)
         {
             return (source.Item1, source.Item2, source.Item3, source.Item4, source.Item5);
         }
 
-        public static explicit operator (T, T, T, T, T, T)(Seq<T> source)
+        public static explicit operator (T, T, T, T, T, T)(in Seq<T> source)
         {
             return (source.Item1, source.Item2, source.Item3, source.Item4, source.Item5, source.Item6);
         }
 
-        public static explicit operator T[](Seq<T> source)
+        public static explicit operator T[](in Seq<T> source)
         {
             return source.ToArray();
         }

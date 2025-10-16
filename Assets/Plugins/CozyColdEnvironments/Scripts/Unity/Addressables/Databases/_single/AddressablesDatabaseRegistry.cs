@@ -1,3 +1,4 @@
+using CCEnv;
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Linq;
@@ -40,7 +41,43 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
         public IAddressablesDatabase this[Type dbAssetType] => GetDatabase(dbAssetType);
-        public IAddressablesDatabase this[Type dbAssetType, object dbID] => GetDatabase(dbAssetType, dbID);
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          UniID dbID] => GetDatabase(dbAssetType, dbID);
+        
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          int num0,
+                                          int num1,
+                                          string str0,
+                                          string str1] => this[dbAssetType, new UniID(num0, num1, str0, str1)];
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          int num0,
+                                          string str0] => this[dbAssetType, new UniID(num0, str0)];
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          string str0,
+                                          string str1] => this[dbAssetType, new UniID(str0, str1)];
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          string str0] => this[dbAssetType, new UniID(str0)];
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          int num0,
+                                          int num1] => this[dbAssetType, new UniID(num0, num1)];
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          int num0] => this[dbAssetType, new UniID(num0)];
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          Enum value] {
+            get => this[dbAssetType, UniID.FromEnum(value)];
+        }
+
+        public IAddressablesDatabase this[Type dbAssetType,
+                                          Enum value,
+                                          Enum value1] {
+            get => this[dbAssetType, UniID.FromEnum(value, value1)];
+        }
 
         public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
         public IEnumerable<IAddressablesDatabase> Values => databases.Values;
@@ -65,9 +102,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public IAddressablesDatabase GetDatabase(AssetDatabaseKey key) => databases[key];
         public IAddressablesDatabase GetDatabase(Type assetType,
-                                                 object? dbID = null)
+                                                 UniID dbID = default)
         {
-            return GetDatabase(new AssetDatabaseKey());
+            return GetDatabase(new AssetDatabaseKey(assetType, dbID));
         }
         public T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase
@@ -75,7 +112,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return GetDatabase(key).As<T>();
         }
         public T GetDatabase<T>(Type dbAssetType,
-                                object? dbID = null)
+                                UniID dbID = default)
             where T : IAddressablesDatabase
         {
             return GetDatabase(new AssetDatabaseKey(dbAssetType, dbID)).As<T>();
@@ -97,7 +134,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return result;
         }
         public IAddressablesDatabase? FindDatabase(Type assetType,
-                                                   object? dbID,
+                                                   UniID dbID,
                                                    bool throwIfNotFound = false)
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
@@ -119,7 +156,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return FindDatabase(assetType, throwIfNotFound).AsOrDefault<T>();
         }
         public T? FindDatabase<T>(Type assetType,
-                                  object? dbID,
+                                  UniID dbID,
                                   bool throwIfNotFound = false)
             where T : IAddressablesDatabase
         {
@@ -140,7 +177,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
         /// <exception cref="AssetNotFoundException"></exception>
         public AssetKey? FindAssetKey(Type dbAssetType,
-                                      object assetID,
+                                      int assetID,
                                       bool throwIfNotFound = false)
         {
             var result = FindDatabase(dbAssetType, throwIfNotFound)
@@ -160,7 +197,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return result;
         }
         public Object? FindAsset(Type dbAssetType,
-                                 object assetID,
+                                 int assetID,
                                  bool throwIfNotFound = false)
         {
             var result = FindDatabase(dbAssetType, throwIfNotFound)?.FindAsset(assetID);
@@ -169,7 +206,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
         public Object? FindAsset(Type dbAssetType,
                                  string assetName,
-                                 object? dbID,
+                                 UniID dbID,
                                  bool ignoreCase = false,
                                  bool throwIfNotFound = false)
         {
@@ -193,8 +230,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                                 throwIfNotFound);
         }
         public Object? FindAsset(Type dbAssetType,
-                                 object assetID,
-                                 object? dbID,
+                                 int assetID,
+                                 UniID dbID,
                                  bool throwIfNotFound = false)
         {
             IAddressablesDatabase db;
@@ -228,7 +265,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    :
                    result.AsOrDefault<T>();
         }
-        public T? FindAsset<T>(object assetID,
+        public T? FindAsset<T>(int assetID,
                                Type? dbAssetType = null,
                                bool throwIfNotFound = false)
         {
@@ -241,7 +278,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    result.AsOrDefault<T>();
         }
         public T? FindAsset<T>(string assetName,
-                               object? dbID,
+                               UniID dbID,
                                Type? dbAssetType = null,
                                bool ignoreCase = false,
                                bool throwIfNotFound = false)
@@ -258,8 +295,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    :
                    result.AsOrDefault<T>();
         }
-        public T? FindAsset<T>(object assetID,
-                               object? dbID,
+        public T? FindAsset<T>(int assetID,
+                               UniID dbID,
                                Type? dbAssetType = null,
                                bool throwIfNotFound = false)
         {
@@ -277,54 +314,62 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
         {
-            IAddressablesDatabase db = databases[dbKey];
+            IAddressablesDatabase db;
+            try
+            {
+                db = databases[dbKey];
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new DatabaseNotFoundException(dbKey);
+            }
 
             return db.GetAsset(assetkey);
         }
         public Object GetAsset(Type dbAssetType,
                                string? assetName,
-                               object? assetID,
-                               object? dbID = null)
+                               int assetID,
+                               UniID dbID = default)
         {
             return GetAsset(new AssetDatabaseKey(dbAssetType, dbID),
                 new AssetKey(assetName, assetID));
         }
         public Object GetAsset(Type dbAssetType,
                                string assetName,
-                               object? dbID = null)
+                               UniID dbID = default)
         {
             return GetAsset(new AssetDatabaseKey(dbAssetType, dbID),
                 new AssetKey(assetName));
         }
         public Object GetAsset(Type dbAssetType,
-                               object assetID,
-                               object? dbID = null)
+                               int assetID,
+                               UniID dbID = default)
         {
             return GetAsset(new AssetDatabaseKey(dbAssetType, dbID),
-                AssetKey.ByID(assetID));
+                new AssetKey(assetID));
         }
         public T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey) => GetAsset(dbKey, assetkey).As<T>();
         public T GetAsset<T>(string? assetName,
-                             object? assetID,
+                             int assetID,
                              Type? dbAssetType = null,
-                             object? dbID = null)
+                             UniID dbID = default)
         {
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 new AssetKey(assetName, assetID));
         }
         public T GetAsset<T>(string assetName,
                              Type? dbAssetType = null,
-                             object? dbID = null)
+                             UniID dbID = default)
         {
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
                 new AssetKey(assetName));
         }
-        public T GetAsset<T>(object assetID,
+        public T GetAsset<T>(int assetID,
                              Type? dbAssetType = null,
-                             object? dbID = null)
+                             UniID dbID = default)
         {
             return GetAsset<T>(new AssetDatabaseKey(dbAssetType ?? typeof(T), dbID),
-                AssetKey.ByID(assetID));
+                new AssetKey(assetID));
         }
 
         public void Dispose() => Dispose(disposing: true);

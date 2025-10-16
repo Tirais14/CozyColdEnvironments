@@ -90,43 +90,27 @@ namespace CCEnvs.Unity
             if (!value.x.NearlyEquals(0) && !value.y.NearlyEquals(0))
             {
                 if (value.x > 0 && value.y > 0)
-                {
                     return Direction2D.RightUp;
-                }
                 else if (value.x < 0 && value.y > 0)
-                {
                     return Direction2D.LeftUp;
-                }
                 else if (value.x > 0 && value.y < 0)
-                {
                     return Direction2D.RightDown;
-                }
                 else if (value.x < 0 && value.y < 0)
-                {
                     return Direction2D.LeftDown;
-                }
             }
             else if (!value.x.NearlyEquals(0) && value.y.NearlyEquals(0))
             {
                 if (value.x > 0)
-                {
                     return Direction2D.Right;
-                }
                 else if (value.x < 0)
-                {
                     return Direction2D.Left;
-                }
             }
             else if (!value.y.NearlyEquals(0) && value.x.NearlyEquals(0))
             {
                 if (value.y > 0)
-                {
                     return Direction2D.Up;
-                }
                 else if (value.y < 0)
-                {
                     return Direction2D.Down;
-                }
             }
 
             return Direction2D.None;

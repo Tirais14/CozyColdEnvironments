@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Unity.AddrsAssets.Databases;
 using System;
 using UnityEngine;
 
@@ -11,15 +12,15 @@ namespace CCEnvs.Unity.AddrsAssets
         {
         }
 
-        public DatabaseNotFoundException(Type dbAssetType, Exception? innerException = null)
+        public DatabaseNotFoundException(Type dbAssetType, object? dbID = null, Exception? innerException = null)
             :
-            base($"{nameof(dbAssetType)}: {dbAssetType}", innerException)
+            base($"{nameof(dbAssetType)}: {dbAssetType}; {nameof(dbID)}: {dbID};", innerException)
         {
         }
 
-        protected DatabaseNotFoundException(string message, Exception? innerException = null)
+        public DatabaseNotFoundException(AssetDatabaseKey key, Exception? innerException = null)
             :
-            base(message, innerException)
+            this(key.AssetType, key.DatabaseID, innerException)
         {
         }
     }

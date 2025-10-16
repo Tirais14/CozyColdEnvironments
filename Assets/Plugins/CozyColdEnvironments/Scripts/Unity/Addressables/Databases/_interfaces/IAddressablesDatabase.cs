@@ -1,3 +1,4 @@
+using CCEnv;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
@@ -13,18 +14,18 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         : IDisposable,
         IEnumerable,
         ILoadable,
-        IIDMarked
+        IIDMarked<UniID>
     {
         Type AssetType { get; }
         Func<Object, AssetKey>? KeyFactory { get; set; }
-        Func<Object, object?>? IDFactory { get; set; }
+        Func<Object, int>? IDFactory { get; set; }
         Func<string, string>? AssetNameProcessor { get; set; }
         IEnumerable<AssetKey> Keys { get; }
         IEnumerable<Object> Values { get; }
-        object this[AssetKey key] { get; }
+        Object this[AssetKey key] { get; }
+        Object this[string assetName, int assetID] { get; }
         Object this[string assetName] { get; }
-        Object this[string assetName, bool ingoreCase] { get; }
-        Object this[object assetID] { get; }
+        Object this[int assetID] { get; }
 
         void AddAsset(Object asset);
 
@@ -46,7 +47,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         AssetKey? FindAssetKey(string assetName,
                                bool ignoreCase = false,
                                bool throwIfNotFound = false);
-        AssetKey? FindAssetKey(object assetID, bool throwIfNotFound = false);
+        AssetKey? FindAssetKey(int assetID, bool throwIfNotFound = false);
 
         Object? FindAsset(string assetName,
                           bool ignoreCase = false,
@@ -54,11 +55,17 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         T? FindAsset<T>(string assetName,
                         bool ignoreCase = false,
                         bool throwIfNotFound = false);
-        Object? FindAsset(object assetID, bool throwIfNotFound = false);
-        T? FindAsset<T>(object assetID, bool throwIfNotFound = false);
+        Object? FindAsset(int assetID, bool throwIfNotFound = false);
+        T? FindAsset<T>(int assetID, bool throwIfNotFound = false);
 
         Object GetAsset(AssetKey key);
+        Object GetAsset(string assetName);
+        Object GetAsset(string assetName, int assetID);
+        Object GetAsset(int assetID);
         T GetAsset<T>(AssetKey key);
+        T GetAsset<T>(string assetName);
+        T GetAsset<T>(string assetName, int assetID);
+        T GetAsset<T>(int assetID);
     }
     public interface IAddressablesDatabase<TAsset>
         : IAddressablesDatabase,
@@ -67,20 +74,27 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         where TAsset : Object
     {
+        new TAsset this[AssetKey key] { get; }
+        new TAsset this[string assetName, int assetID] { get; }
+        new TAsset this[string assetName] { get; }
+        new TAsset this[int assetID] { get; }
+
         new IEnumerable<AssetKey> Keys { get; }
         new IEnumerable<TAsset> Values { get; }
-        new TAsset this[AssetKey key] { get; }
 
-        object IAddressablesDatabase.this[AssetKey key] => this[key];
-        new TAsset this[string assetName] { get; }
-        new TAsset this[string assetName, bool ingoreCase] { get; }
-        new TAsset this[object assetID] { get; }
+        Object IAddressablesDatabase.this[AssetKey key] => this[key];
+        Object IAddressablesDatabase.this[string assetName,int assetID] {
+            get => this[assetName, assetID];
+        }
+        Object IAddressablesDatabase.this[string assetName] {
+            get => this[assetName];
+        }
+        Object IAddressablesDatabase.this[int assetID] {
+            get => this[assetID];
+        }
 
         IEnumerable<AssetKey> IAddressablesDatabase.Keys => Keys;
         IEnumerable<Object> IAddressablesDatabase.Values => Values;
-        Object IAddressablesDatabase.this[string assetName] => this[assetName];
-        Object IAddressablesDatabase.this[string assetName, bool ingoreCase] => this[assetName, ingoreCase];
-        Object IAddressablesDatabase.this[object assetID] => this[assetID];
 
         UniTask LoadAssetsAsync<TSub>(AssetLabels assetLabels) where TSub : TAsset;
         UniTask LoadAssetsAsync<TAnyAsset>(AssetLabels assetLabels, Func<TAnyAsset, TAsset[]> converter)
@@ -93,9 +107,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         new TAsset? FindAsset(string assetName,
                               bool ignoreCase = false,
                               bool throwIfNotFound = false);
-        new TAsset? FindAsset(object assetID, bool throwIfNotFound = false);
+        new TAsset? FindAsset(int assetID, bool throwIfNotFound = false);
 
         new TAsset GetAsset(AssetKey key);
+        new TAsset GetAsset(string assetName);
+        new TAsset GetAsset(string assetName, int assetID);
+        new TAsset GetAsset(int assetID);
 
         void IAddressablesDatabase.AddAsset(Object asset)
         {
@@ -117,12 +134,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             return FindAsset(assetName, ignoreCase, throwIfNotFound);
         }
-        Object? IAddressablesDatabase.FindAsset(object assetID, bool throwIfNotFound)
+        Object? IAddressablesDatabase.FindAsset(int assetID, bool throwIfNotFound)
         {
             return FindAsset(assetID, throwIfNotFound);
         }
 
         Object IAddressablesDatabase.GetAsset(AssetKey key) => GetAsset(key);
+        Object IAddressablesDatabase.GetAsset(string assetName) => GetAsset(assetName);
+        Object IAddressablesDatabase.GetAsset(string assetName, int assetID) => GetAsset(assetName, assetID);
+        Object IAddressablesDatabase.GetAsset(int assetID) => GetAsset(assetID);
 
         UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
             ConverterAsync<TAsset, TNew> dbItemConverter,

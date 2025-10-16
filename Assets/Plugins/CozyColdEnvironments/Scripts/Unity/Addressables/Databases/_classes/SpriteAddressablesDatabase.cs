@@ -1,3 +1,4 @@
+using CCEnv;
 using CCEnvs.Collections.Performance;
 using CCEnvs.Language;
 using Cysharp.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         /// </summary>
         public bool TexturesAsSprites { get; set; }
 
-        public SpriteAddressablesDatabase(object? id, int capacity) : base(id, capacity)
+        public SpriteAddressablesDatabase(UniID id, int capacity) : base(id, capacity)
         {
         }
 
@@ -25,7 +26,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
         }
 
-        public SpriteAddressablesDatabase(object? id) : base(id)
+        public SpriteAddressablesDatabase(UniID id) : base(id)
         {
         }
 
