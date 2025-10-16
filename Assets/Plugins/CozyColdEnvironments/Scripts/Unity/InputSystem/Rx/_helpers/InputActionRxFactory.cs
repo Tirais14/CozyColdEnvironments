@@ -4,30 +4,30 @@ using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Reactive
+namespace CCEnvs.Unity.InputSystem.Rx
 {
-    public static class InputActionReactiveFactory
+    public static class InputActionRxFactory
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static IInputActionReactive<T> Create<T>(InputAction inputAction)
+        public static IInputActionRx<T> Create<T>(InputAction inputAction)
             where T : struct
         {
             if (inputAction is null)
                 throw new ArgumentNullException(nameof(inputAction));
 
-            return new InputActionReactive<T>(inputAction);
+            return new InputActionRx<T>(inputAction);
         }
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public static IInputActionReactive Create(Type? valueType, InputAction inputAction)
+        public static IInputActionRx Create(Type? valueType, InputAction inputAction)
         {
             if (inputAction is null)
                 throw new ArgumentNullException(nameof(inputAction));
             if (valueType is null)
-                return new InputActionReactive(inputAction);
+                return new InputActionRx(inputAction);
 
-            return MethodInvoker.Invoke<IInputActionReactive>(
-                new TypeValuePair(typeof(InputActionReactiveFactory)),
+            return MethodInvoker.Invoke<IInputActionRx>(
+                new TypeValuePair(typeof(InputActionRxFactory)),
                 nameof(Create),
                 new ExplicitArguments(new ExplicitArgument(inputAction)),
                 valueType)!;

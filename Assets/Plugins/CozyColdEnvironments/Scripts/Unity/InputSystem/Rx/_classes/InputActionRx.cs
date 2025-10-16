@@ -7,12 +7,12 @@ using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.InputSystem.Reactive
+namespace CCEnvs.Unity.InputSystem.Rx
 {
-    public class InputActionReactive 
+    public class InputActionRx 
         :
         DisposableContainer,
-        IInputActionReactive
+        IInputActionRx
     {
         private readonly ReactiveProperty<CallbackContext> raw = new();
         private readonly ReactiveProperty<CallbackContext> started = new();
@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
         public string ActionName => Action.name;
         public bool IsEnabled => Action.enabled;
 
-        public InputActionReactive(InputAction inputAction)
+        public InputActionRx(InputAction inputAction)
         {
             CCEnvs.CC.Guard.NullArgument(inputAction, nameof(inputAction));
 
@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             Setup();
         }
 
-        public static explicit operator InputAction(InputActionReactive inputActionReactive)
+        public static explicit operator InputAction(InputActionRx inputActionReactive)
         {
             return inputActionReactive.Action;
         }
@@ -114,10 +114,10 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             canceled.SetValueAndForceNotify(context);
         }
     }
-    public class InputActionReactive<T> 
+    public class InputActionRx<T> 
         :
-        InputActionReactive,
-        IInputActionReactive<T>
+        InputActionRx,
+        IInputActionRx<T>
 
         where T : struct
     {
@@ -127,7 +127,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
         public IObservable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
         public IObservable<T> TCanceled => Canceled.Select(x => x.ReadValue<T>());
 
-        public InputActionReactive(InputAction inputAction) 
+        public InputActionRx(InputAction inputAction) 
             :
             base(inputAction)
         {

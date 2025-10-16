@@ -3,9 +3,9 @@ using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Reactive
+namespace CCEnvs.Unity.InputSystem.Rx
 {
-    public interface IInputActionReactive
+    public interface IInputActionRx
         :
         ISwitchable,
         IDisposable
@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
 
         bool IsButtonPressed();
     }
-    public interface IInputActionReactive<T> : IInputActionReactive
+    public interface IInputActionRx<T> : IInputActionRx
         where T : struct
     {
         T Value { get; }

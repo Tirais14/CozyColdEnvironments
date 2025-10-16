@@ -9,19 +9,19 @@ using CCEnvs.Reflection;
 using CCEnvs.Common;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Reactive
+namespace CCEnvs.Unity.InputSystem.Rx
 {
-    public abstract class InputHandlerReactive
+    public abstract class InputHandlerRx
         :
         DisposableContainer,
-        IInputHandlerReactive
+        IInputHandlerRx
     {
-        private readonly Dictionary<string, IInputActionReactive> registeredActions = new(0);
+        private readonly Dictionary<string, IInputActionRx> registeredActions = new(0);
 
         public InputActionMap ActionMap { get; }
         public bool IsEnabled { get; private set; }
 
-        protected InputHandlerReactive(InputActionMap actionMap, bool autoSetProps)
+        protected InputHandlerRx(InputActionMap actionMap, bool autoSetProps)
         {
             ActionMap = actionMap;
 
@@ -32,11 +32,11 @@ namespace CCEnvs.Unity.InputSystem.Reactive
         }
 
         /// <exception cref="EmptyStringArgumentException"></exception>
-        public IInputActionReactive GetInputAction(string inputName)
+        public IInputActionRx GetInputAction(string inputName)
         {
             if (inputName.IsNullOrEmpty())
                 throw new EmptyStringArgumentException(nameof(inputName), inputName);
-            if (!registeredActions.TryGetValue(inputName, out IInputActionReactive result))
+            if (!registeredActions.TryGetValue(inputName, out IInputActionRx result))
                 throw new ArgumentException($"Cannot find input action with name {inputName}.");
 
             return result;
@@ -77,7 +77,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
             }
         }
 
-        protected void RegsiterAction(IInputActionReactive inputAction)
+        protected void RegsiterAction(IInputActionRx inputAction)
         {
             if (inputAction.IsNull())
                 throw new ArgumentNullException(nameof(inputAction));
@@ -105,7 +105,7 @@ namespace CCEnvs.Unity.InputSystem.Reactive
         {
             PropertyInfo[] props =
                 GetType().ForceGetProperties(BindingFlagsDefault.InstancePublic)
-                         .Where(x => x.PropertyType.IsType<IInputActionReactive>()).ToArray();
+                         .Where(x => x.PropertyType.IsType<IInputActionRx>()).ToArray();
 
             if (props.IsNullOrEmpty())
             {
@@ -115,10 +115,10 @@ namespace CCEnvs.Unity.InputSystem.Reactive
 
             registeredActions.EnsureCapacity(props.Length);
 
-            IInputActionReactive action;
+            IInputActionRx action;
             foreach (var prop in props)
             {
-                action = InputActionReactiveFactory.Create(ResolveValueType(prop),
+                action = InputActionRxFactory.Create(ResolveValueType(prop),
                                                            ResolveInputAction(prop));
                 prop.SetValue(this, action);
                 RegsiterAction(action);

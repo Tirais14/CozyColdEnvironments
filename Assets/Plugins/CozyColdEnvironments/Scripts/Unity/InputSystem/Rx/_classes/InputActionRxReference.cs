@@ -5,23 +5,23 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Reactive
+namespace CCEnvs.Unity.InputSystem.Rx
 {
     [Serializable]
-    public sealed class InputActionReactiveReference
+    public sealed class InputActionRxReference
     {
-        private IInputActionReactive action = null!;
+        private IInputActionRx action = null!;
 
         [SerializeField]
         private InputActionReference inputAction = null!;
         [SerializeField]
         private SerializedType inputValueType;
 
-        public IInputActionReactive Action {
+        public IInputActionRx Action {
             get
             {
                 if (action.IsNull())
-                    action = InputActionReactiveFactory.Create((Type?)inputValueType, inputAction);
+                    action = InputActionRxFactory.Create((Type?)inputValueType, inputAction);
 
                 return action;
             }

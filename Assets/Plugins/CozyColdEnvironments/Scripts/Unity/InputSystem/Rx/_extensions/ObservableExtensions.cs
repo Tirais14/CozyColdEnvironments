@@ -4,7 +4,7 @@ using CCEnvs.Diagnostics;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Reactive
+namespace CCEnvs.Unity.InputSystem.Rx
 {
     public static class ObservableExtensions
     {

@@ -1,58 +1,47 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.U2D
+#pragma warning disable IDE1006
+namespace CCEnvs.Unity._2D
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public sealed class CharacterController2D : CCBehaviour
+    public abstract class CharacterController2D : CCBehaviour
     {
-        [GetBySelfAttribute]
-        private Rigidbody2D rigidbody2DComponent = null!;
+        [Min(0f)]
+        [SerializeField]
+        private float moveSpeed;
 
-        [GetBySelfAttribute]
-        private Collider2D collider2DComponent = null!;
+        [GetBySelf]
+        protected Rigidbody2D rb { get; private set; } = null!;
 
-        public Rigidbody2D Rigidbody2D => rigidbody2DComponent;
-        public Collider2D Collider2D => collider2DComponent;
-        public Vector2 Position => transform.position;
+        [GetBySelf]
+        protected Collider2D col { get; private set; } = null!;
 
-        protected override void Start()
-        {
-            base.Start();
-            Setup();
-        }
-
-        public void Move(Vector2 direction, float speed)
-        {
-            if (speed <= 0)
+        public virtual float MoveSpeed {
+            get => moveSpeed;
+            set
             {
-                return;
-            }
+                if (value < 0f)
+                {
+                    this.PrintWarning($"{nameof(MoveSpeed)} cannot be {MoveSpeed}");
+                    value = 0f;
+                }
 
-            Vector3 offset = direction * speed;
-            Rigidbody2D.MovePosition(transform.position + offset);
+                moveSpeed = value;
+            }
         }
 
-        public void MoveTo(Vector2 targetPosition, float speed)
-        {
-            if (speed <= 0)
-            {
-                return;
-            }
+        protected abstract Vector2 InputValue { get; }
 
-            Vector2 direction = Vector2Helper.GetDirection(Position, targetPosition);
-            Vector2 offset = direction * speed;
-            float sqrDistance = Vector2Helper.SqrDistance(Position, targetPosition);
-            if (offset.sqrMagnitude >= sqrDistance) { Rigidbody2D.MovePosition(targetPosition); }
-            else { Rigidbody2D.MovePosition(Position + offset); }
-        }
-
-        private void Setup()
+        protected virtual void FixedUpdate()
         {
-            Rigidbody2D.freezeRotation = true;
-            Rigidbody2D.gravityScale = 0;
+            ObjectMove.ByPhysics(rb,
+                                 InputValue.normalized,
+                                 MoveSpeed,
+                                 Time.fixedDeltaTime);
         }
     }
 }
