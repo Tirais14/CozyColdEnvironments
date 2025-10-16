@@ -25,7 +25,7 @@ namespace CCEnvs
             var loopState = new LoopState();
             T?[] nextValues;
             T? current;
-            var loopPredicate = new LoopPredicate(() => toProccess.Count > 0);
+            var loopPredicate = new LoopFuse(() => toProccess.Count > 0);
             while (loopPredicate.Invoke())
             {
                 current = toProccess.Dequeue();

@@ -58,7 +58,7 @@ namespace CCEnvs.CodeAnalyzis
             using var reader = new StreamReader(filePath);
             var lines = new List<string>();
             string? line;
-            var loopPredicate = new LoopPredicate(() => !reader.EndOfStream);
+            var loopPredicate = new LoopFuse(() => !reader.EndOfStream);
             while (loopPredicate)
             {
                 line = await reader.ReadLineAsync();

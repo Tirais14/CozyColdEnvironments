@@ -11,6 +11,43 @@ namespace CCEnvs
 {
     public static class EnumFlagsExtensions
     {
+        /// <exception cref="InvalidOperationException"></exception>
+        public unsafe static bool IsFlagSetted<T>(this T value, T flag)
+            where T : unmanaged, Enum
+        {
+#if UNITY_2017_1_OR_NEWER
+            int size = Unity.Collections.LowLevel.Unsafe.UnsafeUtility.SizeOf<T>();
+#else
+            int size = Unsafe.SizeOf<T>();
+#endif
+
+            switch (size)
+            {
+                case 1:
+                    byte valueByte = value.ToByteUnsafe();
+                    byte flagByte = flag.ToByteUnsafe();
+
+                    return (valueByte & flagByte) == flagByte;
+                case 2:
+                    ushort valueShort = value.ToUshortUnsafe();
+                    ushort flagShort = flag.ToUshortUnsafe();
+
+                    return (valueShort & flagShort) == flagShort;
+                case 4:
+                    uint valueInt = value.ToUintUnsafe();
+                    uint flagInt = flag.ToUintUnsafe();
+
+                    return (valueInt & flagInt) == flagInt;
+                case 8:
+                    ulong valueLong = value.ToUlongUnsafe();
+                    ulong flagLong = flag.ToUlongUnsafe();
+
+                    return (valueLong & flagLong) == flagLong;
+                default:
+                    throw new InvalidOperationException("Unsupported enum size.");
+            }
+        }
+
         public static bool IsFlags(this Enum value)
         {
             return value.GetType().IsDefined<FlagsAttribute>();

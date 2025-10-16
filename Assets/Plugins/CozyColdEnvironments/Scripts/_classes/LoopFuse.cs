@@ -6,11 +6,11 @@ namespace CCEnvs
     /// <summary>
     /// Use this for while cycle for preventing endless loop
     /// </summary>
-    public class LoopPredicate : ALoopPredicate
+    public class LoopFuse : ALoopFuse
     {
         public Func<bool> predicate;
 
-        public LoopPredicate(Func<bool> predicate)
+        public LoopFuse(Func<bool> predicate)
         {
             this.predicate = predicate;
         }
@@ -23,14 +23,14 @@ namespace CCEnvs
             return predicate();
         }
 
-        public static implicit operator bool(LoopPredicate value) => value.Invoke();
+        public static implicit operator bool(LoopFuse value) => value.Invoke();
     }
 
-    public class LoopPredicate<T> : ALoopPredicate
+    public class LoopFuse<T> : ALoopFuse
     {
         private readonly Predicate<T> predicate;
 
-        public LoopPredicate(Predicate<T> predicate)
+        public LoopFuse(Predicate<T> predicate)
         {
             this.predicate = predicate;
         }
@@ -44,7 +44,7 @@ namespace CCEnvs
         }
     }
 
-    public class LoopPredicate<T0, T1> : ALoopPredicate
+    public class LoopFuse<T0, T1> : ALoopFuse
     {
         public Func<T0, T1, bool> Predicate { get; set; } = null!;
 
@@ -60,7 +60,7 @@ namespace CCEnvs
         }
     }
 
-    public class LoopPredicate<T0, T1, T2> : ALoopPredicate
+    public class LoopFuse<T0, T1, T2> : ALoopFuse
     {
         public Func<T0, T1, T2, bool> Predicate { get; set; } = null!;
 

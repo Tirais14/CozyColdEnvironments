@@ -179,7 +179,7 @@ namespace CCEnvs.Unity.Initables
             var toProccess = new List<(IInitable value, InitAfterTypeAttribute attribute)>(predicated);
             var proccessed = new List<IInitable>(predicated.Length);
 
-            var loopPredicate = new LoopPredicate<int, int, int>
+            var loopPredicate = new LoopFuse<int, int, int>
             {
                 Predicate = (toProccessCount, proccessedCount, maxCount) =>
                 {
@@ -270,7 +270,7 @@ namespace CCEnvs.Unity.Initables
         {
             Queue<IInitable> queue = CreateInitsQueue(inits);
             IInitable initable;
-            var loopPredicate = new LoopPredicate<int>(x => x > 0);
+            var loopPredicate = new LoopFuse<int>(x => x > 0);
             while (loopPredicate.Invoke(queue.Count))
             {
                 initable = queue.Dequeue();

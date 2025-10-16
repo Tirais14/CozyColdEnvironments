@@ -2,7 +2,9 @@
     "name": "CCEnvs",
     "rootNamespace": "CCEnvs",
     "references": [
-        "GUID:5fc19e916dbec2e4eb8fe60a0c56b165"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:593a5b492d29ac6448b1ebf7f035ef33",
+        "GUID:5c01796d064528144a599661eaab93a6"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -31,5 +33,5 @@
     "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": true
+    "noEngineReferences": false
 }

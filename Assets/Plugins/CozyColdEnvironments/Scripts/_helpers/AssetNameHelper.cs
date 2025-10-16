@@ -1,7 +1,5 @@
 using CCEnvs;
-using Cysharp.Text;
 using System;
-using ZLinq;
 
 #nullable enable
 namespace Game
@@ -39,14 +37,7 @@ namespace Game
             if (assetName is null)
                 throw new ArgumentNullException(assetName);
 
-            var sb = ZString.CreateStringBuilder();
-            sb.Replace("(Clone)", string.Empty);
-            while (true)
-            {
-
-            }
-
-            return assetName.Replace(, string.Empty).TrimEnd(' ');
+            return assetName.Delete("Clone").TrimEnd(' ');
         }
 #endif
     }

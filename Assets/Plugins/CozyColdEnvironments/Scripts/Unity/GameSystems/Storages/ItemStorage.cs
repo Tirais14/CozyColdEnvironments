@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
                 return;
             }
 
-            var loopPredicate = new LoopPredicate<IItemSlot?>(
+            var loopPredicate = new LoopFuse<IItemSlot?>(
                 (x) => x.IsNotNull() && itemStack.HasItem);
 
             IItemSlot? currentSlot = GetSuitableSlot(itemStack.Item);

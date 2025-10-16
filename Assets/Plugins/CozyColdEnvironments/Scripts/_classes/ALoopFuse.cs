@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs
 {
-    public abstract class ALoopPredicate
+    public abstract class ALoopFuse
     {
         private ulong iterations;
 

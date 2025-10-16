@@ -5,7 +5,7 @@ namespace CCEnvs.Unity.Tickables
         where T : ITickableBase
     {
         private readonly TickerTimeCounter timeCounter = new();
-        private readonly LoopPredicate<TickerTimeCounter, float> tickPredicate = new()
+        private readonly LoopFuse<TickerTimeCounter, float> tickPredicate = new()
         {
             Predicate = static (timer, deltaTime) => timer.IsTickAllowed(deltaTime)
         };

@@ -1,6 +1,3 @@
-#if UNI_TASK
-using Cysharp.Threading.Tasks;
-#endif
 using System.Threading.Tasks;
 
 #nullable enable
@@ -13,8 +10,8 @@ namespace CCEnvs.Async
         bool IsRunning { get; }
 
 #if UNI_TASK
-        void RegisterTask(UniTask task);
-        void RegisterTask<T>(UniTask<T> task);
+        void RegisterTask(Cysharp.Threading.Tasks.UniTask task);
+        void RegisterTask<T>(Cysharp.Threading.Tasks.UniTask<T> task);
 #endif
 
         void RegisterTask(ValueTask task);

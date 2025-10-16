@@ -143,7 +143,7 @@ namespace CCEnvs.Reflection.Injections
                                             BindingFlags bindingFlags)
         {
             Queue<Type> types = TypeHelper.CollectBaseTypes(type);
-            var loopPredicate = new LoopPredicate(() => types.Count > 0);
+            var loopPredicate = new LoopFuse(() => types.Count > 0);
             FieldInfo? field = null;
             while (loopPredicate)
             {
@@ -182,7 +182,7 @@ namespace CCEnvs.Reflection.Injections
                                                  BindingFlags bindingFlags)
         {
             Queue<Type> types = TypeHelper.CollectBaseTypes(type);
-            var loopPredicate = new LoopPredicate(() => types.Count > 0);
+            var loopPredicate = new LoopFuse(() => types.Count > 0);
 
             PropertyInfo? lastFoundProp = null!;
             PropertyInfo? prop = null;

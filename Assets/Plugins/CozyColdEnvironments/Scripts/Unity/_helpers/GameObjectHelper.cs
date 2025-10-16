@@ -40,7 +40,7 @@ namespace CCEnvs.Unity
             Stack<Component> components = CreateStackByHardDependecies(args.Object);
             var results = new List<Type>(components.Count);
             Component component;
-            var predicate = new LoopPredicate(() => components.Count > 0);
+            var predicate = new LoopFuse(() => components.Count > 0);
             while (predicate)
             {
                 component = components.Pop();
@@ -73,7 +73,7 @@ namespace CCEnvs.Unity
 
             AddToResults();
 
-            var predicate = new LoopPredicate(() => results.Count < components.Length)
+            var predicate = new LoopFuse(() => results.Count < components.Length)
             {
                 IterationsLimit = 1000
             };

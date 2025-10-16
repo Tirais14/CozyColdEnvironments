@@ -63,7 +63,7 @@ namespace CCEnvs.Unity
 
         public static Transform? FindParent(this Transform transform, string n)
         {
-            LoopPredicate cyclePredicate = new(() => transform != null);
+            LoopFuse cyclePredicate = new(() => transform != null);
             do
             {
                 transform = transform.parent;

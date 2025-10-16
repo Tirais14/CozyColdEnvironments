@@ -64,7 +64,7 @@ namespace CCEnvs.Unity.Tickables
 
         public void UnregisterAll()
         {
-            var loopPredicate = new LoopPredicate(() => tickablesCount > 0);
+            var loopPredicate = new LoopFuse(() => tickablesCount > 0);
             while (loopPredicate)
                 Unregister(tickables[^1]);
         }
