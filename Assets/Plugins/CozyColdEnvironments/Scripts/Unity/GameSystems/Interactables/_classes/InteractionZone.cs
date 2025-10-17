@@ -1,5 +1,6 @@
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Injections;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,16 @@ namespace CCEnvs.Unity.GameSystems.Interactables
     /// <summary>
     /// The child should be call explicitly <see cref="TryAddInteractableBy(Component?)"/> and <see cref="TryRemoveInteractableBy(Component?)"/>
     /// </summary>
-    public abstract class InteractionZone : CCBehaviour, IInteractionZone
+    public abstract class InteractionZone<T> : CCBehaviour, IInteractionZone<T>
+        where T : Component
     {
         private readonly Dictionary<int, List<IInteractable>> interactables = new();
         private readonly Dictionary<int, List<IInteractableWith>> interactableWiths = new();
         private readonly int defaultLayer = LayerMask.NameToLayer("Default");
 
-        public float Size { get; private set; }
+        [field: SerializeField]
+        [GetBySelf]
+        public T InteractionAgent { get; private set; } = null!;
 
         public bool Contains(Type interactableType, int? layers)
         {
@@ -47,13 +51,6 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 return result;
 
             return false;
-        }
-
-        public void SetSize(float size)
-        {
-            Guard.IsGreaterThan(size, 0f);
-
-            Size = size;
         }
 
         public bool TryGetInteractable<T>(int? layers, [NotNullWhen(true)] out T? result) where T : IInteractable

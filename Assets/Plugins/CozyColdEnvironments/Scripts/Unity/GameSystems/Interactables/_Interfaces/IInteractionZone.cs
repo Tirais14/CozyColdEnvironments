@@ -8,7 +8,7 @@ namespace CCEnvs.Unity
 {
     public interface IInteractionZone
     {
-        float Size { get; }
+        Component InteractionAgent { get; }
 
         bool TryGetInteractable<T>(int? layers, [NotNullWhen(true)] out T? result)
             where T : IInteractable;
@@ -17,7 +17,12 @@ namespace CCEnvs.Unity
             where T : IInteractableWith;
 
         bool Contains(Type interactableType, int? layers);
+    }
+    public interface IInteractionZone<out T> : IInteractionZone
+        where T : Component
+    {
+        new T InteractionAgent { get; }
 
-        void SetSize(float size);
+        Component IInteractionZone.InteractionAgent => InteractionAgent;
     }
 }
