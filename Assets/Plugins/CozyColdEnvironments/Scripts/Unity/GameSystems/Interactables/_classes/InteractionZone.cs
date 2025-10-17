@@ -16,16 +16,16 @@ namespace CCEnvs.Unity.GameSystems.Interactables
     /// <summary>
     /// The child should be call explicitly <see cref="TryAddInteractableBy(Component?)"/> and <see cref="TryRemoveInteractableBy(Component?)"/>
     /// </summary>
-    public abstract class InteractionZone<T> : CCBehaviour, IInteractionZone<T>
-        where T : Component
+    public abstract class InteractionZone<TAgent> : CCBehaviour, IInteractionZone<TAgent>
+        where TAgent : Component
     {
         private readonly Dictionary<int, List<IInteractable>> interactables = new();
         private readonly Dictionary<int, List<IInteractableWith>> interactableWiths = new();
         private readonly int defaultLayer = LayerMask.NameToLayer("Default");
 
-        [field: SerializeField]
         [GetBySelf]
-        public T InteractionAgent { get; private set; } = null!;
+        [field: SerializeField]
+        public TAgent InteractionAgent { get; private set; } = null!;
 
         public bool Contains(Type interactableType, int? layers)
         {

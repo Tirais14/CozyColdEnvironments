@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
 {
-    public abstract class UIElement : CCBehaviour, IUIElement
+    public abstract class Element : CCBehaviour, IElement
     {
         [field: SerializeField]
         public UnityEvent OnShowed { get; private set; } = new UnityEvent();

@@ -1,9 +1,11 @@
 #nullable enable
+using UniRx;
+
 namespace CCEnvs.Unity.UI
 {
     public interface ISelectable
     {
-        bool IsSelected { get; }
+        IReadOnlyReactiveProperty<bool> IsSelected { get; }
 
         void Select();
 

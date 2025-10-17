@@ -1,9 +1,11 @@
 #nullable enable
+using UniRx;
+
 namespace CCEnvs.Unity.UI
 {
     public interface IOpenable
     {
-        bool IsOpened { get; }
+        IReadOnlyReactiveProperty<bool> IsOpened { get; }
 
         void Open();
 

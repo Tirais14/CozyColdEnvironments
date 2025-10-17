@@ -1,9 +1,11 @@
 #nullable enable
+using UniRx;
+
 namespace CCEnvs.Unity.UI
 {
     public interface IShowable
     {
-        bool IsVisible { get; }
+        IReadOnlyReactiveProperty<bool> IsVisible { get; }
 
         void Show();
 
