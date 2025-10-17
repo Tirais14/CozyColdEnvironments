@@ -13,6 +13,9 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
         private UnityAction? onClick;
 
+        public virtual int Priority { get; } = 0;
+        public int LayerMask => gameObject.layer;
+
         public event UnityAction OnClick {
             add => onClick += value;
             remove => onClick -= value;

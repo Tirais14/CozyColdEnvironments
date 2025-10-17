@@ -5,6 +5,6 @@ namespace CCEnvs.Unity
 {
     public interface ILayerDependent
     {
-        LayerMask LayerMask { get; }
+        int LayerMask { get; }
     }
 }
