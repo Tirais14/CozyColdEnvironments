@@ -28,7 +28,9 @@
         "ZString.dll",
         "Microsoft.Extensions.ObjectPool.dll",
         "Microsoft.Extensions.Primitives.dll",
-        "C5.dll"
+        "C5.dll",
+        "CommunityToolkit.Common.dll",
+        "CommunityToolkit.Diagnostics.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

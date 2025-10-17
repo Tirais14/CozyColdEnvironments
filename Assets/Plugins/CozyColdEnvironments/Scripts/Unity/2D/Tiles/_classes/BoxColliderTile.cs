@@ -8,61 +8,61 @@ using ZLinq;
 #pragma warning disable S2325
 namespace CCEnvs.Unity._2D.Tiles
 {
-    public sealed class BoxColliderTile : CCBehaviour
-    {
-        public const string SPRITE_NAME = "boxColliderTile";
+    //public sealed class BoxColliderTile : CCBehaviour
+    //{
+    //    public const string SPRITE_NAME = "boxColliderTile";
 
-        private static ulong instanceCount;
-        private static Sprite boxColliderSprite = null!;
+    //    private static ulong instanceCount;
+    //    private static Sprite boxColliderSprite = null!;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            instanceCount++;
-        }
+    //    protected override void Awake()
+    //    {
+    //        base.Awake();
+    //        instanceCount++;
+    //    }
 
-        protected override void Start()
-        {
-            base.Start();
+    //    protected override void Start()
+    //    {
+    //        base.Start();
 
-            if (instanceCount == 0)
-                HideTileSprite();
-        }
+    //        if (instanceCount == 0)
+    //            HideTileSprite();
+    //    }
 
-        private void OnDestroy()
-        {
-            if (instanceCount == 0)
-                throw new System.InvalidOperationException($"{nameof(instanceCount)} cannot be smaller than 0.");
+    //    private void OnDestroy()
+    //    {
+    //        if (instanceCount == 0)
+    //            throw new System.InvalidOperationException($"{nameof(instanceCount)} cannot be smaller than 0.");
 
-            instanceCount--;
+    //        instanceCount--;
 
-            if (instanceCount == 0)
-                ShowTileSprite();
-        }
+    //        if (instanceCount == 0)
+    //            ShowTileSprite();
+    //    }
 
-        private Tile GetBoxColliderTile()
-        {
-            return (from col in Physics2D.OverlapBoxAll(transform.position, Vector2.one * 32, 0f).ZL()
-                    select col.GetComponent<Tilemap>() into map
-                    where map != null
-                    select map.GetTile(Vector3Int.FloorToInt(transform.position)))
-                    .First()
-                    .As<Tile>();
-        }
+    //    private Tile GetBoxColliderTile()
+    //    {
+    //        return (from col in Physics2D.OverlapBoxAll(transform.position, Vector2.one * 32, 0f).ZL()
+    //                select col.GetComponent<Tilemap>() into map
+    //                where map != null
+    //                select map.GetTile(Vector3Int.FloorToInt(transform.position)))
+    //                .First()
+    //                .As<Tile>();
+    //    }
 
-        private void HideTileSprite()
-        {
-            var tile = GetBoxColliderTile();
-            boxColliderSprite = tile.sprite;
-            tile.sprite = null;
-        }
+    //    private void HideTileSprite()
+    //    {
+    //        var tile = GetBoxColliderTile();
+    //        boxColliderSprite = tile.sprite;
+    //        tile.sprite = null;
+    //    }
 
-        private void ShowTileSprite()
-        {
-            CC.Guard.NullArgument(boxColliderSprite, nameof(boxColliderSprite));
+    //    private void ShowTileSprite()
+    //    {
+    //        CC.Guard.NullArgument(boxColliderSprite, nameof(boxColliderSprite));
 
-            var tile = GetBoxColliderTile();
-            tile.sprite = boxColliderSprite;
-        }
-    }
+    //        var tile = GetBoxColliderTile();
+    //        tile.sprite = boxColliderSprite;
+    //    }
+    //}
 }

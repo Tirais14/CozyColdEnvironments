@@ -32,7 +32,9 @@
         "Humanizer.dll",
         "Microsoft.Extensions.ObjectPool.dll",
         "DOTween.dll",
-        "DOTweenEditor.dll"
+        "DOTweenEditor.dll",
+        "CommunityToolkit.Common.dll",
+        "CommunityToolkit.Diagnostics.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
