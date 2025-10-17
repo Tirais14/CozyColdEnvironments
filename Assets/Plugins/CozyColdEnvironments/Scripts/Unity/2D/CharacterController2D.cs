@@ -12,7 +12,7 @@ namespace CCEnvs.Unity._2D
     {
         [Min(0f)]
         [SerializeField]
-        private float moveSpeed;
+        protected float moveSpeed;
 
         [GetBySelf]
         protected Rigidbody2D rb { get; private set; } = null!;

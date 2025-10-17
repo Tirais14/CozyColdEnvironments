@@ -4,7 +4,7 @@ using UnityEngine;
 #endif
 
 #nullable enable
-namespace CCEnv
+namespace CCEnvs
 {
 #if UNITY_2017_1_OR_NEWER
     public struct UniID : IEquatable<UniID>

@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 #nullable enable
+#pragma warning disable S2376
 namespace CCEnvs.Unity
 {
     public record RemoveComponentsArguments
@@ -14,11 +15,9 @@ namespace CCEnvs.Unity
 
         public GameObject Object { get; set; } = null!;
         public Type[] TypesToRemove {
-            get => typesToRemove.ToArray();
             set => typesToRemove = new HashSet<Type>(value);
         }
         public Type[] TypesToExclude {
-            get => typesToRemove.ToArray();
             set => typesToExclude = new HashSet<Type>(value);
         }
         public string[] NamespacesToRemove { get; set; } = Array.Empty<string>();

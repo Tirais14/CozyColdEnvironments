@@ -4,13 +4,12 @@ namespace CCEnvs.Properties
     public class ResetableProperty<T>
     {
         private readonly T? defaultValue;
-
-        public T? Value { get; set; }
+        private T? value;
 
         public ResetableProperty(T? defaultValue, T? value)
         {
             this.defaultValue = defaultValue;
-            Value = value;
+            this.value = value;
         }
 
         public ResetableProperty(T? value)
@@ -25,14 +24,18 @@ namespace CCEnvs.Properties
         {
         }
 
-        public static implicit operator T?(ResetableProperty<T> prop)
+        public static explicit operator T?(ResetableProperty<T> source)
         {
-            return prop.Value;
+            return source.value;
         }
 
+        /// <summary>
+        /// returns <see cref="value"/> and reset it in property
+        /// </summary>
+        /// <returns></returns>
         public T? Use()
         {
-            T? temp = Value;
+            T? temp = value;
             Reset();
 
             return temp;
@@ -40,7 +43,7 @@ namespace CCEnvs.Properties
 
         public void Reset()
         {
-            Value = defaultValue;
+            value = defaultValue;
         }
     }
 }
