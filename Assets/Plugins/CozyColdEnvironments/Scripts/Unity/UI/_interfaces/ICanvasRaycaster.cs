@@ -10,17 +10,17 @@ namespace CCEnvs.Unity.UI
     {
         GraphicRaycaster RaycasterGraphic { get; }
 
-        object[] Raycast(Type type, Vector2 position, object? exclude = null);
-        T[] Raycast<T>(Vector2 position, T? exclude = default);
+        object[] RaycastAll(Type type, Vector2 position, object? exclude = null);
+        T[] RaycastAll<T>(Vector2 position, T? exclude = default);
 
-        object? RaycastAny(Type type, Vector2 position, object? exclude = null);
-        T? RaycastAny<T>(Vector2 position, T? exclude = default);
+        object? Raycast(Type type, Vector2 position, object? exclude = null);
+        T? Raycast<T>(Vector2 position, T? exclude = default);
 
-        bool TryRaycastAny(Type type,
+        bool TryRaycast(Type type,
                            Vector2 position,
                            [NotNullWhen(true)] out object? result,
                            object? exclude = null);
-        bool TryRaycastAny<T>(Vector2 position,
+        bool TryRaycast<T>(Vector2 position,
                               [NotNullWhen(true)] out T? result,
                               T? exclude = default);
     }

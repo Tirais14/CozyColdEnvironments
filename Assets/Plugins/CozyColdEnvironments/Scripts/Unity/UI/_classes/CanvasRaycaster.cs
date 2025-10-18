@@ -1,9 +1,8 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Diagnostics;
-using CCEnvs.Unity.Extensions;
+using CCEnvs.Unity.Injections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -20,8 +19,8 @@ namespace CCEnvs.Unity.UI
         private readonly List<RaycastResult> raycastResults = new();
         private PointerEventData pointerEventData = null!;
 
-        [Tooltip("Keep null to use current")]
-        public EventSystem EventSys { get; private set; } = null!;
+        public EventSystem EventSys { get; set; } = null!;
+
         [GetBySelf]
         public GraphicRaycaster RaycasterGraphic { get; private set; } = null!;
 
@@ -38,7 +37,7 @@ namespace CCEnvs.Unity.UI
             pointerEventData = new PointerEventData(EventSys);
         }
 
-        public object[] Raycast(Type type, Vector2 position, object? exclude = null)
+        public object[] RaycastAll(Type type, Vector2 position, object? exclude = null)
         {
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
@@ -47,60 +46,44 @@ namespace CCEnvs.Unity.UI
             pointerEventData.position = position;
             RaycasterGraphic.Raycast(pointerEventData, raycastResults);
 
-            var results =new List<object>();
-            for (int i = 0; i < raycastResults.Count; i++)
-                results.AddRange(raycastResults[i].gameObject.GetAssignedObjects(type));
-
-            if (exclude.IsNotNull())
-                results.Remove(exclude);
-
-            return results.ToArray();
+            return (from result in raycastResults
+                    select result.gameObject.GetComponents(type) into cmps
+                    where cmps.Length > 0
+                    from cmp in cmps
+                    select (object)cmp into cmp
+                    where cmp != exclude
+                    select cmp)
+                    .ToArray();
         }
-        public T[] Raycast<T>(Vector2 position, T? exclude = default)
+        public T[] RaycastAll<T>(Vector2 position, T? exclude = default)
         {
-            return Raycast(typeof(T), position, exclude).Cast<T>().ToArray();
-        }
-
-        public object? RaycastAny(Type type, Vector2 position, object? exclude = null)
-        {
-            if (type is null)
-                throw new ArgumentNullException(nameof(type));
-
-            raycastResults.Clear();
-            pointerEventData.position = position;
-            RaycasterGraphic.Raycast(pointerEventData, raycastResults);
-
-            for (int i = 0; i < raycastResults.Count; i++)
-            {
-                if (raycastResults[i].gameObject.TryGetAssignedObject(type, out object? result)
-                    &&
-                    result != exclude
-                    )
-                    return result;
-            }
-
-            return null;
-        }
-        public T? RaycastAny<T>(Vector2 position, T? exclude = default)
-        {
-            return (T?)RaycastAny(typeof(T), position, exclude);
+            return RaycastAll(typeof(T), position, exclude).Cast<T>().ToArray();
         }
 
-        public bool TryRaycastAny(Type type,
-                                  Vector2 position,
-                                  [NotNullWhen(true)] out object? result,
-                                  object? exclude = null)
+        public object? Raycast(Type type, Vector2 position, object? exclude = null)
         {
-            result = RaycastAny(type, position, exclude);
+            return RaycastAll(type, position, exclude).FirstOrDefault();
+        }
+        public T? Raycast<T>(Vector2 position, T? exclude = default)
+        {
+            return (T?)Raycast(typeof(T), position, exclude);
+        }
+
+        public bool TryRaycast(Type type,
+                               Vector2 position,
+                               [NotNullWhen(true)] out object? result,
+                               object? exclude = null)
+        {
+            result = Raycast(type, position, exclude);
 
             return result.IsNotNull();
         }
 
-        public bool TryRaycastAny<T>(Vector2 position,
-                                     [NotNullWhen(true)] out T? result,
-                                     T? exclude = default)
+        public bool TryRaycast<T>(Vector2 position,
+                                  [NotNullWhen(true)] out T? result,
+                                  T? exclude = default)
         {
-            result = RaycastAny(position, exclude);
+            result = Raycast(position, exclude);
 
             return result.IsNotDefault();
         }

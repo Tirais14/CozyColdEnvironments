@@ -1,25 +1,30 @@
 using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
+using CCEnvs.Unity.InputSystem.Rx;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 #nullable enable
 
 namespace CCEnvs.Unity.UI
 {
-    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
+    [RequireComponent(typeof(GraphicRaycaster))]
     public class CanvasController : CCBehaviour, ICanvasController
     {
-        [SerializeField]
-        private InputActionReference m_PointerInput = null!;
+        [GetBySelf]
+        public GraphicRaycaster graphicRaycaster { get; private set; } = null!;
 
-        [field: GetBySelf]
-        public GraphicRaycaster RaycasterGraphic { get; private set; } = null!;
-
-        [field: GetBySelf]
+        [GetBySelf]
         public ICanvasRaycaster RaycasterCanvas { get; private set; } = null!;
 
-        public InputAction Pointer => m_PointerInput;
+        public InputActionRx<Vector2> PointerInput { get; private set; } = null!;
+
+        protected override void Start()
+        {
+            base.Start();
+
+            DiContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput);
+        }
     }
 }

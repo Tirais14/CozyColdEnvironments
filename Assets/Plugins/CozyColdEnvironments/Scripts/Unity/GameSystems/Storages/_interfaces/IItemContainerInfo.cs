@@ -1,46 +1,17 @@
+using UniRx;
+
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Storages
 {
     public interface IItemContainerInfo
     {
-        IStorageItem Item { get; }
-        int ItemCount { get; }
-        int MaxItemCount { get; }
-        bool HasItem { get; }
-        bool IsContainerFull { get; }
+        IReadOnlyReactiveProperty<IItem?> Item { get; }
+        IReadOnlyReactiveProperty<int> ItemCount { get; }
+        int Capacity { get; }
+        bool IsEmpty { get; }
 
-        bool IsSameItem(IStorageItem item);
-
-        bool CanHold(IStorageItem item);
-
-        bool Contains(IStorageItem item);
-    }
-    public interface IItemContainerInfo<T> : IItemContainerInfo
-        where T : IStorageItem
-    {
-        new T Item { get; }
-
-        IStorageItem IItemContainerInfo.Item => Item;
-
-        bool IsSameItem(T item);
-
-        bool CanHold(T item);
-
-        bool Contains(T item);
-
-        bool IItemContainerInfo.IsSameItem(IStorageItem item)
-        {
-            return item is T typed && IsSameItem(typed);
-        }
-
-        bool IItemContainerInfo.CanHold(IStorageItem item)
-        {
-            return item is T typed && CanHold(typed);
-        }
-
-        bool IItemContainerInfo.Contains(IStorageItem item)
-        {
-            return item is T typed && Contains(typed);
-        }
+        bool Contains();
+        bool Contains(IItem? item);
+        bool Contains(IItem? item, int count);
     }
 }

@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Json
     [JsonObject]
     [Serializable]
     public abstract record StorageItemReference<T> : IJsonDto
-        where T : IStorageItem
+        where T : IItem
     {
         [JsonProperty("id")]
         protected int ID { get; set; } = -1;
@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.Json
         {
         }
 
-        protected StorageItemReference(IStorageItem item)
+        protected StorageItemReference(IItem item)
         {
             ID = item.ID;
         }

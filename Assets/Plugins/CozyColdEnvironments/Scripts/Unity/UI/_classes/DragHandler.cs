@@ -8,8 +8,6 @@ using UnityEngine.EventSystems;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public delegate void DragAction(PointerEventData eventData);
-
     public class DragHandler
         : CCBehaviour,
         IBeginDragHandler,
@@ -20,9 +18,9 @@ namespace CCEnvs.Unity.UI
         private readonly List<IObserver<PointerEventData>> onDragObservers = new(0);
         private readonly List<IObserver<PointerEventData>> onEndDragObservers = new(0);
 
-        public event DragAction? OnBeginDrag;
-        public event DragAction? OnDrag;
-        public event DragAction? OnEndDrag;
+        public event DragAndDropAction? OnBeginDrag;
+        public event DragAndDropAction? OnDrag;
+        public event DragAndDropAction? OnEndDrag;
 
         public IObservable<PointerEventData> OnBeginDragRx { get; private set; } = null!;
         public IObservable<PointerEventData> OnDragRx { get; private set; } = null!;

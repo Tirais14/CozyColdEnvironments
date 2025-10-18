@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.Json
         public int ItemCount { get; set; }
 
         [JsonProperty]
-        public IStorageItem Item { get; set; } = null!;
+        public IItem Item { get; set; } = null!;
 
         public IItemContainerDto()
         {
