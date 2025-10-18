@@ -8,7 +8,7 @@ namespace CCEnvs.Unity.EditorSerialization
     [Serializable]
     public class SerializedTimeSpan
         : IEditorSerialized<TimeSpan>,
-        ITransformable<TimeSpan>,
+        IMutable<TimeSpan>,
         ISerializationCallbackReceiver
     {
         [SerializeField, Min(0)]
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.EditorSerialization
             return source.Value;
         }
 
-        TimeSpan ITransformable<TimeSpan>.DoTransform() => Value;
+        TimeSpan IMutable<TimeSpan>.MutateType() => Value;
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {

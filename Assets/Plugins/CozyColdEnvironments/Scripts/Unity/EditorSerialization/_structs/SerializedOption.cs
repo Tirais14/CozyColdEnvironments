@@ -46,4 +46,12 @@ namespace CCEnvs.Unity
             return source.Value;
         }
     }
+    public static class SerializedOptionExtensions
+    {
+        public static T? AsNullableValue<T>(this SerializedOption<T> source)
+            where T : struct
+        {
+            return source ? source : null;
+        }
+    }
 }

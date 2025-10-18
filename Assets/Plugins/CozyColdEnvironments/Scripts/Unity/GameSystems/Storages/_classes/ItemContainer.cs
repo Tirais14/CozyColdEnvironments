@@ -19,6 +19,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public IReadOnlyReactiveProperty<int> ItemCount => itemCount;
         public int Capacity => Mathf.Min(capacity, Item.Value?.MaxItemCount ?? int.MaxValue);
         public bool IsEmpty => !Contains();
+        public bool IsFull => ItemCount.Value >= Capacity;
         /// <summary>
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>

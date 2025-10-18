@@ -52,7 +52,7 @@ namespace CCEnvs.Json.Converters
             else
                 dto = serializer.Deserialize<TypeDto>(reader);
 
-            return dto?.DoTransform();
+            return dto?.MutateType();
         }
 
         public override void WriteJson(JsonWriter writer,

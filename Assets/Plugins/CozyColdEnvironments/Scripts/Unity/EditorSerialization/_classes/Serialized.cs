@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.EditorSerialization
     [Serializable]
     public abstract class Serialized<TOutput>
         : IEditorSerialized<TOutput>,
-        ITransformable<TOutput>
+        IMutable<TOutput>
     {
         public TOutput Value { [Converter] get; protected set; } = default!;
 
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.EditorSerialization
             return source.Value;
         }
 
-        TOutput ITransformable<TOutput>.DoTransform() => Value;
+        TOutput IMutable<TOutput>.MutateType() => Value;
     }
     [Serializable]
     public abstract class Serialized<TInput, TOutput>

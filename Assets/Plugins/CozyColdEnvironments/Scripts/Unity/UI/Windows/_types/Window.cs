@@ -17,10 +17,10 @@ namespace CCEnvs.Unity.UI.Windows
 
         protected virtual bool OpenOnStart => false;
 
-        public bool IsOpened { get; private set; }
+        public IReadOnlyReactiveProperty<bool> IsOpened { get; private set; }
 
-        public IObservable<IWindow> OnOpen => onOpen.AsObservable();
-        public IObservable<IWindow> OnClose => onClose.AsObservable();
+        public IObservable<IWindow> OnOpen => onOpen;
+        public IObservable<IWindow> OnClose => onClose;
 
         protected override void Start()
         {
@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.UI.Windows
 
         public virtual bool CanOpen(out string message)
         {
-            if (IsOpened)
+            if (IsOpened.Value)
             {
                 message = ALREADY_OPENED_MSG;
                 return false;
@@ -65,7 +65,7 @@ namespace CCEnvs.Unity.UI.Windows
 
         public bool SwitchOpenableState()
         {
-            gameObject.SetActive(!IsOpened);
+            gameObject.SetActive(!IsOpened.Value);
 
             return gameObject.activeSelf;
         }

@@ -14,7 +14,7 @@ namespace CCEnvs.Conversations
     public static class TypeTransformer
     {
         /// <summary>
-        /// Tries to convert type by <see cref="ITransformable"/>,
+        /// Tries to convert type by <see cref="IMutable"/>,
         /// overloaded cast operator, method marked with <see cref="ConverterAttribute"/>
         /// and returns specified type, <see cref="Convert"/> or throws exception
         /// </summary>
@@ -95,9 +95,9 @@ namespace CCEnvs.Conversations
 
             bool TryConvertByInterface()
             {
-                if (target is ITransformable convertible)
+                if (target is IMutable convertible)
                 {
-                    result = convertible.DoTransform();
+                    result = convertible.MutateType();
 
                     return result is not null && result.GetType().IsType(toType);
                 }
@@ -133,7 +133,7 @@ namespace CCEnvs.Conversations
                 }
                 catch (CCException ex)
                 {
-                    throw new InvalidCastException($"Cannot convert {targetType.GetName()} to {toType.GetName()}. Object must be implement one of the conversation variants: {nameof(ITransformable)}, {nameof(ConverterAttribute)}, explicit/implicit overloaded cast operator, {nameof(IConvertible)}, constructor of {targetType.GetName()} which input takes in argument {toType.GetName()}.", ex);
+                    throw new InvalidCastException($"Cannot convert {targetType.GetName()} to {toType.GetName()}. Object must be implement one of the conversation variants: {nameof(IMutable)}, {nameof(ConverterAttribute)}, explicit/implicit overloaded cast operator, {nameof(IConvertible)}, constructor of {targetType.GetName()} which input takes in argument {toType.GetName()}.", ex);
                 }
             }
         }

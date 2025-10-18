@@ -14,41 +14,13 @@ namespace CCEnvs.Unity.UI
         IDragHandler,
         IEndDragHandler
     {
-        private readonly List<IObserver<PointerEventData>> onBeginDragObservers = new(0);
-        private readonly List<IObserver<PointerEventData>> onDragObservers = new(0);
-        private readonly List<IObserver<PointerEventData>> onEndDragObservers = new(0);
-
         public event DragAndDropAction? OnBeginDrag;
         public event DragAndDropAction? OnDrag;
         public event DragAndDropAction? OnEndDrag;
 
-        public IObservable<PointerEventData> OnBeginDragRx { get; private set; } = null!;
-        public IObservable<PointerEventData> OnDragRx { get; private set; } = null!;
-        public IObservable<PointerEventData> OnEndDragRx { get; private set; } = null!;
-
-        protected override void Awake()
-        {
-            OnBeginDragRx = Observable.Create<PointerEventData>((x) =>
-            {
-                onBeginDragObservers.Add(x);
-
-                return Disposable.Create(() => onBeginDragObservers.Remove(x));
-            });
-
-            OnDragRx = Observable.Create<PointerEventData>((x) =>
-            {
-                onDragObservers.Add(x);
-
-                return Disposable.Create(() => onDragObservers.Remove(x));
-            });
-
-            OnEndDragRx = Observable.Create<PointerEventData>((x) =>
-            {
-                onEndDragObservers.Add(x);
-
-                return Disposable.Create(() => onEndDragObservers.Remove(x));
-            });
-        }
+        public IObservable<PointerEventData> OnBeginDragRx { get; private set; } = new Subject<PointerEventData>();
+        public IObservable<PointerEventData> OnDragRx { get; private set; } = new Subject<PointerEventData>();
+        public IObservable<PointerEventData> OnEndDragRx { get; private set; } = new Subject<PointerEventData>();
 
         public static bool HasOn(GameObject gameObject)
         {
@@ -66,19 +38,19 @@ namespace CCEnvs.Unity.UI
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
             OnBeginDrag?.Invoke(eventData);
-            onBeginDragObservers.ForEach(x => x.OnNext(eventData));
+            ((Subject<PointerEventData>)OnBeginDragRx).OnNext(eventData);
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
         {
             OnDrag?.Invoke(eventData);
-            onDragObservers.ForEach(x => x.OnNext(eventData));
+            ((Subject<PointerEventData>)OnDragRx).OnNext(eventData);
         }
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
             OnEndDrag?.Invoke(eventData);
-            onEndDragObservers.ForEach(x => x.OnNext(eventData));
+            ((Subject<PointerEventData>)OnEndDragRx).OnNext(eventData);
         }
     }
 }
