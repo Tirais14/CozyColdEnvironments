@@ -1,6 +1,9 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UniRx;
 using ZLinq;
 
 #nullable enable
@@ -14,7 +17,12 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public IEnumerable<int> Keys => inner.Keys;
         public IEnumerable<IItemContainer> Values => inner.Values;
-        public int Count => inner.Count;
+        public int Capacity => inner.Count;
+        public bool IsEmpty => inner.Values.Any(x => x.Contains());
+        public bool IsFull => inner.Values.All(x => x.Contains());
+
+        int IReadOnlyCollection<KeyValuePair<int, IItemContainer>>.Count => inner.Count;
+        IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReactiveProperty<int>(int.MinValue);
 
         public Inventory(int capacity)
         {
@@ -52,22 +60,17 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public bool ContainsKey(int key) => inner.ContainsKey(key);
 
-        public IEnumerator<KeyValuePair<int, IItemContainer>> GetEnumerator()
-        {
-            return inner.GetEnumerator();
-        }
-
         public bool Contains()
         {
             return inner.Values.ZL().Any(x => x.Contains());
         }
 
-        public bool Contains(IItem item)
+        public bool Contains(IItem? item)
         {
             return inner.Values.ZL().Any(x => x.Contains(item));
         }
 
-        public bool Contains(IItem item, int count)
+        public bool Contains(IItem? item, int count)
         {
             int containedCount = inner.Values.ZL()
                                              .Where(x => x.Contains(item))
@@ -76,7 +79,12 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return containedCount >= count;
         }
 
-        public IItemContainer PutItem(IItem? item, int count)
+        public bool Contains(IItemContainer itemContainer)
+        {
+            return inner.ContainsValue(itemContainer);
+        }
+
+        public IItemContainer Put(IItem? item, int count)
         {
             int before;
             foreach (var con in inner.Values)
@@ -96,19 +104,19 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return new ItemContainer(item, count);
         }
 
-        public IItemContainer PutItem(IItemContainer itemContainer, int count)
+        public IItemContainer Put(IItemContainer itemContainer, int count)
         {
-            return PutItem(itemContainer.Item.Value, count);
+            return Put(itemContainer.Item.Value, count);
         }
 
-        public IItemContainer PutItem(IItemContainer itemContainer)
+        public IItemContainer Put(IItemContainer itemContainer)
         {
-            return PutItem(itemContainer.Item.Value, itemContainer.ItemCount.Value);
+            return Put(itemContainer.Item.Value, itemContainer.ItemCount.Value);
         }
 
         public void Remove(int id) => inner.Remove(id);
 
-        public IItemContainer TakeItem(IItem item, int count)
+        public IItemContainer Take(IItem item, int count)
         {
             var result = new ItemContainer
             {
@@ -132,6 +140,18 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return inner.TryGetValue(key, out value);
         }
 
+        public IEnumerator<KeyValuePair<int, IItemContainer>> GetEnumerator()
+        {
+            return inner.GetEnumerator();
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        IItemContainer IItemAccessor.Take(int count) => ItemContainer.Empty;
+
+        void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
+        {
+            this.PrintWarning($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
+        }
     }
 }

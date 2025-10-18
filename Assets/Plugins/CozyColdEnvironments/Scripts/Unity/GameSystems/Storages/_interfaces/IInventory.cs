@@ -6,11 +6,15 @@ namespace CCEnvs.Unity
 {
     public interface IInventory
         : IItemAccessor,
-        IItemContainerInfo,
+        IItemContainerInfoItemless,
         IReadOnlyDictionary<int, IItemContainer>
     {
+
+
         void Add(int id, IItemContainer itemContainer);
 
         void Remove(int id);
+
+        bool Contains(IItemContainer itemContainer);
     }
 }
