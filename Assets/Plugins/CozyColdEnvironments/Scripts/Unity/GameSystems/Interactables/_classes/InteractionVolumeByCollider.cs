@@ -4,7 +4,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
     [RequireComponent(typeof(Collider))]
-    public class InteractionVolumeCollider : InteractionZone<Collider>
+    public class InteractionVolumeByCollider : InteractionZone<Collider>
     {
         private void OnTriggerEnter(Collider other)
         {

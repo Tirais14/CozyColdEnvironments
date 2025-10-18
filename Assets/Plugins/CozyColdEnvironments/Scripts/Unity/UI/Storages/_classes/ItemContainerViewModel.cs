@@ -6,7 +6,10 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public class ItemContainerViewModel<T> : AViewModel<T>
+    public class ItemContainerViewModel<T>
+        : AViewModel<T>,
+        IItemContainerViewModel<T>
+
         where T : IItemContainer
     {
         private readonly ReactiveProperty<Sprite> itemIconView = new();

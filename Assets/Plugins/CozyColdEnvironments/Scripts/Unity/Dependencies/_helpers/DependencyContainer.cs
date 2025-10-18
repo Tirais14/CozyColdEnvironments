@@ -6,11 +6,11 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Unity.Dependencies
 {
-    public static class DiContainer
+    public static class DependencyContainer
     {
-        private static readonly Dictionary<(Type type, object id), object> bindings = new();
+        private static readonly Dictionary<(Type type, object? id), object> bindings = new();
 
-        public static void Bind(object obj, object id)
+        public static void Bind(object obj, object? id = null)
         {
             Type objType = obj.GetType();
             if (bindings.ContainsKey((objType, id)))
@@ -19,13 +19,22 @@ namespace CCEnvs.Unity.Dependencies
             bindings.Add((objType, id), obj);
         }
 
-        public static object Resolve(Type type, object id)
+        public static object Resolve(Type type, object? id = null)
         {
             if (!bindings.TryGetValue((type, id), out var result))
                 throw new CCException($"Cannot find binding with key: {(type, id)}.");
 
             return result;
         }
-        public static T Resolve<T>(object id) => Resolve(typeof(T), id).As<T>();
+        public static T Resolve<T>(object? id = null) => Resolve(typeof(T), id).As<T>();
+
+        public static bool HasBinding(Type type, object? id = null)
+        {
+            return bindings.ContainsKey((type, id));
+        }
+        public static bool HasBinding<T>(object? id = null)
+        {
+            return HasBinding(typeof(T), id);
+        }
     }
 }

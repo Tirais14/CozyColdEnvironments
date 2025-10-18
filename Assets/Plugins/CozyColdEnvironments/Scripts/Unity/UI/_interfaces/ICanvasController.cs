@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.UI
     public interface ICanvasController
     {
         GraphicRaycaster graphicRaycaster { get; }
-        ICanvasRaycaster RaycasterCanvas { get; }
+        ICanvasRaycaster CanvasRaycaster { get; }
         InputActionRx<Vector2> PointerInput { get; }
     }
 }

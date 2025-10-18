@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.UI
         public GraphicRaycaster graphicRaycaster { get; private set; } = null!;
 
         [GetBySelf]
-        public ICanvasRaycaster RaycasterCanvas { get; private set; } = null!;
+        public ICanvasRaycaster CanvasRaycaster { get; private set; } = null!;
 
         public InputActionRx<Vector2> PointerInput { get; private set; } = null!;
 
@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.UI
         {
             base.Start();
 
-            DiContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput);
+            DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput);
         }
     }
 }

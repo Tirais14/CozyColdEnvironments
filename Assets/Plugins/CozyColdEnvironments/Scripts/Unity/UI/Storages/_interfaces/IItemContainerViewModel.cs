@@ -1,10 +1,12 @@
 #nullable enable
+using CCEnvs.Unity.UI;
 using UniRx;
 using UnityEngine;
 
 namespace CCEnvs.Unity.GameSystems.Storages
 {
-    public interface IItemContainerViewModel
+    public interface IItemContainerViewModel<out T> : IViewModel<T>
+        where T : IItemContainerInfo
     {
         IReadOnlyReactiveProperty<Sprite> ItemIconView { get; }
         IReadOnlyReactiveProperty<int> ItemCountView { get; }
