@@ -24,10 +24,10 @@ namespace CCEnvs.Unity.UI.Storages
 {
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel, TContainer>
-        : AView<TViewModel>,
+        : View<TViewModel>,
         IDragToggle
 
-        where TViewModel : AViewModel<TContainer>, IItemContainerViewModel<TContainer>
+        where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainerInfo, new()
     {
         private ICanvasController? canvasController;
@@ -119,7 +119,10 @@ namespace CCEnvs.Unity.UI.Storages
         void IDragToggle.ActivateDragAndDropAbility()
         {
             if (DragAndDropHandlerBindingCount > 0)
+            {
+                DragAndDropHandlerBindingCount++;
                 return;
+            }
 
             if (!this.TryGetAssignedObjectInParent(
                 includeInactive: true,
@@ -150,6 +153,8 @@ namespace CCEnvs.Unity.UI.Storages
 
                 dropHandler.OnDropRx.Subscribe(OnDrop)
             };
+
+            DragAndDropHandlerBindingCount++;
         }
 
         void IDragToggle.DeactivateDragAndDropAbility()
@@ -162,6 +167,8 @@ namespace CCEnvs.Unity.UI.Storages
 
             disposables!.ForEach(x => x.Dispose());
             disposables = null;
+
+            DragAndDropHandlerBindingCount--;
         }
     }
 }

@@ -1,18 +1,19 @@
+#nullable enable
+using CCEnvs.Disposables;
 using CCEnvs.TypeMatching;
 using System.Collections.Generic;
 using UnityEngine;
 
-#nullable enable
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public static class ViewModelHelper
+    public static class ViewModel
     {
         public static T[] FindViewModelsByType<T>(
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude,
             FindObjectsSortMode findObjectsSortMode = FindObjectsSortMode.None)
             where T : IViewModel
         {
-            IView[] views = ViewHelper.FindViewsByType<IView>(findObjectsInactive,
+            IView[] views = View.FindViewsByType<IView>(findObjectsInactive,
                                                               findObjectsSortMode);
 
             var viewModels = new List<T>();
@@ -30,7 +31,7 @@ namespace CCEnvs.Unity.UI.MVVM
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude)
             where T : IViewModel
         {
-            IView[] views = ViewHelper.FindViewsByType<IView>(findObjectsInactive);
+            IView[] views = View.FindViewsByType<IView>(findObjectsInactive);
 
             int count = views.Length;
             for (int i = 0; i < count; i++)
@@ -42,5 +43,17 @@ namespace CCEnvs.Unity.UI.MVVM
 
             return default;
         }
+    }
+    public abstract class ViewModel<T> : DisposableContainer, IViewModel<T>
+    {
+        protected T model;
+
+        protected ViewModel(T model)
+        {
+            this.model = model;
+        }
+
+        public T GetModel() => model;
+        object IViewModel.GetModel() => model!;
     }
 }

@@ -8,7 +8,7 @@ namespace CCEnvs.Disposables
     {
         private bool disposedValue;
 
-        protected readonly Disposables disposables = new();
+        protected readonly DisposableCollection disposables = new();
 
         public void Dispose()
         {

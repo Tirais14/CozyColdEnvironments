@@ -1,12 +1,11 @@
-using CCEnvs.Unity.UI.Windows;
 using TMPro;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.UI.Windows
+namespace CCEnvs.Unity.UI.Elements
 {
-    public abstract class ALoadingScreen : Window, ILoadingScreen
+    public abstract class ALoadingScreen : Element, ILoadingScreen
     {
         [field: SerializeField]
         public TextMeshProUGUI TextMesh { get; private set; } = null!;

@@ -4,13 +4,13 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public static class ModelHelper
+    public static class Model
     {
         public static T[] FindModelsByType<T>(
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude,
             FindObjectsSortMode findObjectsSortMode = FindObjectsSortMode.None)
         {
-            var viewModels = ViewModelHelper.FindViewModelsByType<IViewModel>(
+            var viewModels = ViewModel.FindViewModelsByType<IViewModel>(
                 findObjectsInactive,
                 findObjectsSortMode);
 
@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.UI.MVVM
         public static T? FindAnyModelByType<T>(
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude)
         {
-            var viewModels = ViewModelHelper.FindViewModelsByType<IViewModel>(
+            var viewModels = ViewModel.FindViewModelsByType<IViewModel>(
                 findObjectsInactive);
 
             int count = viewModels.Length;

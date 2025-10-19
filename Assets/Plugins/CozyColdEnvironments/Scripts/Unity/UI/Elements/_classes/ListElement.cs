@@ -10,7 +10,7 @@ using UnityEngine.Events;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Windows
+namespace CCEnvs.Unity.UI.Elements
 {
     /// <inheritdoc cref="IListWindow"/>
     /// <summary>
@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.UI.Windows
     /// Only work with <see cref="Component"/>.
     /// <see cref="{T}"/> maybe interface or another abstraction, but it must be derived from <see cref="Component"/>
     /// </summary>
-    public class ListWindow<T> : Window, ITrimmable, IListWindow<T>
+    public class ListElement<T> : Element, ITrimmable, IListWindow<T>
     {
         private readonly List<(GameObject go, IList<T> values)> inner = new();
 
@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.UI.Windows
         public T[] this[int index] => inner[index].values.ToArray();
         public T this[int index, bool _] => inner[index].values[0];
 
-        protected override bool OpenOnStart => true;
+        protected override bool ShowOnStart => true;
 
         bool ICollection<(GameObject go, IList<T> values)>.IsReadOnly => false;
         (GameObject go, IList<T> values) IList<(GameObject go, IList<T> values)>.this[int index] {
@@ -245,7 +245,7 @@ namespace CCEnvs.Unity.UI.Windows
     /// Ignores real indices of components. Adapted to use with <see cref="Component"/> in <see cref="{T}"/>
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ListWindow : ListWindow<Component>
+    public class ListElement : ListElement<Component>
     {
     }
 }
