@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.U3D
+namespace CCEnvs.Unity._3D
 {
     public interface IMoveStrategy 
     {

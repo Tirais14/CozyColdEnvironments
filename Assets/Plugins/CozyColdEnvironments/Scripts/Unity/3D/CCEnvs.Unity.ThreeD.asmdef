@@ -1,6 +1,6 @@
 {
-    "name": "CCEnvs.Unity.U3D",
-    "rootNamespace": "CCEnvs.Unity.U3D",
+    "name": "CCEnvs.Unity._3D",
+    "rootNamespace": "CCEnvs.Unity._3D",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
         "GUID:5fc19e916dbec2e4eb8fe60a0c56b165",

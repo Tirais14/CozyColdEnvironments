@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
-using CCEnvs.Reflection.Data;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
@@ -24,7 +23,7 @@ namespace CCEnvs.Unity.UI.Storages
 {
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel, TContainer>
-        : View<TViewModel>,
+        : View<TViewModel, TContainer>,
         IDragToggle
 
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
@@ -47,7 +46,7 @@ namespace CCEnvs.Unity.UI.Storages
         protected override void Awake()
         {
             base.Awake();
-
+            
             pointerInput = new LazyCC<InputActionRx<Vector2>>(
                 DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput));
         }
@@ -62,15 +61,6 @@ namespace CCEnvs.Unity.UI.Storages
             viewModel.ItemCountView.Select(x => x.ToString())
                                    .Subscribe(x => textMesh.text = x)
                                    .AddTo(this);
-        }
-
-        protected override TViewModel CreateViewModel()
-        {
-            return InstanceFactory.Create<TViewModel>(
-                new ExplicitArguments(new ExplicitArgument(new TContainer())),
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound);
         }
 
         protected virtual void OnBegindDrag()

@@ -1,3 +1,5 @@
+using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
@@ -9,7 +11,11 @@ using System.Linq;
 using UnityEngine;
 using ZLinq;
 
+
 #nullable enable
+#pragma warning disable IDE0044
+#pragma warning disable IDE1006
+#pragma warning disable IDE0051
 #pragma warning disable S3236
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
@@ -19,13 +25,26 @@ namespace CCEnvs.Unity.GameSystems.Interactables
     public abstract class InteractionZone<TAgent> : CCBehaviour, IInteractionZone<TAgent>
         where TAgent : Component
     {
-        private readonly Dictionary<int, List<IInteractable>> interactables = new();
-        private readonly Dictionary<int, List<IInteractableWith>> interactableWiths = new();
-        private readonly int defaultLayer = LayerMask.NameToLayer("Default");
+        protected readonly Dictionary<int, List<IInteractable>> interactables = new();
+        protected readonly Dictionary<int, List<IInteractableWith>> interactableWiths = new();
+
+        [GetBySelf]
+        private TAgent agent = null!;
+        private int defaultLayer;
+        private bool is2DCollider;
 
         [GetBySelf]
         [field: SerializeField]
         public TAgent InteractionAgent { get; private set; } = null!;
+
+        protected TAgent Agent => agent;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            defaultLayer = LayerMask.NameToLayer("Default");
+        }
 
         public bool Contains(Type interactableType, int? layers)
         {
@@ -52,6 +71,22 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             return false;
         }
+        public abstract bool Contains(Vector2 point);
+        public abstract bool Contains(Vector3 point);
+        public bool Contains(IInteractable? interactable)
+        {
+            if (interactable.IsNull())
+                return false;
+
+            return interactables.Values.ZL().SelectMany(x => x).Contains(interactable);
+        }
+        public bool Contains(IInteractableWith? interactableWith)
+        {
+            if (interactableWith.IsNull())
+                return false;
+
+            return interactableWiths.Values.ZL().SelectMany(x => x).Contains(interactableWith);
+        }
 
         public bool TryGetInteractable<T>(int? layers, [NotNullWhen(true)] out T? result) where T : IInteractable
         {
@@ -67,14 +102,14 @@ namespace CCEnvs.Unity.GameSystems.Interactables
             return result.IsNotDefault();
         }
 
-        protected void TryAddInteractableBy(Component? collider)
+        protected void TryAddInteractableBy(TAgent? agent)
         {
-            if (collider == null)
+            if (agent == null)
                 return;
 
-            int layer = collider.gameObject.layer;
+            int layer = agent.gameObject.layer;
 
-            if (collider.TryGetAssignedObject<IInteractable>(out var interactable))
+            if (agent.TryGetAssignedObject<IInteractable>(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                 {
@@ -85,7 +120,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Add(interactable);
             }
 
-            if (collider.TryGetAssignedObject<IInteractableWith>(out var interactableWith))
+            if (agent.TryGetAssignedObject<IInteractableWith>(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                 {
@@ -97,14 +132,14 @@ namespace CCEnvs.Unity.GameSystems.Interactables
             }
         }
 
-        protected void TryRemoveInteractableBy(Component? collider)
+        protected void TryRemoveInteractableBy(TAgent? agent)
         {
-            if (collider == null)
+            if (agent == null)
                 return;
 
-            int layer = collider.gameObject.layer;
+            int layer = agent.gameObject.layer;
 
-            if (collider.TryGetAssignedObject<IInteractable>(out var interactable))
+            if (agent.TryGetAssignedObject<IInteractable>(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                     return;
@@ -112,7 +147,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Remove(interactable);
             }
 
-            if (collider.TryGetAssignedObject<IInteractableWith>(out var interactableWith))
+            if (agent.TryGetAssignedObject<IInteractableWith>(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                     return;
@@ -124,7 +159,11 @@ namespace CCEnvs.Unity.GameSystems.Interactables
         private IInteractable? FindInteractable(Type type, int? layers)
         {
             if (interactables.TryGetValue(layers ?? defaultLayer, out List<IInteractable> values))
-                return values.ZL().OrderBy(x => x.Priority).FirstOrDefault(x => x.GetType().IsType(type));
+            {
+                return values.ZL()
+                             .OrderBy(x => x.InteractionPriority)
+                             .FirstOrDefault(x => x.GetType().IsType(type));
+            }
 
             return null;
         }
@@ -132,7 +171,11 @@ namespace CCEnvs.Unity.GameSystems.Interactables
         private IInteractableWith? FindInteractableWith(Type type, int? layers)
         {
             if (interactableWiths.TryGetValue(layers ?? defaultLayer, out List<IInteractableWith> values))
-                return values.ZL().OrderBy(x => x.Priority).FirstOrDefault(x => x.GetType().IsType(type));
+            {
+                return values.ZL()
+                             .OrderBy(x => x.InteractionPriority)
+                             .FirstOrDefault(x => x.GetType().IsType(type));
+            }
 
             return null;
         }

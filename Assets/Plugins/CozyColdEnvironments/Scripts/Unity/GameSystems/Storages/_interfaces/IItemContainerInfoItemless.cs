@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
     public interface IItemContainerInfoItemless
     {
         IReadOnlyReactiveProperty<int> ItemCount { get; }
-        int Capacity { get; }
+        int Capacity { get; set; }
         bool IsEmpty { get; }
         bool IsFull { get; }
 

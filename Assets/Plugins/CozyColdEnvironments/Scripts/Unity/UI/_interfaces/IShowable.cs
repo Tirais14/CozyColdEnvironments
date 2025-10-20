@@ -1,6 +1,4 @@
 #nullable enable
-using CCEnvs.Reflection;
-using CCEnvs.Unity.UI.Elements;
 using System;
 using UniRx;
 
@@ -12,26 +10,16 @@ namespace CCEnvs.Unity.UI
         event Action OnHide;
 
         IReadOnlyReactiveProperty<bool> IsVisible { get; }
-        IObservable<Unit> OnShowRx { get; }
-        IObservable<Unit> OnHideRx { get; }
+        bool IsShowable { get; }
 
         void Hide();
 
         void Show();
 
-        bool CanShow(out string msg)
-        {
-            if (IsVisible.Value)
-            {
-                msg = $"{GetType().GetFullName()}/> Already opened";
-                return false;
-            }
-
-            msg = string.Empty;
-            return true;
-        }
-        bool CanShow() => CanShow(out _);
-
         bool SwitchVisibleState();
+
+        IObservable<Unit> ObserveShow();
+
+        IObservable<Unit> ObserveHide();
     }
 }

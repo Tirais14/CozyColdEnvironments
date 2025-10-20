@@ -4,7 +4,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
     [RequireComponent(typeof(Collider2D))]
-    public class InteractionAreaCollider : InteractionZone<Collider2D>
+    public class InteractionArea : InteractionZone<Collider2D>
     {
         private void OnTriggerEnter2D(Collider2D collision)
         {
@@ -14,6 +14,15 @@ namespace CCEnvs.Unity.GameSystems.Interactables
         private void OnTriggerExit2D(Collider2D collision)
         {
             TryRemoveInteractableBy(collision);
+        }
+
+        public override bool Contains(Vector2 point)
+        {
+            return Agent.OverlapPoint(point);
+        }
+        public override bool Contains(Vector3 point)
+        {
+            return Contains((Vector2)point);
         }
     }
 }

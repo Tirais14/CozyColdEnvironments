@@ -1,12 +1,7 @@
 #nullable enable
-using System;
-using UniRx;
-
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public interface IInteractableVoid
-        : IInteractable,
-        IObservable<Unit>
+    public interface IInteractableVoid : IInteractable
     {
         new void Interact();
 

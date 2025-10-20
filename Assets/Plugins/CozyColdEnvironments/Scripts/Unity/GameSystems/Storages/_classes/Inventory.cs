@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
@@ -9,20 +9,22 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Storages
 {
-    public class Inventory : IInventory
+    public class Inventory
+        : ReactiveDictionary<int, IItemContainer>,
+        IInventory
     {
         private readonly Dictionary<int, IItemContainer> inner;
 
-        public IItemContainer this[int key] => inner[key];
-
-        public IEnumerable<int> Keys => inner.Keys;
-        public IEnumerable<IItemContainer> Values => inner.Values;
-        public int Capacity => inner.Count;
+        public int Capacity {
+            get => inner.Count;
+            set => inner.EnsureCapacity(value);
+        }
         public bool IsEmpty => inner.Values.Any(x => x.Contains());
         public bool IsFull => inner.Values.All(x => x.Contains());
 
-        int IReadOnlyCollection<KeyValuePair<int, IItemContainer>>.Count => inner.Count;
         IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReactiveProperty<int>(int.MinValue);
+        IEnumerable<int> IReadOnlyDictionary<int, IItemContainer>.Keys => Keys;
+        IEnumerable<IItemContainer> IReadOnlyDictionary<int, IItemContainer>.Values => Values;
 
         public Inventory(int capacity)
         {
@@ -41,24 +43,6 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
             inner = new Dictionary<int, IItemContainer>(containers);
         }
-
-        public Inventory(IEnumerable<(int id, IItemContainer value)> containers)
-        {
-            CC.Guard.NullArgument(containers, nameof(containers));
-
-            inner = new Dictionary<int, IItemContainer>(containers.AsKeyValuePairs());
-        }
-
-        public void Add(int id, IItemContainer itemContainer)
-        {
-            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
-
-            inner.Add(id, itemContainer);
-        }
-
-        public void Clear() => inner.Clear();
-
-        public bool ContainsKey(int key) => inner.ContainsKey(key);
 
         public bool Contains()
         {
@@ -81,7 +65,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public bool Contains(IItemContainer itemContainer)
         {
-            return inner.ContainsValue(itemContainer);
+            return inner.Values.Contains(itemContainer);
         }
 
         public IItemContainer Put(IItem? item, int count)
@@ -114,7 +98,16 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return Put(itemContainer.Item.Value, itemContainer.ItemCount.Value);
         }
 
-        public void Remove(int id) => inner.Remove(id);
+        public bool Remove(IItemContainer itemContainer)
+        {
+            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
+
+            KeyValuePair<int, IItemContainer> found = inner.FirstOrDefault(x => x.Value.Equals(itemContainer));
+            if (found.IsDefault())
+                return false;
+
+            return Remove(found.Key);
+        }
 
         public IItemContainer Take(IItem item, int count)
         {
@@ -134,18 +127,6 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
             return result;
         }
-
-        public bool TryGetValue(int key, out IItemContainer value)
-        {
-            return inner.TryGetValue(key, out value);
-        }
-
-        public IEnumerator<KeyValuePair<int, IItemContainer>> GetEnumerator()
-        {
-            return inner.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         IItemContainer IItemAccessor.Take(int count) => ItemContainer.Empty;
 

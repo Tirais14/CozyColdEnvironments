@@ -6,6 +6,5 @@ namespace CCEnvs.Unity.GameSystems.Storages
         IItemContainerInfo,
         IShallowCloneable<IItemContainer>
     {
-        void SetCapacity(int count);
     }
 }

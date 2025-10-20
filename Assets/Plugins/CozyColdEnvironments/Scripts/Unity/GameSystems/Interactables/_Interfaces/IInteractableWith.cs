@@ -1,16 +1,11 @@
-using System;
-using UniRx;
-
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public interface IInteractableWith : IPrioritized<int>, ILayerDependent
+    public interface IInteractableWith : IInteractableBase
     {
         object? Interact(object arg);
     }
-    public interface IInteractableWith<in TIn, out TOut>
-        : IInteractableWith,
-        IObservable<TOut>
+    public interface IInteractableWith<in TIn, out TOut> : IInteractableWith
     {
         TOut Interact(TIn arg);
 

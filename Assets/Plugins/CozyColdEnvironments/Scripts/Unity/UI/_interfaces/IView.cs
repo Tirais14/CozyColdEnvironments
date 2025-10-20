@@ -4,6 +4,8 @@ namespace CCEnvs.Unity.UI
     public interface IView
     {
         IViewModel GetViewModel();
+
+        object GetModel();
     }
     public interface IView<out T> : IView
         where T : IViewModel
@@ -11,5 +13,16 @@ namespace CCEnvs.Unity.UI
         new T GetViewModel();
 
         IViewModel IView.GetViewModel() => GetViewModel();
+    }
+    public interface IView<out TViewModel, out TModel> : IView
+    where TViewModel : IViewModel
+    {
+        new TViewModel GetViewModel();
+
+        new TModel GetModel();
+
+        IViewModel IView.GetViewModel() => GetViewModel();
+
+        object IView.GetModel() => GetModel()!;
     }
 }

@@ -1,28 +1,23 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.UI.Elements;
 using System;
 using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public class Showable : CCBehaviour, IShowable
+    public class Showable : CCBehaviour, IShowable, IDisposable
     {
-        public const string ALREADY_OPENED_MSG = "{0}/> Already opned.";
-        public const string CANNOT_OPENED_LOG = "Cannot be opened by reasos: {0}.";
-
-        protected readonly Subject<Unit> onOpenRx = new();
-        protected readonly Subject<Unit> onCloseRx = new();
         protected readonly ReactiveProperty<bool> isVisible = new();
+
+        private Subject<Unit>? hideSubj;
+        private Subject<Unit>? showSubj;
+        private bool disposed;
 
         public event Action? OnShow;
         public event Action? OnHide;
 
-        public IObservable<Unit> OnShowRx => onOpenRx;
-        public IObservable<Unit> OnHideRx => onCloseRx;
         public IReadOnlyReactiveProperty<bool> IsVisible => isVisible;
+        public bool IsShowable { get; private set; }
 
         protected virtual bool ShowOnStart => false;
 
@@ -45,35 +40,18 @@ namespace CCEnvs.Unity.UI
                 Hide();
         }
 
-        public virtual bool CanShow(out string msg)
-        {
-            if (IsVisible.Value)
-            {
-                msg = ALREADY_OPENED_MSG.Format(GetType().GetFullName());
-                return false;
-            }
-
-            msg = string.Empty;
-            return true;
-        }
-        public bool CanShow() => CanShow(out _);
-
         public virtual void Hide()
         {
-            onCloseRx.OnNext(Unit.Default);
+            OnHide?.Invoke();
+            hideSubj?.OnNext(Unit.Default);
             gameObject.SetActive(false);
         }
 
         public virtual void Show()
         {
-            if (!CanShow(out string msg))
-            {
-                this.PrintLog(CANNOT_OPENED_LOG.Format(msg));
-                return;
-            }
-
             gameObject.SetActive(true);
-            onOpenRx.OnNext(Unit.Default);
+            showSubj?.OnNext(Unit.Default);
+            OnShow?.Invoke();
         }
 
         public bool SwitchVisibleState()
@@ -81,6 +59,31 @@ namespace CCEnvs.Unity.UI
             gameObject.SetActive(!IsVisible.Value);
 
             return gameObject.activeSelf;
+        }
+
+        public IObservable<Unit> ObserveShow()
+        {
+            showSubj ??= new Subject<Unit>();
+            return showSubj;
+        }
+
+        public IObservable<Unit> ObserveHide()
+        {
+            hideSubj ??= new Subject<Unit>();
+            return hideSubj;
+        }
+
+        public void Dispose() => Dispose(disposing: true);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            showSubj?.Dispose();
+            hideSubj?.Dispose();
+
+            disposed = true;
         }
     }
 }

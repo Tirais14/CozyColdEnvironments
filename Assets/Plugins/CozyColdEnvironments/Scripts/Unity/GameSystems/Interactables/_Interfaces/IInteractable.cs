@@ -1,10 +1,9 @@
 #nullable enable
 using System;
-using UniRx;
 
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
-    public interface IInteractable : IPrioritized<int>, ILayerDependent
+    public interface IInteractable : IInteractableBase
     {
         object? Interact();
     }

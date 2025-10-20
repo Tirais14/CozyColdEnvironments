@@ -17,6 +17,10 @@ namespace CCEnvs.Unity
             where T : IInteractableWith;
 
         bool Contains(Type interactableType, int? layers);
+        bool Contains(Vector2 point);
+        bool Contains(Vector3 point);
+        bool Contains(IInteractable? interactable);
+        bool Contains(IInteractableWith? interactableWith);
     }
     public interface IInteractionZone<out T> : IInteractionZone
         where T : Component

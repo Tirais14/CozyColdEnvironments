@@ -1,7 +1,9 @@
 #nullable enable 
-using CCEnvs.Unity.Components;
+using CCEnvs.Reflection.Data;
 using CCEnvs.Unity.UI.Elements;
+using System;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 
 #pragma warning disable IDE1006
@@ -29,27 +31,50 @@ namespace CCEnvs.Unity.UI.MVVM
                 .FirstOrDefault();
         }
     }
-    public abstract class View<T> : Elements.Element, IView
-        where T : IViewModel
+    /// <summary>
+    /// <see cref="TModel"/> must have empty constructor by default
+    /// </summary>
+    /// <typeparam name="TViewModel"></typeparam>
+    /// <typeparam name="TModel"></typeparam>
+    public abstract class View<TViewModel, TModel> : Element, IView<TViewModel, TModel>
+        where TViewModel : ViewModel<TModel>
     {
-        private LazyCC<T> viewModelLazy = null!;
+        private LazyCC<TViewModel> viewModelLazy = null!;
 
-        protected T viewModel => viewModelLazy.Value;
+        protected TViewModel viewModel => viewModelLazy.Value;
 
         protected override void Awake()
         {
             base.Awake();
 
-            viewModelLazy ??= new LazyCC<T>(CreateViewModel);
+            viewModelLazy ??= new LazyCC<TViewModel>(CreateViewModel);
         }
 
-        protected abstract T CreateViewModel();
-
-        public IViewModel GetViewModel()
+        protected virtual TViewModel CreateViewModel()
         {
-            viewModelLazy ??= new LazyCC<T>(CreateViewModel);
+            TModel model = InstanceFactory.Create<TModel>(
+                parameters: InstanceFactory.Parameters.CacheConstructor
+                            |
+                            InstanceFactory.Parameters.ThrowIfNotFound)!;
+
+            if (model is IDisposable disposable)
+                disposable.AddTo(this);
+
+            return InstanceFactory.Create<TViewModel>(
+                new ExplicitArguments(
+                    new ExplicitArgument(model)),
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.ThrowIfNotFound);
+        }
+
+        public TViewModel GetViewModel()
+        {
+            viewModelLazy ??= new LazyCC<TViewModel>(CreateViewModel);
 
             return viewModel;
         }
+
+        public TModel GetModel() => GetViewModel().GetModel();
     }
 }

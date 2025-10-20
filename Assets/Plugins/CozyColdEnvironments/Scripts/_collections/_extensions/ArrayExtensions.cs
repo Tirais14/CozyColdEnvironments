@@ -1,7 +1,7 @@
 #nullable enable
 
+using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Collections
@@ -22,6 +22,15 @@ namespace CCEnvs.Collections
             int index = Array.IndexOf(array, value);
 
             return index > -1 ? array[index] : default;
+        }
+
+        public static ArraySegment<T> GetArraySegment<T>(this T[] source,
+                                                         int count,
+                                                         int offset = 0)
+        {
+            Guard.IsNotNull(source, nameof(source));
+
+            return new ArraySegment<T>(source, offset, count);
         }
     }
 }

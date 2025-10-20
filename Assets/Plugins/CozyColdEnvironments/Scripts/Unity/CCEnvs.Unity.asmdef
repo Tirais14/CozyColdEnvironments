@@ -36,7 +36,8 @@
         "DOTween.dll",
         "DOTweenEditor.dll",
         "CommunityToolkit.Common.dll",
-        "CommunityToolkit.Diagnostics.dll"
+        "CommunityToolkit.Diagnostics.dll",
+        "C5.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
