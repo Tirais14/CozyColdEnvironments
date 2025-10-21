@@ -1,69 +1,29 @@
 using System;
-#if UNITY_2017_1_OR_NEWER
-using UnityEngine;
-#endif
 
 #nullable enable
 namespace CCEnvs
 {
+    public readonly struct UniID : IEquatable<UniID>
+    {
 #if UNITY_2017_1_OR_NEWER
-    public struct UniID : IEquatable<UniID>
-    {
-        [field: SerializeField]
-        public int Num0 { get; private set; }
+        [field: UnityEngine.SerializeField]
+#endif
+        public int Num0 { get; init; }
 
-        [field: SerializeField]
-        public int Num1 { get; private set; }
+#if UNITY_2017_1_OR_NEWER
+        [field: UnityEngine.SerializeField]
+#endif
+        public int Num1 { get; init; }
 
-        [field: SerializeField]
-        public string Str0 { get; private set; }
+#if UNITY_2017_1_OR_NEWER
+        [field: UnityEngine.SerializeField]
+#endif
+        public string Str0 { get; init; }
 
-        [field: SerializeField]
-        public string Str1 { get; private set; }
-#else
-    public readonly struct CommonID : IEquatable<CommonID>
-    {
-        public int Num0 { get; }
-        public int Num1 { get; }
-        public string Str0 { get; }
-        public string Str1 { get; }
-#endif //UNITY_2017_1_OR_NEWER
-
-        public UniID(int num0, int num1, string? str0, string? str1)
-        {
-            Num0 = num0;
-            Num1 = num1;
-            Str0 = str0 ?? string.Empty;
-            Str1 = str1 ?? string.Empty;
-        }
-
-        public UniID(int num0, string? str0)
-            :
-            this(num0, default, str0, default)
-        {
-        }
-
-        public UniID(int num0)
-            : 
-            this(num0, default, default ,default)
-        {
-        }
-
-        public UniID(string? str0)
-            :
-            this(default, default, str0, default)
-        {
-        }
-
-        public UniID(int num0, int num1)
-            : this(num0, num1, default, default)
-        {
-        }
-
-        public UniID(string? str0, string? str1)
-            : this(default, default, str0, str1)
-        {
-        }
+#if UNITY_2017_1_OR_NEWER
+        [field: UnityEngine.SerializeField]
+#endif
+        public string Str1 { get; init; }
 
         public static bool operator ==(UniID left, UniID right)
         {
@@ -77,23 +37,37 @@ namespace CCEnvs
 
         public static UniID FromEnum(Enum value)
         {
-            return new UniID(value.ToString());
+            return new UniID
+            {
+                Str0 = value.ToString()
+            };
         }
         public static UniID FromEnum(Enum value, Enum value1)
         {
-            return new UniID(value.ToString(), value1.ToString());
+            return new UniID
+            {
+                Str0 = value.ToString(),
+                Str1 = value1.ToString()
+            };
         }
 
-        public static UniID FromEnum<T>(T value)
-            where T : struct, Enum
+        public static UniID FromEnum<T0>(T0 value)
+            where T0 : struct, Enum
         {
-            return new UniID(value.ToString());
+            return new UniID
+            {
+                Str0 = value.ToString(),
+            };
         }
-        public static UniID FromEnum<T, T1>(T value, T1 value1)
-            where T : struct, Enum
+        public static UniID FromEnum<T0, T1>(T0 value, T1 value1)
+            where T0 : struct, Enum
             where T1 : struct, Enum
         {
-            return new UniID(value.ToString(), value1.ToString());
+            return new UniID
+            {
+                Str0 = value.ToString(),
+                Str1 = value1.ToString()
+            };
         }
 
         public readonly bool Equals(UniID other)

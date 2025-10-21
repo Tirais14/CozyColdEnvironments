@@ -128,4 +128,7 @@ namespace CCEnvs.Unity.UI.Storages
             dragAndDropToggle.DeactivateDragAndDropAbility();
         }
     }
+    public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>
+    {
+    }
 }

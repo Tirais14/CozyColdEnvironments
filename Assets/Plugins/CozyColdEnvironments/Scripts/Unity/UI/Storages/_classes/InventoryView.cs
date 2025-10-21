@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
+using CCEnvs.Unity.UI;
 using CCEnvs.Unity.UI.MVVM;
 using CCEnvs.Unity.UI.Storages;
 using System;
@@ -80,5 +81,8 @@ namespace CCEnvs.Unity
 
             Select(key);
         }
+    }
+    public class InventoryView : InventoryView<InventoryViewModel<Inventory>, Inventory>
+    {
     }
 }
