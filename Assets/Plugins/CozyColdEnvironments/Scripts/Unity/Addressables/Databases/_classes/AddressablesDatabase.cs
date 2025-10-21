@@ -1,5 +1,6 @@
 using CCEnvs;
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
@@ -8,6 +9,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
@@ -23,6 +26,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         protected readonly List<AsyncOperationHandle> loadHandles = new(0);
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
         private readonly Dictionary<AssetKey, TAsset> db;
+        private readonly DatabaseQuery askQuery = new();
         private bool disposedValue;
         private int loadingCount;
 
@@ -40,15 +44,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Func<Object, int>? IDFactory { get; set; }
         public Func<string, string>? AssetNameProcessor { get; set; } = DefaultAssetNameProcessor;
         public TAsset this[AssetKey key] => db[key];
-        public TAsset this[string assetName, int assetID] {
-            get => this[new AssetKey(assetName, assetID)];
-        }
-        public TAsset this[string assetName] {
-            get => this[new AssetKey(assetName)];
-        }
-        public TAsset this[int assetID] {
-            get => this[new AssetKey(assetID)];
-        }
 
         public AddressablesDatabase(UniID id, int capacity)
         {
@@ -191,85 +186,23 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                             .ToArray();
         }
 
-        public AssetKey? FindAssetKey(string assetName,
-                                      bool ignoreCase = false,
-                                      bool throwIfNotFound = false)
+        public Ghost<TAsset?> FindAsset(AssetKey key)
         {
-            CC.Guard.StringArgument(assetName, nameof(assetName));
+            if (db.TryGetValue(key, out var asset))
+                return asset;
 
-            assetName = ignoreCase ? assetName.ToLower() : assetName;
-
-            foreach (var key in db.Keys)
-            {
-                if (key.AssetName is not null
-                    &&
-                    (ignoreCase ? key.AssetName.ToLower() : key.AssetName).StartsWith(assetName)
-                    )
-                    return key;
-            }
-
-            if (throwIfNotFound)
-                throw new AssetNotFoundException(assetName, ignoreCase);
-
-            return null;
-        }
-        public AssetKey? FindAssetKey(int assetID, bool throwIfNotFound = false)
-        {
-            CC.Guard.NullArgument(assetID, nameof(assetID));
-
-            foreach (var key in db.Keys)
-            {
-                if (key.AssetID == assetID)
-                    return key;
-            }
-
-            if (throwIfNotFound)
-                throw new AssetNotFoundException(assetID);
-
-            return null;
-        }
-
-        public TAsset? FindAsset(string assetName,
-                                 bool ignoreCase = false,
-                                 bool throwIfNotFound = false)
-        {
-            CC.Guard.StringArgument(assetName, nameof(assetName));
-
-            AssetKey? key = FindAssetKey(assetName, ignoreCase, throwIfNotFound);
-
-            if (key is null)
-                return null;
-
-            return GetAsset(key.Value);
-        }
-        public T? FindAsset<T>(string assetName,
-                               bool ignoreCase = false,
-                               bool throwIfNotFound = false)
-        {
-            return throwIfNotFound
+            return (key.AssetID.IsDefault()
                    ?
-                   FindAsset(assetName, ignoreCase, throwIfNotFound).As<T>()
+                   db.ZL().FirstOrDefault(x => x.Key.AssetName == key.AssetName)
                    :
-                   FindAsset(assetName, ignoreCase, throwIfNotFound).AsOrDefault<T>();
+                   db.ZL().FirstOrDefault(x => x.Key.AssetID == key.AssetID))
+                   .AsGhost()
+                   .Map(x => x.Value)!;
         }
-        public TAsset? FindAsset(int assetID, bool throwIfNotFound = false)
+
+        public Ghost<T?> FindAsset<T>(AssetKey key)
         {
-            CC.Guard.NullArgument(assetID, nameof(assetID));
-
-            AssetKey? key = FindAssetKey(assetID, throwIfNotFound);
-
-            if (key is null)
-                return null;
-
-            return GetAsset(key.Value);
-        }
-        public T? FindAsset<T>(int assetID, bool throwIfNotFound = false)
-        {
-            return throwIfNotFound
-                   ?
-                   FindAsset(assetID, throwIfNotFound).As<T>()
-                   :
-                   FindAsset(assetID, throwIfNotFound).AsOrDefault<T>();
+            return FindAsset(key).AsOrDefault<T>();
         }
 
         public TAsset GetAsset(AssetKey key)
@@ -281,38 +214,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return asset;
         }
-        public TAsset GetAsset(string assetName)
-        {
-            return GetAsset(new AssetKey(assetName));
-        }
-
-        public TAsset GetAsset(string assetName, int assetID)
-        {
-            return GetAsset(new AssetKey(assetName, assetID));
-        }
-
-        public TAsset GetAsset(int assetID)
-        {
-            return GetAsset(new AssetKey(assetID));
-        }
 
         public T GetAsset<T>(AssetKey key)
         {
             return GetAsset(key).As<T>();
         }
-        public T GetAsset<T>(string assetName)
-        {
-            return GetAsset<T>(new AssetKey(assetName));
-        }
 
-        public T GetAsset<T>(string assetName, int assetID)
+        public DatabaseQuery Ask()
         {
-            return GetAsset<T>(new AssetKey(assetName, assetID));
-        }
-
-        public T GetAsset<T>(int assetID)
-        {
-            return GetAsset<T>(new AssetKey(assetID));
+            return askQuery.Reset().DBs(Range.From(this));
         }
 
         public async UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(

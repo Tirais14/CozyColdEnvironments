@@ -1,4 +1,4 @@
-using CCEnvs;
+using CCEnvs.Language;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
@@ -23,9 +23,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IEnumerable<AssetKey> Keys { get; }
         IEnumerable<Object> Values { get; }
         Object this[AssetKey key] { get; }
-        Object this[string assetName, int assetID] { get; }
-        Object this[string assetName] { get; }
-        Object this[int assetID] { get; }
 
         void AddAsset(Object asset);
 
@@ -44,28 +41,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         /// </summary>
         IAddressablesDatabase[] CutByTypes();
 
-        AssetKey? FindAssetKey(string assetName,
-                               bool ignoreCase = false,
-                               bool throwIfNotFound = false);
-        AssetKey? FindAssetKey(int assetID, bool throwIfNotFound = false);
-
-        Object? FindAsset(string assetName,
-                          bool ignoreCase = false,
-                          bool throwIfNotFound = false);
-        T? FindAsset<T>(string assetName,
-                        bool ignoreCase = false,
-                        bool throwIfNotFound = false);
-        Object? FindAsset(int assetID, bool throwIfNotFound = false);
-        T? FindAsset<T>(int assetID, bool throwIfNotFound = false);
+        Ghost<Object?> FindAsset(AssetKey key);
+        Ghost<T?> FindAsset<T>(AssetKey key);
 
         Object GetAsset(AssetKey key);
-        Object GetAsset(string assetName);
-        Object GetAsset(string assetName, int assetID);
-        Object GetAsset(int assetID);
         T GetAsset<T>(AssetKey key);
-        T GetAsset<T>(string assetName);
-        T GetAsset<T>(string assetName, int assetID);
-        T GetAsset<T>(int assetID);
+
+        DatabaseQuery Ask();
     }
     public interface IAddressablesDatabase<TAsset>
         : IAddressablesDatabase,
@@ -75,23 +57,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         where TAsset : Object
     {
         new TAsset this[AssetKey key] { get; }
-        new TAsset this[string assetName, int assetID] { get; }
-        new TAsset this[string assetName] { get; }
-        new TAsset this[int assetID] { get; }
 
         new IEnumerable<AssetKey> Keys { get; }
         new IEnumerable<TAsset> Values { get; }
 
         Object IAddressablesDatabase.this[AssetKey key] => this[key];
-        Object IAddressablesDatabase.this[string assetName,int assetID] {
-            get => this[assetName, assetID];
-        }
-        Object IAddressablesDatabase.this[string assetName] {
-            get => this[assetName];
-        }
-        Object IAddressablesDatabase.this[int assetID] {
-            get => this[assetID];
-        }
 
         IEnumerable<AssetKey> IAddressablesDatabase.Keys => Keys;
         IEnumerable<Object> IAddressablesDatabase.Values => Values;
@@ -104,15 +74,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         void AddAssets(IEnumerable<TAsset> assets);
 
-        new TAsset? FindAsset(string assetName,
-                              bool ignoreCase = false,
-                              bool throwIfNotFound = false);
-        new TAsset? FindAsset(int assetID, bool throwIfNotFound = false);
+        new Ghost<TAsset?> FindAsset(AssetKey key);
 
         new TAsset GetAsset(AssetKey key);
-        new TAsset GetAsset(string assetName);
-        new TAsset GetAsset(string assetName, int assetID);
-        new TAsset GetAsset(int assetID);
 
         void IAddressablesDatabase.AddAsset(Object asset)
         {
@@ -128,21 +92,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AddAssets(assets.Select(x => x.As<TAsset>()));
         }
 
-        Object? IAddressablesDatabase.FindAsset(string assetName,
-                                                bool ignoreCase,
-                                                bool throwIfNotFound)
+        Ghost<Object?> IAddressablesDatabase.FindAsset(AssetKey key)
         {
-            return FindAsset(assetName, ignoreCase, throwIfNotFound);
-        }
-        Object? IAddressablesDatabase.FindAsset(int assetID, bool throwIfNotFound)
-        {
-            return FindAsset(assetID, throwIfNotFound);
+            return FindAsset(key).Map(x => x.As<Object>())!;
         }
 
         Object IAddressablesDatabase.GetAsset(AssetKey key) => GetAsset(key);
-        Object IAddressablesDatabase.GetAsset(string assetName) => GetAsset(assetName);
-        Object IAddressablesDatabase.GetAsset(string assetName, int assetID) => GetAsset(assetName, assetID);
-        Object IAddressablesDatabase.GetAsset(int assetID) => GetAsset(assetID);
 
         UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
             ConverterAsync<TAsset, TNew> dbItemConverter,

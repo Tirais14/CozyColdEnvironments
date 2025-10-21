@@ -24,7 +24,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public AssetLabels AssetLabels { get; private set; }
 
         public AssetDatabaseKey AssetDatabaseKey {
-            get => ID ? new(AssetType, ID.Value) : new(AssetType, new UniID(name));
+            get => ID
+                   ?
+                   new(AssetType, ID.Value)
+                   :
+                   new(AssetType, new UniID
+                       {
+                           Str0 = name
+                       });
         }
 
         public Type GetDatabaseType()
