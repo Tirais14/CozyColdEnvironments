@@ -8,15 +8,24 @@ namespace CCEnvs.Unity
 {
     public interface IInventory
         : IItemAccessor,
-        IItemContainerInfoItemless,
-        IReadOnlyDictionary<int, IItemContainer>,
-        IReadOnlyReactiveDictionary<int, IItemContainer>
+        IItemContainerInfoItemless
     {
-        void Add(int id, IItemContainer itemContainer);
+        event Action<(int id, IItemContainer value)> OnAdd;
+        event Action<(int id, IItemContainer value)> OnRemove;
+
+        IEnumerable<int> IDs { get; }
+        IEnumerable<IItemContainer> Containers { get; }
+
+        void Add(IItemContainer itemContainer);
 
         bool Remove(int id);
         bool Remove(IItemContainer itemContainer);
 
+        bool Contains(int id);
         bool Contains(IItemContainer itemContainer);
+
+        IObservable<(int id, IItemContainer value)> ObserveAdd();
+
+        IObservable<(int id, IItemContainer value)> ObserveRemove();
     }
 }

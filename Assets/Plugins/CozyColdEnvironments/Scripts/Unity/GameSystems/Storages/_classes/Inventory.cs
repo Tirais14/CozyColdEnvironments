@@ -9,22 +9,26 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Storages
 {
-    public class Inventory
-        : ReactiveDictionary<int, IItemContainer>,
-        IInventory
+    public class Inventory : IInventory
     {
         private readonly Dictionary<int, IItemContainer> inner;
+
+        private Subject<(int id, IItemContainer value)>? addSubj;
+        private Subject<(int id, IItemContainer value)>? removeSubj;
+
+        public event Action<(int id, IItemContainer value)>? OnAdd;
+        public event Action<(int id, IItemContainer value)>? OnRemove;
 
         public int Capacity {
             get => inner.Count;
             set => inner.EnsureCapacity(value);
         }
+        public IEnumerable<int> IDs => inner.Keys;
+        public IEnumerable<IItemContainer> Containers => inner.Values;
         public bool IsEmpty => inner.Values.Any(x => x.Contains());
         public bool IsFull => inner.Values.All(x => x.Contains());
 
         IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReactiveProperty<int>(int.MinValue);
-        IEnumerable<int> IReadOnlyDictionary<int, IItemContainer>.Keys => Keys;
-        IEnumerable<IItemContainer> IReadOnlyDictionary<int, IItemContainer>.Values => Values;
 
         public Inventory(int capacity)
         {
@@ -68,6 +72,61 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return inner.Values.Contains(itemContainer);
         }
 
+        public bool Contains(int id) => inner.ContainsKey(id);
+
+        public void Add(IItemContainer itemContainer)
+        {
+            int nextID = IDs.Max() + 1;
+
+            try
+            {
+                inner.Add(nextID, itemContainer);
+
+                addSubj?.OnNext((nextID, itemContainer));
+                OnAdd?.Invoke((nextID, itemContainer));
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
+        }
+
+        public bool Remove(int id)
+        {
+            if (inner.Remove(id, out IItemContainer value))
+            {
+                try
+                {
+                    removeSubj?.OnNext((id, value));
+                    OnRemove?.Invoke((id, value));
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+        public bool Remove(IItemContainer itemContainer)
+        {
+            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
+
+            KeyValuePair<int, IItemContainer> found = inner.FirstOrDefault(x => x.Value.Equals(itemContainer));
+            if (found.IsDefault())
+                return false;
+
+            return Remove(found.Key);
+        }
+
+        public void Clear()
+        {
+            foreach (var id in inner.Keys.ToArray())
+                inner.Remove(id);
+        }
+
         public IItemContainer Put(IItem? item, int count)
         {
             int before;
@@ -98,17 +157,6 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return Put(itemContainer.Item.Value, itemContainer.ItemCount.Value);
         }
 
-        public bool Remove(IItemContainer itemContainer)
-        {
-            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
-
-            KeyValuePair<int, IItemContainer> found = inner.FirstOrDefault(x => x.Value.Equals(itemContainer));
-            if (found.IsDefault())
-                return false;
-
-            return Remove(found.Key);
-        }
-
         public IItemContainer Take(IItem item, int count)
         {
             var result = new ItemContainer
@@ -133,6 +181,20 @@ namespace CCEnvs.Unity.GameSystems.Storages
         void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
         {
             this.PrintWarning($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
+        }
+
+        IObservable<(int id, IItemContainer value)> IInventory.ObserveAdd()
+        {
+            addSubj ??= new Subject<(int id, IItemContainer value)>();
+
+            return addSubj;
+        }
+
+        IObservable<(int id, IItemContainer value)> IInventory.ObserveRemove()
+        {
+            removeSubj ??= new Subject<(int id, IItemContainer value)>();
+
+            return removeSubj;
         }
     }
 }
