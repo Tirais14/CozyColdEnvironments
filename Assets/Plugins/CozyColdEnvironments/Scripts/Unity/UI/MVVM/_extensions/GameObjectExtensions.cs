@@ -1,6 +1,7 @@
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Extensions;
 using CCEnvs.Unity.UI;
+using CCEnvs.Unity.UI.MVVM;
 using System.Collections.Generic;
 using UnityEngine;
 

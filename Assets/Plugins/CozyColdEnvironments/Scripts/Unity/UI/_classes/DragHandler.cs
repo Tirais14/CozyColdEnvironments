@@ -1,12 +1,10 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using System;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -17,13 +15,13 @@ namespace CCEnvs.Unity.UI
         IDragHandler,
         IEndDragHandler
     {
+        private Subject<PointerEventData>? onBeginDragSubj;
+        private Subject<PointerEventData>? onDragSubj;
+        private Subject<PointerEventData>? onEndDragSubj;
+
         public event DragAndDropAction? OnBeginDrag;
         public event DragAndDropAction? OnDrag;
         public event DragAndDropAction? OnEndDrag;
-
-        public IObservable<PointerEventData> OnBeginDragRx { get; private set; } = new Subject<PointerEventData>();
-        public IObservable<PointerEventData> OnDragRx { get; private set; } = new Subject<PointerEventData>();
-        public IObservable<PointerEventData> OnEndDragRx { get; private set; } = new Subject<PointerEventData>();
 
         protected override void Start()
         {
@@ -51,6 +49,27 @@ namespace CCEnvs.Unity.UI
             return HasOn(component.gameObject);
         }
 
+        public IObservable<PointerEventData> ObserveOnBeginDrag()
+        {
+            onBeginDragSubj ??= new Subject<PointerEventData>();
+
+            return onBeginDragSubj;
+        }
+
+        public IObservable<PointerEventData> ObserveOnDrag()
+        {
+            onDragSubj ??= new Subject<PointerEventData>();
+
+            return onDragSubj;
+        }
+
+        public IObservable<PointerEventData> ObserveOnEndDrag()
+        {
+            onEndDragSubj ??= new Subject<PointerEventData>();
+
+            return onEndDragSubj;
+        }
+
         private async UniTask Init()
         {
             await UniTask.WaitForEndOfFrame();
@@ -62,19 +81,19 @@ namespace CCEnvs.Unity.UI
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
             OnBeginDrag?.Invoke(eventData);
-            ((Subject<PointerEventData>)OnBeginDragRx).OnNext(eventData);
+            onBeginDragSubj?.OnNext(eventData);
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
         {
             OnDrag?.Invoke(eventData);
-            ((Subject<PointerEventData>)OnDragRx).OnNext(eventData);
+            onDragSubj?.OnNext(eventData);
         }
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
             OnEndDrag?.Invoke(eventData);
-            ((Subject<PointerEventData>)OnEndDragRx).OnNext(eventData);
+            onEndDragSubj?.OnNext(eventData);
         }
     }
 }

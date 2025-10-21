@@ -1,5 +1,5 @@
 using CCEnvs.Linq;
-using CCEnvs.Unity.UI;
+using CCEnvs.Unity.UI.MVVM;
 using System;
 using System.Linq;
 using UnityEngine;

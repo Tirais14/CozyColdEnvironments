@@ -1,22 +1,19 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
     public class DropHandler : CCBehaviour, IDropHandler
     {
-        public event DragAndDropAction? OnDrop;
+        private Subject<PointerEventData>? onDropSubj;
 
-        public IObservable<PointerEventData> OnDropRx { get; private set; } = new Subject<PointerEventData>();
+        public event DragAndDropAction? OnDrop;
 
         protected override void Start()
         {
@@ -43,6 +40,13 @@ namespace CCEnvs.Unity.UI
             return HasOn(component.gameObject);
         }
 
+        public IObservable<PointerEventData> ObserveOnDrop()
+        {
+            onDropSubj ??= new Subject<PointerEventData>();
+
+            return onDropSubj;
+        }
+
         private async UniTask Init()
         {
             await UniTask.WaitForEndOfFrame();
@@ -54,7 +58,7 @@ namespace CCEnvs.Unity.UI
         void IDropHandler.OnDrop(PointerEventData eventData)
         {
             OnDrop?.Invoke(eventData);
-            ((Subject<PointerEventData>)OnDropRx).OnNext(eventData);
+            onDropSubj?.OnNext(eventData);
         }
     }
 }

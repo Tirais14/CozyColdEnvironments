@@ -1,9 +1,12 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Linq;
+using CCEnvs.Unity.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 using ZLinq;
 
 #nullable enable
@@ -98,6 +101,19 @@ namespace CCEnvs.Unity.GameSystems.Storages
                 this.PrintException(ex);
             }
         }
+        public void Add(GameObject toInstantiate)
+        {
+            UnityEngine.Object.Instantiate(toInstantiate)
+                              .GetAssignedObject<IItemContainer>()
+                              .AsGhost()
+                              .IfSome(Add!);
+        }
+
+        public void AddCount(int count, UnityEngine.GameObject toInstantiate)
+        {
+            for (int i = 0; i < count; i++)
+                Add(toInstantiate);
+        }
 
         public void AddCount<T>(int count)
             where T : IItemContainer, new()
@@ -156,11 +172,22 @@ namespace CCEnvs.Unity.GameSystems.Storages
             if (count == Count)
                 return;
 
-            int changed = count - Count;
-            if (changed < 0)
-                RemoveCount(Math.Abs(changed));
+            int delta = count - Count;
+            if (delta < 0)
+                RemoveCount(Math.Abs(delta));
             else
-                AddCount<T>(changed);
+                AddCount<T>(delta);
+        }
+        public void SetCount(int count, GameObject toInstantiate)
+        {
+            if (count == Count)
+                return;
+
+            int delta = count - Count;
+            if (delta < 0)
+                RemoveCount(Math.Abs(delta));
+            else
+                AddCount(delta, toInstantiate);
         }
 
         public IObservable<(int id, IItemContainer value)> ObserveAdd()

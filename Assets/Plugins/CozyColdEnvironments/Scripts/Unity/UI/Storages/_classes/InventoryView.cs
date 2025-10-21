@@ -22,7 +22,7 @@ namespace CCEnvs.Unity
         public event Action<Ghost<IItemContainer?>>? OnSelectionChanged;
 
         [GetByChildren]
-        public ItemContainerList SlotList { get; private set; } = null!;
+        public ItemContainerViewList SlotList { get; private set; } = null!;
 
         public Ghost<IItemContainer?> SelectionValue { get; private set; }
         public int SelectionKey { get; private set; }
@@ -58,7 +58,7 @@ namespace CCEnvs.Unity
             if (SelectionKey == key)
                 return;
 
-            SelectionValue = GetModel()[key].ToLiquid()!;
+            SelectionValue = GetModel()[key].AsGhost()!;
             SelectionKey = key;
 
             selectionSubj?.OnNext(SelectionValue);

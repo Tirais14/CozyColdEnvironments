@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
         public bool Unlocked { get; set; }
-        Ghost<Func<GameObject>?> IModel.GameObjectGetter { get; set; }
+        public Ghost<GameObject?> gameObject { get; private set; }
 
         public ItemContainer(int capacity)
         {
