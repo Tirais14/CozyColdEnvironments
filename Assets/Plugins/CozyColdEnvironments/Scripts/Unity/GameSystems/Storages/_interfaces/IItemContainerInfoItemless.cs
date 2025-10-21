@@ -1,7 +1,7 @@
 using UniRx;
-using UnityEngine;
 
 #nullable enable
+#pragma warning disable IDE1006
 namespace CCEnvs.Unity.GameSystems.Storages
 {
     public interface IItemContainerInfoItemless

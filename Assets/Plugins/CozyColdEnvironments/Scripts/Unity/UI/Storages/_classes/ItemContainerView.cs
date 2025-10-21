@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.UI.Storages
     public abstract class ItemContainerView<TViewModel, TContainer>
         : View<TViewModel, TContainer>,
         IItemContainerView<TViewModel, TContainer>,
-        IDragToggle
+        IDragAndDropToggle
 
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainerInfo, new()
@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.UI.Storages
             }
         }
 
-        void IDragToggle.ActivateDragAndDropAbility()
+        void IDragAndDropToggle.ActivateDragAndDropAbility()
         {
             if (DragAndDropHandlerBindingCount > 0)
             {
@@ -148,7 +148,7 @@ namespace CCEnvs.Unity.UI.Storages
             DragAndDropHandlerBindingCount++;
         }
 
-        void IDragToggle.DeactivateDragAndDropAbility()
+        void IDragAndDropToggle.DeactivateDragAndDropAbility()
         {
             if (DragAndDropHandlerBindingCount <= 0)
                 return;

@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.UI.MVVM
 {
     public interface IView
     {

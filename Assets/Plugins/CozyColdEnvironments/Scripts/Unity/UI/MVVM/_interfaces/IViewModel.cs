@@ -1,9 +1,7 @@
-using System;
-
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.UI.MVVM
 {
-    public interface IViewModel : IDisposable
+    public interface IViewModel : IGameObjectBindable
     {
         object GetModel();
     }

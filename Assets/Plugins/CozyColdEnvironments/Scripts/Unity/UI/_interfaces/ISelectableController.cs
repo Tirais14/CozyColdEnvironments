@@ -6,12 +6,12 @@ namespace CCEnvs.Unity.UI
 {
     public interface ISelectableController<TKey, TValue>
     {
-        event Action<Liquid<TValue>> OnSelectionChanged;
+        event Action<Ghost<TValue>> OnSelectionChanged;
 
-        Liquid<TValue> SelectionValue { get; }
+        Ghost<TValue> SelectionValue { get; }
         TKey SelectionKey { get; }
 
-        IObservable<Liquid<TValue>> ObserveSelection();
+        IObservable<Ghost<TValue>> ObserveSelection();
 
         void Select(TKey key);
 

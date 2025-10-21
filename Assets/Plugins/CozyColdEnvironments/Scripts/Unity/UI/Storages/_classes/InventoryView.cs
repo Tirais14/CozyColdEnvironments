@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
@@ -9,22 +10,34 @@ using UniRx;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public class InventoryView<TViewModel, TInventory>
+    public abstract class InventoryView<TViewModel, TInventory>
         : View<TViewModel, TInventory>,
         IItemContainerSelectableController
 
         where TViewModel : ViewModel<TInventory>
         where TInventory : IInventory
     {
-        private Subject<Liquid<IItemContainer?>>? selectionSubj;
+        private Subject<Ghost<IItemContainer?>>? selectionSubj;
 
-        public event Action<Liquid<IItemContainer?>>? OnSelectionChanged;
+        public event Action<Ghost<IItemContainer?>>? OnSelectionChanged;
 
         [GetByChildren]
         public ItemContainerList SlotList { get; private set; } = null!;
 
-        public Liquid<IItemContainer?> SelectionValue { get; private set; }
+        public Ghost<IItemContainer?> SelectionValue { get; private set; }
         public int SelectionKey { get; private set; }
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            //Reparent ItemContainerView
+            GetModel().ObserveAdd()
+                      .Subscribe(x => x.value.gameObject.Match(
+                x => x!.transform.SetParent(transform),
+                () => this.PrintError($"Cannot find {nameof(IItemContainer)}.{nameof(IItemContainer.gameObject)}")))
+                      .AddTo(this);
+        }
 
         protected override void OnDestroy()
         {
@@ -33,9 +46,9 @@ namespace CCEnvs.Unity
             selectionSubj?.Dispose();
         }
 
-        public IObservable<Liquid<IItemContainer?>> ObserveSelection()
+        public IObservable<Ghost<IItemContainer?>> ObserveSelection()
         {
-            selectionSubj ??= new Subject<Liquid<IItemContainer?>>();
+            selectionSubj ??= new Subject<Ghost<IItemContainer?>>();
 
             return selectionSubj;
         }

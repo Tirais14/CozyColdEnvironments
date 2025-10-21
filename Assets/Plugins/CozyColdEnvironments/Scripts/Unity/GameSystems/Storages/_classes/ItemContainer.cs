@@ -1,10 +1,14 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
+using CCEnvs.Unity.UI.MVVM;
 using CommunityToolkit.Diagnostics;
+using System;
 using UniRx;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3236
+#pragma warning disable S1144
 namespace CCEnvs.Unity.GameSystems.Storages
 {
     public class ItemContainer : IItemContainer
@@ -36,6 +40,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
         public bool Unlocked { get; set; }
+        Ghost<Func<GameObject>?> IModel.GameObjectGetter { get; set; }
 
         public ItemContainer(int capacity)
         {

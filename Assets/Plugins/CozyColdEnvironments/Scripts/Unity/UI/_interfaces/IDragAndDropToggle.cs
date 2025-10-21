@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public interface IDragToggle
+    public interface IDragAndDropToggle
     {
         /// <summary>
         /// Count of <see cref="DragHandler"/> and <see cref="DropHandler"/> binding count. While is bigger than 1, <see cref="DeactivateDragAndDropAbility"/> only decreases count

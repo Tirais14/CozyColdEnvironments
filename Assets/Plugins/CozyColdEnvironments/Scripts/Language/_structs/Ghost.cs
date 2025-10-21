@@ -1,82 +1,85 @@
-#nullable enable
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
+#nullable enable
 #pragma warning disable S3236
 namespace CCEnvs.Language
 {
-    public readonly struct Liquid<T> : IEnumerable<T>, IEquatable<Liquid<T>>
+    public readonly struct Ghost<T> : IEnumerable<T>, IEquatable<Ghost<T>>
     {
-        public static Liquid<T> None => new();
+        public static Ghost<T> None => new();
 
         private readonly T value;
 
         public bool IsNone => value.IsDefault();
         public bool IsSome => !IsNone;
 
-        public Liquid(T value)
+        public Ghost(T value)
         {
             this.value = value;
         }
 
-        public static implicit operator Liquid<T>(T source)
+        public static implicit operator Ghost<T>(T source)
         {
-            return new Liquid<T>(source);
+            return new Ghost<T>(source);
         }
-        public static explicit operator T(Liquid<T> source)
+        public static explicit operator T(Ghost<T> source)
         {
             return source.value;
         }
 
-        public static bool operator ==(Liquid<T> left, Liquid<T> right)
+        public static bool operator ==(Ghost<T> left, Ghost<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Liquid<T> left, Liquid<T> right)
+        public static bool operator !=(Ghost<T> left, Ghost<T> right)
         {
             return !(left == right);
         }
 
-        public Liquid<T> IfSome(Action<T> action)
+        public Ghost<T> IfSome(Action<T> action)
         {
             Guard.IsNotNull(action, nameof(action));
 
-            action(value);
+            if (IsSome)
+                action(value);
 
             return this;
         }
 
-        public Liquid<T> IfNone(Action action)
+        public Ghost<T> IfNone(Action action)
         {
             Guard.IsNotNull(action, nameof(action));
 
-            action();
+            if (IsNone)
+                action();
 
             return this;
         }
 
-        public Liquid<TOther> Map<TOther>(Func<T, TOther> selector)
+        public Ghost<TOther> Map<TOther>(Func<T, TOther> selector)
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return IsSome ? selector(value) : Liquid<TOther>.None;
+            return IsSome ? selector(value) : Ghost<TOther>.None;
         }
 
-        public Liquid<T> Match(Action<T> some, Action? none = null)
+        public Ghost<T> Match(Action<T> some, Action none)
         {
             Guard.IsNotNull(some, nameof(some));
+            Guard.IsNotNull(none, nameof(none));
 
             if (IsSome)
                 some(value);
             else
-                none?.Invoke();
+                none();
 
             return this;
         }
-        public Liquid<TOther> Match<TOther>(Func<T, TOther> some, Func<TOther>? none)
+        public Ghost<TOther> Match<TOther>(Func<T, TOther> some, Func<TOther> none)
         {
             Guard.IsNotNull(some, nameof(some));
 
@@ -90,18 +93,21 @@ namespace CCEnvs.Language
 
         public IEnumerator<T> GetEnumerator()
         {
+            if (IsNone)
+                yield break;
+
             yield return value;
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public bool Equals(Liquid<T> other)
+        public bool Equals(Ghost<T> other)
         {
             return EqualityComparer<T>.Default.Equals(value, other.value);
         }
         public override bool Equals(object obj)
         {
-            return obj is Liquid<T> typed && Equals(typed);
+            return obj is Ghost<T> typed && Equals(typed);
         }
         public override int GetHashCode()
         {

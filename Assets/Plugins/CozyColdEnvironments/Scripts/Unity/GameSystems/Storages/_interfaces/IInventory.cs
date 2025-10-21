@@ -1,6 +1,7 @@
 using CCEnvs.Unity.GameSystems.Storages;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -19,17 +20,20 @@ namespace CCEnvs.Unity
         int Count { get; }
 
         void Add(IItemContainer itemContainer);
+        void Add(GameObject toInstantiate);
 
+        void AddCount(int count, GameObject toInstantiate);
         void AddCount<T>(int count) where T : IItemContainer, new();
 
         bool Remove(int id);
         bool Remove(IItemContainer itemContainer);
 
+        void RemoveCount(int count);
+
         bool Contains(int id);
         bool Contains(IItemContainer itemContainer);
 
-        void RemoveCount(int count);
-
+        void SetCount(int count, GameObject toInstantiate);
         void SetCount<T>(int count) where T : IItemContainer, new();
 
         IObservable<(int id, IItemContainer value)> ObserveAdd();

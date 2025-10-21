@@ -1,4 +1,5 @@
 #nullable enable 
+using CCEnvs.Language;
 using CCEnvs.Reflection.Data;
 using CCEnvs.Unity.UI.Elements;
 using System;
@@ -50,9 +51,9 @@ namespace CCEnvs.Unity.UI.MVVM
             viewModelLazy ??= new LazyCC<TViewModel>(CreateViewModel);
         }
 
-        protected virtual TViewModel CreateViewModel()
+        protected virtual TModel CreateModel()
         {
-            TModel model = InstanceFactory.Create<TModel>(
+            var model = InstanceFactory.Create<TModel>(
                 parameters: InstanceFactory.Parameters.CacheConstructor
                             |
                             InstanceFactory.Parameters.ThrowIfNotFound)!;
@@ -60,12 +61,29 @@ namespace CCEnvs.Unity.UI.MVVM
             if (model is IDisposable disposable)
                 disposable.AddTo(this);
 
+            return model;
+        }
+
+        protected virtual TViewModel CreateViewModel()
+        {
+            TModel model = CreateModel();
+
+#if UNITY_2017_1_OR_NEWER
             return InstanceFactory.Create<TViewModel>(
                 new ExplicitArguments(
-                    new ExplicitArgument(model)),
+                    new ExplicitArgument(model!),
+                    new ExplicitArgument(gameObject)),
                 InstanceFactory.Parameters.CacheConstructor
                 |
                 InstanceFactory.Parameters.ThrowIfNotFound);
+#else
+            return InstanceFactory.Create<TViewModel>(
+                new ExplicitArguments(
+                    new ExplicitArgument(model!)),
+                InstanceFactory.Parameters.CacheConstructor
+                |
+                InstanceFactory.Parameters.ThrowIfNotFound);
+#endif //UNITY_2017_1_OR_NEWER
         }
 
         public TViewModel GetViewModel()
