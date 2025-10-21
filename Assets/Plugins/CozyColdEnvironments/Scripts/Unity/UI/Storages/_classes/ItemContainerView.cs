@@ -24,6 +24,7 @@ namespace CCEnvs.Unity.UI.Storages
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel, TContainer>
         : View<TViewModel, TContainer>,
+        IItemContainerView<TViewModel, TContainer>,
         IDragToggle
 
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>

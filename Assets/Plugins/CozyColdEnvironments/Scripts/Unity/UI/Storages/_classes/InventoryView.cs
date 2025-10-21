@@ -1,5 +1,6 @@
 using CCEnvs.Language;
 using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI.MVVM;
 using CCEnvs.Unity.UI.Storages;
 using System;
@@ -18,6 +19,9 @@ namespace CCEnvs.Unity
         private Subject<Liquid<IItemContainer?>>? selectionSubj;
 
         public event Action<Liquid<IItemContainer?>>? OnSelectionChanged;
+
+        [GetByChildren]
+        public ItemContainerList SlotList { get; private set; } = null!;
 
         public Liquid<IItemContainer?> SelectionValue { get; private set; }
         public int SelectionKey { get; private set; }

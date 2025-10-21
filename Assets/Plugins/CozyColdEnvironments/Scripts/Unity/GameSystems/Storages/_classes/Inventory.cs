@@ -15,10 +15,15 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         private Subject<(int id, IItemContainer value)>? addSubj;
         private Subject<(int id, IItemContainer value)>? removeSubj;
+        private int nextSlotID;
+
+        public IItemContainer this[int id] => inner[id];
 
         public event Action<(int id, IItemContainer value)>? OnAdd;
         public event Action<(int id, IItemContainer value)>? OnRemove;
 
+
+        public int Count => inner.Count;
         public int Capacity {
             get => inner.Count;
             set => inner.EnsureCapacity(value);
@@ -76,19 +81,29 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public void Add(IItemContainer itemContainer)
         {
-            int nextID = IDs.Max() + 1;
-
             try
             {
-                inner.Add(nextID, itemContainer);
+                inner.Add(nextSlotID, itemContainer);
 
-                addSubj?.OnNext((nextID, itemContainer));
-                OnAdd?.Invoke((nextID, itemContainer));
+                int pointer = nextSlotID + 1;
+                var fuse = new LoopFuse(() => inner.ContainsKey(pointer));
+                while (fuse)
+                    nextSlotID++;
+
+                addSubj?.OnNext((nextSlotID, itemContainer));
+                OnAdd?.Invoke((nextSlotID, itemContainer));
             }
             catch (Exception ex)
             {
                 this.PrintException(ex);
             }
+        }
+
+        public void AddCount<T>(int count)
+            where T : IItemContainer, new()
+        {
+            for (int i = 0; i < count; i++)
+                Add(new T());
         }
 
         public bool Remove(int id)
@@ -121,10 +136,45 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return Remove(found.Key);
         }
 
+        public void RemoveCount(int count)
+        {
+            for (int i = 0; i < count; i++)
+                RemoveLast();
+        }
+
+        public bool RemoveLast() => Remove(inner.Keys.Max());
+
         public void Clear()
         {
             foreach (var id in inner.Keys.ToArray())
                 inner.Remove(id);
+        }
+
+        public void SetCount<T>(int count)
+            where T : IItemContainer, new()
+        {
+            if (count == Count)
+                return;
+
+            int changed = count - Count;
+            if (changed < 0)
+                RemoveCount(Math.Abs(changed));
+            else
+                AddCount<T>(changed);
+        }
+
+        public IObservable<(int id, IItemContainer value)> ObserveAdd()
+        {
+            addSubj ??= new Subject<(int id, IItemContainer value)>();
+
+            return addSubj;
+        }
+
+        public IObservable<(int id, IItemContainer value)> ObserveRemove()
+        {
+            removeSubj ??= new Subject<(int id, IItemContainer value)>();
+
+            return removeSubj;
         }
 
         public IItemContainer Put(IItem? item, int count)
@@ -181,20 +231,6 @@ namespace CCEnvs.Unity.GameSystems.Storages
         void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
         {
             this.PrintWarning($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
-        }
-
-        IObservable<(int id, IItemContainer value)> IInventory.ObserveAdd()
-        {
-            addSubj ??= new Subject<(int id, IItemContainer value)>();
-
-            return addSubj;
-        }
-
-        IObservable<(int id, IItemContainer value)> IInventory.ObserveRemove()
-        {
-            removeSubj ??= new Subject<(int id, IItemContainer value)>();
-
-            return removeSubj;
         }
     }
 }

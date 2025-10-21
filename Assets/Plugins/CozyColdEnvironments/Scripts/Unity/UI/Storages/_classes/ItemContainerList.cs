@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.UI.Storages
         where T : IItemContainer
     {
     }
-    public class ItemContainerList : ItemContainerList<IItemContainer>
+    public class ItemContainerList : ItemContainerList<IItemContainerView>
     {
     }
 }
