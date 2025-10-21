@@ -11,11 +11,15 @@ namespace CCEnvs.Unity
         public static object? GetAssignedObject(this Component value,
                                                 Type targetType)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObject(targetType);
         }
 
         public static T? GetAssignedObject<T>(this Component value)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObject<T>();
         }
 
@@ -23,12 +27,16 @@ namespace CCEnvs.Unity
                                                           Type targetType,
                                                           bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectInChildren(targetType, includeInactive);
         }
 
         public static T? GetAssignedObjectInChildren<T>(this Component value,
                                                         bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectInChildren<T>(includeInactive);
         }
 
@@ -36,23 +44,31 @@ namespace CCEnvs.Unity
                                                         Type targetType,
                                                         bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectInParent(targetType, includeInactive);
         }
 
         public static T? GetAssignedObjectInParent<T>(this Component value,
                                                       bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectInParent<T>(includeInactive);
         }
 
         public static object[] GetAssignedObjects(this Component value,
                                                   Type targetType)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjects(targetType);
         }
 
         public static T[] GetAssignedObjects<T>(this Component value)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjects<T>();
         }
 
@@ -60,12 +76,16 @@ namespace CCEnvs.Unity
                                                             Type targetType,
                                                             bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectsInChildren(targetType, includeInactive);
         }
 
         public static T[] GetAssignedObjectsInChildren<T>(this Component value,
                                                           bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectsInChildren<T>(includeInactive);
         }
 
@@ -73,12 +93,16 @@ namespace CCEnvs.Unity
                                                           Type targetType,
                                                           bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectsInParent(targetType, includeInactive);
         }
 
         public static T[] GetAssignedObjectsInParent<T>(this Component value,
                                                         bool includeInactive = false)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.GetAssignedObjectsInParent<T>(includeInactive);
         }
 
@@ -86,12 +110,16 @@ namespace CCEnvs.Unity
                                                 Type targetType,
                                                 [NotNullWhen(true)] out object? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObject(targetType, out result);
         }
 
         public static bool TryGetAssignedObject<T>(this Component value,
                                                    [NotNullWhen(true)] out T? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObject(out result);
         }
 
@@ -100,6 +128,8 @@ namespace CCEnvs.Unity
             bool includeInactive,
             [NotNullWhen(true)] out object? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInChildren(targetType,
                                                                    includeInactive,
                                                                    out result);
@@ -108,6 +138,8 @@ namespace CCEnvs.Unity
             Type targetType,
             [NotNullWhen(true)] out object? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInChildren(targetType,
                                                                    out result);
         }
@@ -116,12 +148,16 @@ namespace CCEnvs.Unity
             bool includeInactive,
             [NotNullWhen(true)] out T? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInChildren(includeInactive,
                                                                    out result);
         }
         public static bool TryGetAssignedObjectInChildren<T>(this Component value,
             [NotNullWhen(true)] out T? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInChildren(out result);
         }
 
@@ -130,6 +166,8 @@ namespace CCEnvs.Unity
             bool includeInactive,
             [NotNullWhen(true)] out object? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInParent(targetType,
                                                                  includeInactive,
                                                                  out result);
@@ -138,6 +176,8 @@ namespace CCEnvs.Unity
             Type targetType,
             [NotNullWhen(true)] out object? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInParent(targetType,
                                                                  out result);
         }
@@ -146,12 +186,16 @@ namespace CCEnvs.Unity
             bool includeInactive,
             [NotNullWhen(true)] out T? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInParent(includeInactive,
                                                                  out result);
         }
         public static bool TryGetAssignedObjectInParent<T>(this Component value,
             [NotNullWhen(true)] out T? result)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectInParent(out result);
         }
 
@@ -159,12 +203,16 @@ namespace CCEnvs.Unity
             Type targetType,
             out object[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjects(targetType, out results);
         }
 
         public static bool TryGetAssignedObjects<T>(this Component value,
                                                     out T[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjects(out results);
         }
 
@@ -173,6 +221,8 @@ namespace CCEnvs.Unity
                                                            bool includeInactive,
                                                            out object[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInChildren(targetType,
                                                                     includeInactive,
                                                                     out results);
@@ -181,6 +231,8 @@ namespace CCEnvs.Unity
                                                            Type targetType,
                                                            out object[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInChildren(targetType,
                                                                     out results);
         }
@@ -190,12 +242,16 @@ namespace CCEnvs.Unity
                                                               bool includeInactive,
                                                               out T[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInChildren(includeInactive,
                                                                     out results);
         }
         public static bool TryGetAssignedObjectsInChildren<T>(this Component value,
                                                               out T[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInChildren(out results);
         }
 
@@ -204,6 +260,8 @@ namespace CCEnvs.Unity
                                                          bool includeInactive,
                                                          out object[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInParent(targetType,
                                                                   includeInactive,
                                                                   out results);
@@ -212,6 +270,8 @@ namespace CCEnvs.Unity
                                                          Type targetType,
                                                          out object[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInParent(targetType,
                                                                   out results);
         }
@@ -220,12 +280,16 @@ namespace CCEnvs.Unity
                                                             bool includeInactive,
                                                             out T[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInParent(includeInactive,
                                                                   out results);
         }
         public static bool TryGetAssignedObjectsInParent<T>(this Component value,
                                                             out T[] results)
         {
+            CC.Guard.NullArgument(value, nameof(value));
+
             return value.gameObject.TryGetAssignedObjectsInParent(out results);
         }
     }

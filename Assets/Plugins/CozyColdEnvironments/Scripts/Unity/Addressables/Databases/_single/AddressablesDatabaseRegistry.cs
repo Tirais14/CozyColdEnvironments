@@ -123,10 +123,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
 
-            var result = Values.ZL()
-                               .FirstOrDefault(db => db.AssetType == assetType)
-                               .Either(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
-                               .Resolve<IAddressablesDatabase>();
+            var values = Values.ZL();
+            var result = values.FirstOrDefault(db => db.AssetType == assetType)
+                         ??
+                         values.FirstOrDefault(db => db.AssetType.IsType(assetType));
 
             if (throwIfNotFound && result is null)
                 throw new DatabaseNotFoundException(assetType);
@@ -139,10 +139,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
 
-            var result = Values.ZL()
-                               .FirstOrDefault(db => db.AssetType == assetType && db.ID == dbID)
-                               .Either(Values.ZL().FirstOrDefault(db => db.AssetType.IsType(assetType)))
-                               .Resolve<IAddressablesDatabase>();
+            var values = Values.ZL();
+            var result = values.FirstOrDefault(db => db.AssetType == assetType && db.ID == dbID)
+                         ??
+                         values.FirstOrDefault(db => db.AssetType.IsType(assetType) && db.ID == dbID);
 
             if (throwIfNotFound && result is null)
                 throw new DatabaseNotFoundException(assetType);

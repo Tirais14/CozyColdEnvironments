@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using System;
 using UniRx;
@@ -5,13 +6,12 @@ using UniRx;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public class Showable : CCBehaviour, IShowable, IDisposable
+    public class Showable : CCBehaviour, IShowable
     {
         protected readonly ReactiveProperty<bool> isVisible = new();
 
         private Subject<Unit>? hideSubj;
         private Subject<Unit>? showSubj;
-        private bool disposed;
 
         public event Action? OnShow;
         public event Action? OnHide;
@@ -40,9 +40,23 @@ namespace CCEnvs.Unity.UI
                 Hide();
         }
 
+        protected virtual void OnDestroy()
+        {
+            showSubj?.Dispose();
+            hideSubj?.Dispose();
+        }
+
         public virtual void Hide()
         {
-            OnHide?.Invoke();
+            try
+            {
+                OnHide?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
+
             hideSubj?.OnNext(Unit.Default);
             gameObject.SetActive(false);
         }
@@ -51,7 +65,15 @@ namespace CCEnvs.Unity.UI
         {
             gameObject.SetActive(true);
             showSubj?.OnNext(Unit.Default);
-            OnShow?.Invoke();
+
+            try
+            {
+                OnShow?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
         }
 
         public bool SwitchVisibleState()
@@ -71,19 +93,6 @@ namespace CCEnvs.Unity.UI
         {
             hideSubj ??= new Subject<Unit>();
             return hideSubj;
-        }
-
-        public void Dispose() => Dispose(disposing: true);
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-                return;
-
-            showSubj?.Dispose();
-            hideSubj?.Dispose();
-
-            disposed = true;
         }
     }
 }
