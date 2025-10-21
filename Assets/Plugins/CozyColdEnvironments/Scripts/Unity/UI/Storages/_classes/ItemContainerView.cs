@@ -7,8 +7,6 @@ using CCEnvs.Unity.InputSystem.Rx;
 using CCEnvs.Unity.UI.MVVM;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UniRx;
