@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.Dependencies
+namespace CCEnvs.Dependencies
 {
     public static class DependencyContainer
     {
@@ -36,5 +36,13 @@ namespace CCEnvs.Unity.Dependencies
         {
             return HasBinding(typeof(T), id);
         }
+
+#if UNITY_2017_1_OR_NEWER
+        [UnityEditor.InitializeOnEnterPlayMode]
+        private static void ClearOnPlayMode()
+        {
+            bindings.Clear();
+        }
+#endif
     }
 }

@@ -7,18 +7,16 @@ namespace CCEnvs.Unity.UI.MVVM
 
         object GetModel();
     }
-    public interface IView<out T> : IView
-        where T : IViewModel
-    {
-        new T GetViewModel();
-
-        IViewModel IView.GetViewModel() => GetViewModel();
-    }
-    public interface IView<out TViewModel, out TModel> : IView
-    where TViewModel : IViewModel
+    public interface IView<out TViewModel> : IView
+        where TViewModel : IViewModel
     {
         new TViewModel GetViewModel();
 
+        IViewModel IView.GetViewModel() => GetViewModel();
+    }
+    public interface IView<out TViewModel, out TModel> : IView<TViewModel>
+    where TViewModel : IViewModel
+    {
         new TModel GetModel();
 
         IViewModel IView.GetViewModel() => GetViewModel();

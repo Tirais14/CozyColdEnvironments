@@ -1,10 +1,9 @@
+using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CCEnvs.Conversations;
-using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs
@@ -34,7 +33,7 @@ namespace CCEnvs
 
             try
             {
-                return source.TransformType<TOutput>();
+                return source.MutateType<TOutput>();
             }
             catch (Exception ex)
             {
@@ -51,7 +50,7 @@ namespace CCEnvs
 
             try
             {
-                return source.TransformType<TOutput>();
+                return source.MutateType<TOutput>();
             }
             catch (Exception ex)
             {
@@ -326,15 +325,15 @@ namespace CCEnvs.Conversations
     public static class ObjectExtensions
     {
         /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>
-        public static object TransformType(this object obj, Type conversionType)
+        public static object MutateType(this object obj, Type conversionType)
         {
             return TypeMutator.MutateType(obj, conversionType);
         }
 
         /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>
-        public static T TransformType<T>(this object obj)
+        public static T MutateType<T>(this object obj)
         {
-            return obj.TransformType<T>();
+            return obj.MutateType<T>();
         }
     }
 }

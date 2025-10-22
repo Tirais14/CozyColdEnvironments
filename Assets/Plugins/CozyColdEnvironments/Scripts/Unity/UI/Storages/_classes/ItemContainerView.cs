@@ -1,3 +1,4 @@
+using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Language;
@@ -45,6 +46,8 @@ namespace CCEnvs.Unity.UI.Storages
 
         [field: SerializeField, GetByChildren]
         protected Ghost<TextMeshProUGUI> textMesh { get; private set; } = null!;
+
+        protected override bool ShowOnStart => true;
 
         int IDragAndDropToggle.BindingCount => dragAndDropToggle.BindingCount;
 

@@ -3,6 +3,7 @@ using CCEnvs.Language;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI;
+using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
 using CCEnvs.Unity.UI.Storages;
 using System;
@@ -19,14 +20,14 @@ namespace CCEnvs.Unity
         where TViewModel : ViewModel<TInventory>
         where TInventory : IInventory
     {
-        private Subject<Ghost<IItemContainer?>>? selectionSubj;
+        private Subject<Ghost<IItemContainer>>? selectionSubj;
 
-        public event Action<Ghost<IItemContainer?>>? OnSelectionChanged;
+        public event Action<Ghost<IItemContainer>>? OnSelectionChanged;
 
         [field: GetByChildren]
-        public ItemContainerViewList SlotList { get; private set; } = null!;
+        public GameObjectBag SlotBag { get; private set; } = null!;
 
-        public Ghost<IItemContainer?> SelectionValue { get; private set; }
+        public Ghost<IItemContainer> SelectionValue { get; private set; }
         public int SelectionKey { get; private set; }
 
         protected override void Awake()
@@ -34,7 +35,7 @@ namespace CCEnvs.Unity
             base.Awake();
 
             GetModel().ObserveAdd()
-                      .Subscribe(ReparentItemContainerView)
+                      .Subscribe(AddToList)
                       .AddTo(this);
         }
 
@@ -45,17 +46,17 @@ namespace CCEnvs.Unity
             selectionSubj?.Dispose();
         }
 
-        private void ReparentItemContainerView((int id, IItemContainer value) pair)
+        private void AddToList((int id, IItemContainer value) pair)
         {
             pair.value.gameObject.Match(
-                x => x!.transform.SetParent(transform),
+                x => SlotBag.Add(x!),
                 () => this.PrintError($"Cannot find {nameof(IItemContainer)}.{nameof(IItemContainer.gameObject)}")
                 );
         }
 
-        public IObservable<Ghost<IItemContainer?>> ObserveSelection()
+        public IObservable<Ghost<IItemContainer>> ObserveSelection()
         {
-            selectionSubj ??= new Subject<Ghost<IItemContainer?>>();
+            selectionSubj ??= new Subject<Ghost<IItemContainer>>();
 
             return selectionSubj;
         }

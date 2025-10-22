@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using CCEnvs.Unity.Components;
+using CCEnvs.Language;
+using CCEnvs.Conversations;
 
 #nullable enable
 
@@ -102,7 +104,12 @@ namespace CCEnvs.Unity.Injections
 
         private static bool IsTypeValid(Type type)
         {
-            if (!type.IsInterface && type.IsNotType<Component>())
+            if (!type.IsInterface
+                &&
+                type.IsNotType<Component>()
+                &&
+                type.IsNotType(typeof(IGhost))
+                )
                 return false;
 
             return true;
@@ -127,8 +134,7 @@ namespace CCEnvs.Unity.Injections
 
             object? foundComponent = getter(source, field.FieldType, attribute);
 
-            if (foundComponent.IsNull())
-                throw new GameObjectNotFoundException(field.FieldType);
+            ComponentNotFoundException.ThrowIfNull(foundComponent, field.FieldType);
 
             field.SetValue(source, foundComponent);
         }

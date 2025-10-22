@@ -16,15 +16,15 @@ namespace CCEnvs.Unity.Diagnostics
                   .AddIfNotDefault(() => componentType!.GetFullName(), componentType)
                   .Continue()
                   .Add("not found...")
-                  .AddIfNotDefault($"in {nameof(GameObject)}: {context!.name}", context)
+                  .AddIfNotDefault(() => $"in {nameof(GameObject)}: {context!.name}", context)
                   .ToString(),
                   innerException)
         {
         }
 
-        public static void ThrowIfNull(Component? obj,
-                                       Type? componentType,
-                                       GameObject? context)
+        public static void ThrowIfNull(object? obj,
+                                       Type? componentType = null,
+                                       GameObject? context = null)
         {
             if (obj.IsDefault())
                 throw new ComponentNotFoundException(componentType, context);

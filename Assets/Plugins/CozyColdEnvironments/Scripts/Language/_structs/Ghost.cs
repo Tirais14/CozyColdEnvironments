@@ -13,7 +13,7 @@ namespace CCEnvs.Language
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        struct Ghost<T> : IEnumerable<T>, IEquatable<Ghost<T>>
+        struct Ghost<T> : IEnumerable<T>, IEquatable<Ghost<T>>, IGhost<T>
     {
         public static Ghost<T> None => new();
 
@@ -59,6 +59,15 @@ namespace CCEnvs.Language
                 action(value);
 
             return this;
+        }
+        public readonly Ghost<TOut> IfSome<TOut>(Func<T, TOut> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            if (IsSome)
+                return action(value);
+
+            return Ghost<TOut>.None;
         }
 
         public readonly Ghost<T> IfNone(Action action)

@@ -1,6 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Linq;
+using CCEnvs.UI.MVVM;
 using CCEnvs.Unity.Extensions;
 using System;
 using System.Collections.Generic;
@@ -88,10 +89,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
             {
                 inner.Add(nextSlotID, itemContainer);
 
-                int pointer = nextSlotID + 1;
-                var fuse = new LoopFuse(() => inner.ContainsKey(pointer));
-                while (fuse)
-                    nextSlotID++;
+                Do.While(() => inner.ContainsKey(nextSlotID), () => nextSlotID++);
 
                 addSubj?.OnNext((nextSlotID, itemContainer));
                 OnAdd?.Invoke((nextSlotID, itemContainer));
@@ -104,7 +102,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public void Add(GameObject toInstantiate)
         {
             UnityEngine.Object.Instantiate(toInstantiate)
-                              .GetAssignedObject<IItemContainer>()
+                              .GetAssignedModel<IItemContainer>()
                               .AsGhost()
                               .IfSome(Add!);
         }

@@ -71,6 +71,9 @@ namespace CCEnvs.Conversations
                              select method)
                              .FirstOrDefault();
 
+                    if (found is null)
+                        return false;
+
                     result = found.Invoke(null!, Range.From(target));
                 }
                 else
@@ -148,9 +151,18 @@ namespace CCEnvs.Conversations
             Type toType,
             [NotNullWhen(true)] out MethodInfo? result)
         {
-            result = ofType.GetOverloadedCastOperator(toType);
+            try
+            {
+                result = ofType.GetOverloadedCastOperator(toType);
 
-            return result is not null;
+                return result is not null;
+            }
+            catch (Exception)
+            {
+                result = null;
+
+                return false;
+            }
         }
     }
 }
