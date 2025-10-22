@@ -89,7 +89,7 @@ namespace CCEnvs.Json.Converters
                 if (deserialized is null)
                     return null;
 
-                return TypeTransformer.DoTransform(deserialized, typeof(T));
+                return TypeMutator.MutateType(deserialized, typeof(T));
             }
             finally
             {

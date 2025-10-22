@@ -12,10 +12,10 @@ namespace CCEnvs.Unity.UI
     [RequireComponent(typeof(GraphicRaycaster))]
     public class CanvasController : CCBehaviour, ICanvasController
     {
-        [GetBySelf]
+        [field: GetBySelf]
         public GraphicRaycaster graphicRaycaster { get; private set; } = null!;
 
-        [GetBySelf]
+        [field: GetBySelf]
         public ICanvasRaycaster CanvasRaycaster { get; private set; } = null!;
 
         public InputActionRx<Vector2> PointerInput { get; private set; } = null!;

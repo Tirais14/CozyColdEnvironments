@@ -181,7 +181,7 @@ namespace CCEnvs.Linq
             CC.Guard.NullArgument(value, nameof(value));
 
             foreach (var item in value)
-                yield return (TResult)TypeTransformer.DoTransform(item, typeof(TResult));
+                yield return (TResult)TypeMutator.MutateType(item, typeof(TResult));
         }
 
         ///// <summary>

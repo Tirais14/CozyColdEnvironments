@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Injections
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponentInChildren"/>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class GetByChildrenAttribute : GetComponentAttribute
     {
         public string? GameObejctName { get; }

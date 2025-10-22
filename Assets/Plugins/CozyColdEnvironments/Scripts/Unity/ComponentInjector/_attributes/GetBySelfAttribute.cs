@@ -6,9 +6,7 @@ namespace CCEnvs.Unity.Injections
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponent"/>. Calls in <see cref="CCBehaviour.Awake"/>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field
-                    |
-                    AttributeTargets.Property,
+    [AttributeUsage(AttributeTargets.Field,
         Inherited = true,
         AllowMultiple = false
         )]

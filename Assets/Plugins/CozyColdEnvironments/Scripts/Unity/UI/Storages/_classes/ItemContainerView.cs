@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
+using CCEnvs.Language;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
@@ -7,6 +8,7 @@ using CCEnvs.Unity.InputSystem.Rx;
 using CCEnvs.Unity.UI.MVVM;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using System;
 using System.Linq;
 using TMPro;
 using UniRx;
@@ -36,22 +38,25 @@ namespace CCEnvs.Unity.UI.Storages
         private InputActionRx<Vector2>? pointerInput;
         private Component? dragItem;
 
-        [GetByParent]
-        protected ICanvasController canvasController { get; private set; } = null!;
+        protected LazyCC<ICanvasController> canvasController { get; private set; } = null!;
 
-        [GetBySelf]
+        [field: GetBySelf]
         protected Image image { get; private set; } = null!;
 
-        [GetByChildren]
-        [field: SerializeField]
-        protected TextMeshProUGUI textMesh { get; private set; } = null!;
+        [field: SerializeField, GetByChildren]
+        protected Ghost<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
         int IDragAndDropToggle.BindingCount => dragAndDropToggle.BindingCount;
 
         protected override void Awake()
         {
             base.Awake();
-            
+
+            canvasController = new LazyCC<ICanvasController>(
+                () => this.GetAssignedObjectInParent<ICanvasController>()
+                .ValidateGetOperation()
+                );
+
             pointerInput = new LazyCC<InputActionRx<Vector2>>(
                 DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput));
 
@@ -70,9 +75,12 @@ namespace CCEnvs.Unity.UI.Storages
             viewModel.ItemIconView.Subscribe(x => image.sprite = x)
                                   .AddTo(this);
 
-            viewModel.ItemCountView.Select(x => x.ToString())
-                                   .Subscribe(x => textMesh.text = x)
-                                   .AddTo(this);
+            textMesh.IfSome((x) =>
+            {
+                viewModel.ItemCountView.Select(y => y.ToString())
+                                       .Subscribe(y => x.text = y)
+                                       .AddTo(this);
+            });
         }
 
         protected virtual void OnBegindDrag()
@@ -107,7 +115,7 @@ namespace CCEnvs.Unity.UI.Storages
         {
             Guard.IsNotNull(eventData, nameof(eventData));
 
-            foreach (var handler in canvasController!.CanvasRaycaster
+            foreach (var handler in canvasController.Value.CanvasRaycaster
                                  .RaycastAll(pointerInput!.Value, this)
                                  .ZL()
                                  .OfType<IView>()

@@ -54,10 +54,10 @@ namespace CCEnvs.Unity
                 return Array.Empty<Transform>();
 
             if (includeFirst)
-                return Collector.Collect(value, (x) => x.GetChilds())
+                return Do.Collect(value, (x) => x.GetChilds())
                              .ToArray();
 
-            return Collector.Collect(value.GetChild(0), (x) => x.GetChilds())
+            return Do.Collect(value.GetChild(0), (x) => x.GetChilds())
                              .ToArray();
         }
 

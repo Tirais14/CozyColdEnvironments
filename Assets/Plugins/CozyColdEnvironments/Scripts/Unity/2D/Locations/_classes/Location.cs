@@ -21,7 +21,7 @@ namespace CCEnvs.U2D.Locations
 
         private MapInt<T> cells;
 
-        [GetBySelf]
+        [field: GetBySelf]
         public Tilemap Map {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

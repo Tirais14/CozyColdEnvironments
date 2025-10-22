@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace CCEnvs.Conversations
 {
-    public static class TypeTransformer
+    public static class TypeMutator
     {
         /// <summary>
         /// Tries to convert type by <see cref="IMutable"/>,
@@ -19,7 +19,7 @@ namespace CCEnvs.Conversations
         /// and returns specified type, <see cref="Convert"/> or throws exception
         /// </summary>
         /// <exception cref="InvalidCastException"></exception>
-        public static object DoTransform(object target, Type toType)
+        public static object MutateType(object target, Type toType)
         {
             CC.Guard.NullArgument(target, nameof(target));
             CC.Guard.NullArgument(toType, nameof(toType));
@@ -137,11 +137,11 @@ namespace CCEnvs.Conversations
                 }
             }
         }
-        /// <inheritdoc cref="DoTransform(object, Type)"/>
+        /// <inheritdoc cref="MutateType(object, Type)"/>
         [DebuggerStepThrough]
-        public static T DoTransform<T>(object target)
+        public static T MutateType<T>(object target)
         {
-            return (T)DoTransform(target, typeof(T));
+            return (T)MutateType(target, typeof(T));
         }
 
         private static bool TryGetCastOperator(Type ofType,

@@ -325,13 +325,13 @@ namespace CCEnvs.Conversations
 {
     public static class ObjectExtensions
     {
-        /// <inheritdoc cref="TypeTransformer.DoTransform(object, Type)"/>
+        /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>
         public static object TransformType(this object obj, Type conversionType)
         {
-            return TypeTransformer.DoTransform(obj, conversionType);
+            return TypeMutator.MutateType(obj, conversionType);
         }
 
-        /// <inheritdoc cref="TypeTransformer.DoTransform(object, Type)"/>
+        /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>
         public static T TransformType<T>(this object obj)
         {
             return obj.TransformType<T>();

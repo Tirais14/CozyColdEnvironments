@@ -1,4 +1,5 @@
 using CCEnvs.Unity.UI.MVVM;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -7,6 +8,12 @@ namespace CCEnvs.Unity.UI
         where T : IInventory
     {
         public InventoryViewModel(T model) : base(model)
+        {
+        }
+
+        public InventoryViewModel(T model, GameObject gameObject) 
+            :
+            base(model, gameObject)
         {
         }
     }

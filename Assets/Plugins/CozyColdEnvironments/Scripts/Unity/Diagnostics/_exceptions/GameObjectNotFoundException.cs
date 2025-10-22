@@ -14,6 +14,7 @@ namespace CCEnvs.Unity.Diagnostics
             :
             base(Sentence.Empty.Add($"{nameof(GameObject)}...")
                 .AddIfNotDefault(key)
+                .Continue()
                 .Add("not found")
                 .ToString(),
                 innerException)

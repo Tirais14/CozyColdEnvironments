@@ -98,7 +98,7 @@ namespace CCEnvs.Reflection
             //if (type.IsInterface)
             //    return GetInterfaceInheritancePath(type);
 
-            return Collector.Collect(type, x => x.BaseType);
+            return Do.Collect(type, x => x.BaseType);
         }
 
         [Obsolete("In developing")]
@@ -118,7 +118,7 @@ namespace CCEnvs.Reflection
             //graph.AddVertex(type);
 
             //Get all interfaces and binding to source type
-            Queue<(Type? source, Type target)> allIntefacePairs = Collector.Collect(
+            Queue<(Type? source, Type target)> allIntefacePairs = Do.Collect(
                 (source: (Type?)null, target: type), pair =>
             {
                 return pair.target.GetInterfaces()

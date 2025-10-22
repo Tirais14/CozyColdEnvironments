@@ -7,6 +7,7 @@ using CCEnvs.Unity.UI.MVVM;
 using CCEnvs.Unity.UI.Storages;
 using System;
 using UniRx;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -22,7 +23,7 @@ namespace CCEnvs.Unity
 
         public event Action<Ghost<IItemContainer?>>? OnSelectionChanged;
 
-        [GetByChildren]
+        [field: GetByChildren]
         public ItemContainerViewList SlotList { get; private set; } = null!;
 
         public Ghost<IItemContainer?> SelectionValue { get; private set; }
@@ -32,11 +33,8 @@ namespace CCEnvs.Unity
         {
             base.Awake();
 
-            //Reparent ItemContainerView
             GetModel().ObserveAdd()
-                      .Subscribe(x => x.value.gameObject.Match(
-                x => x!.transform.SetParent(transform),
-                () => this.PrintError($"Cannot find {nameof(IItemContainer)}.{nameof(IItemContainer.gameObject)}")))
+                      .Subscribe(ReparentItemContainerView)
                       .AddTo(this);
         }
 
@@ -45,6 +43,14 @@ namespace CCEnvs.Unity
             base.OnDestroy();
 
             selectionSubj?.Dispose();
+        }
+
+        private void ReparentItemContainerView((int id, IItemContainer value) pair)
+        {
+            pair.value.gameObject.Match(
+                x => x!.transform.SetParent(transform),
+                () => this.PrintError($"Cannot find {nameof(IItemContainer)}.{nameof(IItemContainer.gameObject)}")
+                );
         }
 
         public IObservable<Ghost<IItemContainer?>> ObserveSelection()

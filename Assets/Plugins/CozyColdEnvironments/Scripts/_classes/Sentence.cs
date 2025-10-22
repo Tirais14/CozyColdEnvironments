@@ -1,23 +1,23 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Text;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ZLinq;
 
 #nullable enable
 #pragma warning disable S3236
 namespace CCEnvs
 {
-    public struct Sentence : IEquatable<Sentence>
+    public sealed class Sentence
     {
         public const string CONTINUATION_SIGN = "...";
+
         public static Sentence Empty => new();
 
         private readonly int capacity;
         private List<(Func<string?> valueFactory, Predicate<string?>? condition)>? parts;
+
+        public int Count => parts?.Count ?? 0;
 
         private List<(Func<string?> valueFactory, Predicate<string?>? condition)> Parts {
             get
@@ -29,21 +29,13 @@ namespace CCEnvs
             }
         }
 
+        public Sentence()
+        {
+        }
+
         public Sentence(int capacity)
-            : 
-            this()
         {
             this.capacity = capacity;
-        }
-
-        public static bool operator ==(Sentence left, Sentence right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Sentence left, Sentence right)
-        {
-            return !(left == right);
         }
 
         private static string PartToString<T>(T? part)
@@ -54,7 +46,6 @@ namespace CCEnvs
         public Sentence Add(Func<string?> partFactory, Predicate<string?>? condition = null)
         {
             Guard.IsNotNull(partFactory, nameof(partFactory));
-            Guard.IsNotNull(condition, nameof(condition));
 
             Parts.Add((partFactory, condition));
 
@@ -97,7 +88,19 @@ namespace CCEnvs
             return this;
         }
 
-        public readonly Sentence RemoveAt(int index)
+        public Sentence Continue()
+        {
+            if (parts.IsNullOrEmpty())
+                return this;
+
+            var (valueFactory, condition) = parts[^1];
+
+            parts[^1] = (() => valueFactory() + CONTINUATION_SIGN, condition);
+
+            return this;
+        }
+
+        public Sentence RemoveAt(int index)
         {
             if (parts.IsNullOrEmpty() || index >= parts.Count)
                 return this;
@@ -107,17 +110,17 @@ namespace CCEnvs
             return this;
         }
 
-        public readonly Sentence RemoveLast()
+        public Sentence RemoveLast()
         {
             return RemoveAt((parts?.Count ?? 0) - 1);
         }
 
-        public readonly Sentence RemoveFirst()
+        public Sentence RemoveFirst()
         {
             return RemoveAt(0);
         }
 
-        public readonly Sentence Clear()
+        public Sentence Clear()
         {
             if (parts.IsNullOrEmpty())
                 return this;
@@ -127,21 +130,7 @@ namespace CCEnvs
             return this;
         }
 
-        public readonly bool Equals(Sentence other)
-        {
-            return parts == other.parts;
-        }
-        public readonly override bool Equals(object obj)
-        {
-            return obj is Sentence typed && Equals(typed);
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(parts);
-        }
-
-        public readonly override string ToString()
+        public override string ToString()
         {
             if (parts.IsNullOrEmpty())
                 return string.Empty;
@@ -154,30 +143,34 @@ namespace CCEnvs
             foreach (var (valueFactory, condition) in parts)
             {
                 value = valueFactory();
-                i++;
+                isLast = i == parts.Count - 1;
 
                 try
                 {
-                    if ((condition?.Invoke(value) ?? true) && value.IsNotNullOrEmpty())
+                    if ((condition?.Invoke(value) ?? true) && value.IsNotNullOrWhiteSpace())
                     {
-                        isContinuation = value.EndsWith(CONTINUATION_SIGN);
-                        isLast = i == parts.Count - 1;
-
-                        sb.Append(value);
-
-                        if (isLast)
+                        if (value == CONTINUATION_SIGN)
                         {
-                            if (isContinuation)
-                                sb.Append(value.ZL().Take(value.Length - CONTINUATION_SIGN.Length));
-
-                            sb.Append('.');
+                            if (isLast)
+                                sb.Append('.');
+                            else
+                                sb.Append(' ');
                         }
                         else
                         {
-                            if (isContinuation)
-                                sb.Append(value.ZL().Take(value.Length - CONTINUATION_SIGN.Length));
 
-                            sb.Append(". ");
+                            isContinuation = value.EndsWith(CONTINUATION_SIGN);
+
+                            if (isContinuation)
+                            {
+                                sb.Append(value.Delete(CONTINUATION_SIGN));
+                                sb.Append(' ');
+                            }
+                            else
+                            {
+                                sb.Append(value);
+                                sb.Append(". ");
+                            }
                         }
                     }
                 }
@@ -185,6 +178,8 @@ namespace CCEnvs
                 {
                     this.PrintException(ex);
                 }
+
+                i++;
             }
 
             return sb.ToString();

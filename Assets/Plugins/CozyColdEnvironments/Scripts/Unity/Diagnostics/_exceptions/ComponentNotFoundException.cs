@@ -9,11 +9,12 @@ namespace CCEnvs.Unity.Diagnostics
 {
     public class ComponentNotFoundException : CCException
     {
-        public ComponentNotFoundException(Type? componentType,
-                                          GameObject? context,
+        public ComponentNotFoundException(Type? componentType = null,
+                                          GameObject? context = null,
                                           Exception? innerException = null)
             : base(Sentence.Empty.Add("Component...")
                   .AddIfNotDefault(() => componentType!.GetFullName(), componentType)
+                  .Continue()
                   .Add("not found...")
                   .AddIfNotDefault($"in {nameof(GameObject)}: {context!.name}", context)
                   .ToString(),

@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.AddrsAssets.Databases;
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets
@@ -20,7 +19,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public DatabaseNotFoundException(AssetDatabaseKey key, Exception? innerException = null)
             :
-            this(key.AssetType, key.DatabaseID, innerException)
+            this(key.AssetType.Value(), key.DatabaseID, innerException)
         {
         }
     }

@@ -21,5 +21,11 @@ namespace CCEnvs.Unity.UI.Storages
         public ItemContainerViewModel(T model) : base(model)
         {
         }
+
+        public ItemContainerViewModel(T model, GameObject gameObject)
+            :
+            base(model, gameObject)
+        {
+        }
     }
 }

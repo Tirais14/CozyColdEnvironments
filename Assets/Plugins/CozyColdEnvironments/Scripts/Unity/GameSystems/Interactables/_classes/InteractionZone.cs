@@ -33,8 +33,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
         private int defaultLayer;
         private bool is2DCollider;
 
-        [GetBySelf]
-        [field: SerializeField]
+        [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
 
         protected TAgent Agent => agent;

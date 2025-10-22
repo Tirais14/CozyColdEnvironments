@@ -14,10 +14,10 @@ namespace CCEnvs.Unity._2D
         [SerializeField]
         protected float moveSpeed;
 
-        [GetBySelf]
+        [field: GetBySelf]
         protected Rigidbody2D rb { get; private set; } = null!;
 
-        [GetBySelf]
+        [field: GetBySelf]
         protected Collider2D col { get; private set; } = null!;
 
         public virtual float MoveSpeed {

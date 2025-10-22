@@ -22,11 +22,10 @@ namespace CCEnvs.Unity._3D
         private float jumpForce = 12f;
         private RaycastHit surfaceHit;
 
-        [GetBySelf]
+        [field: GetBySelf]
         protected Rigidbody rigidBody { get; private set; } = null!;
 
-        [GetByChildren]
-        [field: SerializeField]
+        [field: SerializeField, GetByChildren]
         protected Camera characterCamera { get; private set; } = null!;
 
         protected Transform characterCameraTransform { get; private set; } = null!;

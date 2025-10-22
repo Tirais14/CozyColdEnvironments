@@ -25,17 +25,10 @@ namespace CCEnvs.Unity.Injections
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
 
-            (FieldInfo field, GetComponentAttribute attribute)[] fields =
-                GetAttributedFields(target);
+            var fields = GetAttributedFields(target);
 
             if (fields.IsNotEmpty())
                 SetFields(target, fields);
-
-            (PropertyInfo prop, GetComponentAttribute attribute)[] props =
-                GetAttributedProps(target);
-
-            if (props.IsNotEmpty())
-                SetProps(target, props);
         }
 
         private static (FieldInfo, GetComponentAttribute)[] GetAttributedFields(
@@ -47,17 +40,6 @@ namespace CCEnvs.Unity.Injections
             return fields.Where(x => x.IsDefined<GetComponentAttribute>())
                          .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>()))
                          .ToArray();
-        }
-
-        private static (PropertyInfo, GetComponentAttribute)[] GetAttributedProps(
-            Component source)
-        {
-            PropertyInfo[] props = source.GetType()
-                .ForceGetProperties(BindingFlagsDefault.InstanceAll);
-
-            return props.Where(x => x.IsDefined<GetComponentAttribute>())
-                        .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>()))
-                        .ToArray();
         }
 
         private static object? SelfGetter(Component source,
@@ -166,57 +148,6 @@ namespace CCEnvs.Unity.Injections
                         break;
                     case GetByChildrenAttribute:
                         SetField(source, fields[i].field, fields[i].attribute, ByChildrenGetter);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        /// <exception cref="GameObjectNotFoundException"></exception>
-        private static void SetProp(Component source,
-            PropertyInfo prop,
-            GetComponentAttribute attribute,
-            Func<Component, Type, GetComponentAttribute, object?> getter)
-        {
-            if (prop.GetValue(source).IsNotNull())
-                return;
-            if (!IsTypeValid(prop.PropertyType))
-            {
-                CCDebug.PrintError($"{prop.PropertyType.GetName()} is not interface and not component.", source);
-                return;
-            }
-
-            object? foundComponent;
-
-            foundComponent = getter(source, prop.PropertyType, attribute);
-
-            if (foundComponent.IsNull())
-                throw new GameObjectNotFoundException(prop.PropertyType);
-
-            prop.SetValue(source,
-                          foundComponent,
-                          BindingFlagsDefault.InstanceAll,
-                          binder: null,
-                          index: null,
-                          culture: CultureInfo.InvariantCulture);
-        }
-
-        private static void SetProps(Component source,
-            (PropertyInfo prop, GetComponentAttribute attribute)[] props)
-        {
-            for (int i = 0; i < props.Length; i++)
-            {
-                switch (props[i].attribute)
-                {
-                    case GetBySelfAttribute:
-                        SetProp(source, props[i].prop, attribute: null!, SelfGetter);
-                        break;
-                    case GetByParentAttribute:
-                        SetProp(source, props[i].prop, attribute: null!, ByParentGetter);
-                        break;
-                    case GetByChildrenAttribute:
-                        SetProp(source, props[i].prop, props[i].attribute, ByChildrenGetter);
                         break;
                     default:
                         break;

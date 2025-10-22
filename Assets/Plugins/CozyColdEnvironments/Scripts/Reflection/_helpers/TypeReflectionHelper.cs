@@ -40,7 +40,7 @@ namespace CCEnvs.Reflection
             int targetFieldCount = targetFieldValues.Length;
             for (int i = 0; i < targetFieldCount; i++)
             {
-                collected = Collector.Collect(targetFieldValues[i], (current) =>
+                collected = Do.Collect(targetFieldValues[i], (current) =>
                 {
                     if (current is null)
                         return Array.Empty<object?>();
@@ -71,7 +71,7 @@ namespace CCEnvs.Reflection
 
             for (int i = 0; i < objFieldCount; i++)
             {
-                collected = Collector.Collect(objFields[i], (current) =>
+                collected = Do.Collect(objFields[i], (current) =>
                 {
                     FieldInfo[] tempFields = current.FieldType.ForceGetFields(bindingFlags);
 

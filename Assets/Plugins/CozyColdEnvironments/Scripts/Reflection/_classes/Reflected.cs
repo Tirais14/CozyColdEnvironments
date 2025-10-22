@@ -339,7 +339,7 @@ namespace CCEnvs.Reflection
             if (Instance is null)
                 CC.Throw.InvalidCast(toType, "Cannot not convert null object.");
 
-            Instance = TypeTransformer.DoTransform(Instance, toType);
+            Instance = TypeMutator.MutateType(Instance, toType);
 
             if (Instance is null)
                 throw new MissingDataException(nameof(Instance));

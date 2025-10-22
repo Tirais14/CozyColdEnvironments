@@ -14,10 +14,10 @@ namespace CCEnvs.Unity.Components
         private Collider? m_Collider;
         private Rigidbody? m_RigidBody;
 
-        [GetBySelf]
+        [field: GetBySelf]
         public MeshRenderer meshRenderer { get; private set; } = null!;
 
-        [GetBySelf]
+        [field: GetBySelf]
         public MeshFilter meshFilter { get; private set; } = null!;
 
         public new Collider collider {

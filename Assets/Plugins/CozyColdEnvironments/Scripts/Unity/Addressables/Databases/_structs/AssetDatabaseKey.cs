@@ -1,4 +1,5 @@
 using CCEnvs;
+using CCEnvs.Language;
 using System;
 using System.Diagnostics;
 
@@ -11,7 +12,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         : IEquatable<AssetDatabaseKey>, 
         IIDMarked<UniID>
     {
-        public Type AssetType { get; }
+        public Ghost<Type> AssetType { get; }
         public UniID DatabaseID { get; }
 
         UniID IIDMarked<UniID>.ID => DatabaseID;
@@ -20,8 +21,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             :
             this()
         {
-            CC.Guard.NullArgument(dbAssetType, nameof(dbAssetType));
-
             AssetType = dbAssetType;
         }
 
@@ -61,7 +60,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public AssetDatabaseKey With(UniID id)
         {
-            return new AssetDatabaseKey(AssetType, id);
+            return new AssetDatabaseKey(AssetType.ValueUnsafe(), id);
         }
 
         public bool Equals(AssetDatabaseKey other)

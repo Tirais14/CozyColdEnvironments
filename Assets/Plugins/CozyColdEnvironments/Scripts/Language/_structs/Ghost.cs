@@ -1,3 +1,5 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
@@ -7,14 +9,23 @@ using System.Collections.Generic;
 #pragma warning disable S3236
 namespace CCEnvs.Language
 {
-    public readonly struct Ghost<T> : IEnumerable<T>, IEquatable<Ghost<T>>
+    public
+#if !UNITY_2017_1_OR_NEWER
+        readonly
+#endif
+        struct Ghost<T> : IEnumerable<T>, IEquatable<Ghost<T>>
     {
         public static Ghost<T> None => new();
 
+#if UNITY_2017_1_OR_NEWER
+        [UnityEngine.SerializeField]
+        private T value;
+#else
         private readonly T value;
+#endif
 
-        public bool IsNone => value.IsDefault();
-        public bool IsSome => !IsNone;
+        public readonly bool IsNone => value.IsDefault();
+        public readonly bool IsSome => !IsNone;
 
         public Ghost(T value)
         {
@@ -40,7 +51,7 @@ namespace CCEnvs.Language
             return !(left == right);
         }
 
-        public Ghost<T> IfSome(Action<T> action)
+        public readonly Ghost<T> IfSome(Action<T> action)
         {
             Guard.IsNotNull(action, nameof(action));
 
@@ -50,7 +61,7 @@ namespace CCEnvs.Language
             return this;
         }
 
-        public Ghost<T> IfNone(Action action)
+        public readonly Ghost<T> IfNone(Action action)
         {
             Guard.IsNotNull(action, nameof(action));
 
@@ -59,15 +70,31 @@ namespace CCEnvs.Language
 
             return this;
         }
+        public readonly T IfNone(T defaultValue)
+        {
+            if (IsNone)
+                return defaultValue;
 
-        public Ghost<TOther> Map<TOther>(Func<T, TOther> selector)
+            return value;
+        }
+        public readonly T IfNone(Func<T> defaultValueFactory)
+        {
+            Guard.IsNotNull(defaultValueFactory, nameof(defaultValueFactory));
+
+            if (IsNone)
+                return defaultValueFactory();
+
+            return value;
+        }
+
+        public readonly Ghost<TOther> Map<TOther>(Func<T, TOther> selector)
         {
             Guard.IsNotNull(selector, nameof(selector));
 
             return IsSome ? selector(value) : Ghost<TOther>.None;
         }
 
-        public Ghost<T> Match(Action<T> some, Action none)
+        public readonly Ghost<T> Match(Action<T> some, Action none)
         {
             Guard.IsNotNull(some, nameof(some));
             Guard.IsNotNull(none, nameof(none));
@@ -79,7 +106,7 @@ namespace CCEnvs.Language
 
             return this;
         }
-        public Ghost<TOther> Match<TOther>(Func<T, TOther> some, Func<TOther> none)
+        public readonly Ghost<TOther> Match<TOther>(Func<T, TOther> some, Func<TOther> none)
         {
             Guard.IsNotNull(some, nameof(some));
 
@@ -89,9 +116,18 @@ namespace CCEnvs.Language
                 return none is not null ? none() : default!;
         }
 
-        public T ValueUnsafe() => value;
+        public readonly T Value() => IfNone(default(T)!);
 
-        public IEnumerator<T> GetEnumerator()
+        /// <exception cref="CCException"></exception>
+        public readonly T ValueUnsafe()
+        {
+            if (IsNone)
+                throw new CCException($"{GetType().GetName()} is none.");
+
+            return value;
+        }
+
+        public readonly IEnumerator<T> GetEnumerator()
         {
             if (IsNone)
                 yield break;
@@ -99,17 +135,17 @@ namespace CCEnvs.Language
             yield return value;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public bool Equals(Ghost<T> other)
+        public readonly bool Equals(Ghost<T> other)
         {
             return EqualityComparer<T>.Default.Equals(value, other.value);
         }
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is Ghost<T> typed && Equals(typed);
         }
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(value);
         }

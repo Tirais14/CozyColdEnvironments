@@ -1,12 +1,18 @@
+#nullable enable
+using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 
-#nullable enable
 namespace CCEnvs
 {
-    public static class Collector
+    public static class Do
     {
         public delegate T?[] MoveNext<T>(T current, LoopState loopState);
+
+        public static void Nothing()
+        {
+        }
 
         /// <summary>
         /// Same as the recursion loop, but use heap memory
@@ -79,6 +85,73 @@ namespace CCEnvs
                 throw new ArgumentNullException(nameof(moveNext));
 
             return Collect(first, (x, _) => new T?[] { moveNext(x) });
+        }
+
+        public static void While(
+            Func<bool> predicate,
+            Action? action,
+            ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
+            bool throwOnLimit = true)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (action is null)
+                return;
+
+            var loopFuse = new LoopFuse(predicate)
+            {
+                IterationsLimit = iterationsLimit
+            };
+            if (!throwOnLimit)
+            {
+                try
+                {
+                    while (loopFuse)
+                        action();
+                }
+                catch (EndlessLoopException ex)
+                {
+                    typeof(Do).PrintException(ex);
+                }
+            }
+            else
+                while (loopFuse)
+                    action();
+        }
+
+        public static T[] While<T>(
+            Func<bool> predicate,
+            Func<T>? action,
+            ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
+            bool throwOnLimit = true)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (action is null)
+                return Array.Empty<T>();
+
+            var results = new List<T>();
+            var loopFuse = new LoopFuse(predicate)
+            {
+                IterationsLimit = iterationsLimit
+            };
+            if (!throwOnLimit)
+            {
+                try
+                {
+                    while (loopFuse)
+                        results.Add(action());
+                }
+                catch (EndlessLoopException ex)
+                {
+                    typeof(Do).PrintException(ex);
+                }
+            }
+            else
+                while (loopFuse)
+                    results.Add(action());
+
+            return results.ToArray();
         }
     }
 }
