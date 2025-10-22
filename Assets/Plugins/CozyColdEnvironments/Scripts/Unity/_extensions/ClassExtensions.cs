@@ -8,16 +8,20 @@ namespace CCEnvs.Unity
 {
     public static class ClassExtensions
     {
-        public static T ThrowIfNotFound<T>(this T? obj)
-            where T : Object
+        public static T ValidateFindOperation<T>(this T? obj,
+            GameObject? context = null)
+            where T : Component
         {
             if (obj == null)
-            {
-                if (typeof(T).IsType<Component>())
-                    throw new ComponentNotFoundException(typeof(T));
-                else
-                    throw new ObjectNotFoundException(typeof(T));
-            }
+                throw new ComponentNotFoundException(typeof(T), context);
+
+            return obj;
+        }
+        public static GameObject ValidateFindOperation(this GameObject? obj,
+            object? key = null)
+        {
+            if (obj == null)
+                throw new GameObjectNotFoundException(key);
 
             return obj;
         }

@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
 using System;
 using UnityEngine;
 
@@ -8,18 +9,24 @@ namespace CCEnvs.Unity.Diagnostics
 {
     public class ComponentNotFoundException : CCException
     {
-        public ComponentNotFoundException()
+        public ComponentNotFoundException(Type? componentType,
+                                          GameObject? context,
+                                          Exception? innerException = null)
+            : base(Sentence.Empty.Add("Component...")
+                  .AddIfNotDefault(() => componentType!.GetFullName(), componentType)
+                  .Add("not found...")
+                  .AddIfNotDefault($"in {nameof(GameObject)}: {context!.name}", context)
+                  .ToString(),
+                  innerException)
         {
         }
 
-        public ComponentNotFoundException(Type componentType)
-            : base($"Component {componentType.Name} not found.")
+        public static void ThrowIfNull(Component? obj,
+                                       Type? componentType,
+                                       GameObject? context)
         {
-        }
-
-        public ComponentNotFoundException(Type componentType, GameObject context)
-            : base($"Component {componentType.Name} not found in game object: {context.name}.")
-        {
+            if (obj.IsDefault())
+                throw new ComponentNotFoundException(componentType, context);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.Components
             Body = GetComponentInChildren<GameModelBody>();
 
             if (Body == null)
-                throw new ObjectNotFoundException(typeof(GameModelBody));
+                throw new GameObjectNotFoundException(typeof(GameModelBody));
 
             if (Anchor == null)
                 Anchor = transform;

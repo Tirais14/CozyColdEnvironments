@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.UI
                 EventSys = EventSystem.current;
 
             if (EventSys == null)
-                throw new ObjectNotFoundException(typeof(EventSystem));
+                throw new GameObjectNotFoundException(typeof(EventSystem));
 
             pointerEventData = new PointerEventData(EventSys);
         }

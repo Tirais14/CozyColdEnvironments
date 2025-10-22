@@ -89,7 +89,7 @@ namespace CCEnvs.Unity.Injections
                 GameObject? go = source.gameObject.Find(attribute.GameObejctName!);
 
                 if (go.IsNull())
-                    throw new ObjectNotFoundException(typeof(GameObject));
+                    throw new GameObjectNotFoundException(typeof(GameObject));
 
                 return go.GetComponent(getType);
             }
@@ -98,7 +98,7 @@ namespace CCEnvs.Unity.Injections
                 GameObject? go = source.gameObject.Find(attribute.GameObejctName!);
 
                 if (go.IsNull())
-                    throw new ObjectNotFoundException(typeof(GameObject));
+                    throw new GameObjectNotFoundException(typeof(GameObject));
 
                 return go.GetAssignedObject(getType);
             }
@@ -126,7 +126,7 @@ namespace CCEnvs.Unity.Injections
             return true;
         }
 
-        /// <exception cref="ObjectNotFoundException"></exception>
+        /// <exception cref="GameObjectNotFoundException"></exception>
         private static void SetField(Component source,
             FieldInfo field,
             GetComponentAttribute attribute,
@@ -146,7 +146,7 @@ namespace CCEnvs.Unity.Injections
             object? foundComponent = getter(source, field.FieldType, attribute);
 
             if (foundComponent.IsNull())
-                throw new ObjectNotFoundException(field.FieldType);
+                throw new GameObjectNotFoundException(field.FieldType);
 
             field.SetValue(source, foundComponent);
         }
@@ -173,7 +173,7 @@ namespace CCEnvs.Unity.Injections
             }
         }
 
-        /// <exception cref="ObjectNotFoundException"></exception>
+        /// <exception cref="GameObjectNotFoundException"></exception>
         private static void SetProp(Component source,
             PropertyInfo prop,
             GetComponentAttribute attribute,
@@ -192,7 +192,7 @@ namespace CCEnvs.Unity.Injections
             foundComponent = getter(source, prop.PropertyType, attribute);
 
             if (foundComponent.IsNull())
-                throw new ObjectNotFoundException(prop.PropertyType);
+                throw new GameObjectNotFoundException(prop.PropertyType);
 
             prop.SetValue(source,
                           foundComponent,

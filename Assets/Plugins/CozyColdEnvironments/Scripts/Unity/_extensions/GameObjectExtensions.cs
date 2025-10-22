@@ -20,7 +20,7 @@ namespace CCEnvs.Unity
             var model = value.GetComponent<GameModel>();
 
             if (throwIfNotFound && model == null)
-                throw new ObjectNotFoundException(typeof(GameModel));
+                throw new GameObjectNotFoundException(typeof(GameModel));
 
             return model;
         }

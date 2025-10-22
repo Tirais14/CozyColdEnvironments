@@ -62,13 +62,13 @@ namespace CCEnvs.Unity.Extenject
             Value = factory();
         }
 
-        /// <exception cref="ObjectNotFoundException"></exception>
+        /// <exception cref="GameObjectNotFoundException"></exception>
         protected InjectionWrapping(FindAnyObjectByType findAnyObjectByType)
         {
             Value = Object.FindAnyObjectByType(typeof(T)).AsOrDefault<T>()!;
 
             if (Value.IsNull())
-                throw new ObjectNotFoundException(typeof(T));
+                throw new GameObjectNotFoundException(typeof(T));
         }
 
         protected InjectionWrapping(FindAnyObjectByType findAnyObjectByType,
@@ -77,7 +77,7 @@ namespace CCEnvs.Unity.Extenject
             var fromComponent = SceneSearch.FindObjectByType(getComponent.type, FindObjectsSortMode.None) as Component;
 
             if (fromComponent.IsNull())
-                throw new ObjectNotFoundException(getComponent.type);
+                throw new GameObjectNotFoundException(getComponent.type);
 
             if (getComponent.inParent)
                 Value = fromComponent.gameObject.GetComponentInParent<T>();
@@ -87,10 +87,10 @@ namespace CCEnvs.Unity.Extenject
                 Value = fromComponent.gameObject.GetComponent<T>();
 
             if (Value.IsNull())
-                throw new ObjectNotFoundException(typeof(T));
+                throw new GameObjectNotFoundException(typeof(T));
         }
 
-        /// <exception cref="ObjectNotFoundException"></exception>
+        /// <exception cref="GameObjectNotFoundException"></exception>
         protected InjectionWrapping(FindAnyObjectByType findAnyObjectByType,
                                     string gameObjectName)
         {
@@ -99,7 +99,7 @@ namespace CCEnvs.Unity.Extenject
             Value = go.GetComponent(typeof(T)).AsOrDefault<T>()!;
 
             if (Value.IsNull())
-                throw new ObjectNotFoundException(typeof(T));
+                throw new GameObjectNotFoundException(typeof(T));
         }
 
         public static implicit operator T(InjectionWrapping<T> wrapper)
