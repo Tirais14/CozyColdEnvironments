@@ -14,7 +14,8 @@ namespace CCEnvs.Collections
 
             return new EnumeratorEnumerable<T>(value);
         }
-        public static EnumeratorEnumerable<TEnumerator, T> AsEnumerable<TEnumerator, T>(this TEnumerator value)
+        public static EnumeratorEnumerable<TEnumerator, T> AsEnumerable<TEnumerator, T>(
+            this TEnumerator value)
             where TEnumerator : struct, IEnumerator<T>
         {
             if (value.IsNull())

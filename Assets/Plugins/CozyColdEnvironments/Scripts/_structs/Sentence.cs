@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Text;
@@ -45,52 +46,12 @@ namespace CCEnvs
             return !(left == right);
         }
 
-        private static string PartToString(object? part)
+        private static string PartToString<T>(T? part)
         {
             return part?.ToString() ?? string.Empty;
         }
 
-        public Sentence Add(object? part)
-        {
-            Parts.Add((() => PartToString(part), null));
-
-            return this;
-        }
-        public Sentence Add<T>(T part) where T : struct
-        {
-            return Add(part.ToString());
-        }
-        public Sentence Add(Func<string?> partFactory)
-        {
-            Guard.IsNotNull(partFactory, nameof(partFactory));
-
-            Parts.Add((partFactory, null));
-
-            return this;
-        }
-        public Sentence Add(object? part, bool condition)
-        {
-            Parts.Add((() => PartToString(part), _ => condition));
-
-            return this;
-        }
-        public Sentence Add<T>(T obj, bool condition) where T : struct
-        {
-            return Add(obj.ToString(), condition);
-        }
-        public Sentence Add(object? part, Predicate<string?> condition)
-        {
-            Guard.IsNotNull(condition, nameof(condition));
-
-            Parts.Add((() => PartToString(part), condition));
-
-            return this;
-        }
-        public Sentence Add<T>(T part, Predicate<string?> condition) where T : struct
-        {
-            return Add(part.ToString(), condition);
-        }
-        public Sentence Add(Func<string?> partFactory, Predicate<string?>? condition)
+        public Sentence Add(Func<string?> partFactory, Predicate<string?>? condition = null)
         {
             Guard.IsNotNull(partFactory, nameof(partFactory));
             Guard.IsNotNull(condition, nameof(condition));
@@ -99,61 +60,39 @@ namespace CCEnvs
 
             return this;
         }
-
-        public Sentence AddIfNotDefault(object? part)
+        public Sentence Add<TPart>(TPart? part, Predicate<string?>? condition = null)
         {
-            Parts.Add((() => PartToString(part), _ => part.IsNotNull()));
+            return Add(() => PartToString(part), condition);
+        }
+        public Sentence Add<TPart>(TPart? part, bool condition)
+        {
+            return Add(part, condition ? null : static _ => false);
+        }
+        public Sentence Add<TPart, TCondition>(TPart? part, TCondition? condition)
+        {
+            return Add(part, condition.IsNull() ? null : static _ => false);
+        }
+
+        public Sentence AddIfNotDefault<TCondition>(Func<string> partFactory,
+                                                    TCondition? condition)
+        {
+            Guard.IsNotNull(partFactory, nameof(partFactory));
+
+            if (condition.IsNotDefault())
+                Parts.Add((partFactory, null));
 
             return this;
         }
-        public Sentence AddIfNotDefault(object? part, object? condition)
-        {
-            Parts.Add((() => PartToString(part), _ => condition.IsNotNull()));
-
-            return this;
-        }
-        public Sentence AddIfNotDefault<T>(object? part, T? condition)
-            where T : struct
+        public Sentence AddIfNotDefault<TPart, TCondition>(TPart? part,
+                                                           TCondition? condition)
         {
             Parts.Add((() => PartToString(part), _ => condition.IsNotDefault()));
 
             return this;
         }
-        public Sentence AddIfNotDefault(Func<string> partFactory, object? condition)
+        public Sentence AddIfNotDefault<TPart>(TPart? part)
         {
-            Guard.IsNotNull(partFactory, nameof(partFactory));
-
-            Parts.Add((partFactory, _ => condition.IsNotNull()));
-
-            return this;
-        }
-        public Sentence AddIfNotDefault<T>(Func<string> partFactory, T? condition)
-            where T : struct
-        {
-            Guard.IsNotNull(partFactory, nameof(partFactory));
-
-            Parts.Add((partFactory, _ => condition.IsNotDefault()));
-
-            return this;
-        }
-        public Sentence AddIfNotDefault<T>(T part)
-            where T : struct
-        {
-            Parts.Add((() => part.ToString(), _ => part.IsNotDefault()));
-
-            return this;
-        }
-        public Sentence AddIfNotDefault<T>(T part, object? condition)
-            where T : struct
-        {
-            Parts.Add((() => part.ToString(), _ => condition.IsNotNull()));
-
-            return this;
-        }
-        public Sentence AddIfNotDefault<T, TCondition>(T part, TCondition condition)
-            where T : struct
-        {
-            Parts.Add((() => part.ToString(), _ => condition.IsNotDefault()));
+            Parts.Add((() => PartToString(part), _ => part.IsNotDefault()));
 
             return this;
         }
@@ -207,7 +146,7 @@ namespace CCEnvs
             if (parts.IsNullOrEmpty())
                 return string.Empty;
 
-            var sb = ZString.CreateStringBuilder();
+            using var sb = ZString.CreateStringBuilder();
             string? value;
             bool isContinuation;
             bool isLast;
@@ -235,8 +174,10 @@ namespace CCEnvs
                         }
                         else
                         {
-                            if (!isContinuation)
-                                sb.Append(". ");
+                            if (isContinuation)
+                                sb.Append(value.ZL().Take(value.Length - CONTINUATION_SIGN.Length));
+
+                            sb.Append(". ");
                         }
                     }
                 }
