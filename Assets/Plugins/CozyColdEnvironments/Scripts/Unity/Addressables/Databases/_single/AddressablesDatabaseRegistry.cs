@@ -181,7 +181,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public DatabaseQuery Ask()
         {
-            return askQuery.Reset().DBs(databases.Values);
+            return askQuery.Reset().In(databases.Values);
         }
     }
 }

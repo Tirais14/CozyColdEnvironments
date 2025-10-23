@@ -60,48 +60,19 @@ namespace CCEnvs.Unity.UI.MVVM
     {
         private Lazy<TViewModel> _viewModel;
 
-        protected Ghost<Image> image { get; private set; }
-        protected TModel model;
+        protected TModel model => GetModel();
         protected TViewModel viewModel => _viewModel.Value;
-        protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
-        protected Lazy<DragAndDropToggle> dragAndDropToggle { get; private set; } = null!;
-        protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
-        protected virtual Ghost<Component> dragItem => this;
-        protected virtual bool readyToDrag => false;
-        protected virtual bool readyToTakeDrop => false;
-
-        int IDragAndDropToggle.BindingCount => dragAndDropToggle.Value.BindingCount;
 
         protected override void Awake()
         {
             base.Awake();
 
-            image = GetComponent<Image>();
-
-            _viewModel = new LazyCC<TViewModel>(CreateViewModel);
-
-            canvasController = new Lazy<ICanvasController>(
-                () => this.GetAssignedObjectInParent<ICanvasController>(includeInactive: true)
-                .ValidateGetOperation()
-                );
-
-            dragAndDropToggle = new Lazy<DragAndDropToggle>(
-                () => new DragAndDropToggle(
-                    gameObject,
-                    OnBeginDrag,
-                    OnDrag,
-                    OnEndDrag,
-                    OnDrop)
-                );
-
-            pointerInput = new Lazy<InputActionRx<Vector2>>(
-                () => DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput)
-                );
+            _viewModel = new Lazy<TViewModel>(CreateViewModel);
         }
 
         public TViewModel GetViewModel()
         {
-            _viewModel ??= new LazyCC<TViewModel>(CreateViewModel);
+            _viewModel ??= new Lazy<TViewModel>(CreateViewModel);
 
             return _viewModel.Value;
         }
@@ -143,34 +114,6 @@ namespace CCEnvs.Unity.UI.MVVM
 #endif //UNITY_2017_1_OR_NEWER
         }
 
-        protected virtual void OnBeginDrag(PointerEventData eventData)
-        {
-        }
 
-        protected virtual void OnDrag(PointerEventData eventData)
-        {
-            if (!readyToDrag)
-                return;
-
-            cTransform.Value.position = pointerInput.Value.InputValue;
-        }
-
-        protected virtual void OnEndDrag(PointerEventData eventData)
-        {
-        }
-
-        protected virtual void OnDrop(PointerEventData eventData)
-        {
-        }
-
-        void IDragAndDropToggle.ActivateDragAndDropAbility()
-        {
-            dragAndDropToggle.Value.ActivateDragAndDropAbility();
-        }
-
-        void IDragAndDropToggle.DeactivateDragAndDropAbility()
-        {
-            dragAndDropToggle.Value.DeactivateDragAndDropAbility();
-        }
     }
 }

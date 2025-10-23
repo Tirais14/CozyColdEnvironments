@@ -88,19 +88,19 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return GetAsset<TPrimary>(assetType).As<TSecondary>();
         }
 
-        public DatabaseQuery DbID(UniID id)
+        public DatabaseQuery WithDatabaseID(UniID id)
         {
             dbKey = new AssetDatabaseKey(dbKey.AssetType.Value(), id);
             key = new AssetKey(key.AssetName, key.AssetID);
 
             return this;
         }
-        public DatabaseQuery DbID(int num0,
+        public DatabaseQuery WithDatabaseID(int num0,
                                             int num1,
                                             string str0,
                                             string str1)
         {
-            return DbID(new UniID
+            return WithDatabaseID(new UniID
             {
                 Num0 = num0,
                 Num1 = num1,
@@ -108,71 +108,71 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 Str1 = str1
             });
         }
-        public DatabaseQuery DbID(int num0,
+        public DatabaseQuery WithDatabaseID(int num0,
                                             int num1,
                                             string str0)
         {
-            return DbID(num0, num1, str0, string.Empty);
+            return WithDatabaseID(num0, num1, str0, string.Empty);
         }
-        public DatabaseQuery DbID(int num0, int num1)
+        public DatabaseQuery WithDatabaseID(int num0, int num1)
         {
-            return DbID(num0, num1, string.Empty, string.Empty);
+            return WithDatabaseID(num0, num1, string.Empty, string.Empty);
         }
-        public DatabaseQuery DbID(int num0)
+        public DatabaseQuery WithDatabaseID(int num0)
         {
-            return DbID(num0, default, string.Empty, string.Empty);
+            return WithDatabaseID(num0, default, string.Empty, string.Empty);
         }
-        public DatabaseQuery DbID(int num0,
+        public DatabaseQuery WithDatabaseID(int num0,
                                             string str0,
                                             string str1)
         {
-            return DbID(num0, default, str0, str1);
+            return WithDatabaseID(num0, default, str0, str1);
         }
-        public DatabaseQuery DbID(string str0,
+        public DatabaseQuery WithDatabaseID(string str0,
                                             string str1)
         {
-            return DbID(default, default, str0, str1);
+            return WithDatabaseID(default, default, str0, str1);
         }
-        public DatabaseQuery DbID(string str0)
+        public DatabaseQuery WithDatabaseID(string str0)
         {
-            return DbID(default, default, str0, string.Empty);
+            return WithDatabaseID(default, default, str0, string.Empty);
         }
 
-        public DatabaseQuery DbID(Enum value0)
+        public DatabaseQuery WithDatabaseID(Enum value0)
         {
-            return DbID(UniID.FromEnum(value0));
+            return WithDatabaseID(UniID.FromEnum(value0));
         }
-        public DatabaseQuery DbID(Enum value0, Enum value1)
+        public DatabaseQuery WithDatabaseID(Enum value0, Enum value1)
         {
-            return DbID(UniID.FromEnum(value0, value1));
+            return WithDatabaseID(UniID.FromEnum(value0, value1));
         }
 
-        public DatabaseQuery DbID<T0>(T0 value0)
+        public DatabaseQuery WithDatabaseID<T0>(T0 value0)
             where T0 : struct, Enum
         {
-            return DbID(UniID.FromEnum(value0));
+            return WithDatabaseID(UniID.FromEnum(value0));
         }
-        public DatabaseQuery DbID<T0, T1>(T0 value0, T1 value1)
+        public DatabaseQuery WithDatabaseID<T0, T1>(T0 value0, T1 value1)
              where T0 : struct, Enum
              where T1 : struct, Enum
         {
-            return DbID(UniID.FromEnum(value0, value1));
+            return WithDatabaseID(UniID.FromEnum(value0, value1));
         }
 
-        public DatabaseQuery AssetName(string? assetName)
+        public DatabaseQuery WithAssetName(string? assetName)
         {
             key = new AssetKey(assetName, key.AssetID);
 
             return this;
         }
-        public DatabaseQuery AssetID(int assetID)
+        public DatabaseQuery WithAssetID(int assetID)
         {
             key = new AssetKey(key.AssetName, assetID);
 
             return this;
         }
 
-        public DatabaseQuery DBs(IEnumerable<IAddressablesDatabase> dbs)
+        public DatabaseQuery In(IEnumerable<IAddressablesDatabase> dbs)
         {
             Guard.IsNotNull(dbs, nameof(dbs));
 

@@ -1,7 +1,10 @@
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
+#nullable enable
 namespace CCEnvs.Language
 {
     public
@@ -11,7 +14,7 @@ namespace CCEnvs.Language
         struct GhostStruct<T>
         : IEnumerable<T>,
         IEquatable<GhostStruct<T>>,
-        IConditional
+        IConditional<T>
 
         where T : struct
     {
@@ -51,7 +54,66 @@ namespace CCEnvs.Language
             return !(left == right);
         }
 
-        public readonly T? Value() => inner;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly GhostStruct<T> IfSome(Action<T> action)
+        {
+            return Lang.IfSome(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Ghost<TOut> IfNone<TOut>(Func<TOut> selector)
+        {
+            return Lang.IfNone<GhostStruct<T>, T, TOut>(this, selector).AsGhost();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly GhostStruct<T> Match(Action<T> some, Action none)
+        {
+            return Lang.Match(this, some, none);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Ghost<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        {
+            return Lang.Match(this, some, none).AsGhost();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Ghost<TOut> Map<TOut>(Func<T, TOut> selector)
+        {
+            return Lang.Map(this, selector).AsGhost();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Value() => inner.GetValueOrDefault();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Value(T defaultValue)
+        {
+            return Lang.Value(this, defaultValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T ValueUnsafe()
+        {
+            return Lang.ValueUnsafe<GhostStruct<T>, T>(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Ghost<TOut> Select<TOut>(Func<T, TOut> selector)
+        {
+            return Map(selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly GhostStruct<T> Where(Predicate<T> predicate)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (IsNone || !predicate(inner.GetValueOrDefault()))
+                return None;
+
+            return this;
+        }
 
         public readonly bool Equals(GhostStruct<T> other)
         {
@@ -71,7 +133,7 @@ namespace CCEnvs.Language
             if (IsNone)
                 yield break;
 
-            yield return inner.Value;
+            yield return inner!.Value;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

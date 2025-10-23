@@ -1,6 +1,8 @@
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable S3236
@@ -29,7 +31,7 @@ namespace CCEnvs.Language
 
         public Ghost(T value)
         {
-            this.inner = value;
+            inner = value;
         }
 
         public static implicit operator Ghost<T>(T source)
@@ -51,48 +53,66 @@ namespace CCEnvs.Language
             return !(left == right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Ghost<T> IfSome(Action<T> action)
         {
             return Lang.IfSome(this, action);
         }
 
-        //public readonly Ghost<T> IfNone(Action action)
-        //{
-        //    return Lang.IfNone(this, action);
-        //}
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Ghost<TOut> IfNone<TOut>(Func<TOut> selector)
         {
             return Lang.IfNone<Ghost<T>, T, TOut>(this, selector).AsGhost();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Ghost<T> Match(Action<T> some, Action none)
         {
             return Lang.Match(this, some, none);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Ghost<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
             return Lang.Match(this, some, none).AsGhost();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Ghost<TOut> Map<TOut>(Func<T, TOut> selector)
         {
             return Lang.Map(this, selector).AsGhost();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T? Value() => inner;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T? Value(T? defaultValue)
         {
             return Lang.Value(this, defaultValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T ValueUnsafe()
         {
             return Lang.ValueUnsafe<Ghost<T>, T>(this);
         }
 
-        //public readonly Ghost<T> Map<TOut>(Func<T, TOut> selector)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Ghost<TOut> Select<TOut>(Func<T, TOut> selector)
+        {
+            return Map(selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Ghost<T> Where(Predicate<T> predicate)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (IsNone || !predicate(inner!))
+                return None;
+
+            return this;
+        }
 
         public readonly bool Equals(Ghost<T> other)
         {

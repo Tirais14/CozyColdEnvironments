@@ -1,12 +1,14 @@
 #nullable enable
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Runtime.CompilerServices;
 
 #pragma warning disable S3236
 namespace CCEnvs.Language
 {
     public static class Lang
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T IfSome<T, TValue>(this T source, Action<TValue> action)
             where T : struct, IConditional<TValue>
         {
@@ -18,6 +20,7 @@ namespace CCEnvs.Language
             return source;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T IfNone<T>(this T source, Action action)
             where T : struct, IConditional
         {
@@ -28,6 +31,7 @@ namespace CCEnvs.Language
 
             return source;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<TOutValue> IfNone<T, TValue, TOutValue>(
             this T source,
             TOutValue? defaultValue)
@@ -38,6 +42,7 @@ namespace CCEnvs.Language
 
             return default;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<TOutValue> IfNone<T, TValue, TOutValue>(
             this T source,
             Func<TOutValue?> defaultValueFactory)
@@ -51,6 +56,7 @@ namespace CCEnvs.Language
             return default;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<TOutValue> Map<T, TValue, TOutValue>(
             this T source,
             Func<TValue, TOutValue> selector)
@@ -61,6 +67,7 @@ namespace CCEnvs.Language
             return source.IsSome ? selector(source.Value()!) : default!;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Match<T, TValue>(
             this T source,
             Action<TValue> some,
@@ -77,6 +84,7 @@ namespace CCEnvs.Language
 
             return source;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<TOutValue> Match<T, TValue, TOutValue>(
             this T source,
             Func<TValue, TOutValue> some,
@@ -92,6 +100,7 @@ namespace CCEnvs.Language
                 return none();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TValue? Value<T, TValue>(this T source, TValue? defaultValue)
             where T : struct, IConditional<TValue>
         {
@@ -100,6 +109,7 @@ namespace CCEnvs.Language
 
             return source.Value()!;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TValue? Value<T, TValue>(this T source, Func<TValue?> defaultValueFactory)
             where T : struct, IConditional<TValue>
         {
@@ -109,6 +119,7 @@ namespace CCEnvs.Language
             return source.Value()!;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TValue ValueUnsafe<T, TValue>(this T source)
             where T : struct, IConditional<TValue>
         {
@@ -118,25 +129,30 @@ namespace CCEnvs.Language
             return source.Value()!;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Ghost<T> ToGhost<T>(this T source) => source;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Ghost<T> AsGhost<T>(this Conditional<T> source)
         {
             return source.Value();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GhostStruct<T> ToGhostStruct<T>(this T source)
             where T : struct
         {
             return source;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GhostStruct<T> AsGhostStruct<T>(this Conditional<T> source)
             where T : struct
         {
             return source.Value();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<T> ToConditional<T>(this T source) => source;
     }
 }

@@ -46,6 +46,7 @@ namespace CCEnvs.Language
         }
 
         public readonly T Value() => value;
+
         public readonly bool Equals(Conditional<T> other)
         {
             return EqualityComparer<T>.Default.Equals(value, other.value);

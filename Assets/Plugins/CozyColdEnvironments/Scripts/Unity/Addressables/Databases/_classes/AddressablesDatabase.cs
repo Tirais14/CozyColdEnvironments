@@ -222,7 +222,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public DatabaseQuery Ask()
         {
-            return askQuery.Reset().DBs(Range.From(this));
+            return askQuery.Reset().In(Range.From(this));
         }
 
         public async UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
