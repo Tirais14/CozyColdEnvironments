@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public DatabaseNotFoundException(AssetDatabaseKey key, Exception? innerException = null)
             :
-            this(key.AssetType.Value, key.DatabaseID, innerException)
+            this(key.AssetType.Value()!, key.DatabaseID, innerException)
         {
         }
     }

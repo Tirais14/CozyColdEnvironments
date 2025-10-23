@@ -90,7 +90,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public DatabaseQuery DbID(UniID id)
         {
-            dbKey = new AssetDatabaseKey(dbKey.AssetType.Value, id);
+            dbKey = new AssetDatabaseKey(dbKey.AssetType.Value(), id);
             key = new AssetKey(key.AssetName, key.AssetID);
 
             return this;

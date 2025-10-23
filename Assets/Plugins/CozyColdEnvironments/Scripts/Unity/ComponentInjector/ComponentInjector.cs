@@ -102,13 +102,13 @@ namespace CCEnvs.Unity.Injections
                 return source.GetAssignedObjectInChildren(getType);
         }
 
-        private static bool IsTypeValid(Type type)
+        private static bool ValidateType(Type type)
         {
             if (type.IsValueType
-                ||
+                &&
                 !(type.IsGenericType
                 &&
-                type.IsNotType(typeof(IConditional<>).MakeGenericType(type.GetGenericArguments()[0])))
+                type.IsType(typeof(IConditional<>).MakeGenericType(type.GetGenericArguments()[0])))
                 )
                 return false;
 
@@ -126,7 +126,7 @@ namespace CCEnvs.Unity.Injections
                 CCDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
                 return;
             }
-            if (!IsTypeValid(field.FieldType))
+            if (!ValidateType(field.FieldType))
             {
                 CCDebug.PrintError($"{field.FieldType.GetName()} is not interface and not component.", source);
                 return;

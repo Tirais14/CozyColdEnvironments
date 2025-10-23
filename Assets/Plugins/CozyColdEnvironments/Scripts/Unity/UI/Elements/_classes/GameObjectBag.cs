@@ -16,15 +16,15 @@ namespace CCEnvs.Unity.UI.Elements
         protected Ghost<ReactiveCollection<GameObject>> inner;
 
         public bool DestroyOnRemove { get; set; }
-        public int Count => inner.Map(x => x.Count).Value;
+        public int Count => inner.Map(x => x.Count).Value();
 
         protected override bool ShowOnStart => true;
 
         protected ReactiveCollection<GameObject> Inner {
             get
             {
-                return inner.IfNone(() => inner = new ReactiveCollection<GameObject>())
-                            .ValueUnsafe();
+                return inner.IfNone(() => { inner = new ReactiveCollection<GameObject>(); })
+                            .Value(inner.Value())!;
             }
         }
 
@@ -73,7 +73,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             return inner.Map(x => x.Remove(item))
                         .IfSome(_ => OnRemove(item))
-                        .Value;
+                        .Value();
         }
 
         public IObservable<CollectionAddEvent<GameObject>> ObserveAdd()
@@ -108,10 +108,8 @@ namespace CCEnvs.Unity.UI.Elements
 
         public IEnumerator<GameObject> GetEnumerator()
         {
-            return inner.Match(
-                x => x.GetEnumerator(),
-                () => Enumerable.Empty<GameObject>().GetEnumerator())
-                .Value;
+            return inner.Map(x => x.GetEnumerator())
+                        .Value(Enumerable.Empty<GameObject>().GetEnumerator())!;
         }
 
         protected void OnAdd(GameObject go)

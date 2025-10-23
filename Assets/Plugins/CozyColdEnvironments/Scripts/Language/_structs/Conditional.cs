@@ -17,8 +17,6 @@ namespace CCEnvs.Language
 #else
         private readonly T value;
 #endif
-
-        public readonly T Value => value;
         public readonly bool IsSome => value.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
@@ -46,6 +44,8 @@ namespace CCEnvs.Language
         {
             return source.value;
         }
+
+        public readonly T Value() => value;
         public readonly bool Equals(Conditional<T> other)
         {
             return EqualityComparer<T>.Default.Equals(value, other.value);

@@ -24,7 +24,6 @@ namespace CCEnvs.Language
         private readonly T? inner;
 #endif
 
-        public readonly T? Value => inner;
         public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
@@ -57,6 +56,16 @@ namespace CCEnvs.Language
             return Lang.IfSome(this, action);
         }
 
+        //public readonly Ghost<T> IfNone(Action action)
+        //{
+        //    return Lang.IfNone(this, action);
+        //}
+
+        public readonly Ghost<TOut> IfNone<TOut>(Func<TOut> selector)
+        {
+            return Lang.IfNone<Ghost<T>, T, TOut>(this, selector).AsGhost();
+        }
+
         public readonly Ghost<T> Match(Action<T> some, Action none)
         {
             return Lang.Match(this, some, none);
@@ -69,6 +78,13 @@ namespace CCEnvs.Language
         public readonly Ghost<TOut> Map<TOut>(Func<T, TOut> selector)
         {
             return Lang.Map(this, selector).AsGhost();
+        }
+
+        public readonly T? Value() => inner;
+
+        public readonly T? Value(T? defaultValue)
+        {
+            return Lang.Value(this, defaultValue);
         }
 
         public readonly T ValueUnsafe()

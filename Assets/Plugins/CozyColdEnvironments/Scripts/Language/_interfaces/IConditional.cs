@@ -8,6 +8,6 @@ namespace CCEnvs.Language
     }
     public interface IConditional<out T> : IConditional
     {
-        T? Value { get; }
+        T? Value();
     }
 }

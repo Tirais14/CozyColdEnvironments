@@ -13,7 +13,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(action, nameof(action));
 
             if (source.IsSome)
-                action(source.Value!);
+                action(source.Value()!);
 
             return source;
         }
@@ -28,27 +28,27 @@ namespace CCEnvs.Language
 
             return source;
         }
-        public static Conditional<TValue?> IfNone<T, TValue>(
+        public static Conditional<TOutValue> IfNone<T, TValue, TOutValue>(
             this T source,
-            TValue? defaultValue)
+            TOutValue? defaultValue)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
-                return defaultValue;
+                return defaultValue!;
 
-            return source.Value;
+            return default;
         }
-        public static Conditional<TValue?> IfNone<T, TValue>(
+        public static Conditional<TOutValue> IfNone<T, TValue, TOutValue>(
             this T source,
-            Func<TValue?> defaultValueFactory)
+            Func<TOutValue?> defaultValueFactory)
             where T : struct, IConditional<TValue>
         {
             Guard.IsNotNull(defaultValueFactory, nameof(defaultValueFactory));
 
             if (source.IsNone)
-                return defaultValueFactory();
+                return defaultValueFactory()!;
 
-            return source.Value;
+            return default;
         }
 
         public static Conditional<TOutValue> Map<T, TValue, TOutValue>(
@@ -58,7 +58,7 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return source.IsSome ? selector(source.Value!) : default!;
+            return source.IsSome ? selector(source.Value()!) : default!;
         }
 
         public static T Match<T, TValue>(
@@ -71,7 +71,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(none, nameof(none));
 
             if (source.IsSome)
-                some(source.Value!);
+                some(source.Value()!);
             else
                 none();
 
@@ -87,26 +87,26 @@ namespace CCEnvs.Language
             Guard.IsNotNull(none, nameof(none));
 
             if (source.IsSome)
-                return some(source.Value!);
+                return some(source.Value()!);
             else
                 return none();
         }
 
-        public static TValue? Value<T, TValue>(T source, TValue? defaultValue)
+        public static TValue? Value<T, TValue>(this T source, TValue? defaultValue)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
                 return defaultValue;
 
-            return source.Value!;
+            return source.Value()!;
         }
-        public static TValue? Value<T, TValue>(T source, Func<TValue?> defaultValueFactory)
+        public static TValue? Value<T, TValue>(this T source, Func<TValue?> defaultValueFactory)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
                 return defaultValueFactory();
 
-            return source.Value!;
+            return source.Value()!;
         }
 
         public static TValue ValueUnsafe<T, TValue>(this T source)
@@ -115,14 +115,14 @@ namespace CCEnvs.Language
             if (source.IsNone)
                 throw new Diagnostics.CCException("Value is none");
 
-            return source.Value!;
+            return source.Value()!;
         }
 
         public static Ghost<T> ToGhost<T>(this T source) => source;
 
         public static Ghost<T> AsGhost<T>(this Conditional<T> source)
         {
-            return source.Value;
+            return source.Value();
         }
 
         public static GhostStruct<T> ToGhostStruct<T>(this T source)
@@ -134,7 +134,7 @@ namespace CCEnvs.Language
         public static GhostStruct<T> AsGhostStruct<T>(this Conditional<T> source)
             where T : struct
         {
-            return source.Value;
+            return source.Value();
         }
 
         public static Conditional<T> ToConditional<T>(this T source) => source;
