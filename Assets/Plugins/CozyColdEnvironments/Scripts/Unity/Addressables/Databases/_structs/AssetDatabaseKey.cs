@@ -17,14 +17,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         UniID IIDMarked<UniID>.ID => DatabaseID;
 
-        public AssetDatabaseKey(Type dbAssetType)
+        public AssetDatabaseKey(Type? dbAssetType)
             :
             this()
         {
-            AssetType = dbAssetType;
+            AssetType = dbAssetType!;
         }
 
-        public AssetDatabaseKey(Type assetType,
+        public AssetDatabaseKey(Type? assetType,
                                 UniID id)
             :
             this(assetType)

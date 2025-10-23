@@ -196,7 +196,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    db.ZL().FirstOrDefault(x => x.Key.AssetName == key.AssetName)
                    :
                    db.ZL().FirstOrDefault(x => x.Key.AssetID == key.AssetID))
-                   .AsGhost()
+                   .ToGhost()
                    .Map(x => x.Value)!;
         }
 

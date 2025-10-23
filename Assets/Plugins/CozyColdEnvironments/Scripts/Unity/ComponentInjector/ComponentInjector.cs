@@ -104,11 +104,11 @@ namespace CCEnvs.Unity.Injections
 
         private static bool IsTypeValid(Type type)
         {
-            if (!type.IsInterface
+            if (type.IsValueType
+                ||
+                !(type.IsGenericType
                 &&
-                type.IsNotType<Component>()
-                &&
-                type.IsNotType(typeof(IGhost))
+                type.IsNotType(typeof(IConditional<>).MakeGenericType(type.GetGenericArguments()[0])))
                 )
                 return false;
 

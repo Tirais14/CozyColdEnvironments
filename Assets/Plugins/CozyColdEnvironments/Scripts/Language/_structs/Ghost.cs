@@ -1,6 +1,3 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,32 +10,36 @@ namespace CCEnvs.Language
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        struct Ghost<T> : IEnumerable<T>, IEquatable<Ghost<T>>, IGhost<T>
+        struct Ghost<T>
+        : IEnumerable<T>,
+        IEquatable<Ghost<T>>,
+        IConditional<T>
     {
         public static Ghost<T> None => new();
 
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private T value;
+        private T? inner;
 #else
-        private readonly T value;
+        private readonly T? inner;
 #endif
 
-        public readonly bool IsNone => value.IsDefault();
-        public readonly bool IsSome => !IsNone;
+        public readonly T? Value => inner;
+        public readonly bool IsSome => inner.IsNotDefault();
+        public readonly bool IsNone => !IsSome;
 
         public Ghost(T value)
         {
-            this.value = value;
+            this.inner = value;
         }
 
         public static implicit operator Ghost<T>(T source)
         {
             return new Ghost<T>(source);
         }
-        public static explicit operator T(Ghost<T> source)
+        public static explicit operator T?(Ghost<T> source)
         {
-            return source.value;
+            return source.inner;
         }
 
         public static bool operator ==(Ghost<T> left, Ghost<T> right)
@@ -53,102 +54,33 @@ namespace CCEnvs.Language
 
         public readonly Ghost<T> IfSome(Action<T> action)
         {
-            Guard.IsNotNull(action, nameof(action));
-
-            if (IsSome)
-                action(value);
-
-            return this;
-        }
-        public readonly Ghost<TOut> IfSome<TOut>(Func<T, TOut> action)
-        {
-            Guard.IsNotNull(action, nameof(action));
-
-            if (IsSome)
-                return action(value);
-
-            return Ghost<TOut>.None;
-        }
-
-        public readonly Ghost<T> IfNone(Action action)
-        {
-            Guard.IsNotNull(action, nameof(action));
-
-            if (IsNone)
-                action();
-
-            return this;
-        }
-        public readonly T IfNone(T defaultValue)
-        {
-            if (IsNone)
-                return defaultValue;
-
-            return value;
-        }
-        public readonly T IfNone(Func<T> defaultValueFactory)
-        {
-            Guard.IsNotNull(defaultValueFactory, nameof(defaultValueFactory));
-
-            if (IsNone)
-                return defaultValueFactory();
-
-            return value;
-        }
-
-        public readonly Ghost<TOther> Map<TOther>(Func<T, TOther> selector)
-        {
-            Guard.IsNotNull(selector, nameof(selector));
-
-            return IsSome ? selector(value) : Ghost<TOther>.None;
+            return Lang.IfSome(this, action);
         }
 
         public readonly Ghost<T> Match(Action<T> some, Action none)
         {
-            Guard.IsNotNull(some, nameof(some));
-            Guard.IsNotNull(none, nameof(none));
-
-            if (IsSome)
-                some(value);
-            else
-                none();
-
-            return this;
+            return Lang.Match(this, some, none);
         }
-        public readonly Ghost<TOther> Match<TOther>(Func<T, TOther> some, Func<TOther> none)
+        public readonly Ghost<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
-            Guard.IsNotNull(some, nameof(some));
-
-            if (IsSome)
-                return some(value);
-            else
-                return none is not null ? none() : default!;
+            return Lang.Match(this, some, none).AsGhost();
         }
 
-        public readonly T Value() => IfNone(default(T)!);
+        public readonly Ghost<TOut> Map<TOut>(Func<T, TOut> selector)
+        {
+            return Lang.Map(this, selector).AsGhost();
+        }
 
-        /// <exception cref="CCException"></exception>
         public readonly T ValueUnsafe()
         {
-            if (IsNone)
-                throw new CCException($"{GetType().GetName()} is none.");
-
-            return value;
+            return Lang.ValueUnsafe<Ghost<T>, T>(this);
         }
 
-        public readonly IEnumerator<T> GetEnumerator()
-        {
-            if (IsNone)
-                yield break;
-
-            yield return value;
-        }
-
-        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        //public readonly Ghost<T> Map<TOut>(Func<T, TOut> selector)
 
         public readonly bool Equals(Ghost<T> other)
         {
-            return EqualityComparer<T>.Default.Equals(value, other.value);
+            return EqualityComparer<T?>.Default.Equals(inner, other.inner);
         }
         public readonly override bool Equals(object obj)
         {
@@ -156,7 +88,17 @@ namespace CCEnvs.Language
         }
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(value);
+            return HashCode.Combine(inner);
         }
+
+        public readonly IEnumerator<T> GetEnumerator()
+        {
+            if (IsNone)
+                yield break;
+
+            yield return inner!;
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

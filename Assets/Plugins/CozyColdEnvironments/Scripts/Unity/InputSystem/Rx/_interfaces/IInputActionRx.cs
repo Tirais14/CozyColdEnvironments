@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
     public interface IInputActionRx<T> : IInputActionRx
         where T : struct
     {
-        T Value { get; }
+        T InputValue { get; }
 
         IObservable<T> TRaw { get; }
         IObservable<T> TStarted { get; }

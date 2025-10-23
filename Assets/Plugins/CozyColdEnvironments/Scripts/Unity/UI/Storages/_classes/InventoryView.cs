@@ -66,7 +66,7 @@ namespace CCEnvs.Unity
             if (SelectionKey == key)
                 return;
 
-            SelectionValue = GetModel()[key].AsGhost()!;
+            SelectionValue = GetModel()[key].ToGhost()!;
             SelectionKey = key;
 
             selectionSubj?.OnNext(SelectionValue);

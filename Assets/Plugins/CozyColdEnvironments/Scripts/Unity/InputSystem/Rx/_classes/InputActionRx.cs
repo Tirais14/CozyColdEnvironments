@@ -121,7 +121,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         where T : struct
     {
-        public T Value { get; private set; }
+        public T InputValue { get; private set; }
         public IObservable<T> TRaw => Raw.Select(x => x.ReadValue<T>());
         public IObservable<T> TStarted => Started.Select(x => x.ReadValue<T>());
         public IObservable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
@@ -131,9 +131,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
             :
             base(inputAction)
         {
-            TStarted.Subscribe(x => Value = x).AddTo(this);
-            TPerformed.Subscribe(x => Value = x).AddTo(this);
-            TCanceled.Subscribe(x => Value = x).AddTo(this);
+            TStarted.Subscribe(x => InputValue = x).AddTo(this);
+            TPerformed.Subscribe(x => InputValue = x).AddTo(this);
+            TCanceled.Subscribe(x => InputValue = x).AddTo(this);
         }
     }
 }

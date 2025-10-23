@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 texture,
                 new Rect(x: 0f, y: 0f, texture.width, texture.height),
                 new Vector2(texture.width / 2, texture.height / 2),
-                texture.GetPixels().Length).ToSeq().ToArray();
+                texture.GetPixels().Length).AsBox().ToArray();
         }
 
         public override async UniTask LoadAssetsAsync(AssetLabels assetLabels)

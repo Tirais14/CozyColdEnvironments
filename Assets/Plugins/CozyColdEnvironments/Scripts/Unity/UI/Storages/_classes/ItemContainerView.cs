@@ -1,18 +1,15 @@
-using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Language;
-using CCEnvs.Unity.Dependencies;
+using CCEnvs.UI.MVVM;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.InputSystem.Rx;
 using CCEnvs.Unity.UI.MVVM;
-using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using System;
 using System.Linq;
 using TMPro;
 using UniRx;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,114 +26,70 @@ namespace CCEnvs.Unity.UI.Storages
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel, TContainer>
         : View<TViewModel, TContainer>,
-        IItemContainerView<TViewModel, TContainer>,
-        IDragAndDropToggle
+        IItemContainerView<TViewModel, TContainer>
 
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
-        where TContainer : IItemContainerInfo, new()
+        where TContainer : IItemContainer, new()
     {
-        private DragAndDropToggle dragAndDropToggle;
-        private InputActionRx<Vector2>? pointerInput;
-        private Component? dragItem;
-
-        protected LazyCC<ICanvasController> canvasController { get; private set; } = null!;
-
-        [field: GetBySelf]
-        protected Image image { get; private set; } = null!;
+        private Ghost<Component> _dragItem;
 
         [field: SerializeField, GetByChildren]
         protected Ghost<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
+        protected override Ghost<Component> dragItem => _dragItem;
         protected override bool ShowOnStart => true;
-
-        int IDragAndDropToggle.BindingCount => dragAndDropToggle.BindingCount;
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            canvasController = new LazyCC<ICanvasController>(
-                () => this.GetAssignedObjectInParent<ICanvasController>()
-                .ValidateGetOperation()
-                );
-
-            pointerInput = new LazyCC<InputActionRx<Vector2>>(
-                DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput));
-
-            dragAndDropToggle = new DragAndDropToggle(
-                gameObject,
-                onBeginDrag: _ => OnBegindDrag(),
-                onDrag: _ => OnDrag(),
-                onEndDrag: _ => OnEndDrag(),
-                onDrop: OnDrop);
-        }
+        protected override bool readyToDrag => model.Contains();
+        protected override bool readyToTakeDrop => !model.IsFull;
 
         protected override void Start()
         {
             base.Start();
 
-            viewModel.ItemIconView.Subscribe(x => image.sprite = x)
-                                  .AddTo(this);
+            image.IfSome(img =>
+            {
+                viewModel.ItemIconView.Subscribe(newSprite => img.sprite = newSprite)
+                                      .AddTo(this);
+            });
 
-            textMesh.IfSome((x) =>
+            textMesh.IfSome((mesh) =>
             {
                 viewModel.ItemCountView.Select(y => y.ToString())
-                                       .Subscribe(y => x.text = y)
+                                       .Subscribe(newText => mesh.text = newText)
                                        .AddTo(this);
             });
         }
 
-        protected virtual void OnBegindDrag()
+        protected override void OnBeginDrag(PointerEventData eventData)
         {
-            if (this.As<IView<TViewModel>>()
-                           .GetViewModel()
-                           .GetModel()
-                           .IsEmpty
-                           )
+            base.OnBeginDrag(eventData);
+
+            if (!readyToDrag)
                 return;
 
-            dragItem = Instantiate(this, transform);
+            _dragItem = Instantiate(this, transform);
         }
 
-        protected virtual void OnDrag()
+        protected override void OnEndDrag(PointerEventData eventData)
         {
-            cTransform.Value.position = pointerInput!.Value;
-        }
+            base.OnEndDrag(eventData);
 
-        protected virtual void OnEndDrag()
-        {
-            if (dragItem == null)
-            {
-                this.PrintWarning($"{nameof(dragItem)} is null. This is unexpected behaviour for DragAndDrop system, but not critically. Maybe cause memory leaks.");
+            if (!readyToDrag)
                 return;
-            }
 
-            Destroy(dragItem.gameObject);
+            dragItem.Match(
+                x => Destroy(x.gameObject),
+                () => this.PrintWarning($"{nameof(dragItem)} is null. This is unexpected behaviour for DragAndDrop system, but not critically. May do cause of memory leak.")
+                );
         }
 
-        protected virtual void OnDrop(PointerEventData eventData)
+        protected override void OnDrop(PointerEventData eventData)
         {
-            Guard.IsNotNull(eventData, nameof(eventData));
+            if (!readyToTakeDrop)
+                return;
 
-            foreach (var handler in canvasController.Value.CanvasRaycaster
-                                 .RaycastAll(pointerInput!.Value, this)
-                                 .ZL()
-                                 .OfType<IView>()
-                                 .Where(x => x.GetViewModel().GetModel() is IItemAccessor)
-                                 .OfType<IDropHandler>())
-            {
-                handler.OnDrop(eventData);
-            }
-        }
-
-        void IDragAndDropToggle.ActivateDragAndDropAbility()
-        {
-            dragAndDropToggle.ActivateDragAndDropAbility();
-        }
-
-        void IDragAndDropToggle.DeactivateDragAndDropAbility()
-        {
-            dragAndDropToggle.DeactivateDragAndDropAbility();
+            eventData.selectedObject.ToGhost()
+                                    .Map(x => x.GetAssignedModel<IItemContainer>()!)
+                                    .IfSome(x => x.Put(model));
         }
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>

@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbs.Select(x => (db: x, assets: x.Values))
                       .FirstOrDefault(x => x.assets.Any(y => y.GetType() == assetType))
-                      .AsGhost()
+                      .ToGhost()
                       .Match(
                        x => x.db,
                        () => dbs.FirstOrDefault(x => x.GetType().IsType(assetType)))
@@ -63,7 +63,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbs.Select(x => (db: x, assets: x.Values))
                       .FirstOrDefault(x => x.assets.Any(y => y.GetType() == assetType))
-                      .AsGhost()
+                      .ToGhost()
                       .Match(
                        x => x.db,
                        () => dbs.FirstOrDefault(x => x.GetType().IsType(assetType)))
@@ -90,7 +90,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public DatabaseQuery DbID(UniID id)
         {
-            dbKey = new AssetDatabaseKey(dbKey.AssetType.Value(), id);
+            dbKey = new AssetDatabaseKey(dbKey.AssetType.Value, id);
             key = new AssetKey(key.AssetName, key.AssetID);
 
             return this;

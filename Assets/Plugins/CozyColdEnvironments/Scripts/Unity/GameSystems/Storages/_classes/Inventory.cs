@@ -103,7 +103,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             UnityEngine.Object.Instantiate(toInstantiate)
                               .GetAssignedModel<IItemContainer>()
-                              .AsGhost()
+                              .ToGhost()
                               .IfSome(Add!);
         }
 

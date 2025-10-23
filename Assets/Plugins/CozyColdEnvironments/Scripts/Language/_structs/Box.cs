@@ -13,9 +13,9 @@ namespace CCEnvs.Language
     /// Equals by items.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public struct Seq<T> : IReadOnlyList<T>, IEquatable<Seq<T>>
+    public struct Box<T> : IReadOnlyList<T>, IEquatable<Box<T>>
     {
-        public static Seq<T> Empty => new();
+        public static Box<T> Empty => new();
 
         public readonly T Item1;
         public readonly T Item2;
@@ -48,7 +48,7 @@ namespace CCEnvs.Language
 
         readonly int IReadOnlyCollection<T>.Count => Count;
 
-        public Seq(T item1)
+        public Box(T item1)
             :
             this()
         {
@@ -56,151 +56,151 @@ namespace CCEnvs.Language
             EqualityComparer = EqualityComparer<T>.Default;
         }
 
-        public Seq(T item1, T item2)
+        public Box(T item1, T item2)
             :
             this(item1)
         {
             Item2 = item2;
         }
 
-        public Seq(T item1, T item2, T item3)
+        public Box(T item1, T item2, T item3)
             :
             this(item1, item2)
         {
             Item3 = item3;
         }
 
-        public Seq(T item1, T item2, T item3, T item4)
+        public Box(T item1, T item2, T item3, T item4)
             :
             this(item1, item2, item3)
         {
             Item4 = item4;
         }
 
-        public Seq(T item1, T item2, T item3, T item4, T item5)
+        public Box(T item1, T item2, T item3, T item4, T item5)
             :
             this(item1, item2, item3, item4)
         {
             Item5 = item5;
         }
 
-        public Seq(T item1, T item2, T item3, T item4, T item5, T item6)
+        public Box(T item1, T item2, T item3, T item4, T item5, T item6)
             :
             this(item1, item2, item3, item4, item5)
         {
             Item6 = item6;
         }
 
-        public static explicit operator (T, T)(in Seq<T> source)
+        public static explicit operator (T, T)(in Box<T> source)
         {
             return (source.Item1, source.Item2);
         }
 
-        public static explicit operator (T, T, T)(in Seq<T> source)
+        public static explicit operator (T, T, T)(in Box<T> source)
         {
             return (source.Item1, source.Item2, source.Item3);
         }
 
-        public static explicit operator (T, T, T, T)(in Seq<T> source)
+        public static explicit operator (T, T, T, T)(in Box<T> source)
         {
             return (source.Item1, source.Item2, source.Item3, source.Item4);
         }
 
-        public static explicit operator (T, T, T, T, T)(in Seq<T> source)
+        public static explicit operator (T, T, T, T, T)(in Box<T> source)
         {
             return (source.Item1, source.Item2, source.Item3, source.Item4, source.Item5);
         }
 
-        public static explicit operator (T, T, T, T, T, T)(in Seq<T> source)
+        public static explicit operator (T, T, T, T, T, T)(in Box<T> source)
         {
             return (source.Item1, source.Item2, source.Item3, source.Item4, source.Item5, source.Item6);
         }
 
-        public static explicit operator T[](in Seq<T> source)
+        public static explicit operator T[](in Box<T> source)
         {
             return source.ToArray();
         }
 
-        public static bool operator ==(Seq<T> left, Seq<T> right)
+        public static bool operator ==(Box<T> left, Box<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Seq<T> left, Seq<T> right)
+        public static bool operator !=(Box<T> left, Box<T> right)
         {
             return !(left == right);
         }
 
-        public readonly Seq<T> SetItem1(T item1)
+        public readonly Box<T> SetItem1(T item1)
         {
             return Count switch
             {
-                0 => new Seq<T>(item1),
-                1 => new Seq<T>(item1, Item2),
-                2 => new Seq<T>(item1, Item2, Item3),
-                3 => new Seq<T>(item1, Item2, Item3, Item4),
-                4 => new Seq<T>(item1, Item2, Item3, Item4, Item5),
-                5 => new Seq<T>(item1, Item2, Item3, Item4, Item5, Item6),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                0 => new Box<T>(item1),
+                1 => new Box<T>(item1, Item2),
+                2 => new Box<T>(item1, Item2, Item3),
+                3 => new Box<T>(item1, Item2, Item3, Item4),
+                4 => new Box<T>(item1, Item2, Item3, Item4, Item5),
+                5 => new Box<T>(item1, Item2, Item3, Item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> SetItem2(T item2)
+        public readonly Box<T> SetItem2(T item2)
         {
             return Count switch
             {
-                1 => new Seq<T>(Item1, item2),
-                2 => new Seq<T>(Item1, item2, Item3),
-                3 => new Seq<T>(Item1, item2, Item3, Item4),
-                4 => new Seq<T>(Item1, item2, Item3, Item4, Item5),
-                5 => new Seq<T>(Item1, item2, Item3, Item4, Item5, Item6),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                1 => new Box<T>(Item1, item2),
+                2 => new Box<T>(Item1, item2, Item3),
+                3 => new Box<T>(Item1, item2, Item3, Item4),
+                4 => new Box<T>(Item1, item2, Item3, Item4, Item5),
+                5 => new Box<T>(Item1, item2, Item3, Item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> SetItem3(T item3)
+        public readonly Box<T> SetItem3(T item3)
         {
             return Count switch
             {
-                2 => new Seq<T>(Item1, Item2, item3),
-                3 => new Seq<T>(Item1, Item2, item3, Item4),
-                4 => new Seq<T>(Item1, Item2, item3, Item4, Item5),
-                5 => new Seq<T>(Item1, Item2, item3, Item4, Item5, Item6),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                2 => new Box<T>(Item1, Item2, item3),
+                3 => new Box<T>(Item1, Item2, item3, Item4),
+                4 => new Box<T>(Item1, Item2, item3, Item4, Item5),
+                5 => new Box<T>(Item1, Item2, item3, Item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> SetItem4(T item4)
+        public readonly Box<T> SetItem4(T item4)
         {
             return Count switch
             {
-                3 => new Seq<T>(Item1, Item2, Item3, item4),
-                4 => new Seq<T>(Item1, Item2, Item3, item4, Item5),
-                5 => new Seq<T>(Item1, Item2, Item3, item4, Item5, Item6),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                3 => new Box<T>(Item1, Item2, Item3, item4),
+                4 => new Box<T>(Item1, Item2, Item3, item4, Item5),
+                5 => new Box<T>(Item1, Item2, Item3, item4, Item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> SetItem5(T item5)
+        public readonly Box<T> SetItem5(T item5)
         {
             return Count switch
             {
-                4 => new Seq<T>(Item1, Item2, Item3, Item4, item5),
-                5 => new Seq<T>(Item1, Item2, Item3, Item4, item5, Item6),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                4 => new Box<T>(Item1, Item2, Item3, Item4, item5),
+                5 => new Box<T>(Item1, Item2, Item3, Item4, item5, Item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> SetItem6(T item6)
+        public readonly Box<T> SetItem6(T item6)
         {
             return Count switch
             {
-                5 => new Seq<T>(Item1, Item2, Item3, Item4, Item5, item6),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                5 => new Box<T>(Item1, Item2, Item3, Item4, Item5, item6),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> SetValue(int index, T item)
+        public readonly Box<T> SetValue(int index, T item)
         {
             return index switch
             {
@@ -210,11 +210,11 @@ namespace CCEnvs.Language
                 3 => SetItem4(item),
                 4 => SetItem5(item),
                 5 => SetItem6(item),
-                _ => CC.Throw.IndexOutOfRange(index).As<Seq<T>>(),
+                _ => CC.Throw.IndexOutOfRange(index).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> Append(T item)
+        public readonly Box<T> Append(T item)
         {
             if (Count >= Length)
                 throw new Diagnostics.LogicException("Cannot add item. Sequence is full.");
@@ -227,16 +227,16 @@ namespace CCEnvs.Language
                 3 => SetItem4(item),
                 4 => SetItem5(item),
                 5 => SetItem6(item),
-                _ => CC.Throw.IndexOutOfRange(Count).As<Seq<T>>(),
+                _ => CC.Throw.IndexOutOfRange(Count).As<Box<T>>(),
             };
         }
 
-        public readonly Seq<T> Remove(T toRemove)
+        public readonly Box<T> Remove(T toRemove)
         {
             if (IsEmpty)
                 return Empty;
 
-            Seq<T> result = Empty;
+            Box<T> result = Empty;
             foreach (var item in this)
             {
                 if (EqualityComparer.Equals(item, toRemove))
@@ -247,12 +247,12 @@ namespace CCEnvs.Language
 
             return result;
         }
-        public readonly Seq<T> RemoveAt(int index)
+        public readonly Box<T> RemoveAt(int index)
         {
             if (IsEmpty)
                 return Empty;
 
-            Seq<T> result = Empty;
+            Box<T> result = Empty;
             for (int i = 0; i < Count; i++)
             {
                 if (i == index)
@@ -275,7 +275,7 @@ namespace CCEnvs.Language
             return -1;
         }
 
-        public readonly Seq<T> Clear() => Empty;
+        public readonly Box<T> Clear() => Empty;
 
         public readonly override string ToString()
         {
@@ -286,7 +286,7 @@ namespace CCEnvs.Language
             return sb.ToString();
         }
 
-        public readonly bool Equals(Seq<T> other)
+        public readonly bool Equals(Box<T> other)
         {
             return EqualityComparer.Equals(Item1, other.Item1)
                    &&
@@ -302,7 +302,7 @@ namespace CCEnvs.Language
         }
         public readonly override bool Equals(object obj)
         {
-            return obj is Seq<T> typed && Equals(typed);
+            return obj is Box<T> typed && Equals(typed);
         }
 
         public readonly override int GetHashCode()
@@ -317,11 +317,11 @@ namespace CCEnvs.Language
             for (int i = 0; i < Count; i++)
                 action(this[i], i);
         }
-        public readonly Seq<TOut> For<TOut>(Func<T, int, TOut> func)
+        public readonly Box<TOut> For<TOut>(Func<T, int, TOut> func)
         {
             CC.Guard.NullArgument(func, nameof(func));
 
-            var result = Seq<TOut>.Empty;
+            var result = Box<TOut>.Empty;
             for (int i = 0; i < Count; i++)
                 result = result.Append(func(this[i], i));
 
@@ -335,11 +335,11 @@ namespace CCEnvs.Language
             foreach (var item in this)
                 action(item);
         }
-        public readonly Seq<TOut> ForEach<TOut>(Func<T, TOut> func)
+        public readonly Box<TOut> ForEach<TOut>(Func<T, TOut> func)
         {
             CC.Guard.NullArgument(func, nameof(func));
 
-            var result = Seq<TOut>.Empty;
+            var result = Box<TOut>.Empty;
             foreach (var item in this)
                 result.Append(func(item));
 
@@ -390,7 +390,7 @@ namespace CCEnvs.Language
             return false;
         }
 
-        public readonly Seq<TOut> Cast<TOut>()
+        public readonly Box<TOut> Cast<TOut>()
         {
             return ForEach((x) => x.As<TOut>());
         }
@@ -419,14 +419,14 @@ namespace CCEnvs.Language
 
         public struct Enumerator : IEnumerator<T>
         {
-            private readonly Seq<T> seq;
+            private readonly Box<T> seq;
             private int pos;
 
             public T Current { readonly get; private set; }
 
             readonly object IEnumerator.Current => Current!;
 
-            public Enumerator(Seq<T> seq)
+            public Enumerator(Box<T> seq)
             {
                 this.seq = seq;
 

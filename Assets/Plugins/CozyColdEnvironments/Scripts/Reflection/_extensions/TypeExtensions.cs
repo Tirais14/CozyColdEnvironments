@@ -1,4 +1,6 @@
 using CCEnvs.Common;
+using CCEnvs.Language;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,10 +152,9 @@ namespace CCEnvs.Reflection
         /// <exception cref="ArgumentNullException"></exception>
         public static bool IsType(this Type value, Type? other)
         {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-            if (other == null)
-                throw new ArgumentNullException(nameof(other));
+            Guard.IsNotNull(value, nameof(value));
+            if (other is null)
+                return false;
 
             if (value == other)
                 return true;
