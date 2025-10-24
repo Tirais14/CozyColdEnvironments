@@ -1,4 +1,3 @@
-using CCEnvs;
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Reflection;
@@ -9,7 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -24,8 +22,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         where TAsset : Object
     {
         protected readonly List<AsyncOperationHandle> loadHandles = new(0);
+        private readonly Dictionary<AssetKey, TAsset> collection;
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
-        private readonly Dictionary<AssetKey, TAsset> db;
         private readonly DatabaseQuery askQuery = new();
         private bool disposedValue;
         private int loadingCount;
@@ -33,22 +31,23 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public event Action OnStartLoading = null!;
         public event Action OnLoaded = null!;
 
+        public TAsset this[AssetKey key] => GetAsset(key);
+
         public UniID ID { get; private set; }
-        public IEnumerable<AssetKey> Keys => db.Keys;
-        public IEnumerable<TAsset> Values => db.Values;
-        public int Count => db.Count;
+        public IEnumerable<AssetKey> Keys => collection.Keys;
+        public IEnumerable<TAsset> Values => collection.Values;
+        public int Count => collection.Count;
         public bool IsLoading => loadingCount > 0;
         public bool IsLoaded => !IsLoading && Count > 0;
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, AssetKey>? KeyFactory { get; set; }
         public Func<Object, int>? IDFactory { get; set; }
         public Func<string, string>? AssetNameProcessor { get; set; } = DefaultAssetNameProcessor;
-        public TAsset this[AssetKey key] => db[key];
 
         public AddressablesDatabase(UniID id, int capacity)
         {
             ID = id;
-            db = new Dictionary<AssetKey, TAsset>(capacity);
+            collection = new Dictionary<AssetKey, TAsset>(capacity);
         }
 
         public AddressablesDatabase(int capacity)
@@ -71,7 +70,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             :
             this()
         {
-            db = new Dictionary<AssetKey, TAsset>(values);
+            collection = new Dictionary<AssetKey, TAsset>(values);
         }
 
         public static string DefaultAssetNameProcessor(string assetName)
@@ -87,7 +86,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             {
                 AssetKey key = KeyFactory is null ? CreateAssetKey(asset) : KeyFactory(asset);
 
-                db.Add(key, asset);
+                collection.Add(key, asset);
                 this.PrintLog($"Asset {asset.GetType().GetFullName()} added. {nameof(AssetKey)}: {key}.");
             }
             catch (Exception ex)
@@ -162,11 +161,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             this.AsReflected().CopyTypeDataTo(newDB, nameof(KeyFactory), nameof(IDFactory));
 
-            var assets = db.AsValueEnumerable()
+            var assets = collection.AsValueEnumerable()
                            .GroupBy(x => x.Value.GetType())
                            .First(x => x.Key == assetType)
                            .Select(x => x)
-                           .Do(x => db.Remove(x.Key))
+                           .Do(x => collection.Remove(x.Key))
                            .Select(x => x.Value);
 
             newDB.AddAssets(assets);
@@ -179,38 +178,41 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public IAddressablesDatabase[] CutByTypes()
         {
-            return db.Values.AsValueEnumerable()
+            return collection.Values.AsValueEnumerable()
                             .Select(x => x.GetType())
                             .Distinct()
                             .Select(assetType => CutByType(assetType))
                             .ToArray();
         }
 
-        public Ghost<TAsset?> FindAsset(AssetKey key)
+        public Ghost<TAsset> FindAsset(AssetKey key)
         {
-            if (db.TryGetValue(key, out var asset))
+            if (collection.TryGetValue(key, out var asset))
                 return asset;
 
             return (key.AssetID.IsDefault()
                    ?
-                   db.ZL().FirstOrDefault(x => x.Key.AssetName == key.AssetName)
+                   collection.ZL().FirstOrDefault(x => x.Key.AssetName == key.AssetName)
                    :
-                   db.ZL().FirstOrDefault(x => x.Key.AssetID == key.AssetID))
+                   collection.ZL().FirstOrDefault(x => x.Key.AssetID == key.AssetID))
                    .ToGhost()
                    .Map(x => x.Value)!;
         }
 
-        public Ghost<T?> FindAsset<T>(AssetKey key)
+        public Ghost<T> FindAsset<T>(AssetKey key)
         {
             return FindAsset(key).AsOrDefault<T>();
         }
 
         public TAsset GetAsset(AssetKey key)
         {
-            CC.Guard.NullArgument(key, nameof(key));
+            if (!collection.TryGetValue(key, out TAsset asset))
+            {
+                Ghost<TAsset> t = FindAsset(key);
 
-            if (!db.TryGetValue(key, out TAsset asset))
-                throw new AssetNotFoundException(key);
+                if (t.IsNone)
+                    throw new AssetNotFoundException(key);
+            }
 
             return asset;
         }
@@ -234,7 +236,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             CC.Guard.NullArgument(dbConverter, nameof(dbConverter));
             CC.Guard.NullArgument(dbItemConverter, nameof(dbItemConverter));
 
-            var converesationTasks = db.Values.AsValueEnumerable()
+            var converesationTasks = collection.Values.AsValueEnumerable()
                                               .Select(x => dbItemConverter(x))
                                               .ToArray();
 
@@ -251,13 +253,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return newDb;
         }
 
-        public bool ContainsKey(AssetKey key) => db.ContainsKey(key);
+        public bool ContainsKey(AssetKey key) => collection.ContainsKey(key);
 
-        public void TrimExcess() => db.TrimExcess();
+        public void TrimExcess() => collection.TrimExcess();
 
         public void Dispose() => Dispose(disposing: true);
 
-        public IEnumerator<KeyValuePair<AssetKey, TAsset>> GetEnumerator() => db.GetEnumerator();
+        public IEnumerator<KeyValuePair<AssetKey, TAsset>> GetEnumerator() => collection.GetEnumerator();
 
         protected virtual void Dispose(bool disposing)
         {
@@ -266,8 +268,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             if (disposing)
             {
-                db.Clear();
-                db.TrimExcess();
+                collection.Clear();
+                collection.TrimExcess();
 
                 loadHandles.ForEach(x => x.Release());
                 loadHandles.Clear();
@@ -306,7 +308,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         bool IReadOnlyDictionary<AssetKey, TAsset>.TryGetValue(AssetKey key, out TAsset value)
         {
-            return db.TryGetValue(key, out value);
+            return collection.TryGetValue(key, out value);
         }
     }
 }

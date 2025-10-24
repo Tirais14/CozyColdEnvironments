@@ -53,15 +53,21 @@ namespace CCEnvs.Unity.UI.MVVM
     /// <typeparam name="TModel"></typeparam>
     public abstract class View<TViewModel, TModel>
         : Element,
-        IView<TViewModel, TModel>,
-        IDragAndDropToggle
+        IView<TViewModel, TModel>
 
         where TViewModel : ViewModel<TModel>
     {
         private Lazy<TViewModel> _viewModel;
 
-        protected TModel model => GetModel();
-        protected TViewModel viewModel => _viewModel.Value;
+        public TModel model => viewModel.model;
+        public TViewModel viewModel {
+            get
+            {
+                _viewModel ??= new Lazy<TViewModel>(CreateViewModel);
+
+                return _viewModel.Value;
+            }
+        }
 
         protected override void Awake()
         {
@@ -69,15 +75,6 @@ namespace CCEnvs.Unity.UI.MVVM
 
             _viewModel = new Lazy<TViewModel>(CreateViewModel);
         }
-
-        public TViewModel GetViewModel()
-        {
-            _viewModel ??= new Lazy<TViewModel>(CreateViewModel);
-
-            return _viewModel.Value;
-        }
-
-        public TModel GetModel() => GetViewModel().GetModel();
 
         protected virtual TModel CreateModel()
         {

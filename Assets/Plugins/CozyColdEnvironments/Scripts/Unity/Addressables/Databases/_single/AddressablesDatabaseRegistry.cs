@@ -22,13 +22,13 @@ using Object = UnityEngine.Object;
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public abstract class AddressablesDatabaseRegistry<TThis>
-        : CCBehaviourStaticQ<TThis>,
+        : CCBehaviourStaticIt<TThis>,
         IAddressablesDatabaseRegistry
 
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
-        private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> databases = new();
-        private readonly DatabaseQuery askQuery = new();
+        private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> collection = new();
+        private readonly DatabaseQuery query = new();
 
         [SerializeField]
         [Tooltip("All loading tasks will be registered in CC.NeccessaryTasks")]
@@ -40,13 +40,18 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public event Action? OnStartLoading;
         public event Action? OnLoaded;
 
-        public IAddressablesDatabase this[AssetDatabaseKey key] => databases[key];
+        public IAddressablesDatabase this[AssetDatabaseKey key] => GetDatabase(key);
 
-        public IEnumerable<AssetDatabaseKey> Keys => databases.Keys;
-        public IEnumerable<IAddressablesDatabase> Values => databases.Values;
-        public int Count => databases.Count;
-        public bool IsLoading => databases.Values.Any(db => db.IsLoading);
+        public IEnumerable<AssetDatabaseKey> Keys => collection.Keys;
+        public IEnumerable<IAddressablesDatabase> Values => collection.Values;
+        public int Count => collection.Count;
+        public bool IsLoading => collection.Values.Any(db => db.IsLoading);
         public bool IsLoaded => !IsLoading && Count > 0;
+        public DatabaseQuery Q => Query;
+
+        public DatabaseQuery Query {
+            get => query.Reset().In(collection.Values);
+        }
 
         protected override void Awake()
         {
@@ -58,31 +63,68 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void RegisterDatabase(IAddressablesDatabase database)
         {
-            databases.Add(new AssetDatabaseKey(database.AssetType, database.ID), database);
+            collection.Add(new AssetDatabaseKey(database.AssetType, database.ID), database);
         }
 
-        public bool UnregisterDatabase(AssetDatabaseKey key) => databases.Remove(key);
+        public bool UnregisterDatabase(AssetDatabaseKey key) => collection.Remove(key);
 
-        public IAddressablesDatabase GetDatabase(AssetDatabaseKey key) => databases[key];
+        public Ghost<IAddressablesDatabase> FindDatabase(AssetDatabaseKey key)
+        {
+            if (collection.TryGetValue(key, out IAddressablesDatabase db))
+                return db.ToGhost();
+
+            return Values.ZL()
+                .FirstOrDefault(
+                    db => key.DatabaseID.Map(id => db.ID == id)
+                        .Value(true)
+                        &&
+                    key.AssetType.Map(type => type == key.AssetType)
+                        .Value(true)
+                        )!.ToGhost();
+        }
+
+        public Ghost<T> FindDatabase<T>(AssetDatabaseKey key) where T : IAddressablesDatabase
+        {
+            return FindDatabase(key).Map(db => db.As<T>());
+        }
+
+        public IAddressablesDatabase GetDatabase(AssetDatabaseKey key)
+        {
+            if (!collection.TryGetValue(key, out IAddressablesDatabase db))
+            {
+                Ghost<IAddressablesDatabase> t = FindDatabase(key);
+
+                if (t.IsNone)
+                    throw new DatabaseNotFoundException(key);
+            }
+
+            return db;
+        }
         public T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase
         {
             return GetDatabase(key).As<T>();
         }
 
+        public Ghost<Object?> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
+        {
+            if (collection.TryGetValue(dbKey, out IAddressablesDatabase db)
+                &&
+                new Trapped<Object>(() => db[key]).Value() is Object asset
+                )
+                return asset;
+
+            return FindDatabase(dbKey).Map(db => db.FindAsset(key).Value());
+        }
+
+        public Ghost<T?> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
+        {
+            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>());
+        }
+
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
         {
-            IAddressablesDatabase db;
-            try
-            {
-                db = databases[dbKey];
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new DatabaseNotFoundException(dbKey);
-            }
-
-            return db.GetAsset(assetkey);
+            return GetDatabase(dbKey).GetAsset(assetkey);
         }
         public T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey)
         {
@@ -93,12 +135,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public IEnumerator<KeyValuePair<AssetDatabaseKey, IAddressablesDatabase>> GetEnumerator()
         {
-            return databases.GetEnumerator();
+            return collection.GetEnumerator();
         }
 
         public bool ContainsKey(AssetDatabaseKey key)
         {
-            return databases.ContainsKey(key);
+            return collection.ContainsKey(key);
         }
 
         protected void BindEvents()
@@ -124,9 +166,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             if (disposing)
             {
-                databases.Values.CForEach(x => x.Dispose());
-                databases.Clear();
-                databases.TrimExcess();
+                collection.Values.CForEach(x => x.Dispose());
+                collection.Clear();
+                collection.TrimExcess();
             }
 
             disposedValue = true;
@@ -156,32 +198,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AssetDatabaseKey key,
             out IAddressablesDatabase value)
         {
-            return databases.TryGetValue(key, out value);
-        }
-
-        public IAddressablesDatabase FindDatabase(AssetDatabaseKey key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T FindDatabase<T>(AssetDatabaseKey key) where T : IAddressablesDatabase
-        {
-            throw new NotImplementedException();
-        }
-
-        public Ghost<Object?> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Ghost<T?> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public DatabaseQuery Ask()
-        {
-            return askQuery.Reset().In(databases.Values);
+            return collection.TryGetValue(key, out value);
         }
     }
 }

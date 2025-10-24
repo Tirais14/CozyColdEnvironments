@@ -1,26 +1,27 @@
 #nullable enable
+#pragma warning disable IDE1006
 namespace CCEnvs.Unity.UI.MVVM
 {
     public interface IView
     {
-        IViewModel GetViewModel();
+        IViewModel viewModel { get; }
 
-        object GetModel();
+        object model { get; }
     }
     public interface IView<out TViewModel> : IView
         where TViewModel : IViewModel
     {
-        new TViewModel GetViewModel();
+        new TViewModel viewModel { get; }
 
-        IViewModel IView.GetViewModel() => GetViewModel();
+        IViewModel IView.viewModel => viewModel;
     }
     public interface IView<out TViewModel, out TModel> : IView<TViewModel>
     where TViewModel : IViewModel
     {
-        new TModel GetModel();
+        new TModel model { get; }
 
-        IViewModel IView.GetViewModel() => GetViewModel();
+        IViewModel IView.viewModel => viewModel;
 
-        object IView.GetModel() => GetModel()!;
+        object IView.model => model!;
     }
 }

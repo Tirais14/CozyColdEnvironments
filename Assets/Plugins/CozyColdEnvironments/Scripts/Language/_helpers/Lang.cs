@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
@@ -16,6 +17,22 @@ namespace CCEnvs.Language
 
             if (source.IsSome)
                 action(source.Value()!);
+
+            return source;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T TryIfSome<T, TValue>(this T source, Action<TValue> action)
+            where T : struct, IConditional<TValue>
+        {
+            try
+            {
+                source.IfSome(action);
+            }
+            catch (Exception ex)
+            {
+                typeof(Lang).PrintLog(ex);
+            }
 
             return source;
         }
@@ -68,6 +85,24 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Conditional<TOutValue> TryMap<T, TValue, TOutValue>(
+            this T source,
+            Func<TValue, TOutValue> selector)
+            where T : struct, IConditional<TValue>
+        {
+            try
+            {
+                return source.Map(selector);
+            }
+            catch (Exception ex)
+            {
+                typeof(Lang).PrintError(ex);
+
+                return default;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Match<T, TValue>(
             this T source,
             Action<TValue> some,
@@ -98,6 +133,62 @@ namespace CCEnvs.Language
                 return some(source.Value()!);
             else
                 return none();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T TryMatch<T, TValue>(
+            this T source,
+            Action<TValue> some,
+            Action noneOrCatched)
+            where T : struct, IConditional<TValue>
+        {
+            try
+            {
+                source.Match(some, noneOrCatched);
+            }
+            catch (Exception ex)
+            {
+                typeof(Lang).PrintLog(ex);
+            }
+
+            return source;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Conditional<TOutValue> TryMatch<T, TValue, TOutValue>(
+            this T source,
+            Func<TValue, TOutValue> some,
+            Func<TOutValue> noneOrCatched)
+            where T : struct, IConditional<TValue>
+        {
+            try
+            {
+                return source.Match(some, noneOrCatched);
+            }
+            catch (Exception ex)
+            {
+                typeof(Lang).PrintLog(ex);
+
+                return noneOrCatched();
+            }
+        }
+
+        public static bool Check<T, TValue>(T source, Predicate<TValue> predicate)
+            where T : struct, IConditional<TValue>
+        {
+            if (source.IsNone)
+                return false;
+
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            return predicate(source.ValueUnsafe<T, TValue>());
+        }
+
+        public static bool CheckUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
+            where T : struct, IConditional<TValue> 
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            return predicate(source.Value());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -134,6 +225,12 @@ namespace CCEnvs.Language
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Ghost<T> AsGhost<T>(this Conditional<T> source)
+        {
+            return source.Value();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Trapped<T> AsTrapped<T>(this Conditional<T> source)
         {
             return source.Value();
         }

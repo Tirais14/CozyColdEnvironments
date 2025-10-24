@@ -14,7 +14,7 @@ namespace CCEnvs.Language
         struct GhostStruct<T>
         : IEnumerable<T>,
         IEquatable<GhostStruct<T>>,
-        IConditional<T>
+        ITarget<GhostStruct<T>, T>
 
         where T : struct
     {
@@ -61,6 +61,12 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly GhostStruct<T> IfNone(Action action)
+        {
+            return Lang.IfNone(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Ghost<TOut> IfNone<TOut>(Func<TOut> selector)
         {
             return Lang.IfNone<GhostStruct<T>, T, TOut>(this, selector).AsGhost();
@@ -84,12 +90,30 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Check(Predicate<T> predicate)
+        {
+            return Lang.Check(this, predicate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool CheckUnsafe(Predicate<T> predicate)
+        {
+            return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T Value() => inner.GetValueOrDefault();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T Value(T defaultValue)
         {
             return Lang.Value(this, defaultValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Value(Func<T> defaultValueFactory)
+        {
+            return Lang.Value(this, defaultValueFactory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

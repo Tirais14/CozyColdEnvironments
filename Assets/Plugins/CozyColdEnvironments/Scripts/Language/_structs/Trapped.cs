@@ -1,24 +1,21 @@
-using CommunityToolkit.Diagnostics;
+using CCEnvs.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-#pragma warning disable S3236
 namespace CCEnvs.Language
 {
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        struct Ghost<T>
+        struct Trapped<T>
         : IEnumerable<T>,
-        IEquatable<Ghost<T>>,
-        ITarget<Ghost<T>, T>
+        IEquatable<Trapped<T>>,
+        ITarget<Trapped<T>, T>
     {
-        public static Ghost<T> None => new();
-
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
         private T? inner;
@@ -29,63 +26,50 @@ namespace CCEnvs.Language
         public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
-        public Ghost(T value)
+        public Trapped(T value)
+            :
+            this()
         {
             inner = value;
         }
 
-        public static implicit operator Ghost<T>(T source)
+        public Trapped(Func<T> valueFactory)
+            :
+            this()
         {
-            return new Ghost<T>(source);
-        }
-        public static explicit operator T?(Ghost<T> source)
-        {
-            return source.inner;
+            try
+            {
+                inner = valueFactory();
+            }
+            catch (Exception ex)
+            {
+                this.PrintLog(ex);
+            }
         }
 
-        public static bool operator ==(Ghost<T> left, Ghost<T> right)
+        public static bool operator ==(Trapped<T> left, Trapped<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Ghost<T> left, Ghost<T> right)
+        public static bool operator !=(Trapped<T> left, Trapped<T> right)
         {
             return !(left == right);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<T> IfSome(Action<T> action)
+        public static implicit operator Trapped<T>(T source)
         {
-            return Lang.IfSome(this, action);
+            return new Trapped<T>(source);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> IfNone<TOut>(Func<TOut> selector)
+        public static explicit operator T?(Trapped<T> source)
         {
-            return Lang.IfNone<Ghost<T>, T, TOut>(this, selector).AsGhost();
+            return source.inner;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<T> IfNone(Action action)
+        public readonly Trapped<TOut> Map<TOut>(Func<T, TOut> selector)
         {
-            return Lang.IfNone(this, action);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<T> Match(Action<T> some, Action none)
-        {
-            return Lang.Match(this, some, none);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
-        {
-            return Lang.Match(this, some, none).AsGhost();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> Map<TOut>(Func<T, TOut> selector)
-        {
-            return Lang.Map(this, selector).AsGhost();
+            return Lang.TryMap(this, selector).AsTrapped();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,6 +82,30 @@ namespace CCEnvs.Language
         public readonly bool CheckUnsafe(Predicate<T?> predicate)
         {
             return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Trapped<T> IfSome(Action<T> action)
+        {
+            return Lang.TryIfSome(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Trapped<T> IfNone(Action action)
+        {
+            return Lang.IfNone(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Trapped<T> Match(Action<T> some, Action none)
+        {
+            return Lang.TryMatch(this, some, none);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Trapped<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        {
+            return Lang.TryMatch(this, some, none).AsTrapped();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,34 +126,18 @@ namespace CCEnvs.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T ValueUnsafe()
         {
-            return Lang.ValueUnsafe<Ghost<T>, T>(this);
+            return Lang.ValueUnsafe<Trapped<T>, T>(this);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> Select<TOut>(Func<T, TOut> selector)
-        {
-            return Map(selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<T> Where(Predicate<T> predicate)
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            if (IsNone || !predicate(inner!))
-                return None;
-
-            return this;
-        }
-
-        public readonly bool Equals(Ghost<T> other)
+        public readonly bool Equals(Trapped<T> other)
         {
             return EqualityComparer<T?>.Default.Equals(inner, other.inner);
         }
         public readonly override bool Equals(object obj)
         {
-            return obj is Ghost<T> typed && Equals(typed);
+            return obj is Trapped<T> typed && Equals(typed);
         }
+
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(inner);

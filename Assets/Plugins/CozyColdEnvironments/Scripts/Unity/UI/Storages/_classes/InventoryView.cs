@@ -34,9 +34,9 @@ namespace CCEnvs.Unity
         {
             base.Awake();
 
-            GetModel().ObserveAdd()
-                      .Subscribe(AddToList)
-                      .AddTo(this);
+            model.ObserveAdd()
+                 .Subscribe(AddToList)
+                 .AddTo(this);
         }
 
         protected override void OnDestroy()
@@ -66,7 +66,7 @@ namespace CCEnvs.Unity
             if (SelectionKey == key)
                 return;
 
-            SelectionValue = GetModel()[key].ToGhost()!;
+            SelectionValue = model[key].ToGhost()!;
             SelectionKey = key;
 
             selectionSubj?.OnNext(SelectionValue);

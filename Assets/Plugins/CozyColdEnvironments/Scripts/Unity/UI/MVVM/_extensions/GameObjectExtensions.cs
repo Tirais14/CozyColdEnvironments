@@ -108,7 +108,7 @@ namespace CCEnvs.UI.MVVM
             int count = views.Length;
             for (int i = 0; i < count; i++)
             {
-                if (views[i].GetViewModel().Is<T>(out var viewModel))
+                if (views[i].viewModel.Is<T>(out var viewModel))
                     viewModels.Add(viewModel);
             }
 
@@ -121,7 +121,7 @@ namespace CCEnvs.UI.MVVM
             int count = views.Length;
             for (int i = 0; i < count; i++)
             {
-                if (views[i].GetViewModel().Is<T>(out var viewModel))
+                if (views[i].viewModel.Is<T>(out var viewModel))
                     return viewModel;
             }
 
@@ -134,7 +134,7 @@ namespace CCEnvs.UI.MVVM
             int count = viewModels.Length;
             for (int i = 0; i < count; i++)
             {
-                if (viewModels[i].GetModel().Is<T>(out var model))
+                if (viewModels[i].model.Is<T>(out var model))
                     models.Add(model);
             }
 
@@ -146,7 +146,7 @@ namespace CCEnvs.UI.MVVM
             int count = viewModels.Length;
             for (int i = 0; i < count; i++)
             {
-                if (viewModels[i].GetModel().Is<T>(out var model))
+                if (viewModels[i].model.Is<T>(out var model))
                     return model;
             }
 

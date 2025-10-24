@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.UI.MVVM
             int count = viewModels.Length;
             for (int i = 0; i < count; i++)
             {
-                if (viewModels[i].GetModel() is T typed)
+                if (viewModels[i].model is T typed)
                     models.Add(typed);
             }
 
@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.UI.MVVM
             int count = viewModels.Length;
             for (int i = 0; i < count; i++)
             {
-                if (viewModels[i].GetModel() is T typed)
+                if (viewModels[i].model is T typed)
                     return typed;
             }
 

@@ -1,7 +1,7 @@
-using CCEnvs;
 using CCEnvs.Language;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 
@@ -13,9 +13,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IIDMarked<UniID>
     {
         public Ghost<Type> AssetType { get; }
-        public UniID DatabaseID { get; }
+        public GhostStruct<UniID> DatabaseID { get; }
 
-        UniID IIDMarked<UniID>.ID => DatabaseID;
+        UniID IIDMarked<UniID>.ID => DatabaseID.Value();
 
         public AssetDatabaseKey(Type? dbAssetType)
             :
@@ -53,11 +53,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return !(left == right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AssetDatabaseKey With(Type assetType)
         {
-            return new AssetDatabaseKey(assetType, DatabaseID);
+            return new AssetDatabaseKey(assetType, DatabaseID.Value());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AssetDatabaseKey With(UniID id)
         {
             return new AssetDatabaseKey(AssetType.ValueUnsafe(), id);

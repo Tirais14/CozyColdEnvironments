@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.UI.MVVM
             int count = views.Length;
             for (int i = 0; i < count; i++)
             {
-                if (views[i].GetViewModel().Is<T>(out var typed))
+                if (views[i].viewModel.Is<T>(out var typed))
                     viewModels.Add(typed);
             }
 
@@ -38,7 +38,7 @@ namespace CCEnvs.Unity.UI.MVVM
             int count = views.Length;
             for (int i = 0; i < count; i++)
             {
-                if (views[i].GetViewModel().Is<T>(out var typed))
+                if (views[i].viewModel.Is<T>(out var typed))
                     return typed;
 
             }
@@ -48,9 +48,8 @@ namespace CCEnvs.Unity.UI.MVVM
     }
     public abstract class ViewModel<T> : DisposableContainer, IViewModel<T>
     {
-        protected T model;
-
         public Ghost<GameObject?> gameObject { get; private set; }
+        public T model { get; private set; }
 
         protected ViewModel(T model)
         {
@@ -76,8 +75,5 @@ namespace CCEnvs.Unity.UI.MVVM
                     }
                 });
         }
-
-        public T GetModel() => model;
-        object IViewModel.GetModel() => model!;
     }
 }

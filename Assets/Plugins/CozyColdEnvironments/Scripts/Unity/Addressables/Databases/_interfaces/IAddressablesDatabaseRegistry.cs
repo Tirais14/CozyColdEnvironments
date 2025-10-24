@@ -1,4 +1,3 @@
-using CCEnvs;
 using CCEnvs.Language;
 using System;
 using System.Collections.Generic;
@@ -12,12 +11,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IDisposable,
         ILoadable
     {
+        DatabaseQuery Query { get; }
+        DatabaseQuery Q { get; }
+
         void RegisterDatabase(IAddressablesDatabase database);
 
         bool UnregisterDatabase(AssetDatabaseKey key);
 
-        IAddressablesDatabase FindDatabase(AssetDatabaseKey key);
-        T FindDatabase<T>(AssetDatabaseKey key)
+        Ghost<IAddressablesDatabase> FindDatabase(AssetDatabaseKey key);
+        Ghost<T> FindDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase;
 
         IAddressablesDatabase GetDatabase(AssetDatabaseKey key);
@@ -29,7 +31,5 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey);
         T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey);
-
-        DatabaseQuery Ask();
     }
 }

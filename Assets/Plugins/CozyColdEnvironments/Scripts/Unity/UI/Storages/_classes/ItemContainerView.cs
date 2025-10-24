@@ -45,18 +45,18 @@ namespace CCEnvs.Unity.UI.Storages
         {
             base.Start();
 
-            image.IfSome(img =>
+            image.IfSome((System.Action<Image>)(img =>
             {
-                viewModel.ItemIconView.Subscribe(newSprite => img.sprite = newSprite)
+                ObservableExtensions.Subscribe<Sprite>(base.viewModel.ItemIconView, (System.Action<Sprite>)(newSprite => img.sprite = newSprite))
                                       .AddTo(this);
-            });
+            }));
 
-            textMesh.IfSome((mesh) =>
+            textMesh.IfSome((System.Action<TextMeshProUGUI>)((mesh) =>
             {
-                viewModel.ItemCountView.Select(y => y.ToString())
+                Observable.Select<int, string>(base.viewModel.ItemCountView, (System.Func<int, string>)(y => y.ToString()))
                                        .Subscribe(newText => mesh.text = newText)
                                        .AddTo(this);
-            });
+            }));
         }
 
         protected override void OnBeginDrag(PointerEventData eventData)
