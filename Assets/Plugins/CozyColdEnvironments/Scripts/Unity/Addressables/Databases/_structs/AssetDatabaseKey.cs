@@ -12,10 +12,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         : IEquatable<AssetDatabaseKey>, 
         IIDMarked<UniID>
     {
-        public Ghost<Type> AssetType { get; }
-        public GhostStruct<UniID> DatabaseID { get; }
+        public Maybe<Type> AssetType { get; }
+        public MaybeStruct<UniID> DatabaseID { get; }
 
-        UniID IIDMarked<UniID>.ID => DatabaseID.Value();
+        UniID IIDMarked<UniID>.ID => DatabaseID.Access();
 
         public AssetDatabaseKey(Type? dbAssetType)
             :
@@ -56,13 +56,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AssetDatabaseKey With(Type assetType)
         {
-            return new AssetDatabaseKey(assetType, DatabaseID.Value());
+            return new AssetDatabaseKey(assetType, DatabaseID.Access());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AssetDatabaseKey With(UniID id)
         {
-            return new AssetDatabaseKey(AssetType.ValueUnsafe(), id);
+            return new AssetDatabaseKey(AssetType.AccessUnsafe(), id);
         }
 
         public bool Equals(AssetDatabaseKey other)

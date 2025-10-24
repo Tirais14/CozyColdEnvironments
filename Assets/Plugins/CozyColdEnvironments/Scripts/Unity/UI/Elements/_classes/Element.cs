@@ -23,11 +23,11 @@ namespace CCEnvs.Unity.UI.Elements
         IElement,
         IDragAndDropToggle
     {
-        protected Ghost<Image> image { get; private set; }
+        protected Maybe<Image> image { get; private set; }
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<DragAndDropToggle> dragAndDropToggle { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
-        protected virtual Ghost<Component> dragItem => this;
+        protected virtual Maybe<Component> dragItem => this;
         protected virtual bool readyToDrag => true;
         protected virtual bool readyToTakeDrop => false;
 

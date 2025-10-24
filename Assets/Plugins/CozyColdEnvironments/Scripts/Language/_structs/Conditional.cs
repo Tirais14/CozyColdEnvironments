@@ -60,10 +60,10 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Value() => value;
+        public readonly T? Access() => value;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Value([NotNullWhen(true)] out T? result)
+        public readonly bool Access([NotNullWhen(true)] out T? result)
         {
             result = value;
 
@@ -71,21 +71,21 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Value(T? defaultValue)
+        public readonly T? Access(T? defaultValue)
         {
-            return Lang.Value(this, defaultValue);
+            return Lang.Access(this, defaultValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Value(Func<T?> defaultValueFactory)
+        public readonly T? Access(Func<T?> defaultValueFactory)
         {
-            return Lang.Value(this, defaultValueFactory);
+            return Lang.Access(this, defaultValueFactory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T ValueUnsafe()
+        public readonly T AccessUnsafe()
         {
-            return Lang.ValueUnsafe<Conditional<T>, T>(this);
+            return Lang.AccessUnsafe<Conditional<T>, T>(this);
         }
 
         public readonly bool Equals(Conditional<T> other)

@@ -12,13 +12,13 @@ namespace CCEnvs.Unity.UI
         IDisposable
     {
         private readonly Lazy<Subject<SelectionChangedEvent<TKey, TValue>>> selectionSubj = new(() => new Subject<SelectionChangedEvent<TKey, TValue>>());
-        private readonly ReactiveProperty<KeyValuePair<TKey, Ghost<TValue>>> selection = new();
-        private readonly Trapped<Func<TKey, TValue>> valueGetter;
+        private readonly ReactiveProperty<KeyValuePair<TKey, Maybe<TValue>>> selection = new();
+        private readonly Catched<Func<TKey, TValue>> valueGetter;
         private bool disposed;
 
         public event Action<SelectionChangedEvent<TKey, TValue>>? OnSelectionChanged;
 
-        public IReadOnlyReactiveProperty<KeyValuePair<TKey, Ghost<TValue>>> Selection => selection;
+        public IReadOnlyReactiveProperty<KeyValuePair<TKey, Maybe<TValue>>> Selection => selection;
 
         public SelectionController(Func<TKey, TValue> valueGetter)
         {
@@ -32,9 +32,9 @@ namespace CCEnvs.Unity.UI
 
             var info = SelectionChangedEvent.Create(
                 selection.Value.Key,
-                selection.Value.Value.Value(),
+                selection.Value.Value.Access(),
                 key,
-                valueGetter.ValueUnsafe().Invoke(key));
+                valueGetter.AccessUnsafe().Invoke(key));
 
             info.previousValue.AsOrDefault<ISelectable>().IfSome(x => x.SelectIt());
             selection.Value = info.NewSelection;
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.UI
 
             var info = SelectionChangedEvent.Create(
                 selection.Value.Key,
-                selection.Value.Value.Value(),
+                selection.Value.Value.Access(),
                 default,
                 default);
 

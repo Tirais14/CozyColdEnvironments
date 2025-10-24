@@ -13,10 +13,10 @@ namespace CCEnvs.Language
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        struct Trapped<T>
+        struct Catched<T>
         : IEnumerable<T>,
-        IEquatable<Trapped<T>>,
-        ITarget<Trapped<T>, T>
+        IEquatable<Catched<T>>,
+        ITarget<Catched<T>, T>
     {
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
@@ -30,7 +30,7 @@ namespace CCEnvs.Language
         public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
-        public Trapped(T? value, LogType logType = LogType.Log)
+        public Catched(T? value, LogType logType = LogType.Log)
             :
             this()
         {
@@ -38,7 +38,7 @@ namespace CCEnvs.Language
             this.logType = logType;
         }
 
-        public Trapped(Func<T> valueFactory)
+        public Catched(Func<T> valueFactory)
             :
             this()
         {
@@ -52,36 +52,36 @@ namespace CCEnvs.Language
             }
         }
 
-        public static bool operator ==(Trapped<T> left, Trapped<T> right)
+        public static bool operator ==(Catched<T> left, Catched<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Trapped<T> left, Trapped<T> right)
+        public static bool operator !=(Catched<T> left, Catched<T> right)
         {
             return !(left == right);
         }
 
-        public static implicit operator Trapped<T>(T source)
+        public static implicit operator Catched<T>(T source)
         {
-            return new Trapped<T>(source);
+            return new Catched<T>(source);
         }
 
-        public static explicit operator T?(Trapped<T> source)
+        public static explicit operator T?(Catched<T> source)
         {
             return source.inner;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Trapped<T> With(LogType logType)
+        public readonly Catched<T> With(LogType logType)
         {
-            return new Trapped<T>(inner, logType);
+            return new Catched<T>(inner, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Trapped<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Catched<TOut> Map<TOut>(Func<T, TOut> selector)
         {
-            return Lang.TryMap(this, selector, logType).AsTrapped();
+            return Lang.TryMap(this, selector, logType).Catch();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,34 +97,34 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Trapped<T> IfSome(Action<T> action)
+        public readonly Catched<T> IfSome(Action<T> action)
         {
             return Lang.TryIfSome(this, action, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Trapped<T> IfNone(Action action)
+        public readonly Catched<T> IfNone(Action action)
         {
             return Lang.IfNone(this, action);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Trapped<T> Match(Action<T> some, Action none)
+        public readonly Catched<T> Match(Action<T> some, Action none)
         {
             return Lang.TryMatch(this, some, none, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Trapped<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        public readonly Catched<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
-            return Lang.TryMatch(this, some, none, logType).AsTrapped();
+            return Lang.TryMatch(this, some, none, logType).Catch();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Value() => inner;
+        public readonly T? Access() => inner;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Value([NotNullWhen(true)] out T? result)
+        public readonly bool Access([NotNullWhen(true)] out T? result)
         {
             result = inner;
 
@@ -132,30 +132,30 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Value(T? defaultValue)
+        public readonly T? Access(T? defaultValue)
         {
-            return Lang.Value(this, defaultValue);
+            return Lang.Access(this, defaultValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Value(Func<T?> defaultValueFactory)
+        public readonly T? Access(Func<T?> defaultValueFactory)
         {
-            return Lang.Value(this, defaultValueFactory);
+            return Lang.Access(this, defaultValueFactory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T ValueUnsafe()
+        public readonly T AccessUnsafe()
         {
-            return Lang.ValueUnsafe<Trapped<T>, T>(this);
+            return Lang.AccessUnsafe<Catched<T>, T>(this);
         }
 
-        public readonly bool Equals(Trapped<T> other)
+        public readonly bool Equals(Catched<T> other)
         {
             return EqualityComparer<T?>.Default.Equals(inner, other.inner);
         }
         public readonly override bool Equals(object obj)
         {
-            return obj is Trapped<T> typed && Equals(typed);
+            return obj is Catched<T> typed && Equals(typed);
         }
 
         public readonly override int GetHashCode()

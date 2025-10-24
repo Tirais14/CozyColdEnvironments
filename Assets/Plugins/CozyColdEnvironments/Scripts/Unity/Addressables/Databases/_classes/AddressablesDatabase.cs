@@ -188,7 +188,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                             .ToArray();
         }
 
-        public Ghost<TAsset> FindAsset(AssetKey key)
+        public Maybe<TAsset> FindAsset(AssetKey key)
         {
             if (collection.TryGetValue(key, out var asset))
                 return asset;
@@ -198,11 +198,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    collection.ZL().FirstOrDefault(x => x.Key.AssetName == key.AssetName)
                    :
                    collection.ZL().FirstOrDefault(x => x.Key.AssetID == key.AssetID))
-                   .ToGhost()
+                   .Maybe()
                    .Map(x => x.Value)!;
         }
 
-        public Ghost<T> FindAsset<T>(AssetKey key)
+        public Maybe<T> FindAsset<T>(AssetKey key)
         {
             return FindAsset(key).AsOrDefault<T>();
         }
@@ -211,7 +211,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             if (collection.TryGetValue(key, out TAsset asset)
                 ||
-                new Ghost<TAsset>(FindAsset(key).Value()!).Value(out asset!)
+                new Maybe<TAsset>(FindAsset(key).Access()!).Access(out asset!)
                 )
                 return asset;
 

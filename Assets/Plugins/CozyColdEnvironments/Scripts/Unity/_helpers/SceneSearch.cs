@@ -11,7 +11,7 @@ namespace CCEnvs
 {
     public static class SceneSearch
     {
-        public static Ghost<object> FindObjectByType(Type type,
+        public static Maybe<object> FindObjectByType(Type type,
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude,
             FindObjectsSortMode sortMode = FindObjectsSortMode.None)
         {
@@ -20,7 +20,7 @@ namespace CCEnvs
                                              sortMode).FirstOrDefault();
         }
 
-        public static Ghost<object> FindObjectByType(Type type,
+        public static Maybe<object> FindObjectByType(Type type,
             FindObjectsSortMode sortMode = FindObjectsSortMode.None)
         {
             return FindObjectsByTypeInternal(type,
@@ -28,7 +28,7 @@ namespace CCEnvs
                                              sortMode).FirstOrDefault();
         }
 
-        public static Ghost<T> FindObjectByType<T>(FindObjectsInactive findObjectsInactive,
+        public static Maybe<T> FindObjectByType<T>(FindObjectsInactive findObjectsInactive,
             FindObjectsSortMode sortMode = FindObjectsSortMode.None)
         {
             return FindObjectsByTypeInternal(typeof(T),
@@ -37,7 +37,7 @@ namespace CCEnvs
                                                       .AsOrDefault<T>();
         }
 
-        public static Ghost<T> FindObjectByType<T>(
+        public static Maybe<T> FindObjectByType<T>(
             FindObjectsSortMode sortMode = FindObjectsSortMode.None)
         {
             return FindObjectsByTypeInternal(typeof(T),

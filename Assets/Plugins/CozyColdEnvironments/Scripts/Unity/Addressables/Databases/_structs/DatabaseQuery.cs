@@ -16,8 +16,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public record DatabaseQuery
     {
-        private Ghost<IAddressablesDatabaseRegistry> dbRegistry;
-        private Ghost<IAddressablesDatabase> db;
+        private Maybe<IAddressablesDatabaseRegistry> dbRegistry;
+        private Maybe<IAddressablesDatabase> db;
         private AssetDatabaseKey dbKey;
         private AssetKey key;
 
@@ -36,8 +36,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg[dbKey, key],
-                () => db.Map(x => x[key]).ValueUnsafe()
-                ).ValueUnsafe();
+                () => db.Map(x => x[key]).AccessUnsafe()
+                ).AccessUnsafe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,8 +50,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg.GetAsset<T>(dbKey, key),
-                () => db.Map(x => x.GetAsset<T>(key)).ValueUnsafe()
-                ).ValueUnsafe();
+                () => db.Map(x => x.GetAsset<T>(key)).AccessUnsafe()
+                ).AccessUnsafe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -69,7 +69,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ghost<UnityEngine.Object> FindAsset(Type assetType)
+        public Maybe<UnityEngine.Object> FindAsset(Type assetType)
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
             Validate();
@@ -78,12 +78,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg.FindAsset(dbKey, key),
-                () => db.Map(x => x.FindAsset(key).Value())!
-                ).Value();
+                () => db.Map(x => x.FindAsset(key).Access())!
+                ).Access();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ghost<T> FindAsset<T>(Type? assetType = null)
+        public Maybe<T> FindAsset<T>(Type? assetType = null)
             where T : UnityEngine.Object
         {
             Validate();
@@ -92,8 +92,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg.FindAsset<T>(dbKey, key),
-                () => db.Map(x => x.FindAsset<T>(key).Value())!
-                ).Value();
+                () => db.Map(x => x.FindAsset<T>(key).Access())!
+                ).Access();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -113,8 +113,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery WithDatabaseID(UniID id)
         {
-            dbKey = new AssetDatabaseKey(dbKey.AssetType.Value(), id);
-            key = new AssetKey(key.AssetName.Value(), key.AssetID);
+            dbKey = new AssetDatabaseKey(dbKey.AssetType.Access(), id);
+            key = new AssetKey(key.AssetName.Access(), key.AssetID);
 
             return this;
         }
@@ -210,7 +210,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery WithAssetID(int assetID)
         {
-            key = new AssetKey(key.AssetName.Value(), assetID);
+            key = new AssetKey(key.AssetName.Access(), assetID);
 
             return this;
         }
@@ -218,7 +218,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery In(IAddressablesDatabaseRegistry? dbRegistry)
         {
-            this.dbRegistry = dbRegistry.ToGhost()!;
+            this.dbRegistry = dbRegistry.Maybe()!;
 
             return this;
         }
@@ -226,7 +226,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery In(IAddressablesDatabase? db)
         {
-            this.db = db.ToGhost()!;
+            this.db = db.Maybe()!;
 
             return this;
         }

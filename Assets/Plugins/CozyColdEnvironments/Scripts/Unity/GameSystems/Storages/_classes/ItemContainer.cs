@@ -13,16 +13,16 @@ namespace CCEnvs.Unity.GameSystems.Storages
 {
     public class ItemContainer : IItemContainer
     {
-        private readonly ReactiveProperty<IItem?> item = new();
+        private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
         private int capacity;
 
         public static ItemContainer Empty => new();
 
-        public IReadOnlyReactiveProperty<IItem?> Item => item;
+        public IReadOnlyReactiveProperty<Maybe<IItem>> Item => item;
         public IReadOnlyReactiveProperty<int> ItemCount => itemCount;
         public int Capacity {
-            get => Mathf.Min(capacity, Item.Value?.MaxItemCount ?? int.MaxValue);
+            get => Mathf.Min(item.Value.Map(item => item.MaxItemCount).Access(int.MaxValue), capacity);
             set
             {
                 if (value < 0)
@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
         public bool Unlocked { get; set; }
-        public Ghost<GameObject?> gameObject { get; private set; }
+        public Maybe<GameObject?> gameObject { get; private set; }
 
         public ItemContainer(int capacity)
         {
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
             :
             this(capcacity)
         {
-            this.item.Value = item;
+            this.item.Value = item.Maybe()!;
 
             if (item.IsNull() && count > 0)
             {
@@ -121,14 +121,14 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
 
-            return Put(itemContainer.Item.Value, count);
+            return Put(itemContainer.Item.Value.Access(), count);
         }
 
         public IItemContainer Put(IItemContainer itemContainer)
         {
             CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
 
-            return Put(itemContainer.Item.Value, itemContainer.ItemCount.Value);
+            return Put(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
         }
 
         public IItemContainer Take(int count)
@@ -136,7 +136,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
             if (count >= ItemCount.Value)
             {
                 Clear();
-                return new ItemContainer(Item.Value, ItemCount.Value);
+                return new ItemContainer(Item.Value.Access(), ItemCount.Value);
             }
 
             itemCount.Value -= count;
@@ -144,7 +144,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
             if (itemCount.Value <= 0)
                 Clear();
 
-            return new ItemContainer(Item.Value, count);
+            return new ItemContainer(Item.Value.Access(), count);
         }
 
         public IItemContainer Take(IItem item, int count)
@@ -157,7 +157,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public IItemContainer ShallowClone()
         {
-            return new ItemContainer(Item.Value, ItemCount.Value);
+            return new ItemContainer(Item.Value.Access(), ItemCount.Value);
         }
 
         public void CopyFrom(IItemContainerInfo itemContainer)

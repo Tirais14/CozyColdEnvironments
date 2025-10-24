@@ -42,8 +42,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         /// </summary>
         IAddressablesDatabase[] CutByTypes();
 
-        Ghost<Object> FindAsset(AssetKey key);
-        Ghost<T> FindAsset<T>(AssetKey key);
+        Maybe<Object> FindAsset(AssetKey key);
+        Maybe<T> FindAsset<T>(AssetKey key);
 
         Object GetAsset(AssetKey key);
         T GetAsset<T>(AssetKey key);
@@ -75,7 +75,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         void AddAssets(IEnumerable<TAsset> assets);
 
-        new Ghost<TAsset> FindAsset(AssetKey key);
+        new Maybe<TAsset> FindAsset(AssetKey key);
 
         new TAsset GetAsset(AssetKey key);
 
@@ -93,7 +93,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AddAssets(assets.Select(x => x.As<TAsset>()));
         }
 
-        Ghost<Object> IAddressablesDatabase.FindAsset(AssetKey key)
+        Maybe<Object> IAddressablesDatabase.FindAsset(AssetKey key)
         {
             return FindAsset(key).Map(x => x.As<Object>())!;
         }

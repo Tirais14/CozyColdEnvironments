@@ -17,7 +17,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(action, nameof(action));
 
             if (source.IsSome)
-                action(source.Value()!);
+                action(source.Access()!);
 
             return source;
         }
@@ -85,7 +85,7 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return source.IsSome ? selector(source.Value()!) : default!;
+            return source.IsSome ? selector(source.Access()!) : default!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,7 +118,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(none, nameof(none));
 
             if (source.IsSome)
-                some(source.ValueUnsafe());
+                some(source.AccessUnsafe());
             else
                 none();
 
@@ -135,7 +135,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(none, nameof(none));
 
             if (source.IsSome)
-                return some(source.ValueUnsafe());
+                return some(source.AccessUnsafe());
             else
                 return none();
         }
@@ -187,7 +187,7 @@ namespace CCEnvs.Language
 
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            return predicate(source.ValueUnsafe<T, TValue>());
+            return predicate(source.AccessUnsafe<T, TValue>());
         }
 
         public static bool CheckUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
@@ -195,67 +195,67 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            return predicate(source.Value());
+            return predicate(source.Access());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue? Value<T, TValue>(this T source, TValue? defaultValue)
+        public static TValue? Access<T, TValue>(this T source, TValue? defaultValue)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
                 return defaultValue;
 
-            return source.Value()!;
+            return source.Access()!;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue? Value<T, TValue>(this T source, Func<TValue?> defaultValueFactory)
+        public static TValue? Access<T, TValue>(this T source, Func<TValue?> defaultValueFactory)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
                 return defaultValueFactory();
 
-            return source.Value()!;
+            return source.Access()!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue ValueUnsafe<T, TValue>(this T source)
+        public static TValue AccessUnsafe<T, TValue>(this T source)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
                 throw new Diagnostics.CCException("Value is none");
 
-            return source.Value()!;
+            return source.Access()!;
         }
 
 #nullable disable
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Ghost<T> ToGhost<T>(this T source) => source;
+        public static Maybe<T> Maybe<T>(this T source) => source;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Ghost<T> AsGhost<T>(this Conditional<T> source)
+        public static Maybe<T> Maybe<T>(this Conditional<T> source)
         {
-            return source.Value();
+            return source.Access();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Trapped<T> AsTrapped<T>(this Conditional<T> source,
+        public static Catched<T> Catch<T>(this Conditional<T> source,
             LogType logType = LogType.Log)
         {
-            return new Trapped<T>(source.Value(), logType);
+            return new Catched<T>(source.Access(), logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GhostStruct<T> ToGhostStruct<T>(this T source)
+        public static MaybeStruct<T> MaybeStruct<T>(this T source)
             where T : struct
         {
             return source;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GhostStruct<T> AsGhostStruct<T>(this Conditional<T> source)
+        public static MaybeStruct<T> MaybeStruct<T>(this Conditional<T> source)
             where T : struct
         {
-            return source.Value();
+            return source.Access();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -30,7 +30,7 @@ namespace CCEnvs.LanguageExt
             if (source.IsNone)
                 return default!;
 
-            return source.Value()!;
+            return source.Access()!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,7 +40,7 @@ namespace CCEnvs.LanguageExt
             if (source.IsNone)
                 return Option<TValue>.None;
 
-            return source.Value()!;
+            return source.Access()!;
         }
     }
 }

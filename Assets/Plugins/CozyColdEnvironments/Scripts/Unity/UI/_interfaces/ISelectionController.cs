@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.UI
     {
         event Action<SelectionChangedEvent<TKey, TValue>> OnSelectionChanged;
 
-        IReadOnlyReactiveProperty<KeyValuePair<TKey, Ghost<TValue>>> Selection { get; }
+        IReadOnlyReactiveProperty<KeyValuePair<TKey, Maybe<TValue>>> Selection { get; }
 
         IObservable<SelectionChangedEvent<TKey, TValue>> ObserveSelection();
 

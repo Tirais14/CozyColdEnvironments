@@ -1,3 +1,5 @@
+using CCEnvs.Disposables;
+using CCEnvs.Language;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;
@@ -12,20 +14,23 @@ namespace CCEnvs.Unity.UI.Storages
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite> itemIconView = new();
+        private readonly ReactiveProperty<Maybe<Sprite>> itemIconView = new();
         private readonly ReactiveProperty<int> itemCountView = new();
 
-        public IReadOnlyReactiveProperty<Sprite> ItemIconView => itemIconView;
+        public IReadOnlyReactiveProperty<Maybe<Sprite>> ItemIconView => itemIconView;
         public IReadOnlyReactiveProperty<int> ItemCountView => itemCountView;
-
-        public ItemContainerViewModel(T model) : base(model)
-        {
-        }
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
             base(model, gameObject)
         {
+            model.Item.Subscribe(x => x.Match(
+                item => itemIconView.Value = item.Icon,
+                () => itemIconView.Value = null))
+                .AddTo(this);
+
+            model.ItemCount.Subscribe(count => itemCountView.Value = count)
+                           .AddTo(this);
         }
     }
 }

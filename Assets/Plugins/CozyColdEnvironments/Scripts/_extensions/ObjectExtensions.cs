@@ -225,12 +225,12 @@ namespace CCEnvs
             }
         }
 
-        public static Ghost<T> AsOrDefault<T>(this object? obj)
+        public static Maybe<T> AsOrDefault<T>(this object? obj)
         {
             return obj is T typedObj ? typedObj : default;
         }
 
-        public static Ghost<TValue> AsOrDefault<TObj, TValue>(this TObj? obj)
+        public static Maybe<TValue> AsOrDefault<TObj, TValue>(this TObj? obj)
         {
             return obj is TValue typedObj ? typedObj : default;
         }

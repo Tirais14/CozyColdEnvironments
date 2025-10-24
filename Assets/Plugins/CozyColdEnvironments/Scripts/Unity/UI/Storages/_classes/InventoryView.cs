@@ -28,7 +28,7 @@ namespace CCEnvs.Unity
         [field: GetByChildren]
         public GameObjectBag SlotBag { get; private set; } = null!;
 
-        public IReadOnlyReactiveProperty<KeyValuePair<int, Ghost<IItemContainer>>> Selection => selectableController.Selection;
+        public IReadOnlyReactiveProperty<KeyValuePair<int, Maybe<IItemContainer>>> Selection => selectableController.Selection;
 
         protected override void Awake()
         {

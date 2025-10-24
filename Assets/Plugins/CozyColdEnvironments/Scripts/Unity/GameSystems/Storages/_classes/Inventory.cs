@@ -103,7 +103,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             UnityEngine.Object.Instantiate(toInstantiate)
                               .GetAssignedModel<IItemContainer>()
-                              .ToGhost()
+                              .Maybe()
                               .IfSome(Add!);
         }
 
@@ -224,12 +224,12 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public IItemContainer Put(IItemContainer itemContainer, int count)
         {
-            return Put(itemContainer.Item.Value, count);
+            return Put(itemContainer.Item.Value.Access(), count);
         }
 
         public IItemContainer Put(IItemContainer itemContainer)
         {
-            return Put(itemContainer.Item.Value, itemContainer.ItemCount.Value);
+            return Put(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
         }
 
         public IItemContainer Take(IItem item, int count)

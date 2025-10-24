@@ -15,11 +15,11 @@ namespace CCEnvs.Language
 
         bool CheckUnsafe(Predicate<T?> predicate);
 
-        T? Value();
-        bool Value([NotNullWhen(true)] out T? result);
-        T? Value(T? defaultValue);
-        T? Value(Func<T?> defaultValueFactory);
+        T? Access();
+        bool Access([NotNullWhen(true)] out T? result);
+        T? Access(T? defaultValue);
+        T? Access(Func<T?> defaultValueFactory);
 
-        T ValueUnsafe();
+        T AccessUnsafe();
     }
 }

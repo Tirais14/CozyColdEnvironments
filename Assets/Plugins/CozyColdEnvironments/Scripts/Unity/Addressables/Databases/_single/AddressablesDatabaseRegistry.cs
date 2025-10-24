@@ -67,22 +67,22 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public bool UnregisterDatabase(AssetDatabaseKey key) => collection.Remove(key);
 
-        public Ghost<IAddressablesDatabase> FindDatabase(AssetDatabaseKey key)
+        public Maybe<IAddressablesDatabase> FindDatabase(AssetDatabaseKey key)
         {
             if (collection.TryGetValue(key, out IAddressablesDatabase db))
-                return db.ToGhost();
+                return db.Maybe();
 
             return Values.ZL()
                 .FirstOrDefault(
                     db => key.DatabaseID.Map(id => db.ID == id)
-                        .Value(true)
+                        .Access(true)
                         &&
                     key.AssetType.Map(type => type == key.AssetType)
-                        .Value(true)
-                        )!.ToGhost();
+                        .Access(true)
+                        )!.Maybe();
         }
 
-        public Ghost<T> FindDatabase<T>(AssetDatabaseKey key) where T : IAddressablesDatabase
+        public Maybe<T> FindDatabase<T>(AssetDatabaseKey key) where T : IAddressablesDatabase
         {
             return FindDatabase(key).Map(db => db.As<T>());
         }
@@ -91,7 +91,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             if (!collection.TryGetValue(key, out IAddressablesDatabase db))
             {
-                Ghost<IAddressablesDatabase> t = FindDatabase(key);
+                Maybe<IAddressablesDatabase> t = FindDatabase(key);
 
                 if (t.IsNone)
                     throw new DatabaseNotFoundException(key);
@@ -105,20 +105,20 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return GetDatabase(key).As<T>();
         }
 
-        public Ghost<Object> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
+        public Maybe<Object> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
         {
             if (collection.TryGetValue(dbKey, out IAddressablesDatabase db)
                 &&
-                new Trapped<Object>(() => db[key]).Value() is Object asset
+                new Catched<Object>(() => db[key]).Access() is Object asset
                 )
                 return asset;
 
-            return FindDatabase(dbKey).Map(db => db.FindAsset(key).Value()!);
+            return FindDatabase(dbKey).Map(db => db.FindAsset(key).Access()!);
         }
 
-        public Ghost<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
+        public Maybe<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
         {
-            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()).Value();
+            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()).Access();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)

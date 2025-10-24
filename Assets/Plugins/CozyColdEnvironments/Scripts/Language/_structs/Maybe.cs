@@ -6,99 +6,87 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-#pragma warning disable IDE1006
+#pragma warning disable S3236
 namespace CCEnvs.Language
 {
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        struct GhostStruct<T>
+        struct Maybe<T>
         : IEnumerable<T>,
-        IEquatable<GhostStruct<T>>,
-        ITarget<GhostStruct<T>, T>
-
-        where T : struct
+        IEquatable<Maybe<T>>,
+        ITarget<Maybe<T>, T>
     {
-        public static GhostStruct<T> None => new();
+        public static Maybe<T> None => new();
 
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private bool m_hasValue;
-
-        [UnityEngine.SerializeField]
-        private T m_value;
-
-        private readonly T? inner => m_hasValue ? m_value : null;
+        private T? inner;
 #else
         private readonly T? inner;
 #endif
 
-        public readonly bool IsSome => inner.HasValue;
+        public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
-        public GhostStruct(T value)
+        public Maybe(T value)
         {
-#if UNITY_2017_1_OR_NEWER
-            m_hasValue = true;
-            m_value = value;
-#else
             inner = value;
-#endif
         }
 
-        public static implicit operator GhostStruct<T>(T source)
+        public static implicit operator Maybe<T>(T? source)
         {
-            return new GhostStruct<T>(source);
+            return new Maybe<T>(source);
         }
-        public static explicit operator T(GhostStruct<T> source)
+        public static explicit operator T?(Maybe<T> source)
         {
-            return source.inner.GetValueOrDefault();
+            return source.inner;
         }
 
-        public static bool operator ==(GhostStruct<T> left, GhostStruct<T> right)
+        public static bool operator ==(Maybe<T> left, Maybe<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(GhostStruct<T> left, GhostStruct<T> right)
+        public static bool operator !=(Maybe<T> left, Maybe<T> right)
         {
             return !(left == right);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly GhostStruct<T> IfSome(Action<T> action)
+        public readonly Maybe<T> IfSome(Action<T> action)
         {
             return Lang.IfSome(this, action);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly GhostStruct<T> IfNone(Action action)
+        public readonly Maybe<TOut> IfNone<TOut>(Func<TOut> selector)
+        {
+            return Lang.IfNone<Maybe<T>, T, TOut>(this, selector).Maybe();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> IfNone(Action action)
         {
             return Lang.IfNone(this, action);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> IfNone<TOut>(Func<TOut> selector)
-        {
-            return Lang.IfNone<GhostStruct<T>, T, TOut>(this, selector).AsGhost();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly GhostStruct<T> Match(Action<T> some, Action none)
+        public readonly Maybe<T> Match(Action<T> some, Action none)
         {
             return Lang.Match(this, some, none);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
-            return Lang.Match(this, some, none).AsGhost();
+            return Lang.Match(this, some, none).Maybe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut> selector)
         {
-            return Lang.Map(this, selector).AsGhost();
+            return Lang.Map(this, selector).Maybe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,64 +96,64 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool CheckUnsafe(Predicate<T> predicate)
+        public readonly bool CheckUnsafe(Predicate<T?> predicate)
         {
             return Lang.CheckUnsafe(this, predicate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Value() => inner.GetValueOrDefault();
+        public readonly T? Access() => inner;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Value([NotNullWhen(true)] out T result)
+        public readonly T? Access(T? defaultValue)
         {
-            result = m_value;
+            return Lang.Access(this, defaultValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Access([NotNullWhen(true)] out T? result)
+        {
+            result = inner;
 
             return IsSome;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Value(T defaultValue)
+        public readonly T? Access(Func<T?> defaultValueFactory)
         {
-            return Lang.Value(this, defaultValue);
+            return Lang.Access(this, defaultValueFactory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Value(Func<T> defaultValueFactory)
+        public readonly T AccessUnsafe()
         {
-            return Lang.Value(this, defaultValueFactory);
+            return Lang.AccessUnsafe<Maybe<T>, T>(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T ValueUnsafe()
-        {
-            return Lang.ValueUnsafe<GhostStruct<T>, T>(this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ghost<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
         {
             return Map(selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly GhostStruct<T> Where(Predicate<T> predicate)
+        public readonly Maybe<T> Where(Predicate<T> predicate)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            if (IsNone || !predicate(inner.GetValueOrDefault()))
+            if (IsNone || !predicate(inner!))
                 return None;
 
             return this;
         }
 
-        public readonly bool Equals(GhostStruct<T> other)
+        public readonly bool Equals(Maybe<T> other)
         {
             return EqualityComparer<T?>.Default.Equals(inner, other.inner);
         }
         public readonly override bool Equals(object obj)
         {
-            return obj is GhostStruct<T> typed && Equals(typed);
+            return obj is Maybe<T> typed && Equals(typed);
         }
         public readonly override int GetHashCode()
         {
@@ -177,7 +165,7 @@ namespace CCEnvs.Language
             if (IsNone)
                 yield break;
 
-            yield return inner!.Value;
+            yield return inner!;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

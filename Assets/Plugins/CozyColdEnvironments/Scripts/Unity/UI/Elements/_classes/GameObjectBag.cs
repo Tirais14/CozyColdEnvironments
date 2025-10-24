@@ -13,10 +13,10 @@ namespace CCEnvs.Unity.UI.Elements
 {
     public class GameObjectBag : Element, IGameObjectBag
     {
-        protected Ghost<ReactiveCollection<GameObject>> inner;
+        protected Maybe<ReactiveCollection<GameObject>> inner;
 
         public bool DestroyOnRemove { get; set; }
-        public int Count => inner.Map(x => x.Count).Value();
+        public int Count => inner.Map(x => x.Count).Access();
 
         protected override bool ShowOnStart => true;
 
@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.UI.Elements
             get
             {
                 return inner.IfNone(() => { inner = new ReactiveCollection<GameObject>(); })
-                            .Value(inner.Value())!;
+                            .Access(inner.Access())!;
             }
         }
 
@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.UI.Elements
                 return inner.Match(
                        x => x[index],
                        () => CC.Throw.IndexOutOfRange(index).As<GameObject>())
-                   .ValueUnsafe();
+                   .AccessUnsafe();
             }
         }
 
@@ -73,7 +73,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             return inner.Map(x => x.Remove(item))
                         .IfSome(_ => OnRemove(item))
-                        .Value();
+                        .Access();
         }
 
         public IObservable<CollectionAddEvent<GameObject>> ObserveAdd()
@@ -109,7 +109,7 @@ namespace CCEnvs.Unity.UI.Elements
         public IEnumerator<GameObject> GetEnumerator()
         {
             return inner.Map(x => x.GetEnumerator())
-                        .Value(Enumerable.Empty<GameObject>().GetEnumerator())!;
+                        .Access(Enumerable.Empty<GameObject>().GetEnumerator())!;
         }
 
         protected void OnAdd(GameObject go)

@@ -6,14 +6,11 @@ using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
-using System.Linq;
 using TMPro;
 using UniRx;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using ZLinq;
 
 
 #nullable enable
@@ -31,12 +28,12 @@ namespace CCEnvs.Unity.UI.Storages
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainer, new()
     {
-        private Ghost<Component> _dragItem;
+        private Maybe<Component> _dragItem;
 
         [field: SerializeField, GetByChildren]
-        protected Ghost<TextMeshProUGUI> textMesh { get; private set; } = null!;
+        protected Maybe<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
-        protected override Ghost<Component> dragItem => _dragItem;
+        protected override Maybe<Component> dragItem => _dragItem;
         protected override bool ShowOnStart => true;
         protected override bool readyToDrag => model.Contains();
         protected override bool readyToTakeDrop => !model.IsFull;
@@ -87,7 +84,7 @@ namespace CCEnvs.Unity.UI.Storages
             if (!readyToTakeDrop)
                 return;
 
-            eventData.selectedObject.ToGhost()
+            eventData.selectedObject.Maybe()
                                     .Map(x => x.GetAssignedModel<IItemContainer>()!)
                                     .IfSome(x => x.Put(model));
         }

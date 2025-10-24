@@ -43,13 +43,13 @@ namespace CCEnvs.Unity.UI
     }
     public readonly struct SelectionChangedEvent<TKey, TValue>
     {
-        public readonly Ghost<TKey> previousKey;
-        public readonly Ghost<TValue> previousValue;
-        public readonly Ghost<TKey> newKey;
-        public readonly Ghost<TValue> newValue;
+        public readonly Maybe<TKey> previousKey;
+        public readonly Maybe<TValue> previousValue;
+        public readonly Maybe<TKey> newKey;
+        public readonly Maybe<TValue> newValue;
 
-        public KeyValuePair<TKey, Ghost<TValue>> PreviousSelection => new(previousKey.Value()!, previousValue);
-        public KeyValuePair<TKey, Ghost<TValue>> NewSelection => new(newKey.Value()!, newValue); 
+        public KeyValuePair<TKey, Maybe<TValue>> PreviousSelection => new(previousKey.Access()!, previousValue);
+        public KeyValuePair<TKey, Maybe<TValue>> NewSelection => new(newKey.Access()!, newValue); 
 
         public SelectionChangedEvent(
             TKey? previousKey,
