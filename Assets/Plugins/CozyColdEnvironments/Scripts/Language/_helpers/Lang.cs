@@ -220,6 +220,7 @@ namespace CCEnvs.Language
             return source.Value()!;
         }
 
+#nullable disable
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Ghost<T> ToGhost<T>(this T source) => source;
 
@@ -251,5 +252,7 @@ namespace CCEnvs.Language
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<T> ToConditional<T>(this T source) => source;
+
+#nullable enable
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 #nullable enable
+#pragma warning disable IDE1006
 namespace CCEnvs.Language
 {
     public
@@ -22,7 +23,12 @@ namespace CCEnvs.Language
 
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private T? inner;
+        private bool m_hasValue;
+
+        [UnityEngine.SerializeField]
+        private T m_value;
+
+        private readonly T? inner => m_hasValue ? m_value : null;
 #else
         private readonly T? inner;
 #endif
@@ -32,7 +38,12 @@ namespace CCEnvs.Language
 
         public GhostStruct(T value)
         {
-            this.inner = value;
+#if UNITY_2017_1_OR_NEWER
+            m_hasValue = true;
+            m_value = value;
+#else
+            inner = value;
+#endif
         }
 
         public static implicit operator GhostStruct<T>(T source)

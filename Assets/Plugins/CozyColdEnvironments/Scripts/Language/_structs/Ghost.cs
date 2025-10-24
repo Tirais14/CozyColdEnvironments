@@ -34,7 +34,7 @@ namespace CCEnvs.Language
             inner = value;
         }
 
-        public static implicit operator Ghost<T>(T source)
+        public static implicit operator Ghost<T>(T? source)
         {
             return new Ghost<T>(source);
         }

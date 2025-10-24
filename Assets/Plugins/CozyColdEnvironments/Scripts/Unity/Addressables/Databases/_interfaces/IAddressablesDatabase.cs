@@ -23,6 +23,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IEnumerable<AssetKey> Keys { get; }
         IEnumerable<Object> Values { get; }
         Object this[AssetKey key] { get; }
+        DatabaseQuery Q { get; }
 
         void AddAsset(Object asset);
 
@@ -47,7 +48,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         Object GetAsset(AssetKey key);
         T GetAsset<T>(AssetKey key);
 
-        DatabaseQuery Ask();
+        DatabaseQuery Query();
     }
     public interface IAddressablesDatabase<TAsset>
         : IAddressablesDatabase,

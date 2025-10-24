@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         protected readonly List<AsyncOperationHandle> loadHandles = new(0);
         private readonly Dictionary<AssetKey, TAsset> collection;
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
-        private readonly DatabaseQuery askQuery = new();
+        private readonly DatabaseQuery query = new();
         private bool disposedValue;
         private int loadingCount;
 
@@ -43,6 +43,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Func<Object, AssetKey>? KeyFactory { get; set; }
         public Func<Object, int>? IDFactory { get; set; }
         public Func<string, string>? AssetNameProcessor { get; set; } = DefaultAssetNameProcessor;
+        public DatabaseQuery Q => Query();
 
         public AddressablesDatabase(UniID id, int capacity)
         {
@@ -94,6 +95,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 this.PrintException(ex);
             }
         }
+
+        public DatabaseQuery Query() => query.Reset().In(this);
 
         public void AddAssets(IEnumerable<TAsset> assets)
         {
@@ -220,11 +223,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public T GetAsset<T>(AssetKey key)
         {
             return GetAsset(key).As<T>();
-        }
-
-        public DatabaseQuery Ask()
-        {
-            return askQuery.Reset().In(Range.From(this));
         }
 
         public async UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(

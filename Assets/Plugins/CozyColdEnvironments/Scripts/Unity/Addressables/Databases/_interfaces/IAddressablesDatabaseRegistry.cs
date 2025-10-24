@@ -11,7 +11,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         IDisposable,
         ILoadable
     {
-        DatabaseQuery Query { get; }
+        Object this[AssetDatabaseKey dbKey, AssetKey key] { get; }
+
         DatabaseQuery Q { get; }
 
         void RegisterDatabase(IAddressablesDatabase database);
@@ -26,10 +27,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         T GetDatabase<T>(AssetDatabaseKey key)
             where T : IAddressablesDatabase;
 
-        Ghost<Object?> FindAsset(AssetDatabaseKey dbKey, AssetKey key);
-        Ghost<T?> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key);
+        Ghost<Object> FindAsset(AssetDatabaseKey dbKey, AssetKey key);
+        Ghost<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key);
 
         Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey);
         T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey);
+
+        DatabaseQuery Query();
     }
 }

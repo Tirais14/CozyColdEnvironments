@@ -41,17 +41,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public event Action? OnLoaded;
 
         public IAddressablesDatabase this[AssetDatabaseKey key] => GetDatabase(key);
+        public Object this[AssetDatabaseKey dbKey, AssetKey key] =>  GetAsset(dbKey, key);
 
         public IEnumerable<AssetDatabaseKey> Keys => collection.Keys;
         public IEnumerable<IAddressablesDatabase> Values => collection.Values;
         public int Count => collection.Count;
         public bool IsLoading => collection.Values.Any(db => db.IsLoading);
         public bool IsLoaded => !IsLoading && Count > 0;
-        public DatabaseQuery Q => Query;
-
-        public DatabaseQuery Query {
-            get => query.Reset().In(collection.Values);
-        }
+        public DatabaseQuery Q => Query();
 
         protected override void Awake()
         {
@@ -60,6 +57,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             BindEvents();
             TryLoadByOrder();
         }
+
+        public DatabaseQuery Query() => query.Reset().In(this);
 
         public void RegisterDatabase(IAddressablesDatabase database)
         {
@@ -106,7 +105,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return GetDatabase(key).As<T>();
         }
 
-        public Ghost<Object?> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
+        public Ghost<Object> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
         {
             if (collection.TryGetValue(dbKey, out IAddressablesDatabase db)
                 &&
@@ -114,12 +113,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 )
                 return asset;
 
-            return FindDatabase(dbKey).Map(db => db.FindAsset(key).Value());
+            return FindDatabase(dbKey).Map(db => db.FindAsset(key).Value()!);
         }
 
-        public Ghost<T?> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
+        public Ghost<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
         {
-            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>());
+            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()!);
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)

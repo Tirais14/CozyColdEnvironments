@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs.Language
@@ -45,7 +46,38 @@ namespace CCEnvs.Language
             return source.value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Check(Predicate<T> predicate)
+        {
+            return Lang.Check(this, predicate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool CheckUnsafe(Predicate<T?> predicate)
+        {
+            return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T Value() => value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T? Value(T? defaultValue)
+        {
+            return Lang.Value(this, defaultValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T? Value(Func<T?> defaultValueFactory)
+        {
+            return Lang.Value(this, defaultValueFactory);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T ValueUnsafe()
+        {
+            return Lang.ValueUnsafe<Conditional<T>, T>(this);
+        }
 
         public readonly bool Equals(Conditional<T> other)
         {
