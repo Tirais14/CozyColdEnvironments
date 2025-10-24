@@ -2,6 +2,7 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -107,6 +108,14 @@ namespace CCEnvs.Language
         public readonly T? Value(T? defaultValue)
         {
             return Lang.Value(this, defaultValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Value([NotNullWhen(true)] out T? result)
+        {
+            result = inner;
+
+            return IsSome;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

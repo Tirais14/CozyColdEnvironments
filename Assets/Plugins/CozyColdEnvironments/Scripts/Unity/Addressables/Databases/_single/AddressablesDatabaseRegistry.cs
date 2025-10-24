@@ -118,7 +118,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public Ghost<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
         {
-            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()!);
+            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()).Value();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -59,7 +60,15 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Value() => value;
+        public readonly T? Value() => value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Value([NotNullWhen(true)] out T? result)
+        {
+            result = value;
+
+            return IsSome;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T? Value(T? defaultValue)

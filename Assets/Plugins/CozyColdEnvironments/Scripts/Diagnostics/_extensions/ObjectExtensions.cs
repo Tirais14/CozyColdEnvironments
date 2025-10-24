@@ -1,7 +1,10 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using UnityEngine;
 
+#pragma warning disable S3236
 namespace CCEnvs.Diagnostics
 {
     public static class ObjectExtensions
@@ -12,12 +15,38 @@ namespace CCEnvs.Diagnostics
             return new DebugContext(value, arguments);
         }
 
+        public static Result PrintDebug(this object? source,
+                                        object message,
+                                        LogType logType,
+                                        DebugArguments args = DebugArguments.Default)
+        {
+            Guard.IsNotNull(message, nameof(message));
+
+            switch (logType)
+            {
+                case LogType.Error:
+                    source.PrintError(message, args);
+                    break;
+                case LogType.Warning:
+                    source.PrintWarning(message, args);
+                    break;
+                case LogType.Log:
+                    source.PrintLog(message, args);
+                    break;
+                case LogType.Exception:
+                    source.PrintException(message.As<Exception>(), args);
+                    break;
+                default:
+                    throw new InvalidOperationException(message.ToString());
+            }
+
+            return default;
+        }
+
         public static Result PrintLog(this object? source,
                                       object message,
                                       DebugArguments args = DebugArguments.Default) 
         {
-            CC.Guard.NullArgument(message, nameof(message));
-
             CCDebug.PrintLog(message, new DebugContext(source, args));
 
             return default;
@@ -27,8 +56,6 @@ namespace CCEnvs.Diagnostics
                                           object message,
                                           DebugArguments args = DebugArguments.Default)
         {
-            CC.Guard.NullArgument(message, nameof(message));
-
             CCDebug.PrintWarning(message, new DebugContext(source, args));
 
             return default;
@@ -38,8 +65,6 @@ namespace CCEnvs.Diagnostics
                                         object message,
                                         DebugArguments args = DebugArguments.Default)
         {
-            CC.Guard.NullArgument(message, nameof(message));
-
             CCDebug.PrintError(message, new DebugContext(source, args));
 
             return default;
@@ -49,8 +74,6 @@ namespace CCEnvs.Diagnostics
                                             Exception exception,
                                             DebugArguments args = DebugArguments.Default)
         {
-            CC.Guard.NullArgument(exception, nameof(exception));
-
             CCDebug.PrintException(exception, new DebugContext(source, args));
 
             return default;
@@ -60,8 +83,6 @@ namespace CCEnvs.Diagnostics
                                                  Exception exception,
                                                  DebugArguments args = DebugArguments.Default)
         {
-            CC.Guard.NullArgument(exception, nameof(exception));
-
             CCDebug.PrintExceptionAsLog(exception, new DebugContext(source, args));
 
             return default;

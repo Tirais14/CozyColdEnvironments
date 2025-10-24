@@ -30,6 +30,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public UnityEngine.Object GetAsset(Type assetType)
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
+            Validate();
 
             dbKey = dbKey.With(assetType);
 
@@ -43,6 +44,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public T GetAsset<T>(Type? assetType = null)
             where T : UnityEngine.Object
         {
+            Validate();
+
             dbKey = dbKey.With(assetType ?? typeof(T));
 
             return dbRegistry.Match(
@@ -55,6 +58,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public TSecondary GetAsset<TPrimary, TSecondary>(Type? assetType = null)
             where TPrimary : UnityEngine.Object
         {
+            Validate();
             assetType ??= typeof(TPrimary);
 
             if (assetType == typeof(GameObject))
@@ -68,6 +72,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Ghost<UnityEngine.Object> FindAsset(Type assetType)
         {
             CC.Guard.NullArgument(assetType, nameof(assetType));
+            Validate();
 
             dbKey = dbKey.With(assetType);
 
@@ -81,6 +86,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Ghost<T> FindAsset<T>(Type? assetType = null)
             where T : UnityEngine.Object
         {
+            Validate();
+
             dbKey = dbKey.With(assetType ?? typeof(T));
 
             return dbRegistry.Match(
@@ -93,6 +100,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public TSecondary FindAsset<TPrimary, TSecondary>(Type? assetType = null)
             where TPrimary : UnityEngine.Object
         {
+            Validate();
             assetType ??= typeof(TPrimary);
 
             if (assetType == typeof(GameObject))
@@ -106,7 +114,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public DatabaseQuery WithDatabaseID(UniID id)
         {
             dbKey = new AssetDatabaseKey(dbKey.AssetType.Value(), id);
-            key = new AssetKey(key.AssetName, key.AssetID);
+            key = new AssetKey(key.AssetName.Value(), key.AssetID);
 
             return this;
         }
@@ -202,7 +210,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery WithAssetID(int assetID)
         {
-            key = new AssetKey(key.AssetName, assetID);
+            key = new AssetKey(key.AssetName.Value(), assetID);
 
             return this;
         }
@@ -231,6 +239,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             key = default;
 
             return this;
+        }
+
+        private void Validate()
+        {
+            if (db.IsNone && dbRegistry.IsNone)
+                throw new InvalidOperationException($"{nameof(db)} and {nameof(dbRegistry)} is not setted.");
         }
     }
 }

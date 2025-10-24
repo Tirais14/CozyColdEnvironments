@@ -4,7 +4,7 @@ using CCEnvs.Unity.GameSystems.Storages;
 namespace CCEnvs.Unity.UI.Storages
 {
     public interface IItemContainerSelectableController 
-        : ISelectableController<int, IItemContainer>
+        : ISelectionController<int, IItemContainer>
     {
 
     }

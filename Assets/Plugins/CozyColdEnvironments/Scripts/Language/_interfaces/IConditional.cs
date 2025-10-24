@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Language
 {
@@ -15,6 +16,7 @@ namespace CCEnvs.Language
         bool CheckUnsafe(Predicate<T?> predicate);
 
         T? Value();
+        bool Value([NotNullWhen(true)] out T? result);
         T? Value(T? defaultValue);
         T? Value(Func<T?> defaultValueFactory);
 

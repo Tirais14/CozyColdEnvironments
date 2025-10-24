@@ -209,15 +209,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public TAsset GetAsset(AssetKey key)
         {
-            if (!collection.TryGetValue(key, out TAsset asset))
-            {
-                Ghost<TAsset> t = FindAsset(key);
+            if (collection.TryGetValue(key, out TAsset asset)
+                ||
+                new Ghost<TAsset>(FindAsset(key).Value()!).Value(out asset!)
+                )
+                return asset;
 
-                if (t.IsNone)
-                    throw new AssetNotFoundException(key);
-            }
-
-            return asset;
+            throw new AssetNotFoundException(key);
         }
 
         public T GetAsset<T>(AssetKey key)

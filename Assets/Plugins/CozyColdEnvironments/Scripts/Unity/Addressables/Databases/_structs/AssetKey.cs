@@ -1,3 +1,4 @@
+using CCEnvs.Language;
 using System;
 using System.Diagnostics;
 using Object = UnityEngine.Object;
@@ -8,7 +9,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     [DebuggerDisplay("HashCode: {GetHashCode()}; String {ToString()}")]
     public readonly struct AssetKey : IEquatable<AssetKey>
     {
-        public string? AssetName { get; }
+        public Ghost<string> AssetName { get; }
         public int AssetID { get; }
 
         public AssetKey(string? assetName,
@@ -39,7 +40,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AssetName = asset.name;
 
             if (asset is IIDMarked idMarked)
-                AssetID = idMarked.ID.AsOrDefault<int>();
+                AssetID = idMarked.ID.AsOrDefault<int>().Value();
         }
 
         public static bool operator ==(AssetKey left, AssetKey right)
@@ -58,7 +59,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
         public AssetKey With(int assetID)
         {
-            return new AssetKey(AssetName, assetID);
+            return new AssetKey(AssetName.Value(), assetID);
         }
 
         public bool Equals(AssetKey other)

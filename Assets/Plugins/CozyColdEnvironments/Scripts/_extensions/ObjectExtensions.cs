@@ -1,5 +1,6 @@
 using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -224,12 +225,12 @@ namespace CCEnvs
             }
         }
 
-        public static T? AsOrDefault<T>(this object? obj)
+        public static Ghost<T> AsOrDefault<T>(this object? obj)
         {
             return obj is T typedObj ? typedObj : default;
         }
 
-        public static TValue? AsOrDefault<TObj, TValue>(this TObj? obj)
+        public static Ghost<TValue> AsOrDefault<TObj, TValue>(this TObj? obj)
         {
             return obj is TValue typedObj ? typedObj : default;
         }

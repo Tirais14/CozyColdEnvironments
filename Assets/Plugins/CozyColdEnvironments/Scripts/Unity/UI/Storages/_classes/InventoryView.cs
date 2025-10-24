@@ -7,8 +7,8 @@ using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
 using CCEnvs.Unity.UI.Storages;
 using System;
+using System.Collections.Generic;
 using UniRx;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -20,19 +20,22 @@ namespace CCEnvs.Unity
         where TViewModel : ViewModel<TInventory>
         where TInventory : IInventory
     {
-        private Subject<Ghost<IItemContainer>>? selectionSubj;
+        private readonly Lazy<Subject<SelectionChangedEvent<int, IItemContainer>>> selectionSubj = new(() => new Subject<SelectionChangedEvent<int, IItemContainer>>());
+        private SelectionController<int, IItemContainer> selectableController;
 
-        public event Action<Ghost<IItemContainer>>? OnSelectionChanged;
+        public event Action<SelectionChangedEvent<int, IItemContainer>>? OnSelectionChanged;
 
         [field: GetByChildren]
         public GameObjectBag SlotBag { get; private set; } = null!;
 
-        public Ghost<IItemContainer> SelectionValue { get; private set; }
-        public int SelectionKey { get; private set; }
+        public IReadOnlyReactiveProperty<KeyValuePair<int, Ghost<IItemContainer>>> Selection => selectableController.Selection;
 
         protected override void Awake()
         {
             base.Awake();
+
+            selectableController = new SelectionController<int, IItemContainer>((key) => model[key]);
+            selectableController.AddTo(this);
 
             model.ObserveAdd()
                  .Subscribe(AddToList)
@@ -43,7 +46,7 @@ namespace CCEnvs.Unity
         {
             base.OnDestroy();
 
-            selectionSubj?.Dispose();
+            selectionSubj.Value.Dispose();
         }
 
         private void AddToList((int id, IItemContainer value) pair)
@@ -54,39 +57,24 @@ namespace CCEnvs.Unity
                 );
         }
 
-        public IObservable<Ghost<IItemContainer>> ObserveSelection()
+        public IObservable<SelectionChangedEvent<int, IItemContainer>> ObserveSelection()
         {
-            selectionSubj ??= new Subject<Ghost<IItemContainer>>();
-
-            return selectionSubj;
+            return selectionSubj.Value;
         }
 
-        public void Select(int key)
+        public void SelectIt(int key)
         {
-            if (SelectionKey == key)
-                return;
-
-            SelectionValue = model[key].ToGhost()!;
-            SelectionKey = key;
-
-            selectionSubj?.OnNext(SelectionValue);
-            OnSelectionChanged?.Invoke(SelectionValue);
+            selectableController.SelectIt(key);
         }
 
-        public void Deselect(int key)
+        public void DeselectIt(int key)
         {
-            SelectionKey = default;
+            selectableController.DeselectIt(key);
         }
 
         public void SwitchSelectionState(int key)
         {
-            if (SelectionKey == key)
-            {
-                Deselect(key);
-                return;
-            }
-
-            Select(key);
+            selectableController.SwitchSelectionState(key);
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<Inventory>, Inventory>

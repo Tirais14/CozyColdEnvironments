@@ -2,7 +2,9 @@ using CCEnvs.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Language
@@ -23,14 +25,17 @@ namespace CCEnvs.Language
         private readonly T? inner;
 #endif
 
+        public LogType logType { get; }
+
         public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
-        public Trapped(T value)
+        public Trapped(T? value, LogType logType = LogType.Log)
             :
             this()
         {
             inner = value;
+            this.logType = logType;
         }
 
         public Trapped(Func<T> valueFactory)
@@ -67,9 +72,16 @@ namespace CCEnvs.Language
             return source.inner;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Trapped<T> With(LogType logType)
+        {
+            return new Trapped<T>(inner, logType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Trapped<TOut> Map<TOut>(Func<T, TOut> selector)
         {
-            return Lang.TryMap(this, selector).AsTrapped();
+            return Lang.TryMap(this, selector, logType).AsTrapped();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,7 +99,7 @@ namespace CCEnvs.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Trapped<T> IfSome(Action<T> action)
         {
-            return Lang.TryIfSome(this, action);
+            return Lang.TryIfSome(this, action, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -99,17 +111,25 @@ namespace CCEnvs.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Trapped<T> Match(Action<T> some, Action none)
         {
-            return Lang.TryMatch(this, some, none);
+            return Lang.TryMatch(this, some, none, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Trapped<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
-            return Lang.TryMatch(this, some, none).AsTrapped();
+            return Lang.TryMatch(this, some, none, logType).AsTrapped();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T? Value() => inner;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Value([NotNullWhen(true)] out T? result)
+        {
+            result = inner;
+
+            return IsSome;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T? Value(T? defaultValue)

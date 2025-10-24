@@ -3,6 +3,7 @@ using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 #pragma warning disable S3236
 namespace CCEnvs.Language
@@ -22,7 +23,10 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T TryIfSome<T, TValue>(this T source, Action<TValue> action)
+        public static T TryIfSome<T, TValue>(
+            this T source,
+            Action<TValue> action,
+            LogType logType)
             where T : struct, IConditional<TValue>
         {
             try
@@ -31,7 +35,7 @@ namespace CCEnvs.Language
             }
             catch (Exception ex)
             {
-                typeof(Lang).PrintLog(ex);
+                typeof(Lang).PrintDebug(ex, logType);
             }
 
             return source;
@@ -87,7 +91,8 @@ namespace CCEnvs.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<TOutValue> TryMap<T, TValue, TOutValue>(
             this T source,
-            Func<TValue, TOutValue> selector)
+            Func<TValue, TOutValue> selector,
+            LogType logType)
             where T : struct, IConditional<TValue>
         {
             try
@@ -96,7 +101,7 @@ namespace CCEnvs.Language
             }
             catch (Exception ex)
             {
-                typeof(Lang).PrintError(ex);
+                typeof(Lang).PrintDebug(ex, logType);
 
                 return default;
             }
@@ -113,7 +118,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(none, nameof(none));
 
             if (source.IsSome)
-                some(source.Value()!);
+                some(source.ValueUnsafe());
             else
                 none();
 
@@ -130,7 +135,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(none, nameof(none));
 
             if (source.IsSome)
-                return some(source.Value()!);
+                return some(source.ValueUnsafe());
             else
                 return none();
         }
@@ -139,7 +144,8 @@ namespace CCEnvs.Language
         public static T TryMatch<T, TValue>(
             this T source,
             Action<TValue> some,
-            Action noneOrCatched)
+            Action noneOrCatched, 
+            LogType logType)
             where T : struct, IConditional<TValue>
         {
             try
@@ -148,7 +154,7 @@ namespace CCEnvs.Language
             }
             catch (Exception ex)
             {
-                typeof(Lang).PrintLog(ex);
+                typeof(Lang).PrintDebug(ex, logType);
             }
 
             return source;
@@ -157,7 +163,8 @@ namespace CCEnvs.Language
         public static Conditional<TOutValue> TryMatch<T, TValue, TOutValue>(
             this T source,
             Func<TValue, TOutValue> some,
-            Func<TOutValue> noneOrCatched)
+            Func<TOutValue> noneOrCatched,
+            LogType logType)
             where T : struct, IConditional<TValue>
         {
             try
@@ -166,7 +173,7 @@ namespace CCEnvs.Language
             }
             catch (Exception ex)
             {
-                typeof(Lang).PrintLog(ex);
+                typeof(Lang).PrintDebug(ex, logType);
 
                 return noneOrCatched();
             }
@@ -231,9 +238,10 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Trapped<T> AsTrapped<T>(this Conditional<T> source)
+        public static Trapped<T> AsTrapped<T>(this Conditional<T> source,
+            LogType logType = LogType.Log)
         {
-            return source.Value();
+            return new Trapped<T>(source.Value(), logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

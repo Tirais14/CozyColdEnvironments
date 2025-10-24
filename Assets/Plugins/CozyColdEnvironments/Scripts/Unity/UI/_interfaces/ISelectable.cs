@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using UniRx;
 
 namespace CCEnvs.Unity.UI
@@ -7,8 +8,14 @@ namespace CCEnvs.Unity.UI
     {
         IReadOnlyReactiveProperty<bool> IsSelected { get; }
 
-        void Select();
+        void SelectIt();
 
-        void Deselect();
+        void DeselectIt();
+
+        void SwitchSelectionState();
+
+        IObservable<Unit> ObserveSelectOperation();
+
+        IObservable<Unit> ObserveDeselectOperation();
     }
 }
