@@ -52,9 +52,8 @@ namespace CCEnvs.Unity.UI.MVVM
         public T model { get; private set; }
 
         protected ViewModel(T model, GameObject gameObject)
-            :
-            this(model)
         {
+            this.model = model;
             this.gameObject = gameObject;
 
             new Maybe<T>(model).Map(x => x as IGameObjectBindable)

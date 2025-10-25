@@ -1,4 +1,6 @@
 using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Language
 {
+    [Serializable]
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly
@@ -16,7 +19,7 @@ namespace CCEnvs.Language
         struct Catched<T>
         : IEnumerable<T>,
         IEquatable<Catched<T>>,
-        ITarget<Catched<T>, T>
+        IConditional<Catched<T>, T>
     {
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
@@ -57,6 +60,11 @@ namespace CCEnvs.Language
             return left.Equals(right);
         }
 
+        public static implicit operator Conditional<T>(Catched<T> source)
+        {
+            return source.inner!;
+        }
+
         public static bool operator !=(Catched<T> left, Catched<T> right)
         {
             return !(left == right);
@@ -79,9 +87,47 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Catched<T> Catch() => inner!;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> IfSome(Action<T> action)
         {
-            return Lang.TryMap(this, selector, logType).Catch();
+            return Lang.IfSome(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> IfNone(Action action)
+        {
+            return Lang.IfNone(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Match(Action<T> some, Action none)
+        {
+            return Lang.Match(this, some, none);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Conditional<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        {
+            return Lang.Match(this, some, none);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Conditional<TOut> Map<TOut>(Func<T, TOut> selector)
+        {
+            return Lang.Map(this, selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Conditional<TOut> MapUnsafe<TOut>(Func<T?, TOut> selector)
+        {
+            return Lang.MapUnsafe(this, selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Check(T? value)
+        {
+            return Lang.Check(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,31 +143,13 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> IfSome(Action<T> action)
-        {
-            return Lang.TryIfSome(this, action, logType);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> IfNone(Action action)
-        {
-            return Lang.IfNone(this, action);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Match(Action<T> some, Action none)
-        {
-            return Lang.TryMatch(this, some, none, logType);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
-        {
-            return Lang.TryMatch(this, some, none, logType).Catch();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T? Access() => inner;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T? Access(T? defaultValue)
+        {
+            return Lang.Access(this, defaultValue);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Access([NotNullWhen(true)] out T? result)
@@ -129,12 +157,6 @@ namespace CCEnvs.Language
             result = inner;
 
             return IsSome;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Access(T? defaultValue)
-        {
-            return Lang.Access(this, defaultValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -147,6 +169,29 @@ namespace CCEnvs.Language
         public readonly T AccessUnsafe()
         {
             return Lang.AccessUnsafe<Catched<T>, T>(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Apply(T? value)
+        {
+            return value!;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Conditional<TOut> Select<TOut>(Func<T, TOut> selector)
+        {
+            return Map(selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Where(Predicate<T> predicate)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (IsNone || !predicate(inner!))
+                return default!;
+
+            return this;
         }
 
         public readonly bool Equals(Catched<T> other)

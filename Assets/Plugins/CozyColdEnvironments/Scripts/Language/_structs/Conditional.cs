@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Language
 {
+    [Serializable]
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly
@@ -45,6 +46,18 @@ namespace CCEnvs.Language
         public static implicit operator T(Conditional<T> source)
         {
             return source.value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> Maybe() => value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Catch() => value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Check(T? value)
+        {
+            return Lang.Check(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

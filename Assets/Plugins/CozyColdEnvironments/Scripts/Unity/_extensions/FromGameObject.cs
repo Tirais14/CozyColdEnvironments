@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
@@ -99,7 +100,7 @@ namespace CCEnvs.Unity.Extensions
                                               targetType,
                                               includeInactive: false,
                                               FindMode.Self,
-                                              onlyFirst: true).FirstOrDefault();
+                                              single: true).FirstOrDefault();
         }
 
         public static T? GetAssignedObject<T>(this GameObject value)
@@ -115,7 +116,7 @@ namespace CCEnvs.Unity.Extensions
                                               targetType,
                                               includeInactive,
                                               FindMode.InChilds,
-                                              onlyFirst: true).FirstOrDefault();
+                                              single: true).FirstOrDefault();
         }
 
         public static T? GetAssignedObjectInChildren<T>(this GameObject value,
@@ -132,7 +133,7 @@ namespace CCEnvs.Unity.Extensions
                                               targetType,
                                               includeInactive,
                                               FindMode.InParents,
-                                              onlyFirst: true).FirstOrDefault();
+                                              single: true).FirstOrDefault();
         }
 
         public static T? GetAssignedObjectInParent<T>(this GameObject value,
@@ -148,7 +149,7 @@ namespace CCEnvs.Unity.Extensions
                                               targetType,
                                               includeInactive: false,
                                               FindMode.Self,
-                                              onlyFirst: false);
+                                              single: false);
         }
 
         public static T[] GetAssignedObjects<T>(this GameObject value)
@@ -166,7 +167,7 @@ namespace CCEnvs.Unity.Extensions
                                               targetType,
                                               includeInactive,
                                               FindMode.InChilds,
-                                              onlyFirst: false);
+                                              single: false);
         }
 
         public static T[] GetAssignedObjectsInChildren<T>(this GameObject value,
@@ -185,7 +186,7 @@ namespace CCEnvs.Unity.Extensions
                                               targetType,
                                               includeInactive,
                                               FindMode.InParents,
-                                              onlyFirst: false);
+                                              single: false);
         }
 
         public static T[] GetAssignedObjectsInParent<T>(this GameObject value,
@@ -370,33 +371,9 @@ namespace CCEnvs.Unity.Extensions
                                                            Type targetType,
                                                            bool includeInactive,
                                                            FindMode findMode,
-                                                           bool onlyFirst)
+                                                           bool single)
         {
-            if (targetType.IsType<Component>())
-            {
-                if (onlyFirst)
-                {
-                    return findMode switch
-                    {
-                        FindMode.Self => new object[] { gameObject.GetComponent(targetType) },
-                        FindMode.InChilds => new object[] { gameObject.GetComponentInChildren(targetType) },
-                        FindMode.InParents => new object[] { gameObject.GetComponentInParent(targetType) },
-                        _ => throw new InvalidOperationException(findMode.ToString()),
-                    };
-                }
-                else
-                {
-                    return findMode switch
-                    {
-                        FindMode.Self => gameObject.GetComponents(targetType),
-                        FindMode.InChilds => gameObject.GetComponentsInChildren(targetType),
-                        FindMode.InParents => gameObject.GetComponentsInParent(targetType),
-                        _ => throw new InvalidOperationException(findMode.ToString()),
-                    };
-                }
-            }
-
-            Component[] gameObjectComponents = findMode switch
+            Component[] cmps = findMode switch
             {
                 FindMode.InChilds => gameObject.GetComponentsInChildren(typeof(Component),
                                                                         includeInactive),
@@ -407,19 +384,18 @@ namespace CCEnvs.Unity.Extensions
                 _ => gameObject.GetComponents(typeof(Component)),
             };
 
-            List<object> results = new();
-            int gameObjectComponentsCount = gameObjectComponents.Length;
-            for (int i = 0; i < gameObjectComponentsCount; i++)
+            if (single)
             {
-                if (targetType.IsInstanceOfType(gameObjectComponents[i]))
-                {
-                    results.Add(gameObjectComponents[i]);
-                    if (onlyFirst)
-                        break;
-                }
-            }
+                var t = cmps.FirstOrDefault(cmp => cmp.GetType().IsType(targetType)).Maybe();
 
-            return results.ToArray();
+                return t.Map(x => Range.From<object>(x)).Access(Array.Empty<object>())!;
+            }
+            else
+            {
+                var t = cmps.Where(x => x.GetType().IsType(targetType)).ToArray();
+
+                return t;
+            }
         }
     }
 }

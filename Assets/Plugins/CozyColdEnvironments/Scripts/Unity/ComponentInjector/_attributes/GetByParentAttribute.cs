@@ -9,6 +9,5 @@ namespace CCEnvs.Unity.Injections
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public class GetByParentAttribute : GetComponentAttribute
     {
-
     }
 }

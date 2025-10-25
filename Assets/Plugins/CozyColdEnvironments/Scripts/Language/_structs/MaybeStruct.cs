@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Runtime.CompilerServices;
 #pragma warning disable IDE1006
 namespace CCEnvs.Language
 {
+    [Serializable]
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly
@@ -16,7 +18,7 @@ namespace CCEnvs.Language
         struct MaybeStruct<T>
         : IEnumerable<T>,
         IEquatable<MaybeStruct<T>>,
-        ITarget<MaybeStruct<T>, T>
+        IConditional<MaybeStruct<T>, T>
 
         where T : struct
     {
@@ -51,6 +53,12 @@ namespace CCEnvs.Language
         {
             return new MaybeStruct<T>(source);
         }
+
+        public static implicit operator Conditional<T>(MaybeStruct<T> source)
+        {
+            return source.inner.GetValueOrDefault();
+        }
+
         public static explicit operator T(MaybeStruct<T> source)
         {
             return source.inner.GetValueOrDefault();
@@ -67,6 +75,12 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Catch() => inner.GetValueOrDefault();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> Maybe() => inner.GetValueOrDefault();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MaybeStruct<T> IfSome(Action<T> action)
         {
             return Lang.IfSome(this, action);
@@ -79,26 +93,32 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> IfNone<TOut>(Func<TOut> selector)
-        {
-            return Lang.IfNone<MaybeStruct<T>, T, TOut>(this, selector).Maybe();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MaybeStruct<T> Match(Action<T> some, Action none)
         {
             return Lang.Match(this, some, none);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        public readonly Conditional<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
-            return Lang.Match(this, some, none).Maybe();
+            return Lang.Match(this, some, none);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Conditional<TOut> Map<TOut>(Func<T, TOut> selector)
         {
-            return Lang.Map(this, selector).Maybe();
+            return Lang.Map(this, selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Conditional<TOut> MapUnsafe<TOut>(Func<T, TOut> selector)
+        {
+            return Lang.MapUnsafe(this, selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Check(T value)
+        {
+            return Lang.Check(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,7 +163,13 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly MaybeStruct<T> Apply(T value)
+        {
+            return value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Conditional<TOut> Select<TOut>(Func<T, TOut> selector)
         {
             return Map(selector);
         }

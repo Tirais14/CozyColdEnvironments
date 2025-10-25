@@ -1,4 +1,4 @@
-using CCEnvs.Diagnostics;
+using CCEnvs.Language;
 using CCEnvs.Reflection.Data;
 using System;
 using System.Collections.Generic;
@@ -14,17 +14,17 @@ namespace CCEnvs.Reflection
         /// <summary>
         /// Extended version
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="source"></param>
         /// <param name="bindings"></param>
         /// <returns></returns>
-        public static ConstructorInfo GetConstructor(this Type value,
+        public static ConstructorInfo GetConstructor(this Type source,
             MethodBindings bindings,
             bool throwIfNotFound = false)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
             CC.Guard.NullArgument(bindings, nameof(bindings));
 
-            if (value.GetConstructor(bindings.BindingFlags,
+            if (source.GetConstructor(bindings.BindingFlags,
                                     bindings.Binder,
                                     bindings.CallingConventions,
                                     bindings.Arguments.GetTypes(),
@@ -34,7 +34,7 @@ namespace CCEnvs.Reflection
                 )
                 return found;
 
-            ConstructorInfo[] constructors = value.GetConstructors(
+            ConstructorInfo[] constructors = source.GetConstructors(
                 bindings.BindingFlags);
 
             found = (from x in constructors
@@ -44,7 +44,7 @@ namespace CCEnvs.Reflection
 
             if (throwIfNotFound && found is null)
                 throw new ConstructorNotFoundException(
-                    value,
+                    source,
                     bindings.BindingFlags,
                     (CCParameters)bindings.Arguments);
 
@@ -52,14 +52,14 @@ namespace CCEnvs.Reflection
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static MemberInfo[] GetMembers(Type value,
+        public static MemberInfo[] GetMembers(Type source,
             Type memberType,
             BindingFlags bindingFlags = BindingFlags.Default)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
             CC.Guard.NullArgument(memberType, nameof(memberType));
 
-            MemberInfo[] members = value.GetMembers(bindingFlags);
+            MemberInfo[] members = source.GetMembers(bindingFlags);
             List<MemberInfo> results = new();
 
             MemberInfo member;
@@ -74,12 +74,12 @@ namespace CCEnvs.Reflection
             return results.ToArray();
         }
 
-        public static MemberInfo[] ForceGetMembers(this Type value,
+        public static MemberInfo[] ForceGetMembers(this Type source,
             BindingFlags bindingFlags = BindingFlags.Default)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(value);
+            Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(source);
             var loopPredicate = new LoopFuse(() => baseTypes.Count > 0);
             var members = new List<MemberInfo>();
             bindingFlags |= BindingFlags.DeclaredOnly;
@@ -88,103 +88,107 @@ namespace CCEnvs.Reflection
 
             return members.ToArray();
         }
-        public static T[] ForceGetMembers<T>(this Type value,
+        public static T[] ForceGetMembers<T>(this Type source,
             BindingFlags bindingFlags = InstancePublic)
 
             where T : MemberInfo
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetMembers(bindingFlags).OfType<T>().ToArray();
+            return source.ForceGetMembers(bindingFlags).OfType<T>().ToArray();
         }
 
-        public static FieldInfo[] ForceGetFields(this Type value,
+        public static FieldInfo[] ForceGetFields(this Type source,
             BindingFlags bindingFlags = InstancePublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetMembers<FieldInfo>(bindingFlags);
+            return source.ForceGetMembers<FieldInfo>(bindingFlags);
         }
 
-        public static FieldInfo? ForceGetField(this Type value,
+        public static FieldInfo? ForceGetField(this Type source,
             string fieldName,
             BindingFlags bindingFlags = InstancePublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetFields(bindingFlags).FirstOrDefault(x => x.Name == fieldName);
+            return source.ForceGetFields(bindingFlags).FirstOrDefault(x => x.Name == fieldName);
         }
 
-        public static PropertyInfo[] ForceGetProperties(this Type value,
+        public static PropertyInfo[] ForceGetProperties(this Type source,
             BindingFlags bindingFlags = InstancePublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetMembers<PropertyInfo>(bindingFlags);
+            return source.ForceGetMembers<PropertyInfo>(bindingFlags);
         }
 
-        public static PropertyInfo? ForceGetProperty(this Type value,
+        public static PropertyInfo? ForceGetProperty(this Type source,
             string propName,
             BindingFlags bindingFlags = InstancePublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetProperties(bindingFlags).FirstOrDefault(x => x.Name == propName);
+            return source.ForceGetProperties(bindingFlags).FirstOrDefault(x => x.Name == propName);
         }
 
-        public static MethodInfo[] ForceGetMethods(this Type value,
+        public static MethodInfo[] ForceGetMethods(this Type source,
             BindingFlags bindingFlags = InstancePublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetMembers<MethodInfo>(bindingFlags);
+            return source.ForceGetMembers<MethodInfo>(bindingFlags);
         }
 
-        public static MethodInfo? ForceGetMethod(this Type value,
+        public static MethodInfo? ForceGetMethod(this Type source,
             string methodName,
             Type[]? types = null,
             BindingFlags bindingFlags = InstancePublic)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
             types ??= Type.EmptyTypes;
 
-            return value.ForceGetMethods(bindingFlags)
+            return source.ForceGetMethods(bindingFlags)
                         .FirstOrDefault(x => x.Name == methodName 
                                 &&
                                 x.GetParameters().Select(x => x.ParameterType)
                                     .SequenceEqual(types));
         }
 
-        public static MethodInfo[] GetOverloadedCastOperators(this Type value)
+        public static MethodInfo[] GetOverloadedCastOperators(this Type source)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            return value.ForceGetMethods(StaticAll)
+            return source.ForceGetMethods(StaticAll)
                         .Where(x => x.Name == "op_Implicit" || x.Name == "op_Explicit")
                         .ToArray();
         }
 
-        public static MethodInfo GetOverloadedCastOperator(this Type value, Type castType)
+        public static MethodInfo GetOverloadedCastOperator(this Type source, Type castType)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
             CC.Guard.NullArgument(castType, nameof(castType));
 
-            return value.GetOverloadedCastOperators().First(x => x.ReturnType == castType);
+            return source.GetOverloadedCastOperators()
+                         .FirstOrDefault(x => x.ReturnType.IsType(castType))
+                         .Maybe()
+                         .IfNone(() => throw new InvalidOperationException($"Cannot find overloaded cast operator from type: {source.GetFullName()} to type: {castType.GetFullName()}"))
+                         .AccessUnsafe();
         }
 
-        public static ConstructorInfo[] ForceGetConstructors(this Type value,
+        public static ConstructorInfo[] ForceGetConstructors(this Type source,
             BindingFlags bindingFlags = InstancePublic)
         {
-            return value.ForceGetMembers<ConstructorInfo>(bindingFlags);
+            return source.ForceGetMembers<ConstructorInfo>(bindingFlags);
         }
 
-        public static ConstructorInfo? ForceGetConstructor(this Type value,
+        public static ConstructorInfo? ForceGetConstructor(this Type source,
             MethodBindings bindings)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.NullArgument(source, nameof(source));
 
-            ConstructorInfo[] ctors = value.ForceGetConstructors(bindings.BindingFlags);
+            ConstructorInfo[] ctors = source.ForceGetConstructors(bindings.BindingFlags);
 
             return ctors.FirstOrDefault(x => ConstructorBindingsMatcher.IsMatch(bindings, x));
         }

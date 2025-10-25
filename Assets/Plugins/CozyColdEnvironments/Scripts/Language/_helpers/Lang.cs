@@ -2,6 +2,7 @@
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -52,30 +53,6 @@ namespace CCEnvs.Language
 
             return source;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Conditional<TOutValue> IfNone<T, TValue, TOutValue>(
-            this T source,
-            TOutValue? defaultValue)
-            where T : struct, IConditional<TValue>
-        {
-            if (source.IsNone)
-                return defaultValue!;
-
-            return default;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Conditional<TOutValue> IfNone<T, TValue, TOutValue>(
-            this T source,
-            Func<TOutValue?> defaultValueFactory)
-            where T : struct, IConditional<TValue>
-        {
-            Guard.IsNotNull(defaultValueFactory, nameof(defaultValueFactory));
-
-            if (source.IsNone)
-                return defaultValueFactory()!;
-
-            return default;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Conditional<TOutValue> Map<T, TValue, TOutValue>(
@@ -85,7 +62,18 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return source.IsSome ? selector(source.Access()!) : default!;
+            return source.IsSome ? selector(source.AccessUnsafe()) : default!;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Conditional<TOutValue> MapUnsafe<T, TValue, TOutValue>(
+            this T source,
+            Func<TValue?, TOutValue> selector)
+            where T : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            return selector(source.Access()!);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -179,6 +167,19 @@ namespace CCEnvs.Language
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Check<T, TValue>(
+            T source,
+            TValue? value,
+            IEqualityComparer<TValue?>? comparer = null)
+            where T : struct, IConditional<TValue>
+        {
+            comparer ??= EqualityComparer<TValue?>.Default;
+
+            return comparer.Equals(source.AccessUnsafe(), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Check<T, TValue>(T source, Predicate<TValue> predicate)
             where T : struct, IConditional<TValue>
         {
@@ -190,6 +191,7 @@ namespace CCEnvs.Language
             return predicate(source.AccessUnsafe<T, TValue>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CheckUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
             where T : struct, IConditional<TValue> 
         {
@@ -238,6 +240,13 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Catched<T> Catch<T>(this T source,
+            LogType logType = LogType.Log)
+        {
+            return new Catched<T>(source, logType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Catched<T> Catch<T>(this Conditional<T> source,
             LogType logType = LogType.Log)
         {
@@ -259,7 +268,14 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Conditional<T> ToConditional<T>(this T source) => source;
+        public static MaybeStruct<T> Struct<T>(this Maybe<T> source)
+            where T : struct
+        {
+            return source.Access();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Conditional<T> Conditional<T>(this T source) => source;
 
 #nullable enable
     }

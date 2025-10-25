@@ -7,10 +7,6 @@ namespace CCEnvs.Unity.UI
     public class InventoryViewModel<T> : ViewModel<T>
         where T : IInventory
     {
-        public InventoryViewModel(T model) : base(model)
-        {
-        }
-
         public InventoryViewModel(T model, GameObject gameObject) 
             :
             base(model, gameObject)

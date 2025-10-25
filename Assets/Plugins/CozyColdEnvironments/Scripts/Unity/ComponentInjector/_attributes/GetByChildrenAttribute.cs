@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using System;
 
 #nullable enable
@@ -10,12 +9,5 @@ namespace CCEnvs.Unity.Injections
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class GetByChildrenAttribute : GetComponentAttribute
     {
-        public string? GameObejctName { get; }
-        public bool HasGameObjectName => GameObejctName.IsNotNull();
-
-        public GetByChildrenAttribute(string? gameObejctName = null)
-        {
-            GameObejctName = gameObejctName;
-        }
     }
 }

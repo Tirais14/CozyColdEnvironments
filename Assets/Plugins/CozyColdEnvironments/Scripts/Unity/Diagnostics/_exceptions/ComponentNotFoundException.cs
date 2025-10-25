@@ -1,6 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -22,7 +23,7 @@ namespace CCEnvs.Unity.Diagnostics
         {
         }
 
-        public static void ThrowIfNull(object? obj,
+        public static void ThrowIfNull([NotNull] object? obj,
                                        Type? componentType = null,
                                        GameObject? context = null)
         {
