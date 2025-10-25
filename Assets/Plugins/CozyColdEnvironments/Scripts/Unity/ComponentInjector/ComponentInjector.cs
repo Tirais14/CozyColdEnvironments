@@ -64,8 +64,7 @@ namespace CCEnvs.Unity.Injections
                                         injectType.GetGenericTypeDefinition()
                                                   .IsAnyType(typeof(Maybe<>),
                                                              typeof(MaybeStruct<>),
-                                                             typeof(Catched<>),
-                                                             typeof(Conditional<>));
+                                                             typeof(Catched<>));
 
             if (isSupportedValueType)
             {

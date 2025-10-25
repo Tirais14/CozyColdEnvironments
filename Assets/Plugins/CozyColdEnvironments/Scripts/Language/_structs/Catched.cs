@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
-using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 #nullable enable
+#pragma warning disable S3236
 namespace CCEnvs.Language
 {
     [Serializable]
@@ -60,7 +60,7 @@ namespace CCEnvs.Language
             return left.Equals(right);
         }
 
-        public static implicit operator Conditional<T>(Catched<T> source)
+        public static implicit operator Maybe<T>(Catched<T> source)
         {
             return source.inner!;
         }
@@ -87,12 +87,9 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Catch() => inner!;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Catched<T> IfSome(Action<T> action)
         {
-            return Lang.IfSome(this, action);
+            return Lang.TryIfSome(this, action, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,22 +101,22 @@ namespace CCEnvs.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Catched<T> Match(Action<T> some, Action none)
         {
-            return Lang.Match(this, some, none);
+            return Lang.TryMatch(this, some, none, logType);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
         {
-            return Lang.Match(this, some, none);
+            return Lang.TryMatch(this, some, none, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
         {
-            return Lang.Map(this, selector);
+            return Lang.TryMap(this, selector, logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> MapUnsafe<TOut>(Func<T?, TOut> selector)
+        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
         {
             return Lang.MapUnsafe(this, selector);
         }
@@ -178,7 +175,7 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
         {
             return Map(selector);
         }

@@ -15,8 +15,7 @@ namespace CCEnvs.Language
         readonly
 #endif
         struct Maybe<T>
-        : IEnumerable<T>,
-        IEquatable<Maybe<T>>,
+        : IEquatable<Maybe<T>>,
         IConditional<Maybe<T>, T>
     {
         public static Maybe<T> None => new();
@@ -39,11 +38,6 @@ namespace CCEnvs.Language
         public static implicit operator Maybe<T>(T? source)
         {
             return new Maybe<T>(source!);
-        }
-
-        public static implicit operator Conditional<T>(Maybe<T> source)
-        {
-            return source.inner!;
         }
 
         public static explicit operator T?(Maybe<T> source)
@@ -82,19 +76,19 @@ namespace CCEnvs.Language
             return Lang.Match(this, some, none);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
         {
             return Lang.Match(this, some, none);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
         {
             return Lang.Map(this, selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> MapUnsafe<TOut>(Func<T?, TOut> selector)
+        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
         {
             return Lang.MapUnsafe(this, selector);
         }
@@ -153,7 +147,7 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
         {
             return Map(selector);
         }
@@ -191,5 +185,13 @@ namespace CCEnvs.Language
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        IConditional IConditional.IfNone(Func<object> selector)
+        {
+            if (IsSome)
+                return this;
+
+            return selector().Maybe();
+        }
     }
 }

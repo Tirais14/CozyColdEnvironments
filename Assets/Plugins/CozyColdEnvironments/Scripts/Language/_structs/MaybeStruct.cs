@@ -1,5 +1,4 @@
 using CommunityToolkit.Diagnostics;
-using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable IDE1006
+#pragma warning disable S3236
 namespace CCEnvs.Language
 {
     [Serializable]
@@ -54,7 +54,7 @@ namespace CCEnvs.Language
             return new MaybeStruct<T>(source);
         }
 
-        public static implicit operator Conditional<T>(MaybeStruct<T> source)
+        public static implicit operator Maybe<T>(MaybeStruct<T> source)
         {
             return source.inner.GetValueOrDefault();
         }
@@ -98,19 +98,19 @@ namespace CCEnvs.Language
             return Lang.Match(this, some, none);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Match<TOut>(Func<T, TOut> some, Func<TOut> none)
+        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
         {
             return Lang.Match(this, some, none);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Map<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
         {
             return Lang.Map(this, selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> MapUnsafe<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T, TOut?> selector)
         {
             return Lang.MapUnsafe(this, selector);
         }
@@ -169,7 +169,7 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Conditional<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
         {
             return Map(selector);
         }

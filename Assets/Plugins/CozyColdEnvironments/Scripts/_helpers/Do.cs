@@ -41,16 +41,10 @@ namespace CCEnvs
                 nextValues = moveNext(current, loopState);
                 results.Enqueue(current);
 
-                if (loopState.Value == LoopKeyword.Break)
-                {
-                    loopState.Reset();
+                if (loopState.Break)
                     break;
-                }
-                else if (loopState.Value == LoopKeyword.Continue)
-                {
-                    loopState.Reset();
+                else if (loopState.Continue.Use())
                     continue;
-                }
 
                 int nextValuesCount = nextValues.Length;
                 for (int i = 0; i < nextValuesCount; i++)
@@ -89,7 +83,7 @@ namespace CCEnvs
 
         public static void While(
             Func<bool> predicate,
-            Action? action,
+            Action<LoopState>? action,
             ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
             bool throwOnLimit = true)
         {
@@ -102,12 +96,21 @@ namespace CCEnvs
             {
                 IterationsLimit = iterationsLimit
             };
+            var state = new LoopState();
             if (!throwOnLimit)
             {
                 try
                 {
                     while (loopFuse)
-                        action();
+                    {
+                        if (state.Break)
+                            break;
+
+                        if (state.Continue.Use())
+                            continue;
+
+                        action(state);
+                    }
                 }
                 catch (EndlessLoopException ex)
                 {
@@ -115,8 +118,29 @@ namespace CCEnvs
                 }
             }
             else
+            {
                 while (loopFuse)
-                    action();
+                {
+                    if (state.Break)
+                        break;
+
+                    if (state.Continue.Use())
+                        continue;
+
+                    action(state);
+                }
+            }
+        }
+        public static void While(
+            Func<bool> predicate,
+            Action? action,
+            ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
+            bool throwOnLimit = true)
+        {
+            if (action is null)
+                return;
+
+            While(predicate, _ => action(), iterationsLimit, throwOnLimit);
         }
 
         public static T[] While<T>(
