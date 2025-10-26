@@ -30,7 +30,12 @@
         "Microsoft.Extensions.Primitives.dll",
         "C5.dll",
         "CommunityToolkit.Common.dll",
-        "CommunityToolkit.Diagnostics.dll"
+        "CommunityToolkit.Diagnostics.dll",
+        "LanguageExt.Core.dll",
+        "LanguageExt.Parsec.dll",
+        "LanguageExt.Rx.dll",
+        "LanguageExt.Streaming.dll",
+        "LanguageExt.Sys.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

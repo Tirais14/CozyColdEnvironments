@@ -56,6 +56,17 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IConditional IfNone<T, TOut>(T source, Func<TOut> selector)
+            where T : struct, IConditional
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+            if (source.IsSome)
+                return source;
+
+            return selector().Maybe();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Maybe<TOutValue> Map<T, TValue, TOutValue>(
             T source,
             Func<TValue, TOutValue?> selector)
@@ -261,6 +272,26 @@ namespace CCEnvs.Language
 
                     return source.As<TValue>();
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TOutValue> Cast<T, TOutValue>(T source)
+            where T : struct, IConditional
+        {
+            if (source.IsNone)
+                return default!;
+
+            return source.Access().AsOrDefault<TOutValue>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TOutValue> Cast<T, TValue, TOutValue>(T source)
+            where T : struct, IConditional<TValue>
+        {
+            if (source.IsNone)
+                return default!;
+
+            return source.Access().AsOrDefault<TOutValue>();
         }
 
 #nullable disable

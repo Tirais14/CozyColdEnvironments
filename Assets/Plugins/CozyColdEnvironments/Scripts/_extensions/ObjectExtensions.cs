@@ -227,12 +227,12 @@ namespace CCEnvs
 
         public static Maybe<T> AsOrDefault<T>(this object? obj)
         {
-            return obj is T typedObj ? typedObj : default;
+            return obj is T typedObj ? typedObj : default!;
         }
 
         public static Maybe<TValue> AsOrDefault<TObj, TValue>(this TObj? obj)
         {
-            return obj is TValue typedObj ? typedObj : default;
+            return obj is TValue typedObj ? typedObj : default!;
         }
 
         /// <summary>

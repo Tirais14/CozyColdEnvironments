@@ -99,6 +99,12 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IConditional IfNone<TOut>(Func<TOut> selector)
+        {
+            return Lang.IfNone(this, selector);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Catched<T> Match(Action<T> some, Action none)
         {
             return Lang.TryMatch(this, some, none, logType);
@@ -189,6 +195,12 @@ namespace CCEnvs.Language
                 return default!;
 
             return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Cast<TOut>()
+        {
+            return Lang.Cast<Catched<T>, T, TOut>(this);
         }
 
         public readonly bool Equals(Catched<T> other)

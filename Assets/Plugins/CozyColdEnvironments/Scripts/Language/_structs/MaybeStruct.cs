@@ -16,8 +16,7 @@ namespace CCEnvs.Language
         readonly
 #endif
         struct MaybeStruct<T>
-        : IEnumerable<T>,
-        IEquatable<MaybeStruct<T>>,
+        : IEquatable<MaybeStruct<T>>,
         IConditional<MaybeStruct<T>, T>
 
         where T : struct
@@ -90,6 +89,12 @@ namespace CCEnvs.Language
         public readonly MaybeStruct<T> IfNone(Action action)
         {
             return Lang.IfNone(this, action);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IConditional IfNone<TOut>(Func<TOut> selector)
+        {
+            return Lang.IfNone(this, selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -183,6 +188,12 @@ namespace CCEnvs.Language
                 return None;
 
             return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Cast<TOut>()
+        {
+            return Lang.Cast<MaybeStruct<T>, T, TOut>(this);
         }
 
         public readonly bool Equals(MaybeStruct<T> other)

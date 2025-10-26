@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime;
 
 namespace CCEnvs.Language
 {
@@ -22,6 +23,8 @@ namespace CCEnvs.Language
 
         object AccessUnsafe();
 
+        Maybe<TOut> Cast<TOut>();
+
         IConditional IfSome(Action<object> action);
 
         IConditional IfNone(Action action);
@@ -36,6 +39,8 @@ namespace CCEnvs.Language
     }
     public interface IConditional<T> : IConditional, IEnumerable<T>
     {
+        IConditional IfNone<TOut>(Func<TOut> selector);
+
         bool Check(T? value);
         bool Check(Predicate<T> predicate);
 
@@ -55,6 +60,8 @@ namespace CCEnvs.Language
         Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector);
 
         Maybe<TOut> Select<TOut>(Func<T, TOut?> selector);
+
+        IConditional IConditional.IfNone(Func<object> selector) => IfNone(() => selector());
 
         bool IConditional.Check(object? value) => Check(value.AsOrDefault<T>().Access());
         bool IConditional.Check(Predicate<object> predicate) => Check(x => predicate(x!));

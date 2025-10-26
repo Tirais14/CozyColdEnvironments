@@ -37,7 +37,12 @@
         "DOTweenEditor.dll",
         "CommunityToolkit.Common.dll",
         "CommunityToolkit.Diagnostics.dll",
-        "C5.dll"
+        "C5.dll",
+        "LanguageExt.Core.dll",
+        "LanguageExt.Parsec.dll",
+        "LanguageExt.Rx.dll",
+        "LanguageExt.Streaming.dll",
+        "LanguageExt.Sys.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
