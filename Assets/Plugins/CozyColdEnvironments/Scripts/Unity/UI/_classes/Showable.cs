@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using System;
 using UniRx;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -51,24 +52,26 @@ namespace CCEnvs.Unity.UI
             try
             {
                 OnHide?.Invoke();
+                hideSubj?.OnNext(Unit.Default);
             }
             catch (Exception ex)
             {
                 this.PrintException(ex);
             }
 
-            hideSubj?.OnNext(Unit.Default);
-            gameObject.SetActive(false);
+            foreach (var cmp in GetComponents<Graphic>())
+                cmp.enabled = false;
         }
 
         public virtual void Show()
         {
-            gameObject.SetActive(true);
-            showSubj?.OnNext(Unit.Default);
+            foreach (var cmp in GetComponents<Graphic>())
+                cmp.enabled = true;
 
             try
             {
                 OnShow?.Invoke();
+                showSubj?.OnNext(Unit.Default);
             }
             catch (Exception ex)
             {

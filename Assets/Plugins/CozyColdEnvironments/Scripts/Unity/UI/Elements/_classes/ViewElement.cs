@@ -27,7 +27,6 @@ namespace CCEnvs.Unity.UI.Elements
     {
         protected Maybe<Component> _dragItem;
         private Vector2 beforeDragPosition;
-        private Maybe<Transform> dragItemTransform;
 
         [field: GetBySelf]
         public Maybe<Image> image { get; private set; }
@@ -67,6 +66,8 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnBeginDrag(PointerEventData eventData)
         {
+            readyToDrag.msg.IfSome(x => this.PrintLog(x));
+
             if (!readyToDrag.state)
                 return;
 
@@ -76,10 +77,8 @@ namespace CCEnvs.Unity.UI.Elements
             if (dragCopyOfThis)
             {
                 _dragItem = Instantiate(this, transform.parent);
-                gameObject.SetActive(false);
+                Hide();
             }
-
-            dragItemTransform = dragItem.transform;
         }
 
         protected virtual void OnDrag(PointerEventData eventData)
@@ -87,30 +86,26 @@ namespace CCEnvs.Unity.UI.Elements
             if (!readyToDrag.state)
                 return;
 
-            dragItemTransform.AccessUnsafe().position = eventData.position;
+            dragItem.transform.position = eventData.position;
         }
 
         protected virtual void OnEndDrag(PointerEventData eventData)
         {
-            readyToDrag.msg.IfSome(x => this.PrintLog(x));
-
             if (!readyToDrag.state)
                 return;
 
-            if (resetPositionAfterDrag)
+            if (!dragCopyOfThis && resetPositionAfterDrag)
                 transform.position = beforeDragPosition;
 
             if (dragCopyOfThis)
             {
                 _dragItem.Match(
-                    cmp => Destroy(cmp.gameObject),
-                    () => this.PrintWarning("Copy of drag item is not destroyed. May cause a memory leak.")
+                    some: cmp => Destroy(cmp.gameObject),
+                    none: () => this.PrintWarning("Copy of drag item is not destroyed. May cause a memory leak.")
                     );
 
-                gameObject.SetActive(true);
+                Show();
             }
-
-            dragItemTransform = null;
         }
 
         protected virtual void OnDrop(PointerEventData eventData)

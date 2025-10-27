@@ -46,45 +46,43 @@ namespace CCEnvs.Unity.UI
                 return;
             }
 
-            if (!target.TryGetComponent<DragHandler>(out var dragHandler))
+            if (target.TryGetComponent<DragHandler>(out var dragHandler))
             {
-                this.PrintError($"Cannot find {nameof(DragHandler)}. DragAndDrop is not working.");
-                return;
-            }
+                if (onBeginDrag is not null)
+                {
+                    disposables.Add(dragHandler.ObserveOnBeginDrag()
+                                               .Subscribe(x => onBeginDrag(x))
+                                               .AddTo(target));
+                }
 
-            if (!target.TryGetComponent<DropHandler>(out var dropHandler))
-            {
-                this.PrintError($"Cannot find {nameof(DropHandler)}. DragAndDrop is not working.");
-                return;
-            }
+                if (onDrag is not null)
+                {
+                    disposables.Add(dragHandler.ObserveOnDrag()
+                                               .Subscribe(x => onDrag(x))
+                                               .AddTo(target));
+                }
 
-            if (onBeginDrag is not null)
-            {
-                disposables.Add(dragHandler.ObserveOnBeginDrag()
-                                           .Subscribe(x => onBeginDrag(x))
-                                           .AddTo(target));
+                if (onEndDrag is not null)
+                {
+                    disposables.Add(dragHandler.ObserveOnEndDrag()
+                                               .Subscribe(x => onEndDrag(x))
+                                               .AddTo(target));
+                }
             }
+            else
+                this.PrintLog($"Cannot find {nameof(DragHandler)}. Drag is disabled.");
 
-            if (onDrag is not null)
+            if (target.TryGetComponent<DropHandler>(out var dropHandler))
             {
-                disposables.Add(dragHandler.ObserveOnDrag()
-                                           .Subscribe(x => onDrag(x))
-                                           .AddTo(target));
+                if (onDrop is not null)
+                {
+                    disposables.Add(dropHandler.ObserveOnDrop()
+                                               .Subscribe(x => onDrop(x))
+                                               .AddTo(target));
+                }
             }
-
-            if (onEndDrag is not null)
-            {
-                disposables.Add(dragHandler.ObserveOnEndDrag()
-                                           .Subscribe(x => onEndDrag(x))
-                                           .AddTo(target));
-            }
-
-            if (onDrop is not null)
-            {
-                disposables.Add(dropHandler.ObserveOnDrop()
-                                           .Subscribe(x => onDrop(x))
-                                           .AddTo(target));
-            }
+            else
+                this.PrintLog($"Cannot find {nameof(DropHandler)}. Drop is disabled.");
 
             BindingCount++;
         }

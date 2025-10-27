@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
 using CCEnvs.UI.MVVM;
@@ -28,7 +27,6 @@ namespace CCEnvs.Unity.UI.Storages
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainer, new()
     {
-
         [field: SerializeField, GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
