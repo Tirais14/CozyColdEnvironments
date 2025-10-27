@@ -89,7 +89,7 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Check<T, TValue>(
+        public static bool ItIs<T, TValue>(
             T source,
             TValue? value,
             IEqualityComparer<TValue?>? comparer = null)
@@ -101,7 +101,7 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Check<T, TValue>(T source, Predicate<TValue> predicate)
+        public static bool ItIs<T, TValue>(T source, Predicate<TValue> predicate)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)

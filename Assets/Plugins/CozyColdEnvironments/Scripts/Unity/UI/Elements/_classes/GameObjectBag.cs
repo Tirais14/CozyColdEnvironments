@@ -11,7 +11,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
 {
-    public class GameObjectBag : Element, IGameObjectBag
+    public class GameObjectBag : ViewElement, IGameObjectBag
     {
         protected Maybe<ReactiveCollection<GameObject>> inner;
 

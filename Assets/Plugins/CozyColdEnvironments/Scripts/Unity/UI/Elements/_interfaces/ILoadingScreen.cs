@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
 {
-    public interface ILoadingScreen : IElement
+    public interface ILoadingScreen : IViewElement
     {
         
     }

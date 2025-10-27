@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
 {
-    public interface IElement : IShowable
+    public interface IViewElement : IShowable
     {
     }
 }

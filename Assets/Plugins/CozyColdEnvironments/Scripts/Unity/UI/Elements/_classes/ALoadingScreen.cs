@@ -5,7 +5,7 @@ using UnityEngine;
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity.UI.Elements
 {
-    public abstract class ALoadingScreen : Element, ILoadingScreen
+    public abstract class ALoadingScreen : ViewElement, ILoadingScreen
     {
         [field: SerializeField]
         public TextMeshProUGUI TextMesh { get; private set; } = null!;

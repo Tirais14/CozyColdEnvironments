@@ -20,9 +20,9 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.UI.Elements
 {
     [DisallowMultipleComponent]
-    public class Element 
+    public class ViewElement 
         : Showable,
-        IElement,
+        IViewElement,
         IDragAndDropToggle
     {
         protected Maybe<Component> _dragItem;
@@ -30,7 +30,7 @@ namespace CCEnvs.Unity.UI.Elements
         private Maybe<Transform> dragItemTransform;
 
         [field: GetBySelf]
-        protected Maybe<Image> image { get; private set; }
+        public Maybe<Image> image { get; private set; }
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<DragAndDropToggle> dragAndDropToggle { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;

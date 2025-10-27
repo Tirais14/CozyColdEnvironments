@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.UI.MVVM
     /// <typeparam name="TViewModel"></typeparam>
     /// <typeparam name="TModel"></typeparam>
     public abstract class View<TViewModel, TModel>
-        : Element,
+        : ViewElement,
         IView<TViewModel, TModel>
 
         where TViewModel : ViewModel<TModel>

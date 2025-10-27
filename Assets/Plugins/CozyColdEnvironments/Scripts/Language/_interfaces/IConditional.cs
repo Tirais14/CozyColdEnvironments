@@ -41,8 +41,8 @@ namespace CCEnvs.Language
     {
         IConditional IfNone<TOut>(Func<TOut> selector);
 
-        bool Check(T? value);
-        bool Check(Predicate<T> predicate);
+        bool ItIs(T? value);
+        bool ItIs(Predicate<T> predicate);
 
         bool CheckUnsafe(Predicate<T?> predicate);
 
@@ -63,8 +63,8 @@ namespace CCEnvs.Language
 
         IConditional IConditional.IfNone(Func<object> selector) => IfNone(() => selector());
 
-        bool IConditional.Check(object? value) => Check(value.AsOrDefault<T>().Access());
-        bool IConditional.Check(Predicate<object> predicate) => Check(x => predicate(x!));
+        bool IConditional.Check(object? value) => ItIs(value.AsOrDefault<T>().Access());
+        bool IConditional.Check(Predicate<object> predicate) => ItIs(x => predicate(x!));
 
         bool IConditional.CheckUnsafe(Predicate<object?> predicate) => CheckUnsafe(x => predicate(x!));
 

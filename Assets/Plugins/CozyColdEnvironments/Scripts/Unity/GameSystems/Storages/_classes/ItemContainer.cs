@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
-using CCEnvs.Unity.UI.MVVM;
 using CommunityToolkit.Diagnostics;
 using System;
 using UniRx;
@@ -39,7 +38,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         /// <summary>
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
-        public bool Unlocked { get; set; }
+        public bool UnlockCapacity { get; set; }
         public Maybe<GameObject?> gameObject { get; private set; }
 
         public ItemContainer(int capacity)
@@ -96,16 +95,17 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return ItemCount.Value >= count;
         }
 
-        public IItemContainer Put(IItem? item, int count)
+        public Maybe<IItemContainer> Put(IItem? item, int count)
         {
             if (item.IsNull() || count <= 0)
-                return Empty;
-
-            if (Capacity - ItemCount.Value <= 0)
+                return null!;
+            if (IsFull
+                ||
+                !Contains(item)
+                )
                 return new ItemContainer(item, count);
 
             int mergedItemCount = ItemCount.Value + count;
-
             if (mergedItemCount > Capacity)
             {
                 itemCount.Value = Capacity;
@@ -114,40 +114,42 @@ namespace CCEnvs.Unity.GameSystems.Storages
             }
 
             itemCount.Value = mergedItemCount;
-            return Empty;
+            return null!;
         }
 
-        public IItemContainer Put(IItemContainer itemContainer, int count)
+        public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)
         {
             CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
 
             return Put(itemContainer.Item.Value.Access(), count);
         }
 
-        public IItemContainer Put(IItemContainer itemContainer)
+        public Maybe<IItemContainer> Put(IItemContainer itemContainer)
         {
             CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
 
             return Put(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
         }
 
-        public IItemContainer Take(int count)
+        public Maybe<IItemContainer> Take(int count)
         {
-            if (count >= ItemCount.Value)
-            {
-                Clear();
-                return new ItemContainer(Item.Value.Access(), ItemCount.Value);
-            }
+            if (Item.Value.IsNone || count <= 0)
+                return null!;
 
-            itemCount.Value -= count;
+            int taked = Math.Clamp(count, 0, ItemCount.Value);
+            itemCount.Value -= taked;
+
+            var result = new ItemContainer(Item.Value.Access(), taked);
 
             if (itemCount.Value <= 0)
                 Clear();
 
-            return new ItemContainer(Item.Value.Access(), count);
+            return result;
         }
 
-        public IItemContainer Take(IItem item, int count)
+        public Maybe<IItemContainer> Take() => Take(itemCount.Value);
+
+        public Maybe<IItemContainer> Take(IItem item, int count)
         {
             if (!Contains(item))
                 return Empty;

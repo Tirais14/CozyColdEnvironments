@@ -56,15 +56,15 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Check(T value)
+        public readonly bool ItIs(T value)
         {
-            return Lang.Check(this, value);
+            return Lang.ItIs(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Check(Predicate<T> predicate)
+        public readonly bool ItIs(Predicate<T> predicate)
         {
-            return Lang.Check(this, predicate);
+            return Lang.ItIs(this, predicate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

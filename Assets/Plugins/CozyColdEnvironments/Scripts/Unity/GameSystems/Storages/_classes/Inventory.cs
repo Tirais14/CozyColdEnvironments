@@ -2,7 +2,6 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Linq;
 using CCEnvs.UI.MVVM;
-using CCEnvs.Unity.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -202,7 +201,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return removeSubj;
         }
 
-        public IItemContainer Put(IItem? item, int count)
+        public Maybe<IItemContainer> Put(IItem? item, int count)
         {
             int before;
             foreach (var con in inner.Values)
@@ -222,36 +221,40 @@ namespace CCEnvs.Unity.GameSystems.Storages
             return new ItemContainer(item, count);
         }
 
-        public IItemContainer Put(IItemContainer itemContainer, int count)
+        public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)
         {
             return Put(itemContainer.Item.Value.Access(), count);
         }
 
-        public IItemContainer Put(IItemContainer itemContainer)
+        public Maybe<IItemContainer> Put(IItemContainer itemContainer)
         {
             return Put(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
         }
 
-        public IItemContainer Take(IItem item, int count)
+        public Maybe<IItemContainer> Take(IItem item, int count)
         {
-            var result = new ItemContainer
-            {
-                Unlocked = true
-            };
-
             int beforeCount;
-            foreach (var con in inner.Values.ZL().Where(x => x.Contains(item)))
+            foreach (var cnt in inner.Values.ZL().Where(x => x.Contains(item)))
             {
-                beforeCount = con.ItemCount.Value;
-                result.Put(con.Take(count));
+                beforeCount = cnt.ItemCount.Value;
+                cnt.Take(count)
+                   .IfSome(
+                   x => new ItemContainer
+                   {
+                       UnlockCapacity = true
+                   }
+                   .Put(x)
+                   );
 
-                count -= beforeCount - con.ItemCount.Value;
+                count -= beforeCount - cnt.ItemCount.Value;
             }
 
-            return result;
+            return default!;
         }
 
-        IItemContainer IItemAccessor.Take(int count) => ItemContainer.Empty;
+        Maybe<IItemContainer> IItemAccessor.Take(int count) => null!;
+
+        Maybe<IItemContainer> IItemAccessor.Take() => null!;
 
         void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
         {
