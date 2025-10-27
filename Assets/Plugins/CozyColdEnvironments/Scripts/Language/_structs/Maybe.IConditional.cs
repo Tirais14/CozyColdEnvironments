@@ -107,23 +107,6 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
-        {
-            return Map(selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> Where(Predicate<T> predicate)
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            if (IsNone || !predicate(inner!))
-                return None;
-
-            return this;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Maybe<TOut> Cast<TOut>()
         {
             return Lang.Cast<Maybe<T>, T, TOut>(this);

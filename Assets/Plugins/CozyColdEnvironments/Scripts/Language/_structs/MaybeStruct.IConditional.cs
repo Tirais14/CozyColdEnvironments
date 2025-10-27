@@ -1,4 +1,3 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -79,7 +78,7 @@ namespace CCEnvs.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Access([NotNullWhen(true)] out T result)
         {
-            result = m_value;
+            result = inner.GetValueOrDefault();
 
             return IsSome;
         }
@@ -106,23 +105,6 @@ namespace CCEnvs.Language
         public readonly MaybeStruct<T> Apply(T value)
         {
             return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
-        {
-            return Map(selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MaybeStruct<T> Where(Predicate<T> predicate)
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            if (IsNone || !predicate(inner.GetValueOrDefault()))
-                return None;
-
-            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,9 +1,6 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -22,45 +19,64 @@ namespace CCEnvs.Language
         where T : struct
     {
         public static MaybeStruct<T> None => new();
-
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private bool m_hasValue;
+        private T inner;
 
         [UnityEngine.SerializeField]
-        private T m_value;
-
-        private readonly T? inner => m_hasValue ? m_value : null;
+        private T defaultValue;
 #else
-        private readonly T? inner;
+        private readonly T inner;
+        private readonly T defaultValue;
 #endif
 
-        public readonly bool IsSome => inner.HasValue;
+        public bool IsSome { get; private set; }
         public readonly bool IsNone => !IsSome;
 
         public MaybeStruct(T value)
+            :
+            this()
         {
-#if UNITY_2017_1_OR_NEWER
-            m_hasValue = true;
-            m_value = value;
-#else
             inner = value;
-#endif
+            IsSome = !inner.Equals(defaultValue);
         }
 
-        public static implicit operator MaybeStruct<T>(T source)
+        public MaybeStruct(T value, T defaultValue)
+            :
+            this(value)
+        {
+            this.defaultValue = defaultValue;
+        }
+
+        public MaybeStruct(T value, bool hasValue)
+            :
+            this()
+        {
+            inner = value;
+            IsSome = hasValue;
+        }
+
+        public MaybeStruct(T? value)
+            :
+            this()
+        {
+            IsSome = value.HasValue;
+            inner = value.GetValueOrDefault();
+        }
+
+        public static implicit operator MaybeStruct<T>(T? source)
         {
             return new MaybeStruct<T>(source);
         }
 
         public static implicit operator Maybe<T>(MaybeStruct<T> source)
         {
-            return source.inner.GetValueOrDefault();
+            return source.inner;
         }
 
         public static explicit operator T(MaybeStruct<T> source)
         {
-            return source.inner.GetValueOrDefault();
+            return source.inner;
         }
 
         public static bool operator ==(MaybeStruct<T> left, MaybeStruct<T> right)
@@ -91,7 +107,7 @@ namespace CCEnvs.Language
             if (IsNone)
                 yield break;
 
-            yield return inner!.Value;
+            yield return inner;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

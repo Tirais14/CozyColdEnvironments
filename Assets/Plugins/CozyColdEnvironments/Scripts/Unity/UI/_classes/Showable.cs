@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.UI
         public event Action? OnHide;
 
         public IReadOnlyReactiveProperty<bool> IsVisible => isVisible;
-        public bool IsShowable { get; private set; }
+        public virtual bool IsShowable => true;
 
         protected virtual bool ShowOnStart => false;
 

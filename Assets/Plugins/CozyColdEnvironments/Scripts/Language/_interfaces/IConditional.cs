@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime;
+using ZLinq;
 
 namespace CCEnvs.Language
 {
@@ -59,8 +60,6 @@ namespace CCEnvs.Language
 
         Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector);
 
-        Maybe<TOut> Select<TOut>(Func<T, TOut?> selector);
-
         IConditional IConditional.IfNone(Func<object> selector) => IfNone(() => selector());
 
         bool IConditional.Check(object? value) => ItIs(value.AsOrDefault<T>().Access());
@@ -97,8 +96,6 @@ namespace CCEnvs.Language
         TThis Match(Action<T> some, Action none);
 
         TThis Apply(T? value);
-
-        TThis Where(Predicate<T> predicate);
 
         IConditional IConditional.IfSome(Action<object> action) => IfSome(x => action(x!));
 

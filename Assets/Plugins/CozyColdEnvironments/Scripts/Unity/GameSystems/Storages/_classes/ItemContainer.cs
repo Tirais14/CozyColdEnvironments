@@ -101,7 +101,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
                 return null!;
             if (IsFull
                 ||
-                !Contains(item)
+                (!IsEmpty  && !Contains(item))
                 )
                 return new ItemContainer(item, count);
 
@@ -173,6 +173,11 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             item.Value = null;
             itemCount.Value = 0;
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(Item)}: {Item.Value.Map(x => x.ToString()).Access("null")}; {nameof(ItemCount)}: {ItemCount.Value}.";
         }
     }
 }

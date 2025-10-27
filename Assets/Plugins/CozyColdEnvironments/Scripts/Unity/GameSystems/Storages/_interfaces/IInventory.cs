@@ -1,3 +1,4 @@
+using CCEnvs.Language;
 using CCEnvs.Unity.GameSystems.Storages;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,8 @@ namespace CCEnvs.Unity
 
         void SetCount(int count, GameObject toInstantiate);
         void SetCount<T>(int count) where T : IItemContainer, new();
+
+        MaybeStruct<int> GetID(IItemContainer itemContainer);
 
         IObservable<(int id, IItemContainer value)> ObserveAdd();
 

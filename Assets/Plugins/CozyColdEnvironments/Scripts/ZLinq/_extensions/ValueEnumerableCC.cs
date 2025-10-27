@@ -10,7 +10,7 @@ using ZLinq.Linq;
 
 namespace CCEnvs
 {
-    public static class ValueEnumerable
+    public static class ValueEnumerableCC
     {
         public static T[] ForEach<TEnumerator, T>(this ValueEnumerable<TEnumerator, T> source,
             Action<T> action)

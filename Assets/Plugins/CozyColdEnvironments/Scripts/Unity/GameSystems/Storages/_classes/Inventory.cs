@@ -1,13 +1,12 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Linq;
-using CCEnvs.Reflection;
 using CCEnvs.UI.MVVM;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
-using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 using ZLinq;
 
@@ -16,33 +15,33 @@ namespace CCEnvs.Unity.GameSystems.Storages
 {
     public class Inventory : IInventory
     {
-        private readonly Dictionary<int, IItemContainer> inner;
+        private readonly Dictionary<int, IItemContainer> collection;
 
         private Subject<(int id, IItemContainer value)>? addSubj;
         private Subject<(int id, IItemContainer value)>? removeSubj;
         private int nextSlotID;
 
-        public IItemContainer this[int id] => inner[id];
+        public IItemContainer this[int id] => collection[id];
 
         public event Action<(int id, IItemContainer value)>? OnAdd;
         public event Action<(int id, IItemContainer value)>? OnRemove;
 
-
-        public int Count => inner.Count;
+        public int Count => collection.Count;
         public int Capacity {
-            get => inner.Count;
-            set => inner.EnsureCapacity(value);
+            get => collection.Count;
+            set => collection.EnsureCapacity(value);
         }
-        public IEnumerable<int> IDs => inner.Keys;
-        public IEnumerable<IItemContainer> Containers => inner.Values;
-        public bool IsEmpty => inner.Values.Any(x => x.Contains());
-        public bool IsFull => inner.Values.All(x => x.Contains());
+        public IEnumerable<int> IDs => collection.Keys;
+        public IEnumerable<IItemContainer> Containers => collection.Values;
+        public bool IsEmpty => collection.Values.Any(x => x.Contains());
+        public bool IsFull => collection.Values.All(x => x.Contains());
 
-        IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReactiveProperty<int>(int.MinValue);
+        IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReadOnlyReactiveProperty<int>(Observable.Empty<int>());
+        Maybe<IItemContainer> IItemContainerInfoItemless.ParentContainer => null!;
 
         public Inventory(int capacity)
         {
-            inner = new Dictionary<int, IItemContainer>(capacity);
+            collection = new Dictionary<int, IItemContainer>(capacity);
         }
 
         public Inventory()
@@ -55,22 +54,22 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             CC.Guard.NullArgument(containers, nameof(containers));
 
-            inner = new Dictionary<int, IItemContainer>(containers);
+            collection = new Dictionary<int, IItemContainer>(containers);
         }
 
         public bool Contains()
         {
-            return inner.Values.ZL().Any(x => x.Contains());
+            return collection.Values.ZL().Any(x => x.Contains());
         }
 
         public bool Contains(IItem? item)
         {
-            return inner.Values.ZL().Any(x => x.Contains(item));
+            return collection.Values.ZL().Any(x => x.Contains(item));
         }
 
         public bool Contains(IItem? item, int count)
         {
-            int containedCount = inner.Values.ZL()
+            int containedCount = collection.Values.ZL()
                                              .Where(x => x.Contains(item))
                                              .Sum(x => x.ItemCount.Value);
 
@@ -79,18 +78,18 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public bool Contains(IItemContainer itemContainer)
         {
-            return inner.Values.Contains(itemContainer);
+            return collection.Values.Contains(itemContainer);
         }
 
-        public bool Contains(int id) => inner.ContainsKey(id);
+        public bool Contains(int id) => collection.ContainsKey(id);
 
         public void Add(IItemContainer itemContainer)
         {
             try
             {
-                inner.Add(nextSlotID, itemContainer);
+                collection.Add(nextSlotID, itemContainer);
 
-                Do.While(() => inner.ContainsKey(nextSlotID), () => nextSlotID++);
+                Do.While(() => collection.ContainsKey(nextSlotID), () => nextSlotID++);
 
                 addSubj?.OnNext((nextSlotID, itemContainer));
                 OnAdd?.Invoke((nextSlotID, itemContainer));
@@ -123,7 +122,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public bool Remove(int id)
         {
-            if (inner.Remove(id, out IItemContainer value))
+            if (collection.Remove(id, out IItemContainer value))
             {
                 try
                 {
@@ -144,7 +143,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
 
-            KeyValuePair<int, IItemContainer> found = inner.FirstOrDefault(x => x.Value.Equals(itemContainer));
+            KeyValuePair<int, IItemContainer> found = collection.FirstOrDefault(x => x.Value.Equals(itemContainer));
             if (found.IsDefault())
                 return false;
 
@@ -157,12 +156,12 @@ namespace CCEnvs.Unity.GameSystems.Storages
                 RemoveLast();
         }
 
-        public bool RemoveLast() => Remove(inner.Keys.Max());
+        public bool RemoveLast() => Remove(collection.Keys.Max());
 
         public void Clear()
         {
-            foreach (var id in inner.Keys.ToArray())
-                inner.Remove(id);
+            foreach (var id in collection.Keys.ToArray())
+                collection.Remove(id);
         }
 
         public void SetCount<T>(int count)
@@ -207,13 +206,13 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             if (item.IsNull() || count <= 0)
             {
-                this.PrintLog($"Item: {item.Maybe().Map(x => x!.ToString()).Access("null")}, count: {count}. is not added.");
+                this.PrintLog($"Item: {item.Maybe().Map(x => x!.ToString()).Access("null")}, count: {count}. Is not added.");
                 return null!;
             }
 
             int rest = count;
             Maybe<IItemContainer> restItems;
-            foreach (var cnt in from it in inner.ZL() //Searching for container with item or first empty container
+            foreach (var cnt in from it in collection.ZL() //Searching for container with item or first empty container
                                 where it.Value.IsEmpty || (it.Value.Contains(item) && !it.Value.IsFull)
                                 select (it, priority: it.Value.Contains(item) ? it.Key - 1 : it.Key) into pair
                                 orderby pair.priority
@@ -223,7 +222,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
                 this.PrintLog($"Item: {item}, count: {count}, item container id: {cnt.Key}. Is added.");
 
-                rest -= restItems.AccessUnsafe().ItemCount.Value;
+                rest = restItems.Map(x => x.ItemCount.Value).Access(0);
 
                 if (rest <= 0)
                     break;
@@ -257,7 +256,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
                 return null!;
 
             Maybe<IItemContainer> taked;
-            foreach (var cnt in inner.Values.ZL().Where(x => x.Contains(item)))
+            foreach (var cnt in collection.Values.ZL().Where(x => x.Contains(item)))
             {
                 taked = cnt.Take(count);
                 count -= taked.AccessUnsafe().ItemCount.Value;
@@ -267,6 +266,13 @@ namespace CCEnvs.Unity.GameSystems.Storages
             }
 
             return default!;
+        }
+
+        public MaybeStruct<int> GetID(IItemContainer itemContainer)
+        {
+            Guard.IsNotNull(itemContainer, nameof(itemContainer));
+
+            collection.FirstOrDefault(x => x.Value.Equals(itemContainer)).Maybe().Map(x => x.Key).Struct().IfSome(x => x)
         }
 
         Maybe<IItemContainer> IItemAccessor.Take(int count) => null!;

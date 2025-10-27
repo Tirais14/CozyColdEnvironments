@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Language;
 using CCEnvs.UI.MVVM;
@@ -32,7 +33,18 @@ namespace CCEnvs.Unity.UI.Storages
         protected Maybe<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
         protected override bool ShowOnStart => true;
-        protected override bool readyToDrag => model.Contains();
+        protected override bool readyToDrag {
+            get
+            {
+                if (model.IsEmpty)
+                {
+                    this.PrintLog($"Cannot start dragging. {nameof(ItemContainer)} is empty. {nameof(ItemContainer)}: {model}", DebugArguments.IsAdditive);
+                    return false;
+                }
+
+                return true;
+            }
+        }
         protected override bool readyToTakeDrop => !model.IsFull;
         protected override bool resetPositionAfterDrag => true;
         protected override bool dragCopyOfThis => true;
