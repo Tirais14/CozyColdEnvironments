@@ -1,6 +1,6 @@
 using CCEnvs;
 using CCEnvs.Collections.Performance;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;

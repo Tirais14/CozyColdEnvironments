@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;

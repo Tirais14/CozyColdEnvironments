@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 #pragma warning disable S3236
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public static partial class Lang
     {

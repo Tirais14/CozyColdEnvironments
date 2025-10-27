@@ -5,7 +5,7 @@ using System.Collections.Generic;
 #nullable enable
 #pragma warning disable IDE1006
 #pragma warning disable S3236
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     [Serializable]
     public
@@ -23,6 +23,7 @@ namespace CCEnvs.Language
         [UnityEngine.SerializeField]
         private T inner;
 
+        [UnityEngine.Range(int.MinValue, int.MaxValue)]
         [UnityEngine.SerializeField]
         private T defaultValue;
 #else

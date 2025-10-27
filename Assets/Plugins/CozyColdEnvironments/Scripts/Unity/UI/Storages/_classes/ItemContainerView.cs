@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.UI.MVVM;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
@@ -33,16 +33,13 @@ namespace CCEnvs.Unity.UI.Storages
         protected Maybe<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
         protected override bool ShowOnStart => true;
-        protected override bool readyToDrag {
+        protected override (bool state, Maybe<string> msg) readyToDrag {
             get
             {
                 if (model.IsEmpty)
-                {
-                    this.PrintLog($"Cannot start dragging. {nameof(ItemContainer)} is empty. {nameof(ItemContainer)}: {model}", DebugArguments.IsAdditive);
-                    return false;
-                }
+                    return (false, $"Cannot start dragging. {nameof(ItemContainer)} is empty. {nameof(ItemContainer)}: {model}");
 
-                return true;
+                return (true, null);
             }
         }
         protected override bool readyToTakeDrop => !model.IsFull;

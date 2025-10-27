@@ -3,16 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public partial struct MaybeStruct<T>
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Catch() => inner.GetValueOrDefault();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> Maybe() => inner.GetValueOrDefault();
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MaybeStruct<T> IfSome(Action<T> action)
         {
@@ -73,12 +67,12 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access() => inner.GetValueOrDefault();
+        public readonly T Access() => inner;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Access([NotNullWhen(true)] out T result)
         {
-            result = inner.GetValueOrDefault();
+            result = inner;
 
             return IsSome;
         }

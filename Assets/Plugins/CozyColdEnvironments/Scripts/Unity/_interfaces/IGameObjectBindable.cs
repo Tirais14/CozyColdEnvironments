@@ -1,4 +1,4 @@
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using UnityEngine;
 
 #nullable enable

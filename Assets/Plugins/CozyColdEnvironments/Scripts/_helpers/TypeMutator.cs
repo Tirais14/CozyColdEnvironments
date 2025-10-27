@@ -1,6 +1,6 @@
 #nullable enable
 using CCEnvs.Attributes;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
 using System;

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 #pragma warning disable S3236
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     [Serializable]
     public

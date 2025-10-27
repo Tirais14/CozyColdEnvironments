@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public static class BoxConverter
     {

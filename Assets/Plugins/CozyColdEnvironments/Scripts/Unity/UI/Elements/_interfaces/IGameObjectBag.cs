@@ -1,4 +1,4 @@
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using UniRx;
 using UnityEngine;
 using System.Collections.Generic;

@@ -1,6 +1,6 @@
 using CCEnvs;
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;

@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection.Data;
 using CCEnvs.Unity;
 using CCEnvs.Unity.Collections;

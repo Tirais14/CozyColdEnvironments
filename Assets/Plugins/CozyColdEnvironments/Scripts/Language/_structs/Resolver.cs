@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 #pragma warning disable S3236
 #pragma warning disable S3400
 #pragma warning disable IDE1006
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public readonly struct Resolver
     {
@@ -52,7 +52,7 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(action, nameof(action));
 
-            if (@if())
+            if (@if?.Invoke() ?? false)
             {
                 action();
                 return true;
@@ -65,7 +65,7 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            if (@if())
+            if (@if?.Invoke() ?? false)
                 return selector();
 
             return default!;
@@ -76,7 +76,7 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(action, nameof(action));
 
-            if (!@if())
+            if (!(@if?.Invoke() ?? false))
             {
                 action();
                 return true;
@@ -90,7 +90,7 @@ namespace CCEnvs.Language
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            if (!@if())
+            if (!(@if?.Invoke() ?? false))
                 return selector();
 
             return default!;
@@ -102,7 +102,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(onIf, nameof(onIf));
             Guard.IsNotNull(onElse, nameof(onElse));
 
-            if (@if())
+            if (@if?.Invoke() ?? false)
             {
                 onIf();
                 return true;
@@ -120,7 +120,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(onIf, nameof(onIf));
             Guard.IsNotNull(onElse, nameof(onElse));
 
-            if (@if())
+            if (@if?.Invoke() ?? false)
                 return onIf();
             else
                 return onElse();

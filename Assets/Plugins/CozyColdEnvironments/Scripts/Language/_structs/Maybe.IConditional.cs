@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable S3236
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public partial struct Maybe<T>
     {

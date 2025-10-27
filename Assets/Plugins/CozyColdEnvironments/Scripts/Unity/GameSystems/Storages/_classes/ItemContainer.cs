@@ -1,9 +1,10 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
 using UniRx;
 using UnityEngine;
+using static CCEnvs.FuncLanguage.LangOperator;
 
 #nullable enable
 #pragma warning disable S3236
@@ -15,6 +16,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
         private int capacity;
+        private Maybe<IInventory> parentInventory;
 
         public static ItemContainer Empty => new();
 
@@ -40,6 +42,13 @@ namespace CCEnvs.Unity.GameSystems.Storages
         /// </summary>
         public bool UnlockCapacity { get; set; }
         public Maybe<GameObject?> gameObject { get; private set; }
+#pragma warning disable S2292
+        //TODO: Remove and Add to new item container parent
+        public Maybe<IInventory> ParentInventory {
+            get => parentInventory;
+            set => parentInventory = value;
+        }
+#pragma warning restore S2292
 
         public ItemContainer(int capacity)
         {

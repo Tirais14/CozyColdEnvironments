@@ -1,8 +1,9 @@
+using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.UI.Storages
 {
     public class InventoryViewModel<T> : ViewModel<T>
         where T : IInventory

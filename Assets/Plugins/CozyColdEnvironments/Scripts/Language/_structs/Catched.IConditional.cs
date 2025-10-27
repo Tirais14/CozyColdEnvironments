@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public partial struct Catched<T>
     {

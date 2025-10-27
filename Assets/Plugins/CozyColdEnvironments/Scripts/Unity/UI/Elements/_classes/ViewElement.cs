@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.UI.Elements
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
         protected Component dragItem => _dragItem.Access(this)!;
         protected virtual bool dragCopyOfThis => false;
-        protected virtual bool readyToDrag => true;
+        protected virtual (bool state, Maybe<string> msg) readyToDrag => (true, null);
         protected virtual bool readyToTakeDrop => false;
         protected virtual bool resetPositionAfterDrag => false;
 
@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnBeginDrag(PointerEventData eventData)
         {
-            if (!readyToDrag)
+            if (!readyToDrag.state)
                 return;
 
             if (resetPositionAfterDrag)
@@ -84,7 +84,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnDrag(PointerEventData eventData)
         {
-            if (!readyToDrag)
+            if (!readyToDrag.state)
                 return;
 
             dragItemTransform.AccessUnsafe().position = eventData.position;
@@ -92,7 +92,9 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnEndDrag(PointerEventData eventData)
         {
-            if (!readyToDrag)
+            readyToDrag.msg.IfSome(x => this.PrintLog(x));
+
+            if (!readyToDrag.state)
                 return;
 
             if (resetPositionAfterDrag)

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 #nullable enable annotations
 #pragma warning disable S3267
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     /// <summary>
     /// Has only 6 slots.

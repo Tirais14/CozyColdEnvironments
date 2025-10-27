@@ -1,17 +1,17 @@
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using UniRx;
 
 #nullable enable
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity.GameSystems.Storages
 {
-    public interface IItemContainerInfoItemless 
+    public interface IItemContainerInfoItemless
     {
         IReadOnlyReactiveProperty<int> ItemCount { get; }
         int Capacity { get; set; }
         bool IsEmpty { get; }
         bool IsFull { get; }
-        Maybe<IItemContainer> ParentContainer { get; }
+        Maybe<IInventory> ParentInventory { get; set; }
 
         bool Contains();
         bool Contains(IItem? item);

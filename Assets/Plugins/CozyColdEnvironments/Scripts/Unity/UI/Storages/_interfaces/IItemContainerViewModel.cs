@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;
 using UnityEngine;

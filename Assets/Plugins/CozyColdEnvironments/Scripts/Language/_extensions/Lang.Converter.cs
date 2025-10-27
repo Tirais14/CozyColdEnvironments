@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3236
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public static partial class Lang
     {
@@ -55,13 +55,13 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, Predicate<T> predicate)
+        public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, Predicate<TValue> predicate)
             where T : struct, IConditional<TValue>
             where TValue : struct
         {
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            return new MaybeStruct<TValue>(input.Access(), predicate(input));
+            return new MaybeStruct<TValue>(input.Access(), predicate(input.Access()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

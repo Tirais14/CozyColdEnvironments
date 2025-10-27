@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 #pragma warning disable S3236
 #pragma warning disable IDE1006
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public static class LangOperator
     {

@@ -1,11 +1,10 @@
-using CCEnvs.Language;
-using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.GameSystems.Storages
 {
     public interface IInventory
         : IItemAccessor,

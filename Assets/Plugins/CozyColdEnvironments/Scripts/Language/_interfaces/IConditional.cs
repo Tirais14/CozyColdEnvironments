@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime;
 using ZLinq;
 
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     public interface IConditional
     {

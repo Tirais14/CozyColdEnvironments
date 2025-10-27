@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 #pragma warning disable S3236
 #pragma warning disable IDE1006
-namespace CCEnvs.Language
+namespace CCEnvs.FuncLanguage
 {
     [Serializable]
     public

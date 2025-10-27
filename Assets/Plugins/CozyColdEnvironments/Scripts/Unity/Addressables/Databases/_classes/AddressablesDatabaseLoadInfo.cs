@@ -1,5 +1,5 @@
 using CCEnvs;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.EditorSerialization;
 using System;
 using UnityEngine;

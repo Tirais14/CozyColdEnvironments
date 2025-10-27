@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using UniRx;

@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI;

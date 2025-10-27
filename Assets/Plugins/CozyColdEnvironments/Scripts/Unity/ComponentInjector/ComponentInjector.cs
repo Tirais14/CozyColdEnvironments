@@ -1,6 +1,6 @@
 using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Diagnostics;

@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 
 namespace CCEnvs.Unity.GameSystems.Storages
 {

@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.UI.MVVM;
 using CommunityToolkit.Diagnostics;
@@ -10,6 +10,7 @@ using UniRx;
 using UnityEngine;
 using ZLinq;
 
+#pragma warning disable S3236
 #nullable enable
 namespace CCEnvs.Unity.GameSystems.Storages
 {
@@ -37,7 +38,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public bool IsFull => collection.Values.All(x => x.Contains());
 
         IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReadOnlyReactiveProperty<int>(Observable.Empty<int>());
-        Maybe<IItemContainer> IItemContainerInfoItemless.ParentContainer => null!;
+        Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get; set; }
 
         public Inventory(int capacity)
         {
@@ -70,8 +71,8 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public bool Contains(IItem? item, int count)
         {
             int containedCount = collection.Values.ZL()
-                                             .Where(x => x.Contains(item))
-                                             .Sum(x => x.ItemCount.Value);
+                                                  .Where(x => x.Contains(item))
+                                                  .Sum(x => x.ItemCount.Value);
 
             return containedCount >= count;
         }
@@ -88,6 +89,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
             try
             {
                 collection.Add(nextSlotID, itemContainer);
+                itemContainer.ParentInventory = this.As<IInventory>().Maybe();
 
                 Do.While(() => collection.ContainsKey(nextSlotID), () => nextSlotID++);
 
@@ -124,6 +126,8 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             if (collection.Remove(id, out IItemContainer value))
             {
+                value.ParentInventory = null!;
+
                 try
                 {
                     removeSubj?.OnNext((id, value));
@@ -272,7 +276,10 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            collection.FirstOrDefault(x => x.Value.Equals(itemContainer)).Maybe().Map(x => x.Key).Struct().IfSome(x => x)
+            return collection.FirstOrDefault(x => x.Value.Equals(itemContainer))
+                             .Maybe()
+                             .Map(x => x.Key.Maybe(x => x >= 0))
+                             .Access();
         }
 
         Maybe<IItemContainer> IItemAccessor.Take(int count) => null!;

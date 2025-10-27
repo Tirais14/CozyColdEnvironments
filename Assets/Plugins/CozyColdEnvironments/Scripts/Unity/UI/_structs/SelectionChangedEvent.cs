@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Language;
+using CCEnvs.FuncLanguage;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
