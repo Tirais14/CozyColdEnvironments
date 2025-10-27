@@ -14,7 +14,7 @@ namespace CCEnvs.Language
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        struct Maybe<T>
+        partial struct Maybe<T>
         : IEquatable<Maybe<T>>,
         IConditional<Maybe<T>, T>
     {
@@ -53,126 +53,6 @@ namespace CCEnvs.Language
         public static bool operator !=(Maybe<T> left, Maybe<T> right)
         {
             return !(left == right);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Catch() => inner!;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> IfSome(Action<T> action)
-        {
-            return Lang.IfSome(this, action);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> IfNone(Action action)
-        {
-            return Lang.IfNone(this, action);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly IConditional IfNone<TOut>(Func<TOut> selector)
-        {
-            return Lang.IfNone(this, selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> Match(Action<T> some, Action none)
-        {
-            return Lang.Match(this, some, none);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
-        {
-            return Lang.Match(this, some, none);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
-        {
-            return Lang.Map(this, selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
-        {
-            return Lang.MapUnsafe(this, selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Check(T? value)
-        {
-            return Lang.Check(this, value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Check(Predicate<T> predicate)
-        {
-            return Lang.Check(this, predicate);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool CheckUnsafe(Predicate<T?> predicate)
-        {
-            return Lang.CheckUnsafe(this, predicate);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Access() => inner;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Access(T? defaultValue)
-        {
-            return Lang.Access(this, defaultValue);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Access([NotNullWhen(true)] out T? result)
-        {
-            result = inner;
-
-            return IsSome;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Access(Func<T?> defaultValueFactory)
-        {
-            return Lang.Access(this, defaultValueFactory);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T AccessUnsafe()
-        {
-            return Lang.AccessUnsafe<Maybe<T>, T>(this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> Apply(T? value)
-        {
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
-        {
-            return Map(selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> Where(Predicate<T> predicate)
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            if (IsNone || !predicate(inner!))
-                return None;
-
-            return this;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Cast<TOut>()
-        {
-            return Lang.Cast<Maybe<T>, T, TOut>(this);
         }
 
         public readonly bool Equals(Maybe<T> other)

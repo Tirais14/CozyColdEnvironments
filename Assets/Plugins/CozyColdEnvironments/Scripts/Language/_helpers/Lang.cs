@@ -1,16 +1,13 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine;
-using static Humanizer.On;
 
 #pragma warning disable S3236
 namespace CCEnvs.Language
 {
-    public static class Lang
+    public static partial class Lang
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T IfSome<T, TValue>(T source, Action<TValue> action)
@@ -20,25 +17,6 @@ namespace CCEnvs.Language
 
             if (source.IsSome)
                 action(source.Access()!);
-
-            return source;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T TryIfSome<T, TValue>(
-            T source,
-            Action<TValue> action,
-            LogType logType)
-            where T : struct, IConditional<TValue>
-        {
-            try
-            {
-                IfSome(source, action);
-            }
-            catch (Exception ex)
-            {
-                typeof(Lang).PrintDebug(ex, logType);
-            }
 
             return source;
         }
@@ -78,36 +56,6 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> MapUnsafe<T, TValue, TOutValue>(
-            T source,
-            Func<TValue?, TOutValue?> selector)
-            where T : struct, IConditional<TValue>
-        {
-            Guard.IsNotNull(selector, nameof(selector));
-
-            return selector(source.Access()!);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> TryMap<T, TValue, TOutValue>(
-            T source,
-            Func<TValue, TOutValue?> selector,
-            LogType logType)
-            where T : struct, IConditional<TValue>
-        {
-            try
-            {
-                return Map(source, selector);
-            }
-            catch (Exception ex)
-            {
-                typeof(Lang).PrintDebug(ex, logType);
-
-                return default!;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Match<T, TValue>(
             T source,
             Action<TValue> some,
@@ -141,45 +89,6 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T TryMatch<T, TValue>(
-            T source,
-            Action<TValue> some,
-            Action noneOrCatched, 
-            LogType logType)
-            where T : struct, IConditional<TValue>
-        {
-            try
-            {
-                Match(source, some, noneOrCatched);
-            }
-            catch (Exception ex)
-            {
-                typeof(Lang).PrintDebug(ex, logType);
-            }
-
-            return source;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> TryMatch<T, TValue, TOutValue>(
-            T source,
-            Func<TValue, TOutValue?> some,
-            Func<TOutValue?> noneOrCatched,
-            LogType logType)
-            where T : struct, IConditional<TValue>
-        {
-            try
-            {
-                return Match(source, some, noneOrCatched);
-            }
-            catch (Exception ex)
-            {
-                typeof(Lang).PrintDebug(ex, logType);
-
-                return noneOrCatched();
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Check<T, TValue>(
             T source,
             TValue? value,
@@ -204,15 +113,6 @@ namespace CCEnvs.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
-            where T : struct, IConditional<TValue> 
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            return predicate(source.Access());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TValue? Access<T, TValue>(T source, TValue? defaultValue)
             where T : struct, IConditional<TValue>
         {
@@ -227,16 +127,6 @@ namespace CCEnvs.Language
         {
             if (source.IsNone)
                 return defaultValueFactory();
-
-            return source.Access()!;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue AccessUnsafe<T, TValue>(T source)
-            where T : struct, IConditional<TValue>
-        {
-            if (source.IsNone)
-                throw new Diagnostics.CCException("Value is none");
 
             return source.Access()!;
         }
@@ -293,38 +183,5 @@ namespace CCEnvs.Language
 
             return source.Access().AsOrDefault<TOutValue>();
         }
-
-#nullable disable
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> Maybe<T>(this T source) => source;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Catched<T> Catch<T>(this T source,
-            LogType logType = LogType.Log)
-        {
-            return new Catched<T>(source, logType);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<T> MaybeStruct<T>(this T source)
-            where T : struct
-        {
-            return source;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<T> MaybeStruct<T>(this Maybe<T> source)
-            where T : struct
-        {
-            return source.Access();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<T> Struct<T>(this Maybe<T> source)
-            where T : struct
-        {
-            return source.Access();
-        }
-#nullable enable
     }
 }

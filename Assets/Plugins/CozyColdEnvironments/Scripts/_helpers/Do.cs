@@ -14,6 +14,8 @@ namespace CCEnvs
         {
         }
 
+        public static T? Nothing<T>() => default;
+
         /// <summary>
         /// Same as the recursion loop, but use heap memory
         /// </summary>
