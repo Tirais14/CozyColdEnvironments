@@ -1,9 +1,7 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable S3236
@@ -78,7 +76,7 @@ namespace CCEnvs.Language
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        IConditional IConditional.IfNone(Func<object> selector)
+        readonly IConditional IConditional.IfNone(Func<object> selector)
         {
             if (IsSome)
                 return this;

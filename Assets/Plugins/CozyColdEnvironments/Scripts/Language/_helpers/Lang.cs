@@ -16,7 +16,7 @@ namespace CCEnvs.Language
             Guard.IsNotNull(action, nameof(action));
 
             if (source.IsSome)
-                action(source.Access()!);
+                action(source.AccessUnsafe());
 
             return source;
         }

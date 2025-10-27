@@ -1,11 +1,13 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Language;
 using CCEnvs.Linq;
+using CCEnvs.Reflection;
 using CCEnvs.UI.MVVM;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 using ZLinq;
 
@@ -204,23 +206,38 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public Maybe<IItemContainer> Put(IItem? item, int count)
         {
             if (item.IsNull() || count <= 0)
-                return null!;
-
-            Maybe<IItemContainer> restItems;
-            foreach (var con in inner.Values.ZL().Where(x => x.Contains(item)))
             {
-                restItems = con.Put(item, count);
-
-                if (restItems.IsNone)
-                    break;
-
-                count = restItems.AccessUnsafe().ItemCount.Value;
+                this.PrintLog($"Item: {item.Maybe().Map(x => x!.ToString()).Access("null")}, count: {count}. is not added.");
+                return null!;
             }
 
-            return new ItemContainer(item, count)
+            int rest = count;
+            Maybe<IItemContainer> restItems;
+            foreach (var cnt in from it in inner.ZL() //Searching for container with item or first empty container
+                                where it.Value.IsEmpty || (it.Value.Contains(item) && !it.Value.IsFull)
+                                select (it, priority: it.Value.Contains(item) ? it.Key - 1 : it.Key) into pair
+                                orderby pair.priority
+                                select pair.it)
             {
-                UnlockCapacity = true
-            };
+                restItems = cnt.Value.Put(item, rest);
+
+                this.PrintLog($"Item: {item}, count: {count}, item container id: {cnt.Key}. Is added.");
+
+                rest -= restItems.AccessUnsafe().ItemCount.Value;
+
+                if (rest <= 0)
+                    break;
+            }
+
+            if (rest > 0)
+            {
+                return new ItemContainer(item, rest)
+                {
+                    UnlockCapacity = true
+                };
+            }
+
+            return null!;
         }
 
         public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)
