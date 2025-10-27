@@ -203,22 +203,24 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public Maybe<IItemContainer> Put(IItem? item, int count)
         {
-            int before;
-            foreach (var con in inner.Values)
+            if (item.IsNull() || count <= 0)
+                return null!;
+
+            Maybe<IItemContainer> restItems;
+            foreach (var con in inner.Values.ZL().Where(x => x.Contains(item)))
             {
-                if (count <= 0)
-                    return ItemContainer.Empty;
+                restItems = con.Put(item, count);
 
-                if (!con.IsEmpty && !con.Contains(item))
-                    continue;
+                if (restItems.IsNone)
+                    break;
 
-                before = con.ItemCount.Value;
-                con.Put(item, count);
-
-                count -= con.ItemCount.Value - before;
+                count = restItems.AccessUnsafe().ItemCount.Value;
             }
 
-            return new ItemContainer(item, count);
+            return new ItemContainer(item, count)
+            {
+                UnlockCapacity = true
+            };
         }
 
         public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)
@@ -233,20 +235,18 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public Maybe<IItemContainer> Take(IItem item, int count)
         {
-            int beforeCount;
+            CC.Guard.NullArgument(item, nameof(item));
+            if (count <= 0)
+                return null!;
+
+            Maybe<IItemContainer> taked;
             foreach (var cnt in inner.Values.ZL().Where(x => x.Contains(item)))
             {
-                beforeCount = cnt.ItemCount.Value;
-                cnt.Take(count)
-                   .IfSome(
-                   x => new ItemContainer
-                   {
-                       UnlockCapacity = true
-                   }
-                   .Put(x)
-                   );
+                taked = cnt.Take(count);
+                count -= taked.AccessUnsafe().ItemCount.Value;
 
-                count -= beforeCount - cnt.ItemCount.Value;
+                if (count <= 0)
+                    break;
             }
 
             return default!;
