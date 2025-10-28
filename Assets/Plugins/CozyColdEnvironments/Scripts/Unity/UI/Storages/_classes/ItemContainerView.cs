@@ -42,16 +42,14 @@ namespace CCEnvs.Unity.UI.Storages
         {
             base.Start();
 
-            textMesh = GetComponentInChildren<TextMeshProUGUI>();
-
-            ObservableExtensions.Subscribe(viewModel.ItemIconView, newSprite => Img.AccessUnsafe().sprite = (Sprite?)newSprite)
-                                .AddTo(this);
+            viewModel.ItemIconView.Subscribe(newSprite => Img.AccessUnsafe().sprite = newSprite.Access())
+                                  .AddTo(this);
 
             textMesh.IfSome(mesh =>
             {
-                Observable.Select(viewModel.ItemCountView, y => y.ToString())
-                          .Subscribe(newText => mesh.text = newText)
-                          .AddTo(this);
+                viewModel.ItemCountView.Select(y => y.ToString())
+                                       .Subscribe(newText => mesh.text = newText)
+                                       .AddTo(this);
             });
         }
 
@@ -72,9 +70,11 @@ namespace CCEnvs.Unity.UI.Storages
             if (DropPredicate())
                 return;
 
-            eventData.selectedObject.Maybe()
-                                    .Map(x => x.GetAssignedModel<IItemContainer>()!)
-                                    .IfSome(x => x.Put(model));
+            eventData.pointerDrag.Maybe()
+                                 .Map(go => go.GetAssignedModel<IItemContainer>()!)
+                                 .Map(cnt => (source: cnt, rest: model.Put(cnt)))
+                                 .Where(cnt => cnt.rest.IsSome)
+                                 .IfSome(cnt => cnt.source.Put(cnt.rest.Access()!));
         }
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>

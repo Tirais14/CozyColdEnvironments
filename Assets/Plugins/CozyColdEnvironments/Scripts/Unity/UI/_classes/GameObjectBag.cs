@@ -18,6 +18,8 @@ namespace CCEnvs.Unity.UI.Elements
         public bool DestroyOnRemove { get; set; }
         public int Count => collection.Map(x => x.Count).Access();
 
+        protected override bool showOnStart => true;
+
         protected ReactiveCollection<GameObject> Inner {
             get
             {

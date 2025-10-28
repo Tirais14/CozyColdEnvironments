@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 #pragma warning disable S3236
 namespace CCEnvs.FuncLanguage
 {
-    public partial struct Maybe<T>
+    public partial struct Maybe<T> : IConditional<Maybe<T>, T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Catched<T> Catch() => inner!;
@@ -66,7 +66,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool CheckUnsafe(Predicate<T?> predicate)
+        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
         {
             return Lang.CheckUnsafe(this, predicate);
         }
@@ -110,6 +110,28 @@ namespace CCEnvs.FuncLanguage
         public readonly Maybe<TOut> Cast<TOut>()
         {
             return Lang.Cast<Maybe<T>, T, TOut>(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> Where(Predicate<T> predicate)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (IsSome && predicate(inner!))
+                return this;
+
+            return None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            if (IsNone)
+                return Maybe<TOut>.None;
+
+            return selector(inner!);
         }
     }
 }

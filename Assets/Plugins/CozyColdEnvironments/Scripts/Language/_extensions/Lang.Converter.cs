@@ -81,5 +81,19 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Resolver Resolve(this bool source) => source;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Resolver Resolve<T>(this T source, Predicate<T> predicate)
+        {
+            return new Resolver(predicate(source));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Resolver Resolve<T>(this T source)
+            where T : struct, IConditional
+        {
+            return new Resolver(source.IsSome);
+        }
+
     }
 }

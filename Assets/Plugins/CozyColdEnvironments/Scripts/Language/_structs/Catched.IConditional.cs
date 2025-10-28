@@ -62,7 +62,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool CheckUnsafe(Predicate<T?> predicate)
+        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
         {
             return Lang.CheckUnsafe(this, predicate);
         }
@@ -106,6 +106,28 @@ namespace CCEnvs.FuncLanguage
         public readonly Maybe<TOut> Cast<TOut>()
         {
             return Lang.Cast<Catched<T>, T, TOut>(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Where(Predicate<T> predicate)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (IsSome && predicate(inner!))
+                return this;
+
+            return default!;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            if (IsNone)
+                return Maybe<TOut>.None;
+
+            return selector(inner!);
         }
     }
 }

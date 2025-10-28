@@ -24,10 +24,8 @@ namespace CCEnvs.Unity.UI.Storages
             :
             base(model, gameObject)
         {
-            model.Item.Subscribe(x => x.Match(
-                item => itemIconView.Value = item.Icon,
-                () => itemIconView.Value = null))
-                .AddTo(this);
+            model.Item.Subscribe(x => itemIconView.Value = x.Map(x => x.Icon).Access())
+                      .AddTo(this);
 
             model.ItemCount.Subscribe(count => itemCountView.Value = count)
                            .AddTo(this);

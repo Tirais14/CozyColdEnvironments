@@ -1,5 +1,3 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,25 +8,35 @@ using UnityEngine.UI;
 #pragma warning disable S3236
 namespace CCEnvs.Unity.UI.Elements
 {
-    [RequireComponent(typeof(Button))]
-    public sealed class HideButton : CCBehaviour
+    [RequireComponent(typeof(Image))]
+    public sealed class HideButton : Button
     {
-        [GetBySelf]
-        private Button button = null!;
-
-        [GetByParent]
         private IViewElement target = null!;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            if (!Application.isPlaying)
+                return;
+
+            target = this.GetAssignedObjectInParent<IViewElement>(includeInactive: true)
+                         .ValidateGetOperation();
+        }
 
         protected override void Start()
         {
             base.Start();
 
-            button.onClick.AddListener(target.Hide);
+            if (!Application.isPlaying)
+                return;
+
+            onClick.AddListener(target.Hide);
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
-            button.onClick.RemoveAllListeners();
+            onClick.RemoveListener(target.Hide);
         }
     }
 }

@@ -23,7 +23,13 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public IReadOnlyReactiveProperty<Maybe<IItem>> Item => item;
         public IReadOnlyReactiveProperty<int> ItemCount => itemCount;
         public int Capacity {
-            get => Mathf.Min(item.Value.Map(item => item.MaxItemCount).Access(int.MaxValue), capacity);
+            get
+            {
+                if (UnlockCapacity)
+                    return int.MaxValue;
+
+                return Mathf.Min(item.Value.Map(item => item.MaxItemCount).Access(int.MaxValue), capacity);
+            }
             set
             {
                 if (value < 0)
@@ -107,23 +113,22 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public Maybe<IItemContainer> Put(IItem? item, int count)
         {
             if (item.IsNull() || count <= 0)
-                return null!;
+                return Maybe<IItemContainer>.None;
             if (IsFull
                 ||
                 (!IsEmpty  && !Contains(item))
                 )
                 return new ItemContainer(item, count);
 
-            int mergedItemCount = ItemCount.Value + count;
-            if (mergedItemCount > Capacity)
-            {
-                itemCount.Value = Capacity;
+            int addedCount = Math.Clamp(count, 0, Capacity - itemCount.Value);
+            this.item.Value.IfNone(() => this.item.Value = item.Maybe());
 
-                return new ItemContainer(item, Capacity - mergedItemCount);
-            }
+            ItemContainer? restItems = null;
+            if (count - addedCount is int deltaCount && deltaCount > 0)
+                restItems = new ItemContainer(item, deltaCount);
 
-            itemCount.Value = mergedItemCount;
-            return null!;
+            itemCount.Value += addedCount;
+            return restItems;
         }
 
         public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)

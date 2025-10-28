@@ -96,6 +96,8 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.ResetPos))
                 beforeDragPosition = transform.position;
+
+            transform.SetAsLastSibling();
         }
 
         protected virtual void OnDrag(PointerEventData eventData)

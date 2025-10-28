@@ -45,7 +45,7 @@ namespace CCEnvs.FuncLanguage
         bool ItIs(T? value);
         bool ItIs(Predicate<T> predicate);
 
-        bool CheckUnsafe(Predicate<T?> predicate);
+        bool ItIsUnsafe(Predicate<T?> predicate);
 
         new T? Access();
         bool Access([NotNullWhen(true)] out T? result);
@@ -65,7 +65,7 @@ namespace CCEnvs.FuncLanguage
         bool IConditional.Check(object? value) => ItIs(value.AsOrDefault<T>().Access());
         bool IConditional.Check(Predicate<object> predicate) => ItIs(x => predicate(x!));
 
-        bool IConditional.CheckUnsafe(Predicate<object?> predicate) => CheckUnsafe(x => predicate(x!));
+        bool IConditional.CheckUnsafe(Predicate<object?> predicate) => ItIsUnsafe(x => predicate(x!));
 
         object? IConditional.Access() => Access();
         bool IConditional.Access([NotNullWhen(true)] out object? result)
@@ -96,6 +96,10 @@ namespace CCEnvs.FuncLanguage
         TThis Match(Action<T> some, Action none);
 
         TThis Apply(T? value);
+
+        TThis Where(Predicate<T> predicate);
+
+        Maybe<TOut> Select<TOut>(Func<T, TOut> selector);
 
         IConditional IConditional.IfSome(Action<object> action) => IfSome(x => action(x!));
 

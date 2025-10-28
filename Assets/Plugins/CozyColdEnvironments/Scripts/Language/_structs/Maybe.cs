@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 #pragma warning disable S3236
@@ -12,9 +11,7 @@ namespace CCEnvs.FuncLanguage
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        partial struct Maybe<T>
-        : IEquatable<Maybe<T>>,
-        IConditional<Maybe<T>, T>
+        partial struct Maybe<T> : IEquatable<Maybe<T>>
     {
         public static Maybe<T> None => new();
 
