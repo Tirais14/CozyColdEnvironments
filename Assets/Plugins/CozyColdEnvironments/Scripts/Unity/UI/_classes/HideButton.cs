@@ -17,13 +17,13 @@ namespace CCEnvs.Unity.UI.Elements
         private Button button = null!;
 
         [GetByParent]
-        private IShowable showable = null!;
+        private IViewElement target = null!;
 
         protected override void Start()
         {
             base.Start();
 
-            button.onClick.AddListener(showable.Hide);
+            button.onClick.AddListener(target.Hide);
         }
 
         private void OnDestroy()

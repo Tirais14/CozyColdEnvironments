@@ -42,10 +42,8 @@ namespace CCEnvs.Unity
                  .AddTo(this);
         }
 
-        protected override void OnDestroy()
+        private void OnDestroy()
         {
-            base.OnDestroy();
-
             selectionSubj.Value.Dispose();
         }
 

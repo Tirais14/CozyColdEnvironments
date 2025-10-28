@@ -11,7 +11,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable IDE1006
@@ -30,19 +29,14 @@ namespace CCEnvs.Unity.UI.Storages
         [field: SerializeField, GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> textMesh { get; private set; } = null!;
 
-        protected override bool ShowOnStart => true;
-        protected override (bool state, Maybe<string> msg) readyToDrag {
-            get
-            {
-                if (model.IsEmpty)
-                    return (false, $"Cannot start dragging. {nameof(ItemContainer)} is empty. {nameof(ItemContainer)}: {model}");
+        protected override bool showOnStart => true;
 
-                return (true, null);
-            }
+        protected override void Awake()
+        {
+            base.Awake();
+
+            dragSettings = DragAndDropSettings.ResetPos;
         }
-        protected override bool readyToTakeDrop => !model.IsFull;
-        protected override bool resetPositionAfterDrag => true;
-        protected override bool dragCopyOfThis => true;
 
         protected override void Start()
         {
@@ -50,11 +44,8 @@ namespace CCEnvs.Unity.UI.Storages
 
             textMesh = GetComponentInChildren<TextMeshProUGUI>();
 
-            image.IfSome(img =>
-            {
-                ObservableExtensions.Subscribe(viewModel.ItemIconView, newSprite => img.sprite = (Sprite?)newSprite)
-                                    .AddTo(this);
-            });
+            ObservableExtensions.Subscribe(viewModel.ItemIconView, newSprite => Img.AccessUnsafe().sprite = (Sprite?)newSprite)
+                                .AddTo(this);
 
             textMesh.IfSome(mesh =>
             {
@@ -64,9 +55,21 @@ namespace CCEnvs.Unity.UI.Storages
             });
         }
 
+        protected override bool DragPredicate(out Maybe<string> msg)
+        {
+            if (model.IsEmpty)
+            {
+                msg = $" Dragging is not possible. {nameof(ItemContainer)} is empty.";
+                return false;
+            }
+
+            msg = null;
+            return true;
+        }
+
         protected override void OnDrop(PointerEventData eventData)
         {
-            if (!readyToTakeDrop)
+            if (DropPredicate())
                 return;
 
             eventData.selectedObject.Maybe()

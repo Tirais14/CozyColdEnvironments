@@ -6,11 +6,7 @@ namespace CCEnvs.Unity.UI
 {
     public interface IShowable
     {
-        event Action OnShow;
-        event Action OnHide;
-
-        IReadOnlyReactiveProperty<bool> IsVisible { get; }
-        bool IsShowable { get; }
+        bool IsVisible { get; }
 
         void Hide();
 

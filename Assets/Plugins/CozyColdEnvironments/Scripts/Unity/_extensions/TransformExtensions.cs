@@ -48,17 +48,13 @@ namespace CCEnvs.Unity
         /// <summary>
         /// Include nested childs
         /// </summary>
-        public static Transform[] GetAllChilds(this Transform value, bool includeFirst = true)
+        public static Transform[] GetAllChilds(this Transform source)
         {
-            if (value.childCount == 0)
+            if (source.childCount == 0)
                 return Array.Empty<Transform>();
 
-            if (includeFirst)
-                return Do.Collect(value, (x) => x.GetChilds())
-                             .ToArray();
-
-            return Do.Collect(value.GetChild(0), (x) => x.GetChilds())
-                             .ToArray();
+            return Do.Collect(source, (x) => x.GetChilds())
+                     .ToArray();
         }
 
         public static Transform? FindParent(this Transform transform, string n)

@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public class DragAndDropToggle : IDragAndDropToggle
+    public class DragAndDropTarget : IDragAndDropTarget
     {
         private readonly List<IDisposable> disposables = new(4);
 
@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.UI
 
         public int BindingCount { get; private set; }
 
-        public DragAndDropToggle(
+        public DragAndDropTarget(
             GameObject target,
             DragAndDropAction? onBeginDrag = null!,
             DragAndDropAction? onDrag = null!,
@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.UI
             this.onDrop = onDrop;
         }
 
-        public static implicit operator bool(DragAndDropToggle source)
+        public static implicit operator bool(DragAndDropTarget source)
         {
             return source.BindingCount > 0;
         }

@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.UI
 
         private void OnDestroy()
         {
-            foreach (var toggle in this.GetAssignedObjects<IDragAndDropToggle>())
+            foreach (var toggle in this.GetAssignedObjects<IDragAndDropTarget>())
                 toggle.DeactivateDragAndDropAbility();
         }
 
@@ -51,7 +51,7 @@ namespace CCEnvs.Unity.UI
         {
             await UniTask.WaitForEndOfFrame();
 
-            foreach (var toggle in this.GetAssignedObjects<IDragAndDropToggle>())
+            foreach (var toggle in this.GetAssignedObjects<IDragAndDropTarget>())
                 toggle.ActivateDragAndDropAbility();
         }
 

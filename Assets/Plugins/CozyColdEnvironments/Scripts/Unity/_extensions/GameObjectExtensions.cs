@@ -44,9 +44,9 @@ namespace CCEnvs.Unity
         /// <summary>
         /// Include nested childs
         /// </summary>
-        public static GameObject[] GetAllChilds(this GameObject value, bool includeFirst = true)
+        public static GameObject[] GetAllChilds(this GameObject value)
         {
-            return value.transform.GetAllChilds(includeFirst).Select(x => x.gameObject).ToArray();
+            return value.transform.GetAllChilds().Select(x => x.gameObject).ToArray();
         }
 
         public static GameObject? FindParent(this GameObject value, string n)

@@ -13,36 +13,41 @@ namespace CCEnvs.Unity.UI.Elements
 {
     public class GameObjectBag : ViewElement, IGameObjectBag
     {
-        protected Maybe<ReactiveCollection<GameObject>> inner;
+        protected Maybe<ReactiveCollection<GameObject>> collection;
 
         public bool DestroyOnRemove { get; set; }
-        public int Count => inner.Map(x => x.Count).Access();
-
-        protected override bool ShowOnStart => true;
+        public int Count => collection.Map(x => x.Count).Access();
 
         protected ReactiveCollection<GameObject> Inner {
             get
             {
-                return inner.IfNone(() => { inner = new ReactiveCollection<GameObject>(); })
-                            .Access(inner.Access())!;
+                return collection.IfNone(() => { collection = new ReactiveCollection<GameObject>(); })
+                            .Access(collection.Access())!;
             }
         }
 
         GameObject IReadOnlyReactiveCollection<GameObject>.this[int index] {
             get
             {
-                return inner.Match(
+                return collection.Match(
                        x => x[index],
                        () => CC.Throw.IndexOutOfRange(index).As<GameObject>())
                    .AccessUnsafe();
             }
         }
 
+        protected override void Awake()
+        {
+            base.Awake();
+
+            Show();
+        }
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
 
-            inner.IfSome(x => x.Dispose());
+            collection.IfSome(x => x.Dispose());
         }
 
         public void Add(GameObject item)
@@ -55,7 +60,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void Clear()
         {
-            inner.IfSome(x => x.ForEach(OnRemove))
+            collection.IfSome(x => x.ForEach(OnRemove))
                  .IfSome((x) => x.Clear());
         }
 
@@ -63,7 +68,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void CopyTo(GameObject[] array, int arrayIndex)
         {
-            inner.IfSome(x => x.CopyTo(array, arrayIndex));
+            collection.IfSome(x => x.CopyTo(array, arrayIndex));
         }
 
         public bool Remove(GameObject item)
@@ -71,7 +76,7 @@ namespace CCEnvs.Unity.UI.Elements
             if (item == null)
                 return false;
 
-            return inner.Map(x => x.Remove(item))
+            return collection.Map(x => x.Remove(item))
                         .IfSome(_ => OnRemove(item))
                         .Access();
         }
@@ -108,7 +113,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public IEnumerator<GameObject> GetEnumerator()
         {
-            return inner.Map(x => x.GetEnumerator())
+            return collection.Map(x => x.GetEnumerator())
                         .Access(Enumerable.Empty<GameObject>().GetEnumerator())!;
         }
 
