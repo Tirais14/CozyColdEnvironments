@@ -81,7 +81,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void AddAsset(TAsset asset)
         {
-            CC.Guard.NullArgument(asset, nameof(asset));
+            CC.Guard.IsNotNull(asset, nameof(asset));
 
             try
             {
@@ -100,7 +100,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void AddAssets(IEnumerable<TAsset> assets)
         {
-            CC.Guard.NullArgument(assets, nameof(assets));
+            CC.Guard.IsNotNull(assets, nameof(assets));
 
             try
             {
@@ -229,8 +229,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             bool disposePreviousDb)
             where TNew : Object
         {
-            CC.Guard.NullArgument(dbConverter, nameof(dbConverter));
-            CC.Guard.NullArgument(dbItemConverter, nameof(dbItemConverter));
+            CC.Guard.IsNotNull(dbConverter, nameof(dbConverter));
+            CC.Guard.IsNotNull(dbItemConverter, nameof(dbItemConverter));
 
             var converesationTasks = collection.Values.AsValueEnumerable()
                                               .Select(x => dbItemConverter(x))

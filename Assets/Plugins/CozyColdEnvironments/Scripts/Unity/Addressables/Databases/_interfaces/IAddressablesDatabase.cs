@@ -81,14 +81,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         void IAddressablesDatabase.AddAsset(Object asset)
         {
-            CC.Guard.NullArgument(asset, nameof(asset));
+            CC.Guard.IsNotNull(asset, nameof(asset));
 
             AddAsset(asset.As<TAsset>());
         }
 
         void IAddressablesDatabase.AddAssets(IEnumerable<Object> assets)
         {
-            CC.Guard.NullArgument(assets, nameof(assets));
+            CC.Guard.IsNotNull(assets, nameof(assets));
 
             AddAssets(assets.Select(x => x.As<TAsset>()));
         }

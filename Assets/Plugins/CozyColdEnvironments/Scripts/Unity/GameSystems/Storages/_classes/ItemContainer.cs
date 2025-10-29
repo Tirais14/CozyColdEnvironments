@@ -133,14 +133,14 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)
         {
-            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
+            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             return Put(itemContainer.Item.Value.Access(), count);
         }
 
         public Maybe<IItemContainer> Put(IItemContainer itemContainer)
         {
-            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
+            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             return Put(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
         }

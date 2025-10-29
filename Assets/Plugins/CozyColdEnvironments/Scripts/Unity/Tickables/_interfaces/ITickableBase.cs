@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Tickables
 
         IDisposable Register(Type tickerType)
         {
-            CC.Guard.NullArgument(tickerType, nameof(tickerType));
+            CC.Guard.IsNotNull(tickerType, nameof(tickerType));
 
             IDisposable susbcription = TickablesManager.RegisterTickable(this, tickerType);
 
@@ -38,7 +38,7 @@ namespace CCEnvs.Unity.Tickables
         }
         bool Unregister(Type fromTickerType)
         {
-            CC.Guard.NullArgument(fromTickerType, nameof(fromTickerType));
+            CC.Guard.IsNotNull(fromTickerType, nameof(fromTickerType));
 
             return TickablesManager.UnregisterTickable(this, fromTickerType);
         }

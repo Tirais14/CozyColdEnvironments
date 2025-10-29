@@ -1,5 +1,4 @@
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Extensions;
 using System;
 using UnityEngine;
 

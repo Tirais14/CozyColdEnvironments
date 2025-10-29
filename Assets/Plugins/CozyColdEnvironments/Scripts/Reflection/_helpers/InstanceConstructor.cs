@@ -15,7 +15,7 @@ namespace CCEnvs.Reflection
 
         public static Type[] GetConstructorTypes(Type constructableType)
         {
-            CC.Guard.NullArgument(constructableType, nameof(constructableType));
+            CC.Guard.IsNotNull(constructableType, nameof(constructableType));
 
             if (constructorTypes.TryGetValue(constructableType, out Type[] results))
                 return results;

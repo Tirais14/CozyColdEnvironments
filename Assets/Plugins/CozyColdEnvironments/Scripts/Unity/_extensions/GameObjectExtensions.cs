@@ -36,11 +36,6 @@ namespace CCEnvs.Unity
             settings.ApplyTo(value);
         }
 
-        public static GameObject[] GetChilds(this GameObject value)
-        {
-            return value.transform.GetChilds().Select(x => x.gameObject).ToArray();
-        }
-
         /// <summary>
         /// Include nested childs
         /// </summary>

@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public static class ComponentGetComponentExtensions
+    public static class GetComponentExtensions
     {
         public static bool TryGetComponentInChildren(this Component value,
             Type type,

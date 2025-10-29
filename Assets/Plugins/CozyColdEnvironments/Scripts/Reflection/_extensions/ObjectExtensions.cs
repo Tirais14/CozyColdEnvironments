@@ -21,7 +21,7 @@ namespace CCEnvs.Reflection
 
         public static Reflected AsReflected(this object source, bool nonPublic)
         {
-            CC.Guard.NullArgument(source, nameof(source));
+            CC.Guard.IsNotNull(source, nameof(source));
 
             Reflected.Settings settings = Reflected.Settings.Default;
 
@@ -33,14 +33,14 @@ namespace CCEnvs.Reflection
 
         public static Reflected AsReflectedNonCacheable(this object source)
         {
-            CC.Guard.NullArgument(source, nameof(source));
+            CC.Guard.IsNotNull(source, nameof(source));
 
             return new Reflected(source, Reflected.Settings.Default & ~Reflected.Settings.DisallowCaching);
         }
 
         public static Reflected AsReflected(this object source)
         {
-            CC.Guard.NullArgument(source, nameof(source));
+            CC.Guard.IsNotNull(source, nameof(source));
 
             return new Reflected(source);
         }

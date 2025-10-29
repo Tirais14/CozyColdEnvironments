@@ -18,7 +18,7 @@ namespace CCEnvs.Patterns.States
                                         FieldInfo[] stateFields,
                                         IState[] states)
         {
-            CC.Guard.NullArgument(stateMachine, nameof(stateMachine));
+            CC.Guard.IsNotNull(stateMachine, nameof(stateMachine));
             CC.Guard.CollectionArgument(stateFields, nameof(stateFields));
             CC.Guard.CollectionArgument(states, nameof(states));
             if (stateFields.Length != states.Length)
@@ -51,7 +51,7 @@ namespace CCEnvs.Patterns.States
         public static IState[] CreateStates(IFactory<Type, IState> factory,
                                             Type[] stateTypes)
         {
-            CC.Guard.NullArgument(factory, nameof(factory));
+            CC.Guard.IsNotNull(factory, nameof(factory));
             CC.Guard.CollectionArgument(stateTypes, nameof(stateTypes));
 
             return stateTypes.Select(x => factory.Create(x)).ToArray();

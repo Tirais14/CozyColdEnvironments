@@ -15,7 +15,7 @@ namespace CCEnvs.Cacheables
 
         public static bool IsCacheable(Type type)
         {
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
             if (cacheableTypes.Contains(type))
                 return true;
 
@@ -33,7 +33,7 @@ namespace CCEnvs.Cacheables
         }
         public static bool IsCacheable<T>(T obj)
         {
-            CC.Guard.NullArgument(obj, nameof(obj));
+            CC.Guard.IsNotNull(obj, nameof(obj));
 
             if (obj is ICacheable)
                 return true;
@@ -45,7 +45,7 @@ namespace CCEnvs.Cacheables
                                        [NotNullWhen(true)] out object? result,
                                        ExplicitArguments args = default)
         {
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
             if (IsCacheable(type))
             {
                 result = null;

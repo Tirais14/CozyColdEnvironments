@@ -20,7 +20,7 @@ namespace CCEnvs
         }
         public static T IfDefault<T>(this T? source, Func<T> factory)
         {
-            CC.Guard.NullArgument(factory, nameof(factory));
+            CC.Guard.IsNotNull(factory, nameof(factory));
 
             if (source.IsDefault())
                 return factory();
@@ -76,7 +76,7 @@ namespace CCEnvs
             this T? source,
             Action<T> action)
         {
-            CC.Guard.NullArgument(action, nameof(action));
+            CC.Guard.IsNotNull(action, nameof(action));
 
             if (source.IsNotDefault())
                 action(source);
@@ -88,7 +88,7 @@ namespace CCEnvs
             this T? source,
             Func<T, T> action)
         {
-            CC.Guard.NullArgument(action, nameof(action));
+            CC.Guard.IsNotNull(action, nameof(action));
 
             if (source.IsNotDefault())
                 return action(source);
@@ -101,8 +101,8 @@ namespace CCEnvs
             Func<TInput, TOutput> action,
             Func<TInput, TOutput> ifDefaultAction)
         {
-            CC.Guard.NullArgument(action, nameof(action));
-            CC.Guard.NullArgument(ifDefaultAction, nameof(ifDefaultAction));
+            CC.Guard.IsNotNull(action, nameof(action));
+            CC.Guard.IsNotNull(ifDefaultAction, nameof(ifDefaultAction));
 
             if (source.IsNotDefault())
                 return action(source);
@@ -113,7 +113,7 @@ namespace CCEnvs
         public static bool TrySwitch<T>(this T? source,
             params (Predicate<T?> predicate, Action<T> action)[] conditions)
         {
-            CC.Guard.NullArgument(conditions, nameof(conditions));
+            CC.Guard.IsNotNull(conditions, nameof(conditions));
             if (conditions.IsEmpty())
                 return false;
 
@@ -133,7 +133,7 @@ namespace CCEnvs
             out TResult result,
             params (Predicate<T?> predicate, Func<T, TResult> func)[] conditions)
         {
-            CC.Guard.NullArgument(conditions, nameof(conditions));
+            CC.Guard.IsNotNull(conditions, nameof(conditions));
             if (conditions.IsEmpty())
             {
                 result = default!;

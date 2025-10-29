@@ -9,7 +9,7 @@ namespace CCEnvs.Json
         /// <returns>true if converter defined in <see cref="Newtonsoft.Json"/> namespace</returns>
         public static bool IsDefaultJsonType(Type type)
         {
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
 
             return type.Namespace.IsNotNullOrEmpty()
                    &&

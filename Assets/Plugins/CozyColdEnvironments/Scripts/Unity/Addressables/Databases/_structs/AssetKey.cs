@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             :
             this()
         {
-            CC.Guard.NullArgument(asset, nameof(asset));
+            CC.Guard.IsNotNull(asset, nameof(asset));
 
             AssetName = asset.name;
 

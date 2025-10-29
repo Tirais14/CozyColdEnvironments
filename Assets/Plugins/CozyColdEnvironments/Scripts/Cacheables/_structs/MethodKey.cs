@@ -31,7 +31,7 @@ namespace CCEnvs.Cacheables
 
         public static MethodKey Create(MethodBase method)
         {
-            CC.Guard.NullArgument(method, nameof(method));
+            CC.Guard.IsNotNull(method, nameof(method));
 
             ParameterInfo[] parameters = method.GetParameters();
 

@@ -26,8 +26,8 @@ namespace CCEnvs.Conversations
         /// <exception cref="InvalidOperationException"></exception>
         public static object MutateType(object input, Type toType)
         {
-            CC.Guard.NullArgument(input, nameof(input));
-            CC.Guard.NullArgument(toType, nameof(toType));
+            CC.Guard.IsNotNull(input, nameof(input));
+            CC.Guard.IsNotNull(toType, nameof(toType));
 
             Type inputType = input.GetType();
             if (inputType.IsType(toType))

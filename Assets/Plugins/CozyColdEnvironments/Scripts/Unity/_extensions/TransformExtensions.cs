@@ -1,6 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+using CCEnvs.Collections;
+using System.Linq;
+using CCEnvs.FuncLanguage;
 
 #nullable enable
 
@@ -32,29 +35,25 @@ namespace CCEnvs.Unity
             return value.up * -1;
         }
 
-        public static Transform[] GetChilds(this Transform value)
-        {
-            if (value.childCount == 0)
-                return Array.Empty<Transform>();
-
-            int childCount = value.childCount;
-            var childs = new Transform[childCount];
-            for (int i = 0; i < childCount; i++)
-                childs[i] = value.GetChild(i);
-
-            return childs;
-        }
-
         /// <summary>
         /// Include nested childs
         /// </summary>
-        public static Transform[] GetAllChilds(this Transform source)
+        public static ArraySegment<Transform> GetAllChilds(this Transform source, bool excludeSelf = false)
         {
             if (source.childCount == 0)
                 return Array.Empty<Transform>();
 
-            return Do.Collect(source, (x) => x.GetChilds())
-                     .ToArray();
+            var results = source.GetComponentsInChildren<Transform>(includeInactive: true);
+
+            if (excludeSelf)
+            {
+                if (results[0] == source)
+                    return results.GetArraySegment(results.Length - 1, offset: 1);
+
+                return results.Where(x => x != source).ToArray();
+            }
+
+            return results;
         }
 
         public static Transform? FindParent(this Transform transform, string n)

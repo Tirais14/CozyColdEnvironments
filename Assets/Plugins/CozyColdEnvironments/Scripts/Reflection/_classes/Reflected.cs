@@ -182,7 +182,7 @@ namespace CCEnvs.Reflection
         }
         public ContextedFieldInfo Field(Type type)
         {
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
 
             if (TypeCache.Fields.TryGetValue(
                     new FieldKey(InstanceType, type),
@@ -245,7 +245,7 @@ namespace CCEnvs.Reflection
         }
         public ContextedPropertyInfo Property(Type type)
         {
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
 
             if (TypeCache.Properties.TryGetValue(
                     new FieldKey(InstanceType, type),
@@ -334,7 +334,7 @@ namespace CCEnvs.Reflection
 
         public object TransformType(Type toType)
         {
-            CC.Guard.NullArgument(toType, nameof(toType));
+            CC.Guard.IsNotNull(toType, nameof(toType));
 
             if (Instance is null)
                 CC.Throw.InvalidCast(toType, "Cannot not convert null object.");

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 #nullable enable
@@ -9,24 +10,24 @@ namespace CCEnvs.Unity.UI
         public static void Show<T>(T target)
             where T : Component, IShowable
         {
-            CC.Guard.NullArgument(target, nameof(target));
+            CC.Guard.IsNotNull(target, nameof(target));
 
             if (target.IsVisible)
                 return;
 
-            target.gameObject.SetActive(true);
+            UIHelper.EnableGraphics(target);
         }
 
         //TODO: Unbind logic from game object activation
         public static void Hide<T>(T target)
             where T : Component, IShowable
         {
-            CC.Guard.NullArgument(target, nameof(target));
+            CC.Guard.IsNotNull(target, nameof(target));
 
             if (!target.IsVisible)
                 return;
 
-            target.gameObject.SetActive(false);
+            UIHelper.DisableGraphics(target);
         }
     }
 }

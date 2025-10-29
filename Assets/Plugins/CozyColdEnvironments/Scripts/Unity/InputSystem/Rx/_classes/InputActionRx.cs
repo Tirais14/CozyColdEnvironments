@@ -47,7 +47,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public InputActionRx(InputAction inputAction)
         {
-            CCEnvs.CC.Guard.NullArgument(inputAction, nameof(inputAction));
+            CCEnvs.CC.Guard.IsNotNull(inputAction, nameof(inputAction));
 
             Action = inputAction;  
             Setup();

@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public Inventory(IEnumerable<KeyValuePair<int, IItemContainer>> containers)
         {
-            CC.Guard.NullArgument(containers, nameof(containers));
+            CC.Guard.IsNotNull(containers, nameof(containers));
 
             collection = new Dictionary<int, IItemContainer>(containers);
         }
@@ -145,7 +145,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         }
         public bool Remove(IItemContainer itemContainer)
         {
-            CC.Guard.NullArgument(itemContainer, nameof(itemContainer));
+            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             KeyValuePair<int, IItemContainer> found = collection.FirstOrDefault(x => x.Value.Equals(itemContainer));
             if (found.IsDefault())
@@ -182,6 +182,8 @@ namespace CCEnvs.Unity.GameSystems.Storages
         }
         public void SetCount(int count, GameObject toInstantiate)
         {
+            CC.Guard.IsNotNull(toInstantiate, nameof(toInstantiate));
+
             if (count == Count)
                 return;
 
@@ -255,7 +257,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
 
         public Maybe<IItemContainer> Take(IItem item, int count)
         {
-            CC.Guard.NullArgument(item, nameof(item));
+            CC.Guard.IsNotNull(item, nameof(item));
             if (count <= 0)
                 return null!;
 

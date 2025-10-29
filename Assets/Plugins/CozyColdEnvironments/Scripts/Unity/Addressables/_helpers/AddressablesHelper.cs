@@ -15,14 +15,14 @@ namespace CCEnvs.Unity.AddrsAssets
     {
         public static Type[] GetResourceTypes(IEnumerable<IResourceLocation> locations)
         {
-            CC.Guard.NullArgument(locations, nameof(locations));
+            CC.Guard.IsNotNull(locations, nameof(locations));
 
             return locations.Select(x => x.ResourceType).ToArray();
         }
 
         public static int GetLoadPriority(Type fromType)
         {
-            CC.Guard.NullArgument(fromType, nameof(fromType));
+            CC.Guard.IsNotNull(fromType, nameof(fromType));
 
             if (fromType.GetCustomAttribute<LoadPriorityAttribute>()
                 is LoadPriorityAttribute attribute
@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
         public static IReadOnlyDictionary<Type, int> GetLoadPriorites(params Type[] types)
         {
-            CC.Guard.NullArgument(types, nameof(types));
+            CC.Guard.IsNotNull(types, nameof(types));
             if (types.IsEmpty())
                 return ImmutableDictionary<Type, int>.Empty;
 

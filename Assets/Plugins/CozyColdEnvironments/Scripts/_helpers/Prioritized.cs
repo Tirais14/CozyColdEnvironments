@@ -13,7 +13,7 @@ namespace CCEnvs
     {
         public static int ResolvePriority<T>(T value, bool throwIfNotFound)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.IsNotNull(value, nameof(value));
 
             if (value is IPrioritized<int> iface)
                 return iface.Priority;
@@ -37,8 +37,8 @@ namespace CCEnvs
             Func<T, int> priorityGetter,
             params T[] values)
         {
-            CC.Guard.NullArgument(priorityGetter, nameof(priorityGetter));
-            CC.Guard.NullArgument(values, nameof(values));
+            CC.Guard.IsNotNull(priorityGetter, nameof(priorityGetter));
+            CC.Guard.IsNotNull(values, nameof(values));
 
             if (values.IsEmpty())
                 return Array.Empty<PrioritizedValue<T>>();
@@ -56,8 +56,8 @@ namespace CCEnvs
             Func<T, int> priorityGetter,
             params T[] values)
         {
-            CC.Guard.NullArgument(priorityGetter, nameof(priorityGetter));
-            CC.Guard.NullArgument(values, nameof(values));
+            CC.Guard.IsNotNull(priorityGetter, nameof(priorityGetter));
+            CC.Guard.IsNotNull(values, nameof(values));
 
             var heap = new IntervalHeap<PrioritizedValue<T>>(values.Length);
 

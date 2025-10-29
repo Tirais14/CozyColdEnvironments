@@ -29,13 +29,13 @@ namespace CCEnvs.Unity.UI
 
         public static bool HasOn(GameObject gameObject)
         {
-            CC.Guard.NullArgument(gameObject, nameof(gameObject));
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
             return gameObject.TryGetComponent<DropHandler>(out _);
         }
         public static bool HasOn(Component component)
         {
-            CC.Guard.NullArgument(component, nameof(component));
+            CC.Guard.IsNotNull(component, nameof(component));
 
             return HasOn(component.gameObject);
         }

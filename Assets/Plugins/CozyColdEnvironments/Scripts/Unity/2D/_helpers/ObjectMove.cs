@@ -11,7 +11,7 @@ namespace CCEnvs.Unity._2D
         {
             const float SPEED_MULTIPLIER = 50; //Need for smaller input speed values
 
-            CC.Guard.NullArgument(body, nameof(body));
+            CC.Guard.IsNotNull(body, nameof(body));
 
             if (dir == Vector2.zero || speed <= 0f || deltaTime <= 0f)
             {

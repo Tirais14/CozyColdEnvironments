@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.Tickables
         public static Type GetTickerType<T>(T tickable)
             where T : ITickableBase
         {
-            CC.Guard.NullArgument(tickable, nameof(tickable));
+            CC.Guard.IsNotNull(tickable, nameof(tickable));
 
             if (GetTickerTypeAttribute(tickable) is TickerTypeAttribute attribute)
                 return attribute.TickerType;
@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Tickables
         private static Type? GetTickerTypeByInterfaces<T>(T tickable)
             where T : ITickableBase
         {
-            CC.Guard.NullArgument(tickable, nameof(tickable));
+            CC.Guard.IsNotNull(tickable, nameof(tickable));
 
             return (from baseType in TypeHelper.CollectBaseTypes(tickable.GetType()).AsValueEnumerable()
                     select baseType.GetInterfaces() into ifaces
@@ -71,7 +71,7 @@ namespace CCEnvs.Unity.Tickables
         private static TickerTypeAttribute? GetTickerTypeAttribute<T>(T? tickable)
             where T : ITickableBase
         {
-            CC.Guard.NullArgument(tickable, nameof(tickable));
+            CC.Guard.IsNotNull(tickable, nameof(tickable));
 
             return tickable.GetType().GetCustomAttribute<TickerTypeAttribute>();
         }

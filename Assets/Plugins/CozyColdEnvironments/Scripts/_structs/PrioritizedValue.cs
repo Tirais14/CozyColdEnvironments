@@ -16,7 +16,7 @@ namespace CCEnvs
 
         public PrioritizedValue(T value, int priority, IEqualityComparer<T> valueComparer)
         {
-            CC.Guard.NullArgument(valueComparer, nameof(valueComparer));
+            CC.Guard.IsNotNull(valueComparer, nameof(valueComparer));
 
             Value = value;
             Priority = priority;

@@ -54,7 +54,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void Add(GameObject item)
         {
-            CC.Guard.NullArgument(item, nameof(item));
+            CC.Guard.IsNotNull(item, nameof(item));
 
             Inner.Add(item);
             OnAdd(item);

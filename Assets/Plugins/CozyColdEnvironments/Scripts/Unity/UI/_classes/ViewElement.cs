@@ -4,6 +4,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
+using CCEnvs.Unity.Extensions;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using System;
@@ -20,7 +21,7 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.UI.Elements
 {
     [DisallowMultipleComponent]
-    public partial class ViewElement 
+    public class ViewElement 
         : CCBehaviour,
         IViewElement,
         IDragAndDropTarget
@@ -65,13 +66,23 @@ namespace CCEnvs.Unity.UI.Elements
         {
             None,
             ResetPos,
+            /// <summary>
+            /// Creates a copy of this and places it in empty space of moved drag item
+            /// </summary>
+            RefillEmptySpace = 2,
+            SetAsLastSiblingWhenDraggin = 4
         }
 
         protected DragAndDropSettings dragSettings;
-        private Vector2 beforeDragPosition;
+        private Vector2 dragStartPos;
+        private int dragStartSiblingIndex;
+        private Maybe<ViewElement> dragThisCloned;
 
         protected Lazy<DragAndDropTarget> dragAndDrop { get; private set; } = null!;
-        protected bool isDragging { get; private set; }
+        /// <summary>
+        /// It's cached result of the <see cref="DragPredicate(out Maybe{string})"/>
+        /// </summary>
+        protected bool dragAllowed { get; private set; }
 
         int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
 
@@ -88,21 +99,32 @@ namespace CCEnvs.Unity.UI.Elements
             if (!DragPredicate(out Maybe<string> msg))
             {
                 msg.IfSome(x => this.PrintLog(x));
-                isDragging = false;
+                dragAllowed = false;
                 return;
             }
 
-            isDragging = true;
+            dragAllowed = true;
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.ResetPos))
-                beforeDragPosition = transform.position;
+                dragStartPos = cTransform.Value.position;
 
-            transform.SetAsLastSibling();
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
+            {
+                dragThisCloned = Instantiate(this, cTransform.Value.parent);
+                ((ViewElement)dragThisCloned!).transform.position = cTransform.Value.position;
+                ((ViewElement)dragThisCloned!).Hide();
+            }
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDraggin))
+            {
+                dragStartSiblingIndex = transform.GetSiblingIndex();
+                cTransform.Value.SetAsLastSibling();
+            }
         }
 
         protected virtual void OnDrag(PointerEventData eventData)
         {
-            if (!isDragging)
+            if (!dragAllowed)
                 return;
 
             cTransform.Value.position = eventData.position;
@@ -110,11 +132,21 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnEndDrag(PointerEventData eventData)
         {
-            if (!isDragging)
+            if (!dragAllowed)
                 return;
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.ResetPos))
-                transform.position = beforeDragPosition;
+                transform.position = dragStartPos;
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
+                dragThisCloned.IfSome(static x => Destroy(x.gameObject));
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDraggin))
+            {
+                cTransform.Value.SetSiblingIndex(dragStartSiblingIndex);
+            }
+
+            dragAllowed = default;
         }
 
         protected virtual void OnDrop(PointerEventData eventData)
@@ -147,10 +179,12 @@ namespace CCEnvs.Unity.UI.Elements
 
         #region IShowable
 
-        private Subject<Unit>? showSubj;
-        private Subject<Unit>? hideSubj;
+        private Subject<Unit>? showableShowSubj;
+        private Subject<Unit>? showableHideSubj;
+        private ArraySegment<BeforeDisabledGraphicSnapshot> showableDisabledGraphics;
+        private bool? isVisible;
 
-        public bool IsVisible => gameObject.activeSelf;
+        public bool IsVisible => isVisible.GetValueOrDefault();
         protected virtual bool showOnStart { get; }
 
         private void StartIShowable()
@@ -163,12 +197,19 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void Hide()
         {
-            Showable.Hide(this);
+            if (isVisible is not null && !IsVisible)
+                return;
+
+            showableDisabledGraphics = UIHelper.DisableGraphics(this);
         }
 
         public virtual void Show()
         {
-            Showable.Show(this);
+            if (IsVisible)
+                return;
+
+            UIHelper.EnableGraphics(showableDisabledGraphics);
+            isVisible = true;
         }
 
         public bool SwitchVisibleState()
@@ -183,16 +224,16 @@ namespace CCEnvs.Unity.UI.Elements
 
         public IObservable<Unit> ObserveShow()
         {
-            showSubj ??= new Subject<Unit>();
+            showableShowSubj ??= new Subject<Unit>();
 
-            return showSubj;
+            return showableShowSubj;
         }
 
         public IObservable<Unit> ObserveHide()
         {
-            hideSubj ??= new Subject<Unit>();
+            showableHideSubj ??= new Subject<Unit>();
 
-            return hideSubj;
+            return showableHideSubj;
         }
 
         #endregion IShowable

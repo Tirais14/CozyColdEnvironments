@@ -21,8 +21,8 @@ namespace CCEnvs.Reflection
         public static MemberMatches GetMemberMatches(Type left,
                                                      Type right)
         {
-            CC.Guard.NullArgument(left, nameof(left));
-            CC.Guard.NullArgument(right, nameof(right));
+            CC.Guard.IsNotNull(left, nameof(left));
+            CC.Guard.IsNotNull(right, nameof(right));
 
             BindingFlags bindings = BindingFlagsDefault.All;
             var comparer = new MemberEqualityComparer();
@@ -93,7 +93,7 @@ namespace CCEnvs.Reflection
         /// <exception cref="ArgumentNullException"></exception>
         public static Queue<Type> CollectBaseTypes(Type type)
         {
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
 
             //if (type.IsInterface)
             //    return GetInterfaceInheritancePath(type);
@@ -106,7 +106,7 @@ namespace CCEnvs.Reflection
         {
             throw new NotImplementedException("In developing");
 
-            CC.Guard.NullArgument(type, nameof(type));
+            CC.Guard.IsNotNull(type, nameof(type));
             CC.Guard.ArgumentObsolete(type,
                                  nameof(type),
                                  type.IsInterface,

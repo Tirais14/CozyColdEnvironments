@@ -15,7 +15,7 @@ namespace CCEnvs.Reflection
     {
         public static Type[] FindTypesInAppDomain(TypeSearchArguments parameters)
         {
-            CC.Guard.NullArgument(parameters, nameof(parameters));
+            CC.Guard.IsNotNull(parameters, nameof(parameters));
 
             return FindTypesInternal(parameters);
         }
@@ -25,7 +25,7 @@ namespace CCEnvs.Reflection
         public static Type FindTypeInAppDomain(TypeSearchArguments parameters,
                                                bool throwOnError = true)
         {
-            CC.Guard.NullArgument(parameters, nameof(parameters));
+            CC.Guard.IsNotNull(parameters, nameof(parameters));
             CC.Guard.StringArgument(parameters.TypeName,
                 Syntax.Chain(nameof(parameters), nameof(parameters.TypeName)));
 

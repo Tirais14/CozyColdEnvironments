@@ -1,13 +1,9 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Extensions;
-using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using ZLinq;
+using CCEnvs.Unity.Diagnostics;
 
 #nullable enable
 #pragma warning disable S1117
@@ -29,7 +25,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UnityEngine.Object GetAsset(Type assetType)
         {
-            CC.Guard.NullArgument(assetType, nameof(assetType));
+            CC.Guard.IsNotNull(assetType, nameof(assetType));
             Validate();
 
             dbKey = dbKey.With(assetType);
@@ -54,6 +50,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 ).AccessUnsafe();
         }
 
+        /// <summary>
+        /// if <typeparamref name="TPrimary"/> is <see cref="GameObject"/> calls on it GetAssignedObjectInChildren()
+        /// </summary>
+        /// <typeparam name="TPrimary"></typeparam>
+        /// <typeparam name="TSecondary"></typeparam>
+        /// <param name="assetType"></param>
+        /// <returns></returns>
+        /// <exception cref="ComponentNotFoundException"></exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TSecondary GetAsset<TPrimary, TSecondary>(Type? assetType = null)
             where TPrimary : UnityEngine.Object
@@ -61,17 +65,21 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             Validate();
             assetType ??= typeof(TPrimary);
 
-            if (assetType == typeof(GameObject))
-                return GetAsset<TPrimary>(assetType).As<GameObject>()
-                                                    .GetAssignedObject<TSecondary>()!;
+            return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
+                .Match(
+                some: x => x.GetAssignedObjectInChildren<TSecondary>(includeInactive: true)
+                            .Maybe()
+                            .IfNone(() => throw new ComponentNotFoundException(typeof(TSecondary), context: GetAsset<GameObject>()))
+                            .AccessUnsafe(),
 
-            return GetAsset<TPrimary>(assetType).As<TSecondary>();
+                none: () => GetAsset<TPrimary>().As<TSecondary>())
+                .AccessUnsafe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<UnityEngine.Object> FindAsset(Type assetType)
         {
-            CC.Guard.NullArgument(assetType, nameof(assetType));
+            CC.Guard.IsNotNull(assetType, nameof(assetType));
             Validate();
 
             dbKey = dbKey.With(assetType);

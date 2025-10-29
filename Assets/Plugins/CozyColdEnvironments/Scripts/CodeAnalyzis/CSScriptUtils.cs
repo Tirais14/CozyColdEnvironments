@@ -21,7 +21,7 @@ namespace CCEnvs.CodeAnalyzis
         public static async ValueTask AddMissingUsingsAsync(string filePath, params Type[] forTypes)
         {
             CC.Guard.StringArgument(filePath, nameof(filePath));
-            CC.Guard.NullArgument(forTypes, nameof(forTypes));
+            CC.Guard.IsNotNull(forTypes, nameof(forTypes));
             if (forTypes.IsEmpty())
                 return;
 
@@ -74,7 +74,7 @@ namespace CCEnvs.CodeAnalyzis
 
         public static bool IsUsingDefine(string line)
         {
-            CC.Guard.NullArgument(line, nameof(line));
+            CC.Guard.IsNotNull(line, nameof(line));
 
             return Regex.IsMatch(line, @"(^s*)(\w*)(s*$)");
         }

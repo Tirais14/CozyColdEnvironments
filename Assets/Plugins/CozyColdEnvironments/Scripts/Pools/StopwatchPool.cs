@@ -22,7 +22,7 @@ namespace CCEnvs.Pools
 
             public bool Return(Stopwatch obj)
             {
-                CC.Guard.NullArgument(obj, nameof(obj));
+                CC.Guard.IsNotNull(obj, nameof(obj));
 
                 obj.Stop();
                 obj.Reset();

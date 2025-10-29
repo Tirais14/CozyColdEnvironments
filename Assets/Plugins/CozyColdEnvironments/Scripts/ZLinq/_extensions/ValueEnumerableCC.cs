@@ -16,7 +16,7 @@ namespace CCEnvs
             Action<T> action)
             where TEnumerator : struct, IValueEnumerator<T>
         {
-            CC.Guard.NullArgument(action, nameof(action));
+            CC.Guard.IsNotNull(action, nameof(action));
 
             var list = new List<T>();
             foreach (var item in source)

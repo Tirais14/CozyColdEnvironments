@@ -312,14 +312,14 @@ namespace CCEnvs.FuncLanguage
 
         public readonly void For(Action<T, int> action)
         {
-            CC.Guard.NullArgument(action, nameof(action));
+            CC.Guard.IsNotNull(action, nameof(action));
 
             for (int i = 0; i < Count; i++)
                 action(this[i], i);
         }
         public readonly Box<TOut> For<TOut>(Func<T, int, TOut> func)
         {
-            CC.Guard.NullArgument(func, nameof(func));
+            CC.Guard.IsNotNull(func, nameof(func));
 
             var result = Box<TOut>.Empty;
             for (int i = 0; i < Count; i++)
@@ -330,14 +330,14 @@ namespace CCEnvs.FuncLanguage
 
         public readonly void ForEach(Action<T> action)
         {
-            CC.Guard.NullArgument(action, nameof(action));
+            CC.Guard.IsNotNull(action, nameof(action));
 
             foreach (var item in this)
                 action(item);
         }
         public readonly Box<TOut> ForEach<TOut>(Func<T, TOut> func)
         {
-            CC.Guard.NullArgument(func, nameof(func));
+            CC.Guard.IsNotNull(func, nameof(func));
 
             var result = Box<TOut>.Empty;
             foreach (var item in this)
@@ -362,7 +362,7 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool All(Predicate<T> predicate)
         {
-            CC.Guard.NullArgument(predicate, nameof(predicate));
+            CC.Guard.IsNotNull(predicate, nameof(predicate));
             if (IsEmpty)
                 return false;
 
@@ -377,7 +377,7 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool Any(Predicate<T> predicate)
         {
-            CC.Guard.NullArgument(predicate, nameof(predicate));
+            CC.Guard.IsNotNull(predicate, nameof(predicate));
             if (IsEmpty)
                 return false;
 

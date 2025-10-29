@@ -10,7 +10,7 @@ namespace CCEnvs.U2D
     {
         public static TileBase Create(Sprite sprite, Type? tileType)
         {
-            CC.Guard.NullArgument(sprite, nameof(sprite));
+            CC.Guard.IsNotNull(sprite, nameof(sprite));
 
             var t = ScriptableObject.CreateInstance(tileType ?? typeof(Tile));
 

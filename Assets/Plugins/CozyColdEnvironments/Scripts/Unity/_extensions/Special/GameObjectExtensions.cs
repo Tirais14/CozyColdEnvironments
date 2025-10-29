@@ -1,4 +1,5 @@
 using CCEnvs.TypeMatching;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace CCEnvs.Unity.Special
 {
     public static class GameObjectExtensions
     {
+        [Obsolete]
         /// <returns>Overrided or default <see cref="Transform"/></returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         public static Transform GetTransform(this GameObject value)
@@ -20,6 +22,7 @@ namespace CCEnvs.Unity.Special
             return value.transform;
         }
 
+        [Obsolete]
         /// <exception cref="System.ArgumentNullException"></exception>
         public static Transform? GetOverridedTransform(this GameObject value,
                                                        bool throwIfNotFound = false)
@@ -40,6 +43,7 @@ namespace CCEnvs.Unity.Special
             return result;
         }
 
+        [Obsolete]
         /// <returns>Overrided or default <see cref="GameObject"/></returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         public static GameObject GetGameObject(this GameObject value)
@@ -53,6 +57,7 @@ namespace CCEnvs.Unity.Special
             return value;
         }
 
+        [Obsolete]
         /// <exception cref="System.ArgumentNullException"></exception>
         public static GameObject? GetOverridedGameObject(this GameObject value,
                                                          bool throwIfNotFound = false)

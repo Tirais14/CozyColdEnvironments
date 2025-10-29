@@ -16,8 +16,8 @@ namespace CCEnvs
         public AnonymousEqualityComparer(AnonymousEqualityComparer.Comparison<T> comparison,
             AnonymousEqualityComparer.HashCodeGenerator<T> hashCodeGenerator)
         {
-            CC.Guard.NullArgument(comparison, nameof(comparison));
-            CC.Guard.NullArgument(hashCodeGenerator, nameof(hashCodeGenerator));
+            CC.Guard.IsNotNull(comparison, nameof(comparison));
+            CC.Guard.IsNotNull(hashCodeGenerator, nameof(hashCodeGenerator));
 
             this.comparison = comparison;
             this.hashCodeGenerator = hashCodeGenerator;

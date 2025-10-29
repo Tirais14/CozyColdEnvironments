@@ -64,11 +64,11 @@ namespace CCEnvs
         {
             public static void SourceArg<T>([NotNull] T? obj)
             {
-                NullArgument(obj, "source");
+                IsNotNull(obj, "source");
             }
 
             /// <exception cref="ArgumentNullException"></exception>
-            public static void NullArgument<T>([NotNull] T? obj,
+            public static void IsNotNull<T>([NotNull] T? obj,
                                                string paramName)
             {
                 if (obj.IsNull())
@@ -106,7 +106,7 @@ namespace CCEnvs
             /// <exception cref="EmptyStringArgumentException"></exception>
             public static void StringArgument([NotNull] string? value, string paramName)
             {
-                NullArgument(value, paramName);
+                IsNotNull(value, paramName);
 
                 if (value == string.Empty)
                     throw new EmptyStringArgumentException(paramName, value);
@@ -123,7 +123,7 @@ namespace CCEnvs
             public static void CollectionArgument([NotNull] IEnumerable? enumerable,
                                                   string paramName)
             {
-                NullArgument(enumerable, paramName);
+                IsNotNull(enumerable, paramName);
 
                 if (CCEnumerable.IsNullOrEmpty(enumerable))
                     throw new EmptyCollectionArgumentException(paramName);

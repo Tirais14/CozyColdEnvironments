@@ -12,7 +12,7 @@ namespace CCEnvs.Reflection
                                      ExplicitArguments args = default,
                                      params Type[] genericParams)
         {
-            CC.Guard.NullArgument(target.Type,
+            CC.Guard.IsNotNull(target.Type,
                                   Syntax.Chain(nameof(target), nameof(target.Type)));
             CC.Guard.StringArgument(methodName, nameof(methodName));
 

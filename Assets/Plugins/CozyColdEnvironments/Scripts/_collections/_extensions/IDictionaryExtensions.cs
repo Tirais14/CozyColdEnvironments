@@ -30,7 +30,7 @@ namespace CCEnvs.Collections
 
         public static void Add<TKey, TValue>(this IDictionary<Type, Type> value)
         {
-            CC.Guard.NullArgument(value, nameof(value));
+            CC.Guard.IsNotNull(value, nameof(value));
 
             value.Add(typeof(TKey), typeof(TValue));
         }

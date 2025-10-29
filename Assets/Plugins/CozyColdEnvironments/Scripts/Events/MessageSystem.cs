@@ -12,7 +12,7 @@ namespace CCEnvs.Events
 
         public static void Publish<T>(T message)
         {
-            CC.Guard.NullArgument(message, nameof(message));
+            CC.Guard.IsNotNull(message, nameof(message));
 
             var gType = typeof(T);
             if (!messages.ContainsKey(gType))

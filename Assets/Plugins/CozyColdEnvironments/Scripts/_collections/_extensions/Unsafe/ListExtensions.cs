@@ -10,7 +10,7 @@ namespace CCEnvs.Collections.Unsafe
 
         public static T[] GetInternalArray<T>(this List<T> source)
         {
-            CC.Guard.NullArgument(source, nameof(source));
+            CC.Guard.IsNotNull(source, nameof(source));
 
             Reflected rSource = source.AsReflected();
 

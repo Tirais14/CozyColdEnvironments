@@ -1,5 +1,6 @@
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -13,59 +14,69 @@ namespace CCEnvs.FuncLanguage
         public readonly Catched<T> Catch() => inner!;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<T> IfSome(Action<T> action)
         {
             return Lang.IfSome(this, action);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<T> IfNone(Action action)
         {
             return Lang.IfNone(this, action);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly IConditional IfNone<TOut>(Func<TOut> selector)
         {
             return Lang.IfNone(this, selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<T> Match(Action<T> some, Action none)
         {
             return Lang.Match(this, some, none);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
         {
             return Lang.Match(this, some, none);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
         {
             return Lang.Map(this, selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
         {
             return Lang.MapUnsafe(this, selector);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly bool ItIs(T? value)
         {
             return Lang.ItIs(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly bool ItIs(Predicate<T> predicate)
         {
             return Lang.ItIs(this, predicate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly bool ItIsUnsafe(Predicate<T?> predicate)
         {
             return Lang.CheckUnsafe(this, predicate);
@@ -75,6 +86,7 @@ namespace CCEnvs.FuncLanguage
         public readonly T? Access() => inner;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly T? Access(T? defaultValue)
         {
             return Lang.Access(this, defaultValue);
@@ -89,12 +101,14 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly T? Access(Func<T?> defaultValueFactory)
         {
             return Lang.Access(this, defaultValueFactory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly T AccessUnsafe()
         {
             return Lang.AccessUnsafe<Maybe<T>, T>(this);
@@ -107,6 +121,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<TOut> Cast<TOut>()
         {
             return Lang.Cast<Maybe<T>, T, TOut>(this);

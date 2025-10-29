@@ -9,7 +9,7 @@ namespace CCEnvs
     {
         public static T[] From<T>(params T[] values)
         {
-            CC.Guard.NullArgument(values, nameof(values));
+            CC.Guard.IsNotNull(values, nameof(values));
 
             return values;
         }
