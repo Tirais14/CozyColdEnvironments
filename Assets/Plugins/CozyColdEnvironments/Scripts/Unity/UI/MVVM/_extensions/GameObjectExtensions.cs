@@ -102,7 +102,9 @@ namespace CCEnvs.UI.MVVM
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.GetAssignedViews().FilterViewModels<T>(single: true).As<Maybe<T>>();
+            return source.GetAssignedViews()
+                         .FilterViewModels<T>(single: true)
+                         .As<Maybe<T>>();
         }
 
         [DebuggerStepThrough]
@@ -112,7 +114,10 @@ namespace CCEnvs.UI.MVVM
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.GetAssignedViews().FilterViewModels<T>(single: false).As<T[]>();
+            return source.GetAssignedViews()
+                         .FilterViewModels<T>(single: false)
+                         .As<IEnumerable<T>>()
+                         .ToArray();
         }
 
         [DebuggerStepThrough]
@@ -128,7 +133,9 @@ namespace CCEnvs.UI.MVVM
             where T : IViewModel
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewsInChildren(includeInactive).FilterViewModels<T>(single: true).As<Maybe<T>>();
+            return source.GetAssignedViewsInChildren(includeInactive)
+                         .FilterViewModels<T>(single: true)
+                         .As<Maybe<T>>();
         }
 
         [DebuggerStepThrough]
@@ -137,7 +144,10 @@ namespace CCEnvs.UI.MVVM
             where T : IViewModel
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewsInChildren(includeInactive).FilterViewModels<T>(single: false).As<T[]>();
+            return source.GetAssignedViewsInChildren(includeInactive)
+                         .FilterViewModels<T>(single: false)
+                         .As<IEnumerable<T>>()
+                         .ToArray();
         }
 
         [DebuggerStepThrough]
@@ -153,7 +163,9 @@ namespace CCEnvs.UI.MVVM
             where T : IViewModel
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewsInParent(includeInactive).FilterViewModels<T>(single: true).As<Maybe<T>>();
+            return source.GetAssignedViewsInParent(includeInactive)
+                         .FilterViewModels<T>(single: true)
+                         .As<Maybe<T>>();
         }
 
         [DebuggerStepThrough]
@@ -162,7 +174,9 @@ namespace CCEnvs.UI.MVVM
             where T : IViewModel
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewsInParent(includeInactive).FilterViewModels<T>(single: false).As<T[]>();
+            return source.GetAssignedViewsInParent(includeInactive)
+                         .FilterViewModels<T>(single: false)
+                         .As<T[]>();
         }
 
         [DebuggerStepThrough]
@@ -182,7 +196,9 @@ namespace CCEnvs.UI.MVVM
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.GetAssignedViewModels().FilterModels<T>(single: true).As<Maybe<T>>();
+            return source.GetAssignedViewModels()
+                         .FilterModels<T>(single: true)
+                         .As<Maybe<T>>();
         }
 
         [DebuggerStepThrough]
@@ -191,7 +207,10 @@ namespace CCEnvs.UI.MVVM
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.GetAssignedViewModels().FilterModels<T>(single: false).As<T[]>();
+            return source.GetAssignedViewModels()
+                         .FilterModels<T>(single: false)
+                         .As<IEnumerable<T>>()
+                         .ToArray();
         }
 
         [DebuggerStepThrough]
@@ -206,7 +225,9 @@ namespace CCEnvs.UI.MVVM
         public static Maybe<T> GetAssignedModelInChildren<T>(this GameObject source, bool includeInactive = false)
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewModelsInChildren(includeInactive).FilterModels<T>(single: true).As<Maybe<T>>();
+            return source.GetAssignedViewModelsInChildren(includeInactive)
+                         .FilterModels<T>(single: true)
+                         .As<Maybe<T>>();
         }
 
         [DebuggerStepThrough]
@@ -214,7 +235,10 @@ namespace CCEnvs.UI.MVVM
         public static T[] GetAssignedModelsInChildren<T>(this GameObject source, bool includeInactive = false)
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewModelsInChildren(includeInactive).FilterModels<T>(single: false).As<T[]>();
+            return source.GetAssignedViewModelsInChildren(includeInactive)
+                         .FilterModels<T>(single: false)
+                         .As<IEnumerable<T>>()
+                         .ToArray();
         }
 
         [DebuggerStepThrough]
@@ -229,7 +253,9 @@ namespace CCEnvs.UI.MVVM
         public static Maybe<T> GetAssignedModelInParent<T>(this GameObject source, bool includeInactive = false)
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewModelsInParent(includeInactive).FilterModels<T>(single: true).As<Maybe<T>>();
+            return source.GetAssignedViewModelsInParent(includeInactive)
+                         .FilterModels<T>(single: true)
+                         .As<Maybe<T>>();
         }
 
         [DebuggerStepThrough]
@@ -237,7 +263,10 @@ namespace CCEnvs.UI.MVVM
         public static T[] GetAssignedModelsInParent<T>(this GameObject source, bool includeInactive = false)
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return source.GetAssignedViewModelsInParent(includeInactive).FilterModels<T>(single: false).As<T[]>();
+            return source.GetAssignedViewModelsInParent(includeInactive)
+                         .FilterModels<T>(single: false)
+                         .As<IEnumerable<T>>()
+                         .ToArray();
         }
 
         [DebuggerStepThrough]
@@ -254,18 +283,28 @@ namespace CCEnvs.UI.MVVM
             where T : IViewModel
         {
             if (single)
-                return views.FirstOrDefault(x => x is T).Maybe().Map(x => (T)x);
+                return views.Select(x => x.viewModel)
+                            .FirstOrDefault(x => x is T)
+                            .Maybe()
+                            .Map(x => (T)x);
 
-            return views.Where(x => x is T).Cast<T>();
+            return views.Select(x => x.viewModel)
+                        .Where(x => x is T)
+                        .Cast<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static object FilterModels<T>(this IEnumerable<IViewModel> viewModels, bool single)
         {
             if (single)
-                return viewModels.FirstOrDefault(x => x is T).Maybe().Map(x => (T)x).Access()!;
+                return viewModels.Select(x => x.model)
+                                 .FirstOrDefault(x => x is T)
+                                 .Maybe()
+                                 .Map(x => (T)x);
 
-            return viewModels.Where(x => x is T).Cast<T>();
+            return viewModels.Select(x => x.model)
+                             .Where(x => x is T)
+                             .Cast<T>();
         }
     }
 }

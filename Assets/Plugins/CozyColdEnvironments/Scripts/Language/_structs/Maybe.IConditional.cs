@@ -148,5 +148,12 @@ namespace CCEnvs.FuncLanguage
 
             return selector(inner!);
         }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> Unfold()
+        {
+            return Lang.Unfold<Maybe<T>, T>(this).Access();
+        }
     }
 }

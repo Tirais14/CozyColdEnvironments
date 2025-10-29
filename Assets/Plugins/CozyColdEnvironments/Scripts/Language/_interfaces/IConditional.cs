@@ -101,6 +101,8 @@ namespace CCEnvs.FuncLanguage
 
         Maybe<TOut> Select<TOut>(Func<T, TOut> selector);
 
+        TThis Unfold();
+
         IConditional IConditional.IfSome(Action<object> action) => IfSome(x => action(x!));
 
         IConditional IConditional.IfNone(Action action) => IfNone(() => action());

@@ -1,8 +1,9 @@
 #nullable enable
 namespace CCEnvs.Unity.Dependencies
 {
-    public enum DependencyID
+    public enum UnityDependecyID
     {
         PointerInput,
+        HighPriorityCanvas,
     }
 }

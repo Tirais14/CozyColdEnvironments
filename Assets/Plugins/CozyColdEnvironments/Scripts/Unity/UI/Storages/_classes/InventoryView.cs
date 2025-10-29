@@ -51,7 +51,7 @@ namespace CCEnvs.Unity
         private void AddToList((int id, IItemContainer value) pair)
         {
             pair.value.gameObject.Match(
-                x => SlotBag.Add(x!),
+                x => SlotBag.Add(x.transform.root.gameObject),
                 () => this.PrintError($"Cannot find {nameof(IItemContainer)}.{nameof(IItemContainer.gameObject)}")
                 );
         }

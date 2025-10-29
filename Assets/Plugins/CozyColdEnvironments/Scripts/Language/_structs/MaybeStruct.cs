@@ -12,9 +12,7 @@ namespace CCEnvs.FuncLanguage
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        partial struct MaybeStruct<T>
-        : IEquatable<MaybeStruct<T>>,
-        IConditional<MaybeStruct<T>, T>
+        partial struct MaybeStruct<T> : IEquatable<MaybeStruct<T>>
 
         where T : struct
     {

@@ -15,9 +15,7 @@ namespace CCEnvs.FuncLanguage
 #if !UNITY_2017_1_OR_NEWER
         readonly
 #endif
-        partial struct Catched<T>
-        : IEquatable<Catched<T>>,
-        IConditional<Catched<T>, T>
+        partial struct Catched<T> : IEquatable<Catched<T>>
     {
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]

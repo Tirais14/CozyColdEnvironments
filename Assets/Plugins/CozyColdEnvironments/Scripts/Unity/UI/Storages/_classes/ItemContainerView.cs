@@ -40,7 +40,9 @@ namespace CCEnvs.Unity.UI.Storages
                            |
                            DragAndDropSettings.RefillEmptySpace
                            |
-                           DragAndDropSettings.SetAsLastSiblingWhenDraggin;
+                           DragAndDropSettings.SetAsLastSiblingWhenDragging
+                           |
+                           DragAndDropSettings.InHighPriorityCanvas;
         }
 
         protected override void Start()
@@ -65,7 +67,10 @@ namespace CCEnvs.Unity.UI.Storages
 
         protected override void OnDrop(PointerEventData eventData)
         {
-            if (!DropPredicate())
+            if (!DropPredicate()
+                || 
+                eventData.pointerDrag == cGameObject.Value
+                )
                 return;
 
             eventData.pointerDrag.Maybe()
@@ -78,13 +83,8 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindItemIcon()
         {
-            viewModel.ItemIconView.Subscribe(newSprite =>
-                {
-                    Img.AccessUnsafe().sprite = newSprite.Match(
-                                                          some: _ => Show(),
-                                                          none: Hide)
-                                                          .Access();
-                })
+            viewModel.ItemIconView.Subscribe(newSprite => 
+                Img.IfSome(x => x.sprite = newSprite))
                 .AddTo(this);
         }
 
@@ -92,8 +92,7 @@ namespace CCEnvs.Unity.UI.Storages
         {
             textMesh.IfSome(mesh =>
             {
-                viewModel.ItemCountView.Select(y => y.ToString())
-                    .Subscribe(newText =>
+                viewModel.ItemCountView.Subscribe(newText =>
                     {
                         mesh.text = newText;
 

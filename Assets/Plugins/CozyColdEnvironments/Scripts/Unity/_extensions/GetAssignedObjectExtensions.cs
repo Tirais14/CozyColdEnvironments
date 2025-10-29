@@ -74,7 +74,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? GetAssignedObjectInChildren(this Component value,
+        public static Maybe<object> GetAssignedObjectInChildren(this Component value,
                                                           Type targetType,
                                                           bool includeInactive = false)
         {

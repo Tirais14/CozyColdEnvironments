@@ -14,20 +14,22 @@ namespace CCEnvs.Unity.UI.Storages
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Maybe<Sprite>> itemIconView = new();
-        private readonly ReactiveProperty<int> itemCountView = new();
+        private readonly ReactiveProperty<Sprite?> itemIconView = new();
+        private readonly ReactiveProperty<string> itemCountView = new();
 
-        public IReadOnlyReactiveProperty<Maybe<Sprite>> ItemIconView => itemIconView;
-        public IReadOnlyReactiveProperty<int> ItemCountView => itemCountView;
+        public IReadOnlyReactiveProperty<Sprite?> ItemIconView => itemIconView;
+        public IReadOnlyReactiveProperty<string> ItemCountView => itemCountView;
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
             base(model, gameObject)
         {
-            model.Item.Subscribe(x => itemIconView.Value = x.Map(x => x.Icon).Access())
-                      .AddTo(this);
+            model.Item.Subscribe(x => x.Match(
+                some: (item) => itemIconView.Value = item.Icon,
+                none: () => itemIconView.Value = null))
+                .AddTo(this);
 
-            model.ItemCount.Subscribe(count => itemCountView.Value = count)
+            model.ItemCount.Subscribe(count => itemCountView.Value = count.ToString())
                            .AddTo(this);
         }
     }

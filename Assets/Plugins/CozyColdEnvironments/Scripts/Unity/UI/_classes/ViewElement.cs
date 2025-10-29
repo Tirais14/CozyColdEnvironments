@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.UI.Elements
                 );
 
             pointerInput = new Lazy<InputActionRx<Vector2>>(
-                () => DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput)
+                () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
                 );
 
             AwakeDragAndDrop();
@@ -67,22 +67,28 @@ namespace CCEnvs.Unity.UI.Elements
             None,
             ResetPos,
             /// <summary>
-            /// Creates a copy of this and places it in empty space of moved drag item
+            /// Creates a copy of this and do place it in empty space of moved drag item
             /// </summary>
             RefillEmptySpace = 2,
-            SetAsLastSiblingWhenDraggin = 4
+            SetAsLastSiblingWhenDragging = 4,
+            /// <summary>
+            /// Due dragging do placing this to special <see cref="Canvas"/> marked with <see cref="HighPriorityCanvasMarker"/>. If it doesn't exists prints error.
+            /// </summary>
+            InHighPriorityCanvas = 8,
         }
 
         protected DragAndDropSettings dragSettings;
         private Vector2 dragStartPos;
         private int dragStartSiblingIndex;
         private Maybe<ViewElement> dragThisCloned;
+        private Maybe<Transform> startDraggingParent;
 
         protected Lazy<DragAndDropTarget> dragAndDrop { get; private set; } = null!;
         /// <summary>
         /// It's cached result of the <see cref="DragPredicate(out Maybe{string})"/>
         /// </summary>
         protected bool dragAllowed { get; private set; }
+        protected Lazy<Maybe<Canvas>> highPriorityCanvas = new(() => new Catched<Canvas>(() => DependencyContainer.Resolve<Canvas>(UnityDependecyID.HighPriorityCanvas)));
 
         int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
 
@@ -110,16 +116,33 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
             {
+                Hide(); //Hides this before instantiate to avoid graphical glitch
                 dragThisCloned = Instantiate(this, cTransform.Value.parent);
-                ((ViewElement)dragThisCloned!).transform.position = cTransform.Value.position;
-                ((ViewElement)dragThisCloned!).Hide();
+                dragThisCloned.IfSome(x =>
+                {
+                    x.transform.position = cTransform.Value.position;
+                    x.Hide();
+                });
+                Show();
             }
 
-            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDraggin))
-            {
+            //Save sibling index before is moved to high priority canvas
+            //to correctly restore it position
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
                 dragStartSiblingIndex = transform.GetSiblingIndex();
-                cTransform.Value.SetAsLastSibling();
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.InHighPriorityCanvas))
+            {
+                highPriorityCanvas.Value.IfSome(x =>
+                {
+                    startDraggingParent = cTransform.Value.parent;
+                    cTransform.Value.parent = x.transform;
+                });
             }
+
+            //Set sibling index after moving to high priority canvas for correctly overlapping
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
+                cTransform.Value.SetAsLastSibling();
         }
 
         protected virtual void OnDrag(PointerEventData eventData)
@@ -135,16 +158,25 @@ namespace CCEnvs.Unity.UI.Elements
             if (!dragAllowed)
                 return;
 
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.InHighPriorityCanvas))
+            {
+                highPriorityCanvas.Value.IfSome(x =>
+                {
+                    startDraggingParent.Match(
+                        some: x => cTransform.Value.parent = x,
+                        none: () => this.PrintError("Cannot find previous parent transfrom.")
+                        );
+                });
+            }
+
             if (dragSettings.IsFlagSetted(DragAndDropSettings.ResetPos))
-                transform.position = dragStartPos;
+                cTransform.Value.position = dragStartPos;
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
                 dragThisCloned.IfSome(static x => Destroy(x.gameObject));
 
-            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDraggin))
-            {
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
                 cTransform.Value.SetSiblingIndex(dragStartSiblingIndex);
-            }
 
             dragAllowed = default;
         }
@@ -181,7 +213,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         private Subject<Unit>? showableShowSubj;
         private Subject<Unit>? showableHideSubj;
-        private ArraySegment<BeforeDisabledGraphicSnapshot> showableDisabledGraphics;
+        private ArraySegment<BeforeDisabledGraphicComponentSnapshot> showableDisabledGraphics;
         private bool? isVisible;
 
         public bool IsVisible => isVisible.GetValueOrDefault();

@@ -21,11 +21,14 @@ namespace CCEnvs.Unity.UI
 
         public InputActionRx<Vector2> PointerInput { get; private set; } = null!;
 
+        [field: GetBySelf]
+        public Canvas canvas { get; private set; } = null!;
+
         protected override void Start()
         {
             base.Start();
 
-            DependencyContainer.Resolve<InputActionRx<Vector2>>(DependencyID.PointerInput);
+            DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput);
         }
     }
 }

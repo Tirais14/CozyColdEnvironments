@@ -1,27 +1,23 @@
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Collections.Unsafe;
 using CCEnvs.Collections.Performance;
 using System;
-using SuperLinq;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
     public static class UIHelper
     {
-        public static ArraySegment<BeforeDisabledGraphicSnapshot> DisableGraphics(Component component)
+        public static ArraySegment<BeforeDisabledGraphicComponentSnapshot> DisableGraphics(Component component)
         {
             CC.Guard.IsNotNull(component, nameof(component));
 
-            var results = new List<BeforeDisabledGraphicSnapshot>();
+            var results = new List<BeforeDisabledGraphicComponentSnapshot>();
 
-            var graphics = component.transform.GetComponentsInChildren<MaskableGraphic>();
+            var graphics = component.transform.GetComponentsInChildren<Graphic>();
             for (int i = 0; i < graphics.Length; i++)
-                results.Add(new BeforeDisabledGraphicSnapshot(graphics[i]));
+                results.Add(new BeforeDisabledGraphicComponentSnapshot(graphics[i]));
 
             return results.GetInternalArraySegment();
         }
@@ -30,11 +26,11 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(component, nameof(component));
 
-            var graphics = component.GetComponentsInChildren<MaskableGraphic>();
+            var graphics = component.GetComponentsInChildren<Graphic>();
             for (int i = 0; i < graphics.Length; i++)
                 graphics[i].enabled = true;
         }
-        public static void EnableGraphics(ArraySegment<BeforeDisabledGraphicSnapshot> settings)
+        public static void EnableGraphics(ArraySegment<BeforeDisabledGraphicComponentSnapshot> settings)
         {
             CC.Guard.IsNotNull(settings, nameof(settings));
 

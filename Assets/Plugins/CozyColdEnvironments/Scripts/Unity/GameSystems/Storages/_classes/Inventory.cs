@@ -104,8 +104,11 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public void Add(GameObject toInstantiate)
         {
             UnityEngine.Object.Instantiate(toInstantiate)
-                              .GetAssignedModel<IItemContainer>()
-                              .IfSome(Add!);
+                              .GetAssignedModelInChildren<IItemContainer>(includeInactive: true)
+                              .Match(
+                              some: Add!, 
+                              none: () => this.PrintError($"Try to add object without {nameof(ItemContainer)} model in views.")
+                              );
         }
 
         public void AddCount(int count, UnityEngine.GameObject toInstantiate)

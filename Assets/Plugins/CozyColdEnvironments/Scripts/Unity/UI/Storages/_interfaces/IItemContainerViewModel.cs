@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
     public interface IItemContainerViewModel<out T> : IViewModel<T>
         where T : IItemContainerInfo
     {
-        IReadOnlyReactiveProperty<Maybe<Sprite>> ItemIconView { get; }
-        IReadOnlyReactiveProperty<int> ItemCountView { get; }
+        IReadOnlyReactiveProperty<Sprite> ItemIconView { get; }
+        IReadOnlyReactiveProperty<string> ItemCountView { get; }
     }
 }
