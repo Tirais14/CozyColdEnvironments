@@ -21,6 +21,7 @@ namespace CCEnvs.Unity.UI.Elements
                 return;
 
             target = this.GetAssignedObjectInParent<IViewElement>(includeInactive: true)
+                         .Access()
                          .ValidateGetOperation();
         }
 

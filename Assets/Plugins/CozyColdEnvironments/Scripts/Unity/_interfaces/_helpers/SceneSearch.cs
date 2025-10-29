@@ -1,5 +1,5 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Extensions;
+using CCEnvs.Unity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,12 +93,9 @@ namespace CCEnvs
             List<object> results = new();
             for (int i = 0; i < gameObjectsCount; i++)
             {
-                if (gameObjects[i].TryGetAssignedObjects(type, out object[]? result))
-                {
-                    results.AddRange(result);
-                    if (onlyFirst)
-                        break;
-                }
+                results.AddRange(gameObjects[i].GetAssignedObjects(type));
+                if (onlyFirst)
+                    break;
             }
 
             return results.ToArray();

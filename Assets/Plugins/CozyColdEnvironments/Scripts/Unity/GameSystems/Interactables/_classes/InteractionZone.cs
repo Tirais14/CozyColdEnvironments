@@ -108,7 +108,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             int layer = agent.gameObject.layer;
 
-            if (agent.TryGetAssignedObject<IInteractable>(out var interactable))
+            if (agent.GetAssignedObject<IInteractable>().Access(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                 {
@@ -119,7 +119,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Add(interactable);
             }
 
-            if (agent.TryGetAssignedObject<IInteractableWith>(out var interactableWith))
+            if (agent.GetAssignedObject<IInteractableWith>().Access(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                 {
@@ -138,7 +138,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             int layer = agent.gameObject.layer;
 
-            if (agent.TryGetAssignedObject<IInteractable>(out var interactable))
+            if (agent.GetAssignedObject<IInteractable>().Access(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                     return;
@@ -146,7 +146,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Remove(interactable);
             }
 
-            if (agent.TryGetAssignedObject<IInteractableWith>(out var interactableWith))
+            if (agent.GetAssignedObject<IInteractableWith>().Access(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                     return;

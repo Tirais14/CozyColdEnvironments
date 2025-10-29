@@ -1,9 +1,8 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Extensions;
+using CCEnvs.Unity.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using CCEnvs.Unity.Diagnostics;
 
 #nullable enable
 #pragma warning disable S1117
@@ -67,8 +66,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
                 .Match(
-                some: x => x.GetAssignedObjectInChildren<TSecondary>(includeInactive: true)
-                            .Maybe()
+                some: x => x.GetAssignedObject<TSecondary>()
                             .IfNone(() => throw new ComponentNotFoundException(typeof(TSecondary), context: GetAsset<GameObject>()))
                             .AccessUnsafe(),
 
@@ -105,17 +103,19 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TSecondary FindAsset<TPrimary, TSecondary>(Type? assetType = null)
+        public Maybe<TSecondary> FindAsset<TPrimary, TSecondary>(Type? assetType = null)
             where TPrimary : UnityEngine.Object
         {
             Validate();
             assetType ??= typeof(TPrimary);
 
-            if (assetType == typeof(GameObject))
-                return GetAsset<TPrimary>(assetType).As<GameObject>()
-                                                    .GetAssignedObject<TSecondary>()!;
+            return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
+                .Match(
+                some: x => x.GetAssignedObject<TSecondary>()
+                            .Access(),
 
-            return GetAsset<TPrimary>(assetType).As<TSecondary>();
+                none: () => GetAsset<TPrimary>().AsOrDefault<TSecondary>().Access())
+                .Access()!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

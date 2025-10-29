@@ -4,7 +4,6 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
-using CCEnvs.Unity.Extensions;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using System;
@@ -38,6 +37,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             canvasController = new Lazy<ICanvasController>(
                 () => this.GetAssignedObjectInParent<ICanvasController>(includeInactive: true)
+                          .Access()
                           .ValidateGetOperation()
                 );
 
