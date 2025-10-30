@@ -78,7 +78,6 @@ namespace CCEnvs.FuncLanguage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly L? AccessLeft() => left;
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly L AccessLeft(L defaultValue)
         {
@@ -94,7 +93,6 @@ namespace CCEnvs.FuncLanguage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly R? AccessRight() => right;
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly R AccessRight(R defaultValue)
         {
@@ -104,6 +102,30 @@ namespace CCEnvs.FuncLanguage
                 return defaultValue;
 
             return right;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly object? Access()
+        {
+            if (IsRight)
+                return right;
+
+            if (IsLeft)
+                return left;
+
+            return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly object? Access(L leftDefault, R rightDefault)
+        {
+            if (IsRight)
+                return AccessRight(rightDefault);
+
+            if (IsLeft)
+                return AccessLeft(leftDefault);
+
+            return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

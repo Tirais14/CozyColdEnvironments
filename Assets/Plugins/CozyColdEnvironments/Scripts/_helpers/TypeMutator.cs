@@ -39,7 +39,7 @@ namespace CCEnvs.Conversations
                 .IfRight(_ => ConvertByCustomConverter(input, inputType, toType).Access()!)
                 .IfRight(_ => CreateByFactory(input, toType).Access()!)
                 .IfRight(_ => throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}."))
-                .AccessUnsafe();
+                .Access()!;
 
             return converted;
         }
