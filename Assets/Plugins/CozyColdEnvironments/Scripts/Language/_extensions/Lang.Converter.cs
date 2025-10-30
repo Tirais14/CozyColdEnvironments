@@ -40,7 +40,7 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, TValue defaultValue)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
             where TValue : struct
         {
             return new MaybeStruct<TValue>(input.Access(), defaultValue);
@@ -48,7 +48,7 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, bool hasValue)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
             where TValue : struct
         {
             return new MaybeStruct<TValue>(input.Access(), hasValue);
@@ -56,7 +56,7 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, Predicate<TValue> predicate)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
             where TValue : struct
         {
             Guard.IsNotNull(predicate, nameof(predicate));
@@ -74,13 +74,13 @@ namespace CCEnvs.FuncLanguage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Catched<TValue> Catch<T, TValue>(this T source,
             LogType logType = LogType.Log)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
         {
             return new Catched<TValue>(source.Access(), logType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Resolver Resolve(this bool source) => source;
+        public static IfElse<> IfElse(this bool source) => source;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Resolver Resolve<T>(this T source, Predicate<T> predicate)
@@ -90,7 +90,7 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Resolver Resolve<T>(this T source)
-            where T : struct, IConditional
+            where T : struct, IMaybe
         {
             return new Resolver(source.IsSome);
         }

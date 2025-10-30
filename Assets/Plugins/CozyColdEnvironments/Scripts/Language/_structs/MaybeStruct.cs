@@ -19,25 +19,29 @@ namespace CCEnvs.FuncLanguage
         public static MaybeStruct<T> None => new();
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private T inner;
+        private T target;
 
-        [UnityEngine.Range(int.MinValue, int.MaxValue)]
         [UnityEngine.SerializeField]
+        [UnityEngine.Range(int.MinValue, int.MaxValue)]
         private T defaultValue;
+
+        [field: UnityEngine.SerializeField]
+        public bool IsSome { get; private set; }
 #else
         private readonly T inner;
         private readonly T defaultValue;
+
+        public bool IsSome { get; }
 #endif
 
-        public bool IsSome { get; private set; }
         public readonly bool IsNone => !IsSome;
 
         public MaybeStruct(T value)
             :
             this()
         {
-            inner = value;
-            IsSome = !inner.Equals(defaultValue);
+            this.target = value;
+            IsSome = !this.target.Equals(defaultValue);
         }
 
         public MaybeStruct(T value, T defaultValue)
@@ -51,7 +55,7 @@ namespace CCEnvs.FuncLanguage
             :
             this()
         {
-            inner = value;
+            this.target = value;
             IsSome = hasValue;
         }
 
@@ -60,7 +64,7 @@ namespace CCEnvs.FuncLanguage
             this()
         {
             IsSome = value.HasValue;
-            inner = value.GetValueOrDefault();
+            this.target = value.GetValueOrDefault();
         }
 
         public static implicit operator MaybeStruct<T>(T? source)
@@ -70,12 +74,12 @@ namespace CCEnvs.FuncLanguage
 
         public static implicit operator Maybe<T>(MaybeStruct<T> source)
         {
-            return source.inner;
+            return source.target;
         }
 
         public static explicit operator T(MaybeStruct<T> source)
         {
-            return source.inner;
+            return source.target;
         }
 
         public static bool operator ==(MaybeStruct<T> left, MaybeStruct<T> right)
@@ -90,7 +94,7 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool Equals(MaybeStruct<T> other)
         {
-            return EqualityComparer<T?>.Default.Equals(inner, other.inner);
+            return EqualityComparer<T?>.Default.Equals(target, other.target);
         }
         public readonly override bool Equals(object obj)
         {
@@ -98,7 +102,7 @@ namespace CCEnvs.FuncLanguage
         }
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(inner);
+            return HashCode.Combine(target, IsSome);
         }
 
         public readonly IEnumerator<T> GetEnumerator()
@@ -106,7 +110,7 @@ namespace CCEnvs.FuncLanguage
             if (IsNone)
                 yield break;
 
-            yield return inner;
+            yield return target;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -1,10 +1,8 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime;
-using ZLinq;
 
+#nullable enable
 namespace CCEnvs.FuncLanguage
 {
     public interface IConditional
@@ -12,101 +10,78 @@ namespace CCEnvs.FuncLanguage
         bool IsSome { get; }
         bool IsNone { get; }
 
-        bool Check(object? value);
-        bool Check(Predicate<object> predicate);
-
-        bool CheckUnsafe(Predicate<object?> predicate);
-
         object? Access();
-        bool Access([NotNullWhen(true)] out object? result);
-        object? Access(object? defaultValue);
-        object? Access(Func<object?> defaultValueFactory);
+        object Access(object defaultValue);
+        object Access(Func<object> defaultValueFactory);
 
         object AccessUnsafe();
 
-        Maybe<TOut> Cast<TOut>();
+        bool TryAccess([NotNullWhen(true)] out object? result);
 
-        IConditional IfSome(Action<object> action);
+        bool ItIs(object? value);
+        bool ItIs(Predicate<object> predicate);
 
-        IConditional IfNone(Action action);
-        IConditional IfNone(Func<object> selector);
-
-        IConditional Match(Action<object> some, Action none);
-        IConditional Match(Func<object, object?> some, Func<object?> none);
-
-        IConditional Map(Func<object, object?> selector);
-
-        IConditional MapUnsafe(Func<object?, object?> selector);
+        bool ItIsUnsafe(Predicate<object?> predicate);
     }
     public interface IConditional<T> : IConditional, IEnumerable<T>
     {
-        IConditional IfNone<TOut>(Func<TOut> selector);
+        new T? Access();
+        T Access(T defaultValue);
+        T Access(Func<T> defaultValueFactory);
+
+        new T AccessUnsafe();
+
+        bool TryAccess([NotNullWhen(true)] out T? result);
 
         bool ItIs(T? value);
         bool ItIs(Predicate<T> predicate);
 
         bool ItIsUnsafe(Predicate<T?> predicate);
 
-        new T? Access();
-        bool Access([NotNullWhen(true)] out T? result);
-        T? Access(T? defaultValue);
-        T? Access(Func<T?> defaultValueFactory);
+        Ways<T, R> Cast<R>();
 
-        new T AccessUnsafe();
-
-        Maybe<TOut> Map<TOut>(Func<T, TOut?> selector);
-
-        Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none);
-
-        Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector);
-
-        IConditional IConditional.IfNone(Func<object> selector) => IfNone(() => selector());
-
-        bool IConditional.Check(object? value) => ItIs(value.AsOrDefault<T>().Access());
-        bool IConditional.Check(Predicate<object> predicate) => ItIs(x => predicate(x!));
-
-        bool IConditional.CheckUnsafe(Predicate<object?> predicate) => ItIsUnsafe(x => predicate(x!));
+        Ways<T, R> Select<R>(Func<T, R> selector);
 
         object? IConditional.Access() => Access();
-        bool IConditional.Access([NotNullWhen(true)] out object? result)
+        object IConditional.Access(object defaultValue)
         {
-            var t = Access(out T? tR);
+            return Access(defaultValue.As<T>())!;
+        }
+        object IConditional.Access(Func<object> defaultValueFactory)
+        {
+            return Access(() => defaultValueFactory())!;
+        }
+
+        object IConditional.AccessUnsafe() => AccessUnsafe()!;
+
+        bool IConditional.TryAccess([NotNullWhen(true)] out object? result)
+        {
+            var t = TryAccess(out T? tR);
 
             result = tR;
             return t;
         }
-        object? IConditional.Access(object? defaultValue) => Access(defaultValue.AsOrDefault<T>().Access());
-        object? IConditional.Access(Func<object?> defaultValueFactory) => Access(() => defaultValueFactory());
 
-        object IConditional.AccessUnsafe() => AccessUnsafe()!;
+        bool IConditional.ItIs(object? value)
+        {
+            return ItIs(value.AsOrDefault<T>().Access());
+        }
+        bool IConditional.ItIs(Predicate<object> predicate)
+        {
+            return ItIs(x => predicate(x!));
+        }
 
-        IConditional IConditional.Map(Func<object, object?> selector) => Map(x => selector(x!));
-
-        IConditional IConditional.Match(Func<object, object?> some, Func<object?> none) => Match(x => some(x!), () => none());
-
-        IConditional IConditional.MapUnsafe(Func<object?, object?> selector) => MapUnsafe((x) => selector(x));
+        bool IConditional.ItIsUnsafe(Predicate<object?> predicate)
+        {
+            return ItIsUnsafe(x => predicate(x!));
+        }
     }
-    public interface IConditional<TThis, T> : IConditional<T>
+
+    public interface IConditional<T, out TThis>
         where TThis : struct, IConditional<T>
     {
-        TThis IfSome(Action<T> action);
-
-        new TThis IfNone(Action action);
-
-        TThis Match(Action<T> some, Action none);
-
         TThis Apply(T? value);
 
         TThis Where(Predicate<T> predicate);
-
-        Maybe<TOut> Select<TOut>(Func<T, TOut> selector);
-
-        TThis Unfold();
-
-        IConditional IConditional.IfSome(Action<object> action) => IfSome(x => action(x!));
-
-        IConditional IConditional.IfNone(Action action) => IfNone(() => action());
-
-        IConditional IConditional.Match(Action<object> some, Action none) => Match(x => some(x!), () => none());
     }
 }

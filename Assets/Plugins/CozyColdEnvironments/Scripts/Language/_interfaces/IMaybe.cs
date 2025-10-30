@@ -1,0 +1,60 @@
+#nullable enable
+using System;
+
+namespace CCEnvs.FuncLanguage
+{
+    public interface IMaybe : IConditional
+    {
+        IMaybe IfSome(Action<object> action);
+
+        IMaybe IfNone(Action action);
+        Ways<object, object> IfNone(Func<object> factory);
+
+        IMaybe Match(Action<object> some, Action none);
+        IMaybe Match(Func<object, object?> some, Func<object?> none);
+
+        IMaybe Map(Func<object, object?> selector);
+
+        IMaybe MapUnsafe(Func<object?, object?> selector);
+    }
+    public interface IMaybe<T>
+        : IConditional<T>,
+        IMaybe
+    {
+        Ways<T, R> IfNone<R>(Func<R> factory);
+
+        Maybe<TOut> Map<TOut>(Func<T, TOut?> selector);
+
+        Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none);
+
+        Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector);
+
+        Maybe<TOut> Unfold<TOut>();
+
+        Ways<object, object> IMaybe.IfNone(Func<object> factory) => IfNone(() => factory());
+
+        IMaybe IMaybe.Map(Func<object, object?> selector) => Map(x => selector(x!));
+
+        IMaybe IMaybe.Match(Func<object, object?> some, Func<object?> none) => Match(x => some(x!), () => none());
+
+        IMaybe IMaybe.MapUnsafe(Func<object?, object?> selector) => MapUnsafe((x) => selector(x));
+    }
+    public interface IMaybe<T, TThis> 
+        : IMaybe<T>,
+        IConditional<T, TThis>
+
+        where TThis : struct, IMaybe<T>
+    {
+        TThis IfSome(Action<T> action);
+
+        new TThis IfNone(Action action);
+
+        TThis Match(Action<T> some, Action none);
+
+        IMaybe IMaybe.IfSome(Action<object> action) => IfSome(x => action(x!));
+
+        IMaybe IMaybe.IfNone(Action action) => IfNone(() => action());
+
+        IMaybe IMaybe.Match(Action<object> some, Action none) => Match(x => some(x!), () => none());
+    }
+}

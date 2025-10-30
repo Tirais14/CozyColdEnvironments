@@ -15,21 +15,40 @@ namespace CCEnvs.Unity.UI.Storages
         where T : IItemContainer
     {
         private readonly ReactiveProperty<Sprite?> itemIconView = new();
+        private readonly ReactiveProperty<bool> itemIconVisible = new();
         private readonly ReactiveProperty<string> itemCountView = new();
+        private readonly ReactiveProperty<bool> itemCountEnabled = new();
 
         public IReadOnlyReactiveProperty<Sprite?> ItemIconView => itemIconView;
+        public IReadOnlyReactiveProperty<bool> ItemIconVisible => itemIconVisible;
         public IReadOnlyReactiveProperty<string> ItemCountView => itemCountView;
+        public IReadOnlyReactiveProperty<bool> ItemCountVisible => itemCountEnabled;
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
             base(model, gameObject)
         {
-            model.Item.Subscribe(x => x.Match(
-                some: (item) => itemIconView.Value = item.Icon,
-                none: () => itemIconView.Value = null))
-                .AddTo(this);
+            BindItemIcon();
+            BindItemCount();
+        }
 
-            model.ItemCount.Subscribe(count => itemCountView.Value = count.ToString())
+        private void BindItemIcon()
+        {
+            model.Item.Subscribe(x => itemIconView.Value = x.Map(item => item.Icon).Access())
+                      .AddTo(this);
+
+            model.Item.Select(x => x.IsSome)
+                      .Subscribe(state => itemIconVisible.Value = state)
+                      .AddTo(this);
+        }
+
+        private void BindItemCount()
+        {
+            model.ItemCount.Subscribe(x => itemCountView.Value = x.ToString())
+                           .AddTo(this);
+
+            model.ItemCount.Select(x => x > 0)
+                           .Subscribe(state => itemCountEnabled.Value = state)
                            .AddTo(this);
         }
     }

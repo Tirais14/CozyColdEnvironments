@@ -82,12 +82,15 @@ namespace CCEnvs.Unity.UI.Elements
         private int dragStartSiblingIndex;
         private Maybe<ViewElement> dragThisCloned;
         private Maybe<Transform> startDraggingParent;
+        private bool? dragAllowed;
 
+        public bool DragAllowed {
+            get => dragAllowed ?? DragPredicate(out _);
+        }
         protected Lazy<DragAndDropTarget> dragAndDrop { get; private set; } = null!;
         /// <summary>
         /// It's cached result of the <see cref="DragPredicate(out Maybe{string})"/>
         /// </summary>
-        protected bool dragAllowed { get; private set; }
         protected Lazy<Maybe<Canvas>> highPriorityCanvas = new(() => new Catched<Canvas>(() => DependencyContainer.Resolve<Canvas>(UnityDependecyID.HighPriorityCanvas)));
 
         int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
@@ -116,14 +119,13 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
             {
-                Hide(); //Hides this before instantiate to avoid graphical glitch
                 dragThisCloned = Instantiate(this, cTransform.Value.parent);
                 dragThisCloned.IfSome(x =>
                 {
                     x.transform.position = cTransform.Value.position;
-                    x.Hide();
+                    x.Hide(DisableGraphicsSettings.None);
+                    //Hides it and disable any interaction with the copy.
                 });
-                Show();
             }
 
             //Save sibling index before is moved to high priority canvas
@@ -147,7 +149,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnDrag(PointerEventData eventData)
         {
-            if (!dragAllowed)
+            if (!DragAllowed)
                 return;
 
             cTransform.Value.position = eventData.position;
@@ -155,15 +157,15 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnEndDrag(PointerEventData eventData)
         {
-            if (!dragAllowed)
+            if (!DragAllowed)
                 return;
 
             if (dragSettings.IsFlagSetted(DragAndDropSettings.InHighPriorityCanvas))
             {
-                highPriorityCanvas.Value.IfSome(x =>
+                highPriorityCanvas.Value.IfSome(_ =>
                 {
                     startDraggingParent.Match(
-                        some: x => cTransform.Value.parent = x,
+                        some: parent => cTransform.Value.parent = parent,
                         none: () => this.PrintError("Cannot find previous parent transfrom.")
                         );
                 });
@@ -178,7 +180,7 @@ namespace CCEnvs.Unity.UI.Elements
             if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
                 cTransform.Value.SetSiblingIndex(dragStartSiblingIndex);
 
-            dragAllowed = default;
+            dragAllowed = null;
         }
 
         protected virtual void OnDrop(PointerEventData eventData)
@@ -211,10 +213,11 @@ namespace CCEnvs.Unity.UI.Elements
 
         #region IShowable
 
+        protected bool? isVisible;
+        protected ArraySegment<BeforeDisabledGraphicComponentSnapshot> showableDisabledGraphics;
+        protected DisableGraphicsSettings showableDisableGraphicsSettings = DisableGraphicsSettings.Default;
         private Subject<Unit>? showableShowSubj;
         private Subject<Unit>? showableHideSubj;
-        private ArraySegment<BeforeDisabledGraphicComponentSnapshot> showableDisabledGraphics;
-        private bool? isVisible;
 
         public bool IsVisible => isVisible.GetValueOrDefault();
         protected virtual bool showOnStart { get; }
@@ -224,16 +227,24 @@ namespace CCEnvs.Unity.UI.Elements
             if (showOnStart)
                 Show();
             else
-                Hide();
+                Hide(showableDisableGraphicsSettings);
         }
 
-        public virtual void Hide()
+        public virtual void Hide(DisableGraphicsSettings disableGraphicsSettings)
         {
             if (isVisible is not null && !IsVisible)
                 return;
 
-            showableDisabledGraphics = UIHelper.DisableGraphics(this);
+            showableDisabledGraphics = UIHelper.DisableGraphics(cGameObject.Value,
+                disableGraphicsSettings == DisableGraphicsSettings.Default
+                ?
+                showableDisableGraphicsSettings
+                : 
+                disableGraphicsSettings);
+
+            isVisible = false;
         }
+        public void Hide() => Hide(DisableGraphicsSettings.Default);
 
         public virtual void Show()
         {

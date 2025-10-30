@@ -95,7 +95,7 @@ namespace CCEnvs.Unity.Injections
 
             if ((attribute.IsOptional
                 ||
-                field.FieldType.IsType<IConditional>())
+                field.FieldType.IsType<IMaybe>())
                 &&
                 foundComponent.IsNone)
             {

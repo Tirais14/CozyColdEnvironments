@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.UI
             Color = target.color;
         }
 
-        public void Apply()
+        public void Restore()
         {
             Target.raycastTarget = RaycastTarget;
             Target.color = Color;

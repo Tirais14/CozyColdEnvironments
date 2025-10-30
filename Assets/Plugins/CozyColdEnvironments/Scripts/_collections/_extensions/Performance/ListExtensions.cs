@@ -35,6 +35,13 @@ namespace CCEnvs.Collections.Performance
             return new Memory<T>(source.GetInternalArray(), 0, source.Count);
         }
 
+        /// <summary>
+        /// For less memory allocation.
+        /// Use this only if you are sure that the source list will not be used anywhere else.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static ArraySegment<T> GetInternalArraySegment<T>(this List<T> source)
         {
             CC.Guard.SourceArg(source);

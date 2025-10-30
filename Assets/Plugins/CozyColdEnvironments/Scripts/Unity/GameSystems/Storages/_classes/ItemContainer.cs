@@ -4,7 +4,6 @@ using CommunityToolkit.Diagnostics;
 using System;
 using UniRx;
 using UnityEngine;
-using static CCEnvs.FuncLanguage.LangOperator;
 
 #nullable enable
 #pragma warning disable S3236
@@ -135,9 +134,13 @@ namespace CCEnvs.Unity.GameSystems.Storages
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            return itemContainer.Take(count).Map(x => Put(
-                x.Item.Value.Access(),
-                x.ItemCount.Value).Access()
+            if (itemContainer.Equals(this))
+                return null!;
+
+            return itemContainer.Take(count)
+                                .Map(cnt => Put(
+                cnt.Item.Value.Access(),
+                cnt.ItemCount.Value).Access()
                 );
         }
 

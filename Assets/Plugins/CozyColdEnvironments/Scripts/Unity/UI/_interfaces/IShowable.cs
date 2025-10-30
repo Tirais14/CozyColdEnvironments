@@ -8,6 +8,7 @@ namespace CCEnvs.Unity.UI
     {
         bool IsVisible { get; }
 
+        void Hide(DisableGraphicsSettings disableGraphicsSettings);
         void Hide();
 
         void Show();

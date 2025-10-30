@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.UI.Storages
         where TContainer : IItemContainer, new()
     {
         [field: SerializeField, GetByChildren(IsOptional = true)]
-        protected Maybe<TextMeshProUGUI> textMesh { get; private set; } = null!;
+        protected Maybe<TextMeshProUGUI> counterMesh { get; private set; } = null!;
 
         protected override bool showOnStart => true;
 
@@ -43,6 +43,8 @@ namespace CCEnvs.Unity.UI.Storages
                            DragAndDropSettings.SetAsLastSiblingWhenDragging
                            |
                            DragAndDropSettings.InHighPriorityCanvas;
+
+            showableDisableGraphicsSettings = DisableGraphicsSettings.KeepRaycastTargetState;
         }
 
         protected override void Start()
@@ -67,7 +69,8 @@ namespace CCEnvs.Unity.UI.Storages
 
         protected override void OnDrop(PointerEventData eventData)
         {
-            if (!DropPredicate()
+            if (
+               !DropPredicate()
                 || 
                 eventData.pointerDrag == cGameObject.Value
                 )
@@ -77,36 +80,32 @@ namespace CCEnvs.Unity.UI.Storages
                                  .Map(go => go.GetAssignedModel<IItemContainer>().Access())
                                  .Map(cnt => (source: cnt, rest: model.Put(cnt)))
                                  .Where(cnt => cnt.rest.IsSome)
-                                 .IfSome(cnt => cnt.source.Put(cnt.rest.Access()!));
+                                 .IfSome(cnt => cnt.source.Put(cnt.rest.AccessUnsafe()));
 
         }
 
         private void BindItemIcon()
         {
-            viewModel.ItemIconView.Subscribe(newSprite => 
-                Img.IfSome(x => x.sprite = newSprite))
-                .AddTo(this);
+            Img.IfSome(x =>
+            {
+                x.sprite = viewModel.ItemIconView.Value;
+
+                viewModel.ItemIconVisible.Value.Resolve()
+                                               .If(Show)
+                                               .Else(() => Hide());
+            });
         }
 
         private void BindItemCount()
         {
-            textMesh.IfSome(mesh =>
+            counterMesh.IfSome(x =>
             {
-                viewModel.ItemCountView.Subscribe(newText =>
-                    {
-                        mesh.text = newText;
+                viewModel.ItemCountView.Subscribe(
+                    text => x.text = text)
+                                       .AddTo(this);
 
-                        if (long.TryParse(mesh.text, out long parsed))
-                        {
-                            if (parsed <= 0)
-                                mesh.gameObject.SetActive(false);
-                            else
-                                mesh.gameObject.SetActive(true);
-                        }
-                        else
-                            this.PrintWarning("Counter text cannot be parsed in number value.");
-                    })
-                    .AddTo(this);
+                viewModel.ItemCountVisible.Subscribe(
+                    state => x.gameObject.SetActive(state));
             });
         }
     }

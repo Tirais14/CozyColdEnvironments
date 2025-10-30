@@ -34,7 +34,7 @@ namespace CCEnvs.Conversations
                 return input;
 
             var converted = ConvertByDefaultConverter(input, toType)
-                .As<IConditional>()
+                .As<IMaybe>()
                 .IfNone(() => ConvertByInterface(input).Access()!)
                 .IfNone(() => ConvertByOverloadedCastOperator(input, inputType, toType).Access()!)
                 .IfNone(() => ConvertByCustomConverter(input, inputType, toType).Access()!)

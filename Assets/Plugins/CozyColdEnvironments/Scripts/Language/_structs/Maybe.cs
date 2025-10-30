@@ -13,21 +13,27 @@ namespace CCEnvs.FuncLanguage
 #endif
         partial struct Maybe<T> : IEquatable<Maybe<T>>
     {
-        public static Maybe<T> None => new();
+        public readonly static Maybe<T> None = default;
 
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
         private T? inner;
+
+        [field: UnityEngine.SerializeField]
+        public bool IsSome { get; private set; }
 #else
         private readonly T? inner;
+
+        public readonly bool IsSome { get; }
 #endif
 
-        public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
         public Maybe(T value)
         {
             inner = value;
+
+            IsSome = value.IsNotDefault();
         }
 
         public static implicit operator Maybe<T>(T? source)
@@ -73,7 +79,7 @@ namespace CCEnvs.FuncLanguage
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        readonly IConditional IConditional.IfNone(Func<object> selector)
+        readonly IMaybe IMaybe.IfNone(Func<object> selector)
         {
             if (IsSome)
                 return this;

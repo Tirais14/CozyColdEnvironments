@@ -2,7 +2,6 @@
 using CCEnvs.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 #pragma warning disable S3236
 namespace CCEnvs.FuncLanguage
@@ -14,7 +13,7 @@ namespace CCEnvs.FuncLanguage
             T source,
             Action<TValue> action,
             LogType logType)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
         {
             try
             {
@@ -33,7 +32,7 @@ namespace CCEnvs.FuncLanguage
             T source,
             Func<TValue, TOutValue?> selector,
             LogType logType)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
         {
             try
             {
@@ -53,7 +52,7 @@ namespace CCEnvs.FuncLanguage
             Action<TValue> some,
             Action noneOrCatched,
             LogType logType)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
         {
             try
             {
@@ -73,7 +72,7 @@ namespace CCEnvs.FuncLanguage
             Func<TValue, TOutValue?> some,
             Func<TOutValue?> noneOrCatched,
             LogType logType)
-            where T : struct, IConditional<TValue>
+            where T : struct, IMaybe<TValue>
         {
             try
             {

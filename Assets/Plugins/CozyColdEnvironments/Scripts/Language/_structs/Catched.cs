@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3236
@@ -20,13 +19,20 @@ namespace CCEnvs.FuncLanguage
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
         private T? inner;
+
+        [field: UnityEngine.SerializeField]
+        public bool IsSome { get; private set; }
+
+        [field: UnityEngine.SerializeField]
+        public LogType logType { get; private set; }
 #else
         private readonly T? inner;
-#endif
+
+        public readonly bool IsSome { get; }
 
         public LogType logType { get; }
+#endif
 
-        public readonly bool IsSome => inner.IsNotDefault();
         public readonly bool IsNone => !IsSome;
 
         public Catched(T? value, LogType logType = LogType.Log)
@@ -35,6 +41,8 @@ namespace CCEnvs.FuncLanguage
         {
             inner = value;
             this.logType = logType;
+
+            IsSome = value.IsNotDefault();
         }
 
         public Catched(Func<T> valueFactory)
@@ -66,7 +74,7 @@ namespace CCEnvs.FuncLanguage
             return !(left == right);
         }
 
-        public static implicit operator Catched<T>(T source)
+        public static implicit operator Catched<T>(T? source)
         {
             return new Catched<T>(source);
         }
