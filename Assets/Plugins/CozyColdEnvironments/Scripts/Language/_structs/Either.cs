@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using static UnityEngine.GraphicsBuffer;
 
 #nullable enable
 #pragma warning disable S3236

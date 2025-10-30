@@ -191,7 +191,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator IfElse<T>((T value, Predicate<T>? predicate) input) 
+        public static implicit operator IfElse<T>((T? value, Predicate<T>? predicate) input) 
         {
             return new IfElse<T>(input.value, input.predicate);
         }

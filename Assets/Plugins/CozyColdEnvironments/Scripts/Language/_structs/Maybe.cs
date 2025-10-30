@@ -66,7 +66,10 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly IfElse<T> Resolve() => target;
+        public readonly IfElse<T> Resolve(Predicate<T>? predicate = null)
+        {
+            return (target, predicate);
+        }
 
         public readonly bool Equals(Maybe<T> other)
         {

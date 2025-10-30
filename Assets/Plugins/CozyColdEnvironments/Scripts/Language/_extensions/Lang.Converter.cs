@@ -96,7 +96,10 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IfElse<T> Resolve<T>(this T source) => source;
+        public static IfElse<T> Resolve<T>(this T source, Predicate<T>? predicate = null)
+        {
+            return (source, predicate);
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

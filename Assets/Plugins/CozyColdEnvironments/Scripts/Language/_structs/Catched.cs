@@ -94,8 +94,13 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly IfElse<T> Resolve() => target;
+        public readonly IfElse<T> Resolve(Predicate<T>? predicate = null)
+        {
+            return (target, predicate);
+        }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Maybe<T> Maybe() => target;
 
         public readonly bool Equals(Catched<T> other)
