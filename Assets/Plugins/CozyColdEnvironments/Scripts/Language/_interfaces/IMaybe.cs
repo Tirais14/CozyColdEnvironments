@@ -8,7 +8,7 @@ namespace CCEnvs.FuncLanguage
         IMaybe IfSome(Action<object> action);
 
         IMaybe IfNone(Action action);
-        Ways<object, object> IfNone(Func<object> factory);
+        Either<object, object> IfNone(Func<object> factory);
 
         IMaybe Match(Action<object> some, Action none);
         IMaybe Match(Func<object, object?> some, Func<object?> none);
@@ -21,7 +21,7 @@ namespace CCEnvs.FuncLanguage
         : IConditional<T>,
         IMaybe
     {
-        Ways<T, R> IfNone<R>(Func<R> factory);
+        Either<T, R> IfNone<R>(Func<R> factory);
 
         Maybe<TOut> Map<TOut>(Func<T, TOut?> selector);
 
@@ -31,7 +31,10 @@ namespace CCEnvs.FuncLanguage
 
         Maybe<TOut> Unfold<TOut>();
 
-        Ways<object, object> IMaybe.IfNone(Func<object> factory) => IfNone(() => factory());
+        Either<object, object> IMaybe.IfNone(Func<object> factory)
+        {
+            return IfNone(factory.As<Func<T>>()).Cast<object, object>();
+        }
 
         IMaybe IMaybe.Map(Func<object, object?> selector) => Map(x => selector(x!));
 

@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable S3236
@@ -17,7 +19,7 @@ namespace CCEnvs.FuncLanguage
 
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private T? inner;
+        private T? target;
 
         [field: UnityEngine.SerializeField]
         public bool IsSome { get; private set; }
@@ -31,20 +33,18 @@ namespace CCEnvs.FuncLanguage
 
         public Maybe(T value)
         {
-            inner = value;
+            target = value;
 
             IsSome = value.IsNotDefault();
         }
 
-        public static implicit operator Maybe<T>(T? source)
-        {
-            return new Maybe<T>(source!);
-        }
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Maybe<T>(T? source) => new(source!);
 
-        public static explicit operator T?(Maybe<T> source)
-        {
-            return source.inner;
-        }
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator T?(Maybe<T> source) => source.target;
 
         public static bool operator ==(Maybe<T> left, Maybe<T> right)
         {
@@ -56,9 +56,21 @@ namespace CCEnvs.FuncLanguage
             return !(left == right);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Either<R>(R? right) => (target, right);
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Catch() => target;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IfElse<T> Resolve() => target;
+
         public readonly bool Equals(Maybe<T> other)
         {
-            return EqualityComparer<T?>.Default.Equals(inner, other.inner);
+            return EqualityComparer<T?>.Default.Equals(target, other.target);
         }
         public readonly override bool Equals(object obj)
         {
@@ -66,7 +78,7 @@ namespace CCEnvs.FuncLanguage
         }
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(inner);
+            return HashCode.Combine(target);
         }
 
         public readonly IEnumerator<T> GetEnumerator()
@@ -74,17 +86,9 @@ namespace CCEnvs.FuncLanguage
             if (IsNone)
                 yield break;
 
-            yield return inner!;
+            yield return target!;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        readonly IMaybe IMaybe.IfNone(Func<object> selector)
-        {
-            if (IsSome)
-                return this;
-
-            return selector().Maybe();
-        }
     }
 }

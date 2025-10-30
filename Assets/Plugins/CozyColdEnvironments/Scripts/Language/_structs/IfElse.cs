@@ -2,6 +2,8 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 
 #nullable enable
@@ -33,20 +35,28 @@ namespace CCEnvs.FuncLanguage
         {
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator bool(IfElse input)
         {
             return input.IsTrue;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator IfElse(bool input)
         {
             return new IfElse(input);
         }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator IfElse(Func<bool> input)
         {
             return new IfElse(input);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IfElse If(Action action)
         {
             Guard.IsNotNull(action, nameof(action));
@@ -56,6 +66,7 @@ namespace CCEnvs.FuncLanguage
 
             return this;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IfElse<TOut> If<TOut>(Func<TOut> factory)
         {
             Guard.IsNotNull(factory, nameof(factory));
@@ -66,6 +77,7 @@ namespace CCEnvs.FuncLanguage
             return IfElse<TOut>.None;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IfElse Else(Action action)
         {
             Guard.IsNotNull(action, nameof(action));
@@ -75,6 +87,7 @@ namespace CCEnvs.FuncLanguage
 
             return this;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IfElse<TOut> Else<TOut>(Func<TOut> factory)
         {
             Guard.IsNotNull(factory, nameof(factory));
@@ -85,6 +98,7 @@ namespace CCEnvs.FuncLanguage
             return IfElse<TOut>.None;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IfElse Match(Action If, Action Else)
         {
             Guard.IsNotNull(If, nameof(If));
@@ -97,6 +111,7 @@ namespace CCEnvs.FuncLanguage
 
             return this;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IfElse<TOut> Match<TOut>(Func<TOut> If, Func<TOut> Else)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
@@ -108,7 +123,8 @@ namespace CCEnvs.FuncLanguage
             else
                 return Else();
         }
-        public Ways<L, R> Match<L, R>(Func<R> If, Func<L> Else)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Either<L, R> Match<L, R>(Func<R> If, Func<L> Else)
         {
             Guard.IsNotNull(If, nameof(If));
             Guard.IsNotNull(Else, nameof(Else));
@@ -148,21 +164,26 @@ namespace CCEnvs.FuncLanguage
 
         public IfElse(T? value)
         {
-            this.target = value!;
+            target = value!;
 
             IsSome = value.IsNotDefault();
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator IfElse<T>(T? input)
         {
             return new IfElse<T>(input);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator T?(IfElse<T> input)
         {
             return input.target;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<T> If(Predicate<T> predicate, Action<T> action)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
@@ -173,6 +194,7 @@ namespace CCEnvs.FuncLanguage
 
             return this;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<TOut> If<TOut>(Predicate<T> predicate, Func<T, TOut> selector)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
@@ -184,6 +206,7 @@ namespace CCEnvs.FuncLanguage
             return IfElse<TOut>.None;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<T> Else(Action action)
         {
             Guard.IsNotNull(action, nameof(action));
@@ -193,6 +216,7 @@ namespace CCEnvs.FuncLanguage
 
             return this;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<TOut> Else<TOut>(Func<TOut> factory)
         {
             Guard.IsNotNull(factory, nameof(factory));
@@ -203,6 +227,7 @@ namespace CCEnvs.FuncLanguage
             return IfElse<TOut>.None;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<T> Match(Predicate<T> predicate, Action<T> If, Action Else)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
@@ -216,6 +241,7 @@ namespace CCEnvs.FuncLanguage
 
             return this;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<TOut> Match<TOut>(Predicate<T> predicate, Func<T, TOut> If, Func<TOut> Else)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
@@ -227,7 +253,8 @@ namespace CCEnvs.FuncLanguage
             else
                 return Else();
         }
-        public readonly Ways<L ,R> Match<L, R>(Predicate<T> predicate, Func<T, R> If, Func<L> Else)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<L ,R> Match<L, R>(Predicate<T> predicate, Func<T, R> If, Func<L> Else)
         {
             Guard.IsNotNull(predicate, nameof(predicate));
             Guard.IsNotNull(If, nameof(If));
@@ -244,9 +271,17 @@ namespace CCEnvs.FuncLanguage
             return (left, right);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Maybe<T> Maybe() => target;
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Catched<T> Catch() => target;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Either<R>(R? right) => (target, right);
 
         public readonly IEnumerator<T> GetEnumerator()
         {

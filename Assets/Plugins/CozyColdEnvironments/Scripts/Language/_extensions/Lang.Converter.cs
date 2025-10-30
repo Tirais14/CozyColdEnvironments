@@ -1,7 +1,8 @@
+using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3236
@@ -9,12 +10,11 @@ namespace CCEnvs.FuncLanguage
 {
     public static partial class Lang
     {
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> Maybe<TValue>(this TValue input)
-        {
-            return input;
-        }
+        public static Maybe<TValue> Maybe<TValue>(this TValue input) => input;
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<TValue>(this TValue input, TValue defaultValue)
             where TValue : struct
@@ -22,6 +22,7 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<TValue>(input, defaultValue);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<TValue>(this TValue input, bool hasValue)
             where TValue : struct
@@ -29,6 +30,7 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<TValue>(input, hasValue);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<TValue>(this TValue input, Predicate<TValue> predicate)
             where TValue : struct
@@ -38,6 +40,7 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<TValue>(input, predicate(input));
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, TValue defaultValue)
             where T : struct, IMaybe<TValue>
@@ -46,6 +49,7 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<TValue>(input.Access(), defaultValue);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, bool hasValue)
             where T : struct, IMaybe<TValue>
@@ -54,6 +58,7 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<TValue>(input.Access(), hasValue);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, Predicate<TValue> predicate)
             where T : struct, IMaybe<TValue>
@@ -64,6 +69,7 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<TValue>(input.Access(), predicate(input.Access()));
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Catched<TValue> Catch<TValue>(this TValue source,
             LogType logType = LogType.Log)
@@ -71,6 +77,7 @@ namespace CCEnvs.FuncLanguage
             return new Catched<TValue>(source, logType);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Catched<TValue> Catch<T, TValue>(this T source,
             LogType logType = LogType.Log)
@@ -79,21 +86,23 @@ namespace CCEnvs.FuncLanguage
             return new Catched<TValue>(source.Access(), logType);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IfElse<> IfElse(this bool source) => source;
+        public static IfElse Resolve(this bool source) => source;
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Resolver Resolve<T>(this T source, Predicate<T> predicate)
+        public static IfElse Resolve(this Func<bool> source) => source;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IfElse<T> Resolve<T>(this T source) => source;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Either<L, R> Either<L, R>(this L source, R right)
         {
-            return new Resolver(predicate(source));
+            return (source, right);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Resolver Resolve<T>(this T source)
-            where T : struct, IMaybe
-        {
-            return new Resolver(source.IsSome);
-        }
-
     }
 }

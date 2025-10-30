@@ -38,9 +38,9 @@ namespace CCEnvs.FuncLanguage
 
         bool ItIsUnsafe(Predicate<T?> predicate);
 
-        Ways<T, R> Cast<R>();
+        Either<T, R> Cast<R>();
 
-        Ways<T, R> Select<R>(Func<T, R> selector);
+        Either<T, R> Select<R>(Func<T, R> selector);
 
         object? IConditional.Access() => Access();
         object IConditional.Access(object defaultValue)
@@ -77,7 +77,7 @@ namespace CCEnvs.FuncLanguage
         }
     }
 
-    public interface IConditional<T, out TThis>
+    public interface IConditional<T, out TThis> : IConditional<T>
         where TThis : struct, IConditional<T>
     {
         TThis Apply(T? value);

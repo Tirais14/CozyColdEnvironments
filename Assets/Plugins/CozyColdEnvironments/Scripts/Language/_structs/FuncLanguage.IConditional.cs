@@ -1,187 +1,337 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-#pragma warning disable S3236
 namespace CCEnvs.FuncLanguage
 {
-    public partial struct Catched<T> : IMaybe<Catched<T>, T>
+    public partial struct Catched<T> : IConditional<T, Catched<T>>
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T? Access() => target;
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> IfSome(Action<T> action)
+        public readonly T Access(T defaultValue)
         {
-            return Lang.TryIfSome(this, action, logType);
+            return Lang.Access(this, defaultValue);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> IfNone(Action action)
+        public readonly T Access(Func<T> defaultValueFactory)
         {
-            return Lang.IfNone(this, action);
+            return Lang.Access(this, defaultValueFactory);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ways<T, R> IfNone<R>(Func<R> factory)
+        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
         {
-            return Lang.IfNone<Catched<T>, T, R>(this, factory);
+            return Lang.TryAccess(this, out result);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Match(Action<T> some, Action none)
+        public readonly T AccessUnsafe()
         {
-            return Lang.TryMatch(this, some, none, logType);
-        }
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
-        {
-            return Lang.TryMatch(this, some, none, logType);
+            return Lang.AccessUnsafe<Catched<T>, T>(this);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
+        public readonly bool ItIs(T? value)
         {
-            return Lang.TryMap(this, selector, logType);
+            return Lang.ItIs(this, value);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
+        public readonly bool ItIs(Predicate<T> predicate)
         {
-            return Lang.MapUnsafe(this, selector);
+            return Lang.ItIs(this, predicate);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Unfold<TOut>()
+        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
         {
-            return Lang.Unfold<Catched<T>, T, TOut>(this).Access()!;
+            return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Apply(T? value) => value!;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Cast<R>()
+        {
+            return Lang.Cast<Catched<T>, T, R>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched<T> Where(Predicate<T> predicate)
+        {
+            return Lang.Where(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Select<R>(Func<T, R> selector)
+        {
+            return Lang.Select(this, selector);
         }
     }
 
-    public partial struct Maybe<T> : IMaybe<Maybe<T>, T>
+    public partial struct Maybe<T> : IConditional<T, Maybe<T>>
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Catch() => inner;
+        public readonly T? Access() => target;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly Maybe<T> IfSome(Action<T> action)
+        public readonly T Access(T defaultValue)
         {
-            return Lang.IfSome(this, action);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [DebuggerStepThrough]
-        public readonly Maybe<T> IfNone(Action action)
-        {
-            return Lang.IfNone(this, action);
+            return Lang.Access(this, defaultValue);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ways<T, R> IfNone<R>(Func<R> factory)
+        public readonly T Access(Func<T> defaultValueFactory)
         {
-            return Lang.IfNone<Maybe<T>, T, R>(this, factory);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [DebuggerStepThrough]
-        public readonly Maybe<T> Match(Action<T> some, Action none)
-        {
-            return Lang.Match(this, some, none);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [DebuggerStepThrough]
-        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
-        {
-            return Lang.Match(this, some, none);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [DebuggerStepThrough]
-        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
-        {
-            return Lang.Map(this, selector);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [DebuggerStepThrough]
-        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
-        {
-            return Lang.MapUnsafe(this, selector);
+            return Lang.Access(this, defaultValueFactory);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Unfold<TOut>()
+        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
         {
-            return Lang.Unfold<Maybe<T>, T, TOut>(this);
+            return Lang.TryAccess(this, out result);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T AccessUnsafe()
+        {
+            return Lang.AccessUnsafe<Maybe<T>, T>(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        public readonly bool ItIs(T? value)
+        {
+            return Lang.ItIs(this, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        public readonly bool ItIs(Predicate<T> predicate)
+        {
+            return Lang.ItIs(this, predicate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
+        {
+            return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> Apply(T? value) => value;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Cast<R>()
+        {
+            return Lang.Cast<Maybe<T>, T, R>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<T> Where(Predicate<T> predicate)
+        {
+            return Lang.Where(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Select<R>(Func<T, R> selector)
+        {
+            return Lang.Select(this, selector);
         }
     }
 
-    public partial struct MaybeStruct<T> : IMaybe<MaybeStruct<T>, T>
+    public partial struct MaybeStruct<T> : IConditional<T, MaybeStruct<T>>
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MaybeStruct<T> IfSome(Action<T> action)
+        public readonly T Access() => target;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Access(T defaultValue)
         {
-            return Lang.IfSome(this, action);
+            return Lang.Access(this, defaultValue);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MaybeStruct<T> IfNone(Action action)
+        public readonly T Access(Func<T> defaultValueFactory)
         {
-            return Lang.IfNone(this, action);
+            return Lang.Access(this, defaultValueFactory);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Ways<T, R> IfNone<R>(Func<R> factory)
+        public readonly bool TryAccess([NotNullWhen(true)] out T result)
         {
-            return Lang.IfNone<MaybeStruct<T>, T, R>(this, factory);
+            return Lang.TryAccess(this, out result);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MaybeStruct<T> Match(Action<T> some, Action none)
+        public readonly T AccessUnsafe()
         {
-            return Lang.Match(this, some, none);
-        }
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
-        {
-            return Lang.Match(this, some, none);
+            return Lang.AccessUnsafe<MaybeStruct<T>, T>(this);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Map<TOut>(Func<T, TOut?> selector)
+        public readonly bool ItIs(T value)
         {
-            return Lang.Map(this, selector);
+            return Lang.ItIs(this, value);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T, TOut?> selector)
+        public readonly bool ItIs(Predicate<T> predicate)
         {
-            return Lang.MapUnsafe(this, selector);
+            return Lang.ItIs(this, predicate);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Unfold<TOut>()
+        public readonly bool ItIsUnsafe(Predicate<T> predicate)
         {
-            return Lang.Unfold<MaybeStruct<T>, T, TOut>(this).Access()!;
+            return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly MaybeStruct<T> Apply(T value)
+        {
+            return value;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Cast<R>()
+        {
+            return Lang.Cast<MaybeStruct<T>, T, R>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly MaybeStruct<T> Where(Predicate<T> predicate)
+        {
+            return Lang.Where(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Select<R>(Func<T, R> selector)
+        {
+            return Lang.Select(this, selector);
+        }
+    }
+
+    public partial struct IfElse<T> : IConditional<T, IfElse<T>>
+    {
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Access() => target;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Access(T defaultValue)
+        {
+            return Lang.Access(this, defaultValue);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Access(Func<T> defaultValueFactory)
+        {
+            return Lang.Access(this, defaultValueFactory);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
+        {
+            return Lang.TryAccess(this, out result);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T AccessUnsafe()
+        {
+            return Lang.AccessUnsafe<IfElse<T>, T>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool ItIs(T? value)
+        {
+            return Lang.ItIs(this, value);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool ItIs(Predicate<T> predicate)
+        {
+            return Lang.ItIs(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
+        {
+            return Lang.CheckUnsafe(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IfElse<T> Apply(T? value)
+        {
+            return value;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Cast<R>()
+        {
+            return Lang.Cast<IfElse<T>, T, R>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IfElse<T> Where(Predicate<T> predicate)
+        {
+            return Lang.Where(this, predicate);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Select<R>(Func<T, R> selector)
+        {
+            return Lang.Select(this, selector);
         }
     }
 }

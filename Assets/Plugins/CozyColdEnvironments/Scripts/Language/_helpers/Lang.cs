@@ -34,7 +34,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Ways<L, R> IfNone<T, L, R>(T input, Func<R> factory)
+        public static Either<L, R> IfNone<T, L, R>(T input, Func<R> factory)
             where T : struct, IConditional<L>
         {
             Guard.IsNotNull(factory, nameof(factory));
@@ -178,7 +178,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Ways<L, R> Cast<T, L, R>(T input)
+        public static Either<L, R> Cast<T, L, R>(T input)
             where T : struct, IConditional<L>
         {
             L? left = input.Access();
@@ -200,7 +200,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Ways<L, R> Select<T, L, R>(T input,
+        public static Either<L, R> Select<T, L, R>(T input,
             Func<L, R?> selector)
 
             where T : struct, IConditional<L>

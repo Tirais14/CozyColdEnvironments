@@ -2,7 +2,10 @@ using CCEnvs.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using static UnityEngine.GraphicsBuffer;
 
 #nullable enable
 #pragma warning disable S3236
@@ -18,7 +21,7 @@ namespace CCEnvs.FuncLanguage
     {
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
-        private T? inner;
+        private T? target;
 
         [field: UnityEngine.SerializeField]
         public bool IsSome { get; private set; }
@@ -39,7 +42,7 @@ namespace CCEnvs.FuncLanguage
             :
             this()
         {
-            inner = value;
+            target = value;
             this.logType = logType;
 
             IsSome = value.IsNotDefault();
@@ -51,7 +54,7 @@ namespace CCEnvs.FuncLanguage
         {
             try
             {
-                inner = valueFactory();
+                target = valueFactory();
             }
             catch (Exception ex)
             {
@@ -62,11 +65,6 @@ namespace CCEnvs.FuncLanguage
         public static bool operator ==(Catched<T> left, Catched<T> right)
         {
             return left.Equals(right);
-        }
-
-        public static implicit operator Maybe<T>(Catched<T> source)
-        {
-            return source.inner!;
         }
 
         public static bool operator !=(Catched<T> left, Catched<T> right)
@@ -81,18 +79,28 @@ namespace CCEnvs.FuncLanguage
 
         public static explicit operator T?(Catched<T> source)
         {
-            return source.inner;
+            return source.target;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Catched<T> With(LogType logType)
         {
-            return new Catched<T>(inner, logType);
+            return new Catched<T>(target, logType);
         }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Either<R>(R? right) => (target, right);
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IfElse<T> Resolve() => target;
+
+        public readonly Maybe<T> Maybe() => target;
 
         public readonly bool Equals(Catched<T> other)
         {
-            return EqualityComparer<T?>.Default.Equals(inner, other.inner);
+            return EqualityComparer<T?>.Default.Equals(target, other.target);
         }
         public readonly override bool Equals(object obj)
         {
@@ -101,7 +109,7 @@ namespace CCEnvs.FuncLanguage
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(inner);
+            return HashCode.Combine(target);
         }
 
         public readonly IEnumerator<T> GetEnumerator()
@@ -109,7 +117,7 @@ namespace CCEnvs.FuncLanguage
             if (IsNone)
                 yield break;
 
-            yield return inner!;
+            yield return target!;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

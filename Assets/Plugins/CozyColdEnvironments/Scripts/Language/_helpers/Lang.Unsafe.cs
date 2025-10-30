@@ -33,7 +33,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
-                throw new Diagnostics.CCException("Value is none");
+                throw new ValueIsNoneException();
 
             return source.Access()!;
         }

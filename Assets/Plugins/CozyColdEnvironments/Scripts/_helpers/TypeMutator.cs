@@ -34,12 +34,11 @@ namespace CCEnvs.Conversations
                 return input;
 
             var converted = ConvertByDefaultConverter(input, toType)
-                .As<IMaybe>()
                 .IfNone(() => ConvertByInterface(input).Access()!)
-                .IfNone(() => ConvertByOverloadedCastOperator(input, inputType, toType).Access()!)
-                .IfNone(() => ConvertByCustomConverter(input, inputType, toType).Access()!)
-                .IfNone(() => CreateByFactory(input, toType).Access()!)
-                .IfNone(() => throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}."))
+                .IfRight(_ => ConvertByOverloadedCastOperator(input, inputType, toType).Access()!)
+                .IfRight(_ => ConvertByCustomConverter(input, inputType, toType).Access()!)
+                .IfRight(_ => CreateByFactory(input, toType).Access()!)
+                .IfRight(_ => throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}."))
                 .AccessUnsafe();
 
             return converted;

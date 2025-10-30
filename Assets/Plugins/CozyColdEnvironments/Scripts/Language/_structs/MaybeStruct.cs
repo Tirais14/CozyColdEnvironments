@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -91,6 +93,16 @@ namespace CCEnvs.FuncLanguage
         {
             return !(left == right);
         }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> Either<R>(R? right) => (target, right);
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly IfElse<T> Resolve() => target;
+
+        public readonly Maybe<T> Maybe() => target;
 
         public readonly bool Equals(MaybeStruct<T> other)
         {
