@@ -35,6 +35,8 @@ namespace CCEnvs.Conversations
 
             var converted = ConvertByDefaultConverter(input, toType)
                 .IfNone(() => ConvertByInterface(input).Access()!)
+                .Resolve()
+                .If()
                 .IfRight(_ => ConvertByOverloadedCastOperator(input, inputType, toType).Access()!)
                 .IfRight(_ => ConvertByCustomConverter(input, inputType, toType).Access()!)
                 .IfRight(_ => CreateByFactory(input, toType).Access()!)
