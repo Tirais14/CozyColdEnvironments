@@ -182,7 +182,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<L>
         {
             L? left = input.Access();
-            R? right = input.Access().AsOrDefault<R>().Access();
+            R? right = (R?)left.AsOrDefault<R>();
 
             return (left, right);
         }
@@ -200,17 +200,20 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> Select<T, TValue, TOutValue>(T input,
-            Func<TValue, TOutValue?> selector)
+        public static Ways<L, R> Select<T, L, R>(T input,
+            Func<L, R?> selector)
 
-            where T : struct, IConditional<TValue>
+            where T : struct, IConditional<L>
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            if (input.IsSome)
-                return selector(input.AccessUnsafe());
+            L? left = input.Access();
+            R? right = default;
 
-            return default!;
+            if (input.IsSome)
+                right = selector(left!);
+
+            return (left, right);
         }
     }
 }

@@ -63,16 +63,13 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Apply(T? value)
-        {
-            return value!;
-        }
+        public readonly Catched<T> Apply(T? value) => value!;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Cast<TOut>()
+        public readonly Ways<T, R> Cast<R>()
         {
-            return Lang.Cast<Catched<T>, T, TOut>(this);
+            return Lang.Cast<Catched<T>, T, R>(this);
         }
 
         [DebuggerStepThrough]
@@ -84,9 +81,9 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Ways<T, R> Select<R>(Func<T, R> selector)
         {
-            return Lang.Select<Maybe<T>, T, TOut>(this, selector);
+            return Lang.Select(this, selector);
         }
     }
 
@@ -151,9 +148,9 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Cast<TOut>()
+        public readonly Ways<T, R> Cast<R>()
         {
-            return Lang.Cast<Maybe<T>, T, TOut>(this);
+            return Lang.Cast<Maybe<T>, T, R>(this);
         }
 
         [DebuggerStepThrough]
@@ -165,9 +162,9 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Ways<T, R> Select<R>(Func<T, R> selector)
         {
-            return Lang.Select<Maybe<T>, T, TOut>(this, selector);
+            return Lang.Select(this, selector);
         }
     }
 
@@ -235,9 +232,9 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Cast<TOut>()
+        public readonly Ways<T, R> Cast<R>()
         {
-            return Lang.Cast<MaybeStruct<T>, T, TOut>(this);
+            return Lang.Cast<MaybeStruct<T>, T, R>(this);
         }
 
         [DebuggerStepThrough]
@@ -249,7 +246,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Ways<T, R> Select<R>(Func<T, R> selector)
         {
             return Lang.Select(this, selector);
         }
@@ -277,7 +274,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccess([NotNullWhen(true)] out T result)
+        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
         {
             return Lang.TryAccess(this, out result);
         }
@@ -291,7 +288,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(T value)
+        public readonly bool ItIs(T? value)
         {
             return Lang.ItIs(this, value);
         }
@@ -305,7 +302,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIsUnsafe(Predicate<T> predicate)
+        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
         {
             return Lang.CheckUnsafe(this, predicate);
         }
@@ -326,7 +323,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut> selector)
+        public readonly Ways<T, R> Select<R>(Func<T, R> selector)
         {
             return Lang.Select(this, selector);
         }
