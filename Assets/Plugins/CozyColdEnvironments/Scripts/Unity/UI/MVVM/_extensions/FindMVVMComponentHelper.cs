@@ -247,8 +247,6 @@ namespace CCEnvs.UI.MVVM
             Type? type = null,
             bool includeInactive = false,
             FindMode findMode = FindMode.Self)
-
-            where T : IViewModel
         {
             return source.gameObject.FindViewModelRaw(
                 type: type,
@@ -295,6 +293,44 @@ namespace CCEnvs.UI.MVVM
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<T> FindModelsRaw<T>(
+            this GameObject source,
+            bool includeInactive = false,
+            FindMode findMode = FindMode.Self)
+        {
+            return source.FindModelsRaw(type: typeof(T),
+                includeInactive: includeInactive,
+                findMode: findMode)
+                .Cast<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<object> FindModelsRaw(
+            this Component source,
+            Type? type = null,
+            bool includeInactive = false,
+            FindMode findMode = FindMode.Self)
+        {
+            return source.gameObject.FindModelsRaw(type: type,
+                includeInactive: includeInactive,
+                findMode: findMode);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<T> FindModelsRaw<T>(
+            this Component source,
+            bool includeInactive = false,
+            FindMode findMode = FindMode.Self)
+        {
+            return source.gameObject.FindModelsRaw(
+                includeInactive: includeInactive,
+                findMode: findMode)
+                .Cast<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Maybe<object> FindModelRaw(
             this GameObject source,
             Type? type = null,
@@ -311,6 +347,34 @@ namespace CCEnvs.UI.MVVM
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Maybe<T> FindModelRaw<T>(
             this GameObject source,
+            bool includeInactive = false,
+            FindMode findMode = FindMode.Self)
+        {
+            return source.FindModelRaw(
+                type: typeof(T),
+                includeInactive: includeInactive,
+                findMode: findMode)
+                .Cast<T>()
+                .RightTarget;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<object> FindModelRaw(
+            this Component source,
+            Type? type = null,
+            bool includeInactive = false,
+            FindMode findMode = FindMode.Self)
+        {
+            return source.gameObject.FindModelRaw(
+                type: type,
+                includeInactive: includeInactive,
+                findMode: findMode);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<T> FindModelRaw<T>(
+            this Component source,
             bool includeInactive = false,
             FindMode findMode = FindMode.Self)
         {

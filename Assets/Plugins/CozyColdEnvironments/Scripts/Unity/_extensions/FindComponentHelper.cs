@@ -15,7 +15,7 @@ namespace CCEnvs.Unity
     public static class FindComponentHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<object> FindComponentsRaw(this GameObject source,
+        public static IEnumerable<object> FindComponentsRaw(GameObject source,
                                                             Type? type = null,
                                                             bool includeInactive = false,
                                                             FindMode findMode = FindMode.Self)
@@ -38,43 +38,22 @@ namespace CCEnvs.Unity
             return cmps.Where(cmp => cmp.GetType().IsType(type));
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<object> FindComponentsRaw(this Component source,
-                                                            Type? type = null,
-                                                            bool includeInactive = false,
-                                                            FindMode findMode = FindMode.Self)
+        public static IEnumerable<T> FindComponentsRaw<T>(GameObject source,
+                                                          bool includeInactive = false,
+                                                          FindMode findMode = FindMode.Self)
         {
-            return source.gameObject.FindComponentsRaw(type,
-                includeInactive,
-                findMode);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<T> FindComponentsRaw<T>(this GameObject source,
-                                                               bool includeInactive = false,
-                                                               FindMode findMode = FindMode.Self)
-        {
-            return source.FindComponentsRaw(typeof(T),
-                includeInactive,
-                findMode)
+            return FindComponentsRaw(
+                source,
+                type: typeof(T),
+                includeInactive: includeInactive,
+                findMode: findMode)
                 .Select(x => x.AsOrDefault<T>().Target!)
                 .Where(x => x.IsNotNull());
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<T> FindComponentsRaw<T>(this Component source,
-                                                               bool includeInactive = false,
-                                                               FindMode findMode = FindMode.Self)
-        {
-            return source.gameObject.FindComponentsRaw<T>(includeInactive, findMode);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object FindComponentRaw(this GameObject source,
+        public static Maybe<object> FindComponentRaw(GameObject source,
                                               Type? type = null,
                                               bool includeInactive = false,
                                               FindMode findMode = FindMode.Self)
@@ -94,158 +73,141 @@ namespace CCEnvs.Unity
                 };
             }
 
-            return source.FindComponentsRaw(type,
-                includeInactive,
-                findMode)
+            return FindComponentsRaw(source,
+                type: type,
+                includeInactive: includeInactive,
+                findMode: findMode)
                 .FirstOrDefault();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object FindComponentRaw(this Component source,
-                                              Type? type = null,
-                                              bool includeInactive = false,
-                                              FindMode findMode = FindMode.Self)
-        {
-            return source.FindComponentsRaw(type,
-                includeInactive,
-                findMode)
-                .FirstOrDefault();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponentRaw<T>(this GameObject source,
+        public static Maybe<T> FindComponentRaw<T>(GameObject source,
                                                  bool includeInactive = false,
                                                  FindMode findMode = FindMode.Self)
         {
-            return source.FindComponentsRaw<T>(includeInactive, findMode)
-                         .FirstOrDefault()
-                         .AsOrDefault<T>();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponentRaw<T>(this Component source,
-                                                 bool includeInactive = false,
-                                                 FindMode findMode = FindMode.Self)
-        {
-            return source.gameObject.FindComponentRaw<T>(includeInactive, findMode);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponent<T>(this GameObject source)
-        {
-            return source.FindComponentRaw<T>();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponent<T>(this Component source)
-        {
-            return source.gameObject.FindComponent<T>();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponentInChildren<T>(this GameObject source,
-                                                          bool includeInactive = false)
-        {
-            return source.FindComponentRaw<T>(
+            return FindComponentRaw(
+                source,
+                type: typeof(T),
                 includeInactive: includeInactive,
-                findMode: FindMode.InChilds
-                );
+                findMode: findMode)
+                .Cast<T>()
+                .RightTarget;
         }
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponentInChildren<T>(this Component source,
-                                                          bool includeInactive = false)
-        {
-            return source.FindComponentRaw<T>(
-                includeInactive: includeInactive,
-                findMode: FindMode.InChilds
-                );
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static Maybe<T> FindComponent<T>(this GameObject source)
+        //{
+        //    return source.FindComponentRaw<T>();
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponentInParent<T>(this GameObject source,
-                                                        bool includeInactive = false)
-        {
-            return source.FindComponentRaw<T>(
-                includeInactive: includeInactive,
-                findMode: FindMode.InParents
-                );
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static Maybe<T> FindComponent<T>(this Component source)
+        //{
+        //    return source.gameObject.FindComponent<T>();
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> FindComponentInParent<T>(this Component source,
-                                                      bool includeInactive = false)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static Maybe<T> FindComponentInChildren<T>(this GameObject source,
+        //                                                  bool includeInactive = false)
+        //{
+        //    return source.FindComponentRaw<T>(
+        //        includeInactive: includeInactive,
+        //        findMode: FindMode.InChilds
+        //        );
+        //}
 
-            return source.gameObject.FindComponentInParent<T>(includeInactive);
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static Maybe<T> FindComponentInChildren<T>(this Component source,
+        //                                                  bool includeInactive = false)
+        //{
+        //    return source.FindComponentRaw<T>(
+        //        includeInactive: includeInactive,
+        //        findMode: FindMode.InChilds
+        //        );
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindComponents<T>(this GameObject source)
-        {
-            return source.FindComponentsRaw<T>().ToArray();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static Maybe<T> FindComponentInParent<T>(this GameObject source,
+        //                                                bool includeInactive = false)
+        //{
+        //    return source.FindComponentRaw<T>(
+        //        includeInactive: includeInactive,
+        //        findMode: FindMode.InParents
+        //        );
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindComponents<T>(this Component source)
-        {
-            return source.FindComponentsRaw<T>().ToArray();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static Maybe<T> FindComponentInParent<T>(this Component source,
+        //                                              bool includeInactive = false)
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindComponentsInChildren<T>(this GameObject source,
-                                                      bool includeInactive = false)
-        {
-            return source.FindComponentsRaw<T>(
-                includeInactive: includeInactive, 
-                findMode: FindMode.InChilds)
-                .ToArray();
-        }
+        //    return source.gameObject.FindComponentInParent<T>(includeInactive);
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindComponentsInChildren<T>(this Component source,
-                                                      bool includeInactive = false)
-        {
-            return source.FindComponentsRaw<T>(
-                includeInactive: includeInactive,
-                findMode: FindMode.InChilds)
-                .ToArray();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static T[] FindComponents<T>(this GameObject source)
+        //{
+        //    return source.FindComponentsRaw<T>().ToArray();
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindComponentsInParent<T>(this GameObject source,
-                                                    bool includeInactive = false)
-        {
-            return source.FindComponentsRaw<T>(
-                includeInactive: includeInactive,
-                findMode: FindMode.InParents)
-                .ToArray();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static T[] FindComponents<T>(this Component source)
+        //{
+        //    return source.FindComponentsRaw<T>().ToArray();
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindComponentsInParent<T>(this Component source,
-                                                    bool includeInactive = false)
-        {
-            return source.FindComponentsRaw<T>(
-                includeInactive: includeInactive,
-                findMode: FindMode.InParents)
-                .ToArray();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static T[] FindComponentsInChildren<T>(this GameObject source,
+        //                                              bool includeInactive = false)
+        //{
+        //    return source.FindComponentsRaw<T>(
+        //        includeInactive: includeInactive, 
+        //        findMode: FindMode.InChilds)
+        //        .ToArray();
+        //}
+
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static T[] FindComponentsInChildren<T>(this Component source,
+        //                                              bool includeInactive = false)
+        //{
+        //    return source.FindComponentsRaw<T>(
+        //        includeInactive: includeInactive,
+        //        findMode: FindMode.InChilds)
+        //        .ToArray();
+        //}
+
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static T[] FindComponentsInParent<T>(this GameObject source,
+        //                                            bool includeInactive = false)
+        //{
+        //    return source.FindComponentsRaw<T>(
+        //        includeInactive: includeInactive,
+        //        findMode: FindMode.InParents)
+        //        .ToArray();
+        //}
+
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static T[] FindComponentsInParent<T>(this Component source,
+        //                                            bool includeInactive = false)
+        //{
+        //    return source.FindComponentsRaw<T>(
+        //        includeInactive: includeInactive,
+        //        findMode: FindMode.InParents)
+        //        .ToArray();
+        //}
     }
 }
