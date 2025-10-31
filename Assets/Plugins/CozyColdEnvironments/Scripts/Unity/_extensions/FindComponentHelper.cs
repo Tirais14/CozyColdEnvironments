@@ -35,7 +35,9 @@ namespace CCEnvs.Unity
 
             type ??= typeof(Component);
 
-            return cmps.Where(cmp => cmp.GetType().IsType(type));
+            var results = cmps.Where(cmp => cmp.GetType().IsType(type));
+
+            return results;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

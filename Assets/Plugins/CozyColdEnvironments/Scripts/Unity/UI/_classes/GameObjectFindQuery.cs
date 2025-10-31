@@ -180,14 +180,11 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> Models(Type? type = null)
         {
-            type ??= typeof(object);
-
             bool anyType = type is null;
 
-            var results = from obj in Components(type)
-                          select (obj, type: obj.GetType()) into x
-                          select (x.obj, x.type, view: x.AsOrDefault<IView>()) into x
-                          select x.view.Map(y => y.viewModel.model).Access(x.obj) into obj
+            var results = from obj in Components()
+                          select (obj, view: obj.AsOrDefault<IView>()) into x
+                          select x.view.Map(y => y.model).Access(x.obj) into obj
                           where anyType || obj.IsType(type!)
                           select obj;
 

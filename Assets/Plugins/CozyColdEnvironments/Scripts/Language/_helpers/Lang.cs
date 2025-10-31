@@ -116,7 +116,7 @@ namespace CCEnvs.FuncLanguage
             if (input.IsNone)
                 return defaultValue;
 
-            return input.Access()!;
+            return input.AccessUnsafe();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TValue Access<T, TValue>(T input, Func<TValue> defaultValueFactory)
@@ -125,7 +125,7 @@ namespace CCEnvs.FuncLanguage
             if (input.IsNone)
                 return defaultValueFactory();
 
-            return input.Access()!;
+            return input.AccessUnsafe();
         }
 
         public static bool TryAccess<T, TValue>(T input, out TValue? result)
