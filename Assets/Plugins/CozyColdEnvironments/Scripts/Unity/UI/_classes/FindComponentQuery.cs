@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Diagnostics;
 using System;
@@ -11,80 +10,8 @@ using static CCEnvs.Unity.FindComponentHelper;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public class FindComponentQuery
+    public class FindComponentQuery : FindComponentQueryBase<FindComponentQuery>
     {
-        public readonly static FindComponentQuery Instance = new();
-
-        public static FindComponentQuery Empty => new();
-
-        public GameObject Source { get; protected set; } = null!;
-        public bool includeInactive { get; protected set; }
-        public FindMode findMode { get; protected set; } = FindMode.Self;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FindComponentQuery From(GameObject gameObject)
-        {
-            if (gameObject == null)
-            {
-                this.PrintError($"{nameof(gameObject)} is null.");
-                return this;
-            }
-
-            Source = gameObject;
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FindComponentQuery From(Component component)
-        {
-            if (component == null)
-            {
-                this.PrintError($"{nameof(component)} is null.");
-                return this;
-            }
-
-            Source = component.gameObject;
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FindComponentQuery IncludeInactive()
-        {
-            includeInactive = true;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FindComponentQuery InSelf()
-        {
-            findMode = FindMode.Self;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FindComponentQuery InChildren()
-        {
-            findMode = FindMode.InChilds;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FindComponentQuery InParent()
-        {
-            findMode = FindMode.InParents;
-
-            return this;
-        }
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<object> Component(Type? type = null)
@@ -124,21 +51,29 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> Components(Type? type = null)
         {
-            return FindComponentsRaw(
+            var results = FindComponentsRaw(
                 Source,
                 type: type,
                 includeInactive: includeInactive,
                 findMode: findMode);
+
+            Reset();
+
+            return results;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> Components<T>()
         {
-            return FindComponentsRaw<T>(
+            var results = FindComponentsRaw<T>(
                 Source,
                 includeInactive: includeInactive,
                 findMode: findMode);
+
+            Reset();
+
+            return results;
         }
     }
 

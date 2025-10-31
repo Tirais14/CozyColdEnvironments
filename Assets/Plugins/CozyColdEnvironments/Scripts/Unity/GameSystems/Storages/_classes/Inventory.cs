@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
-using CCEnvs.UI.MVVM;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using ZLinq;
+using CCEnvs.Unity.UI.MVVM;
 
 #pragma warning disable S3236
 #nullable enable
@@ -104,10 +104,13 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public void Add(GameObject toInstantiate)
         {
             UnityEngine.Object.Instantiate(toInstantiate)
-                              .FindModelInChildren<IItemContainer>(includeInactive: true)
+                              .FindUIComponent()
+                              .InChildren()
+                              .IncludeInactive()
+                              .Model<IItemContainer>()
                               .Match(
-                              some: Add!, 
-                              none: () => this.PrintError($"Try to add object without {nameof(ItemContainer)} model in views.")
+                              some: x => Add(x),
+                              none: () => this.PrintError($"Cannot find {nameof(ItemContainer)} model.")
                               );
         }
 

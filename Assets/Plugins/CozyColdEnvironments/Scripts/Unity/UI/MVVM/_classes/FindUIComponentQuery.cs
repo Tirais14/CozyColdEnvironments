@@ -9,17 +9,15 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public class FindUIComponentQuery : FindComponentQuery
+    public class FindUIComponentQuery : FindComponentQueryBase<FindUIComponentQuery>
     {
-        new public readonly static FindUIComponentQuery Instance = new();
-
-        new public static FindUIComponentQuery Empty => new();
+        private readonly FindComponentQuery inner = new();
 
         public IEnumerable<IView> Views(Type? type = null)
         {
             type ??= typeof(IView);
 
-            return Components(type).Cast<IView>();    
+            return inner.Components(type).Cast<IView>();    
         }
 
         public IEnumerable<T> Views<T>()
@@ -59,7 +57,7 @@ namespace CCEnvs.Unity.UI.MVVM
             return from view in Views(type)
                    select view.viewModel into viewModel
                    where anyType || viewModel.IsType(type!)
-                   select viewModel;  
+                   select viewModel;
         }
 
         public IEnumerable<T> ViewModels<T>()
@@ -96,12 +94,16 @@ namespace CCEnvs.Unity.UI.MVVM
 
             bool anyType = type is null;
 
-            return from obj in Components(type)
+            var results = from obj in inner.Components(type)
                    select (obj, type: obj.GetType()) into x
                    select (x.obj, x.type, view: x.AsOrDefault<IView>()) into x
                    select x.view.Map(y => y.viewModel.model).Access(x.obj) into obj
                    where anyType || obj.IsType(type!)
                    select obj;
+
+            Reset();
+
+            return results;
         }
 
         public IEnumerable<T> Models<T>()

@@ -1,6 +1,5 @@
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.UI.MVVM;
 using CCEnvs.Unity.GameSystems.Storages;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI.MVVM;
@@ -74,7 +73,7 @@ namespace CCEnvs.Unity.UI.Storages
                 return;
 
             eventData.pointerDrag.Maybe()
-                                 .Map(go => go.FindModel<IItemContainer>().Access())
+                                 .Map(go => go.FindUIComponent().Model<IItemContainer>().Target!)
                                  .Map(cnt => (source: cnt, rest: model.Put(cnt)))
                                  .Where(cnt => cnt.rest.IsSome)
                                  .IfSome(cnt => cnt.source.Put(cnt.rest.AccessUnsafe()));
