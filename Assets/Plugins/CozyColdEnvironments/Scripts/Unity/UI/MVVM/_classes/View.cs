@@ -1,10 +1,7 @@
 using CCEnvs.Reflection.Data;
 using CCEnvs.Unity.UI.Elements;
 using System;
-using System.Linq;
 using UniRx;
-using UnityEngine;
-using ZLinq;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -14,28 +11,6 @@ using ZLinq;
 #pragma warning disable S1117
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public static class View
-    {
-        public static T[] FindViewsByType<T>(
-            FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude,
-            FindObjectsSortMode findObjectsSortMode = FindObjectsSortMode.None)
-            where T : IView
-        {
-            return SceneSearch.FindObjectsByType<T>(findObjectsInactive,
-                                                    findObjectsSortMode);
-        }
-
-        public static T? FindAnyViewByType<T>(
-            FindObjectsInactive findObjectsInactive = FindObjectsInactive.Exclude,
-            FindObjectsSortMode findObjectsSortMode = FindObjectsSortMode.None)
-            where T : IView
-        {
-            return SceneSearch.FindObjectsByType<T>(
-                findObjectsInactive,
-                findObjectsSortMode)
-                .FirstOrDefault();
-        }
-    }
     /// <summary>
     /// <see cref="TModel"/> must have empty constructor by default
     /// </summary>

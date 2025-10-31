@@ -36,9 +36,10 @@ namespace CCEnvs.Unity.UI.Elements
             base.Awake();
 
             canvasController = new Lazy<ICanvasController>(
-                () => this.FindComponentInParent<ICanvasController>(includeInactive: true)
-                          .Access()
-                          .ValidateGetOperation()
+                () => this.FindFor()
+                          .InParent()
+                          .IncludeInactive()
+                          .ComponentStrict<ICanvasController>()
                 );
 
             pointerInput = new Lazy<InputActionRx<Vector2>>(

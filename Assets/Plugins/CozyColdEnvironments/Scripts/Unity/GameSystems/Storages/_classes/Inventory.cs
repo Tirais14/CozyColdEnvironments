@@ -104,7 +104,7 @@ namespace CCEnvs.Unity.GameSystems.Storages
         public void Add(GameObject toInstantiate)
         {
             UnityEngine.Object.Instantiate(toInstantiate)
-                              .FindUIComponent()
+                              .FindFor()
                               .InChildren()
                               .IncludeInactive()
                               .Model<IItemContainer>()

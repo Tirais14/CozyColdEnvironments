@@ -66,10 +66,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
                 .Match(
-                some: x => x.FindComponent<TSecondary>()
-                            .IfNone(() => throw new ComponentNotFoundException(typeof(TSecondary), context: GetAsset<GameObject>()))
-                            .AccessUnsafe(),
-
+                some: x => x.FindFor().ComponentStrict<TSecondary>(),
                 none: () => GetAsset<TPrimary>().As<TSecondary>())
                 .AccessUnsafe();
         }
@@ -111,7 +108,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
                 .Match(
-                some: x => x.FindComponent<TSecondary>()
+                some: x => x.FindFor()
+                            .Component<TSecondary>()
                             .Access(),
 
                 none: () => GetAsset<TPrimary>().AsOrDefault<TSecondary>().Access())

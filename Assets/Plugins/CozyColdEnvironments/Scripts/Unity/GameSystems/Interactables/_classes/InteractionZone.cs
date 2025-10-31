@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             int layer = agent.gameObject.layer;
 
-            if (agent.FindUIComponent().Model<IInteractable>().TryAccess(out var interactable))
+            if (agent.FindFor().Model<IInteractable>().TryAccess(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                 {
@@ -118,7 +118,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Add(interactable);
             }
 
-            if (agent.FindUIComponent().Model<IInteractableWith>().TryAccess(out var interactableWith))
+            if (agent.FindFor().Model<IInteractableWith>().TryAccess(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                 {
@@ -137,7 +137,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             int layer = agent.gameObject.layer;
 
-            if (agent.FindUIComponent().Model<IInteractable>().TryAccess(out var interactable))
+            if (agent.FindFor().Model<IInteractable>().TryAccess(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                     return;
@@ -145,7 +145,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Remove(interactable);
             }
 
-            if (agent.FindUIComponent().Model<IInteractableWith>().TryAccess(out var interactableWith))
+            if (agent.FindFor().Model<IInteractableWith>().TryAccess(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                     return;
