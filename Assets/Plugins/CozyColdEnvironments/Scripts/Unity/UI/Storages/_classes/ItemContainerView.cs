@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
 using CCEnvs.UI.MVVM;
@@ -38,8 +37,6 @@ namespace CCEnvs.Unity.UI.Storages
 
             dragSettings = DragAndDropSettings.ResetPos
                            |
-                           DragAndDropSettings.RefillEmptySpace
-                           |
                            DragAndDropSettings.SetAsLastSiblingWhenDragging
                            |
                            DragAndDropSettings.InHighPriorityCanvas;
@@ -77,7 +74,7 @@ namespace CCEnvs.Unity.UI.Storages
                 return;
 
             eventData.pointerDrag.Maybe()
-                                 .Map(go => go.GetAssignedModel<IItemContainer>().Access())
+                                 .Map(go => go.FindModel<IItemContainer>().Access())
                                  .Map(cnt => (source: cnt, rest: model.Put(cnt)))
                                  .Where(cnt => cnt.rest.IsSome)
                                  .IfSome(cnt => cnt.source.Put(cnt.rest.AccessUnsafe()));
@@ -88,11 +85,10 @@ namespace CCEnvs.Unity.UI.Storages
         {
             Img.IfSome(x =>
             {
-                x.sprite = viewModel.ItemIconView.Value;
+                viewModel.ItemIconView.Subscribe(sprite => x.sprite = sprite).AddTo(this);
 
-                viewModel.ItemIconVisible.Value.Resolve()
-                                               .If(Show)
-                                               .Else(() => Hide());
+                viewModel.ItemIconVisible.Subscribe(state => state.Resolve().Match(Show, Hide))
+                                         .AddTo(this);
             });
         }
 

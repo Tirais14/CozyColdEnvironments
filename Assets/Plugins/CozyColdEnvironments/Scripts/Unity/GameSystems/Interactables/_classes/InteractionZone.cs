@@ -9,14 +9,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
+using CCEnvs.Unity.UI.MVVM;
 using ZLinq;
-
 
 #nullable enable
 #pragma warning disable IDE0044
-#pragma warning disable IDE1006
-#pragma warning disable IDE0051
-#pragma warning disable S3236
 namespace CCEnvs.Unity.GameSystems.Interactables
 {
     /// <summary>
@@ -28,15 +25,13 @@ namespace CCEnvs.Unity.GameSystems.Interactables
         protected readonly Dictionary<int, List<IInteractable>> interactables = new();
         protected readonly Dictionary<int, List<IInteractableWith>> interactableWiths = new();
 
-        [GetBySelf]
-        private TAgent agent = null!;
         private int defaultLayer;
         private bool is2DCollider;
 
         [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
 
-        protected TAgent Agent => agent;
+        protected TAgent agent => InteractionAgent;
 
         protected override void Awake()
         {
@@ -45,14 +40,14 @@ namespace CCEnvs.Unity.GameSystems.Interactables
             defaultLayer = LayerMask.NameToLayer("Default");
         }
 
-        public bool Contains(Type interactableType, int? layers)
+        public bool Contains(Type interactableType, int? layerMask)
         {
             Guard.IsNotNull(interactableType, nameof(interactableType));
 
             if (interactableType.TrySwitchType(out bool result,
                 (typeof(IInteractable), (type) =>
                 {
-                    if (interactables.TryGetValue(layers ?? defaultLayer, out var values))
+                    if (interactables.TryGetValue(layerMask ?? defaultLayer, out var values))
                         return values.Exists(x => x.GetType().IsType(type));
 
                     return false;
@@ -60,7 +55,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
             ),
                 (typeof(IInteractableWith), (type) =>
                 {
-                    if (interactableWiths.TryGetValue(layers ?? defaultLayer, out var values))
+                    if (interactableWiths.TryGetValue(layerMask ?? defaultLayer, out var values))
                         return values.Exists(x => x.GetType().IsType(type));
 
                     return false;
@@ -77,26 +72,30 @@ namespace CCEnvs.Unity.GameSystems.Interactables
             if (interactable.IsNull())
                 return false;
 
-            return interactables.Values.ZL().SelectMany(x => x).Contains(interactable);
+            return interactables.Values.ZL()
+                                       .SelectMany(x => x)
+                                       .Contains(interactable);
         }
         public bool Contains(IInteractableWith? interactableWith)
         {
             if (interactableWith.IsNull())
                 return false;
 
-            return interactableWiths.Values.ZL().SelectMany(x => x).Contains(interactableWith);
+            return interactableWiths.Values.ZL()
+                                           .SelectMany(x => x)
+                                           .Contains(interactableWith);
         }
 
-        public bool TryGetInteractable<T>(int? layers, [NotNullWhen(true)] out T? result) where T : IInteractable
+        public bool TryGetInteractable<T>(int? layerMask, [NotNullWhen(true)] out T? result) where T : IInteractable
         {
-            result = FindInteractable(typeof(T), layers).As<T>();
+            result = FindInteractable(typeof(T), layerMask).As<T>();
 
             return result.IsNotDefault();
         }
 
-        public bool TryGetInteractableWith<T>(int? layers, [NotNullWhen(true)] out T? result) where T : IInteractableWith
+        public bool TryGetInteractableWith<T>(int? layerMask, [NotNullWhen(true)] out T? result) where T : IInteractableWith
         {
-            result = FindInteractableWith(typeof(T), layers).As<T>();
+            result = FindInteractableWith(typeof(T), layerMask).As<T>();
 
             return result.IsNotDefault();
         }
@@ -108,7 +107,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             int layer = agent.gameObject.layer;
 
-            if (agent.GetAssignedObject<IInteractable>().TryAccess(out var interactable))
+            if (agent.FindComponent<IInteractable>().TryAccess(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                 {
@@ -119,7 +118,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Add(interactable);
             }
 
-            if (agent.GetAssignedObject<IInteractableWith>().TryAccess(out var interactableWith))
+            if (agent.GetAssignedMode<IInteractableWith>().TryAccess(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                 {
@@ -138,7 +137,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
             int layer = agent.gameObject.layer;
 
-            if (agent.GetAssignedObject<IInteractable>().TryAccess(out var interactable))
+            if (agent.FindComponent<IInteractable>().TryAccess(out var interactable))
             {
                 if (!interactables.TryGetValue(layer, out List<IInteractable> values))
                     return;
@@ -146,7 +145,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
                 values.Remove(interactable);
             }
 
-            if (agent.GetAssignedObject<IInteractableWith>().TryAccess(out var interactableWith))
+            if (agent.FindComponent<IInteractableWith>().TryAccess(out var interactableWith))
             {
                 if (!interactableWiths.TryGetValue(layer, out List<IInteractableWith> values))
                     return;

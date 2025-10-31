@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using static UnityEngine.GraphicsBuffer;
 
 #nullable enable
 #pragma warning disable S3236
@@ -32,8 +31,9 @@ namespace CCEnvs.FuncLanguage
 #endif
 
         public readonly bool IsNotLeft => !IsLeft;
-
-        public readonly bool IsNotRight => !IsRight; 
+        public readonly bool IsNotRight => !IsRight;
+        public readonly L? LeftTarget => left;
+        public readonly R? RightTarget => right;
 
         public Either(L? left, R? right)
         {

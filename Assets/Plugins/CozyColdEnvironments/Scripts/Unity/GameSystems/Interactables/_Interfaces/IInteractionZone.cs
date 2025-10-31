@@ -10,13 +10,13 @@ namespace CCEnvs.Unity
     {
         Component InteractionAgent { get; }
 
-        bool TryGetInteractable<T>(int? layers, [NotNullWhen(true)] out T? result)
+        bool TryGetInteractable<T>(int? layerMask, [NotNullWhen(true)] out T? result)
             where T : IInteractable;
 
-        bool TryGetInteractableWith<T>(int? layers, [NotNullWhen(true)] out T? result)
+        bool TryGetInteractableWith<T>(int? layerMask, [NotNullWhen(true)] out T? result)
             where T : IInteractableWith;
 
-        bool Contains(Type interactableType, int? layers);
+        bool Contains(Type interactableType, int? layerMask);
         bool Contains(Vector2 point);
         bool Contains(Vector3 point);
         bool Contains(IInteractable? interactable);

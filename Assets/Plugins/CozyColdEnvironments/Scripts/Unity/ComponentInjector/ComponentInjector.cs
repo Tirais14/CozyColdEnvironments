@@ -84,13 +84,13 @@ namespace CCEnvs.Unity.Injections
             Maybe<GameObject> fromGameObject = attribute.GameObjectName.Map(x => source.gameObject.Find(x)!);
             Maybe<object> foundComponent = injectFrom switch
             {
-                InejctFrom.Parent => source.GetAssignedObjectInParent(injectType, includeInactive: true).Access(),
-                InejctFrom.Child => source.GetAssignedObjectInChildren(injectType, includeInactive: true).Access(),
+                InejctFrom.Parent => source.FindComponentInParent(injectType, includeInactive: true).Access(),
+                InejctFrom.Child => source.FindComponentInChildren(injectType, includeInactive: true).Access(),
                 InejctFrom.GameObject => fromGameObject.Match(
-                    some: go => go.GetAssignedObject(injectType).Access(),
+                    some: go => go.FindComponent(injectType).Access(),
                     none: () => typeof(ComponentInjector).PrintError($"Cannot find {nameof(GameObject)}: {attribute.GameObjectName.Access()}.")
                     ),
-                _ => source.GetAssignedObject(injectType).Access()
+                _ => source.FindComponent(injectType).Access()
             };
 
             if ((attribute.IsOptional

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using static UnityEngine.GraphicsBuffer;
 
 
 #nullable enable
@@ -22,6 +23,8 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool IsTrue => predicate();
         public readonly bool IsFalse => predicate();
+
+        public readonly Func<bool> Predicate => predicate;
 
         public IfElse(Func<bool> predicate)
         {
@@ -163,10 +166,10 @@ namespace CCEnvs.FuncLanguage
 #endif
 
         public readonly bool IsNone => !IsSome;
-
         public readonly bool IsTrue => IsSome && (predicate?.Invoke(target) ?? true);
-
         public readonly bool IsFalse => !IsTrue;
+        public readonly T? Target => target;
+        public readonly Predicate<T>? Predicate => predicate;
 
         public IfElse(T? value, Predicate<T>? predicate)
         {

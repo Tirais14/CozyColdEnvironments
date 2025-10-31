@@ -9,6 +9,7 @@ namespace CCEnvs.FuncLanguage
     {
         bool IsSome { get; }
         bool IsNone { get; }
+        object? Wrapped { get; }
 
         object? Access();
         object Access(object defaultValue);
@@ -25,6 +26,10 @@ namespace CCEnvs.FuncLanguage
     }
     public interface IConditional<T> : IConditional, IEnumerable<T>
     {
+        new T? Wrapped { get; }
+
+        object? IConditional.Wrapped => Wrapped;
+
         new T? Access();
         T Access(T defaultValue);
         T Access(Func<T> defaultValueFactory);

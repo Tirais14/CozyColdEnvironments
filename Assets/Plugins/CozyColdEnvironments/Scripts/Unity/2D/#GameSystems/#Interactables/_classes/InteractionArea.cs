@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.GameSystems.Interactables
 
         public override bool Contains(Vector2 point)
         {
-            return Agent.OverlapPoint(point);
+            return agent.OverlapPoint(point);
         }
         public override bool Contains(Vector3 point)
         {

@@ -38,6 +38,8 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool IsNone => !IsSome;
 
+        public readonly T Target => target;
+
         public MaybeStruct(T value)
             :
             this()

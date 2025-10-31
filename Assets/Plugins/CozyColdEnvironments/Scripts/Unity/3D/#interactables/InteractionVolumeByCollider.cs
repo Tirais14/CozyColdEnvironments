@@ -14,7 +14,7 @@ namespace CCEnvs.Unity._3D.Interactables
 
         public override bool Contains(Vector3 point)
         {
-            return Agent.bounds.Contains(point);
+            return agent.bounds.Contains(point);
         }
 
         private void OnTriggerEnter(Collider other)

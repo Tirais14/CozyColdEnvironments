@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.UI.Elements
             if (!Application.isPlaying)
                 return;
 
-            target = this.GetAssignedObjectInParent<IViewElement>(includeInactive: true)
+            target = this.FindComponentInParent<IViewElement>(includeInactive: true)
                          .Access()
                          .ValidateGetOperation();
         }

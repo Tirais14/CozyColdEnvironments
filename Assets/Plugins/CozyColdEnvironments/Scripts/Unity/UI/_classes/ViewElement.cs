@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.UI.Elements
             base.Awake();
 
             canvasController = new Lazy<ICanvasController>(
-                () => this.GetAssignedObjectInParent<ICanvasController>(includeInactive: true)
+                () => this.FindComponentInParent<ICanvasController>(includeInactive: true)
                           .Access()
                           .ValidateGetOperation()
                 );
@@ -138,7 +138,7 @@ namespace CCEnvs.Unity.UI.Elements
                 highPriorityCanvas.Value.IfSome(x =>
                 {
                     startDraggingParent = cTransform.Value.parent;
-                    cTransform.Value.parent = x.transform;
+                    cTransform.Value.SetParent(x.transform);
                 });
             }
 
@@ -165,7 +165,7 @@ namespace CCEnvs.Unity.UI.Elements
                 highPriorityCanvas.Value.IfSome(_ =>
                 {
                     startDraggingParent.Match(
-                        some: parent => cTransform.Value.parent = parent,
+                        some: parent => cTransform.Value.SetParent(parent),
                         none: () => this.PrintError("Cannot find previous parent transfrom.")
                         );
                 });

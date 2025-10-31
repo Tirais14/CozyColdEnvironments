@@ -93,7 +93,7 @@ namespace CCEnvs
             List<object> results = new();
             for (int i = 0; i < gameObjectsCount; i++)
             {
-                results.AddRange(gameObjects[i].GetAssignedObjects(type));
+                results.AddRange(gameObjects[i].FindComponents(type));
                 if (onlyFirst)
                     break;
             }
