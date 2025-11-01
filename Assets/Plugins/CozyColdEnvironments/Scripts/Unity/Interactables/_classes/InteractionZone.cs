@@ -3,7 +3,6 @@ using CCEnvs.Diagnostics;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,12 +18,20 @@ namespace CCEnvs.Unity.Interactables
     public abstract class InteractionZone<TAgent> : CCBehaviour, IInteractionZone<TAgent>
         where TAgent : Component
     {
-        protected readonly HashSet<TAgent> otherAgents = new();
+        protected readonly C5.HashSet<TAgent> otherAgents = new();
+        private readonly HashSet<IInteractableBase> interactables = new();
 
         [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
 
         protected TAgent agent => InteractionAgent;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            otherAgents.CollectionChanged += OnOtherAgentsChanged;
+        }
 
         public IEnumerable<IInteractableBase> GetInteractables()
         {
@@ -50,7 +57,12 @@ namespace CCEnvs.Unity.Interactables
             if (interactable.IsNull())
                 return false;
 
-            return GetInteractables().Contains(interactable);
+            if (interactables.Count > 0)
+                return interactables.Contains(interactable);
+
+            interactables.AddRange(GetInteractables());
+
+            return interactables.Contains(interactable);
         }
 
         public bool Contains(TAgent? agent)
@@ -59,6 +71,12 @@ namespace CCEnvs.Unity.Interactables
                 return false;
 
             return otherAgents.Contains(agent);
+        }
+
+        private void OnOtherAgentsChanged(object _)
+        {
+            if (interactables.Count > 0)
+                interactables.Clear();
         }
     }
 }

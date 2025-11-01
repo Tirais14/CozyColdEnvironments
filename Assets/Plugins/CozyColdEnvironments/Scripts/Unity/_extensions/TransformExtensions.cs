@@ -1,9 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
-using CCEnvs.Collections;
-using System.Linq;
-using CCEnvs.FuncLanguage;
 
 #nullable enable
 
@@ -33,27 +30,6 @@ namespace CCEnvs.Unity
                 throw new ArgumentNullException(nameof(value));
 
             return value.up * -1;
-        }
-
-        /// <summary>
-        /// Include nested childs
-        /// </summary>
-        public static ArraySegment<Transform> GetChilds(this Transform source, bool excludeSelf = false)
-        {
-            if (source.childCount == 0)
-                return Array.Empty<Transform>();
-
-            var results = source.GetComponentsInChildren<Transform>(includeInactive: true);
-
-            if (excludeSelf)
-            {
-                if (results[0] == source)
-                    return results.GetArraySegment(results.Length - 1, offset: 1);
-
-                return results.Where(x => x != source).ToArray();
-            }
-
-            return results;
         }
 
         public static Transform? FindParent(this Transform transform, string n)

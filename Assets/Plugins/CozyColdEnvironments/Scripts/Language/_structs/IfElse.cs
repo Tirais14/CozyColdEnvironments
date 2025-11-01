@@ -22,7 +22,7 @@ namespace CCEnvs.FuncLanguage
         private readonly Func<bool> predicate;
 
         public readonly bool IsTrue => predicate();
-        public readonly bool IsFalse => predicate();
+        public readonly bool IsFalse => !predicate();
 
         public readonly Func<bool> Predicate => predicate;
 
