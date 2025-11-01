@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 #nullable enable
 #pragma warning disable S3236
@@ -206,6 +207,35 @@ namespace CCEnvs.FuncLanguage
                 );
         }
 
+        public readonly Either<LOut, R> SelectLeft<LOut>(Func<L, LOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            if (IsNotLeft)
+                return (default, right);
+
+            return (selector(left), right);
+        }
+
+        public readonly Either<L, ROut> SelectRight<ROut>(Func<R, ROut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            if (IsNotRight)
+                return (left, default);
+
+            return (left, selector(right));
+        }
+
+        public readonly Either<LOut, ROut> Select<LOut, ROut>(Func<(Maybe<L>, Maybe<R>), (LOut left, ROut right)> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            var result = selector((left, right));
+
+            return (result.left, result.right);
+        }
+
         public readonly bool Equals(Either<L, R> other)
         {
             return IsLeft
@@ -214,7 +244,7 @@ namespace CCEnvs.FuncLanguage
                    &&
                    EqualityComparer<L?>.Default.Equals(left, other.left)
                    &&
-                   EqualityComparer<R>.Default.Equals(right, other.right);
+                   EqualityComparer<R?>.Default.Equals(right, other.right);
         }
         public readonly override bool Equals(object obj)
         {

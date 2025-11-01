@@ -16,20 +16,24 @@ namespace CCEnvs.Unity
 {
     public record GameObjectSearch
     {
-        private readonly static GameObjectSearch empty = new GameObjectSearch().Reset();
+        internal readonly static GameObjectSearch Instance = new GameObjectSearch().Reusable(false);
+        private readonly static GameObjectSearch empty = new();
 
-        public readonly static GameObjectSearch Instance = new GameObjectSearch().Reusable(false);
-
-        public static GameObjectSearch Empty => new GameObjectSearch().Reset();
+        public static GameObjectSearch Empty => new();
 
         public GameObject Source { get; protected set; } = null!;
         public bool includeInactive { get; protected set; }
         public bool excludeSelf { get; protected set; }
-        public bool resusable { get; protected set; } = true;
+        public bool reusable { get; protected set; } = true;
         public Maybe<string> name { get; protected set; }
         public Maybe<string> tag { get; protected set; }
         public int? layerMask { get; protected set; }
         public FindMode findMode { get; protected set; } = FindMode.Self;
+
+        public GameObjectSearch()
+        {
+            Reset();
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -83,7 +87,7 @@ namespace CCEnvs.Unity
             if (this == Instance)
                 return this;
 
-            resusable = state;
+            reusable = state;
 
             return this;
         }
@@ -192,9 +196,9 @@ namespace CCEnvs.Unity
         public IEnumerable<object> Components(Type? type = null)
         {
             Guard.IsNotNull(Source, nameof(Source));
-            ValidateInstance();
 
             bool anyType = type is null;
+            type ??= typeof(Component);
 
             IEnumerable<Component> results;
             if (anyType || type!.IsType<Component>())
@@ -240,7 +244,7 @@ namespace CCEnvs.Unity
                           select x.cmp;
             }
 
-            if (resusable)
+            if (reusable)
                 Reset();
 
             return results;

@@ -5,7 +5,7 @@ namespace CCEnvs.Unity.Storages
 {
     public interface IItemAccessor
     {
-        Maybe<IItemContainer> Put(IItem? item, int count);
+        Maybe<IItemContainer> Put(IItem? item, int count = 1);
         Maybe<IItemContainer> Put(IItemContainer itemContainer, int count);
         Maybe<IItemContainer> Put(IItemContainer itemContainer);
 

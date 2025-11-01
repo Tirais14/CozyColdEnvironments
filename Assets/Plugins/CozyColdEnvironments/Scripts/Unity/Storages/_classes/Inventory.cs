@@ -212,7 +212,7 @@ namespace CCEnvs.Unity.Storages
             return removeSubj;
         }
 
-        public Maybe<IItemContainer> Put(IItem? item, int count)
+        public Maybe<IItemContainer> Put(IItem? item, int count = 1)
         {
             if (item.IsNull() || count <= 0)
             {

@@ -11,14 +11,14 @@ namespace CCEnvs.Unity
         Component InteractionAgent { get; }
 
         /// <returns>LINQ enumerator</returns>
-        IEnumerable<IInteractableBase> GetInteractables();
+        IEnumerable<IInteractable> GetInteractables();
 
         /// <inheritdoc cref="GetInteractables()"/>
-        IEnumerable<T> GetInteractables<T>() where T : IInteractableBase;
+        IEnumerable<T> GetInteractables<T>() where T : IInteractable;
 
         bool Contains(Vector2 point);
         bool Contains(Vector3 point);
-        bool Contains(IInteractableBase? interactable);
+        bool Contains(IInteractable? interactable);
     }
     public interface IInteractionZone<T> : IInteractionZone
         where T : Component

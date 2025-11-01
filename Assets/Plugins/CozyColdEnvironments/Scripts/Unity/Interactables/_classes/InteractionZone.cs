@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.Interactables
         where TAgent : Component
     {
         protected readonly C5.HashSet<TAgent> otherAgents = new();
-        private readonly HashSet<IInteractableBase> interactables = new();
+        private readonly HashSet<IInteractable> interactables = new();
 
         [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
@@ -33,10 +33,10 @@ namespace CCEnvs.Unity.Interactables
             otherAgents.CollectionChanged += OnOtherAgentsChanged;
         }
 
-        public IEnumerable<IInteractableBase> GetInteractables()
+        public IEnumerable<IInteractable> GetInteractables()
         {
             foreach (var item in from agent in otherAgents
-                                 select agent.FindFor().Component<IInteractableBase>() into ible
+                                 select agent.FindFor().Component<IInteractable>() into ible
                                  where ible.IsSome
                                  select ible.AccessUnsafe())
             {
@@ -44,7 +44,7 @@ namespace CCEnvs.Unity.Interactables
             }
         }
 
-        public IEnumerable<T> GetInteractables<T>() where T : IInteractableBase
+        public IEnumerable<T> GetInteractables<T>() where T : IInteractable
         {
             return GetInteractables().Where(x => x.Is<T>()).Cast<T>();
         }
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Interactables
         public abstract bool Contains(Vector2 point);
         public abstract bool Contains(Vector3 point);
 
-        public bool Contains(IInteractableBase? interactable)
+        public bool Contains(IInteractable? interactable)
         {
             if (interactable.IsNull())
                 return false;

@@ -18,5 +18,7 @@ namespace CCEnvs.FuncLanguage
         {
             return new Either<object, T>(null, value);
         }
+
+        public static Catched<T> Catch()
     }
 }

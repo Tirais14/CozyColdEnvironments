@@ -2,29 +2,37 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using System;
+using System.Linq;
 
 namespace CCEnvs.Unity.Interactables
 {
-    public interface IInteractable : IInteractableBase
+    public interface IInteractable
     {
-        object? Interact();
+        /// <returns>Left is message, right is returned value</returns>
+        Either<string, object[]> Interact(params object?[]? tools);
+    }
+    public interface IInteractable<in TIn>
+        : IInteractable
+    {
+        /// <inheritdoc cref="IInteractable.Interact(object?)"/>
+        Either<string, object[]> Interact(params TIn?[]? tools);
 
-        Either<string, object> IInteractableBase.Interact(object? tool)
+        Either<string, object[]> IInteractable.Interact(params object?[] tools)
         {
-            return (null, Interact());
+            return Interact(tools.Cast<TIn>().ToArray());
         }
     }
-    public interface IInteractable<out T> 
-        : IInteractable,
-        IObservable<T>
+    public interface IInteractable<in TIn, TOut> 
+        : IInteractable<TIn>
     {
-        new T Interact();
+        /// <inheritdoc cref="IInteractable.Interact(object?)"/>
+        new Either<string, TOut[]> Interact(params TIn?[]? tools);
 
-        object? IInteractable.Interact() => Interact();
-
-        Either<string, object> IInteractableBase.Interact(object? tool)
+        Either<string, object[]> IInteractable<TIn>.Interact(params TIn?[]? tools)
         {
-            return (null, Interact());
+            var t = Interact(tools);
+
+            return (t.LeftTarget, t.IfRight(x => x.Cast<object>().ToArray()).RightTarget);
         }
     }
 }
