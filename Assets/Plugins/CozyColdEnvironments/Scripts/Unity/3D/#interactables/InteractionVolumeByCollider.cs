@@ -7,6 +7,16 @@ namespace CCEnvs.Unity._3D.Interactables
     [RequireComponent(typeof(Collider))]
     public class InteractionVolumeByCollider : InteractionZone<Collider>
     {
+        private void OnTriggerEnter(Collider other)
+        {
+            otherAgents.Add(other);
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            otherAgents.Remove(other);
+        }
+
         public override bool Contains(Vector2 point)
         {
             return Contains((Vector3)point);
@@ -15,16 +25,6 @@ namespace CCEnvs.Unity._3D.Interactables
         public override bool Contains(Vector3 point)
         {
             return agent.bounds.Contains(point);
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            TryAddInteractableBy(other);
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            TryRemoveInteractableBy(other);
         }
     }
 }

@@ -8,12 +8,12 @@ namespace CCEnvs.Unity.Interactables
     {
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            TryAddInteractableBy(collision);
+            otherAgents.Add(collision);
         }
 
         private void OnTriggerExit2D(Collider2D collision)
         {
-            TryRemoveInteractableBy(collision);
+            otherAgents.Remove(collision);
         }
 
         public override bool Contains(Vector2 point)
@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Interactables
         }
         public override bool Contains(Vector3 point)
         {
-            return Contains((Vector2)point);
+            return Contains(new Vector2(point.x, point.y));
         }
     }
 }

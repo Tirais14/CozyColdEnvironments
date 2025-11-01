@@ -1,6 +1,6 @@
 using CCEnvs.Unity.Interactables;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -10,23 +10,23 @@ namespace CCEnvs.Unity
     {
         Component InteractionAgent { get; }
 
-        bool TryGetInteractable<T>(int? layerMask, [NotNullWhen(true)] out T? result)
-            where T : IInteractable;
+        /// <returns>LINQ enumerator</returns>
+        IEnumerable<IInteractableBase> GetInteractables();
 
-        bool TryGetInteractableWith<T>(int? layerMask, [NotNullWhen(true)] out T? result)
-            where T : IInteractableWith;
+        /// <inheritdoc cref="GetInteractables()"/>
+        IEnumerable<T> GetInteractables<T>() where T : IInteractableBase;
 
-        bool Contains(Type interactableType, int? layerMask);
         bool Contains(Vector2 point);
         bool Contains(Vector3 point);
-        bool Contains(IInteractable? interactable);
-        bool Contains(IInteractableWith? interactableWith);
+        bool Contains(IInteractableBase? interactable);
     }
-    public interface IInteractionZone<out T> : IInteractionZone
+    public interface IInteractionZone<T> : IInteractionZone
         where T : Component
     {
         new T InteractionAgent { get; }
 
         Component IInteractionZone.InteractionAgent => InteractionAgent;
+
+        bool Contains(T? agent);
     }
 }

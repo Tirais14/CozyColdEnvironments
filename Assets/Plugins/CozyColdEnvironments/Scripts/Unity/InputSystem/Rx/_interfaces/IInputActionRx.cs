@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         bool IsButtonPressed();
     }
-    public interface IInputActionRx<T> : IInputActionRx
+    public interface IInputActionRx<out T> : IInputActionRx
         where T : struct
     {
         T InputValue { get; }
