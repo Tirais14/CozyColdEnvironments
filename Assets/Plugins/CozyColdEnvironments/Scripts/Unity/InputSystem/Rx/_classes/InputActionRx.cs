@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using CCEnvs.Disposables;
 using static UnityEngine.InputSystem.InputAction;
+using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable S3881
@@ -21,8 +22,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private bool disposedValue;
 
+        public bool ButtonInputValue { get; private set; }
         public InputAction Action { get; }
-        public IObservable<CallbackContext> Raw => raw.AsObservable();
+        public IObservable<CallbackContext> Raw => raw;
         public IObservable<CallbackContext> Started {
             get => started.Skip(1);
         }
@@ -31,16 +33,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
         }
         public IObservable<CallbackContext> Canceled {
             get => canceled.Skip(1);
-        }
-        public IObservable<bool> ButtonRaw => raw.Select(x => x.ReadValueAsButton());
-        public IObservable<bool> ButtonStarted {
-            get => Started.Select(x => x.ReadValueAsButton());
-        }
-        public IObservable<bool> ButtonPerformed {
-            get => Performed.Select(x => x.ReadValueAsButton());
-        }
-        public IObservable<bool> ButtonCanceled {
-            get => Canceled.Select(x => x.ReadValueAsButton());
         }
         public string ActionName => Action.name;
         public bool IsEnabled => Action.enabled;
@@ -122,10 +114,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
         where T : struct
     {
         public T InputValue { get; private set; }
-        public IObservable<T> TRaw => Raw.Select(x => x.ReadValue<T>());
-        public IObservable<T> TStarted => Started.Select(x => x.ReadValue<T>());
-        public IObservable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
-        public IObservable<T> TCanceled => Canceled.Select(x => x.ReadValue<T>());
+        public virtual IObservable<T> TRaw => Raw.Select(x => x.ReadValue<T>());
+        public virtual IObservable<T> TStarted => Started.Select(x => x.ReadValue<T>());
+        public virtual IObservable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
+        public virtual IObservable<T> TCanceled => Canceled.Select(x => x.ReadValue<T>());
 
         public InputActionRx(InputAction inputAction) 
             :

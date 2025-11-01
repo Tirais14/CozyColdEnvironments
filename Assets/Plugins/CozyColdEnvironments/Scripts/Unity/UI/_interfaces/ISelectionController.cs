@@ -14,9 +14,9 @@ namespace CCEnvs.Unity.UI
 
         IObservable<SelectionChangedEvent<TKey, TValue>> ObserveSelection();
 
-        void SelectIt(TKey key);
+        void SelectItem(TKey key);
 
-        void DeselectIt(TKey key);
+        void DeselectItem(TKey key);
 
         void SwitchSelectionState(TKey key);
     }

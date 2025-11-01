@@ -16,10 +16,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
         IObservable<CallbackContext> Started { get; }
         IObservable<CallbackContext> Performed { get; }
         IObservable<CallbackContext> Canceled { get; }
-        IObservable<bool> ButtonRaw { get; }
-        IObservable<bool> ButtonStarted { get; }
-        IObservable<bool> ButtonPerformed { get; }
-        IObservable<bool> ButtonCanceled { get; }
 
         bool IsButtonPressed();
     }

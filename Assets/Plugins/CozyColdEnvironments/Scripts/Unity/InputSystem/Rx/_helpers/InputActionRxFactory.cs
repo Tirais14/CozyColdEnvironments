@@ -2,6 +2,7 @@ using System;
 using UnityEngine.InputSystem;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Data;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Rx
@@ -12,8 +13,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public static IInputActionRx<T> Create<T>(InputAction inputAction)
             where T : struct
         {
-            if (inputAction is null)
-                throw new ArgumentNullException(nameof(inputAction));
+            Guard.IsNotNull(inputAction, nameof(inputAction));
+
+            if (inputAction.type == InputActionType.Button)
+                return new ButtonActionRx(inputAction).As<IInputActionRx<T>>();
 
             return new InputActionRx<T>(inputAction);
         }

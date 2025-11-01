@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.UI
             this.valueGetter = valueGetter;
         }
 
-        public void SelectIt(TKey key)
+        public void SelectItem(TKey key)
         {
             if (EqualityComparer<TKey>.Default.Equals(selection.Value.Key, key))
                 return;
@@ -43,7 +43,7 @@ namespace CCEnvs.Unity.UI
             OnSelectionChanged?.Invoke(info);
         }
 
-        public void DeselectIt(TKey key)
+        public void DeselectItem(TKey key)
         {
             if (Selection.IsDefault())
                 return;
@@ -65,11 +65,11 @@ namespace CCEnvs.Unity.UI
         {
             if (EqualityComparer<TKey>.Default.Equals(selection.Value.Key, key))
             {
-                DeselectIt(key);
+                DeselectItem(key);
                 return;
             }
 
-            SelectIt(key);
+            SelectItem(key);
         }
 
         public IObservable<SelectionChangedEvent<TKey, TValue>> ObserveSelection()

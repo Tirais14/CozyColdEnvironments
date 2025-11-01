@@ -1,4 +1,7 @@
 #nullable enable
+using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
 using System;
 using UniRx;
 
@@ -6,13 +9,23 @@ namespace CCEnvs.Unity.Interactables
 {
     public interface IInteractableVoidWith : IInteractableWith
     {
-        new void Interact(object arg);
+        new void Interact(object tool);
 
-        object? IInteractableWith.Interact(object arg)
+        Maybe<object> IInteractableWith.Interact(object tool)
         {
-            Interact(arg);
+            Interact(tool);
 
-            return null;
+            return null!;
+        }
+
+        Either<string, object> IInteractableBase.Interact(object? tool)
+        {
+            if (tool.IsNull())
+                return ("tool required for interaction.", null);
+
+
+            Interact(tool);
+            return Either<string, object>.None;
         }
     }
     public interface IInteractableVoidWith<in T> 
@@ -21,6 +34,15 @@ namespace CCEnvs.Unity.Interactables
     {
         void Interact(T arg);
 
-        void IInteractableVoidWith.Interact(object arg) => Interact(arg);
+        void IInteractableVoidWith.Interact(object tool) => Interact(tool);
+
+        Either<string, object> IInteractableBase.Interact(object? tool)
+        {
+            if (tool.IsNull())
+                return ($"tool (type: {typeof(T).GetFullName()}) required for interaction.", null);
+
+            Interact(tool);
+            return Either<string, object>.None;
+        }
     }
 }

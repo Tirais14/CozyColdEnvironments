@@ -61,14 +61,14 @@ namespace CCEnvs.Unity
             return selectionSubj.Value;
         }
 
-        public void SelectIt(int key)
+        public void SelectItem(int key)
         {
-            selectableController.SelectIt(key);
+            selectableController.SelectItem(key);
         }
 
-        public void DeselectIt(int key)
+        public void DeselectItem(int key)
         {
-            selectableController.DeselectIt(key);
+            selectableController.DeselectItem(key);
         }
 
         public void SwitchSelectionState(int key)
