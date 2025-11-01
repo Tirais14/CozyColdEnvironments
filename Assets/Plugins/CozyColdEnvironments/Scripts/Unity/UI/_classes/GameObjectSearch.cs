@@ -16,18 +16,19 @@ namespace CCEnvs.Unity
 {
     public record GameObjectSearch
     {
-        private readonly static GameObjectSearch empty = new();
+        private readonly static GameObjectSearch empty = new GameObjectSearch().Reset();
 
-        public readonly static GameObjectSearch Instance = new();
+        public readonly static GameObjectSearch Instance = new GameObjectSearch().Reusable(false);
 
-        public static GameObjectSearch Empty => new();
+        public static GameObjectSearch Empty => new GameObjectSearch().Reset();
 
         public GameObject Source { get; protected set; } = null!;
         public bool includeInactive { get; protected set; }
         public bool excludeSelf { get; protected set; }
-        public Maybe<string> gameObjectName { get; protected set; }
-        public Maybe<string> gameObjectTag { get; protected set; }
-        public Maybe<int> gameObjectLayer { get; protected set; }
+        public bool resusable { get; protected set; } = true;
+        public Maybe<string> name { get; protected set; }
+        public Maybe<string> tag { get; protected set; }
+        public int? layerMask { get; protected set; }
         public FindMode findMode { get; protected set; } = FindMode.Self;
 
         [DebuggerStepThrough]
@@ -60,27 +61,56 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch IncludeInactive()
+        public GameObjectSearch IncludeInactive(bool state = true)
         {
-            includeInactive = true;
+            includeInactive = state;
 
             return this;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch ExcludeSelf()
+        public GameObjectSearch ExcludeSelf(bool state = true)
         {
-            excludeSelf = true;
+            excludeSelf = state;
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch Reusable(bool state = true)
+        {
+            if (this == Instance)
+                return this;
+
+            resusable = state;
 
             return this;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch GameObjectName(string? name)
+        public GameObjectSearch Name(string? name = null)
         {
-            gameObjectName = name;
+            this.name = name;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch Tag(string? tag = null)
+        {
+            this.tag = tag;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch Layers(int? layerMask = null)
+        {
+            this.layerMask = layerMask;
 
             return this;
         }
@@ -91,7 +121,7 @@ namespace CCEnvs.Unity
         {
             findMode = FindMode.Self;
 
-            return this; ;
+            return this;
         }
 
         [DebuggerStepThrough]
@@ -112,10 +142,16 @@ namespace CCEnvs.Unity
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectSearch Reset()
         {
-            Source = null!;
-            includeInactive = false;
+            Source = default!;
+            includeInactive = default;
+            excludeSelf = default;
+            name = default;
+            tag = default;
+            layerMask = default;
             findMode = FindMode.Self;
 
             return this;
@@ -156,10 +192,11 @@ namespace CCEnvs.Unity
         public IEnumerable<object> Components(Type? type = null)
         {
             Guard.IsNotNull(Source, nameof(Source));
+            ValidateInstance();
 
             bool anyType = type is null;
 
-            IEnumerable<object> results;
+            IEnumerable<Component> results;
             if (anyType || type!.IsType<Component>())
             {
                 results = findMode switch
@@ -189,7 +226,22 @@ namespace CCEnvs.Unity
                 };
             }
 
-            Reset();
+            if (layerMask.HasValue
+                ||
+                name.IsSome
+                ||
+                tag.IsSome)
+            {
+                results = from cmp in results
+                          select (cmp, go: cmp.gameObject) into x
+                          where name.Map(name => x.go.name == name).Access(true)
+                          where !layerMask.HasValue || x.go.layer == layerMask
+                          where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
+                          select x.cmp;
+            }
+
+            if (resusable)
+                Reset();
 
             return results;
         }
@@ -310,8 +362,6 @@ namespace CCEnvs.Unity
                           where anyType || obj.IsType(type!)
                           select obj;
 
-            Reset();
-
             return results;
         }
 
@@ -360,6 +410,14 @@ namespace CCEnvs.Unity
         {
             return Transforms().Select(x => x.gameObject);
         }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ValidateInstance()
+        {
+            if (ReferenceEquals(this, Instance) && this != empty)
+                this.PrintError("Singleton not reseted before another using.");
+        }
     }
 
     public static class GameObjectSearchExtensions
@@ -370,7 +428,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectSearch.Instance.From(source);
+            return GameObjectSearch.Instance.Reset().From(source);
         }
 
         [DebuggerStepThrough]
@@ -379,7 +437,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectSearch.Instance.From(source);
+            return GameObjectSearch.Instance.Reset().From(source);
         }
     }
 }
