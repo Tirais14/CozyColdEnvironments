@@ -41,7 +41,7 @@ namespace CCEnvs.Unity
         /// </summary>
         public static GameObject[] GetAllChilds(this GameObject value)
         {
-            return value.transform.GetAllChilds().Select(x => x.gameObject).ToArray();
+            return value.transform.GetChilds().Select(x => x.gameObject).ToArray();
         }
 
         public static GameObject? FindParent(this GameObject value, string n)

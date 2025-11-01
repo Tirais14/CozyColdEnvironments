@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public interface IItem : IEquatable<IItem>
     {

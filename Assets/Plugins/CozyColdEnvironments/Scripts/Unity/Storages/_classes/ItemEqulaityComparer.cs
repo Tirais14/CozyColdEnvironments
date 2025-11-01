@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public class ItemEqulaityComparer : IEqualityComparer<IItem?>
     {

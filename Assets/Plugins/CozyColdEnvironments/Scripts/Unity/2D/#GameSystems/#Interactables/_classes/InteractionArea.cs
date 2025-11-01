@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     [RequireComponent(typeof(Collider2D))]
     public class InteractionArea : InteractionZone<Collider2D>

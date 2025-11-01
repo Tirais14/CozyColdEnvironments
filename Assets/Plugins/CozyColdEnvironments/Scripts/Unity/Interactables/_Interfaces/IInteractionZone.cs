@@ -1,4 +1,4 @@
-using CCEnvs.Unity.GameSystems.Interactables;
+using CCEnvs.Unity.Interactables;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;

@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
-using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.Storages;
 using Newtonsoft.Json;
 using System;
 using System.Runtime.Serialization;

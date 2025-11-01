@@ -8,11 +8,10 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using ZLinq;
-using CCEnvs.Unity.UI.MVVM;
 
 #pragma warning disable S3236
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public class Inventory : IInventory
     {

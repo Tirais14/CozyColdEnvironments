@@ -14,7 +14,7 @@ using ZLinq;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     /// <summary>
     /// The child should be call explicitly <see cref="TryAddInteractableBy(Component?)"/> and <see cref="TryRemoveInteractableBy(Component?)"/>

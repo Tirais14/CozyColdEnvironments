@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI;
 using CCEnvs.Unity.UI.Elements;

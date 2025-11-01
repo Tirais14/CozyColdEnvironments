@@ -1,4 +1,4 @@
-using CCEnvs.Unity.GameSystems.Interactables;
+using CCEnvs.Unity.Interactables;
 
 #nullable enable
 namespace CCEnvs.Unity

@@ -5,7 +5,7 @@ using UniRx;
 using UnityEngine.Events;
 
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     public class WorldButton : CCBehaviour, IWorldButton
     {

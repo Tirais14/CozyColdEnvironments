@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public class ItemsDontMatchException : CCException
     {

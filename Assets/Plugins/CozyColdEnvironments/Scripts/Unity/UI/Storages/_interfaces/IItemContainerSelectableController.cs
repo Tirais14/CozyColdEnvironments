@@ -1,4 +1,4 @@
-using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.Storages;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages

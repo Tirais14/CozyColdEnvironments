@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     public interface IInteractable : IInteractableBase
     {

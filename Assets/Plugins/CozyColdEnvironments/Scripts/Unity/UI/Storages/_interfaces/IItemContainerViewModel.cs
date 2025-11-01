@@ -3,7 +3,7 @@ using CCEnvs.Unity.UI.MVVM;
 using UniRx;
 using UnityEngine;
 
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public interface IItemContainerViewModel<out T> : IViewModel<T>
         where T : IItemContainerInfo

@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     public interface IInteractableVoid : IInteractable
     {

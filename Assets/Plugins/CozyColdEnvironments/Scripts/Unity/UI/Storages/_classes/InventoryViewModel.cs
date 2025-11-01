@@ -1,4 +1,4 @@
-using CCEnvs.Unity.GameSystems.Storages;
+using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using UnityEngine;
 

@@ -38,7 +38,7 @@ namespace CCEnvs.Unity
         /// <summary>
         /// Include nested childs
         /// </summary>
-        public static ArraySegment<Transform> GetAllChilds(this Transform source, bool excludeSelf = false)
+        public static ArraySegment<Transform> GetChilds(this Transform source, bool excludeSelf = false)
         {
             if (source.childCount == 0)
                 return Array.Empty<Transform>();

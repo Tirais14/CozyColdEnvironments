@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.Unity.UI.MVVM;
 
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public interface IItemContainer
         : IItemAccessor,

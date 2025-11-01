@@ -2,7 +2,7 @@
 using UnityEngine.Events;
 
 #nullable enable
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     public interface IWorldButton : IInteractableVoid
     {

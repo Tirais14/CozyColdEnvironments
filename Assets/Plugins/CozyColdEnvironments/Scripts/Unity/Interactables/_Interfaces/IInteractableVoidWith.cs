@@ -2,7 +2,7 @@
 using System;
 using UniRx;
 
-namespace CCEnvs.Unity.GameSystems.Interactables
+namespace CCEnvs.Unity.Interactables
 {
     public interface IInteractableVoidWith : IInteractableWith
     {

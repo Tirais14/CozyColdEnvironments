@@ -3,7 +3,7 @@ using UniRx;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.GameSystems.Storages
+namespace CCEnvs.Unity.Storages
 {
     public interface IItemContainerInfoItemless
     {

@@ -1,4 +1,4 @@
-using CCEnvs.Unity.GameSystems.Interactables;
+using CCEnvs.Unity.Interactables;
 using UnityEngine;
 
 #nullable enable
