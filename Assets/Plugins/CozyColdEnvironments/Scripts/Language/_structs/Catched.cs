@@ -49,7 +49,7 @@ namespace CCEnvs.FuncLanguage
             IsSome = value.IsNotDefault();
         }
 
-        public Catched(Func<T> valueFactory)
+        public Catched(Func<T> valueFactory, LogType logType = LogType.Log)
             :
             this()
         {

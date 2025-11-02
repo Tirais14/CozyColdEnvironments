@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.UI
             this.valueGetter = valueGetter;
         }
 
-        public void SelectItem(TKey key)
+        public void DoSelect(TKey key)
         {
             if (EqualityComparer<TKey>.Default.Equals(selection.Value.Key, key))
                 return;
@@ -36,14 +36,14 @@ namespace CCEnvs.Unity.UI
                 key,
                 valueGetter.AccessUnsafe().Invoke(key));
 
-            info.previousValue.AsOrDefault<ISelectable>().IfSome(x => x.SelectIt());
+            info.previousValue.AsOrDefault<ISelectable>().IfSome(x => x.DoSelect());
             selection.Value = info.NewSelection;
 
             selectionSubj.Value.OnNext(info);
             OnSelectionChanged?.Invoke(info);
         }
 
-        public void DeselectItem(TKey key)
+        public void DoDeselect(TKey key)
         {
             if (Selection.IsDefault())
                 return;
@@ -54,7 +54,7 @@ namespace CCEnvs.Unity.UI
                 default,
                 default);
 
-            info.previousValue.AsOrDefault<ISelectable>().IfSome(x => x.DeselectIt());
+            info.previousValue.AsOrDefault<ISelectable>().IfSome(x => x.DoDeselect());
             selection.Value = info.NewSelection;
 
             selectionSubj.Value.OnNext(info!);
@@ -65,11 +65,11 @@ namespace CCEnvs.Unity.UI
         {
             if (EqualityComparer<TKey>.Default.Equals(selection.Value.Key, key))
             {
-                DeselectItem(key);
+                DoDeselect(key);
                 return;
             }
 
-            SelectItem(key);
+            DoSelect(key);
         }
 
         public IObservable<SelectionChangedEvent<TKey, TValue>> ObserveSelection()

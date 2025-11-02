@@ -12,11 +12,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-#pragma warning disable IDE0044
-#pragma warning disable IDE1006
-#pragma warning disable IDE0051
-#pragma warning disable S3236
-
+#pragma warning disable S4144
 namespace CCEnvs.Unity.UI.Elements
 {
     [DisallowMultipleComponent]
@@ -54,6 +50,7 @@ namespace CCEnvs.Unity.UI.Elements
             base.Start();
 
             StartIShowable();
+            StartISelectable();
         }
 
         protected virtual void OnDestroy()
@@ -214,17 +211,18 @@ namespace CCEnvs.Unity.UI.Elements
 
         #region IShowable
 
-        protected bool? isVisible;
         protected ArraySegment<BeforeDisabledGraphicComponentSnapshot> showableDisabledGraphics;
         protected DisableGraphicsSettings showableDisableGraphicsSettings = DisableGraphicsSettings.Default;
         private Subject<Unit>? showableShowSubj;
         private Subject<Unit>? showableHideSubj;
 
-        public bool IsVisible => isVisible.GetValueOrDefault();
+        public bool IsVisible { get; protected set; }
         protected virtual bool showOnStart { get; }
 
         private void StartIShowable()
         {
+            ShowablePreheat();
+
             if (showOnStart)
                 Show();
             else
@@ -233,7 +231,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void Hide(DisableGraphicsSettings disableGraphicsSettings)
         {
-            if (isVisible is not null && !IsVisible)
+            if (!IsVisible)
                 return;
 
             showableDisabledGraphics = UIHelper.DisableGraphics(cGameObject.Value,
@@ -243,7 +241,7 @@ namespace CCEnvs.Unity.UI.Elements
                 : 
                 disableGraphicsSettings);
 
-            isVisible = false;
+            IsVisible = false;
         }
         public void Hide() => Hide(DisableGraphicsSettings.Default);
 
@@ -253,7 +251,7 @@ namespace CCEnvs.Unity.UI.Elements
                 return;
 
             UIHelper.EnableGraphics(showableDisabledGraphics);
-            isVisible = true;
+            IsVisible = true;
         }
 
         public bool SwitchVisibleState()
@@ -280,6 +278,91 @@ namespace CCEnvs.Unity.UI.Elements
             return showableHideSubj;
         }
 
+        private void ShowablePreheat()
+        {
+            Show();
+            Hide();
+        }
+
         #endregion IShowable
+
+        #region ISelectable
+
+        protected readonly ReactiveProperty<bool> isSelected = new();
+        protected Color selectableSelectionColor = Color.red;
+        protected Color selectableBeforeSelectColor;
+        private Subject<Unit>? selectableSelectSubj;
+        private Subject<Unit>? selectableDeselectSubj;
+
+        public IReadOnlyReactiveProperty<bool> IsSelected => isSelected;
+
+        private void StartISelectable()
+        {
+            SelectablePreheat();
+        }
+
+        public virtual bool SelectPredicate(out Maybe<string> msg)
+        {
+            msg = null;
+            return true;
+        }
+
+        public virtual void DoSelect()
+        {
+            if (isSelected.Value)
+                return;
+
+            isSelected.Value = true;
+
+            Img.IfSome(img =>
+            {
+                selectableBeforeSelectColor = img.color;
+                img.color *= selectableSelectionColor;
+            });
+        }
+
+        public virtual void DoDeselect()
+        {
+            if (!isSelected.Value)
+                return;
+
+            isSelected.Value = false;
+
+            Img.IfSome(img =>
+            {
+                selectableBeforeSelectColor = img.color;
+                img.color *= Color.red;
+            });
+        }
+
+        public void SwitchSelectionState()
+        {
+            if (isSelected.Value)
+                DoDeselect();
+            else
+                DoSelect();
+        }
+
+        public IObservable<Unit> ObserveSelect()
+        {
+            selectableSelectSubj ??= new Subject<Unit>();
+
+            return selectableSelectSubj;
+        }
+
+        public IObservable<Unit> ObserveDeselect()
+        {
+            selectableDeselectSubj ??= new Subject<Unit>();
+
+            return selectableDeselectSubj;
+        }
+
+        private void SelectablePreheat()
+        {
+            DoSelect();
+            DoDeselect();
+        }
+
+        #endregion ISelectable
     }
 }

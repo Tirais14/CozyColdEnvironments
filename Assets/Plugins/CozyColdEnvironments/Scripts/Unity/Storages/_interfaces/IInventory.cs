@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 #nullable enable
@@ -18,6 +19,7 @@ namespace CCEnvs.Unity.Storages
         IEnumerable<int> IDs { get; }
         IEnumerable<IItemContainer> Containers { get; }
         int Count { get; }
+        IReadOnlyReactiveProperty<Maybe<IItemContainer>> ActiveContainer { get; }
 
         void Add(IItemContainer itemContainer);
         void Add(GameObject toInstantiate);
@@ -36,7 +38,11 @@ namespace CCEnvs.Unity.Storages
         void SetCount(int count, GameObject toInstantiate);
         void SetCount<T>(int count) where T : IItemContainer, new();
 
-        MaybeStruct<int> GetID(IItemContainer itemContainer);
+        void SetActiveContainer(int id);
+
+        void DeactivateContainer();
+
+        MaybeStruct<int> GetContainerID(IItemContainer itemContainer);
 
         IObservable<(int id, IItemContainer value)> ObserveAdd();
 

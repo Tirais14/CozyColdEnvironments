@@ -2,6 +2,7 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using static UnityEditor.Experimental.GraphView.GraphView;
 
@@ -91,6 +92,14 @@ namespace CCEnvs.FuncLanguage
             return left;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryAccessLeft([NotNullWhen(true)] out L? left)
+        {
+            left = this.left;
+
+            return IsLeft;
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly R? AccessRight() => right;
@@ -104,6 +113,14 @@ namespace CCEnvs.FuncLanguage
                 return defaultValue;
 
             return right;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryAccessRight([NotNullWhen(true)] out R? right)
+        {
+            right = this.right;
+
+            return IsRight;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

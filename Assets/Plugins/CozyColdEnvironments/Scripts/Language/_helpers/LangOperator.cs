@@ -1,4 +1,6 @@
 #nullable enable
+using CCEnvs.Diagnostics;
+using System;
 using System.Runtime.CompilerServices;
 
 #pragma warning disable S3236
@@ -19,6 +21,10 @@ namespace CCEnvs.FuncLanguage
             return new Either<object, T>(null, value);
         }
 
-        public static Catched<T> Catch()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Catched<T> Catch<T>(Func<T> factory, LogType logType = LogType.Log)
+        {
+            return new Catched<T>(factory, logType);
+        }
     }
 }

@@ -195,6 +195,11 @@ namespace CCEnvs.Unity.Storages
             itemCount.Value = 0;
         }
 
+        public MaybeStruct<int> GetContainerID()
+        {
+            return parentInventory.Map(x => x.GetContainerID(this)).Target;
+        }
+
         public override string ToString()
         {
             return $"{nameof(Item)}: {Item.Value.Map(x => x.ToString()).Access("null")}; {nameof(ItemCount)}: {ItemCount.Value}.";

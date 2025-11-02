@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface IViewElement : IShowable
+    public interface IViewElement : IShowable, ISelectable
     {
         Maybe<Image> Img { get; }
     }

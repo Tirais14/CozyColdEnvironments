@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using SuperLinq;
 using System;
 using System.Linq;
 
@@ -9,15 +10,15 @@ namespace CCEnvs.Unity.Interactables
     public interface IInteractable
     {
         /// <returns>Left is message, right is returned value</returns>
-        Either<string, object[]> Interact(params object?[]? tools);
+        Either<InvokeInfo, Maybe<object>[]> Interact(params object?[]? tools);
     }
     public interface IInteractable<in TIn>
         : IInteractable
     {
         /// <inheritdoc cref="IInteractable.Interact(object?)"/>
-        Either<string, object[]> Interact(params TIn?[]? tools);
+        Either<InvokeInfo, Maybe<object>[]> Interact(params TIn?[]? tools);
 
-        Either<string, object[]> IInteractable.Interact(params object?[] tools)
+        Either<InvokeInfo, Maybe<object>[]> IInteractable.Interact(params object?[]? tools)
         {
             return Interact(tools.Cast<TIn>().ToArray());
         }
@@ -26,13 +27,17 @@ namespace CCEnvs.Unity.Interactables
         : IInteractable<TIn>
     {
         /// <inheritdoc cref="IInteractable.Interact(object?)"/>
-        new Either<string, TOut[]> Interact(params TIn?[]? tools);
+        new Either<InvokeInfo, Maybe<TOut>[]> Interact(params TIn?[]? tools);
 
-        Either<string, object[]> IInteractable<TIn>.Interact(params TIn?[]? tools)
+        Either<InvokeInfo, Maybe<object>[]> IInteractable<TIn>.Interact(params TIn?[]? tools)
         {
             var t = Interact(tools);
 
-            return (t.LeftTarget, t.IfRight(x => x.Cast<object>().ToArray()).RightTarget);
+            return (t.LeftTarget, t.IfRight(
+                arr => arr.Select(
+                    arr => arr.Target.As<object>().Maybe()).ToArray())
+                .AccessRight(Array.Empty<Maybe<object>>())
+                );
         }
     }
 }

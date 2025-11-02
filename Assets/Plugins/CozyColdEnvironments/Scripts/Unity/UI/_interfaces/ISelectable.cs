@@ -8,14 +8,14 @@ namespace CCEnvs.Unity.UI
     {
         IReadOnlyReactiveProperty<bool> IsSelected { get; }
 
-        void SelectIt();
+        void DoSelect();
 
-        void DeselectIt();
+        void DoDeselect();
 
         void SwitchSelectionState();
 
-        IObservable<Unit> ObserveSelectOperation();
+        IObservable<Unit> ObserveSelect();
 
-        IObservable<Unit> ObserveDeselectOperation();
+        IObservable<Unit> ObserveDeselect();
     }
 }

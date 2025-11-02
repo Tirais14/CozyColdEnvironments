@@ -8,6 +8,7 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using ZLinq;
+using static CCEnvs.FuncLanguage.LangOperator;
 
 #pragma warning disable S3236
 #nullable enable
@@ -16,6 +17,7 @@ namespace CCEnvs.Unity.Storages
     public class Inventory : IInventory
     {
         private readonly Dictionary<int, IItemContainer> collection;
+        private readonly ReactiveProperty<Maybe<IItemContainer>> activeContainer = new();
 
         private Subject<(int id, IItemContainer value)>? addSubj;
         private Subject<(int id, IItemContainer value)>? removeSubj;
@@ -33,6 +35,7 @@ namespace CCEnvs.Unity.Storages
         }
         public IEnumerable<int> IDs => collection.Keys;
         public IEnumerable<IItemContainer> Containers => collection.Values;
+        public IReadOnlyReactiveProperty<Maybe<IItemContainer>> ActiveContainer => activeContainer;
         public bool IsEmpty => collection.Values.Any(x => x.Contains());
         public bool IsFull => collection.Values.All(x => x.Contains());
 
@@ -278,7 +281,20 @@ namespace CCEnvs.Unity.Storages
             return default!;
         }
 
-        public MaybeStruct<int> GetID(IItemContainer itemContainer)
+        public void SetActiveContainer(int id)
+        {
+            if (activeContainer.Value.ItIs(x => x.GetContainerID() == id))
+                return;
+
+            activeContainer.Value = Catch(() => this[id], CCEnvs.Diagnostics.LogType.Error).Maybe()!;
+        }
+
+        public void DeactivateContainer()
+        {
+            activeContainer.Value = null;
+        }
+
+        public MaybeStruct<int> GetContainerID(IItemContainer itemContainer)
         {
             Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
@@ -296,5 +312,7 @@ namespace CCEnvs.Unity.Storages
         {
             this.PrintWarning($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
         }
+
+        MaybeStruct<int> IItemContainerInfoItemless.GetContainerID() => (-1, false);
     }
 }

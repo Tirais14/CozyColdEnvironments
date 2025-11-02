@@ -11,12 +11,12 @@ namespace CCEnvs.Unity.UI
 
         public IReadOnlyReactiveProperty<bool> IsSelected => isSelected;
 
-        public void SelectIt()
+        public void DoSelect()
         {
             isSelected.Value = true;
         }
 
-        public void DeselectIt()
+        public void DoDeselect()
         {
             isSelected.Value = false;
         }
@@ -26,12 +26,12 @@ namespace CCEnvs.Unity.UI
             isSelected.Value = !isSelected.Value;
         }
 
-        public IObservable<Unit> ObserveSelectOperation()
+        public IObservable<Unit> ObserveSelect()
         {
             return isSelected.Where(x => x).AsUnitObservable();
         }
 
-        public IObservable<Unit> ObserveDeselectOperation()
+        public IObservable<Unit> ObserveDeselect()
         {
             return isSelected.Where(x => !x).AsUnitObservable();
         }

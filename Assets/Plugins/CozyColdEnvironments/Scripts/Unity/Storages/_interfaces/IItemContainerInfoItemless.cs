@@ -16,5 +16,6 @@ namespace CCEnvs.Unity.Storages
         bool Contains();
         bool Contains(IItem? item);
         bool Contains(IItem? item, int count);
+        MaybeStruct<int> GetContainerID();
     }
 }

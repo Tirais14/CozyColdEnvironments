@@ -1,14 +1,16 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Interactables;
+using System;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public interface ICollectable : IInteractable
+    [Obsolete("Maybe better use IInterctable")]
+    public interface ICollectable
     {
         object? Collect();
-
-        object? IInteractable.Interact() => Collect();
     }
+    [Obsolete("Maybe better use IInterctable")]
     public interface ICollectable<out T> : ICollectable
     {
         new T Collect();

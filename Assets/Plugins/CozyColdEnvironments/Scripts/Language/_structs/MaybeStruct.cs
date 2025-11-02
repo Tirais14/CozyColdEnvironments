@@ -76,6 +76,16 @@ namespace CCEnvs.FuncLanguage
             return new MaybeStruct<T>(source);
         }
 
+        public static implicit operator MaybeStruct<T>((T value, bool hasValue) source)
+        {
+            return new MaybeStruct<T>(source.value, source.hasValue);
+        }
+
+        public static implicit operator MaybeStruct<T>((T value, Predicate<T> predicate) source)
+        {
+            return new MaybeStruct<T>(source.value, source.predicate(source.value));
+        }
+
         public static implicit operator Maybe<T>(MaybeStruct<T> source)
         {
             return source.target;
