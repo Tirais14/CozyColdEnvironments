@@ -18,6 +18,7 @@ namespace CCEnvs.Unity.Storages
     {
         private readonly Dictionary<int, IItemContainer> collection;
         private readonly ReactiveProperty<Maybe<IItemContainer>> activeContainer = new();
+        private readonly Dictionary<int, IDisposable> activeContainerSubscriptions = new(0);
 
         private Subject<(int id, IItemContainer value)>? addSubj;
         private Subject<(int id, IItemContainer value)>? removeSubj;
@@ -94,6 +95,9 @@ namespace CCEnvs.Unity.Storages
                 collection.Add(nextSlotID, itemContainer);
                 itemContainer.ParentInventory = this.As<IInventory>().Maybe();
 
+                var sub = itemContainer.IsActiveContainer.SubscribeWithState2(activeContainer, itemContainer, (_, prop, cnt) => prop.Value = cnt.Maybe());
+                activeContainerSubscriptions.Add(nextSlotID, sub);
+
                 Do.While(() => collection.ContainsKey(nextSlotID), () => nextSlotID++);
 
                 addSubj?.OnNext((nextSlotID, itemContainer));
@@ -135,6 +139,7 @@ namespace CCEnvs.Unity.Storages
             if (collection.Remove(id, out IItemContainer value))
             {
                 value.ParentInventory = null!;
+                activeContainerSubscriptions.Remove(id);
 
                 try
                 {
@@ -304,6 +309,9 @@ namespace CCEnvs.Unity.Storages
 
         public void DeactivateContainer()
         {
+            if (activeContainer.Value.IsNone)
+                return;
+
             activeContainer.Value = null;
         }
 
@@ -323,7 +331,7 @@ namespace CCEnvs.Unity.Storages
 
         void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
         {
-            this.PrintWarning($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
+            this.PrintLog($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
         }
 
         MaybeStruct<int> IItemContainerInfoItemless.GetContainerID() => (-1, false);

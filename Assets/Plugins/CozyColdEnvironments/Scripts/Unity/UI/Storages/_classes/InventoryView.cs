@@ -1,9 +1,7 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
-using System.Net.NetworkInformation;
 using UniRx;
 
 #nullable enable
@@ -22,17 +20,8 @@ namespace CCEnvs.Unity.UI.Storages
         {
             base.Awake();
 
-            BindActiveContainer();
             BindAddContainer();
             BindRemoveContainer();
-        }
-
-        private void BindActiveContainer()
-        {
-            viewModel.ActiveContainerID.Where(x => x.IsSome)
-                                         .Select(x => x.Target)
-                                         .SubscribeWithState(model, (id, inv) => inv.ActivateContainer(id))
-                                         .AddTo(this);
         }
 
         private void BindAddContainer()

@@ -18,13 +18,12 @@ namespace CCEnvs.Unity.UI.Storages
         private readonly ReactiveProperty<bool> itemIconVisible = new();
         private readonly ReactiveProperty<string> itemCount = new();
         private readonly ReactiveProperty<bool> itemCountEnabled = new();
-        private readonly ReactiveProperty<bool> isActiveContainer = new();
 
         public IReadOnlyReactiveProperty<Sprite?> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<bool> ItemIconVisible => itemIconVisible;
         public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
         public IReadOnlyReactiveProperty<bool> ItemCountVisible => itemCountEnabled;
-        public IReadOnlyReactiveProperty<bool> IsActiveContainer => IsActiveContainer;
+        public IReadOnlyReactiveProperty<bool> IsActiveContainer => model.IsActiveContainer;
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
@@ -53,7 +52,5 @@ namespace CCEnvs.Unity.UI.Storages
                            .Subscribe(state => itemCountEnabled.Value = state)
                            .AddTo(this);
         }
-
-        private void 
     }
 }

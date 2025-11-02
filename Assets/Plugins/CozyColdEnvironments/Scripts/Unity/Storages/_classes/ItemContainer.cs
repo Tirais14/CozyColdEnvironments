@@ -16,8 +16,8 @@ namespace CCEnvs.Unity.Storages
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
         private readonly ReactiveProperty<bool> isActiveContainer = new();
-        private int capacity;
         private Maybe<IInventory> parentInventory;
+        private int capacity;
 
         public static ItemContainer Empty => new();
 

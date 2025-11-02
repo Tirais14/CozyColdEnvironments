@@ -100,6 +100,17 @@ namespace CCEnvs.Unity.UI.Storages
                     state => x.gameObject.SetActive(state));
             });
         }
+
+        private void BindActiveContainer()
+        {
+            viewModel.IsActiveContainer.SubscribeWithState(this, (state, self) =>
+            {
+                if (state)
+                    self.DoSelect();
+                else
+                    self.DoDeselect();
+            });
+        }
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>
     {
