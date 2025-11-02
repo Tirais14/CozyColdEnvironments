@@ -46,6 +46,7 @@ namespace CCEnvs.Unity.UI.Storages
 
             BindItemIcon();
             BindItemCount();
+            BindActiveContainer();
         }
 
         protected override bool DragPredicate(out Maybe<string> msg)

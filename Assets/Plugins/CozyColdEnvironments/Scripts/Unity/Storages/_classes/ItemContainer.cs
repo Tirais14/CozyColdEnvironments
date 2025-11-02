@@ -71,7 +71,7 @@ namespace CCEnvs.Unity.Storages
         {
         }
 
-        public ItemContainer(IItem? item, int count, int capcacity)
+        public ItemContainer(IItem? item, int capcacity, int count = 1)
             :
             this(capcacity)
         {
@@ -86,9 +86,9 @@ namespace CCEnvs.Unity.Storages
             itemCount.Value = count;
         }
 
-        public ItemContainer(IItem? item, int count)
+        public ItemContainer(IItem? item, int count = 1)
             :
-            this(item, count, int.MaxValue)
+            this(item, int.MaxValue, count: count)
         {
 
         }
@@ -102,7 +102,7 @@ namespace CCEnvs.Unity.Storages
             if (!ContainsItem())
                 return false;
 
-            return Item.Equals(item);
+            return Item.Value.ItIs(item);
         }
         public bool ContainsItem(IItem? item, int count)
         {
@@ -159,7 +159,7 @@ namespace CCEnvs.Unity.Storages
             if (Item.Value.IsNone || count <= 0)
                 return null!;
 
-            int taked = Math.Clamp(count, 0, ItemCount.Value);
+            int taked = Math.Clamp(count, 1, ItemCount.Value);
             itemCount.Value -= taked;
 
             var result = new ItemContainer(Item.Value.Access(), taked);
@@ -211,11 +211,25 @@ namespace CCEnvs.Unity.Storages
         public void ActivateContainer()
         {
             isActiveContainer.Value = true;
+
+            this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
         }
 
         public void DeactivateContainer()
         {
             isActiveContainer.Value = false;
+
+            this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
+        }
+
+        public bool SwitchContainerActiveState()
+        {
+            if (isActiveContainer.Value)
+                DeactivateContainer();
+            else
+                ActivateContainer();
+
+            return isActiveContainer.Value;
         }
     }
 }

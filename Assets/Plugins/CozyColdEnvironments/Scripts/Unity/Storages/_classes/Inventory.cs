@@ -4,6 +4,7 @@ using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UniRx;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace CCEnvs.Unity.Storages
 {
     public class Inventory : IInventory
     {
-        private readonly Dictionary<int, IItemContainer> collection;
+        private readonly Dictionary<int, IItemContainer> collection = new();
         private readonly ReactiveProperty<Maybe<IItemContainer>> activeContainer = new();
         private readonly Dictionary<int, IDisposable> activeContainerSubscriptions = new(0);
 
@@ -24,7 +25,10 @@ namespace CCEnvs.Unity.Storages
         private Subject<(int id, IItemContainer value)>? removeSubj;
         private int nextSlotID;
 
-        public IItemContainer this[int id] => collection[id];
+        public IItemContainer this[int id] => Catch(() => collection[id]).Match(
+                                                  some: cnt => cnt,
+                                                  none: () => ItemContainer.Empty)
+                                                  .AccessUnsafe();
 
         public event Action<(int id, IItemContainer value)>? OnAdd;
         public event Action<(int id, IItemContainer value)>? OnRemove;
@@ -44,14 +48,14 @@ namespace CCEnvs.Unity.Storages
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
         IReadOnlyReactiveProperty<bool> IItemContainerInfoItemless.IsActiveContainer { get; } = new ReadOnlyReactiveProperty<bool>(Observable.Empty<bool>());
 
-        public Inventory(int capacity)
+        public Inventory(int initialContainerCount)
         {
-            collection = new Dictionary<int, IItemContainer>(capacity);
+            collection = new Dictionary<int, IItemContainer>(initialContainerCount);
+
+            SetContainerCount<ItemContainer>(initialContainerCount);
         }
 
         public Inventory()
-            :
-            this(capacity: 4)
         {
         }
 
@@ -260,9 +264,17 @@ namespace CCEnvs.Unity.Storages
 
         public Maybe<IItemContainer> PutItem(IItemContainer itemContainer, int count)
         {
-            return PutItem(itemContainer.Item.Value.Access(), count);
+            return (from cnt in itemContainer.TakeItem(count)
+                    where cnt.Item.Value.IsSome
+                    let item = cnt.Item.Value.AccessUnsafe()
+                    select (cnt, rest: PutItem(item, count)))
+                    .IfRight(x => x.rest.IfSome(
+                        rest => itemContainer.PutItem(rest)).Target)
+                    .RightTarget
+                    .Maybe()!;
         }
 
+        [DebuggerStepThrough]
         public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
         {
             return PutItem(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
@@ -304,7 +316,9 @@ namespace CCEnvs.Unity.Storages
             if (activeContainer.Value.ItIs(x => x.GetContainerID() == id))
                 return;
 
-            activeContainer.Value = Catch(() => this[id], CCEnvs.Diagnostics.LogType.Error).Maybe()!;
+            Catch(() => this[id]).Match(
+                some: cnt => cnt.ActivateContainer(),
+                none: () => this.PrintError($"Cannot find {nameof(ItemContainer)} with id: {id}"));
         }
 
         public void DeactivateContainer()
@@ -312,7 +326,12 @@ namespace CCEnvs.Unity.Storages
             if (activeContainer.Value.IsNone)
                 return;
 
-            activeContainer.Value = null;
+            activeContainer.Value.IfSome(cnt => cnt.DeactivateContainer());
+        }
+
+        public bool SwitchContainerActiveState(int id)
+        {
+            return this[id].SwitchContainerActiveState();
         }
 
         public MaybeStruct<int> GetContainerID(IItemContainer itemContainer)
@@ -339,5 +358,7 @@ namespace CCEnvs.Unity.Storages
         void IItemContainerInfoItemless.ActivateContainer() => Do.Nothing();
 
         void IItemContainerInfoItemless.DeactivateContainer() => Do.Nothing();
+
+        bool IItemContainerInfoItemless.SwitchContainerActiveState() => Do.Nothing<bool>();
     }
 }

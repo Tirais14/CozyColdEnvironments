@@ -47,6 +47,8 @@ namespace CCEnvs.Unity.Storages
 
         void ActivateContainer(int id);
 
+        bool SwitchContainerActiveState(int id);
+
         MaybeStruct<int> GetContainerID(IItemContainer itemContainer);
     }
 }

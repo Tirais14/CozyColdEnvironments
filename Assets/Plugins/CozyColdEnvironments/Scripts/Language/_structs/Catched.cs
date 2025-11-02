@@ -56,10 +56,13 @@ namespace CCEnvs.FuncLanguage
             try
             {
                 target = valueFactory();
+                this.logType = logType;
+
+                IsSome = target.IsNotDefault();
             }
             catch (Exception ex)
             {
-                this.PrintLog(ex);
+                this.PrintDebug(ex, logType);
             }
         }
 

@@ -22,6 +22,8 @@ namespace CCEnvs.Unity.Storages
 
         void ActivateContainer();
 
-        void DeactivateContainer();
+        void DeactivateContainer(); 
+
+        bool SwitchContainerActiveState();
     }
 }
