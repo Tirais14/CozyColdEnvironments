@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace CCEnvs.Unity.Storages
     {
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
+        private readonly ReactiveProperty<bool> isActiveContainer = new();
         private int capacity;
         private Maybe<IInventory> parentInventory;
 
@@ -40,13 +42,14 @@ namespace CCEnvs.Unity.Storages
                 capacity = value;
             }
         }
-        public bool IsEmpty => !Contains();
+        public bool IsEmpty => !ContainsItem();
         public bool IsFull => ItemCount.Value >= Capacity;
+        public IReadOnlyReactiveProperty<bool> IsActiveContainer => isActiveContainer;
         /// <summary>
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
         public bool UnlockCapacity { get; set; }
-        public Maybe<GameObject?> gameObject { get; private set; }
+        public Maybe<GameObject> gameObject { get; private set; }
 #pragma warning disable S2292
         //TODO: Remove and Add to new item container parent
         public Maybe<IInventory> ParentInventory {
@@ -90,32 +93,32 @@ namespace CCEnvs.Unity.Storages
 
         }
 
-        public bool Contains()
+        public bool ContainsItem()
         {
             return Item.IsNotNull() && ItemCount.Value > 0;
         }
-        public bool Contains(IItem? item)
+        public bool ContainsItem(IItem? item)
         {
-            if (!Contains())
+            if (!ContainsItem())
                 return false;
 
             return Item.Equals(item);
         }
-        public bool Contains(IItem? item, int count)
+        public bool ContainsItem(IItem? item, int count)
         {
-            if (!Contains(item))
+            if (!ContainsItem(item))
                 return false;
 
             return ItemCount.Value >= count;
         }
 
-        public Maybe<IItemContainer> Put(IItem? item, int count)
+        public Maybe<IItemContainer> PutItem(IItem? item, int count = 1)
         {
             if (item.IsNull() || count <= 0)
                 return Maybe<IItemContainer>.None;
             if (IsFull
                 ||
-                (!IsEmpty  && !Contains(item))
+                (!IsEmpty  && !ContainsItem(item))
                 )
                 return new ItemContainer(item, count);
 
@@ -130,28 +133,28 @@ namespace CCEnvs.Unity.Storages
             return restItems;
         }
 
-        public Maybe<IItemContainer> Put(IItemContainer itemContainer, int count)
+        public Maybe<IItemContainer> PutItem(IItemContainer itemContainer, int count)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             if (itemContainer.Equals(this))
                 return null!;
 
-            return itemContainer.Take(count)
-                                .Map(cnt => Put(
+            return itemContainer.TakeItem(count)
+                                .Map(cnt => PutItem(
                 cnt.Item.Value.Access(),
                 cnt.ItemCount.Value).Access()
                 );
         }
 
-        public Maybe<IItemContainer> Put(IItemContainer itemContainer)
+        public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            return Put(itemContainer, itemContainer.ItemCount.Value);
+            return PutItem(itemContainer, itemContainer.ItemCount.Value);
         }
 
-        public Maybe<IItemContainer> Take(int count)
+        public Maybe<IItemContainer> TakeItem(int count)
         {
             if (Item.Value.IsNone || count <= 0)
                 return null!;
@@ -167,14 +170,14 @@ namespace CCEnvs.Unity.Storages
             return result;
         }
 
-        public Maybe<IItemContainer> Take() => Take(itemCount.Value);
+        public Maybe<IItemContainer> TakeItem() => TakeItem(itemCount.Value);
 
-        public Maybe<IItemContainer> Take(IItem item, int count)
+        public Maybe<IItemContainer> TakeItem(IItem item, int count)
         {
-            if (!Contains(item))
+            if (!ContainsItem(item))
                 return Empty;
 
-            return Take(count);
+            return TakeItem(count);
         }
 
         public IItemContainer ShallowClone()
@@ -203,6 +206,16 @@ namespace CCEnvs.Unity.Storages
         public override string ToString()
         {
             return $"{nameof(Item)}: {Item.Value.Map(x => x.ToString()).Access("null")}; {nameof(ItemCount)}: {ItemCount.Value}.";
+        }
+
+        public void ActivateContainer()
+        {
+            isActiveContainer.Value = true;
+        }
+
+        public void DeactivateContainer()
+        {
+            isActiveContainer.Value = false;
         }
     }
 }

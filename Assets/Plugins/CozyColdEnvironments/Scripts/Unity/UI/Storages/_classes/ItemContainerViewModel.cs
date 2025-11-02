@@ -14,15 +14,17 @@ namespace CCEnvs.Unity.UI.Storages
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite?> itemIconView = new();
+        private readonly ReactiveProperty<Sprite?> itemIcon = new();
         private readonly ReactiveProperty<bool> itemIconVisible = new();
-        private readonly ReactiveProperty<string> itemCountView = new();
+        private readonly ReactiveProperty<string> itemCount = new();
         private readonly ReactiveProperty<bool> itemCountEnabled = new();
+        private readonly ReactiveProperty<bool> isActiveContainer = new();
 
-        public IReadOnlyReactiveProperty<Sprite?> ItemIconView => itemIconView;
+        public IReadOnlyReactiveProperty<Sprite?> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<bool> ItemIconVisible => itemIconVisible;
-        public IReadOnlyReactiveProperty<string> ItemCountView => itemCountView;
+        public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
         public IReadOnlyReactiveProperty<bool> ItemCountVisible => itemCountEnabled;
+        public IReadOnlyReactiveProperty<bool> IsActiveContainer => IsActiveContainer;
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
@@ -34,7 +36,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindItemIcon()
         {
-            model.Item.Subscribe(x => itemIconView.Value = x.Map(item => item.Icon).Access())
+            model.Item.Subscribe(x => itemIcon.Value = x.Map(item => item.Icon).Access())
                       .AddTo(this);
 
             model.Item.Select(x => x.IsSome)
@@ -44,12 +46,14 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindItemCount()
         {
-            model.ItemCount.Subscribe(x => itemCountView.Value = x.ToString())
+            model.ItemCount.Subscribe(x => itemCount.Value = x.ToString())
                            .AddTo(this);
 
             model.ItemCount.Select(x => x > 0)
                            .Subscribe(state => itemCountEnabled.Value = state)
                            .AddTo(this);
         }
+
+        private void 
     }
 }

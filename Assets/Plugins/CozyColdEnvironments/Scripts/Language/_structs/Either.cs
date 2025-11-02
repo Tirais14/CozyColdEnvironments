@@ -234,7 +234,16 @@ namespace CCEnvs.FuncLanguage
             return (selector(left), right);
         }
 
-        public readonly Either<L, ROut> SelectRight<ROut>(Func<R, ROut> selector)
+        public readonly Either<LOut, ROut> SelectPair<LOut, ROut>(Func<(Maybe<L>, Maybe<R>), (LOut left, ROut right)> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            var result = selector((left, right));
+
+            return (result.left, result.right);
+        }
+
+        public readonly Either<L, ROut> Select<ROut>(Func<R, ROut> selector)
         {
             Guard.IsNotNull(selector, nameof(selector));
 
@@ -244,13 +253,14 @@ namespace CCEnvs.FuncLanguage
             return (left, selector(right));
         }
 
-        public readonly Either<LOut, ROut> Select<LOut, ROut>(Func<(Maybe<L>, Maybe<R>), (LOut left, ROut right)> selector)
+        public readonly Either<L, R> Where(Predicate<R> predicate)
         {
-            Guard.IsNotNull(selector, nameof(selector));
+            Guard.IsNotNull(predicate, nameof(predicate));
 
-            var result = selector((left, right));
+            if (IsRight && predicate(right))
+                return this;
 
-            return (result.left, result.right);
+            return None;
         }
 
         public readonly bool Equals(Either<L, R> other)

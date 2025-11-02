@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         {
             Guard.IsNotNull(inputAction, nameof(inputAction));
 
-            if (inputAction.type == InputActionType.Button)
+            if (inputAction.type == InputActionType.Button || inputAction.expectedControlType == "Button")
                 return new ButtonActionRx(inputAction).As<IInputActionRx<T>>();
 
             return new InputActionRx<T>(inputAction);

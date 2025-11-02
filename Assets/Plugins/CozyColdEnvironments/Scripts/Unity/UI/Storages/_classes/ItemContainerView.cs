@@ -12,9 +12,6 @@ using UnityEngine.UI;
 
 #nullable enable
 #pragma warning disable IDE0044
-#pragma warning disable IDE1006
-#pragma warning disable IDE0051
-#pragma warning disable S3236
 namespace CCEnvs.Unity.UI.Storages
 {
     [RequireComponent(typeof(Image))]
@@ -74,17 +71,17 @@ namespace CCEnvs.Unity.UI.Storages
 
             eventData.pointerDrag.Maybe()
                                  .Map(go => go.FindFor().Model<IItemContainer>().Target!)
-                                 .Map(cnt => (source: cnt, rest: model.Put(cnt)))
+                                 .Map(cnt => (source: cnt, rest: model.PutItem(cnt)))
                                  .Where(cnt => cnt.rest.IsSome)
-                                 .IfSome(cnt => cnt.source.Put(cnt.rest.AccessUnsafe()));
-
+                                 .IfSome(cnt => cnt.source.PutItem(cnt.rest.AccessUnsafe()));
         }
 
         private void BindItemIcon()
         {
             Img.IfSome(x =>
             {
-                viewModel.ItemIconView.Subscribe(sprite => x.sprite = sprite).AddTo(this);
+                viewModel.ItemIcon.Subscribe(sprite => x.sprite = sprite)
+                                      .AddTo(this);
 
                 viewModel.ItemIconVisible.Subscribe(state => state.Resolve().Match(Show, Hide))
                                          .AddTo(this);
@@ -95,7 +92,7 @@ namespace CCEnvs.Unity.UI.Storages
         {
             counterMesh.IfSome(x =>
             {
-                viewModel.ItemCountView.Subscribe(
+                viewModel.ItemCount.Subscribe(
                     text => x.text = text)
                                        .AddTo(this);
 

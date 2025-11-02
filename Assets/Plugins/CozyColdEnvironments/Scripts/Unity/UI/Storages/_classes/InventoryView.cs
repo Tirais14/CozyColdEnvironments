@@ -1,79 +1,48 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.UI;
+using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
-using CCEnvs.Unity.UI.Storages;
-using System;
-using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using UniRx;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.UI.Storages
 {
     public abstract class InventoryView<TViewModel, TInventory>
-        : View<TViewModel, TInventory>,
-        IItemContainerSelectableController
+        : View<TViewModel, TInventory>
 
-        where TViewModel : ViewModel<TInventory>
+        where TViewModel : ViewModel<TInventory>, IInventoryViewModel<TInventory>
         where TInventory : IInventory
     {
-        private readonly Lazy<Subject<SelectionChangedEvent<int, IItemContainer>>> selectionSubj = new(() => new Subject<SelectionChangedEvent<int, IItemContainer>>());
-        private SelectionController<int, IItemContainer> selectableController;
-
-        public event Action<SelectionChangedEvent<int, IItemContainer>>? OnSelectionChanged;
-
         [field: GetByChildren]
         public GameObjectBag SlotBag { get; private set; } = null!;
-
-        public IReadOnlyReactiveProperty<KeyValuePair<int, Maybe<IItemContainer>>> Selection => selectableController.Selection;
 
         protected override void Awake()
         {
             base.Awake();
 
-            selectableController = new SelectionController<int, IItemContainer>((key) => model[key]);
-            selectableController.AddTo(this);
-
-            model.ObserveAdd()
-                 .Subscribe(AddToList)
-                 .AddTo(this);
+            BindActiveContainer();
+            BindAddContainer();
+            BindRemoveContainer();
         }
 
-        protected override void OnDestroy()
+        private void BindActiveContainer()
         {
-            base.OnDestroy();
-            selectionSubj.Value.Dispose();
+            viewModel.ActiveContainerID.Where(x => x.IsSome)
+                                         .Select(x => x.Target)
+                                         .SubscribeWithState(model, (id, inv) => inv.ActivateContainer(id))
+                                         .AddTo(this);
         }
 
-        private void AddToList((int id, IItemContainer value) pair)
+        private void BindAddContainer()
         {
-            pair.value.gameObject.Match(
-                x => SlotBag.Add(x.transform.root.gameObject),
-                () => this.PrintError($"Cannot find {nameof(IItemContainer)}.{nameof(IItemContainer.gameObject)}")
-                );
+            viewModel.ObserveAddContainer().SubscribeWithState(SlotBag, (go, bag) => bag.Add(go));
         }
 
-        public IObservable<SelectionChangedEvent<int, IItemContainer>> ObserveSelection()
+        private void BindRemoveContainer()
         {
-            return selectionSubj.Value;
-        }
-
-        public void DoSelect(int key)
-        {
-            selectableController.DoSelect(key);
-        }
-
-        public void DoDeselect(int key)
-        {
-            selectableController.DoDeselect(key);
-        }
-
-        public void SwitchSelectionState(int key)
-        {
-            selectableController.SwitchSelectionState(key);
+            viewModel.ObserveRemoveContainer().SubscribeWithState(SlotBag, (go, bag) => bag.Remove(go));
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<Inventory>, Inventory>

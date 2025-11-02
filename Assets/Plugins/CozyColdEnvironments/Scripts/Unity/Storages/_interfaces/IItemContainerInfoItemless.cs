@@ -8,14 +8,20 @@ namespace CCEnvs.Unity.Storages
     public interface IItemContainerInfoItemless
     {
         IReadOnlyReactiveProperty<int> ItemCount { get; }
+        Maybe<IInventory> ParentInventory { get; set; }
+        IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
         int Capacity { get; set; }
         bool IsEmpty { get; }
         bool IsFull { get; }
-        Maybe<IInventory> ParentInventory { get; set; }
 
-        bool Contains();
-        bool Contains(IItem? item);
-        bool Contains(IItem? item, int count);
+        bool ContainsItem();
+        bool ContainsItem(IItem? item);
+        bool ContainsItem(IItem? item, int count);
+
         MaybeStruct<int> GetContainerID();
+
+        void ActivateContainer();
+
+        void DeactivateContainer();
     }
 }

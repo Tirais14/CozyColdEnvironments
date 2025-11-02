@@ -1,12 +1,13 @@
+using CCEnvs.Conversations;
+using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.InputSystem;
-using CCEnvs.Diagnostics;
-using CCEnvs.Disposables;
-using CCEnvs.Reflection;
-using CCEnvs.Common;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Rx
@@ -88,10 +89,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private static Type? ResolveValueType(PropertyInfo prop)
         {
-            if (!prop.PropertyType.IsGenericType)
-                return null;
-
-            return prop.PropertyType.GetGenericArguments()[0];
+            return (Type?)TypeHelper.CollectBaseTypes(prop.PropertyType)
+                                    .FirstOrDefault(type => type.IsGenericType)
+                                    .Maybe()
+                                    .Map(type => type.GetGenericArguments()[0]);
         }
 
         private InputAction ResolveInputAction(PropertyInfo prop)
@@ -118,8 +119,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             IInputActionRx action;
             foreach (var prop in props)
             {
-                action = InputActionRxFactory.Create(ResolveValueType(prop),
-                                                           ResolveInputAction(prop));
+                action = InputActionRxFactory.Create(ResolveValueType(prop), ResolveInputAction(prop));
                 prop.SetValue(this, action);
                 RegsiterAction(action);
             }

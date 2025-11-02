@@ -5,13 +5,13 @@ namespace CCEnvs.Unity.Storages
 {
     public interface IItemAccessor
     {
-        Maybe<IItemContainer> Put(IItem? item, int count = 1);
-        Maybe<IItemContainer> Put(IItemContainer itemContainer, int count);
-        Maybe<IItemContainer> Put(IItemContainer itemContainer);
+        Maybe<IItemContainer> PutItem(IItem? item, int count = 1);
+        Maybe<IItemContainer> PutItem(IItemContainer itemContainer, int count);
+        Maybe<IItemContainer> PutItem(IItemContainer itemContainer);
 
-        Maybe<IItemContainer> Take(int count);
-        Maybe<IItemContainer> Take();
-        Maybe<IItemContainer> Take(IItem item, int count);
+        Maybe<IItemContainer> TakeItem(int count);
+        Maybe<IItemContainer> TakeItem();
+        Maybe<IItemContainer> TakeItem(IItem item, int count);
 
         void CopyFrom(IItemContainerInfo itemContainer);
 

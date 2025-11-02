@@ -18,34 +18,35 @@ namespace CCEnvs.Unity.Storages
 
         IEnumerable<int> IDs { get; }
         IEnumerable<IItemContainer> Containers { get; }
-        int Count { get; }
+        int ContainerCount { get; }
         IReadOnlyReactiveProperty<Maybe<IItemContainer>> ActiveContainer { get; }
 
-        void Add(IItemContainer itemContainer);
-        void Add(GameObject toInstantiate);
+        IObservable<(int id, IItemContainer value)> ObserveAddContainer();
 
-        void AddCount(int count, GameObject toInstantiate);
-        void AddCount<T>(int count) where T : IItemContainer, new();
+        IObservable<(int id, IItemContainer value)> ObserveRemoveContainer();
 
-        bool Remove(int id);
-        bool Remove(IItemContainer itemContainer);
+        void AddContainer(IItemContainer itemContainer);
+        void AddContainer(GameObject toInstantiate);
 
-        void RemoveCount(int count);
+        void AddContainerCount(int count, GameObject toInstantiate);
+        void AddContainerCount<T>(int count) where T : IItemContainer, new();
 
-        bool Contains(int id);
-        bool Contains(IItemContainer itemContainer);
+        bool RemoveContainer(int id);
+        bool RemoveContainer(IItemContainer itemContainer);
 
-        void SetCount(int count, GameObject toInstantiate);
-        void SetCount<T>(int count) where T : IItemContainer, new();
+        void RemoveContainerCount(int count);
 
-        void SetActiveContainer(int id);
+        bool ContainsContainer(int id);
+        bool ContainsContainer(IItemContainer itemContainer);
 
-        void DeactivateContainer();
+        void SetContainerCount(int count, GameObject toInstantiate);
+        void SetContainerCount<T>(int count) where T : IItemContainer, new();
+
+        bool IsContainerActive(int id);
+        bool IsContainerActive(IItemContainer itemContainer);
+
+        void ActivateContainer(int id);
 
         MaybeStruct<int> GetContainerID(IItemContainer itemContainer);
-
-        IObservable<(int id, IItemContainer value)> ObserveAdd();
-
-        IObservable<(int id, IItemContainer value)> ObserveRemove();
     }
 }

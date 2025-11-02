@@ -328,11 +328,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             isSelected.Value = false;
 
-            Img.IfSome(img =>
-            {
-                selectableBeforeSelectColor = img.color;
-                img.color *= Color.red;
-            });
+            Img.IfSome(img => img.color = selectableBeforeSelectColor);
         }
 
         public void SwitchSelectionState()

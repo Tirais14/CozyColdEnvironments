@@ -6,6 +6,6 @@ namespace CCEnvs.Unity
 {
     public interface IGameObjectBindable
     {
-        Maybe<GameObject?> gameObject { get; }
+        Maybe<GameObject> gameObject { get; }
     }
 }

@@ -2,15 +2,13 @@
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.TypeMatching;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI.MVVM
 {
     public abstract class ViewModel<T> : DisposableContainer, IViewModel<T>
     {
-        public Maybe<GameObject?> gameObject { get; private set; }
+        public Maybe<GameObject> gameObject { get; private set; }
         public T model { get; private set; }
 
         protected ViewModel(T model, GameObject gameObject)
