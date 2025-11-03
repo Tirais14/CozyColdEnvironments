@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.Injections
     /// </summary>
     public static class ComponentInjector
     {
-        private enum InejctFrom
+        private enum InjectFrom
         {
             Self,
             Child,
@@ -54,7 +54,7 @@ namespace CCEnvs.Unity.Injections
         private static void SetField(Component source,
             FieldInfo field,
             GetComponentAttribute attribute,
-            InejctFrom injectFrom)
+            InjectFrom injectFrom)
         {
             Type injectType = field.FieldType;
 
@@ -81,28 +81,35 @@ namespace CCEnvs.Unity.Injections
                 return;
             }
 
-            Maybe<GameObject> fromGameObject = attribute.GameObjectName.Map(x => source.gameObject.Find(x)!);
-            Maybe<object> foundComponent = injectFrom switch
+            Maybe<object> foundComponent;
+            try
             {
-                InejctFrom.Parent => source.FindFor()
-                                           .InParent()
-                                           .IncludeInactive()
-                                           .Component(injectType),
+                foundComponent = injectFrom switch
+                {
+                    InjectFrom.Parent => source.FindFor()
+                                               .InParent()
+                                               .IncludeInactive()
+                                               .Component(injectType),
 
-                InejctFrom.Child => source.FindFor()
-                                          .InChildren()
-                                          .IncludeInactive()
-                                          .Component(injectType),
+                    InjectFrom.Child => source.FindFor()
+                                              .InChildren()
+                                              .IncludeInactive()
+                                              .Component(injectType),
 
-                InejctFrom.GameObject => fromGameObject.Match(
-                    some: go => go.FindFor()
-                                  .Component(injectType),
-
-                    none: () => typeof(ComponentInjector).PrintError($"Cannot find {nameof(GameObject)}: {attribute.GameObjectName.Access()}.")
-                    ),
-                _ => source.FindFor()
-                           .Component(injectType),
-            };
+                    InjectFrom.GameObject => source.FindFor()
+                                                   .InChildren()
+                                                   .IncludeInactive()
+                                                   .Name(attribute.GameObjectName)
+                                                   .GameObject()
+                                                   .Strict(),
+                    _ => throw new InvalidOperationException(injectFrom.ToString())
+                };
+            }
+            catch (Exception ex)
+            {
+                typeof(ComponentInjector).PrintException(ex);
+                return;
+            }
 
             if ((attribute.IsOptional
                 ||
@@ -144,28 +151,28 @@ namespace CCEnvs.Unity.Injections
                             source,
                             field,
                             attribute: attribute,
-                            InejctFrom.Self);
+                            InjectFrom.Self);
                         break;
                     case GetByParentAttribute:
                         SetField(
                             source,
                             field,
                             attribute: attribute,
-                            InejctFrom.Parent);
+                            InjectFrom.Parent);
                         break;
                     case GetByChildrenAttribute byChild:
-                        byChild.GameObjectName.Match(
+                        byChild.GameObjectName.Maybe().Match(
                             _ => SetField(
                             source,
                             field,
                             attribute,
-                            InejctFrom.GameObject),
+                            InjectFrom.GameObject),
 
                             () => SetField(
                             source,
                             field,
                             attribute,
-                            InejctFrom.Child));
+                            InjectFrom.Child));
                         break;
                     default:
                         break;

@@ -25,7 +25,8 @@ namespace CCEnvs.Unity.UI.Elements
             target = this.FindFor()
                          .InParent()
                          .IncludeInactive()
-                         .ComponentStrict<IViewElement>();
+                         .Component<IViewElement>()
+                         .Strict();
         }
 
         protected override void Start()

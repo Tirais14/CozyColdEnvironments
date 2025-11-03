@@ -88,6 +88,9 @@ namespace CCEnvs.Unity
 
         public static GameObjectSearch Empty => new();
 
+        /// <summary>
+        /// May be null
+        /// </summary>
         public GameObject Source { get; protected set; } = null!;
         public Settings settings { get; protected set; } = Settings.Default;
         public Maybe<string> name { get; protected set; }
@@ -240,8 +243,8 @@ namespace CCEnvs.Unity
         {
             Source = default!;
             settings = Settings.Default;
-            name = default;
-            tag = default;
+            name = Maybe<string>.None;
+            tag = Maybe<string>.None;
             layerMask = default;
             findMode = FindMode.Self;
 
@@ -453,9 +456,9 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Transform Transform()
+        public Result<Transform> Transform()
         {
-            return Transforms().FirstOrDefault();
+            return (Transforms().FirstOrDefault(), new ComponentNotFoundException(typeof(Transform), context: Source));
         }
 
         [DebuggerStepThrough]
@@ -467,9 +470,9 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObject GameObject()
+        public Result<GameObject> GameObject()
         {
-            return GameObjects().FirstOrDefault();
+            return (GameObjects().FirstOrDefault(), new ComponentNotFoundException(typeof(GameObject), context: Source));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

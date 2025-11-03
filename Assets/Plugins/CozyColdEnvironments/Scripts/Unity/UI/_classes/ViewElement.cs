@@ -35,7 +35,8 @@ namespace CCEnvs.Unity.UI.Elements
                 () => this.FindFor()
                           .InParent()
                           .IncludeInactive()
-                          .ComponentStrict<ICanvasController>()
+                          .Component<ICanvasController>()
+                          .Strict()
                 );
 
             pointerInput = new Lazy<InputActionRx<Vector2>>(
