@@ -5,6 +5,8 @@ namespace CCEnvs.Unity.UI.MVVM
     public interface IViewModel : IGameObjectBindable
     {
         object model { get; }
+
+        void ForceNotify();
     }
     public interface IViewModel<out T> : IViewModel
     {

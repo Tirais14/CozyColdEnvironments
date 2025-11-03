@@ -34,7 +34,7 @@ namespace CCEnvs.Json.DTO
 
         public Type MutateType()
         {
-            return TypeSearch.FindTypeInAppDomain(
+            return TypeQuery.FindTypeInAppDomain(
                 new TypeSearchArguments
                 {
                     AssemblyName = AssemblyName,

@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.UI.Storages
         {
             if (model.IsEmpty)
             {
-                msg = $" Dragging is not possible. {nameof(ItemContainer)} is empty.";
+                msg = $"Dragging is not possible. {nameof(ItemContainer)} is empty.";
                 return false;
             }
 
@@ -63,8 +63,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         protected override void OnDrop(PointerEventData eventData)
         {
-            if (
-               !DropPredicate()
+            if (!DropPredicate()
                 || 
                 eventData.pointerDrag == cGameObject.Value
                 )
@@ -79,26 +78,26 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindItemIcon()
         {
-            Img.IfSome(x =>
+            Img.IfSome(img =>
             {
-                viewModel.ItemIcon.Subscribe(sprite => x.sprite = sprite)
-                                      .AddTo(this);
+                viewModel.ItemIcon.SubscribeWithState(img, static (sprite, img) => img.sprite = sprite)
+                                  .AddTo(this);
 
-                viewModel.ItemIconVisible.Subscribe(state => state.Resolve().Match(Show, Hide))
+                viewModel.ItemIconVisible.SubscribeWithState(this, static (state, self) => state.Resolve().Match(self.Show, self.Hide))
                                          .AddTo(this);
             });
         }
 
         private void BindItemCount()
         {
-            counterMesh.IfSome(x =>
+            counterMesh.IfSome(mesh =>
             {
-                viewModel.ItemCount.Subscribe(
-                    text => x.text = text)
+                viewModel.ItemCount.SubscribeWithState(mesh,
+                    static (text, mesh) => mesh.text = text)
                     .AddTo(this);
 
-                viewModel.ItemCountVisible.Subscribe(
-                    state => x.gameObject.SetActive(state));
+                viewModel.ItemCountVisible.SubscribeWithState(mesh,
+                    static (state, mesh) => mesh.gameObject.SetActive(state));
             });
         }
 

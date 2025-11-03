@@ -91,7 +91,7 @@ namespace CCEnvs.Reflection
         /// <param name="type"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Queue<Type> CollectBaseTypes(Type type)
+        public static Queue<Type> CollectBaseTypes(this Type type)
         {
             CC.Guard.IsNotNull(type, nameof(type));
 

@@ -69,6 +69,11 @@ namespace CCEnvs.Unity.UI.MVVM
 #endif //UNITY_2017_1_OR_NEWER
         }
 
+        public override void Show()
+        {
+            base.Show();
 
+            viewModel.ForceNotify();
+        }
     }
 }

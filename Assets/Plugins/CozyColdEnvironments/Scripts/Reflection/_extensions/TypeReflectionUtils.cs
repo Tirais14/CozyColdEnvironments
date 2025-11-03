@@ -80,6 +80,7 @@ namespace CCEnvs.Reflection
             CC.Guard.IsNotNull(source, nameof(source));
 
             Queue<Type> baseTypes = TypeHelper.CollectBaseTypes(source);
+
             var loopPredicate = new LoopFuse(() => baseTypes.Count > 0);
             var members = new List<MemberInfo>();
             bindingFlags |= BindingFlags.DeclaredOnly;

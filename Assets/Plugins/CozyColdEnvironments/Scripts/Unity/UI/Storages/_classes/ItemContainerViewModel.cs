@@ -28,27 +28,28 @@ namespace CCEnvs.Unity.UI.Storages
             :
             base(model, gameObject)
         {
+            gameObject.FindFor
             BindItemIcon();
             BindItemCount();
         }
 
         private void BindItemIcon()
         {
-            model.Item.Subscribe(x => itemIcon.Value = x.Map(item => item.Icon).Access())
+            model.Item.SubscribeWithState(itemIcon, static (x, prop) => prop.Value = x.Map(item => item.Icon).Access())
                       .AddTo(this);
 
             model.Item.Select(x => x.IsSome)
-                      .Subscribe(state => itemIconVisible.Value = state)
+                      .SubscribeWithState(itemIconVisible, static (state, prop) => prop.Value = state)
                       .AddTo(this);
         }
 
         private void BindItemCount()
         {
-            model.ItemCount.Subscribe(x => itemCount.Value = x.ToString())
+            model.ItemCount.SubscribeWithState(itemCount, static (x, prop) => prop.Value = x.ToString())
                            .AddTo(this);
 
             model.ItemCount.Select(x => x > 0)
-                           .Subscribe(state => itemCountEnabled.Value = state)
+                           .SubscribeWithState(itemCountEnabled, static (state, prop) => prop.Value = state)
                            .AddTo(this);
         }
     }
