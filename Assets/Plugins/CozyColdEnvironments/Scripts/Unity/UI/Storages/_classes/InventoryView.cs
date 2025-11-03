@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.Elements;
@@ -16,12 +17,35 @@ namespace CCEnvs.Unity.UI.Storages
         [field: GetByChildren]
         public GameObjectBag SlotBag { get; private set; } = null!;
 
-        protected override void Awake()
+        protected override void Start()
         {
-            base.Awake();
+            base.Start();
 
+            SetupSlotBag();
             BindAddContainer();
             BindRemoveContainer();
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            SlotBag.Clear();
+        }
+
+        public void SetInventory(TInventory inventory)
+        {
+            CC.Guard.IsNotNull(inventory, nameof(inventory));
+        }
+
+        private void SetupSlotBag()
+        {
+            SlotBag.settings = IGameObjectBag.Settings.ReparentByRootMarker
+                |
+                IGameObjectBag.Settings.ActivateOnAdd
+                |
+                IGameObjectBag.Settings.DeactivateOnRemove;
+
+            SlotBag.AddRange(viewModel.GetInventoryContainerGameObjects());
         }
 
         private void BindAddContainer()

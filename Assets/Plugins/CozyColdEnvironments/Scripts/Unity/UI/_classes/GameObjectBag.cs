@@ -7,35 +7,22 @@ using System.Linq;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
+using static CCEnvs.Unity.UI.Elements.IGameObjectBag;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
 {
     public class GameObjectBag : ViewElement, IGameObjectBag
     {
-        protected Maybe<ReactiveCollection<GameObject>> collection;
+        protected readonly ReactiveCollection<GameObject> collection = new();
 
-        public bool DestroyOnRemove { get; set; }
-        public int Count => collection.Map(x => x.Count).Access();
+        public Settings settings { get; set; } = Settings.Default;
+        public int Count => collection.Count;
 
         protected override bool showOnStart => true;
 
-        protected ReactiveCollection<GameObject> Inner {
-            get
-            {
-                return collection.IfNone(() => { collection = new ReactiveCollection<GameObject>(); })
-                            .Access(collection.Access())!;
-            }
-        }
-
         GameObject IReadOnlyReactiveCollection<GameObject>.this[int index] {
-            get
-            {
-                return collection.Match(
-                       x => x[index],
-                       () => CC.Throw.IndexOutOfRange(index).As<GameObject>())
-                   .AccessUnsafe();
-            }
+            get => collection[index];
         }
 
         protected override void Awake()
@@ -49,91 +36,148 @@ namespace CCEnvs.Unity.UI.Elements
         {
             base.OnDestroy();
 
-            collection.IfSome(x => x.Dispose());
+            collection.Dispose();
         }
 
         public void Add(GameObject item)
         {
             CC.Guard.IsNotNull(item, nameof(item));
 
-            Inner.Add(item);
+            collection.Add(item);
             OnAdd(item);
         }
 
         public void Clear()
         {
-            collection.IfSome(x => x.ForEach(OnRemove))
-                 .IfSome((x) => x.Clear());
+            foreach (var go in collection)
+                OnRemove(go);
+
+            collection.Clear();
         }
 
-        public bool Contains(GameObject item) => Inner.Contains(item);
+        public bool Contains(GameObject item) => collection.Contains(item);
 
         public void CopyTo(GameObject[] array, int arrayIndex)
         {
-            collection.IfSome(x => x.CopyTo(array, arrayIndex));
+            collection.CopyTo(array, arrayIndex);
         }
 
         public bool Remove(GameObject item)
         {
-            if (item == null)
+            if (item is null)
                 return false;
 
-            return collection.Map(x => x.Remove(item))
-                        .IfSome(_ => OnRemove(item))
-                        .Access();
+            if (collection.Remove(item))
+            {
+                OnRemove(item);
+                return true;
+            }
+
+            return false;
         }
 
         public IObservable<CollectionAddEvent<GameObject>> ObserveAdd()
         {
-            return Inner.ObserveAdd();
+            return collection.ObserveAdd();
         }
 
         public IObservable<int> ObserveCountChanged(bool notifyCurrentCount = false)
         {
-            return Inner.ObserveCountChanged(notifyCurrentCount);
+            return collection.ObserveCountChanged(notifyCurrentCount);
         }
 
         public IObservable<CollectionMoveEvent<GameObject>> ObserveMove()
         {
-            return Inner.ObserveMove();
+            return collection.ObserveMove();
         }
 
         public IObservable<CollectionRemoveEvent<GameObject>> ObserveRemove()
         {
-            return Inner.ObserveRemove();
+            return collection.ObserveRemove();
         }
 
         public IObservable<CollectionReplaceEvent<GameObject>> ObserveReplace()
         {
-            return Inner.ObserveReplace();
+            return collection.ObserveReplace();
         }
 
         public IObservable<Unit> ObserveReset()
         {
-            return Inner.ObserveReset();
+            return collection.ObserveReset();
         }
 
         public IEnumerator<GameObject> GetEnumerator()
         {
-            return collection.Map(x => x.GetEnumerator())
-                        .Access(Enumerable.Empty<GameObject>().GetEnumerator())!;
+            return collection.GetEnumerator();
         }
 
-        protected void OnAdd(GameObject go)
+        protected virtual void OnAdd(GameObject go)
         {
-            go.transform.SetParent(transform);
+            if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            {
+                var root = go.FindFor().Root();
+
+                root.IfRight(x =>
+                {
+                    if (settings.IsFlagSetted(Settings.ActivateOnAdd))
+                        x.gameObject.SetActive(true);
+
+                    x.transform.SetParent(transform);
+                });
+            }
+
+            if (!settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            {
+                if (settings.IsFlagSetted(Settings.ActivateOnAdd)
+                    &&
+                    go != null)
+                {
+                    go.SetActive(true);
+                }
+
+                go.transform.SetParent(transform);
+            }
 
             go.OnDestroyAsObservable()
-              .Subscribe(_ => Inner.Remove(go))
+              .Subscribe(_ => collection.Remove(go))
               .AddTo(go);
         }
 
-        protected void OnRemove(GameObject go)
+        protected virtual void OnRemove(GameObject go)
         {
-            if (DestroyOnRemove)
-                Destroy(go);
+            if (go == null)
+                return;
 
-            go.transform.SetParent(null);
+            if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            {
+                var root = go.FindFor().Root();
+
+                root.IfRight(x =>
+                {
+                    if (settings.IsFlagSetted(Settings.DestroyOnRemove))
+                        Destroy(x.gameObject);
+                    else
+                        x.transform.SetParent(null);
+
+                    if (settings.IsFlagSetted(Settings.DeactivateOnRemove))
+                        x.gameObject.SetActive(false);
+                });
+            }
+
+            if (!settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            {
+                if (settings.IsFlagSetted(Settings.DestroyOnRemove))
+                    Destroy(go);
+                else
+                    go.transform.SetParent(null);
+
+                if (settings.IsFlagSetted(Settings.DeactivateOnRemove)
+                    &&
+                    go != null)
+                {
+                    go.SetActive(false);
+                }
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -9,7 +9,8 @@ namespace CCEnvs.Unity.Storages
 {
     public interface IInventory
         : IItemAccessor,
-        IItemContainerInfoItemless
+        IItemContainerInfoItemless,
+        IEnumerable<IItemContainer>
     {
         IItemContainer this[int id] { get; }
 

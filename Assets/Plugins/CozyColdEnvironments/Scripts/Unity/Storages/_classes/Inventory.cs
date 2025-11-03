@@ -3,6 +3,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -344,6 +345,11 @@ namespace CCEnvs.Unity.Storages
                              .Access();
         }
 
+        public IEnumerator<IItemContainer> GetEnumerator()
+        {
+            return collection.Values.GetEnumerator();
+        }
+
         Maybe<IItemContainer> IItemAccessor.TakeItem(int count) => null!;
 
         Maybe<IItemContainer> IItemAccessor.TakeItem() => null!;
@@ -360,5 +366,7 @@ namespace CCEnvs.Unity.Storages
         void IItemContainerInfoItemless.DeactivateContainer() => Do.Nothing();
 
         bool IItemContainerInfoItemless.SwitchContainerActiveState() => Do.Nothing<bool>();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

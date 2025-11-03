@@ -4,6 +4,7 @@ using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -49,6 +50,15 @@ namespace CCEnvs.Unity.UI.Storages
                     where go.IsSome
                     select go.Target)
                     .Do(go => addedContainerGameObjects.Remove(go));
+        }
+
+
+        public IEnumerable<GameObject> GetInventoryContainerGameObjects()
+        {
+            return from cnt in model
+                   select cnt.gameObject.Target into go
+                   where go != null
+                   select go;
         }
     }
 }

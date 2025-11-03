@@ -415,6 +415,13 @@ namespace CCEnvs.Unity
             return Transforms().Select(x => x.gameObject);
         }
 
+        public Either<Transform, RootMarker> Root()
+        {
+            var marker = InParent().IncludeInactive().Component<RootMarker>();
+
+            return (marker.Map(x => x.transform).Access(Source.transform.root), marker.Target);
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidateInstance()

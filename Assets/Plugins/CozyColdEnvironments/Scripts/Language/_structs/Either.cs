@@ -263,6 +263,16 @@ namespace CCEnvs.FuncLanguage
             return None;
         }
 
+        public readonly Either<L, R> WhereLeft(Predicate<L> predicate)
+        {
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            if (IsLeft && predicate(left))
+                return this;
+
+            return None;
+        }
+
         public readonly bool Equals(Either<L, R> other)
         {
             return IsLeft

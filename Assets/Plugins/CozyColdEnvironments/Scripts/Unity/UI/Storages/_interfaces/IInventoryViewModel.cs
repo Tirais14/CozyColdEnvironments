@@ -2,6 +2,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using System;
+using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 
@@ -15,5 +16,7 @@ namespace CCEnvs.Unity.UI.Storages
         IObservable<GameObject> ObserveAddContainer();
 
         IObservable<GameObject> ObserveRemoveContainer();
+
+        IEnumerable<GameObject> GetInventoryContainerGameObjects();
     }
 }
