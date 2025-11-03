@@ -63,7 +63,8 @@ namespace CCEnvs.Unity.Injections
                                         injectType.GetGenericTypeDefinition()
                                                   .IsAnyType(typeof(Maybe<>),
                                                              typeof(MaybeStruct<>),
-                                                             typeof(Catched<>));
+                                                             typeof(Catched<>),
+                                                             typeof(IfElse<>));
 
             if (isSupportedValueType)
             {
@@ -81,62 +82,65 @@ namespace CCEnvs.Unity.Injections
                 return;
             }
 
-            Maybe<object> foundComponent;
+            object? foundComponent;
             try
             {
                 foundComponent = injectFrom switch
                 {
+                    InjectFrom.Self => source.FindFor().Component(injectType).Strict(),
+
                     InjectFrom.Parent => source.FindFor()
                                                .InParent()
                                                .IncludeInactive()
-                                               .Component(injectType),
+                                               .Component(injectType)
+                                               .Strict(),
 
                     InjectFrom.Child => source.FindFor()
                                               .InChildren()
                                               .IncludeInactive()
-                                              .Component(injectType),
+                                              .Component(injectType)
+                                              .Strict(),
 
                     InjectFrom.GameObject => source.FindFor()
                                                    .InChildren()
                                                    .IncludeInactive()
-                                                   .Name(attribute.GameObjectName)
+                                                   .Name(attribute.Name)
                                                    .GameObject()
+                                                   .Strict()
+                                                   .FindFor()
+                                                   .Component(injectType)
                                                    .Strict(),
+
                     _ => throw new InvalidOperationException(injectFrom.ToString())
                 };
             }
             catch (Exception ex)
             {
+                if (attribute.IsOptional
+                    ||
+                    field.FieldType.IsType<IConditional>())
+                {
+                    typeof(ComponentInjector).PrintLog($"Not injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}. Is optional and not found.");
+                    return;
+                }
+
                 typeof(ComponentInjector).PrintException(ex);
                 return;
             }
 
-            if ((attribute.IsOptional
-                ||
-                field.FieldType.IsType<IMaybe>())
-                &&
-                foundComponent.IsNone)
-            {
-                typeof(ComponentInjector).PrintLog($"Not injected in component: {source.GetType().GetFullName()}; field: {BackingField.GetHumanizedName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}. Is optional and not found.");
-                return;
-            }
-
-            ComponentNotFoundException.ThrowIfNull(
-                foundComponent.Access(),
-                field.FieldType,
-                source.gameObject);
+            if (foundComponent is IConditional conditional)
+                foundComponent = conditional.Access();
 
             if (injectType.IsNotType(field.FieldType))
             {
-                var converted = foundComponent.Map(x => x.MutateType(field.FieldType)).AccessUnsafe();
+                var converted = foundComponent!.MutateType(field.FieldType);
 
                 field.SetValue(source, converted);
             }
             else
-                field.SetValue(source, foundComponent
-                     .AccessUnsafe());
+                field.SetValue(source, foundComponent);
 
-            typeof(ComponentInjector).PrintLog($"Injected in component: {source.GetType().GetFullName()}; field: {BackingField.GetHumanizedName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}.");
+            typeof(ComponentInjector).PrintLog($"Injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}.");
         }
 
         private static void SetFields(Component source,
@@ -161,7 +165,7 @@ namespace CCEnvs.Unity.Injections
                             InjectFrom.Parent);
                         break;
                     case GetByChildrenAttribute byChild:
-                        byChild.GameObjectName.Maybe().Match(
+                        byChild.Name.Maybe().Match(
                             _ => SetField(
                             source,
                             field,

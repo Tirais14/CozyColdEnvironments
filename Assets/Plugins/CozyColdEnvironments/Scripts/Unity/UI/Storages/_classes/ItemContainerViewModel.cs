@@ -1,5 +1,4 @@
 using CCEnvs.Disposables;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;

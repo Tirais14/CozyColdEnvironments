@@ -95,7 +95,7 @@ namespace CCEnvs.Unity.UI.Storages
             {
                 viewModel.ItemCount.Subscribe(
                     text => x.text = text)
-                                       .AddTo(this);
+                    .AddTo(this);
 
                 viewModel.ItemCountVisible.Subscribe(
                     state => x.gameObject.SetActive(state));

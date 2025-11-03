@@ -22,23 +22,16 @@ namespace CCEnvs.Unity.UI.MVVM
 
         where TViewModel : ViewModel<TModel>
     {
-        private Lazy<TViewModel> _viewModel;
+        protected Lazy<TViewModel> _viewModel;
 
         public TModel model => viewModel.model;
-        public TViewModel viewModel {
-            get
-            {
-                _viewModel ??= new Lazy<TViewModel>(CreateViewModel);
-
-                return _viewModel.Value;
-            }
-        }
+        public TViewModel viewModel => _viewModel.Value;
 
         protected override void Awake()
         {
             base.Awake();
 
-            _viewModel = new Lazy<TViewModel>(CreateViewModel);
+            _viewModel = new Lazy<TViewModel>(() => CreateViewModel().AddTo(this));
         }
 
         protected virtual TModel CreateModel()
@@ -54,9 +47,9 @@ namespace CCEnvs.Unity.UI.MVVM
             return model;
         }
 
-        protected virtual TViewModel CreateViewModel()
+        protected virtual TViewModel CreateViewModel(TModel? model = default)
         {
-            TModel model = CreateModel();
+            model ??= CreateModel();
 
 #if UNITY_2017_1_OR_NEWER
             return InstanceFactory.Create<TViewModel>(

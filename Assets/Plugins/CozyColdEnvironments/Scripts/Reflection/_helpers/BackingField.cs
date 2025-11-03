@@ -7,7 +7,7 @@ namespace CCEnvs.Reflection
 {
     public static class BackingField
     {
-        public static string GetHumanizedName(FieldInfo field)
+        public static string HumanizeName(FieldInfo field)
         {
             Guard.IsNotNull(field, nameof(field));
 

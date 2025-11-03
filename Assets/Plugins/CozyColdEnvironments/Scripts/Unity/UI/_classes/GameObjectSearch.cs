@@ -318,14 +318,14 @@ namespace CCEnvs.Unity
                                   return x.go.name == name;
                               else
                                   return x.go.name.ContainsOrdinal(name, settings.IsFlagSetted(Settings.IgnoreCase));
-                          }).Access(true)
+                          }).Target
                           where !layerMask.HasValue || x.go.layer == layerMask
                           where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
                           select x.cmp;
             }
 
-            if (!settings.IsFlagSetted(Settings.Reusable))
-                Reset();
+            //if (!settings.IsFlagSetted(Settings.Reusable))
+            //    Reset();
 
             return results;
         }

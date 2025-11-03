@@ -3,6 +3,7 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
+using System;
 using UniRx;
 
 #nullable enable
@@ -22,6 +23,7 @@ namespace CCEnvs.Unity.UI.Storages
             base.Start();
 
             SetupSlotBag();
+            Init();
             BindAddContainer();
             BindRemoveContainer();
         }
@@ -35,6 +37,17 @@ namespace CCEnvs.Unity.UI.Storages
         public void SetInventory(TInventory inventory)
         {
             CC.Guard.IsNotNull(inventory, nameof(inventory));
+
+            viewModel.Dispose();
+            _viewModel = new Lazy<TViewModel>(() => CreateViewModel(inventory).AddTo(this));
+            Init();
+        }
+
+        private void Init()
+        {
+            SlotBag.Clear();
+
+            SlotBag.AddRange(viewModel.GetInventoryContainerGameObjects());
         }
 
         private void SetupSlotBag()
@@ -44,8 +57,6 @@ namespace CCEnvs.Unity.UI.Storages
                 IGameObjectBag.Settings.ActivateOnAdd
                 |
                 IGameObjectBag.Settings.DeactivateOnRemove;
-
-            SlotBag.AddRange(viewModel.GetInventoryContainerGameObjects());
         }
 
         private void BindAddContainer()

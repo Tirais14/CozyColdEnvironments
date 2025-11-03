@@ -56,6 +56,13 @@ namespace CCEnvs.Unity.Storages
             SetContainerCount<ItemContainer>(initialContainerCount);
         }
 
+        public Inventory(int initialContainerCount, GameObject toInstantiate)
+        {
+            collection = new Dictionary<int, IItemContainer>(initialContainerCount);
+
+            SetContainerCount(initialContainerCount, toInstantiate);
+        }
+
         public Inventory()
         {
         }
@@ -115,6 +122,8 @@ namespace CCEnvs.Unity.Storages
         }
         public void AddContainer(GameObject toInstantiate)
         {
+            CC.Guard.IsNotNull(toInstantiate, nameof(toInstantiate));
+
             UnityEngine.Object.Instantiate(toInstantiate)
                               .FindFor()
                               .InChildren()
