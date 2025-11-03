@@ -16,16 +16,84 @@ namespace CCEnvs.Unity
 {
     public record GameObjectSearch
     {
+        [Flags]
+        public enum Settings
+        {
+            None,
+            Reusable,
+            IncludeInactive = 2,
+            ExcludeSelf = 4,
+            ByFullName = 8,
+            IgnoreCase = 16,
+            Default = None
+        }
+
+        public readonly ref struct Result<T>
+        {
+            private readonly T value;
+            private readonly Exception exception;
+
+            public Result(T value, Exception exception)
+            {
+                Guard.IsNotNull(exception, nameof(exception));
+
+                this.value = value;
+                this.exception = exception;
+            }
+
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Result<T>((T value, Exception exception) input)
+            {
+                return new Result<T>(input.value, input.exception);
+            }
+
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Maybe<T>(Result<T> source)
+            {
+                return source.Lax();
+            }
+
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator T(Result<T> source)
+            {
+                return source.Strict();
+            }
+
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Maybe<T> Lax() => value;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public T Strict()
+            {
+                if (value.IsNull())
+                    throw exception;
+
+                return value;
+            }
+
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Result<TOut> Cast<TOut>()
+            {
+                return (value.As<TOut>(), exception);
+            }
+        }
+
         internal readonly static GameObjectSearch Instance = new GameObjectSearch().Reusable(false);
         private readonly static GameObjectSearch empty = new();
 
         public static GameObjectSearch Empty => new();
 
         public GameObject Source { get; protected set; } = null!;
-        public bool includeInactive { get; protected set; }
-        public bool excludeSelf { get; protected set; }
-        public bool reusable { get; protected set; } = true;
+        public Settings settings { get; protected set; } = Settings.Default;
         public Maybe<string> name { get; protected set; }
+        /// <summary>
+        /// <see cref="Settings.ByFullName"/>, <see cref="Settings.IgnoreCase"/> doesn' affect
+        /// </summary>
         public Maybe<string> tag { get; protected set; }
         public int? layerMask { get; protected set; }
         public FindMode findMode { get; protected set; } = FindMode.Self;
@@ -67,7 +135,10 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectSearch IncludeInactive(bool state = true)
         {
-            includeInactive = state;
+            if (state)
+                settings |= Settings.IncludeInactive;
+            else
+                settings &= ~Settings.IncludeInactive;
 
             return this;
         }
@@ -76,7 +147,10 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectSearch ExcludeSelf(bool state = true)
         {
-            excludeSelf = state;
+            if (state)
+                settings |= Settings.ExcludeSelf;
+            else
+                settings &= ~Settings.ExcludeSelf;
 
             return this;
         }
@@ -87,7 +161,21 @@ namespace CCEnvs.Unity
             if (this == Instance)
                 return this;
 
-            reusable = state;
+            if (state)
+                settings |= Settings.Reusable;
+            else
+                settings &= ~Settings.Reusable;
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch ByFullName(bool state = true)
+        {
+            if (state)
+                settings |= Settings.ByFullName;
+            else
+                settings &= ~Settings.ByFullName;
 
             return this;
         }
@@ -151,8 +239,7 @@ namespace CCEnvs.Unity
         public GameObjectSearch Reset()
         {
             Source = default!;
-            includeInactive = default;
-            excludeSelf = default;
+            settings = Settings.Default;
             name = default;
             tag = default;
             layerMask = default;
@@ -163,34 +250,18 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<object> Component(Type type)
+        public Result<object> Component(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return Components(type).FirstOrDefault();
+            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Source));
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<T> Component<T>()
+        public Result<T> Component<T>()
         {
-            return Component(typeof(T)).Cast<T>().RightTarget;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object ComponentStrict(Type type)
-        {
-            Guard.IsNotNull(type, nameof(type));
-
-            return Component(type).IfNone(() => throw new ComponentNotFoundException(type, Source)).Target!;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T ComponentStrict<T>()
-        {
-            return Component<T>().IfNone(() => throw new ComponentNotFoundException(typeof(T), Source)).Target!;
+            return Component(typeof(T)).Cast<T>();
         }
 
         public IEnumerable<object> Components(Type? type = null)
@@ -206,8 +277,8 @@ namespace CCEnvs.Unity
                 results = findMode switch
                 {
                     FindMode.Self => Source.GetComponents(type),
-                    FindMode.InChilds => Source.GetComponentsInChildren(type, includeInactive),
-                    FindMode.InParents => Source.GetComponentsInParent(type, includeInactive),
+                    FindMode.InChilds => Source.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                    FindMode.InParents => Source.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };
             }
@@ -238,13 +309,19 @@ namespace CCEnvs.Unity
             {
                 results = from cmp in results
                           select (cmp, go: cmp.gameObject) into x
-                          where name.Map(name => x.go.name == name).Access(true)
+                          where name.Map(name =>
+                          {
+                              if (settings.IsFlagSetted(Settings.ByFullName))
+                                  return x.go.name == name;
+                              else
+                                  return x.go.name.ContainsOrdinal(name, settings.IsFlagSetted(Settings.IgnoreCase));
+                          }).Access(true)
                           where !layerMask.HasValue || x.go.layer == layerMask
                           where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
                           select x.cmp;
             }
 
-            if (reusable)
+            if (!settings.IsFlagSetted(Settings.Reusable))
                 Reset();
 
             return results;
@@ -276,32 +353,17 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<IView> View(Type? type = null)
+        public Result<IView> View(Type type)
         {
-            return Views(type).FirstOrDefault().Maybe();
+            return Component(type).Cast<IView>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<T> View<T>()
+        public Result<T> View<T>()
             where T : IView
         {
-            return Views<T>().FirstOrDefault();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IView ViewStrict(Type? type = null)
-        {
-            return View(type).IfNone(() => throw new ComponentNotFoundException(type, Source)).Target!;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T ViewStrict<T>()
-            where T : IView
-        {
-            return ViewStrict(typeof(T)).As<T>();
+            return View(typeof(T)).Cast<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -327,34 +389,24 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<IViewModel> ViewModel(Type? type = null)
+        public Result<IViewModel> ViewModel(Type type)
         {
-            return ViewModels(type).FirstOrDefault().Maybe();
+            Guard.IsNotNull(type, nameof(type));
+
+            return (ViewModels(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Source));
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<T> ViewModel<T>()
+        public Result<T> ViewModel<T>()
             where T : IViewModel
         {
-            return ViewModels<T>().FirstOrDefault();
+            return ViewModel(typeof(T)).Cast<T>();
         }
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IViewModel ViewModelStrict(Type? type = null)
-        {
-            return ViewModel(type).IfNone(() => throw new ComponentNotFoundException(type, Source)).Target!;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T ViewModelStrict<T>()
-            where T : IViewModel
-        {
-            return ViewModelStrict(typeof(T)).As<T>();
-        }
-
+        /// <summary>
+        /// Also include <see cref="Components(Type?)"/>
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> Models(Type? type = null)
         {
@@ -369,6 +421,7 @@ namespace CCEnvs.Unity
             return results;
         }
 
+        /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> Models<T>()
@@ -376,32 +429,22 @@ namespace CCEnvs.Unity
             return Models(typeof(T)).Cast<T>();
         }
 
+        /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<object> Model(Type? type = null)
+        public Result<object> Model(Type type)
         {
-            return Models(type).FirstOrDefault();
+            Guard.IsNotNull(type, nameof(type));
+
+            return (Models(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Source));
         }
 
+        /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> Model<T>()
         {
-            return Models<T>().FirstOrDefault();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object ModelStrict(Type? type = null)
-        {
-            return Model(type).IfNone(() => throw new ComponentNotFoundException(type, Source)).Target!;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T ModelStrict<T>()
-        {
-            return ModelStrict().As<T>();
+            return Model(typeof(T)).Cast<T>();
         }
 
         [DebuggerStepThrough]
@@ -410,14 +453,31 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Transform Transform()
+        {
+            return Transforms().FirstOrDefault();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<GameObject> GameObjects()
         {
             return Transforms().Select(x => x.gameObject);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObject GameObject()
+        {
+            return GameObjects().FirstOrDefault();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Either<Transform, RootMarker> Root()
         {
-            var marker = InParent().IncludeInactive().Component<RootMarker>();
+            var marker = InParent().IncludeInactive()
+                                   .Component<RootMarker>()
+                                   .Lax();
 
             return (marker.Map(x => x.transform).Access(Source.transform.root), marker.Target);
         }

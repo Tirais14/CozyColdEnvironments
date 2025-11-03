@@ -50,12 +50,16 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindAddContainer()
         {
-            viewModel.ObserveAddContainer().SubscribeWithState(SlotBag, (go, bag) => bag.Add(go));
+            viewModel.ObserveAddContainer()
+                     .SubscribeWithState(SlotBag, (go, bag) => bag.Add(go))
+                     .AddTo(this);
         }
 
         private void BindRemoveContainer()
         {
-            viewModel.ObserveRemoveContainer().SubscribeWithState(SlotBag, (go, bag) => bag.Remove(go));
+            viewModel.ObserveRemoveContainer()
+                     .SubscribeWithState(SlotBag, (go, bag) => bag.Remove(go))
+                     .AddTo(this);
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<Inventory>, Inventory>
