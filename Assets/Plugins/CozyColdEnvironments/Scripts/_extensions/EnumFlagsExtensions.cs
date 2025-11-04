@@ -16,7 +16,7 @@ namespace CCEnvs
             where T : unmanaged, Enum
         {
 #if UNITY_2017_1_OR_NEWER
-            int size = Unity.Collections.LowLevel.Unsafe.UnsafeUtility.SizeOf<T>();
+            int size = global::Unity.Collections.LowLevel.Unsafe.UnsafeUtility.SizeOf<T>();
 #else
             int size = Unsafe.SizeOf<T>();
 #endif

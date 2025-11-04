@@ -9,8 +9,10 @@ namespace CCEnvs.Unity
 {
     public readonly struct Result<T>
     {
+        public readonly Exception exception;
         private readonly T value;
-        private readonly Exception exception;
+
+        public T Raw => value;
 
         public Result(T value, Exception exception)
         {

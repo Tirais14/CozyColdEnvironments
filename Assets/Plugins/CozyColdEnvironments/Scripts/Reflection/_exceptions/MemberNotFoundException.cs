@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
 using System;
+using System.Linq;
 using System.Reflection;
 
 #nullable enable
@@ -8,32 +8,22 @@ namespace CCEnvs.Reflection
 {
     public class MemberNotFoundException : CCException
     {
-        public MemberNotFoundException()
-        {
-        }
-
-        public MemberNotFoundException(Type reflectedType,
+        public MemberNotFoundException(MemberTypes memberType,
+                                       Type? reflectedType = null,
                                        string? name = null,
-                                       BindingFlags? bindingFlags = null)
+                                       BindingFlags? bindingFlags = null,
+                                       Type[]? types = null,
+                                       Binder? binder = null)
             :
-            base(ReflectedType(reflectedType)
-                 +
-                 (name is not null ? $" Name = {name}. " : string.Empty) 
-                 + 
-                 (bindingFlags.HasValue ? $" Binding flags = {bindingFlags.Value}. " : string.Empty))
+            base(Sentence.Empty.Add($"Member type: {memberType}...")
+                .AddIfNotDefault(() => $"Reflected type: {reflectedType!.GetFullName()}...", reflectedType)
+                .AddIfNotDefault(() => $"Name: {name}...", name)
+                .AddIfNotDefault(() => $"BindingFlags: {bindingFlags.GetValueOrDefault()}", bindingFlags)
+                .AddIfNotDefault(() => $"Input types: {types.Select(x => x.GetFullName())}...", types)
+                .AddIfNotDefault(() => $"Binder: {binder}...", binder)
+                .ToString())
         {
 
-        }
-
-        public MemberNotFoundException(string message, Exception? innerException = null) 
-            :
-            base(message, innerException)
-        {
-        }
-
-        protected static string ReflectedType(Type type)
-        {
-            return $"Reflected type = {type.GetName()}.";
         }
     }
 }
