@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using BindingFlags = System.Reflection.BindingFlags;
 
 #nullable enable
@@ -25,7 +26,8 @@ namespace CCEnvs.Reflection
             None,
             IncludeBaseTypes,
             ByFullName,
-            ForceConstructors
+            ForceConstructors,
+            ForceMethods
         }
 
         public readonly static Reflect self = new();
@@ -489,48 +491,31 @@ namespace CCEnvs.Reflection
             return true;
         }
 
-        private 
-
-        private bool CompareMethod(MethodBase method)
+        private bool CompareMethod(MethodBase methodBase)
         {
-            if (method is not ConstructorInfo
-                &&
-                !CompareName(method.Name)
-                )
-                return false;
+            var parameters = methodBase.GetParameters();
+            ParameterModifier paramMods = parameters.GetParameterModifiers();
+            var argumentTypes = this.argumentTypes.Access(Type.EmptyTypes);
 
-            ParameterInfo[] parameters = method.GetParameters();
-
-            if (parameters.Length != argumentTypes.Access(Type.EmptyTypes).Length
-                ||
-                parameters.Zip(argumentTypes.Access(Type.EmptyTypes), (param, other) => param.ParameterType.IsType(other)).Any(x => !x)
-                )
-                return false;
-
-            ParameterModifier mods = parameters.GetParameterModifiers();
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                if ((parameterModifiers.IsNone && mods[i])
+            return (settings.IsFlagSetted(Settings.ForceMethods)
                     ||
-                    (parameterModifiers.IsSome
+                    name.IsSome)
                     &&
-                    parameterModifiers.AccessUnsafe()[0][i] != mods[i])
-                    )
-                    return false;
-            }
-
-            if (method is MethodInfo methodTyped
-                &&
-                (extraType.IsSome
-                && 
-                methodTyped.ReturnType.IsNotType(extraType.AccessUnsafe())
-                ||
-                (methodTyped.ContainsGenericParameters
-                &&
-                methodTyped.GetGenericArguments().Length != genericTypes.Access(Type.EmptyTypes).Length)))
-                return false;
-
-            return true;
+                    methodBase is MethodInfo method
+                    &&
+                    method.CompareParameters(argumentTypes, parameters.GetParameterModifiers())
+                    &&
+                    extraType.Match(some: type => method.ReturnType.IsType(type), none: () => true).Raw
+                    &&
+                    CompareName(method.Name)
+                    ||
+                    (settings.IsFlagSetted(Settings.ForceConstructors)
+                    ||
+                    name.IsNone)
+                    &&
+                    methodBase is ConstructorInfo ctor
+                    &&
+                    ctor.CompareParameters(argumentTypes, paramMods);
         }
     }
 
