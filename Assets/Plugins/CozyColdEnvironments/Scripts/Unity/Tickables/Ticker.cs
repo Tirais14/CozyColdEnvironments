@@ -92,45 +92,26 @@ namespace CCEnvs.Unity.Tickables
 
         private static void TryVoidInjectedTicker(TTickable tickable)
         {
-            Type tickableType = tickable.GetType();
-            if (!TypeCache.Fields.TryGetValue(
-                new FieldKey(tickableType, typeof(ITicker)),
-                out FieldInfo? tickerField))
-            {
-                tickerField = tickableType.GetField(
-                    typeof(ITicker),
-                    BindingFlagsDefault.InstanceAll)
-                    .TryCacheMember();
-            }
-
-            if (tickerField is null)
-                return;
-
-            tickerField.SetValue(tickable, null);
+            tickable.ReflectQuery()
+                    .NonPublic()
+                    .IncludeBaseTypes()
+                    .ExtraType<ITicker>()
+                    .Cache()
+                    .Field()
+                    .Lax()
+                    .IfSome(prop => prop.SetValue(tickable, null));
         }
 
         private void TryInjectTicker(TTickable tickable)
         {
-            Type tickableType = tickable.GetType();
-            if (!TypeCache.Fields.TryGetValue(
-                new FieldKey(tickableType, typeof(ITicker)),
-                out FieldInfo? tickerField))
-            {
-                tickerField = tickableType.GetField(
-                    typeof(ITicker),
-                    BindingFlagsDefault.InstanceAll)
-                    .TryCacheMember();
-            }
-            if (tickerField is null)
-                return;
-
-            if (tickerField.IsInitOnly)
-                throw new InvalidOperationException("Field with ticker cannot be readonly.");
-
-            if (tickerField.GetValue(tickable).IsNotNull())
-                throw new InvalidOperationException($"Field with type {nameof(ITicker).TrimFirst()} must be null(native or unity) before regsiterd.");
-
-            tickerField.SetValue(tickable, this);
+            tickable.ReflectQuery()
+                    .NonPublic()
+                    .IncludeBaseTypes()
+                    .ExtraType<ITicker>()
+                    .Cache()
+                    .Field()
+                    .Lax()
+                    .IfSome(prop => prop.SetValue(tickable, this));
         }
 
         private void AddTickable(TTickable tickable)

@@ -1,4 +1,3 @@
-using CCEnvs.Reflection.Data;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -19,14 +18,6 @@ namespace CCEnvs.Cacheables
             ReflectedType = reflectedType;
             ParameterTypes = parameterTypes;
             ParameterModifiers = parameterModifiers;
-        }
-
-        public MethodKey(Type reflectedType,
-                               CCParameters parameters,
-                               ParameterModifier parameterModifiers)
-            :
-            this(reflectedType, (Type[])parameters, parameterModifiers)
-        {
         }
 
         public static MethodKey Create(MethodBase method)

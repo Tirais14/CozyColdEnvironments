@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection.Data;
-using CCEnvs.Unity;
+using CCEnvs.Reflection;
 using CCEnvs.Unity.Collections;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
@@ -67,13 +66,11 @@ namespace CCEnvs.U2D.Locations
             T cell;
             foreach (var pos in Bounds.allPositionsWithin)
             {
-                cell = InstanceFactory.Create<T>(
-                    new ExplicitArguments(
-                        new ExplicitArgument(this),
-                        new ExplicitArgument(pos)),
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound);
+                cell = typeof(T).ReflectQuery()
+                                .NonPublic()
+                                .Arguments(this, pos)
+                                .Invoke<T>()
+                                .Strict();
 
                 cells[pos] = cell;
 

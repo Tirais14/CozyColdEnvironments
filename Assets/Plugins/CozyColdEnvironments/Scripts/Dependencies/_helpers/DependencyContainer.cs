@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 
@@ -12,6 +13,8 @@ namespace CCEnvs.Dependencies
 
         public static void Bind(object obj, object? id = null)
         {
+            CC.Guard.IsNotNull(obj, nameof(obj));
+
             Type objType = obj.GetType();
             if (bindings.ContainsKey((objType, id)))
                 throw new CCException($"Object {objType.GetFullName()} already binded.");

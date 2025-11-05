@@ -106,7 +106,12 @@ namespace CCEnvs.Unity.Initables
         /// <exception cref="InvalidOperationException"></exception>
         private static void SetInited(IInitableBase initable)
         {
-            PropertyInfo[] props = initable.GetType().ForceGetProperties(BindingFlagsDefault.InstanceAll);
+            PropertyInfo[] props = initable.GetType()
+                                           .ReflectQuery()
+                                           .NonPublic()
+                                           .IncludeBaseTypes()
+                                           .Properties()
+                                           .ToArray();
 
             if (props.IsEmpty())
                 throw new Exception("Cannot find any property.");
@@ -117,7 +122,7 @@ namespace CCEnvs.Unity.Initables
                 x.PropertyType == typeof(bool)
                 )
                 ??
-                throw new PropertyNotFoundException(initable.GetType(), nameof(IInitableBase.IsInited));
+                throw new MemberNotFoundException(MemberTypes.Property, initable.GetType(), nameof(IInitableBase.IsInited));
 
             if (isInitedProp.SetMethod is null)
                 throw new InvalidOperationException("Not found SetMethod.");

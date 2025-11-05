@@ -26,9 +26,9 @@ namespace CCEnvs.FuncLanguage
     }
     public interface IConditional<T> : IConditional, IEnumerable<T>
     {
-        new T? Target { get; }
+        new T? Raw { get; }
 
-        object? IConditional.Target => Target;
+        object? IConditional.Target => Raw;
 
         new T? Access();
         T Access(T defaultValue);

@@ -1,8 +1,7 @@
+using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using UnityEngine.InputSystem;
-using CCEnvs.Reflection;
-using CCEnvs.Reflection.Data;
-using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Rx
@@ -22,18 +21,20 @@ namespace CCEnvs.Unity.InputSystem.Rx
         }
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public static IInputActionRx Create(Type? valueType, InputAction inputAction)
+        public static IInputActionRx Create(Type valueType, InputAction inputAction)
         {
             if (inputAction is null)
                 throw new ArgumentNullException(nameof(inputAction));
             if (valueType is null)
                 return new InputActionRx(inputAction);
 
-            return MethodInvoker.Invoke<IInputActionRx>(
-                new TypeValuePair(typeof(InputActionRxFactory)),
-                nameof(Create),
-                new ExplicitArguments(new ExplicitArgument(inputAction)),
-                valueType)!;
+            return typeof(InputActionRxFactory).ReflectQuery()
+                                               .Name(nameof(Create))
+                                               .Arguments(inputAction)
+                                               .GenericTypes(valueType)
+                                               .Cache()
+                                               .Invoke<IInputActionRx>()
+                                               .Strict();
         }
     }
 }

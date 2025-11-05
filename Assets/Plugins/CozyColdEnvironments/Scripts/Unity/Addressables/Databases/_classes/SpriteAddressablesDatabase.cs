@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 TexturesAsSprites ? LoadAssetsAsync<Texture2D>(assetLabels, ConvertTextureAsset) : UniTask.CompletedTask
             };
 
-            await UniTask.WhenAll(tasks.GetInternalArraySegment());
+            await UniTask.WhenAll(tasks);
         }
     }
 }

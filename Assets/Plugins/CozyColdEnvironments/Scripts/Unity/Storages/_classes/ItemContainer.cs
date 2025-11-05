@@ -199,7 +199,7 @@ namespace CCEnvs.Unity.Storages
 
         public MaybeStruct<int> GetContainerID()
         {
-            return parentInventory.Map(x => x.GetContainerID(this)).Target;
+            return parentInventory.Map(x => x.GetContainerID(this)).Raw;
         }
 
         public override string ToString()

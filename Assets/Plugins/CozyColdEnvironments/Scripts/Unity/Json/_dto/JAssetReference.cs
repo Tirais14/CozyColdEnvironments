@@ -1,13 +1,8 @@
-using CCEnvs.Async;
-using CCEnvs.Diagnostics;
 using CCEnvs.Json.DTO;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Data;
-using CCEnvs.TypeMatching;
 using CCEnvs.Unity.AddrsAssets;
 using Newtonsoft.Json;
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using UnityEngine.AddressableAssets;
@@ -79,7 +74,9 @@ namespace CCEnvs.Unity.Json.Converters
             object genericHandle = LoadAssetAsync();
 
             MethodInfo castOperator = genericHandle.GetType().GetOverloadedCastOperator(
-                typeof(AsyncOperationHandle));
+                typeof(AsyncOperationHandle)).Raw!;
+
+            //TODO: null forgiving operator is temporary, resolve it
 
             LoadHandle = (AsyncOperationHandle)castOperator.Invoke(obj: null, Range.From(genericHandle));
 
@@ -88,11 +85,12 @@ namespace CCEnvs.Unity.Json.Converters
 
         private object LoadAssetAsync()
         {
-            return MethodInvoker.Invoke(
-                new TypeValuePair(typeof(Addressables)),
-                nameof(Addressables.LoadAssetAsync),
-                new ExplicitArguments(ExplicitArgument.T<object>(Key)),
-                AssetType)!;
+            return typeof(Addressables).ReflectQuery()
+                .ByFullName()
+                .Name(nameof(Addressables.LoadAssetAsync))
+                .GenericTypes(AssetType)
+                .Invoke()
+                .Strict();
         }
 
         [OnDeserialized]

@@ -24,7 +24,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Result<T>((T value, Exception exception) input)
+        public static implicit operator Result<T>((T? value, Exception exception) input)
         {
             return new Result<T>(input.value, input.exception);
         }

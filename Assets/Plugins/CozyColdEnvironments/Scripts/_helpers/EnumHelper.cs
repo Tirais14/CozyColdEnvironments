@@ -19,7 +19,7 @@ namespace CCEnvs.Utils
                 throw new ArgumentException($"{enumType.Name} is not enum.");
 
             FieldInfo field = enumType.GetField(name, BindingFlagsDefault.All) ??
-                throw new FieldNotFoundException(enumType, name, BindingFlagsDefault.All);
+                throw new MemberNotFoundException(MemberTypes.Field, enumType, name, BindingFlagsDefault.All);
 
             return field;
         }

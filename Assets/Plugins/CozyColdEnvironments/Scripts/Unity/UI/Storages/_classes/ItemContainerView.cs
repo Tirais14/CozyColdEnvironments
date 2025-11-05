@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.UI.Storages
                 return;
 
             eventData.pointerDrag.Maybe()
-                                 .Map(go => go.FindFor().Model<IItemContainer>().Target!)
+                                 .Map(go => go.FindFor().Model<IItemContainer>().Raw!)
                                  .Map(cnt => (source: cnt, rest: model.PutItem(cnt)))
                                  .Where(cnt => cnt.rest.IsSome)
                                  .IfSome(cnt => cnt.source.PutItem(cnt.rest.AccessUnsafe()));

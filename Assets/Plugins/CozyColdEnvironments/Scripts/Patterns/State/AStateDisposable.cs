@@ -1,4 +1,6 @@
 using CCEnvs.Disposables;
+using System;
+using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable S3881
@@ -6,12 +8,12 @@ namespace CCEnvs.Patterns.States
 {
     public abstract class AStateDisposable<T> 
         :
-        AState<T>,
-        IDisposableContainer
+        AState<T>, 
+        IDisposable
 
         where T : IStateMachine
     {
-        private readonly Disposables.DisposableCollection disposables = new();
+        private readonly List<IDisposable> disposables = new();
         private bool disposedValue;
 
         protected AStateDisposable(T stateMachine) : base(stateMachine)
@@ -23,7 +25,7 @@ namespace CCEnvs.Patterns.States
             if (!disposedValue)
             {
                 if (disposing)
-                    disposables.Dispose();
+                    disposables.DisposeAll();
 
                 disposedValue = true;
             }
@@ -32,7 +34,7 @@ namespace CCEnvs.Patterns.States
         public virtual void Dispose()
         {
             Dispose(disposing: true);
-            System.GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);
         }
     }
 }

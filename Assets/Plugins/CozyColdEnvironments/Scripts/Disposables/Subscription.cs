@@ -34,16 +34,6 @@ namespace CCEnvs.Disposables
                                                             observer,
                                                             observable);
         }
-
-        public static ISubscription<TDelegate, ContextedEventInfo<TDelegate>> FromEvent<TDelegate>(
-            TDelegate eventHanlder,
-            ContextedEventInfo<TDelegate> eventInfo)
-            where TDelegate : Delegate
-        {
-            CC.Guard.IsNotNull(eventInfo, nameof(eventInfo));
-
-            return Create(eventHanlder, eventInfo, static (del, ev) => ev.RemoveEventHanlder(del));
-        }
     }
 
     public sealed class Subscription<TObserver, TObservable> 

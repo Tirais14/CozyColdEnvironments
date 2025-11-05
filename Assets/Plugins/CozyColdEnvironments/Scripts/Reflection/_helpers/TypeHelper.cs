@@ -1,15 +1,11 @@
-using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using QuikGraph;
-using QuikGraph.Algorithms;
 using QuikGraph.Algorithms.Search;
 using QuikGraph.Graphviz;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 #nullable enable
@@ -18,73 +14,6 @@ namespace CCEnvs.Reflection
 {
     public static class TypeHelper
     {
-        public static MemberMatches GetMemberMatches(Type left,
-                                                     Type right)
-        {
-            CC.Guard.IsNotNull(left, nameof(left));
-            CC.Guard.IsNotNull(right, nameof(right));
-
-            BindingFlags bindings = BindingFlagsDefault.All;
-            var comparer = new MemberEqualityComparer();
-            FieldInfo[] valueFields = left.ForceGetFields(bindings);
-            FieldInfo[] otherFields = right.ForceGetFields(bindings);
-
-            var matches = new List<MemberInfo>();
-            valueFields.Where(x => otherFields.FirstOrDefault(
-                            y => comparer.Equals(x, y)).IsNotDefault())
-                       .ForEach(x => matches.Add(x));
-
-            PropertyInfo[] valueProps = left.ForceGetProperties(bindings);
-            PropertyInfo[] otherProps = right.ForceGetProperties(bindings);
-
-            valueProps.Where(x => otherProps.FirstOrDefault(
-                            y => comparer.Equals(x, y)).IsNotDefault())
-                       .ForEach(x => matches.Add(x));
-
-            MethodInfo[] valueMethods = left.ForceGetMethods(bindings);
-            MethodInfo[] otherMethods = right.ForceGetMethods(bindings);
-
-            valueMethods.Where(x => otherMethods.FirstOrDefault(
-                            y => comparer.Equals(x, y)).IsNotDefault())
-                       .ForEach(x => matches.Add(x));
-
-            EventInfo[] valueEvents = left.ForceGetMembers<EventInfo>(bindings);
-            EventInfo[] otherEvents = right.ForceGetMembers<EventInfo>(bindings);
-
-            valueEvents.Where(x => otherEvents.FirstOrDefault(
-                            y => comparer.Equals(x, y)).IsNotDefault())
-                       .ForEach(x => matches.Add(x));
-
-            return new MemberMatches(
-                valueFields.Length + valueProps.Length + valueMethods.Length + valueEvents.Length,
-                otherFields.Length + otherProps.Length + otherMethods.Length + otherEvents.Length,
-                matches.AsReadOnly());
-        }
-
-        [Obsolete("In developing")]
-        /// <summary>
-        /// Finds type with the largest number of base types
-        /// </summary>
-        /// <param name="types"></param>
-        /// <returns></returns>
-        public static Type GetElderType(IEnumerable<Type>? types, Type? restriction = null)
-        {
-            throw new NotImplementedException("In developing");
-
-            CC.Guard.CollectionArgument(types, nameof(types));
-
-            IEnumerable<Type> ordered = from type in types
-                                        orderby type.GetParentsCount() descending
-                                        select type;
-
-            if (restriction is not null)
-                return ordered.FirstOrDefault(x => x.IsType(restriction))
-                       ??
-                       throw new LogicException("Incorrect input types. Not found any matches by setted restriction.");
-
-            return ordered.First();
-        }
-
         /// <summary>
         /// Also supports interfaces
         /// </summary>
@@ -101,7 +30,7 @@ namespace CCEnvs.Reflection
             return Do.Collect(type, x => x.BaseType);
         }
 
-        [Obsolete("In developing")]
+        [Obsolete("In developing", error: true)]
         public static Queue<Type> GetInterfaceInheritancePath(Type type)
         {
             throw new NotImplementedException("In developing");

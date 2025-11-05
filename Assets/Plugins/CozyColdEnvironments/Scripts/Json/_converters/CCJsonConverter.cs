@@ -47,15 +47,18 @@ namespace CCEnvs.Json
                                                [NotNullWhen(true)] out object? result,
                                                out bool isCacheable)
         {
-            isCacheable = type.IsCacheableType();
+            //TODO:Cached
 
-            if (isCacheable
-                ||
-                JsonSerializerCache.Objects.ContainsKey(type)
-                )
-                return JsonSerializerCache.Objects.TryGetValue(type,
-                                                              out result);
+            //isCacheable = type.IsCacheableType();
 
+            //if (isCacheable
+            //    ||
+            //    JsonSerializerCache.Objects.ContainsKey(type)
+            //    )
+            //    return JsonSerializerCache.Objects.TryGetValue(type,
+            //                                                  out result);
+
+            isCacheable = false;
             result = null;
             return false;
         }

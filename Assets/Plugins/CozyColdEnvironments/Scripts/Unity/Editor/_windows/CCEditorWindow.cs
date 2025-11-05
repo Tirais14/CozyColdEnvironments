@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.EditorC
 
         private void InitElements()
         {
-            foreach (var item in from field in this.AsReflectedNonCacheable().AllFields.Value
+            foreach (var item in from field in this.ReflectQuery().NonPublic().Fields()
                                  where field.FieldType.IsType<VisualElement>()
                                  select field.GetValue(this).As<VisualElement>())
             {

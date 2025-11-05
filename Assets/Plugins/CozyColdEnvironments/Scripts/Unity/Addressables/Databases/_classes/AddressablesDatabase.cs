@@ -157,37 +157,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             await LoadAssetsAsync<TAsset>(assetLabels);
         }
 
-        public IAddressablesDatabase CutByType(Type assetType)
-        {
-            var newDB = InstanceFactory.Create(typeof(AddressablesDatabase<>).MakeGenericType(assetType))
-                                       .As<IAddressablesDatabase>();
-
-            this.AsReflected().CopyTypeDataTo(newDB, nameof(KeyFactory), nameof(IDFactory));
-
-            var assets = collection.AsValueEnumerable()
-                           .GroupBy(x => x.Value.GetType())
-                           .First(x => x.Key == assetType)
-                           .Select(x => x)
-                           .Do(x => collection.Remove(x.Key))
-                           .Select(x => x.Value);
-
-            newDB.AddAssets(assets);
-            return newDB;
-        }
-        public IAddressablesDatabase<T> CutByType<T>() where T : Object
-        {
-            return CutByType(typeof(T)).As<IAddressablesDatabase<T>>();
-        }
-
-        public IAddressablesDatabase[] CutByTypes()
-        {
-            return collection.Values.AsValueEnumerable()
-                            .Select(x => x.GetType())
-                            .Distinct()
-                            .Select(assetType => CutByType(assetType))
-                            .ToArray();
-        }
-
         public Maybe<TAsset> FindAsset(AssetKey key)
         {
             if (collection.TryGetValue(key, out var asset))

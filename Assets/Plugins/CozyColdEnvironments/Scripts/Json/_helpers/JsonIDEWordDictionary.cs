@@ -117,8 +117,11 @@ namespace CCEnvs.Json
 
         private static string[] CollectFieldNames(Type[] types)
         {
-            FieldInfo[] fields = types.SelectMany(x => x.ForceGetFields(BindingFlagsDefault.All))
-                                      .ToArray();
+            FieldInfo[] fields = types.SelectMany(x => x.ReflectQuery()
+            .NonPublic()
+            .IncludeBaseTypes()
+            .Fields()
+            ).ToArray();
 
             var enumFields = new List<FieldInfo>(fields.Where(x => x.ReflectedType.IsEnum));
 
@@ -140,7 +143,10 @@ namespace CCEnvs.Json
         private static string[] CollectPropertyNames(Type[] types)
         {
             return (from type in types
-                    select type.ForceGetProperties(BindingFlagsDefault.All) into props
+                    select type.ReflectQuery()
+                    .NonPublic()
+                    .IncludeBaseTypes()
+                    .Properties() into props
                     from prop in props
                     where prop.CanWrite
                           ||

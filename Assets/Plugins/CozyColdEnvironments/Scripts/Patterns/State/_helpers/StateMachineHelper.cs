@@ -41,11 +41,12 @@ namespace CCEnvs.Patterns.States
             if (stateMachine.IsNull())
                 throw new ArgumentNullException(nameof(stateMachine));
 
-            return (from x in stateMachine.GetType().ForceGetFields(BindingFlagsDefault.InstanceAll)
-                    where x.FieldType.IsType<IFactory<Type, IState>>()
-                    select (IFactory<Type, IState>?)x.GetValue(stateMachine) into f
-                    where f.IsNotNull()
-                    select f).FirstOrDefault();
+            return (from field in stateMachine.GetType().ReflectQuery().NonPublic().IncludeBaseTypes().Fields()
+                    where field.FieldType.IsType<IFactory<Type, IState>>()
+                    select (IFactory<Type, IState>?)field.GetValue(stateMachine) into value
+                    where value.IsNotNull()
+                    select value)
+                    .FirstOrDefault();
         }
 
         public static IState[] CreateStates(IFactory<Type, IState> factory,
@@ -64,7 +65,7 @@ namespace CCEnvs.Patterns.States
                 throw new ArgumentNullException(nameof(stateMachine));
 
             return stateMachine.GetType()
-                               .ForceGetFields(BindingFlagsDefault.InstanceAll)
+                               .ReflectQuery().NonPublic().IncludeBaseTypes().Fields()
                                .Where(x => x.FieldType.IsType<IState>() && x.FieldType != typeof(IState))
                                .ToArray();
         }

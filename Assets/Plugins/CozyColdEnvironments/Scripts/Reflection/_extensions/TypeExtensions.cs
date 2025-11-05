@@ -56,13 +56,6 @@ namespace CCEnvs.Reflection
             return count;
         }
 
-        public static Reflected AsReflected(this Type value)
-        {
-            CC.Guard.IsNotNull(value, nameof(value));
-
-            return new Reflected(value);
-        }
-
         public static string GetTypeName<T>(this T? obj,
             TypeNameConvertingAttributes attributes = TypeNameConvertingAttributes.Default)
         {
@@ -126,21 +119,6 @@ namespace CCEnvs.Reflection
                    value == typeof(long)
                    ||
                    value == typeof(ulong);
-        }
-
-        public static bool IsTypeBySemantics(this Type left, Type right)
-        {
-            CC.Guard.IsNotNull(left, nameof(left));
-            CC.Guard.IsNotNull(right, nameof(right));
-
-            MemberMatches matches = TypeHelper.GetMemberMatches(left, right);
-
-            return matches.values.Count == matches.leftProcessedMemberCount;
-        }
-
-        public static bool IsNotTypeBySemantics(this Type left, Type right)
-        {
-            return !left.IsTypeBySemantics(right);
         }
 
         /// <summary>

@@ -6,24 +6,25 @@ namespace CCEnvs.Collections.Unsafe
 {
     public static class ListExtensions
     {
-        public static string? InternalArrayFieldName { get; private set; }
+        public static string? InternalArrayFieldName { get; private set; } = "items";
 
         public static T[] GetInternalArray<T>(this List<T> source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            Reflected rSource = source.AsReflected();
-
-            if (InternalArrayFieldName.IsNullOrEmpty())
-            {
-                var field = rSource.Field<T[]>();
-
-                InternalArrayFieldName = rSource.Field<T[]>().value.Name;
-
-                return field.GetValueT<T[]>();
-            }
-
-            return rSource.Field<T[]>(InternalArrayFieldName).GetValue();
+            return source.ReflectQuery()
+                .NonPublic()
+                .Name(InternalArrayFieldName)
+                .Field()
+                .Lax()
+                .IfNone(() => source.ReflectQuery()
+                .NonPublic()
+                .ExtraType<T[]>()
+                .Field()
+                .Strict()
+                .GetValue(source)
+                )
+                .RightTarget.As<T[]>();
         }
     }
 }

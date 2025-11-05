@@ -279,7 +279,7 @@ namespace CCEnvs.Unity.Storages
                     let item = cnt.Item.Value.AccessUnsafe()
                     select (cnt, rest: PutItem(item, count)))
                     .IfRight(x => x.rest.IfSome(
-                        rest => itemContainer.PutItem(rest)).Target)
+                        rest => itemContainer.PutItem(rest)).Raw)
                     .RightTarget
                     .Maybe()!;
         }
@@ -318,7 +318,7 @@ namespace CCEnvs.Unity.Storages
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            return ActiveContainer.Value.Map(cnt => cnt == itemContainer).Target;
+            return ActiveContainer.Value.Map(cnt => cnt == itemContainer).Raw;
         }
 
         public void ActivateContainer(int id)

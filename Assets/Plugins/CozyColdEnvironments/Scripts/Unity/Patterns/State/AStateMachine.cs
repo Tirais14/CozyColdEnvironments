@@ -18,11 +18,11 @@ namespace CCEnvs.Patterns.States
         :
         CCBehaviour,
         IStateMachine,
-        IDisposableContainer
+        IDisposable
 
         where TIdle : IState
     {
-        private readonly Disposables.DisposableCollection disposables = new();
+        private readonly List<IDisposable> disposables = new();
 
         private bool disposedValue;
         private Dictionary<Type, Action>? forceStopableStates;
@@ -145,7 +145,7 @@ namespace CCEnvs.Patterns.States
             if (!disposedValue)
             {
                 if (disposing)
-                    disposables.Dispose();
+                    disposables.DisposeAll();
 
                 disposedValue = true;
             }

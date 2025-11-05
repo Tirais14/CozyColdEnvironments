@@ -38,7 +38,7 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool IsNone => !IsSome;
 
-        public readonly T Target => target;
+        public readonly T Raw => target;
 
         public MaybeStruct(T value)
             :

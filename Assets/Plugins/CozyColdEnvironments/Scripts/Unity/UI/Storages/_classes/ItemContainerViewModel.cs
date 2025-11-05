@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.UI.Storages
             :
             base(model, gameObject)
         {
-            gameObject.FindFor
+            //gameObject.FindFor
             BindItemIcon();
             BindItemCount();
         }
@@ -36,21 +36,21 @@ namespace CCEnvs.Unity.UI.Storages
         private void BindItemIcon()
         {
             model.Item.SubscribeWithState(itemIcon, static (x, prop) => prop.Value = x.Map(item => item.Icon).Access())
-                      .AddTo(this);
+                      .AddTo(disposables);
 
             model.Item.Select(x => x.IsSome)
                       .SubscribeWithState(itemIconVisible, static (state, prop) => prop.Value = state)
-                      .AddTo(this);
+                      .AddTo(disposables);
         }
 
         private void BindItemCount()
         {
             model.ItemCount.SubscribeWithState(itemCount, static (x, prop) => prop.Value = x.ToString())
-                           .AddTo(this);
+                           .AddTo(disposables);
 
             model.ItemCount.Select(x => x > 0)
                            .SubscribeWithState(itemCountEnabled, static (state, prop) => prop.Value = state)
-                           .AddTo(this);
+                           .AddTo(disposables);
         }
     }
 }

@@ -1,5 +1,4 @@
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Data;
 using System;
 
 #nullable enable
@@ -47,13 +46,6 @@ namespace CCEnvs
         {
             return !left.Equals(right);
         }
-
-        public static explicit operator ExplicitArgument(TypeValuePair pair)
-        {
-            return pair.ToExplicitArgument();
-        }
-
-        public ExplicitArgument ToExplicitArgument() => new(new CCParameterInfo(Type), Value);
 
         public bool Equals(TypeValuePair other)
         {

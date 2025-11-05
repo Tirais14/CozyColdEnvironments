@@ -24,7 +24,12 @@ namespace CCEnvs.Unity.EditorSerialization
 
             return tuple.type.Value.GetField(tuple.name, tuple.binds.Unfold())
                    ??
-                   throw new FieldNotFoundException(tuple.type, tuple.name, tuple.binds.Unfold());
+                   throw new MemberNotFoundException(
+                       MemberTypes.Field,
+                       reflectedType: tuple.type,
+                       name: tuple.name,
+                       bindingFlags: tuple.binds.Unfold()
+                       );
         }
     }
 }

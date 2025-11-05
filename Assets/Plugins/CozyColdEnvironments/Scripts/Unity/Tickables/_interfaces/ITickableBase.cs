@@ -14,9 +14,12 @@ namespace CCEnvs.Unity.Tickables
 
             IDisposable susbcription = TickablesManager.RegisterTickable(this, tickerType);
 
-            this.AsReflected()
-                .Property<IDisposable>(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
-                .SetValue(susbcription);
+            this.ReflectQuery()
+                .NonPublic()
+                .Name(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
+                .Property()
+                .Strict()
+                .SetValue(this, susbcription);
 
             return susbcription;
         }
@@ -27,10 +30,13 @@ namespace CCEnvs.Unity.Tickables
 
         bool Unregister()
         {
-            if (this.AsReflected()
-                    .Property<IDisposable>(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
-                    .GetValue() is not IDisposable subscription
-                     )
+            if (this.ReflectQuery()
+                .NonPublic()
+                .Name(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
+                .Property()
+                .Strict()
+                .GetValue(this) is not IDisposable subscription
+                )
                 return TickablesManager.UnregisterTickable(this);
 
             subscription.Dispose();

@@ -1,6 +1,4 @@
-using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
-using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using System;
@@ -10,14 +8,16 @@ using System.Reflection;
 using UnityEngine.InputSystem;
 
 #nullable enable
+#pragma warning disable S3881
 namespace CCEnvs.Unity.InputSystem.Rx
 {
     public abstract class InputHandlerRx
         :
-        DisposableContainer,
         IInputHandlerRx
     {
+        protected readonly List<IDisposable> disposables = new();
         private readonly Dictionary<string, IInputActionRx> registeredActions = new(0);
+        private bool disposed;
 
         public InputActionMap ActionMap { get; }
         public bool IsEnabled { get; private set; }
@@ -78,6 +78,18 @@ namespace CCEnvs.Unity.InputSystem.Rx
             }
         }
 
+        public void Dispose() => Dispose(disposing: true);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            disposables.DisposeAll();
+
+            disposed = true;
+        }
+
         protected void RegsiterAction(IInputActionRx inputAction)
         {
             if (inputAction.IsNull())
@@ -104,13 +116,17 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private void SetProperties()
         {
-            PropertyInfo[] props =
-                GetType().ForceGetProperties(BindingFlagsDefault.InstancePublic)
-                         .Where(x => x.PropertyType.IsType<IInputActionRx>()).ToArray();
+            PropertyInfo[] props = this.ReflectQuery()
+                .NonPublic()
+                .IncludeBaseTypes()
+                .ExtraType<IInputActionRx>()
+                .Properties()
+                .Where(x => x.PropertyType.IsType<IInputActionRx>())
+                .ToArray();
 
             if (props.IsNullOrEmpty())
             {
-                CCDebug.PrintWarning("Cannot find any input action properties.");
+                CCDebug.PrintError("Cannot find any input action properties.");
                 return;
             }
 

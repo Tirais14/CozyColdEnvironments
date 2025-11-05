@@ -28,9 +28,9 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindActiveContainer()
         {
-            model.ActiveContainer.Select(cnt => cnt.Map(cnt => cnt.GetContainerID()).Target)
+            model.ActiveContainer.Select(cnt => cnt.Map(cnt => cnt.GetContainerID()).Raw)
                                  .SubscribeWithState(activeContainerID, (id, prop) => prop.Value = id)
-                                 .AddTo(this);
+                                 .AddTo(disposables);
         }
 
         public IObservable<GameObject> ObserveAddContainer()
@@ -38,7 +38,7 @@ namespace CCEnvs.Unity.UI.Storages
             return (from added in model.ObserveAddContainer()
                     select added.value.gameObject into go
                     where go.IsSome
-                    select (src: go.Target, root: go.AccessUnsafe().transform.root.gameObject))
+                    select (src: go.Raw, root: go.AccessUnsafe().transform.root.gameObject))
                     .Do(x => addedContainerGameObjects.Add(x.src, x.root))
                     .Select(x => x.root);
         }
@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.UI.Storages
             return (from removed in model.ObserveRemoveContainer()
                     select removed.value.gameObject into go
                     where go.IsSome
-                    select go.Target)
+                    select go.Raw)
                     .Do(go => addedContainerGameObjects.Remove(go));
         }
 
@@ -56,7 +56,7 @@ namespace CCEnvs.Unity.UI.Storages
         public IEnumerable<GameObject> GetInventoryContainerGameObjects()
         {
             return from cnt in model
-                   select cnt.gameObject.Target into go
+                   select cnt.gameObject.Raw into go
                    where go != null
                    select go;
         }

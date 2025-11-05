@@ -14,7 +14,11 @@ namespace CCEnvs.U2D
 
             var t = ScriptableObject.CreateInstance(tileType ?? typeof(Tile));
 
-            t.AsReflected().Property<Sprite>(nameof(Tile.sprite)).SetValue(sprite);
+            t.ReflectQuery()
+                .Name(nameof(Tile.sprite))
+                .Property()
+                .Strict()
+                .SetValue(t, sprite);
 
             return t.As<TileBase>();
         }

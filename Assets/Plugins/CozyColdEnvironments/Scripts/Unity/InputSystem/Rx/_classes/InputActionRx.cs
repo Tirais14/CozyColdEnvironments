@@ -1,10 +1,8 @@
 using System;
-using UniRx;
-using UnityEngine;
-using UnityEngine.InputSystem;
-using CCEnvs.Disposables;
-using static UnityEngine.InputSystem.InputAction;
 using System.Collections.Generic;
+using UniRx;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
 #pragma warning disable S3881
@@ -12,15 +10,16 @@ namespace CCEnvs.Unity.InputSystem.Rx
 {
     public class InputActionRx 
         :
-        DisposableContainer,
         IInputActionRx
     {
+        protected readonly List<IDisposable> disposables = new();
+
         private readonly ReactiveProperty<CallbackContext> raw = new();
         private readonly ReactiveProperty<CallbackContext> started = new();
         private readonly ReactiveProperty<CallbackContext> performed = new();
         private readonly ReactiveProperty<CallbackContext> canceled = new();
 
-        private bool disposedValue;
+        private bool disposed;
 
         public bool ButtonInputValue { get; private set; }
         public InputAction Action { get; }
@@ -56,23 +55,25 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public void Disable() => Action.Disable();
 
-        protected override void Dispose(bool disposing)
+        public void Dispose() => Dispose(disposing: true);
+
+        protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (disposed)
+                return;
+
+            if (disposing)
             {
-                if (disposing)
-                {
-                    Action.started -= OnRaw;
-                    Action.performed -= OnRaw;
-                    Action.canceled -= OnRaw;
+                Action.started -= OnRaw;
+                Action.performed -= OnRaw;
+                Action.canceled -= OnRaw;
 
-                    Action.started -= OnStarted;
-                    Action.performed -= OnPerformed;
-                    Action.canceled -= OnCanceled;
-                }
-
-                disposedValue = true;
+                Action.started -= OnStarted;
+                Action.performed -= OnPerformed;
+                Action.canceled -= OnCanceled;
             }
+
+            disposed = true;
         }
 
         private void Setup()
@@ -123,9 +124,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
             :
             base(inputAction)
         {
-            TStarted.Subscribe(x => InputValue = x).AddTo(this);
-            TPerformed.Subscribe(x => InputValue = x).AddTo(this);
-            TCanceled.Subscribe(x => InputValue = x).AddTo(this);
+            TStarted.Subscribe(x => InputValue = x).AddTo(disposables);
+            TPerformed.Subscribe(x => InputValue = x).AddTo(disposables);
+            TCanceled.Subscribe(x => InputValue = x).AddTo(disposables);
         }
     }
 }

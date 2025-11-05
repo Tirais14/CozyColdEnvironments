@@ -30,7 +30,7 @@ namespace CCEnvs.FuncLanguage
 #endif
 
         public readonly bool IsNone => !IsSome;
-        public readonly T? Target => target;
+        public readonly T? Raw => target;
 
         public Maybe(T value)
         {

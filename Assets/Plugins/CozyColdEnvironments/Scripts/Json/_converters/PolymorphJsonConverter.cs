@@ -2,7 +2,6 @@
 using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -38,10 +37,13 @@ namespace CCEnvs.Json.Converters
         private static Type GetConversationType(JsonSerializer serializer, JToken token)
         {
 
-            NamingStrategy namingStrategy = serializer.ContractResolver
-                                                .AsReflected()
-                                                .Property<NamingStrategy>()
-                                                .GetValue();
+            NamingStrategy namingStrategy = serializer.ContractResolver.ReflectQuery()
+                .NonPublic()
+                .ExtraType<NamingStrategy>()
+                .Field()
+                .Strict()
+                .GetValue(serializer.ContractResolver)
+                .As<NamingStrategy>();
 
             string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
             JToken? objectTypeToken = token[keyName];
@@ -114,13 +116,13 @@ namespace CCEnvs.Json.Converters
 
             try
             {
-                var obj = InstanceFactory.Create(((ITypeProvider)value).ObjectType,
-                    new ExplicitArguments(new ExplicitArgument(value)),
-                    InstanceFactory.Parameters.CacheConstructor
-                    |
-                    InstanceFactory.Parameters.ThrowIfNotFound
-                    |
-                    InstanceFactory.Parameters.NonPublic);
+                
+
+                var obj = ((ITypeProvider)value).ObjectType.ReflectQuery()
+                    .NonPublic()
+                    .Cache()
+                    .Arguments(value)
+                    .Invoke().Raw;
 
                 serializer.Serialize(writer, obj);
             }

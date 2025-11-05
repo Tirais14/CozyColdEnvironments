@@ -43,7 +43,7 @@ namespace CCEnvs
 
         public static explicit operator string?(InvokeInfo input)
         {
-            return input.message.Target;
+            return input.message.Raw;
         }
     }
 }

@@ -168,7 +168,7 @@ namespace CCEnvs.FuncLanguage
         public readonly bool IsNone => !IsSome;
         public readonly bool IsTrue => IsSome && (predicate?.Invoke(target) ?? true);
         public readonly bool IsFalse => !IsTrue;
-        public readonly T? Target => target;
+        public readonly T? Raw => target;
         public readonly Predicate<T>? Predicate => predicate;
 
         public IfElse(T? value, Predicate<T>? predicate)

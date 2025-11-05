@@ -2,7 +2,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Data;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -37,7 +36,7 @@ namespace CCEnvs.Conversations
                 .Else(() => ConvertByInterface(input).Access()!)
                 .Else(() => ConvertByOverloadedCastOperator(input, inputType, toType).Access()!)
                 .Else(() => ConvertByCustomConverter(input, inputType, toType).Access()!)
-                .Else(() => CreateByFactory(input, toType).Access()!)
+                .Else(() => CreateByReflection(input, toType).Access()!)
                 .Else(() => throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}."))
                 .AccessUnsafe();
 
@@ -58,7 +57,7 @@ namespace CCEnvs.Conversations
         private static Maybe<object> ConvertByOverloadedCastOperator(object input, Type type, Type toType)
         {
             return type.Catch()
-                       .Map(t => t.GetOverloadedCastOperator(toType))
+                       .Map(t => t.GetOverloadedCastOperator(toType).Raw)
                        .Map(x => x.Invoke(input, Range.From(input)))
                        .Access();
         }
@@ -72,22 +71,22 @@ namespace CCEnvs.Conversations
 
         private static Maybe<object> ConvertByCustomConverter(object input, Type type, Type toType)
         {
-            return type.AsReflected()
-                       .Catch()
-                       .Map(rt => rt.AllMethods.Value.Where(m => m.GetParameters().Length == 1 && m.ReturnType is not null)
-                                                     .FirstOrDefault(m => m.GetParameters()[0].ParameterType.IsType(type) && m.GetParameters()[0].ParameterType.IsType(toType)))
-                       .Map(x => x.Invoke(input, Range.From(input)))
-                       .Access();
+            return type.ReflectQuery()
+                .NonPublic()
+                .Attributes(typeof(ConverterAttribute))
+                .ArgumentTypes(type)
+                .ExtraType(toType)
+                .Arguments(input)
+                .Invoke()
+                .Lax();
         }
 
-        private static Maybe<object> CreateByFactory(object arg, Type type)
+        private static Maybe<object> CreateByReflection(object arg, Type type)
         {
-            var created = InstanceFactory.Create(
-                type,
-                new ExplicitArguments(new ExplicitArgument(arg)),
-                InstanceFactory.Parameters.NonPublic);
-
-            return created;
+            return type.ReflectQuery()
+                       .Instance()
+                       .Arguments(arg)
+                       .Invoke();
         }
     }
 }

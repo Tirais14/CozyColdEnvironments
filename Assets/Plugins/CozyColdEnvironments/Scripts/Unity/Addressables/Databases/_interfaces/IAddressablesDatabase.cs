@@ -31,17 +31,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         UniTask LoadAssetsAsync(AssetLabels assetLabels);
 
-        IAddressablesDatabase CutByType(Type assetType);
-        /// <summary>
-        /// Creates new <see cref="IAddressablesDatabase"/> with specified type, and delete it items from current
-        /// </summary>
-        IAddressablesDatabase<T> CutByType<T>() where T : Object;
-
-        /// <summary>
-        /// Do <see cref="CutByType{T}"/> for all types in database
-        /// </summary>
-        IAddressablesDatabase[] CutByTypes();
-
         Maybe<Object> FindAsset(AssetKey key);
         Maybe<T> FindAsset<T>(AssetKey key);
 

@@ -1,4 +1,4 @@
-using CCEnvs.Reflection.Data;
+using CCEnvs.Reflection;
 using CCEnvs.Unity.UI.Elements;
 using System;
 using UniRx;
@@ -36,10 +36,10 @@ namespace CCEnvs.Unity.UI.MVVM
 
         protected virtual TModel CreateModel()
         {
-            var model = InstanceFactory.Create<TModel>(
-                parameters: InstanceFactory.Parameters.CacheConstructor
-                            |
-                            InstanceFactory.Parameters.ThrowIfNotFound)!;
+            var model = typeof(TModel).ReflectQuery()
+                                      .NonPublic()
+                                      .Invoke<TModel>()
+                                      .Strict();
 
             if (model is IDisposable disposable)
                 disposable.AddTo(this);
@@ -51,22 +51,11 @@ namespace CCEnvs.Unity.UI.MVVM
         {
             model ??= CreateModel();
 
-#if UNITY_2017_1_OR_NEWER
-            return InstanceFactory.Create<TViewModel>(
-                new ExplicitArguments(
-                    new ExplicitArgument(model!),
-                    new ExplicitArgument(gameObject)),
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound);
-#else
-            return InstanceFactory.Create<TViewModel>(
-                new ExplicitArguments(
-                    new ExplicitArgument(model!)),
-                InstanceFactory.Parameters.CacheConstructor
-                |
-                InstanceFactory.Parameters.ThrowIfNotFound);
-#endif //UNITY_2017_1_OR_NEWER
+            return typeof(TViewModel).ReflectQuery()
+                                     .NonPublic()
+                                     .Arguments(model!)
+                                     .Invoke<TViewModel>()
+                                     .Strict();
         }
 
         public override void Show()

@@ -44,7 +44,11 @@ namespace CCEnvs.Unity.Injections
             Component source)
         {
             FieldInfo[] fields = source.GetType()
-                                       .ForceGetFields(BindingFlagsDefault.InstanceAll);
+                                       .ReflectQuery()
+                                       .NonPublic()
+                                       .IncludeBaseTypes()
+                                       .Fields()
+                                       .ToArray();
 
             return fields.Where(x => x.IsDefined<GetComponentAttribute>())
                          .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>()));

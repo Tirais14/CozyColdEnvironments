@@ -180,10 +180,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             var tasks = (from loadInfo in loadOrder
                          select (loadInfo, value: loadInfo.GetDatabaseType()) into dbType
-                         select (dbType.loadInfo, value: InstanceFactory.Create(
-                             dbType.value,
-                             parameters: InstanceFactory.Parameters.ThrowIfNotFound)
-                         .As<IAddressablesDatabase>()) into db
+                         select (dbType.loadInfo, value: dbType.value.ReflectQuery()
+                         .NonPublic()
+                         .Invoke<IAddressablesDatabase>()
+                         .Strict()) into db
                          select (value: db.value.LoadAssetsAsync(db.loadInfo.AssetLabels), db: db.value)
                          ).Do(task => RegisterDatabase(task.db))
                          .Select(task => task.value);
