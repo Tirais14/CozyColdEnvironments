@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.UI.MVVM
             this.gameObject = gameObject;
 
             new Maybe<T>(model).Map(x => x as IGameObjectBindable)
-                .IfSome(target => target.ReflectQuery()
+                .IfSome(target => target.Reflect()
                                         .NonPublic()
                                         .ExtraType<GameObject>()
                                         .Field()
@@ -35,17 +35,17 @@ namespace CCEnvs.Unity.UI.MVVM
         public virtual void ForceNotify()
         {
             foreach (var (value, method) in 
-                   from field in this.ReflectQuery().NonPublic().Fields()
+                   from field in this.Reflect().NonPublic().Fields()
                    where field.FieldType.IsGenericType
                    where field.FieldType.Name.ContainsOrdinal("ReactiveProperty")
                    select (field, prop: field.GetValue(this)) into x
-                   select (value: x.ReflectQuery()
+                   select (value: x.Reflect()
                        .NonPublic()
                        .Name(nameof(ReactiveProperty<object>.Value))
                        .Property()
                        .Lax()
                        .Map(f => f.GetValue(this)).Raw,
-                   method: x.ReflectQuery()
+                   method: x.Reflect()
                        .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
                        .Method()
                        .Strict()) into x

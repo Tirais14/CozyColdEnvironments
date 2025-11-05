@@ -17,7 +17,7 @@ namespace CCEnvs.Reflection
                 throw new ArgumentNullException(nameof(target));
 
             return target.GetType()
-                .ReflectQuery()
+                .Reflect()
                 .NonPublic()
                 .IncludeBaseTypes()
                 .Fields()
@@ -63,7 +63,7 @@ namespace CCEnvs.Reflection
         public static FieldInfo[] GetFieldValuesIncludeNestedFieldTypes(Type type,
             BindingFlags bindingFlags = BindingFlagsDefault.InstanceAll)
         {
-            FieldInfo[] objFields = type.ReflectQuery()
+            FieldInfo[] objFields = type.Reflect()
                 .NonPublic()
                 .IncludeBaseTypes()
                 .Fields()
@@ -80,7 +80,7 @@ namespace CCEnvs.Reflection
             {
                 collected = Do.Collect(objFields[i], (current) =>
                 {
-                    FieldInfo[] tempFields = current.FieldType.ReflectQuery()
+                    FieldInfo[] tempFields = current.FieldType.Reflect()
                         .NonPublic()
                         .IncludeBaseTypes()
                         .Fields()

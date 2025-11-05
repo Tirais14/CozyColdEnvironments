@@ -43,7 +43,7 @@ namespace CCEnvs.Unity.Injections
         private static IEnumerable<(FieldInfo, GetComponentAttribute)> GetAttributedFields(
             Component source)
         {
-            FieldInfo[] fields = source.ReflectQuery()
+            FieldInfo[] fields = source.Reflect()
                                        .NonPublic()
                                        .IncludeBaseTypes()
                                        .Fields()

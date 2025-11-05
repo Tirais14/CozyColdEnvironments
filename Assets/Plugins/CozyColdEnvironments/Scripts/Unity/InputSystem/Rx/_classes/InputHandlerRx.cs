@@ -116,7 +116,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private void SetProperties()
         {
-            PropertyInfo[] props = this.ReflectQuery()
+            PropertyInfo[] props = this.Reflect()
                 .NonPublic()
                 .IncludeBaseTypes()
                 .ExtraType<IInputActionRx>()

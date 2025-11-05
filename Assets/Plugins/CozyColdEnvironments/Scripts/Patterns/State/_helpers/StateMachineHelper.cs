@@ -41,7 +41,7 @@ namespace CCEnvs.Patterns.States
             if (stateMachine.IsNull())
                 throw new ArgumentNullException(nameof(stateMachine));
 
-            return (from field in stateMachine.GetType().ReflectQuery().NonPublic().IncludeBaseTypes().Fields()
+            return (from field in stateMachine.GetType().Reflect().NonPublic().IncludeBaseTypes().Fields()
                     where field.FieldType.IsType<IFactory<Type, IState>>()
                     select (IFactory<Type, IState>?)field.GetValue(stateMachine) into value
                     where value.IsNotNull()
@@ -65,7 +65,7 @@ namespace CCEnvs.Patterns.States
                 throw new ArgumentNullException(nameof(stateMachine));
 
             return stateMachine.GetType()
-                               .ReflectQuery().NonPublic().IncludeBaseTypes().Fields()
+                               .Reflect().NonPublic().IncludeBaseTypes().Fields()
                                .Where(x => x.FieldType.IsType<IState>() && x.FieldType != typeof(IState))
                                .ToArray();
         }

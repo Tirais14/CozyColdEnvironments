@@ -24,10 +24,10 @@ namespace CCEnvs.Reflection
         public enum Settings
         {
             None,
-            IncludeBaseTypes,
-            ByFullName,
-            ForceConstructors,
-            ForceMethods
+            IncludeBaseTypes = 1,
+            ByFullName = 2,
+            ForceConstructors = 4,
+            ForceMethods = 8
         }
 
         public readonly static Reflect self = new();
@@ -35,11 +35,11 @@ namespace CCEnvs.Reflection
 
         public Settings settings { get; private set; }
         public Maybe<object> instance { get; private set; }
-        public MemberInfo target { get; private set; } = null!;
+        public MemberInfo member { get; private set; } = null!;
         public Maybe<string> name { get; private set; }
         public BindingFlags bindingFlags { get; private set; }
         public Maybe<Type[]> argumentTypes { get; private set; }
-        public Maybe<object[]> arguments { get; private set; }
+        public Maybe<object?[]> arguments { get; private set; }
         public Maybe<Type> extraType { get; private set; }
         public Maybe<ParameterModifier[]> parameterModifiers { get; private set; }
         public Maybe<Binder> binder { get; private set; }
@@ -47,7 +47,7 @@ namespace CCEnvs.Reflection
         public Type[] baseTypes {
             get
             {
-                if (cachedBaseTypes.IsNone && target is Type t)
+                if (cachedBaseTypes.IsNone && member is Type t)
                     cachedBaseTypes = t.CollectBaseTypes().ToArray();
 
                 return cachedBaseTypes.Access(Type.EmptyTypes);
@@ -55,7 +55,7 @@ namespace CCEnvs.Reflection
         }
         public Maybe<Type[]> attributes { get; private set; }
 
-        private Type type => target.As<Type>();
+        private Type type => member.As<Type>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect From(object instance)
@@ -63,7 +63,7 @@ namespace CCEnvs.Reflection
             Guard.IsNotNull(instance, nameof(instance));
 
             this.instance = instance;
-            target = instance.GetType();
+            member = instance.GetType();
 
             return Instance().Static().Public();
         }
@@ -74,7 +74,7 @@ namespace CCEnvs.Reflection
             Guard.IsNotNull(member, nameof(member));
 
             instance = null;
-            target = member;
+            this.member = member;
 
             return Static().Public();
         }
@@ -181,12 +181,26 @@ namespace CCEnvs.Reflection
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect ForceConstructors(bool state = true)
         {
             if (state)
                 settings |= Settings.ForceConstructors;
             else
                 settings &= ~Settings.ForceConstructors;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ForceMethods(bool state = true)
+        {
+            if (state)
+                settings |= Settings.ForceMethods;
+            else
+                settings &= ~Settings.ForceMethods;
 
             return this;
         }
@@ -207,6 +221,56 @@ namespace CCEnvs.Reflection
             this.argumentTypes = types;
 
             return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ArgumentTypes<T>()
+        {
+            return ArgumentTypes(typeof(T));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ArgumentTypes<T, T1>()
+        {
+            return ArgumentTypes(typeof(T), typeof(T1));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ArgumentTypes<T, T1, T2>()
+        {
+            return ArgumentTypes(
+                typeof(T),
+                typeof(T1),
+                typeof(T2)
+                );
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ArgumentTypes<T, T1, T2, T3>()
+        {
+            return ArgumentTypes(
+                typeof(T),
+                typeof(T1),
+                typeof(T2),
+                typeof(T3)
+                );
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ArgumentTypes<T, T1, T2, T3, T4>()
+        {
+            return ArgumentTypes(
+                typeof(T),
+                typeof(T1),
+                typeof(T2),
+                typeof(T3),
+                typeof(T4)
+                );
         }
 
         [DebuggerStepThrough]
@@ -255,7 +319,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect GenericTypes(params Type[] types)
+        public Reflect GenericArguments(params Type[] types)
         {
             genericTypes = types;
 
@@ -288,7 +352,7 @@ namespace CCEnvs.Reflection
 
             settings = default;
             instance = null;
-            target = null!;
+            member = null!;
             name = null;
             bindingFlags = default;
             argumentTypes = null;
@@ -311,7 +375,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<ConstructorInfo> Constructor()
         {
-            return (Instance().Constructors().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Constructor));
+            return (Constructors().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Constructor));
         }
 
         [DebuggerStepThrough]
@@ -371,47 +435,40 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<MethodInfo> Method()
         {
-            if (name.Raw.IsNullOrEmpty())
-                throw new InvalidOperationException($"{nameof(name)} must be setted for methods.");
-
             return (Methods().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Method));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Invoke()
+        public object InvokeMethod()
         {
-            var methodBase = name.Match(
-                some: _ => Method().Cast<MethodBase>(),
-                none: () => Constructor().Cast<MethodBase>())
-                .Raw
-                .Strict();
+            MethodInfo method = Method().Strict();
 
-            this.PrintLog($"Method will be invoked: {methodBase.Name}, argumentsTypes: {argumentTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma())}, genericArguments: {genericTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma()).Access(string.Empty)}.");
+            var result = method.Invoke(instance.Raw, arguments.Access(Type.EmptyTypes));
 
+            PrintMethodInvoked(method);
 
-            object[] arguments = this.arguments.Access(Array.Empty<object>());
-            return methodBase switch
-            {
-                MethodInfo method => invokeMethod(method),
-                ConstructorInfo ctor => ctor.Invoke(arguments),
-                _ => throw new InvalidOperationException(methodBase.GetType().GetFullName())
-            };
-
-            object invokeMethod(MethodInfo method)
-            {
-                if (!method.ContainsGenericParameters
-                    &&
-                    genericTypes.ItIs(x => x.IsNullOrEmpty())
-                    )
-                    throw new CCException($"Is open generic method, but not found {nameof(genericTypes)}.");
-
-                return method.Invoke(target, arguments);
-            }
+            return result;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Invoke<T>() => Invoke().As<T>();
+        public T InvokeMethod<T>() => InvokeMethod().As<T>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeConstructor()
+        {
+            ConstructorInfo ctor = Constructor().Strict();
+
+            var result = ctor.Invoke(arguments.Access(Type.EmptyTypes));
+
+            PrintMethodInvoked(ctor);
+
+            return result;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T InvokeConstructor<T>() => InvokeConstructor().As<T>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IEnumerable<MemberInfo> FindMembers(MemberTypes memberType)
@@ -426,7 +483,7 @@ namespace CCEnvs.Reflection
             return memberType switch
             {
                 MemberTypes.All => throw new NotImplementedException(memberType.ToString()),
-                MemberTypes.Constructor => types.SelectMany(type => type.GetConstructors(bindingFlags)).Where(CompareMethod),
+                MemberTypes.Constructor => types.SelectMany(type => type.GetConstructors(bindingFlags)).Where(CompareConstructor),
                 MemberTypes.Custom => throw new NotImplementedException(memberType.ToString()),
                 MemberTypes.Event => throw new NotImplementedException(memberType.ToString()),
                 MemberTypes.Field => types.SelectMany(type => type.GetFields(bindingFlags)).Where(CompareFieldOrProp),
@@ -472,6 +529,14 @@ namespace CCEnvs.Reflection
                 binder: binder.Raw);
         }
 
+        private bool CompareAttributes(MemberInfo member)
+        {
+            return attributes.Match(
+                some: types => types.All(type => member.IsDefined(type)),
+                none: () => true)
+                .Raw;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareFieldOrProp(MemberInfo member)
         {
@@ -480,42 +545,59 @@ namespace CCEnvs.Reflection
 
             Type underlyingType = field.Map(x => x.FieldType).Access(() => prop.AccessUnsafe().PropertyType);
 
-            if (!CompareName(member.Name) 
-                ||
-                (extraType.IsSome
-                &&
-                underlyingType.IsNotType(extraType.AccessUnsafe()))
+            if (!CompareName(member.Name))
+                return false;
+            if (!CompareAttributes(member))
+                return false;
+            if (!extraType.Match(
+                    some: type => underlyingType.IsType(type),
+                    none: () => true)
+                .Raw
                 )
                 return false;
 
             return true;
         }
 
-        private bool CompareMethod(MethodBase methodBase)
+        private bool CompareMethod(MethodInfo method)
         {
-            var parameters = methodBase.GetParameters();
+            var parameters = method.GetParameters();
             ParameterModifier paramMods = parameters.GetParameterModifiers();
             var argumentTypes = this.argumentTypes.Access(Type.EmptyTypes);
 
-            return (settings.IsFlagSetted(Settings.ForceMethods)
-                    ||
-                    name.IsSome)
-                    &&
-                    methodBase is MethodInfo method
-                    &&
-                    method.CompareParameters(argumentTypes, parameters.GetParameterModifiers())
-                    &&
-                    extraType.Match(some: type => method.ReturnType.IsType(type), none: () => true).Raw
-                    &&
-                    CompareName(method.Name)
-                    ||
-                    (settings.IsFlagSetted(Settings.ForceConstructors)
-                    ||
-                    name.IsNone)
-                    &&
-                    methodBase is ConstructorInfo ctor
-                    &&
-                    ctor.CompareParameters(argumentTypes, paramMods);
+            if (!CompareName(method.Name))
+                return false;
+            if (!CompareAttributes(method))
+                return false;
+            if (!method.CompareParameters(argumentTypes, paramMods))
+                return false;
+            if (!extraType.Match(
+                    some: returnType => method.ReturnType.IsType(returnType),
+                    none: () => true)
+                .Raw
+                )
+                return false;
+
+            return true;
+        }
+
+        private bool CompareConstructor(ConstructorInfo ctor)
+        {
+            var parameters = ctor.GetParameters();
+            ParameterModifier paramMods = parameters.GetParameterModifiers();
+            var argumentTypes = this.argumentTypes.Access(Type.EmptyTypes);
+
+            if (!CompareAttributes(ctor))
+                return false;
+            if (!ctor.CompareParameters(argumentTypes, paramMods))
+                return false;
+
+            return true;
+        }
+
+        private void PrintMethodInvoked(MethodBase methodBase)
+        {
+            this.PrintLog($"{(methodBase is ConstructorInfo ? "Constructor" : "Method")} invoked: {methodBase}, argumentsTypes: {argumentTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma())}, genericArguments: {genericTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma()).Access(string.Empty)}.");
         }
     }
 
@@ -523,20 +605,20 @@ namespace CCEnvs.Reflection
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Reflect ReflectQuery(this MemberInfo source)
+        public static Reflect Reflect(this MemberInfo source)
         {
             Guard.IsNotNull(source, nameof(source));
 
-            return Reflection.Reflect.self.Reset().From(source);
+            return new Reflect().From(source);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Reflect ReflectQuery(this object source)
+        public static Reflect Reflect(this object source)
         {
             Guard.IsNotNull(source, nameof(source));
 
-            return Reflection.Reflect.self.Reset().From(source);
+            return new Reflect().From(source);
         }
     }
 }

@@ -28,12 +28,14 @@ namespace CCEnvs.Unity.InputSystem.Rx
             if (valueType is null)
                 return new InputActionRx(inputAction);
 
-            return typeof(InputActionRxFactory).ReflectQuery()
+            return typeof(InputActionRxFactory).Reflect()
                                                .Name(nameof(Create))
                                                .Arguments(inputAction)
-                                               .GenericTypes(valueType)
-                                               .Cache()
-                                               .Invoke<IInputActionRx>();
+                                               .GenericArguments(valueType)
+                                               .Method()
+                                               .Strict()
+                                               .Invoke(null, Range.From(inputAction))
+                                               .As<IInputActionRx>();
         }
     }
 }

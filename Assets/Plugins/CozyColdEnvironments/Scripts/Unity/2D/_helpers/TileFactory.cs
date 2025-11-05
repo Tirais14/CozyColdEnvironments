@@ -14,7 +14,7 @@ namespace CCEnvs.U2D
 
             var t = ScriptableObject.CreateInstance(tileType ?? typeof(Tile));
 
-            t.ReflectQuery()
+            t.Reflect()
                 .Name(nameof(Tile.sprite))
                 .Property()
                 .Strict()

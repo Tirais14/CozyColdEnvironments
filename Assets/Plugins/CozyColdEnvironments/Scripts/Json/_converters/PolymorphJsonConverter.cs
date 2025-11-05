@@ -37,7 +37,7 @@ namespace CCEnvs.Json.Converters
         private static Type GetConversationType(JsonSerializer serializer, JToken token)
         {
 
-            NamingStrategy namingStrategy = serializer.ContractResolver.ReflectQuery()
+            NamingStrategy namingStrategy = serializer.ContractResolver.Reflect()
                 .NonPublic()
                 .ExtraType<NamingStrategy>()
                 .Field()
@@ -118,11 +118,13 @@ namespace CCEnvs.Json.Converters
             {
 
 
-                var obj = ((ITypeProvider)value).ObjectType.ReflectQuery()
+                var obj = ((ITypeProvider)value).ObjectType.Reflect()
                     .NonPublic()
                     .Cache()
                     .Arguments(value)
-                    .Invoke();
+                    .Constructor()
+                    .Strict()
+                    .Invoke(Range.From(value));
 
                 serializer.Serialize(writer, obj);
             }

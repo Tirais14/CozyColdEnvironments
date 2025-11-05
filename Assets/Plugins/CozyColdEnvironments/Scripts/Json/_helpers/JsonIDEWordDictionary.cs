@@ -117,7 +117,7 @@ namespace CCEnvs.Json
 
         private static string[] CollectFieldNames(Type[] types)
         {
-            FieldInfo[] fields = types.SelectMany(x => x.ReflectQuery()
+            FieldInfo[] fields = types.SelectMany(x => x.Reflect()
             .NonPublic()
             .IncludeBaseTypes()
             .Fields()
@@ -143,7 +143,7 @@ namespace CCEnvs.Json
         private static string[] CollectPropertyNames(Type[] types)
         {
             return (from type in types
-                    select type.ReflectQuery()
+                    select type.Reflect()
                     .NonPublic()
                     .IncludeBaseTypes()
                     .Properties() into props

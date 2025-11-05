@@ -18,7 +18,7 @@ namespace CCEnvs
                                       select assembly.GetTypes() into types
                                       from type in types
                                       where type.IsDefined<StaticInstallerAttribute>()
-                                      select type.ReflectQuery().NonPublic().Static().Methods() into methods
+                                      select type.Reflect().NonPublic().Static().Methods() into methods
                                       from method in methods
                                       where method.IsDefined<StaticInstallerMethodAttribute>(inherit: true)
                                       select method)

@@ -85,11 +85,14 @@ namespace CCEnvs.Unity.Json.Converters
 
         private object LoadAssetAsync()
         {
-            return typeof(Addressables).ReflectQuery()
+            return typeof(Addressables).Reflect()
                 .ByFullName()
                 .Name(nameof(Addressables.LoadAssetAsync))
-                .GenericTypes(AssetType)
-                .Invoke();
+                .Arguments(AssetPath)
+                .GenericArguments(AssetType)
+                .Method()
+                .Strict()
+                .Invoke(null, Range.From(AssetPath));
         }
 
         [OnDeserialized]

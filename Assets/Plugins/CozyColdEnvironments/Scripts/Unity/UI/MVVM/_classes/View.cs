@@ -2,6 +2,7 @@ using CCEnvs.Reflection;
 using CCEnvs.Unity.UI.Elements;
 using System;
 using UniRx;
+using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -36,9 +37,9 @@ namespace CCEnvs.Unity.UI.MVVM
 
         protected virtual TModel CreateModel()
         {
-            var model = typeof(TModel).ReflectQuery()
+            var model = typeof(TModel).Reflect()
                                       .NonPublic()
-                                      .Invoke<TModel>();
+                                      .InvokeConstructor<TModel>();
 
             if (model is IDisposable disposable)
                 disposable.AddTo(this);
@@ -50,10 +51,10 @@ namespace CCEnvs.Unity.UI.MVVM
         {
             model ??= CreateModel();
 
-            return typeof(TViewModel).ReflectQuery()
+            return typeof(TViewModel).Reflect()
                                      .NonPublic()
-                                     .Arguments(model!)
-                                     .Invoke<TViewModel>();
+                                     .Arguments(model!, gameObject)
+                                     .InvokeConstructor<TViewModel>();
         }
 
         public override void Show()

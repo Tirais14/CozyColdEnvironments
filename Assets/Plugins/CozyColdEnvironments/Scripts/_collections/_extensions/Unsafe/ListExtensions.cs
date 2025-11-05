@@ -12,12 +12,12 @@ namespace CCEnvs.Collections.Unsafe
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.ReflectQuery()
+            return source.Reflect()
                 .NonPublic()
                 .Name(InternalArrayFieldName)
                 .Field()
                 .Lax()
-                .IfNone(() => source.ReflectQuery()
+                .IfNone(() => source.Reflect()
                 .NonPublic()
                 .ExtraType<T[]>()
                 .Field()

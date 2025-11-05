@@ -66,10 +66,13 @@ namespace CCEnvs.U2D.Locations
             T cell;
             foreach (var pos in Bounds.allPositionsWithin)
             {
-                cell = typeof(T).ReflectQuery()
+                cell = typeof(T).Reflect()
                                 .NonPublic()
                                 .Arguments(this, pos)
-                                .Invoke<T>();
+                                .Constructor()
+                                .Strict()
+                                .Invoke(Range.From<object>(this, pos))
+                                .As<T>();
 
                 cells[pos] = cell;
 

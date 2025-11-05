@@ -92,7 +92,7 @@ namespace CCEnvs.Unity.Tickables
 
         private static void TryVoidInjectedTicker(TTickable tickable)
         {
-            tickable.ReflectQuery()
+            tickable.Reflect()
                     .NonPublic()
                     .IncludeBaseTypes()
                     .ExtraType<ITicker>()
@@ -104,7 +104,7 @@ namespace CCEnvs.Unity.Tickables
 
         private void TryInjectTicker(TTickable tickable)
         {
-            tickable.ReflectQuery()
+            tickable.Reflect()
                     .NonPublic()
                     .IncludeBaseTypes()
                     .ExtraType<ITicker>()

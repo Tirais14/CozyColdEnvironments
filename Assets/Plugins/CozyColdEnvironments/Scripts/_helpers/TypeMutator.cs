@@ -55,12 +55,11 @@ namespace CCEnvs.Conversations
             return new Catched<object>(() => Convert.ChangeType(input, toType)).Access();
         }
 
-        private static Maybe<object> ConvertByOverloadedCastOperator(object input, Type type, Type toType)
+        private static Maybe<object> ConvertByOverloadedCastOperator(object input, Type fromType, Type toType)
         {
-            return type.Catch()
-                       .Map(t => t.GetOverloadedCastOperator(toType).Raw)
-                       .Map(x => x.Invoke(input, Range.From(input)))
-                       .Access();
+            return toType.GetOverloadedCastOperator(fromType)
+                         .IfSome(x => x.Invoke(null, Range.From(input)))
+                         .Access();
         }
 
         private static Maybe<object> ConvertByInterface(object input)
@@ -70,23 +69,28 @@ namespace CCEnvs.Conversations
                         .Access();
         }
 
-        private static Maybe<object> ConvertByCustomConverter(object input, Type type, Type toType)
+        private static Maybe<object> ConvertByCustomConverter(object input, Type fromType, Type toType)
         {
-            return type.ReflectQuery()
+            return toType.Reflect()
                 .NonPublic()
                 .Attributes(typeof(ConverterAttribute))
-                .ArgumentTypes(type)
+                .ArgumentTypes(fromType)
                 .ExtraType(toType)
                 .Arguments(input)
-                .Invoke();
+                .Method()
+                .Lax()
+                .IfSome(m => m.Invoke(null, Range.From(input)))
+                .Access();
         }
 
-        private static Maybe<object> CreateByReflection(object arg, Type type)
+        private static Maybe<object> CreateByReflection(object arg, Type toType)
         {
-            return type.ReflectQuery()
-                       .Instance()
+            return toType.Reflect()
                        .Arguments(arg)
-                       .Invoke();
+                       .Constructor()
+                       .Lax()
+                       .Map(m => m.Invoke(Range.From(arg)))
+                       .Access();
         }
     }
 }

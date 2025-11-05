@@ -30,7 +30,7 @@ namespace CCEnvs.Reflection
             {
                 if ((inputMods is null
                     &&
-                    otherMods[i])
+                    !otherMods[i])
                     ||
                     (inputMods.IsNotNull()
                     &&

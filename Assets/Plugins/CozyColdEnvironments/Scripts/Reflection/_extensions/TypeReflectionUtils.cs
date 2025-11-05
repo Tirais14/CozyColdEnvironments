@@ -8,12 +8,16 @@ namespace CCEnvs.Reflection
 {
     public static class TypeReflectionUtils
     {
+
+
         private static Reflect imptQ => Reflect.self.Reset()
+                                                    .Static()
                                                     .NonPublic()
                                                     .ByFullName()
                                                     .Name("op_Implicit");
 
         private static Reflect exptQ => Reflect.self.Reset()
+                                                    .Static()
                                                     .NonPublic()
                                                     .ByFullName()
                                                     .Name("op_Explicit");
@@ -22,12 +26,21 @@ namespace CCEnvs.Reflection
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            var first = imptQ.From(source);
-            var second = exptQ.From(source);
+            var t = source.Reflect()
+                  .Static()
+                  .NonPublic()
+                  .ByFullName()
+                  .Name("op_Implicit")
+                  .Methods()
+                  .Concat(source.Reflect()
+                      .Static()
+                      .NonPublic()
+                      .ByFullName()
+                      .Name("op_Explicit")
+                      .Methods())
+                  .ToArray();
 
-            return first.Methods()
-                        .Concat(second.Methods())
-                        .ToArray();
+            return t;
         }
 
         public static Maybe<MethodInfo> GetOverloadedCastOperator(this Type source,
@@ -36,13 +49,8 @@ namespace CCEnvs.Reflection
             CC.Guard.IsNotNull(source, nameof(source));
             CC.Guard.IsNotNull(castType, nameof(castType));
 
-            var first = imptQ.From(source);
-            var second = exptQ.From(source);
-
-            return first.ExtraType(castType)
-                        .Methods()
-                        .Concat(second.ExtraType(castType).Methods())
-                        .FirstOrDefault();
+            return source.GetOverloadedCastOperators()
+                .FirstOrDefault(x => x.ReturnType.IsType(castType));
         }
     }
 }

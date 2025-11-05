@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.Initables
         private static void SetInited(IInitableBase initable)
         {
             PropertyInfo[] props = initable.GetType()
-                                           .ReflectQuery()
+                                           .Reflect()
                                            .NonPublic()
                                            .IncludeBaseTypes()
                                            .Properties()
