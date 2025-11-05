@@ -97,6 +97,12 @@ namespace CCEnvs
             return strings.JoinStrings(Environment.NewLine, options);
         }
 
+        public static string JoinStringsByComma(this IEnumerable<string> strings,
+                                         StringJoinOptions options = StringJoinOptions.None)
+        {
+            return strings.JoinStrings($", ", options);
+        }
+
         public static bool ContainsAny(this string str, char[] chars)
         {
             for (int i = 0; i < chars.Length; i++)

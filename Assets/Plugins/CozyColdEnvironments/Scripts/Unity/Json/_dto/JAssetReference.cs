@@ -89,8 +89,7 @@ namespace CCEnvs.Unity.Json.Converters
                 .ByFullName()
                 .Name(nameof(Addressables.LoadAssetAsync))
                 .GenericTypes(AssetType)
-                .Invoke()
-                .Strict();
+                .Invoke();
         }
 
         [OnDeserialized]

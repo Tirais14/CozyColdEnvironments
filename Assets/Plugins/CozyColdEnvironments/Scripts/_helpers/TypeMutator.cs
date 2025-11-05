@@ -77,8 +77,7 @@ namespace CCEnvs.Conversations
                 .ArgumentTypes(type)
                 .ExtraType(toType)
                 .Arguments(input)
-                .Invoke()
-                .Lax();
+                .Invoke();
         }
 
         private static Maybe<object> CreateByReflection(object arg, Type type)

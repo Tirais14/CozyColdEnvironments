@@ -5,20 +5,29 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+#nullable enable
 namespace CCEnvs.Unity
 {
     public readonly struct Result<T>
     {
         public readonly Exception exception;
-        private readonly T value;
+        private readonly Lazy<T> raw;
 
-        public T Raw => value;
+        public T Raw => raw.Value;
 
         public Result(T value, Exception exception)
         {
             Guard.IsNotNull(exception, nameof(exception));
 
-            this.value = value;
+            this.raw = new Lazy<T>(value);
+            this.exception = exception;
+        }
+        public Result(Func<T> valueFactory, Exception exception)
+        {
+            Guard.IsNotNull(valueFactory, nameof(valueFactory));
+            Guard.IsNotNull(exception, nameof(exception));
+
+            raw = new Lazy<T>(valueFactory);
             this.exception = exception;
         }
 
@@ -45,22 +54,27 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<T> Lax() => value;
+        public Maybe<T> Lax() => raw.Value;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Strict()
         {
-            if (value.IsNull())
+            if (raw.IsNull())
                 throw exception;
 
-            return value;
+            return raw.Value;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<TOut> Cast<TOut>()
         {
-            return (value.As<TOut>(), exception);
+            return (raw.Value.As<TOut>(), exception);
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(Raw)}: {raw.Value}; {nameof(exception)}: {exception}";
         }
     }
 }

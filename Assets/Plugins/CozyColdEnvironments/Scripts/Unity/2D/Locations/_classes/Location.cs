@@ -69,8 +69,7 @@ namespace CCEnvs.U2D.Locations
                 cell = typeof(T).ReflectQuery()
                                 .NonPublic()
                                 .Arguments(this, pos)
-                                .Invoke<T>()
-                                .Strict();
+                                .Invoke<T>();
 
                 cells[pos] = cell;
 

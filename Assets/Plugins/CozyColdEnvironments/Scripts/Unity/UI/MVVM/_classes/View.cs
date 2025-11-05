@@ -38,8 +38,7 @@ namespace CCEnvs.Unity.UI.MVVM
         {
             var model = typeof(TModel).ReflectQuery()
                                       .NonPublic()
-                                      .Invoke<TModel>()
-                                      .Strict();
+                                      .Invoke<TModel>();
 
             if (model is IDisposable disposable)
                 disposable.AddTo(this);
@@ -54,8 +53,7 @@ namespace CCEnvs.Unity.UI.MVVM
             return typeof(TViewModel).ReflectQuery()
                                      .NonPublic()
                                      .Arguments(model!)
-                                     .Invoke<TViewModel>()
-                                     .Strict();
+                                     .Invoke<TViewModel>();
         }
 
         public override void Show()

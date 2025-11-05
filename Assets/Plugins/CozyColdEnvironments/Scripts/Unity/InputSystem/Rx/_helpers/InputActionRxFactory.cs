@@ -33,8 +33,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
                                                .Arguments(inputAction)
                                                .GenericTypes(valueType)
                                                .Cache()
-                                               .Invoke<IInputActionRx>()
-                                               .Strict();
+                                               .Invoke<IInputActionRx>();
         }
     }
 }

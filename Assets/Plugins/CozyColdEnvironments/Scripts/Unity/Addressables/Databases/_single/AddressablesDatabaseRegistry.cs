@@ -182,8 +182,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                          select (loadInfo, value: loadInfo.GetDatabaseType()) into dbType
                          select (dbType.loadInfo, value: dbType.value.ReflectQuery()
                          .NonPublic()
-                         .Invoke<IAddressablesDatabase>()
-                         .Strict()) into db
+                         .Invoke<IAddressablesDatabase>()) into db
                          select (value: db.value.LoadAssetsAsync(db.loadInfo.AssetLabels), db: db.value)
                          ).Do(task => RegisterDatabase(task.db))
                          .Select(task => task.value);

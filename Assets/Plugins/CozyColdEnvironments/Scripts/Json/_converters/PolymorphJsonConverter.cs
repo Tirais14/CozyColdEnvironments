@@ -116,13 +116,13 @@ namespace CCEnvs.Json.Converters
 
             try
             {
-                
+
 
                 var obj = ((ITypeProvider)value).ObjectType.ReflectQuery()
                     .NonPublic()
                     .Cache()
                     .Arguments(value)
-                    .Invoke().Raw;
+                    .Invoke();
 
                 serializer.Serialize(writer, obj);
             }
