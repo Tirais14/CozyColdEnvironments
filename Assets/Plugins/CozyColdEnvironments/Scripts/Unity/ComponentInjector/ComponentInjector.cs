@@ -70,13 +70,11 @@ namespace CCEnvs.Unity.Injections
                                                              typeof(IfElse<>));
 
             if (isSupportedValueType)
-            {
                 injectType = injectType.GetGenericArguments()[0];
-            }
 
             if (injectType.IsValueType)
             {
-                typeof(ComponentInjector).PrintError($"Unsupported field type: {injectType.GetFullName()}.");
+                typeof(ComponentInjector).PrintError($"Unsupported inject type: {injectType.GetFullName()}.");
                 return;
             }
             if (field.GetValue(source).IsNotDefault())
@@ -107,7 +105,7 @@ namespace CCEnvs.Unity.Injections
                     InjectFrom.GameObject => source.FindFor()
                                                    .InChildren()
                                                    .IncludeInactive()
-                                                   .Name(attribute.Name)
+                                                   .Name(attribute.UnityName)
                                                    .GameObject()
                                                    .Strict()
                                                    .FindFor()
@@ -117,26 +115,33 @@ namespace CCEnvs.Unity.Injections
                     _ => throw new InvalidOperationException(injectFrom.ToString())
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (attribute.IsOptional
                     ||
                     field.FieldType.IsType<IConditional>())
                 {
-                    typeof(ComponentInjector).PrintLog($"Not injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}. Is optional and not found.");
+                    printNotInjectedLog();
                     return;
                 }
 
-                typeof(ComponentInjector).PrintException(ex);
-                return;
+                throw;
             }
 
             if (foundComponent is IConditional conditional)
-                foundComponent = conditional.Access();
+            {
+                if (conditional.IsNone)
+                {
+                    printNotInjectedLog();
+                    return;
+                }
+
+                foundComponent = conditional.AccessUnsafe();
+            }
 
             if (injectType.IsNotType(field.FieldType))
             {
-                var converted = foundComponent!.MutateType(field.FieldType);
+                var converted = foundComponent.MutateType(field.FieldType);
 
                 field.SetValue(source, converted);
             }
@@ -144,6 +149,11 @@ namespace CCEnvs.Unity.Injections
                 field.SetValue(source, foundComponent);
 
             typeof(ComponentInjector).PrintLog($"Injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}.");
+
+            void printNotInjectedLog()
+            {
+                typeof(ComponentInjector).PrintLog($"Not injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}. Is optional and not found.");
+            }
         }
 
         private static void SetFields(Component source,
@@ -168,7 +178,7 @@ namespace CCEnvs.Unity.Injections
                             InjectFrom.Parent);
                         break;
                     case GetByChildrenAttribute byChild:
-                        byChild.Name.Maybe().Match(
+                        byChild.UnityName.Maybe().Match(
                             _ => SetField(
                             source,
                             field,

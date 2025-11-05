@@ -11,15 +11,15 @@ namespace CCEnvs.Unity
     public readonly struct Result<T>
     {
         public readonly Exception exception;
-        private readonly Lazy<T> raw;
+        private readonly Lazy<T?> raw;
 
-        public T Raw => raw.Value;
+        public T? Raw => raw.Value;
 
-        public Result(T value, Exception exception)
+        public Result(T? value, Exception exception)
         {
             Guard.IsNotNull(exception, nameof(exception));
 
-            this.raw = new Lazy<T>(value);
+            this.raw = new Lazy<T?>(value);
             this.exception = exception;
         }
         public Result(Func<T> valueFactory, Exception exception)
@@ -27,7 +27,7 @@ namespace CCEnvs.Unity
             Guard.IsNotNull(valueFactory, nameof(valueFactory));
             Guard.IsNotNull(exception, nameof(exception));
 
-            raw = new Lazy<T>(valueFactory);
+            raw = new Lazy<T?>(valueFactory);
             this.exception = exception;
         }
 
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Strict()
         {
-            if (raw.IsNull())
+            if (raw.Value.IsNull())
                 throw exception;
 
             return raw.Value;

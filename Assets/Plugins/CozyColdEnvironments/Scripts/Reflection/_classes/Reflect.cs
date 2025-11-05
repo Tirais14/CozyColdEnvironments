@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using BindingFlags = System.Reflection.BindingFlags;
@@ -16,17 +17,18 @@ using BindingFlags = System.Reflection.BindingFlags;
 namespace CCEnvs.Reflection
 {
     //TODO: Caching, expression trees
-    public record ReflectQuery
+    public record Reflect
     {
         [Flags]
         public enum Settings
         {
             None,
             IncludeBaseTypes,
-            ByFullName
+            ByFullName,
+            ForceConstructors
         }
 
-        public readonly static ReflectQuery self = new();
+        public readonly static Reflect self = new();
         private Maybe<Type[]> cachedBaseTypes;
 
         public Settings settings { get; private set; }
@@ -54,7 +56,7 @@ namespace CCEnvs.Reflection
         private Type type => target.As<Type>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery From(object instance)
+        public Reflect From(object instance)
         {
             Guard.IsNotNull(instance, nameof(instance));
 
@@ -65,7 +67,7 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery From(MemberInfo member)
+        public Reflect From(MemberInfo member)
         {
             Guard.IsNotNull(member, nameof(member));
 
@@ -77,7 +79,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery BindingAttributes(BindingFlags bindingFlags)
+        public Reflect BindingAttributes(BindingFlags bindingFlags)
         {
             this.bindingFlags = bindingFlags;
 
@@ -86,7 +88,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery NonPublic(bool state = true)
+        public Reflect NonPublic(bool state = true)
         {
             if (state)
                 bindingFlags |= BindingFlags.NonPublic;
@@ -98,7 +100,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Name(string? name = null)
+        public Reflect Name(string? name = null)
         {
             this.name = name;
 
@@ -107,7 +109,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Public(bool state = true)
+        public Reflect Public(bool state = true)
         {
             if (state)
                 bindingFlags |= BindingFlags.Public;
@@ -119,7 +121,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Static(bool state = true)
+        public Reflect Static(bool state = true)
         {
             if (state)
                 bindingFlags |= BindingFlags.Static;
@@ -131,7 +133,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Instance(bool state = true)
+        public Reflect Instance(bool state = true)
         {
             if (state)
                 bindingFlags |= BindingFlags.Instance;
@@ -143,7 +145,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery IgnoreCase(bool state = true)
+        public Reflect IgnoreCase(bool state = true)
         {
             if (state)
                 bindingFlags |= BindingFlags.IgnoreCase;
@@ -155,7 +157,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery IncludeBaseTypes(bool state = true)
+        public Reflect IncludeBaseTypes(bool state = true)
         {
             if (state)
                 settings |= Settings.IncludeBaseTypes;
@@ -167,7 +169,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery ByFullName(bool state = true)
+        public Reflect ByFullName(bool state = true)
         {
             if (state)
                 settings |= Settings.ByFullName;
@@ -177,9 +179,19 @@ namespace CCEnvs.Reflection
             return this;
         }
 
+        public Reflect ForceConstructors(bool state = true)
+        {
+            if (state)
+                settings |= Settings.ForceConstructors;
+            else
+                settings &= ~Settings.ForceConstructors;
+
+            return this;
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Binder(Binder? binder = null)
+        public Reflect Binder(Binder? binder = null)
         {
             this.binder = binder;
 
@@ -188,7 +200,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery ArgumentTypes(params Type[] types)
+        public Reflect ArgumentTypes(params Type[] types)
         {
             this.argumentTypes = types;
 
@@ -197,7 +209,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Arguments(params object[] args)
+        public Reflect Arguments(params object[] args)
         {
             arguments = args;
             argumentTypes = args.Select(x => x.GetType()).ToArray();
@@ -207,7 +219,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery ParameterModifiers(ParameterModifier parameterModifier = default)
+        public Reflect ParameterModifiers(ParameterModifier parameterModifier = default)
         {
             parameterModifiers = Range.From(parameterModifier);
 
@@ -216,7 +228,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery ParameterModifiers(ParameterModifier[]? parameterModifiers = null)
+        public Reflect ParameterModifiers(ParameterModifier[]? parameterModifiers = null)
         {
             this.parameterModifiers = parameterModifiers;
 
@@ -225,7 +237,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery ExtraType(Type? type = null)
+        public Reflect ExtraType(Type? type = null)
         {
             extraType = type;
 
@@ -234,14 +246,14 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery ExtraType<T>()
+        public Reflect ExtraType<T>()
         {
             return ExtraType(typeof(T));
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery GenericTypes(params Type[] types)
+        public Reflect GenericTypes(params Type[] types)
         {
             genericTypes = types;
 
@@ -250,7 +262,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Cache(bool state = true)
+        public Reflect Cache(bool state = true)
         {
             //TODO: Caching
 
@@ -259,7 +271,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Attributes(params Type[] types)
+        public Reflect Attributes(params Type[] types)
         {
             attributes = types;
 
@@ -268,7 +280,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectQuery Reset()
+        public Reflect Reset()
         {
             cachedBaseTypes = null;
 
@@ -477,6 +489,8 @@ namespace CCEnvs.Reflection
             return true;
         }
 
+        private 
+
         private bool CompareMethod(MethodBase method)
         {
             if (method is not ConstructorInfo
@@ -524,20 +538,20 @@ namespace CCEnvs.Reflection
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReflectQuery ReflectQuery(this MemberInfo source)
+        public static Reflect ReflectQuery(this MemberInfo source)
         {
             Guard.IsNotNull(source, nameof(source));
 
-            return Reflection.ReflectQuery.self.Reset().From(source);
+            return Reflection.Reflect.self.Reset().From(source);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReflectQuery ReflectQuery(this object source)
+        public static Reflect ReflectQuery(this object source)
         {
             Guard.IsNotNull(source, nameof(source));
 
-            return Reflection.ReflectQuery.self.Reset().From(source);
+            return Reflection.Reflect.self.Reset().From(source);
         }
     }
 }

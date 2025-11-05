@@ -2,6 +2,7 @@
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace CCEnvs.Conversations
         public static object MutateType(object input, Type toType)
         {
             CC.Guard.IsNotNull(input, nameof(input));
-            CC.Guard.IsNotNull(toType, nameof(toType));
+            Guard.IsNotNull(toType, nameof(toType));
 
             Type inputType = input.GetType();
             if (inputType.IsType(toType))

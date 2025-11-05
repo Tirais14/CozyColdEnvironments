@@ -8,12 +8,12 @@ namespace CCEnvs.Reflection
 {
     public static class TypeReflectionUtils
     {
-        private static ReflectQuery imptQ => ReflectQuery.self.Reset()
+        private static Reflect imptQ => Reflect.self.Reset()
                                                               .NonPublic()
                                                               .ByFullName()
                                                               .Name("op_Implicit");
 
-        private static ReflectQuery exptQ => ReflectQuery.self.Reset()
+        private static Reflect exptQ => Reflect.self.Reset()
                                                               .NonPublic()
                                                               .ByFullName()
                                                               .Name("op_Explicit");
