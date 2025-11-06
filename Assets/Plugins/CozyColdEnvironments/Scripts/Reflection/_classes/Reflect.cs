@@ -287,8 +287,21 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect Arguments(params object[] args)
         {
+            if (args.Any(x => x.IsNull()))
+                ThrowHelper.ThrowArgumentNullException(nameof(args), "Array contains null");
+
             arguments = args;
             argumentTypes = args.Select(x => x.GetType()).ToArray();
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect Arguments(params TypeValuePair[] pairs)
+        {
+            arguments = pairs.Select(x => x.Value).ToArray();
+            argumentTypes = pairs.Select(x => x.Type).ToArray();
 
             return this;
         }
@@ -455,7 +468,7 @@ namespace CCEnvs.Reflection
         {
             MethodInfo method = Method().Strict();
 
-            var result = method.Invoke(target.Raw, arguments.Access(Type.EmptyTypes));
+            var result = method.Invoke(target.Access(), arguments.Access(Type.EmptyTypes));
 
             PrintMethodInvoked(method);
 
@@ -473,6 +486,9 @@ namespace CCEnvs.Reflection
 
             var result = ctor.Invoke(arguments.Access(Type.EmptyTypes));
 
+            if (result.IsNull())
+                throw new CCException("Error while invoking constructor. Result is null.");
+
             PrintMethodInvoked(ctor);
 
             return result;
@@ -486,21 +502,21 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object CreateInstance()
         {
-            return Instance().Static().InvokeConstructor();
+            return Instance().Static().NonPublic().InvokeConstructor();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T CreateInstance<T>()
         {
-            return Instance().Static().InvokeConstructor<T>();
+            return CreateInstance().As<T>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<object> GetFieldValue()
         {
-            return (Field().Strict().GetValue(target), null);
+            return (Field().Strict().GetValue(target.Access()), null);
         }
 
         [DebuggerStepThrough]
@@ -514,7 +530,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect SetFieldValue()
         {
-            Field().Strict().SetValue(target, arguments.Map(x => x.FirstOrDefault()).Access());
+            Field().Strict().SetValue(target.Access(), arguments.Map(x => x.FirstOrDefault()).Access());
 
             return this;
         }
@@ -523,7 +539,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<object> GetPropertyValue()
         {
-            return (Property().Strict().GetValue(target), null);
+            return (Property().Strict().GetValue(target.Access()), null);
         }
 
         [DebuggerStepThrough]
@@ -537,7 +553,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect SetPropertyValue()
         {
-            Property().Strict().SetValue(target, arguments.Map(x => x.FirstOrDefault()).Access());
+            Property().Strict().SetValue(target.Access(), arguments.Map(x => x.FirstOrDefault()).Access());
 
             return this;
         }
@@ -602,8 +618,15 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool CompareType(Type left, Maybe<Type> right)
+        private bool CompareType(Type left, Maybe<Type> right, bool useFirstArgument)
         {
+            if (useFirstArgument && arguments.Raw.IsNotNull())
+            {
+                right = arguments.Map(x => x.FirstOrDefault())
+                                 .Map(arg => arg.GetType())
+                                 .AccessUnsafe();
+            }
+
             return right.Match(
                 some: right => CompareType(left, right),
                 none: () => true).Raw;
@@ -651,7 +674,7 @@ namespace CCEnvs.Reflection
                 return false;
             if (!CompareAttributes(member))
                 return false;
-            if (!CompareType(underlyingType, extraType))
+            if (!CompareType(underlyingType, extraType, useFirstArgument: true))
                 return false;
 
             return true;
@@ -669,7 +692,7 @@ namespace CCEnvs.Reflection
                 return false;
             if (!method.CompareParameters(argumentTypes, paramMods))
                 return false;
-            if (!CompareType(method.ReturnType, extraType))
+            if (!CompareType(method.ReturnType, extraType, useFirstArgument: false))
                 return false;
 
             return true;

@@ -235,15 +235,15 @@ namespace CCEnvs.Unity
                 results = findMode switch
                 {
                     FindMode.Self => Source.Components()
-                                           .Where(cmp => anyType || cmp.IsType(type!)),
+                                           .Where(cmp => anyType || cmp.IsIntanceOfType(type!)),
 
                     FindMode.InChilds => InChildren().GameObjects()
                                                      .SelectMany(x => x.Components())
-                                                     .Where(x => anyType || x.IsType(type!)),
+                                                     .Where(x => anyType || x.IsIntanceOfType(type!)),
 
                     FindMode.InParents => InParent().GameObjects()
                                                     .SelectMany(x => x.Components())
-                                                    .Where(x => anyType || x.IsType(type!)),
+                                                    .Where(x => anyType || x.IsIntanceOfType(type!)),
 
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };
@@ -323,7 +323,7 @@ namespace CCEnvs.Unity
 
             return from view in Views(type)
                    select view.viewModel into viewModel
-                   where anyType || viewModel.IsType(type!)
+                   where anyType || viewModel.IsIntanceOfType(type!)
                    select viewModel;
         }
 
@@ -363,7 +363,7 @@ namespace CCEnvs.Unity
             var results = from obj in Components()
                           select (obj, view: obj.AsOrDefault<IView>()) into x
                           select x.view.Map(y => y.model).Access(x.obj) into obj
-                          where anyType || obj.IsType(type!)
+                          where anyType || obj.IsIntanceOfType(type!)
                           select obj;
 
             return results;
@@ -447,7 +447,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectSearch.Instance.Reset().From(source);
+            return new GameObjectSearch().From(source);
         }
 
         [DebuggerStepThrough]
@@ -456,7 +456,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectSearch.Instance.Reset().From(source);
+            return new GameObjectSearch().From(source);
         }
     }
 }

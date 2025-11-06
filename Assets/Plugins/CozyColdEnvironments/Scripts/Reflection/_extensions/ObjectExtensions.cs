@@ -6,17 +6,21 @@ namespace CCEnvs.Reflection
 {
     public static class ObjectExtensions
     {
-        public static bool IsType<T>(this T? value, Type other)
+        public static bool IsIntanceOfType<T>(this T? value,
+            Type other,
+            TypeMatchingSettings typeMatchingSettings = TypeMatchingSettings.Default)
         {
             if (value.IsNull())
                 return false;
 
-            return value.GetType().IsType(other);
+            return value.GetType().IsType(other, typeMatchingSettings);
         }
 
-        public static bool IsNotType<T>(this T? value, Type other)
+        public static bool IsNotInstanceOfType<T>(this T? value,
+            Type other,
+            TypeMatchingSettings typeMatchingSettings = TypeMatchingSettings.Default)
         {
-            return !value.IsType(other);
+            return !value.IsIntanceOfType(other, typeMatchingSettings);
         }
     }
 }

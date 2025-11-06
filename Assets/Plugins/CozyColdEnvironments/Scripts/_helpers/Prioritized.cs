@@ -48,7 +48,7 @@ namespace CCEnvs
             foreach (var item in values)
                 list.Add(new PrioritizedValue<T>(item, priorityGetter(item)));
 
-            return list.GetInternalArray();
+            return list.GetInternalArrayUnsafe();
         }
 
 #if C5

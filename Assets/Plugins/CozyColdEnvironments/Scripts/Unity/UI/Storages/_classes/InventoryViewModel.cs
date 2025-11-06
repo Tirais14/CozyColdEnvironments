@@ -1,4 +1,3 @@
-using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
@@ -18,6 +17,7 @@ namespace CCEnvs.Unity.UI.Storages
         private readonly Dictionary<GameObject, GameObject> addedContainerGameObjects = new();
 
         public IReadOnlyReactiveProperty<MaybeStruct<int>> ActiveContainerID => activeContainerID;
+        public override bool ModelMutable => true;
 
         public InventoryViewModel(T model, GameObject gameObject) 
             :

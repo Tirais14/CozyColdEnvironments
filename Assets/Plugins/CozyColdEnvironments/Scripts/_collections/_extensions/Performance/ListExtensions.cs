@@ -11,28 +11,28 @@ namespace CCEnvs.Collections.Performance
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new ReadOnlySpan<T>(source.GetInternalArray(), 0, source.Count);
+            return new ReadOnlySpan<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }
 
         public static Span<T> ToSpan<T>(this List<T> source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new Span<T>(source.GetInternalArray(), 0, source.Count);
+            return new Span<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }
 
         public static ReadOnlyMemory<T> ToReadOnlyMemory<T>(this List<T> source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new ReadOnlyMemory<T>(source.GetInternalArray(), 0, source.Count);
+            return new ReadOnlyMemory<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }
 
         public static Memory<T> ToMemory<T>(this List<T> source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new Memory<T>(source.GetInternalArray(), 0, source.Count);
+            return new Memory<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace CCEnvs.Collections.Performance
         {
             CC.Guard.SourceArg(source);
 
-            return new ArraySegment<T>(source.GetInternalArray(), 0, source.Count);
+            return new ArraySegment<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }
     }
 }

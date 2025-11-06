@@ -124,6 +124,18 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly object AccessUnsafe()
+        {
+            if (IsRight)
+                return right!;
+
+            if (IsLeft)
+                return left!;
+
+            throw new ValueIsNoneException();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly object? Access()
         {
             if (IsRight)

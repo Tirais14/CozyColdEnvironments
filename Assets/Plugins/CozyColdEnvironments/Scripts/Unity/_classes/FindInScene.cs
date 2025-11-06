@@ -64,12 +64,12 @@ namespace CCEnvs.Unity
             if (type.IsType(defaultType))
             {
                 results = Object.FindObjectsByType(type, Inactive, SortMode)
-                                .Where(cmp => anyType || cmp.IsType(type));
+                                .Where(cmp => anyType || cmp.IsIntanceOfType(type));
             }
             else
             {
                 results = Object.FindObjectsByType(defaultType, Inactive, SortMode)
-                                .Where(cmp => anyType || cmp.IsType(type));
+                                .Where(cmp => anyType || cmp.IsIntanceOfType(type));
             }
 
             Reset();
@@ -110,7 +110,7 @@ namespace CCEnvs.Unity
             if (type.IsNotType<IView>())
                 return Array.Empty<IView>();
 
-            return Components().Where(cmp => cmp.IsType(type)).Cast<IView>();
+            return Components().Where(cmp => cmp.IsIntanceOfType(type)).Cast<IView>();
         }
 
         [DebuggerStepThrough]
@@ -177,7 +177,7 @@ namespace CCEnvs.Unity
             return from cmp in Components()
                    select (cmp, view: cmp.AsOrDefault<IView>()) into x
                    select x.view.Map(y => y.model).Access(x.cmp) into cmp
-                   where anyType || cmp.IsType(type!)
+                   where anyType || cmp.IsIntanceOfType(type!)
                    select cmp;
         }
 

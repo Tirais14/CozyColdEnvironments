@@ -14,10 +14,7 @@ namespace CCEnvs.Unity
         None,
         Object,
         Prefab,
-
-        [MetaString("Scriptable Object")]
         ScriptableObject,
-
         Texture2D,
         Sprite,
         SpriteAtlas,

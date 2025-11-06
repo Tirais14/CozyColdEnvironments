@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using System;
@@ -9,27 +10,29 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public abstract class ViewModel<T> : IViewModel<T>, IDisposable
+    public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable
     {
         protected readonly List<IDisposable> disposables = new();
         private bool disposed;
 
         public Maybe<GameObject> gameObject { get; private set; }
-        public T model { get; private set; }
+        public TModel model { get; private set; }
+        public virtual bool ModelMutable => false;
 
-        protected ViewModel(T model, GameObject gameObject)
+        protected ViewModel(TModel model, GameObject gameObject)
         {
             this.model = model;
             this.gameObject = gameObject;
 
-            new Maybe<T>(model).Map(x => x as IGameObjectBindable)
+            model.Maybe()
+                .Map(x => x as IGameObjectBindable)
+                .Where(x => x is not UnityEngine.Object)
                 .IfSome(target => target.Reflect()
-                                        .NonPublic()
-                                        .ExtraType<GameObject>()
-                                        .Field()
-                                        .Strict()
-                                        .SetValue(target, gameObject)
-                                        );
+                    .NonPublic()
+                    .Name(nameof(IGameObjectBindable.gameObject))
+                    .Arguments(gameObject.Maybe())
+                    .SetFieldValue()
+                    );
         }
 
         public virtual void ForceNotify()
@@ -53,6 +56,16 @@ namespace CCEnvs.Unity.UI.MVVM
                       .Arguments(propValue)
                       .InvokeMethod();
             }
+        }
+
+        public virtual void SetModelUnsafe(TModel model)
+        {
+            if (!ModelMutable)
+                throw new InvalidOperationException("Cannot set new model.");
+            CC.Guard.IsNotNull(model, nameof(model));
+
+            this.model = model;
+            ForceNotify();
         }
 
         public void Dispose() => Dispose(disposing: true);

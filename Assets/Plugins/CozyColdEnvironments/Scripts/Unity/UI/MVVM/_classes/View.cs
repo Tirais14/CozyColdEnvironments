@@ -1,3 +1,5 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.UI.Elements;
 using System;
@@ -6,10 +8,6 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
-#pragma warning disable IDE1006
-#pragma warning disable IDE0051
-#pragma warning disable S3236
-#pragma warning disable S1117
 namespace CCEnvs.Unity.UI.MVVM
 {
     /// <summary>
@@ -27,19 +25,44 @@ namespace CCEnvs.Unity.UI.MVVM
 
         public TModel model => viewModel.model;
         public TViewModel viewModel => _viewModel.Value;
+        public virtual bool ViewModelMutable => false;
 
         protected override void Awake()
         {
             base.Awake();
 
-            _viewModel = new Lazy<TViewModel>(() => CreateViewModel().AddTo(this));
+            _viewModel = new Lazy<TViewModel>(() => ViewModelFactory().AddTo(this));
         }
 
-        protected virtual TModel CreateModel()
+        protected override void Start()
         {
-            var model = typeof(TModel).Reflect()
-                                      .NonPublic()
-                                      .InvokeConstructor<TModel>();
+            base.Start();
+            SetupViewModel();
+        }
+
+        public virtual void SetViewModelUnsafe(TViewModel viewModel)
+        {
+            if (!ViewModelMutable)
+                throw new InvalidOperationException("Cannot set new view model.");
+            CC.Guard.IsNotNull(viewModel, nameof(viewModel));
+
+            this.viewModel.Dispose();
+            _viewModel = new Lazy<TViewModel>(viewModel);
+
+            if (viewModel is IDisposable disp)
+                disp.AddTo(this);
+
+            SetupViewModel();
+        }
+
+        protected virtual TModel ModelFactory()
+        {
+            Type modelType = typeof(TModel);
+
+            if (modelType.IsType<Component>())
+                throw new InvalidOperationException($"Unity objects must be instantiated by Unity instead of creating new instance. Type: {modelType.GetFullName()}.");
+
+            TModel model = typeof(TModel).Reflect().Cache().CreateInstance<TModel>();
 
             if (model is IDisposable disposable)
                 disposable.AddTo(this);
@@ -47,21 +70,23 @@ namespace CCEnvs.Unity.UI.MVVM
             return model;
         }
 
-        protected virtual TViewModel CreateViewModel(TModel? model = default)
+        protected virtual TViewModel ViewModelFactory(TModel? model = default)
         {
-            model ??= CreateModel();
+            model = model.Maybe()
+                         .IfNone(() => ModelFactory())
+                         .AccessUnsafe()
+                         .As<TModel>();
 
             return typeof(TViewModel).Reflect()
-                                     .NonPublic()
+                                     .Cache()            
                                      .Arguments(model!, gameObject)
-                                     .InvokeConstructor<TViewModel>();
+                                     .CreateInstance<TViewModel>();
         }
 
-        public override void Show()
-        {
-            base.Show();
-
-            viewModel.ForceNotify();
-        }
+        /// <summary>
+        /// Put any logic which needed to execute on <see cref="viewModel"/> changed.
+        /// <br/>Called in <see cref="Start"/> and when <see cref="viewModel"/> is changed.
+        /// </summary>
+        protected abstract void SetupViewModel();
     }
 }

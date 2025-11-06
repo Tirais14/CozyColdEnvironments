@@ -23,9 +23,7 @@ namespace CCEnvs.Unity.UI.Storages
             base.Start();
 
             SetupSlotBag();
-            Init();
-            BindAddContainer();
-            BindRemoveContainer();
+
         }
 
         protected override void OnDestroy()
@@ -34,13 +32,11 @@ namespace CCEnvs.Unity.UI.Storages
             SlotBag.Clear();
         }
 
-        public void SetInventory(TInventory inventory)
+        protected override void SetupViewModel()
         {
-            CC.Guard.IsNotNull(inventory, nameof(inventory));
-
-            viewModel.Dispose();
-            _viewModel = new Lazy<TViewModel>(() => CreateViewModel(inventory).AddTo(this));
             Init();
+            BindAddContainer();
+            BindRemoveContainer();
         }
 
         private void Init()

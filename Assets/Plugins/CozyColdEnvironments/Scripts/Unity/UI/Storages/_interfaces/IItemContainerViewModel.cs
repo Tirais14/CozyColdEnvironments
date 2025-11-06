@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.Storages
 {
-    public interface IItemContainerViewModel<out T> : IViewModel<T>
+    public interface IItemContainerViewModel<T> : IViewModel<T>
         where T : IItemContainerInfo
     {
         IReadOnlyReactiveProperty<Sprite?> ItemIcon { get; }

@@ -114,5 +114,8 @@ namespace CCEnvs.Unity.UI.Storages
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>
     {
+        protected override void SetupViewModel()
+        {
+        }
     }
 }
