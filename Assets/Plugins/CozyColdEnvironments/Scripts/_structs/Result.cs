@@ -10,18 +10,27 @@ namespace CCEnvs.Unity
 {
     public readonly struct Result<T>
     {
-        public readonly Exception exception;
+        public readonly Exception? exception;
         private readonly Lazy<T?> raw;
 
         public T? Raw => raw.Value;
 
-        public Result(T? value, Exception exception)
+        public Result(T? value, Exception? exception)
         {
             Guard.IsNotNull(exception, nameof(exception));
 
             this.raw = new Lazy<T?>(value);
             this.exception = exception;
         }
+        public Result(T value)
+            :
+            this()
+        {
+            CC.Guard.IsNotNull(value, nameof(value));
+
+            raw = new Lazy<T?>(value);
+        }
+
         public Result(Func<T> valueFactory, Exception exception)
         {
             Guard.IsNotNull(valueFactory, nameof(valueFactory));
@@ -33,8 +42,11 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Result<T>((T? value, Exception exception) input)
+        public static implicit operator Result<T>((T? value, Exception? exception) input)
         {
+            if (input.exception is null)
+                return new Result<T>(input.value!);
+
             return new Result<T>(input.value, input.exception);
         }
 
@@ -60,7 +72,12 @@ namespace CCEnvs.Unity
         public T Strict()
         {
             if (raw.Value.IsNull())
+            {
+                if (exception is null)
+                    throw new InvalidOperationException($"{nameof(Strict)} value and exception is null. This exception means violation of contract.");
+
                 throw exception;
+            }
 
             return raw.Value;
         }

@@ -1,16 +1,13 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.TypeMatching;
 using CCEnvs.Unity;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using BindingFlags = System.Reflection.BindingFlags;
 
 #nullable enable
@@ -18,7 +15,7 @@ using BindingFlags = System.Reflection.BindingFlags;
 namespace CCEnvs.Reflection
 {
     //TODO: Caching, expression trees
-    public record Reflect
+    public record Reflect : IShallowCloneable<Reflect>
     {
         [Flags]
         public enum Settings
@@ -27,17 +24,18 @@ namespace CCEnvs.Reflection
             IncludeBaseTypes = 1,
             ByFullName = 2,
             ForceConstructors = 4,
-            ForceMethods = 8
+            ForceMethods = 8,
         }
 
         public readonly static Reflect self = new();
         private Maybe<Type[]> cachedBaseTypes;
 
         public Settings settings { get; private set; }
-        public Maybe<object> instance { get; private set; }
+        public BindingFlags bindingFlags { get; private set; }
+        public TypeMatchingSettings typeMatchingSettings { get; private set; }
+        public Maybe<object> target { get; private set; }
         public MemberInfo member { get; private set; } = null!;
         public Maybe<string> name { get; private set; }
-        public BindingFlags bindingFlags { get; private set; }
         public Maybe<Type[]> argumentTypes { get; private set; }
         public Maybe<object?[]> arguments { get; private set; }
         public Maybe<Type> extraType { get; private set; }
@@ -62,7 +60,7 @@ namespace CCEnvs.Reflection
         {
             Guard.IsNotNull(instance, nameof(instance));
 
-            this.instance = instance;
+            this.target = instance;
             member = instance.GetType();
 
             return Instance().Static().Public();
@@ -73,7 +71,7 @@ namespace CCEnvs.Reflection
         {
             Guard.IsNotNull(member, nameof(member));
 
-            instance = null;
+            target = null;
             this.member = member;
 
             return Static().Public();
@@ -201,6 +199,18 @@ namespace CCEnvs.Reflection
                 settings |= Settings.ForceMethods;
             else
                 settings &= ~Settings.ForceMethods;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect MatchTypesByBaseGenericTypeDefinition(bool state = true)
+        {
+            if (state)
+                typeMatchingSettings |= TypeMatchingSettings.ByBaseGenericTypeDefinition;
+            else
+                typeMatchingSettings &= ~TypeMatchingSettings.ByBaseGenericTypeDefinition;
 
             return this;
         }
@@ -351,16 +361,18 @@ namespace CCEnvs.Reflection
             cachedBaseTypes = null;
 
             settings = default;
-            instance = null;
+            bindingFlags = default;
+            typeMatchingSettings = default;
+            target = null;
             member = null!;
             name = null;
-            bindingFlags = default;
             argumentTypes = null;
             arguments = null;
             extraType = null;
             parameterModifiers = null;
             binder = null;
             genericTypes = null;
+            attributes = null;
 
             return this;
         }
@@ -439,11 +451,11 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object InvokeMethod()
+        public Maybe<object> InvokeMethod()
         {
             MethodInfo method = Method().Strict();
 
-            var result = method.Invoke(instance.Raw, arguments.Access(Type.EmptyTypes));
+            var result = method.Invoke(target.Raw, arguments.Access(Type.EmptyTypes));
 
             PrintMethodInvoked(method);
 
@@ -470,6 +482,79 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T InvokeConstructor<T>() => InvokeConstructor().As<T>();
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object CreateInstance()
+        {
+            return Instance().Static().InvokeConstructor();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T CreateInstance<T>()
+        {
+            return Instance().Static().InvokeConstructor<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<object> GetFieldValue()
+        {
+            return (Field().Strict().GetValue(target), null);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<T> GetFieldValue<T>()
+        {
+            return GetFieldValue().Cast<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect SetFieldValue()
+        {
+            Field().Strict().SetValue(target, arguments.Map(x => x.FirstOrDefault()).Access());
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<object> GetPropertyValue()
+        {
+            return (Property().Strict().GetValue(target), null);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<T> GetPropertyValue<T>()
+        {
+            return GetPropertyValue().Cast<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect SetPropertyValue()
+        {
+            Property().Strict().SetValue(target, arguments.Map(x => x.FirstOrDefault()).Access());
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect ShallowClone() => new(this);
+
+        /// <summary>
+        /// Left is source, Right is clone.
+        /// <br/>Fo
+        /// </summary>
+        /// <returns></returns>
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Either<Reflect, Reflect> Fork() => (this, ShallowClone());
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IEnumerable<MemberInfo> FindMembers(MemberTypes memberType)
         {
@@ -495,6 +580,35 @@ namespace CCEnvs.Reflection
             };
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private MemberNotFoundException GetMemberNotFoundException(MemberTypes memberType)
+        {
+            return new MemberNotFoundException(
+                memberType,
+                reflectedType: type,
+                name: name.Raw,
+                bindingFlags: bindingFlags,
+                types: argumentTypes.Raw,
+                binder: binder.Raw);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool CompareType(Type left, Type right)
+        {
+            return left.IsType(right, typeMatchingSettings);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool CompareType(Type left, Maybe<Type> right)
+        {
+            return right.Match(
+                some: right => CompareType(left, right),
+                none: () => true).Raw;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareName(string other)
         {
@@ -516,19 +630,7 @@ namespace CCEnvs.Reflection
                 .Raw;
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private MemberNotFoundException GetMemberNotFoundException(MemberTypes memberType)
-        {
-            return new MemberNotFoundException(
-                memberType,
-                reflectedType: type,
-                name: name.Raw,
-                bindingFlags: bindingFlags,
-                types: argumentTypes.Raw,
-                binder: binder.Raw);
-        }
-
         private bool CompareAttributes(MemberInfo member)
         {
             return attributes.Match(
@@ -549,11 +651,7 @@ namespace CCEnvs.Reflection
                 return false;
             if (!CompareAttributes(member))
                 return false;
-            if (!extraType.Match(
-                    some: type => underlyingType.IsType(type),
-                    none: () => true)
-                .Raw
-                )
+            if (!CompareType(underlyingType, extraType))
                 return false;
 
             return true;
@@ -571,11 +669,7 @@ namespace CCEnvs.Reflection
                 return false;
             if (!method.CompareParameters(argumentTypes, paramMods))
                 return false;
-            if (!extraType.Match(
-                    some: returnType => method.ReturnType.IsType(returnType),
-                    none: () => true)
-                .Raw
-                )
+            if (!CompareType(method.ReturnType, extraType))
                 return false;
 
             return true;

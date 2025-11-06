@@ -34,25 +34,24 @@ namespace CCEnvs.Unity.UI.MVVM
 
         public virtual void ForceNotify()
         {
-            foreach (var (value, method) in 
-                   from field in this.Reflect().NonPublic().Fields()
-                   where field.FieldType.IsGenericType
-                   where field.FieldType.Name.ContainsOrdinal("ReactiveProperty")
-                   select (field, prop: field.GetValue(this)) into x
-                   select (value: x.Reflect()
-                       .NonPublic()
-                       .Name(nameof(ReactiveProperty<object>.Value))
-                       .Property()
-                       .Lax()
-                       .Map(f => f.GetValue(this)).Raw,
-                   method: x.Reflect()
-                       .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
-                       .Method()
-                       .Strict()) into x
-                   where x.method != null
-                   select x)
+            foreach (var rxProp in
+                   from field in this.Reflect()
+                           .NonPublic()
+                           .Name(nameof(ReactiveProperty<object>))
+                           .ExtraType(typeof(IReactiveProperty<>))
+                           .MatchTypesByBaseGenericTypeDefinition()
+                           .Cache()
+                           .Fields()
+                   select field.GetValue(this))
             {
-                method.Invoke(this, new object[] { value });
+                object propValue = rxProp.Reflect()
+                                         .Name(nameof(ReactiveProperty<object>.Value))
+                                         .GetPropertyValue();
+
+                rxProp.Reflect()
+                      .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
+                      .Arguments(propValue)
+                      .InvokeMethod();
             }
         }
 

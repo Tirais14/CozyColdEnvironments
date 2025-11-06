@@ -124,34 +124,49 @@ namespace CCEnvs.Reflection
         /// <summary>
         /// Correctly compares primitive number values
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="source"></param>
         /// <param name="other"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool IsType(this Type value, Type? other)
+        public static bool IsType(this Type source, Type? other, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
-            Guard.IsNotNull(value, nameof(value));
+            Guard.IsNotNull(source, nameof(source));
             if (other is null)
                 return false;
 
-            if (value == other)
+            if (source == other)
                 return true;
 
-            if (other.IsPrimitiveNumber() && value.IsPrimitiveNumber())
-                return IsPrimitiveNumberValueAssignable(other, value);
+            if (other.IsPrimitiveNumber() && source.IsPrimitiveNumber())
+                return IsPrimitiveNumberValueAssignable(other, source);
 
-            return other.IsAssignableFrom(value);
+            bool result = other.IsAssignableFrom(source);
+
+            if (!result
+                &&
+                (settings.IsFlagSetted(TypeMatchingSettings.ByBaseGenericTypeDefinition)
+                ||
+                source.IsGenericTypeDefinition)
+                &&
+                source.IsGenericType
+                &&
+                other.IsGenericType)
+            {
+                result = other.GetGenericTypeDefinition().IsAssignableFrom(source.GetGenericTypeDefinition());
+            }
+
+            return result;
         }
-        public static bool IsType<T>(this Type value)
+        public static bool IsType<T>(this Type value, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
             return value.IsType(typeof(T));
         }
 
-        public static bool IsNotType(this Type value, Type other)
+        public static bool IsNotType(this Type value, Type other, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
             return !value.IsType(other);
         }
-        public static bool IsNotType<T>(this Type value)
+        public static bool IsNotType<T>(this Type value, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
             return value.IsNotType(typeof(T));
         }
