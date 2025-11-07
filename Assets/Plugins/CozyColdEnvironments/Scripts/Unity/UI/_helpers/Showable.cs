@@ -1,3 +1,4 @@
+using SuperLinq;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace CCEnvs.Unity.UI
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(componentSnapshots, nameof(componentSnapshots));
 
-            var graphics = gameObject.GetComponents<Graphic>();
+            var graphics = gameObject.GetComponentsInChildren<Graphic>().Where(cmp => cmp is not IShowable);
 
             if (graphics.IsEmpty())
                 return;

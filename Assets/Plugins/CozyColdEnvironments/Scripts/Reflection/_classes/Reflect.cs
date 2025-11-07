@@ -334,7 +334,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect ExtraType(Type? type = null)
+        public Reflect TypeFilter(Type? type = null)
         {
             extraType = type;
 
@@ -343,9 +343,9 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect ExtraType<T>()
+        public Reflect TypeFilter<T>()
         {
-            return ExtraType(typeof(T));
+            return TypeFilter(typeof(T));
         }
 
         [DebuggerStepThrough]
@@ -485,7 +485,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T InvokeMethod<T>() => InvokeMethod().As<T>();
+        public T InvokeMethod<T>() => TypeFilter<T>().InvokeMethod().As<T>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object InvokeConstructor()
@@ -531,7 +531,21 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetFieldValue<T>()
         {
-            return GetFieldValue().Cast<T>().RightTarget.As<T>();
+            return TypeFilter<T>().GetFieldValue().Cast<T>().RightTarget.As<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<object> GetFieldValues()
+        {
+            return Fields().Select(field => field.GetValue(target.Raw));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<T> GetFieldValues<T>()
+        {
+            return TypeFilter<T>().GetFieldValues().Cast<T>();
         }
 
         [DebuggerStepThrough]
@@ -554,7 +568,21 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetPropertyValue<T>()
         {
-            return GetPropertyValue().Cast<T>().AccessUnsafe().As<T>();
+            return TypeFilter<T>().GetPropertyValue().Cast<T>().AccessUnsafe().As<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<object> GetPropertyValues()
+        {
+            return Properties().Select(prop => prop.GetValue(target.Raw));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<T> GetPropertyValues<T>()
+        {
+            return TypeFilter<T>().GetPropertyValues().Cast<T>();
         }
 
         [DebuggerStepThrough]

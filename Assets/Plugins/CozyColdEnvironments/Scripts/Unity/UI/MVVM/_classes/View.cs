@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.UI.Elements;
@@ -24,7 +25,7 @@ namespace CCEnvs.Unity.UI.MVVM
 
         public TModel model => viewModel.model;
         public TViewModel viewModel => _viewModel.Value;
-        public virtual bool ViewModelMutable => false;
+        public virtual bool IsMutable => false;
 
         protected override void Awake()
         {
@@ -41,7 +42,7 @@ namespace CCEnvs.Unity.UI.MVVM
 
         public virtual void SetViewModelUnsafe(TViewModel viewModel)
         {
-            if (!ViewModelMutable)
+            if (!IsMutable)
                 throw new InvalidOperationException("Cannot set new view model.");
             CC.Guard.IsNotNull(viewModel, nameof(viewModel));
 
@@ -53,6 +54,18 @@ namespace CCEnvs.Unity.UI.MVVM
                 disp.AddTo(this);
 
             SetupViewModel();
+        }
+
+        public Maybe<TModel> SetModelUnsafe(TModel model)
+        {
+            if (!IsMutable)
+                throw new InvalidOperationException("Cannot set new model.");
+
+            var tModel = viewModel.Maybe().Map(viewModel => viewModel.model).Raw;
+
+            SetViewModelUnsafe(ViewModelFactory(model));
+
+            return tModel;
         }
 
         protected virtual TModel ModelFactory()
@@ -73,9 +86,13 @@ namespace CCEnvs.Unity.UI.MVVM
         protected virtual TViewModel ViewModelFactory(TModel? model = default)
         {
             model = model.Maybe()
-                         .IfNone(() => ModelFactory())
-                         .AccessUnsafe()
-                         .As<TModel>();
+                         .Match(
+                some: m => m,
+                none: () => ModelFactory())
+                         .Raw;
+
+            if (model.IsNull())
+                return null!;
 
             return typeof(TViewModel).Reflect()
                                      .Cache()            

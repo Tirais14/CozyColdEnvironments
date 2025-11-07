@@ -17,6 +17,7 @@ namespace CCEnvs.Unity.UI.Storages
     {
         [field: GetByChildren]
         public GameObjectBag SlotBag { get; private set; } = null!;
+        public override bool IsMutable => true;
 
         protected override void Start()
         {

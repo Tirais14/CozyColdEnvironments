@@ -75,7 +75,7 @@ namespace CCEnvs.Conversations
                 .NonPublic()
                 .Attributes(typeof(ConverterAttribute))
                 .ArgumentTypes(fromType)
-                .ExtraType(toType)
+                .TypeFilter(toType)
                 .Arguments(input)
                 .Method()
                 .Lax()

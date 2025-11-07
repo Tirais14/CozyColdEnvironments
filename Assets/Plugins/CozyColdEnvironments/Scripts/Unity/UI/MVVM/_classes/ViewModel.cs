@@ -9,6 +9,7 @@ using System.Reflection;
 using UniRx;
 using UnityEngine;
 
+#pragma warning disable S1699
 namespace CCEnvs.Unity.UI.MVVM
 {
     public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable
@@ -34,13 +35,15 @@ namespace CCEnvs.Unity.UI.MVVM
                     .Arguments(gameObject.Maybe())
                     .SetFieldValue()
                     );
+
+            AddDisposableViewModelDataToList();
         }
 
         public virtual void ForceNotify()
         {
             foreach (var rxProp in from field in this.Reflect()
                            .NonPublic()
-                           .ExtraType(typeof(IReactiveProperty<>))
+                           .TypeFilter(typeof(IReactiveProperty<>))
                            .MatchTypesByBaseGenericTypeDefinition()
                            .Cache()
                            .Fields()
@@ -70,16 +73,6 @@ namespace CCEnvs.Unity.UI.MVVM
             }
         }
 
-        public virtual void SetModelUnsafe(TModel model)
-        {
-            if (!ModelMutable)
-                throw new InvalidOperationException("Cannot set new model.");
-            CC.Guard.IsNotNull(model, nameof(model));
-
-            this.model = model;
-            ForceNotify();
-        }
-
         public void Dispose() => Dispose(disposing: true);
 
         protected virtual void Dispose(bool disposing)
@@ -88,8 +81,15 @@ namespace CCEnvs.Unity.UI.MVVM
                 return;
 
             disposables.DisposeAll();
+            disposables.Clear();
 
             disposed = true;
+        }
+
+        protected virtual void AddDisposableViewModelDataToList()
+        {
+            foreach (var item in this.Reflect().Cache().GetFieldValues<IDisposable>())
+                disposables.Add(item);
         }
     }
 }

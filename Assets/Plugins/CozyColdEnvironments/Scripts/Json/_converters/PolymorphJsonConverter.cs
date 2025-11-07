@@ -39,7 +39,7 @@ namespace CCEnvs.Json.Converters
 
             NamingStrategy namingStrategy = serializer.ContractResolver.Reflect()
                 .NonPublic()
-                .ExtraType<NamingStrategy>()
+                .TypeFilter<NamingStrategy>()
                 .Field()
                 .Strict()
                 .GetValue(serializer.ContractResolver)
