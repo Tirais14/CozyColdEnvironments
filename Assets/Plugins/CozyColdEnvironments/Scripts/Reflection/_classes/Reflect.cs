@@ -53,7 +53,7 @@ namespace CCEnvs.Reflection
         }
         public Maybe<Type[]> attributes { get; private set; }
 
-        private Type type => member.As<Type>();
+        protected Type type => member.As<Type>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect From(object instance)
@@ -229,6 +229,14 @@ namespace CCEnvs.Reflection
         public Reflect ArgumentTypes(params Type[] types)
         {
             this.argumentTypes = types;
+
+            arguments = types.Select(type =>
+            {
+                if (type.IsValueType)
+                    return Activator.CreateInstance(type);
+                else return null;
+
+            }).ToArray();
 
             return this;
         }
@@ -514,16 +522,16 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<object> GetFieldValue()
+        public Maybe<object> GetFieldValue()
         {
-            return (Field().Strict().GetValue(target.Access()), null);
+            return Field().Strict().GetValue(target.Access());
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T> GetFieldValue<T>()
+        public Maybe<T> GetFieldValue<T>()
         {
-            return GetFieldValue().Cast<T>();
+            return GetFieldValue().Cast<T>().RightTarget.As<T>();
         }
 
         [DebuggerStepThrough]
@@ -537,16 +545,16 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<object> GetPropertyValue()
+        public Maybe<object> GetPropertyValue()
         {
-            return (Property().Strict().GetValue(target.Access()), null);
+            return Property().Strict().GetValue(target.Access());
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T> GetPropertyValue<T>()
+        public Maybe<T> GetPropertyValue<T>()
         {
-            return GetPropertyValue().Cast<T>();
+            return GetPropertyValue().Cast<T>().AccessUnsafe().As<T>();
         }
 
         [DebuggerStepThrough]
@@ -620,7 +628,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareType(Type left, Maybe<Type> right, bool useFirstArgument)
         {
-            if (useFirstArgument && arguments.Raw.IsNotNull())
+            if (right.IsNone && useFirstArgument && arguments.Raw.IsNotNull())
             {
                 right = arguments.Map(x => x.FirstOrDefault())
                                  .Map(arg => arg.GetType())

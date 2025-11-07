@@ -14,14 +14,17 @@ namespace CCEnvs.Unity
         None,
         Object,
         Prefab,
+
+        [MetaString("Scriptable Object")]
         ScriptableObject,
+
         Texture2D,
         Sprite,
         SpriteAtlas,
         Scene,
     }
 
-    public static class AssetTypeNameExtensions
+    public static class AssetTypeExtensions
     {
         public static Type? ToSystemType(this AssetType assetType) =>
             assetType switch

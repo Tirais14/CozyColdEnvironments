@@ -152,7 +152,18 @@ namespace CCEnvs.Reflection
                 &&
                 other.IsGenericType)
             {
-                result = other.GetGenericTypeDefinition().IsAssignableFrom(source.GetGenericTypeDefinition());
+                Type sourceDef = source.GetGenericTypeDefinition();
+                Type otherDef = other.GetGenericTypeDefinition();
+
+                result = otherDef.IsAssignableFrom(sourceDef);
+
+                if (!result)
+                {
+                    result = sourceDef.GetInterfaces()
+                        .Where(iface => iface.IsGenericType)
+                        .Select(iface => iface.GetGenericTypeDefinition())
+                        .Any(iface => otherDef.IsAssignableFrom(iface));
+                }
             }
 
             return result;

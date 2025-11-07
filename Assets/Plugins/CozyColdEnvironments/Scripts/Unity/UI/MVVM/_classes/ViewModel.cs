@@ -5,6 +5,7 @@ using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UniRx;
 using UnityEngine;
 
@@ -37,24 +38,35 @@ namespace CCEnvs.Unity.UI.MVVM
 
         public virtual void ForceNotify()
         {
-            foreach (var rxProp in
-                   from field in this.Reflect()
+            foreach (var rxProp in from field in this.Reflect()
                            .NonPublic()
-                           .Name(nameof(ReactiveProperty<object>))
                            .ExtraType(typeof(IReactiveProperty<>))
                            .MatchTypesByBaseGenericTypeDefinition()
                            .Cache()
                            .Fields()
                    select field.GetValue(this))
             {
-                object propValue = rxProp.Reflect()
-                                         .Name(nameof(ReactiveProperty<object>.Value))
-                                         .GetPropertyValue();
+                PropertyInfo? valueProp = rxProp.Reflect()
+                                                .Name(nameof(ReactiveProperty<object>.Value))
+                                                .Property()
+                                                .Strict();
 
-                rxProp.Reflect()
-                      .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
-                      .Arguments(propValue)
-                      .InvokeMethod();
+                object propValue = valueProp.GetValue(rxProp);
+
+                if (propValue.IsNull())
+                {
+                    rxProp.Reflect()
+                          .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
+                          .ArgumentTypes(valueProp.PropertyType)
+                          .InvokeMethod();
+                }
+                else
+                {
+                    rxProp.Reflect()
+                          .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
+                          .Arguments(propValue)
+                          .InvokeMethod();
+                }
             }
         }
 

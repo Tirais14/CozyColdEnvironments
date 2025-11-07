@@ -4,13 +4,13 @@ using UnityEngine.UI;
 
 namespace CCEnvs.Unity.UI
 {
-    public readonly struct BeforeDisabledGraphicComponentSnapshot
+    public readonly struct GraphicComponentStateSnapshot
     {
         public Graphic Target { get; }
         public Color Color { get; }
         public bool RaycastTarget { get; }
 
-        public BeforeDisabledGraphicComponentSnapshot(Graphic target)
+        public GraphicComponentStateSnapshot(Graphic target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 

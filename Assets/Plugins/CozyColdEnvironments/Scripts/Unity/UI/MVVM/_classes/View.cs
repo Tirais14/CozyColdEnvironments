@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.UI.Elements;
@@ -31,7 +30,7 @@ namespace CCEnvs.Unity.UI.MVVM
         {
             base.Awake();
 
-            _viewModel = new Lazy<TViewModel>(() => ViewModelFactory().AddTo(this));
+            _viewModel = new Lazy<TViewModel>(() => ViewModelFactory());
         }
 
         protected override void Start()
@@ -46,7 +45,8 @@ namespace CCEnvs.Unity.UI.MVVM
                 throw new InvalidOperationException("Cannot set new view model.");
             CC.Guard.IsNotNull(viewModel, nameof(viewModel));
 
-            this.viewModel.Dispose();
+            this.viewModel.Maybe().IfSome(viewModel => viewModel.Dispose());
+
             _viewModel = new Lazy<TViewModel>(viewModel);
 
             if (viewModel is IDisposable disp)
@@ -84,7 +84,7 @@ namespace CCEnvs.Unity.UI.MVVM
         }
 
         /// <summary>
-        /// Put any logic which needed to execute on <see cref="viewModel"/> changed.
+        /// Put any logic which needed to execute on <see cref="SetViewModelUnsafe(TViewModel)"/>.
         /// <br/>Called in <see cref="Start"/> and when <see cref="viewModel"/> is changed.
         /// </summary>
         protected abstract void SetupViewModel();

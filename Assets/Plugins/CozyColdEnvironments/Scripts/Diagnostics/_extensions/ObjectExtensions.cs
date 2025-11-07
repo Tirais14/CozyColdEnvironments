@@ -24,6 +24,8 @@ namespace CCEnvs.Diagnostics
 
             switch (logType)
             {
+                case LogType.None:
+                    break;
                 case LogType.Error:
                     source.PrintError(message, args);
                     break;

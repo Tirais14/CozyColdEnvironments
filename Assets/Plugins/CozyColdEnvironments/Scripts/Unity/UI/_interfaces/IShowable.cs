@@ -8,9 +8,10 @@ namespace CCEnvs.Unity.UI
     {
         bool IsVisible { get; }
 
-        void Hide(DisableGraphicsSettings disableGraphicsSettings);
+        void Hide(ShowableSettings settings);
         void Hide();
 
+        void Show(ShowableSettings settings);   
         void Show();
 
         bool SwitchVisibleState();

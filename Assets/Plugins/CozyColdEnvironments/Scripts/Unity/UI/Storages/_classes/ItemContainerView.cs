@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.UI.Storages
                            |
                            DragAndDropSettings.InHighPriorityCanvas;
 
-            showableDisableGraphicsSettings = DisableGraphicsSettings.KeepRaycastTargetState;
+            showableSettings = ShowableSettings.KeepRaycastTargetState;
         }
 
         protected override void Start()
