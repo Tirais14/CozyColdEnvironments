@@ -84,10 +84,6 @@ namespace CCEnvs.Unity.UI.Storages
                 viewModel.ItemIcon.SubscribeWithState(img,
                     static (sprite, img) => img.sprite = sprite)
                     .AddTo(this);
-
-                viewModel.ItemIconVisible.SubscribeWithState(this,
-                    static (state, img) => img.enabled = state)
-                    .AddTo(this);
             });
         }
 
@@ -97,10 +93,6 @@ namespace CCEnvs.Unity.UI.Storages
             {
                 viewModel.ItemCount.SubscribeWithState(mesh,
                     static (text, mesh) => mesh.text = text)
-                    .AddTo(this);
-
-                viewModel.ItemCountVisible.SubscribeWithState(mesh,
-                    static (state, mesh) => mesh.gameObject.SetActive(state))
                     .AddTo(this);
             });
         }
