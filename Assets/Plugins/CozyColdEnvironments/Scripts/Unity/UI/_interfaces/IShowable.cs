@@ -15,8 +15,6 @@ namespace CCEnvs.Unity.UI
             Recursive = 2,
             Default = None,
         }
-
-        bool IsShowAllowed { get; }
         bool IsVisible { get; }
 
         void Hide(Settings settings);

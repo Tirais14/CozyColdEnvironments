@@ -1,8 +1,10 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -47,28 +49,22 @@ namespace CCEnvs.Unity.UI.Storages
             BindActiveContainer();
         }
 
-        protected override bool DragAllowedPredicate(out Maybe<string> msg)
+        protected override bool DragAllowedPredicate()
         {
             if (model.IsEmpty)
             {
-                msg = $"Dragging is not possible. {nameof(ItemContainer)} is empty.";
+                this.PrintLog($"Dragging is not possible. {nameof(ItemContainer)} is empty.");
                 return false;
             }
 
-            msg = null;
             return true;
         }
 
-        protected override bool DropAllowedPredicate(out Maybe<string> msg)
-        {
-            msg = null;
-
-            return true;
-        }
+        protected override bool DropAllowedPredicate() => true;
 
         protected override void OnDrop(PointerEventData eventData)
         {
-            if (!DropAllowedPredicate(out _)
+            if (!DropAllowedPredicate()
                 || 
                 eventData.pointerDrag == cGameObject.Value
                 )
@@ -90,7 +86,7 @@ namespace CCEnvs.Unity.UI.Storages
                     .AddTo(this);
 
                 viewModel.ItemIconVisible.SubscribeWithState(this,
-                    static (state, self) => state.Resolve().If(self.Show).Else(self.Hide))
+                    static (state, img) => img.enabled = state)
                     .AddTo(this);
             });
         }
@@ -103,8 +99,8 @@ namespace CCEnvs.Unity.UI.Storages
                     static (text, mesh) => mesh.text = text)
                     .AddTo(this);
 
-                viewModel.ItemCountVisible.SubscribeWithState2(this, mesh,
-                    static (state, self, mesh) => self.IsVisible.Resolve().If(() => mesh.gameObject.SetActive(state)))
+                viewModel.ItemCountVisible.SubscribeWithState(mesh,
+                    static (state, mesh) => mesh.gameObject.SetActive(state))
                     .AddTo(this);
             });
         }

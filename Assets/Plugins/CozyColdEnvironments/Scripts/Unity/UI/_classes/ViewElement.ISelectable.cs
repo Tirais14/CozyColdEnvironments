@@ -8,14 +8,14 @@ namespace CCEnvs.Unity.UI.Elements
 {
     public partial class ViewElement : ISelectable
     {
+        protected readonly ReactiveProperty<bool> isSelected = new();
+
         [SerializeField]
         protected Color selectableSelectionColor = Color.red;
 
         protected Color selectableBeforeSelectColor;
-        private Subject<Unit>? selectableSelectSubj;
-        private Subject<Unit>? selectableDeselectSubj;
 
-        public bool IsSelected { get; protected set; }
+        public bool IsSelected => isSelected.Value; 
 
         private void StartISelectable()
         {
@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.UI.Elements
             if (IsSelected)
                 return;
 
-            IsSelected = true;
+            isSelected.Value = true;
 
             Img.IfSome(img =>
             {
@@ -47,7 +47,7 @@ namespace CCEnvs.Unity.UI.Elements
             if (!IsSelected)
                 return;
 
-            IsSelected = false;
+            isSelected.Value = false;
 
             Img.IfSome(img => img.color = selectableBeforeSelectColor);
         }
@@ -62,16 +62,12 @@ namespace CCEnvs.Unity.UI.Elements
 
         public IObservable<Unit> ObserveSelect()
         {
-            selectableSelectSubj ??= new Subject<Unit>();
-
-            return selectableSelectSubj;
+            return isSelected.Where(x => x).AsUnitObservable();
         }
 
         public IObservable<Unit> ObserveDeselect()
         {
-            selectableDeselectSubj ??= new Subject<Unit>();
-
-            return selectableDeselectSubj;
+            return isSelected.Where(x => !x).AsUnitObservable();
         }
 
         private void SelectablePreheat()

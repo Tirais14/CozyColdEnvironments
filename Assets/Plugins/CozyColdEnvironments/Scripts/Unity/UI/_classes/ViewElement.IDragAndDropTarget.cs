@@ -1,7 +1,6 @@
 using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Dependencies;
 using System;
 using UnityEngine;
@@ -38,7 +37,7 @@ namespace CCEnvs.Unity.UI.Elements
         private bool? dragAllowed;
 
         public bool DragAllowed {
-            get => dragAllowed ?? DragAllowedPredicate(out _);
+            get => dragAllowed ?? DragAllowedPredicate();
         }
         protected Lazy<DragAndDropTarget> dragAndDrop { get; private set; } = null!;
         /// <summary>
@@ -48,24 +47,26 @@ namespace CCEnvs.Unity.UI.Elements
 
         int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
 
-        protected virtual bool DragAllowedPredicate(out Maybe<string> msg)
+        private void AwakeIDragAndDropTarget()
         {
-            msg = null;
-            return true;
+            dragAndDrop = new Lazy<DragAndDropTarget>(
+                () => new DragAndDropTarget(
+                    gameObject,
+                    OnBeginDrag,
+                    OnDrag,
+                    OnEndDrag,
+                    OnDrop)
+                );
         }
 
-        protected virtual bool DropAllowedPredicate(out Maybe<string> msg)
-        {
-            msg = $"{GetType().GetFullName()} cannot take drop.";
+        protected virtual bool DragAllowedPredicate() => true;
 
-            return false;
-        }
+        protected virtual bool DropAllowedPredicate() => false;
 
         protected virtual void OnBeginDrag(PointerEventData eventData)
         {
-            if (!DragAllowedPredicate(out Maybe<string> msg))
+            if (!DragAllowedPredicate())
             {
-                msg.IfSome(x => this.PrintLog(x));
                 dragAllowed = false;
                 return;
             }
@@ -86,7 +87,7 @@ namespace CCEnvs.Unity.UI.Elements
                 });
             }
 
-            //Save sibling index before is moved to high priority canvas
+            //Save sibling index before it moved to high priority canvas
             //to correctly restore it position
             if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
                 dragStartSiblingIndex = transform.GetSiblingIndex();
@@ -143,18 +144,6 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnDrop(PointerEventData eventData)
         {
-        }
-
-        private void AwakeDragAndDrop()
-        {
-            dragAndDrop = new Lazy<DragAndDropTarget>(
-                () => new DragAndDropTarget(
-                    gameObject,
-                    OnBeginDrag,
-                    OnDrag,
-                    OnEndDrag,
-                    OnDrop)
-                );
         }
 
         void IDragAndDropTarget.ActivateDragAndDropAbility()

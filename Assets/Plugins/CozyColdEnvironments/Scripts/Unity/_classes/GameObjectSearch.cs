@@ -36,7 +36,7 @@ namespace CCEnvs.Unity
         /// <summary>
         /// May be null
         /// </summary>
-        public GameObject Source { get; protected set; } = null!;
+        public GameObject Target { get; protected set; } = null!;
         public Settings settings { get; protected set; } = Settings.Default;
         public Maybe<string> name { get; protected set; }
         /// <summary>
@@ -61,7 +61,7 @@ namespace CCEnvs.Unity
                 return this;
             }
 
-            Source = gameObject;
+            Target = gameObject;
             return this;
         }
 
@@ -75,7 +75,7 @@ namespace CCEnvs.Unity
                 return this;
             }
 
-            Source = component.gameObject;
+            Target = component.gameObject;
             return this;
         }
 
@@ -186,7 +186,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectSearch Reset()
         {
-            Source = default!;
+            Target = default!;
             settings = Settings.Default;
             name = Maybe<string>.None;
             tag = Maybe<string>.None;
@@ -202,7 +202,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Source));
+            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
         }
 
         [DebuggerStepThrough]
@@ -214,7 +214,7 @@ namespace CCEnvs.Unity
 
         public IEnumerable<object> Components(Type? type = null)
         {
-            Guard.IsNotNull(Source, nameof(Source));
+            Guard.IsNotNull(Target, nameof(Target));
 
             bool anyType = type is null;
             type ??= typeof(Component);
@@ -224,9 +224,9 @@ namespace CCEnvs.Unity
             {
                 results = findMode switch
                 {
-                    FindMode.Self => Source.GetComponents(type),
-                    FindMode.InChilds => Source.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                    FindMode.InParents => Source.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                    FindMode.Self => Target.GetComponents(type),
+                    FindMode.InChilds => Target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                    FindMode.InParents => Target.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };
             }
@@ -234,7 +234,7 @@ namespace CCEnvs.Unity
             {
                 results = findMode switch
                 {
-                    FindMode.Self => Source.Components()
+                    FindMode.Self => Target.Components()
                                            .Where(cmp => anyType || cmp.IsIntanceOfType(type!)),
 
                     FindMode.InChilds => InChildren().GameObjects()
@@ -268,6 +268,9 @@ namespace CCEnvs.Unity
                           where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
                           select x.cmp;
             }
+
+            if (settings.IsFlagSetted(Settings.ExcludeSelf))
+                results = results.Where(cmp => cmp.gameObject != Target);
 
             //if (!settings.IsFlagSetted(Settings.Reusable))
             //    Reset();
@@ -341,7 +344,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (ViewModels(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Source));
+            return (ViewModels(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
         }
 
         [DebuggerStepThrough]
@@ -384,7 +387,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Models(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Source));
+            return (Models(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
         }
 
         /// <inheritdoc cref="Models"/>
@@ -403,7 +406,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<Transform> Transform()
         {
-            return (Transforms().FirstOrDefault(), new ComponentNotFoundException(typeof(Transform), context: Source));
+            return (Transforms().FirstOrDefault(), new ComponentNotFoundException(typeof(Transform), context: Target));
         }
 
         [DebuggerStepThrough]
@@ -417,7 +420,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<GameObject> GameObject()
         {
-            return (GameObjects().FirstOrDefault(), new ComponentNotFoundException(typeof(GameObject), context: Source));
+            return (GameObjects().FirstOrDefault(), new ComponentNotFoundException(typeof(GameObject), context: Target));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -427,7 +430,7 @@ namespace CCEnvs.Unity
                                    .Component<RootMarker>()
                                    .Lax();
 
-            return (marker.Map(x => x.transform).Access(Source.transform.root), marker.Raw);
+            return (marker.Map(x => x.transform).Access(Target.transform.root), marker.Raw);
         }
 
         [DebuggerStepThrough]

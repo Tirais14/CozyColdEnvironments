@@ -43,14 +43,9 @@ namespace CCEnvs.Unity.UI
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(componentSnapshots, nameof(componentSnapshots));
 
-            var graphics = gameObject.GetComponentsInChildren<Graphic>().Where(cmp => cmp is not IShowable);
-
-            if (graphics.IsEmpty())
-                return;
-
             componentSnapshots.Clear();
 
-            foreach (var cmp in graphics)
+            foreach (var cmp in gameObject.GetComponentsInChildren<Graphic>(includeInactive: true).Where(cmp => cmp is not IShowable))
             {
                 componentSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
 
@@ -58,9 +53,6 @@ namespace CCEnvs.Unity.UI
                     cmp.raycastTarget = false;
 
                 cmp.color = cmp.color.WithAlpha(0f);
-
-                if (cmp.gameObject != gameObject)
-                    cmp.enabled = false;
             }
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))

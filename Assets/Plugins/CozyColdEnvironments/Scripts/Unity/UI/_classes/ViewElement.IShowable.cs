@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using UniRx;
@@ -13,50 +12,39 @@ namespace CCEnvs.Unity.UI.Elements
 
         [SerializeField]
         protected IShowable.Settings showableSettings = IShowable.Settings.Default;
-        private Subject<Unit>? showableShowSubj;
-        private Subject<Unit>? showableHideSubj;
 
-        public bool IsVisible { get; protected set; }
-        public virtual bool IsShowAllowed => parentIsVisible;
-        protected virtual bool showOnStart { get; }
+        private readonly ReactiveProperty<bool> isVisible = new();
+
+        public bool IsVisible => isVisible.Value;
+        protected virtual bool showOnStart => false;
 
         private void StartIShowable()
         {
-            ShowablePreheat();
-
             if (showOnStart)
                 Show();
             else
-                Hide(showableSettings);
+                Hide();
         }
 
         public virtual void Hide(IShowable.Settings settings)
         {
-            if (!IsVisible)
-                return;
-
             Showable.Hide(
                 gameObject,
-                showableGraphicSnapshots!,
+                showableGraphicSnapshots,
                 showableSettings);
 
-            IsVisible = false;
+            isVisible.Value = false;
         }
         public void Hide() => Hide(showableSettings);
 
         public virtual void Show(IShowable.Settings settings)
         {
-            if (IsVisible)
-                return;
-            if (!IsShowAllowed)
-                return;
-
             Showable.Show(
                 gameObject,
                 showableGraphicSnapshots,
                 showableSettings);
 
-            IsVisible = true;
+            isVisible.Value = true;
         }
         public void Show() => Show(showableSettings);
 
@@ -72,22 +60,12 @@ namespace CCEnvs.Unity.UI.Elements
 
         public IObservable<Unit> ObserveShow()
         {
-            showableShowSubj ??= new Subject<Unit>();
-
-            return showableShowSubj;
+            return isVisible.Where(x => x).AsUnitObservable();
         }
 
         public IObservable<Unit> ObserveHide()
         {
-            showableHideSubj ??= new Subject<Unit>();
-
-            return showableHideSubj;
-        }
-
-        private void ShowablePreheat()
-        {
-            Show();
-            Hide();
+            return isVisible.Where(x => !x).AsUnitObservable();
         }
     }
 }
