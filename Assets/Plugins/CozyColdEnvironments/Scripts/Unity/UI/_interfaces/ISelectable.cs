@@ -6,7 +6,7 @@ namespace CCEnvs.Unity.UI
 {
     public interface ISelectable
     {
-        IReadOnlyReactiveProperty<bool> IsSelected { get; }
+        bool IsSelected { get; }
 
         void DoSelect();
 

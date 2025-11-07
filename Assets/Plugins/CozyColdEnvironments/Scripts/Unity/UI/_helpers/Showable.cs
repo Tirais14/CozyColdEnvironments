@@ -1,6 +1,5 @@
 using SuperLinq;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +11,7 @@ namespace CCEnvs.Unity.UI
     {
         public static void Show(GameObject gameObject,
             List<GraphicComponentStateSnapshot> componentSnapshots,
-            ShowableSettings settings = ShowableSettings.Default)
+            IShowable.Settings settings = IShowable.Settings.Default)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(componentSnapshots, nameof(componentSnapshots));
@@ -23,7 +22,7 @@ namespace CCEnvs.Unity.UI
             foreach (var cmpShapshot in componentSnapshots)
                 cmpShapshot.Restore();
 
-            if (settings.IsFlagSetted(ShowableSettings.Recursive))
+            if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
                 foreach (var cmp in gameObject.FindFor()
                     .InChildren()
@@ -32,14 +31,14 @@ namespace CCEnvs.Unity.UI
                     .Where(showable => showable.IsSome)
                     .Select(showable => showable.AccessUnsafe()))
                 {
-                    cmp.Show(settings & ~ShowableSettings.Recursive);
+                    cmp.Show(settings & ~IShowable.Settings.Recursive);
                 }
             }
         }
 
         public static void Hide(GameObject gameObject,
             List<GraphicComponentStateSnapshot> componentSnapshots,
-            ShowableSettings settings = ShowableSettings.Default)
+            IShowable.Settings settings = IShowable.Settings.Default)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(componentSnapshots, nameof(componentSnapshots));
@@ -55,13 +54,16 @@ namespace CCEnvs.Unity.UI
             {
                 componentSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
 
-                if (!settings.IsFlagSetted(ShowableSettings.KeepRaycastTargetState))
+                if (!settings.IsFlagSetted(IShowable.Settings.KeepRaycastTargetState))
                     cmp.raycastTarget = false;
 
                 cmp.color = cmp.color.WithAlpha(0f);
+
+                if (cmp.gameObject != gameObject)
+                    cmp.enabled = false;
             }
 
-            if (settings.IsFlagSetted(ShowableSettings.Recursive))
+            if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
                 foreach (var cmp in gameObject.FindFor()
                     .InChildren()
@@ -70,7 +72,7 @@ namespace CCEnvs.Unity.UI
                     .Where(showable => showable.IsSome)
                     .Select(showable => showable.AccessUnsafe()))
                 {
-                    cmp.Hide(settings & ~ShowableSettings.Recursive);
+                    cmp.Hide(settings & ~IShowable.Settings.Recursive);
                 }
             }
         }

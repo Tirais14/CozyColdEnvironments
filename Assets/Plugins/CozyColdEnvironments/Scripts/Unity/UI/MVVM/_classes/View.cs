@@ -37,7 +37,8 @@ namespace CCEnvs.Unity.UI.MVVM
         protected override void Start()
         {
             base.Start();
-            SetupViewModel();
+
+            viewModel.Maybe().IfSome(_ => InstallBingings());
         }
 
         public virtual void SetViewModelUnsafe(TViewModel viewModel)
@@ -53,7 +54,7 @@ namespace CCEnvs.Unity.UI.MVVM
             if (viewModel is IDisposable disp)
                 disp.AddTo(this);
 
-            SetupViewModel();
+            InstallBingings();
         }
 
         public Maybe<TModel> SetModelUnsafe(TModel model)
@@ -73,7 +74,7 @@ namespace CCEnvs.Unity.UI.MVVM
             Type modelType = typeof(TModel);
 
             if (modelType.IsType<Component>())
-                throw new InvalidOperationException($"Unity objects must be instantiated by Unity instead of creating new instance. Type: {modelType.GetFullName()}.");
+                throw new InvalidOperationException($"View not contain model. Unity objects must be instantiated by Unity instead of creating new instance. Model: {modelType.GetFullName()}.");
 
             TModel model = typeof(TModel).Reflect().Cache().CreateInstance<TModel>();
 
@@ -101,9 +102,12 @@ namespace CCEnvs.Unity.UI.MVVM
         }
 
         /// <summary>
-        /// Put any logic which needed to execute on <see cref="SetViewModelUnsafe(TViewModel)"/>.
-        /// <br/>Called in <see cref="Start"/> and when <see cref="viewModel"/> is changed.
+        /// Invokes in <see cref="Start"/>, <see cref="SetViewModelUnsafe(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
-        protected abstract void SetupViewModel();
+        protected virtual void InstallBingings()
+        {
+            ObserveShow().SubscribeWithState(this, static (_, view) => view.viewModel.ForceNotify())
+                         .AddTo(this);
+        }
     }
 }

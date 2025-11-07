@@ -8,14 +8,14 @@ namespace CCEnvs
     {
         public readonly Maybe<Exception> exception;
         public readonly Maybe<string> message;
-        public readonly bool isError;
+        public readonly bool hasError;
 
         public InvokeInfo(Exception? exception)
             :
             this()
         {
             this.exception = exception;
-            this.isError = exception is not null;
+            this.hasError = exception is not null;
         }
 
         public InvokeInfo(string? message, bool hasError)
@@ -23,7 +23,7 @@ namespace CCEnvs
             this()
         {
             this.message = message;
-            this.isError = hasError;
+            this.hasError = hasError;
         }
 
         public static implicit operator InvokeInfo(Exception? exception)
@@ -31,14 +31,14 @@ namespace CCEnvs
             return new InvokeInfo(exception);
         }
 
-        public static implicit operator InvokeInfo((string? msg, bool isError) input)
+        public static implicit operator InvokeInfo((string? msg, bool hasError) input)
         {
-            return new InvokeInfo(input.msg, input.isError);
+            return new InvokeInfo(input.msg, input.hasError);
         }
 
         public static explicit operator bool(InvokeInfo input)
         {
-            return input.isError;
+            return input.hasError;
         }
 
         public static explicit operator string?(InvokeInfo input)

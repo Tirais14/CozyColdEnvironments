@@ -28,7 +28,6 @@ namespace CCEnvs.Unity.UI.Storages
             :
             base(model, gameObject)
         {
-            //gameObject.FindFor
             BindItemIcon();
             BindItemCount();
         }

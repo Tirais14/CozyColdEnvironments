@@ -1,7 +1,6 @@
-using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.Injections;
+using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
 using TMPro;
@@ -37,19 +36,18 @@ namespace CCEnvs.Unity.UI.Storages
                            |
                            DragAndDropSettings.InHighPriorityCanvas;
 
-            showableSettings = ShowableSettings.KeepRaycastTargetState;
+            showableSettings = IShowable.Settings.KeepRaycastTargetState;
         }
 
-        protected override void Start()
+        protected override void InstallBingings()
         {
-            base.Start();
-
+            base.InstallBingings();
             BindItemIcon();
             BindItemCount();
             BindActiveContainer();
         }
 
-        protected override bool DragPredicate(out Maybe<string> msg)
+        protected override bool DragAllowedPredicate(out Maybe<string> msg)
         {
             if (model.IsEmpty)
             {
@@ -61,9 +59,16 @@ namespace CCEnvs.Unity.UI.Storages
             return true;
         }
 
+        protected override bool DropAllowedPredicate(out Maybe<string> msg)
+        {
+            msg = null;
+
+            return true;
+        }
+
         protected override void OnDrop(PointerEventData eventData)
         {
-            if (!DropPredicate()
+            if (!DropAllowedPredicate(out _)
                 || 
                 eventData.pointerDrag == cGameObject.Value
                 )
@@ -80,11 +85,13 @@ namespace CCEnvs.Unity.UI.Storages
         {
             Img.IfSome(img =>
             {
-                viewModel.ItemIcon.SubscribeWithState(img, static (sprite, img) => img.sprite = sprite)
-                                  .AddTo(this);
+                viewModel.ItemIcon.SubscribeWithState(img,
+                    static (sprite, img) => img.sprite = sprite)
+                    .AddTo(this);
 
-                viewModel.ItemIconVisible.SubscribeWithState(this, static (state, self) => state.Resolve().Match(self.Show, self.Hide))
-                                         .AddTo(this);
+                viewModel.ItemIconVisible.SubscribeWithState(this,
+                    static (state, self) => state.Resolve().If(self.Show).Else(self.Hide))
+                    .AddTo(this);
             });
         }
 
@@ -96,26 +103,21 @@ namespace CCEnvs.Unity.UI.Storages
                     static (text, mesh) => mesh.text = text)
                     .AddTo(this);
 
-                viewModel.ItemCountVisible.SubscribeWithState(mesh,
-                    static (state, mesh) => mesh.gameObject.SetActive(state));
+                viewModel.ItemCountVisible.SubscribeWithState2(this, mesh,
+                    static (state, self, mesh) => self.IsVisible.Resolve().If(() => mesh.gameObject.SetActive(state)))
+                    .AddTo(this);
             });
         }
 
         private void BindActiveContainer()
         {
-            viewModel.IsActiveContainer.SubscribeWithState(this, (state, self) =>
-            {
-                if (state)
-                    self.DoSelect();
-                else
-                    self.DoDeselect();
-            });
+            viewModel.IsActiveContainer.SubscribeWithState(this, (state, self) => state.Resolve()
+                    .If(self.DoSelect)
+                    .Else(self.DoDeselect))
+                .AddTo(this);
         }
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>
     {
-        protected override void SetupViewModel()
-        {
-        }
     }
 }

@@ -8,8 +8,6 @@ namespace CCEnvs.Unity.UI.Elements
 {
     public partial class ViewElement : ISelectable
     {
-        protected readonly ReactiveProperty<bool> isSelected = new();
-
         [SerializeField]
         protected Color selectableSelectionColor = Color.red;
 
@@ -17,14 +15,14 @@ namespace CCEnvs.Unity.UI.Elements
         private Subject<Unit>? selectableSelectSubj;
         private Subject<Unit>? selectableDeselectSubj;
 
-        public IReadOnlyReactiveProperty<bool> IsSelected => isSelected;
+        public bool IsSelected { get; protected set; }
 
         private void StartISelectable()
         {
             SelectablePreheat();
         }
 
-        public virtual bool SelectPredicate(out Maybe<string> msg)
+        public virtual bool SelectAllowedPredicate(out Maybe<string> msg)
         {
             msg = null;
             return true;
@@ -32,10 +30,10 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void DoSelect()
         {
-            if (isSelected.Value)
+            if (IsSelected)
                 return;
 
-            isSelected.Value = true;
+            IsSelected = true;
 
             Img.IfSome(img =>
             {
@@ -46,17 +44,17 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void DoDeselect()
         {
-            if (!isSelected.Value)
+            if (!IsSelected)
                 return;
 
-            isSelected.Value = false;
+            IsSelected = false;
 
             Img.IfSome(img => img.color = selectableBeforeSelectColor);
         }
 
         public void SwitchSelectionState()
         {
-            if (isSelected.Value)
+            if (IsSelected)
                 DoDeselect();
             else
                 DoSelect();

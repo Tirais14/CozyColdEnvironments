@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using UniRx;
@@ -11,11 +12,12 @@ namespace CCEnvs.Unity.UI.Elements
         protected readonly List<GraphicComponentStateSnapshot> showableGraphicSnapshots = new();
 
         [SerializeField]
-        protected ShowableSettings showableSettings = ShowableSettings.Default;
+        protected IShowable.Settings showableSettings = IShowable.Settings.Default;
         private Subject<Unit>? showableShowSubj;
         private Subject<Unit>? showableHideSubj;
 
         public bool IsVisible { get; protected set; }
+        public virtual bool IsShowAllowed => parentIsVisible;
         protected virtual bool showOnStart { get; }
 
         private void StartIShowable()
@@ -28,7 +30,7 @@ namespace CCEnvs.Unity.UI.Elements
                 Hide(showableSettings);
         }
 
-        public virtual void Hide(ShowableSettings settings)
+        public virtual void Hide(IShowable.Settings settings)
         {
             if (!IsVisible)
                 return;
@@ -42,9 +44,11 @@ namespace CCEnvs.Unity.UI.Elements
         }
         public void Hide() => Hide(showableSettings);
 
-        public virtual void Show(ShowableSettings settings)
+        public virtual void Show(IShowable.Settings settings)
         {
             if (IsVisible)
+                return;
+            if (!IsShowAllowed)
                 return;
 
             Showable.Show(

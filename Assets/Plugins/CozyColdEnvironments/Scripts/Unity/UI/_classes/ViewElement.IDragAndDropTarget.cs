@@ -1,6 +1,7 @@
 using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
 using CCEnvs.Unity.Dependencies;
 using System;
 using UnityEngine;
@@ -37,27 +38,32 @@ namespace CCEnvs.Unity.UI.Elements
         private bool? dragAllowed;
 
         public bool DragAllowed {
-            get => dragAllowed ?? DragPredicate(out _);
+            get => dragAllowed ?? DragAllowedPredicate(out _);
         }
         protected Lazy<DragAndDropTarget> dragAndDrop { get; private set; } = null!;
         /// <summary>
-        /// It's cached result of the <see cref="DragPredicate(out Maybe{string})"/>
+        /// It's cached result of the <see cref="DragAllowedPredicate(out Maybe{string})"/>
         /// </summary>
         protected Lazy<Maybe<Canvas>> highPriorityCanvas = new(() => new Catched<Canvas>(() => DependencyContainer.Resolve<Canvas>(UnityDependecyID.HighPriorityCanvas)).Maybe());
 
         int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
 
-        protected virtual bool DragPredicate(out Maybe<string> msg)
+        protected virtual bool DragAllowedPredicate(out Maybe<string> msg)
         {
             msg = null;
             return true;
         }
 
-        protected virtual bool DropPredicate() => true;
+        protected virtual bool DropAllowedPredicate(out Maybe<string> msg)
+        {
+            msg = $"{GetType().GetFullName()} cannot take drop.";
+
+            return false;
+        }
 
         protected virtual void OnBeginDrag(PointerEventData eventData)
         {
-            if (!DragPredicate(out Maybe<string> msg))
+            if (!DragAllowedPredicate(out Maybe<string> msg))
             {
                 msg.IfSome(x => this.PrintLog(x));
                 dragAllowed = false;
@@ -75,7 +81,7 @@ namespace CCEnvs.Unity.UI.Elements
                 dragThisCloned.IfSome(x =>
                 {
                     x.transform.position = cTransform.Value.position;
-                    x.Hide(ShowableSettings.None);
+                    x.Hide(IShowable.Settings.None);
                     //Hides it and disable any interaction with the copy.
                 });
             }

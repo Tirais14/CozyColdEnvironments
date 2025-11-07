@@ -3,7 +3,6 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
-using System;
 using UniRx;
 
 #nullable enable
@@ -22,9 +21,15 @@ namespace CCEnvs.Unity.UI.Storages
         protected override void Start()
         {
             base.Start();
+            SetSlotBagSettings();
+        }
 
-            SetupSlotBag();
-
+        protected override void InstallBingings()
+        {
+            base.InstallBingings();
+            AddSlotGameObjectsToBag();
+            BindAddContainer();
+            BindRemoveContainer();
         }
 
         protected override void OnDestroy()
@@ -33,27 +38,19 @@ namespace CCEnvs.Unity.UI.Storages
             SlotBag.Clear();
         }
 
-        protected override void SetupViewModel()
-        {
-            Init();
-            BindAddContainer();
-            BindRemoveContainer();
-        }
-
-        private void Init()
+        private void AddSlotGameObjectsToBag()
         {
             SlotBag.Clear();
-
             SlotBag.AddRange(viewModel.GetInventoryContainerGameObjects());
         }
 
-        private void SetupSlotBag()
+        private void SetSlotBagSettings()
         {
             SlotBag.settings = IGameObjectBag.Settings.ReparentByRootMarker
-                |
-                IGameObjectBag.Settings.ActivateOnAdd
-                |
-                IGameObjectBag.Settings.DeactivateOnRemove;
+                               |
+                               IGameObjectBag.Settings.ActivateOnAdd
+                               |
+                               IGameObjectBag.Settings.DeactivateOnRemove;
         }
 
         private void BindAddContainer()

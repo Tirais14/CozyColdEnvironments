@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.UI
     {
         private readonly ReactiveProperty<bool> isSelected = new();
 
-        public IReadOnlyReactiveProperty<bool> IsSelected => isSelected;
+        public bool IsSelected => isSelected.Value;
 
         public void DoSelect()
         {

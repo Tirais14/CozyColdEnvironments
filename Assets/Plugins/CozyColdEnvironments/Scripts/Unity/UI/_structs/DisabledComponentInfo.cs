@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 namespace CCEnvs.Unity.UI
 {
@@ -9,6 +10,7 @@ namespace CCEnvs.Unity.UI
         public Graphic Target { get; }
         public Color Color { get; }
         public bool RaycastTarget { get; }
+        public bool enabled { get; }
 
         public GraphicComponentStateSnapshot(Graphic target)
         {
@@ -17,12 +19,14 @@ namespace CCEnvs.Unity.UI
             Target = target;
             RaycastTarget = target.raycastTarget;
             Color = target.color;
+            enabled = target.enabled;
         }
 
         public void Restore()
         {
             Target.raycastTarget = RaycastTarget;
             Target.color = Color;
+            Target.enabled = enabled;
         }
     }
 }
