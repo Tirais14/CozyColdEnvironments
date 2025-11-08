@@ -212,8 +212,13 @@ namespace CCEnvs.Unity.Storages
             if (IsEmpty)
                 return;
 
+            parentInventory.IfSome(inv =>
+            {
+                inv.ActiveContainer.IfSome(cnt => cnt.DeactivateContainer());
+                inv.ActiveContainer = this;
+            });
+
             isActiveContainer.Value = true;
-            parentInventory.IfSome(inv => inv.ActiveContainer = this);
 
             this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
         }

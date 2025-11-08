@@ -449,7 +449,9 @@ namespace CCEnvs.Unity
             return (marker.Map(x => x.transform).Access(Target.transform.root), marker.Raw);
         }
 
-        public Transform Root()
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Transform RootTransform()
         {
             return RootRaw()
                 .Match(

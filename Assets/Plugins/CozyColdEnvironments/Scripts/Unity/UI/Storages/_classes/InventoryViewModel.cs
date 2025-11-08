@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.UI.Storages
                    select added.value.gameObject into go
                    where go.IsSome
                    select go.AccessUnsafe() into go
-                   select go.FindFor().Root().gameObject;
+                   select go.FindFor().RootTransform().gameObject;
         }
 
         public IObservable<GameObject> ObserveRemoveContainer()
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.UI.Storages
                    select added.value.gameObject into go
                    where go.IsSome
                    select go.AccessUnsafe() into go
-                   select go.FindFor().Root().gameObject;
+                   select go.FindFor().RootTransform().gameObject;
         }
 
 
