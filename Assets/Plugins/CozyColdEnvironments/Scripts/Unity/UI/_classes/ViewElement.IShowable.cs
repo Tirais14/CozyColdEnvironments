@@ -10,6 +10,10 @@ namespace CCEnvs.Unity.UI.Elements
     {
         protected readonly List<GraphicComponentStateSnapshot> showableGraphicSnapshots = new();
 
+        [Space]
+        [Header(nameof(Showable) + " Settings")]
+        [Space]
+
         [SerializeField]
         protected IShowable.Settings showableSettings = IShowable.Settings.Default;
 

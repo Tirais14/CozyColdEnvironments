@@ -32,11 +32,11 @@ namespace CCEnvs.Unity.UI.Elements
 
             canvasController = new Lazy<ICanvasController>(
                 () => this.FindFor()
-                          .InParent()
-                          .IncludeInactive()
-                          .Component<ICanvasController>()
-                          .Strict()
-                );
+                    .InParent()
+                    .IncludeInactive()
+                    .Component<ICanvasController>()
+                    .Strict()
+                    );
 
             pointerInput = new Lazy<InputActionRx<Vector2>>(
                 () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)

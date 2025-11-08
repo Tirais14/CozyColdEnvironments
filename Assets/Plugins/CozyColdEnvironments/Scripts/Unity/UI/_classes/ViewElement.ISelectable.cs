@@ -10,6 +10,10 @@ namespace CCEnvs.Unity.UI.Elements
     {
         protected readonly ReactiveProperty<bool> isSelected = new();
 
+        [Space]
+        [Header(nameof(Selectable) + " Settings")]
+        [Space]
+
         [SerializeField]
         protected bool selectableDisabled;
 

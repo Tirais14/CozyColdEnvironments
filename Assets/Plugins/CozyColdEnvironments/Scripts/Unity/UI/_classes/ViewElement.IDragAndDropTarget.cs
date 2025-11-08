@@ -28,6 +28,10 @@ namespace CCEnvs.Unity.UI.Elements
             Default = None,
         }
 
+        [Space]
+        [Header(nameof(DragAndDropTarget) + " Settings")]
+        [Space]
+
         [SerializeField]
         protected DragAndDropSettings dragSettings = DragAndDropSettings.Default;
         private Vector2 dragStartPos;
