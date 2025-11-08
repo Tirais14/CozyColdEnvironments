@@ -14,7 +14,6 @@ namespace CCEnvs.Unity.UI.Storages
         where T : IInventory
     {
         private readonly ReactiveProperty<MaybeStruct<int>> activeContainerID = new();
-        private readonly Dictionary<GameObject, GameObject> addedContainerGameObjects = new();
 
         public IReadOnlyReactiveProperty<MaybeStruct<int>> ActiveContainerID => activeContainerID;
         public override bool ModelMutable => true;
@@ -32,25 +31,26 @@ namespace CCEnvs.Unity.UI.Storages
                 .Select(cnt => cnt.Map(cnt => cnt.GetContainerID()).Raw)
                 .SubscribeWithState(activeContainerID, (id, prop) => prop.Value = id)
                 .AddTo(disposables);
+
+            activeContainerID.AddTo(disposables);
         }
 
         public IObservable<GameObject> ObserveAddContainer()
         {
-            return (from added in model.ObserveAddContainer()
-                    select added.value.gameObject into go
-                    where go.IsSome
-                    select (src: go.Raw, root: go.AccessUnsafe().transform.root.gameObject))
-                    .Do(x => addedContainerGameObjects.Add(x.src, x.root))
-                    .Select(x => x.root);
+            return from added in model.ObserveAddContainer()
+                   select added.value.gameObject into go
+                   where go.IsSome
+                   select go.AccessUnsafe() into go
+                   select go.FindFor().Root().gameObject;
         }
 
         public IObservable<GameObject> ObserveRemoveContainer()
         {
-            return (from removed in model.ObserveRemoveContainer()
-                    select removed.value.gameObject into go
-                    where go.IsSome
-                    select go.Raw)
-                    .Do(go => addedContainerGameObjects.Remove(go));
+            return from added in model.ObserveRemoveContainer()
+                   select added.value.gameObject into go
+                   where go.IsSome
+                   select go.AccessUnsafe() into go
+                   select go.FindFor().Root().gameObject;
         }
 
 

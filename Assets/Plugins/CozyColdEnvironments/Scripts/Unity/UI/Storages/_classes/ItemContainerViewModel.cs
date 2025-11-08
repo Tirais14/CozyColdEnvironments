@@ -45,6 +45,8 @@ namespace CCEnvs.Unity.UI.Storages
                     static (x, prop) => prop.Value = x.Map(item => item.Icon)
                         .Access(UCC.TranparentSprite.Value))
                 .AddTo(disposables);
+
+            itemIcon.AddTo(disposables);
         }
 
         private void BindItemCount()
@@ -54,6 +56,8 @@ namespace CCEnvs.Unity.UI.Storages
                 .SubscribeWithState(itemCount, 
                     static (countStr, prop) => prop.Value = countStr)
                 .AddTo(disposables);
+
+            itemCount.AddTo(disposables);
         }
     }
 }

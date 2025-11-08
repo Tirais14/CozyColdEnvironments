@@ -16,7 +16,7 @@ using static CCEnvs.FuncLanguage.LangOperator;
 #nullable enable
 namespace CCEnvs.Unity.Storages
 {
-    public class Inventory : IInventory
+    public class Inventory : IInventory, IDisposable
     {
         private readonly Dictionary<int, IItemContainer> collection = new();
         private readonly ReactiveProperty<Maybe<IItemContainer>> activeContainer = new();
@@ -354,6 +354,22 @@ namespace CCEnvs.Unity.Storages
         }
 
         public IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer() => activeContainer;
+
+        public void Dispose() => Dispose(disposing: true);
+
+        private bool disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                activeContainer.Dispose();
+            }
+
+            disposed = true;
+        }
 
         public IEnumerator<IItemContainer> GetEnumerator()
         {

@@ -10,7 +10,7 @@ using UnityEngine;
 #pragma warning disable S1144
 namespace CCEnvs.Unity.Storages
 {
-    public class ItemContainer : IItemContainer
+    public class ItemContainer : IItemContainer, IDisposable
     {
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
@@ -241,5 +241,23 @@ namespace CCEnvs.Unity.Storages
         public IObservable<Maybe<IItem>> ObserveItem() => item;
 
         public IObservable<int> ObserveItemCount() => itemCount;
+
+        public void Dispose() => Dispose(disposing: true);
+
+        private bool disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                item.Dispose();
+                itemCount.Dispose();
+                isActiveContainer.Dispose();
+            }
+
+            disposed = true;
+        }
     }
 }

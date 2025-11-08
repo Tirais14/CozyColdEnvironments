@@ -120,7 +120,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
             {
-                var root = go.FindFor().Root();
+                var root = go.FindFor().RootRaw();
 
                 goTransform = root.IfRight(r => r.transform)
                                   .AccessUnsafe()
@@ -169,7 +169,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
             {
-                var root = go.FindFor().Root();
+                var root = go.FindFor().RootRaw();
 
                 root.IfRight(x =>
                 {

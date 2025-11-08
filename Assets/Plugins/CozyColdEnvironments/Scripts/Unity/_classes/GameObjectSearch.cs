@@ -440,13 +440,24 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Either<Transform, RootMarker> Root()
+        public Either<Transform, RootMarker> RootRaw()
         {
             var marker = InParent().IncludeInactive()
                                    .Component<RootMarker>()
                                    .Lax();
 
             return (marker.Map(x => x.transform).Access(Target.transform.root), marker.Raw);
+        }
+
+        public Transform Root()
+        {
+            return RootRaw()
+                .Match(
+                    Right: r => r.transform,
+                    Left: l => l)
+                .Access()
+                .AsOrDefault<Transform>()
+                .Access(Target.transform);
         }
 
         [DebuggerStepThrough]
