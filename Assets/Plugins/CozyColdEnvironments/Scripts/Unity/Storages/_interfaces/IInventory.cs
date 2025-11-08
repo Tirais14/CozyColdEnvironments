@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Storages
         IEnumerable<int> IDs { get; }
         IEnumerable<IItemContainer> Containers { get; }
         int ContainerCount { get; }
-        IReadOnlyReactiveProperty<Maybe<IItemContainer>> ActiveContainer { get; }
+        Maybe<IItemContainer> ActiveContainer { get; set; }
 
         IObservable<(int id, IItemContainer value)> ObserveAddContainer();
 
@@ -51,5 +51,7 @@ namespace CCEnvs.Unity.Storages
         bool SwitchContainerActiveState(int id);
 
         MaybeStruct<int> GetContainerID(IItemContainer itemContainer);
+
+        IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer();
     }
 }

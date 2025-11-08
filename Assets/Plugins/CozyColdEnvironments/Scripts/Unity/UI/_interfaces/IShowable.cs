@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.UI
             None = 0,
             KeepRaycastTargetState = 1,
             Recursive = 2,
-            Default = None,
+            Default = Recursive,
         }
         bool IsVisible { get; }
 

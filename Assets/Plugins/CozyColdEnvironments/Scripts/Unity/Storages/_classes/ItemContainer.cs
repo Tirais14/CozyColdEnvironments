@@ -20,8 +20,8 @@ namespace CCEnvs.Unity.Storages
 
         public static ItemContainer Empty => new();
 
-        public IReadOnlyReactiveProperty<Maybe<IItem>> Item => item;
-        public IReadOnlyReactiveProperty<int> ItemCount => itemCount;
+        public Maybe<IItem> Item => item.Value;
+        public int ItemCount => itemCount.Value;
         public int Capacity {
             get
             {
@@ -42,8 +42,8 @@ namespace CCEnvs.Unity.Storages
             }
         }
         public bool IsEmpty => !ContainsItem();
-        public bool IsFull => ItemCount.Value >= Capacity;
-        public IReadOnlyReactiveProperty<bool> IsActiveContainer => isActiveContainer;
+        public bool IsFull => ItemCount >= Capacity;
+        public bool IsActiveContainer => isActiveContainer.Value;
         /// <summary>
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
@@ -94,21 +94,21 @@ namespace CCEnvs.Unity.Storages
 
         public bool ContainsItem()
         {
-            return Item.IsNotNull() && ItemCount.Value > 0;
+            return Item.IsNotNull() && ItemCount > 0;
         }
         public bool ContainsItem(IItem? item)
         {
             if (!ContainsItem())
                 return false;
 
-            return Item.Value.ItIs(item);
+            return Item.ItIs(item);
         }
         public bool ContainsItem(IItem? item, int count)
         {
             if (!ContainsItem(item))
                 return false;
 
-            return ItemCount.Value >= count;
+            return ItemCount >= count;
         }
 
         public Maybe<IItemContainer> PutItem(IItem? item, int count = 1)
@@ -140,28 +140,28 @@ namespace CCEnvs.Unity.Storages
                 return null!;
 
             return itemContainer.TakeItem(count)
-                                .Map(cnt => PutItem(
-                cnt.Item.Value.Access(),
-                cnt.ItemCount.Value).Access()
-                );
+                .Map(cnt => PutItem(
+                    cnt.Item.Access(),
+                    cnt.ItemCount).Access()
+                    );
         }
 
         public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            return PutItem(itemContainer, itemContainer.ItemCount.Value);
+            return PutItem(itemContainer, itemContainer.ItemCount);
         }
 
         public Maybe<IItemContainer> TakeItem(int count)
         {
-            if (Item.Value.IsNone || count <= 0)
+            if (Item.IsNone || count <= 0)
                 return null!;
 
-            int taked = Math.Clamp(count, 1, ItemCount.Value);
+            int taked = Math.Clamp(count, 1, ItemCount);
             itemCount.Value -= taked;
 
-            var result = new ItemContainer(Item.Value.Access(), taked);
+            var result = new ItemContainer(Item.Access(), taked);
 
             if (itemCount.Value <= 0)
                 Clear();
@@ -181,13 +181,13 @@ namespace CCEnvs.Unity.Storages
 
         public IItemContainer ShallowClone()
         {
-            return new ItemContainer(Item.Value.Access(), ItemCount.Value);
+            return new ItemContainer(Item.Access(), ItemCount);
         }
 
         public void CopyFrom(IItemContainerInfo itemContainer)
         {
-            item.Value = itemContainer.Item.Value;
-            itemCount.Value = itemContainer.ItemCount.Value;
+            item.Value = itemContainer.Item;
+            itemCount.Value = itemContainer.ItemCount;
             capacity = itemContainer.Capacity;
         }
 
@@ -204,12 +204,16 @@ namespace CCEnvs.Unity.Storages
 
         public override string ToString()
         {
-            return $"{nameof(Item)}: {Item.Value.Map(x => x.ToString()).Access("null")}; {nameof(ItemCount)}: {ItemCount.Value}.";
+            return $"{nameof(Item)}: {Item.Map(x => x.ToString()).Access("null")}; {nameof(ItemCount)}: {ItemCount}.";
         }
 
         public void ActivateContainer()
         {
+            if (IsEmpty)
+                return;
+
             isActiveContainer.Value = true;
+            parentInventory.IfSome(inv => inv.ActiveContainer = this);
 
             this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
         }
@@ -217,9 +221,12 @@ namespace CCEnvs.Unity.Storages
         public void DeactivateContainer()
         {
             isActiveContainer.Value = false;
+            parentInventory.IfSome(inv => inv.ActiveContainer = null);
 
             this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
         }
+
+        public IObservable<bool> ObserveIsActiveContainer() => isActiveContainer;
 
         public bool SwitchContainerActiveState()
         {
@@ -230,5 +237,9 @@ namespace CCEnvs.Unity.Storages
 
             return isActiveContainer.Value;
         }
+
+        public IObservable<Maybe<IItem>> ObserveItem() => item;
+
+        public IObservable<int> ObserveItemCount() => itemCount;
     }
 }

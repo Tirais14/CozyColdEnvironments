@@ -1,3 +1,5 @@
+using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,62 +12,70 @@ namespace CCEnvs.Unity.UI
     public static class Showable
     {
         public static void Show(GameObject gameObject,
-            List<GraphicComponentStateSnapshot> componentSnapshots,
+            List<GraphicComponentStateSnapshot> graphicSnapshots,
             IShowable.Settings settings = IShowable.Settings.Default)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
-            CC.Guard.IsNotNull(componentSnapshots, nameof(componentSnapshots));
+            Guard.IsNotNull(graphicSnapshots, nameof(graphicSnapshots));
 
-            if (componentSnapshots.IsEmpty())
+            if (graphicSnapshots.IsEmpty())
                 return;
 
-            foreach (var cmpShapshot in componentSnapshots)
+            foreach (var cmpShapshot in graphicSnapshots)
                 cmpShapshot.Restore();
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                foreach (var cmp in gameObject.FindFor()
-                    .InChildren()
-                    .Transforms()
-                    .Select(child => child.AsOrDefault<IShowable>())
-                    .Where(showable => showable.IsSome)
-                    .Select(showable => showable.AccessUnsafe()))
+                foreach (var child in from go in gameObject.FindFor().ExcludeSelf().ChildrenGameObjects()
+                                      select go.FindFor().Component<IShowable>().Lax() into cmp
+                                      where cmp.IsSome
+                                      select cmp.AccessUnsafe())
                 {
-                    cmp.Show(settings & ~IShowable.Settings.Recursive);
+                    child.Show(settings & ~IShowable.Settings.Recursive);
                 }
             }
         }
 
         public static void Hide(GameObject gameObject,
-            List<GraphicComponentStateSnapshot> componentSnapshots,
+            List<GraphicComponentStateSnapshot> graphicSnapshots,
             IShowable.Settings settings = IShowable.Settings.Default)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
-            CC.Guard.IsNotNull(componentSnapshots, nameof(componentSnapshots));
+            Guard.IsNotNull(graphicSnapshots, nameof(graphicSnapshots));
 
-            componentSnapshots.Clear();
+            graphicSnapshots.Clear();
 
-            foreach (var cmp in gameObject.GetComponentsInChildren<Graphic>(includeInactive: true).Where(cmp => cmp is not IShowable))
+            HideGraphics(gameObject, graphicSnapshots, settings);
+
+            if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                componentSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
+                foreach (var child in gameObject.FindFor().ExcludeSelf().ChildrenGameObjects())
+                {
+                    if (child.FindFor()
+                             .Component<IShowable>()
+                             .Lax()
+                             .TryAccess(out var showable))
+                    {
+                        showable.Hide();
+                    }
+                    else
+                        HideGraphics(child, graphicSnapshots, settings);
+                }
+            }
+        }
+
+        private static void HideGraphics(GameObject gameObject,
+            List<GraphicComponentStateSnapshot> graphicSnapshots, 
+            IShowable.Settings settings)
+        {
+            foreach (var cmp in gameObject.GetComponents<Graphic>())
+            {
+                graphicSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
 
                 if (!settings.IsFlagSetted(IShowable.Settings.KeepRaycastTargetState))
                     cmp.raycastTarget = false;
 
                 cmp.color = cmp.color.WithAlpha(0f);
-            }
-
-            if (settings.IsFlagSetted(IShowable.Settings.Recursive))
-            {
-                foreach (var cmp in gameObject.FindFor()
-                    .InChildren()
-                    .Transforms()
-                    .Select(child => child.AsOrDefault<IShowable>())
-                    .Where(showable => showable.IsSome)
-                    .Select(showable => showable.AccessUnsafe()))
-                {
-                    cmp.Hide(settings & ~IShowable.Settings.Recursive);
-                }
             }
         }
     }

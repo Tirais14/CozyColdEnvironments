@@ -20,15 +20,14 @@ namespace CCEnvs.Unity.Storages
     {
         private readonly Dictionary<int, IItemContainer> collection = new();
         private readonly ReactiveProperty<Maybe<IItemContainer>> activeContainer = new();
-        private readonly Dictionary<int, IDisposable> activeContainerSubscriptions = new(0);
 
         private Subject<(int id, IItemContainer value)>? addSubj;
         private Subject<(int id, IItemContainer value)>? removeSubj;
         private int nextSlotID;
 
         public IItemContainer this[int id] => Catch(() => collection[id]).Match(
-                                                  some: cnt => cnt,
-                                                  none: () => ItemContainer.Empty)
+                                                      some: cnt => cnt,
+                                                      none: () => ItemContainer.Empty)
                                                   .AccessUnsafe();
 
         public event Action<(int id, IItemContainer value)>? OnAdd;
@@ -41,13 +40,16 @@ namespace CCEnvs.Unity.Storages
         }
         public IEnumerable<int> IDs => collection.Keys;
         public IEnumerable<IItemContainer> Containers => collection.Values;
-        public IReadOnlyReactiveProperty<Maybe<IItemContainer>> ActiveContainer => activeContainer;
+        public Maybe<IItemContainer> ActiveContainer {
+            get => activeContainer.Value;
+            set => activeContainer.Value = value;
+        }
         public bool IsEmpty => collection.Values.Any(x => x.ContainsItem());
         public bool IsFull => collection.Values.All(x => x.ContainsItem());
 
-        IReadOnlyReactiveProperty<int> IItemContainerInfoItemless.ItemCount { get; } = new ReadOnlyReactiveProperty<int>(Observable.Empty<int>());
+        int IItemContainerInfoItemless.ItemCount => throw new NotImplementedException();
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
-        IReadOnlyReactiveProperty<bool> IItemContainerInfoItemless.IsActiveContainer { get; } = new ReadOnlyReactiveProperty<bool>(Observable.Empty<bool>());
+        bool IItemContainerInfoItemless.IsActiveContainer => throw new NotImplementedException();
 
         public Inventory(int initialContainerCount)
         {
@@ -88,7 +90,7 @@ namespace CCEnvs.Unity.Storages
         {
             int containedCount = collection.Values.ZL()
                                                   .Where(x => x.ContainsItem(item))
-                                                  .Sum(x => x.ItemCount.Value);
+                                                  .Sum(x => x.ItemCount);
 
             return containedCount >= count;
         }
@@ -106,9 +108,6 @@ namespace CCEnvs.Unity.Storages
             {
                 collection.Add(nextSlotID, itemContainer);
                 itemContainer.ParentInventory = this.As<IInventory>().Maybe();
-
-                var sub = itemContainer.IsActiveContainer.SubscribeWithState2(activeContainer, itemContainer, (_, prop, cnt) => prop.Value = cnt.Maybe());
-                activeContainerSubscriptions.Add(nextSlotID, sub);
 
                 Do.While(() => collection.ContainsKey(nextSlotID), () => nextSlotID++);
 
@@ -154,7 +153,6 @@ namespace CCEnvs.Unity.Storages
             if (collection.Remove(id, out IItemContainer value))
             {
                 value.ParentInventory = null!;
-                activeContainerSubscriptions.Remove(id);
 
                 try
                 {
@@ -256,7 +254,7 @@ namespace CCEnvs.Unity.Storages
 
                 this.PrintLog($"Item: {item}, count: {count}, item container id: {cnt.Key}. Is added.");
 
-                rest = restItems.Map(x => x.ItemCount.Value).Access(0);
+                rest = restItems.Map(x => x.ItemCount).Access(0);
 
                 if (rest <= 0)
                     break;
@@ -276,8 +274,8 @@ namespace CCEnvs.Unity.Storages
         public Maybe<IItemContainer> PutItem(IItemContainer itemContainer, int count)
         {
             return (from cnt in itemContainer.TakeItem(count)
-                    where cnt.Item.Value.IsSome
-                    let item = cnt.Item.Value.AccessUnsafe()
+                    where cnt.Item.IsSome
+                    let item = cnt.Item.AccessUnsafe()
                     select (cnt, rest: PutItem(item, count)))
                     .IfRight(x => x.rest.IfSome(
                         rest => itemContainer.PutItem(rest)).Raw)
@@ -288,7 +286,7 @@ namespace CCEnvs.Unity.Storages
         [DebuggerStepThrough]
         public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
         {
-            return PutItem(itemContainer.Item.Value.Access(), itemContainer.ItemCount.Value);
+            return PutItem(itemContainer.Item.Access(), itemContainer.ItemCount);
         }
 
         public Maybe<IItemContainer> TakeItem(IItem item, int count)
@@ -301,7 +299,7 @@ namespace CCEnvs.Unity.Storages
             foreach (var cnt in collection.Values.ZL().Where(x => x.ContainsItem(item)))
             {
                 taked = cnt.TakeItem(count);
-                count -= taked.AccessUnsafe().ItemCount.Value;
+                count -= taked.AccessUnsafe().ItemCount;
 
                 if (count <= 0)
                     break;
@@ -312,14 +310,14 @@ namespace CCEnvs.Unity.Storages
 
         public bool IsContainerActive(int id)
         {
-            return ActiveContainer.Value.Map(cnt => cnt.GetContainerID()).ItIs(cntID => cntID == id);
+            return ActiveContainer.Map(cnt => cnt.GetContainerID()).ItIs(cntID => cntID == id);
         }
 
         public bool IsContainerActive(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            return ActiveContainer.Value.Map(cnt => cnt == itemContainer).Raw;
+            return ActiveContainer.Map(cnt => cnt == itemContainer).Raw;
         }
 
         public void ActivateContainer(int id)
@@ -355,28 +353,49 @@ namespace CCEnvs.Unity.Storages
                              .Access();
         }
 
+        public IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer() => activeContainer;
+
         public IEnumerator<IItemContainer> GetEnumerator()
         {
             return collection.Values.GetEnumerator();
         }
 
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
         Maybe<IItemContainer> IItemAccessor.TakeItem(int count) => null!;
 
         Maybe<IItemContainer> IItemAccessor.TakeItem() => null!;
 
-        void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
-        {
-            this.PrintLog($"{nameof(IItemAccessor.CopyFrom)} not supported and was be mocked.");
-        }
-
         MaybeStruct<int> IItemContainerInfoItemless.GetContainerID() => (-1, false);
 
-        void IItemContainerInfoItemless.ActivateContainer() => Do.Nothing();
+        void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
+        {
+            throw new NotImplementedException();
+        }
 
-        void IItemContainerInfoItemless.DeactivateContainer() => Do.Nothing();
+        void IItemContainerInfoItemless.ActivateContainer()
+        {
+            throw new NotImplementedException();
+        }
 
-        bool IItemContainerInfoItemless.SwitchContainerActiveState() => Do.Nothing<bool>();
+        void IItemContainerInfoItemless.DeactivateContainer()
+        {
+            throw new NotImplementedException();
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        bool IItemContainerInfoItemless.SwitchContainerActiveState()
+        {
+            throw new NotImplementedException();
+        }
+
+        IObservable<bool> IItemContainerInfoItemless.ObserveIsActiveContainer()
+        {
+            return Observable.Empty<bool>();
+        }
+
+        IObservable<int> IItemContainerInfoItemless.ObserveItemCount()
+        {
+            return Observable.Empty<int>();
+        }
     }
 }

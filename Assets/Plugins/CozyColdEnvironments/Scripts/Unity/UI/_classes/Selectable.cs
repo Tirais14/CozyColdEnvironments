@@ -26,14 +26,9 @@ namespace CCEnvs.Unity.UI
             isSelected.Value = !isSelected.Value;
         }
 
-        public IObservable<Unit> ObserveSelect()
+        public IObservable<bool> ObserveIsSelected()
         {
-            return isSelected.Where(x => x).AsUnitObservable();
-        }
-
-        public IObservable<Unit> ObserveDeselect()
-        {
-            return isSelected.Where(x => !x).AsUnitObservable();
+            return isSelected.Where(x => x);
         }
     }
 }

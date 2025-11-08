@@ -411,6 +411,22 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<GameObject> ChildrenGameObjects() => InChildren().GameObjects();
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<Transform> ChildrenTransforms() => InChildren().Transforms();
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<GameObject> ParentGameObjects() => InParent().GameObjects();
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<Transform> ParentTranforms() => InParent().Transforms();
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<GameObject> GameObjects()
         {
             return Transforms().Select(x => x.gameObject);

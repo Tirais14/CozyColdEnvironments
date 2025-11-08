@@ -4,6 +4,7 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -24,8 +25,6 @@ namespace CCEnvs.Unity.UI.Storages
     {
         [field: SerializeField, GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> counterMesh { get; private set; } = null!;
-
-        protected override bool showOnStart => true;
 
         protected override void Awake()
         {
@@ -51,14 +50,30 @@ namespace CCEnvs.Unity.UI.Storages
         public override void DoSelect()
         {
             base.DoSelect();
+
+            if (selectableDisabled
+                ||
+                viewModel.IsActiveContainer.Value) //to prevent double triggering
+                return;
+
             viewModel.ActivateContainer();
+        }
+
+        public override void DoDeselect()
+        {
+            base.DoDeselect();
+
+            if (!viewModel.IsActiveContainer.Value) //to prevent double triggering
+                return;
+
+            viewModel.DeactivateContainer();
         }
 
         protected override bool DragAllowedPredicate()
         {
             if (model.IsEmpty)
             {
-                this.PrintLog($"Dragging is not possible. {nameof(ItemContainer)} is empty.");
+                this.PrintLog($"Dragging is not possible. {nameof(ItemContainer).Humanize()} is empty.");
                 return false;
             }
 
@@ -76,10 +91,10 @@ namespace CCEnvs.Unity.UI.Storages
                 return;
 
             eventData.pointerDrag.Maybe()
-                                 .Map(go => go.FindFor().Model<IItemContainer>().Raw!)
-                                 .Map(cnt => (source: cnt, rest: model.PutItem(cnt)))
-                                 .Where(cnt => cnt.rest.IsSome)
-                                 .IfSome(cnt => cnt.source.PutItem(cnt.rest.AccessUnsafe()));
+                .Map(go => go.FindFor().Model<IItemContainer>().Raw!)
+                .Map(cnt => (source: cnt, rest: model.PutItem(cnt)))
+                .Where(cnt => cnt.rest.IsSome)
+                .IfSome(cnt => cnt.source.PutItem(cnt.rest.AccessUnsafe()));
         }
 
         private void BindItemIcon()
@@ -87,7 +102,7 @@ namespace CCEnvs.Unity.UI.Storages
             image.IfSome(img =>
             {
                 viewModel.ItemIcon.SubscribeWithState(img,
-                    static (sprite, img) => img.sprite = sprite)
+                        static (sprite, img) => img.sprite = sprite)
                     .AddTo(this);
             });
         }
@@ -97,16 +112,17 @@ namespace CCEnvs.Unity.UI.Storages
             counterMesh.IfSome(mesh =>
             {
                 viewModel.ItemCount.SubscribeWithState(mesh,
-                    static (text, mesh) => mesh.text = text)
+                        static (text, mesh) => mesh.text = text)
                     .AddTo(this);
             });
         }
 
         private void BindActiveContainer()
         {
-            viewModel.IsActiveContainer.SubscribeWithState(this, (state, self) => state.Resolve()
-                    .If(self.DoSelect)
-                    .Else(self.DoDeselect))
+            viewModel.IsActiveContainer.SubscribeWithState(this, 
+                    static (state, self) => state.Resolve()
+                        .If(self.DoSelect)
+                        .Else(self.DoDeselect))
                 .AddTo(this);
         }
     }

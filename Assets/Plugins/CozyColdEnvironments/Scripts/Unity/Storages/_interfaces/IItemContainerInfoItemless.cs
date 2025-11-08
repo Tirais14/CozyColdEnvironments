@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using System;
 using UniRx;
 
 #nullable enable
@@ -7,9 +8,9 @@ namespace CCEnvs.Unity.Storages
 {
     public interface IItemContainerInfoItemless
     {
-        IReadOnlyReactiveProperty<int> ItemCount { get; }
+        int ItemCount { get; }
         Maybe<IInventory> ParentInventory { get; set; }
-        IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
+        bool IsActiveContainer { get; }
         int Capacity { get; set; }
         bool IsEmpty { get; }
         bool IsFull { get; }
@@ -22,8 +23,12 @@ namespace CCEnvs.Unity.Storages
 
         void ActivateContainer();
 
-        void DeactivateContainer(); 
+        void DeactivateContainer();
 
         bool SwitchContainerActiveState();
+
+        IObservable<bool> ObserveIsActiveContainer();
+
+        IObservable<int> ObserveItemCount();
     }
 }

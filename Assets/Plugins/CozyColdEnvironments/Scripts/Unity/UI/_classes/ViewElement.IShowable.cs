@@ -13,10 +13,12 @@ namespace CCEnvs.Unity.UI.Elements
         [SerializeField]
         protected IShowable.Settings showableSettings = IShowable.Settings.Default;
 
+        [SerializeField]
+        protected bool showOnStart;
+
         private readonly ReactiveProperty<bool> isVisible = new();
 
         public bool IsVisible => isVisible.Value;
-        protected virtual bool showOnStart => false;
 
         private void StartIShowable()
         {

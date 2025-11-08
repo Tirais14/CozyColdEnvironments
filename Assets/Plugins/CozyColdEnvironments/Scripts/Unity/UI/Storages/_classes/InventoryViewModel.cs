@@ -28,9 +28,10 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindActiveContainer()
         {
-            model.ActiveContainer.Select(cnt => cnt.Map(cnt => cnt.GetContainerID()).Raw)
-                                 .SubscribeWithState(activeContainerID, (id, prop) => prop.Value = id)
-                                 .AddTo(disposables);
+            model.ObserveActiveItemContainer()
+                .Select(cnt => cnt.Map(cnt => cnt.GetContainerID()).Raw)
+                .SubscribeWithState(activeContainerID, (id, prop) => prop.Value = id)
+                .AddTo(disposables);
         }
 
         public IObservable<GameObject> ObserveAddContainer()

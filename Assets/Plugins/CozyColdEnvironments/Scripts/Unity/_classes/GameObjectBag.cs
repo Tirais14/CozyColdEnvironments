@@ -23,7 +23,6 @@ namespace CCEnvs.Unity.UI.Elements
         public int Count => collection.Count;
 
         //protected Maybe<LayoutGroup> layoutGroup => m_LayoutGroup;
-        protected override bool showOnStart => true;
 
         GameObject IReadOnlyReactiveCollection<GameObject>.this[int index] {
             get => collection[index];
@@ -33,7 +32,7 @@ namespace CCEnvs.Unity.UI.Elements
         {
             base.Awake();
 
-            Show();
+            showOnStart = true;
         }
 
         protected override void OnDestroy()

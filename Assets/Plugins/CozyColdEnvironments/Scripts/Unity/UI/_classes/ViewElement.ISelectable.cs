@@ -64,20 +64,15 @@ namespace CCEnvs.Unity.UI.Elements
                 DoSelect();
         }
 
-        public IObservable<Unit> ObserveSelect()
+        public IObservable<bool> ObserveIsSelected()
         {
-            return isSelected.Where(x => x).AsUnitObservable();
-        }
-
-        public IObservable<Unit> ObserveDeselect()
-        {
-            return isSelected.Where(x => !x).AsUnitObservable();
+            return isSelected.Where(x => x);
         }
 
         private void SelectableBindButton()
         {
             button.IfSome(button => button.OnClickAsObservable()
-                .SubscribeWithState(this, (_, @this) => @this.SwitchSelectionState())
+                .SubscribeWithState(this, (_, @this) => @this.DoSelect())
                 .AddTo(this)
                 );
         }

@@ -12,18 +12,12 @@ namespace CCEnvs.Unity.UI.Storages
 
         where T : IItemContainer
     {
-        /// <summary>
-        /// To prevent endless loop in some actions
-        /// </summary>
-        private readonly ReactiveProperty<bool> toModel = new(initialValue: false);
-
         private readonly ReactiveProperty<Sprite> itemIcon = new(initialValue: UCC.TranparentSprite.Value);
         private readonly ReactiveProperty<string> itemCount = new(initialValue: string.Empty);
-        private readonly ReactiveCommand<bool> isActiveContainer;
 
         public IReadOnlyReactiveProperty<Sprite> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
-        public IReactiveCommand<bool> IsActiveContainer => isActiveContainer;
+        public IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
@@ -31,41 +25,35 @@ namespace CCEnvs.Unity.UI.Storages
         {
             BindItemIcon();
             BindItemCount();
-
-            isActiveContainer = new ReactiveCommand<bool>(toModel,
-                initialValue: false);
-
-            BindIsActiveContainer();
+            IsActiveContainer = model.ObserveIsActiveContainer().ToReactiveProperty();
         }
 
         public void ActivateContainer()
         {
-            toModel.Value = true;
             model.ActivateContainer();
-            toModel.Value = false;
+        }
+
+        public void DeactivateContainer()
+        {
+            model.DeactivateContainer();
         }
 
         private void BindItemIcon()
         {
-            model.Item.SubscribeWithState(itemIcon,
-                      static (x, prop) => prop.Value = x.Map(item => item.Icon)
+            model.ObserveItem()
+                .SubscribeWithState(itemIcon,
+                    static (x, prop) => prop.Value = x.Map(item => item.Icon)
                         .Access(UCC.TranparentSprite.Value))
-                      .AddTo(disposables);
+                .AddTo(disposables);
         }
 
         private void BindItemCount()
         {
-            model.ItemCount.Select(itemCount => itemCount <= 0 ? string.Empty : itemCount.ToString())
-                           .SubscribeWithState(itemCount, 
-                           static (countStr, prop) => prop.Value = countStr)
-                           .AddTo(disposables);
-        }
-
-        private void BindIsActiveContainer()
-        {
-            model.IsActiveContainer.SubscribeWithState(isActiveContainer,
-                                   static (state, prop) => prop.Execute(state))
-                                   .AddTo(disposables);
+            model.ObserveItemCount()
+                .Select(itemCount => itemCount <= 0 ? string.Empty : itemCount.ToString())
+                .SubscribeWithState(itemCount, 
+                    static (countStr, prop) => prop.Value = countStr)
+                .AddTo(disposables);
         }
     }
 }

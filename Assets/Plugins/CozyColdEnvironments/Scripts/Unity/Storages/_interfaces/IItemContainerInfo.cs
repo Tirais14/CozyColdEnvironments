@@ -1,11 +1,13 @@
 using CCEnvs.FuncLanguage;
-using UniRx;
+using System;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages
 {
     public interface IItemContainerInfo : IItemContainerInfoItemless
     {
-        IReadOnlyReactiveProperty<Maybe<IItem>> Item { get; }
+        Maybe<IItem> Item { get; }
+
+        IObservable<Maybe<IItem>> ObserveItem();
     }
 }
