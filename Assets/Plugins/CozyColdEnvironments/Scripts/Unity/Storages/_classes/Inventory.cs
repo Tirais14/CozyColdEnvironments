@@ -129,6 +129,7 @@ namespace CCEnvs.Unity.Storages
                               .InChildren()
                               .IncludeInactive()
                               .Model<IItemContainer>()
+                              .Lax()
                               .Match(
                               some: x => AddContainer(x),
                               none: () => this.PrintError($"Cannot find {nameof(ItemContainer)} model.")

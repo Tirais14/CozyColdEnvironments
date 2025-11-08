@@ -18,7 +18,10 @@ namespace CCEnvs.Unity.UI.Elements
         IViewElement
     {
         [field: SerializeField, GetBySelf]
-        public Maybe<Image> Img { get; private set; }
+        public Maybe<Image> image { get; private set; }
+
+        [field: SerializeField, GetBySelf]
+        public Maybe<Button> button { get; private set; }
 
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;

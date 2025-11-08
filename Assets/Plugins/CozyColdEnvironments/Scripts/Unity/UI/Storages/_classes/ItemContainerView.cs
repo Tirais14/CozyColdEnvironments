@@ -84,7 +84,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindItemIcon()
         {
-            Img.IfSome(img =>
+            image.IfSome(img =>
             {
                 viewModel.ItemIcon.SubscribeWithState(img,
                     static (sprite, img) => img.sprite = sprite)

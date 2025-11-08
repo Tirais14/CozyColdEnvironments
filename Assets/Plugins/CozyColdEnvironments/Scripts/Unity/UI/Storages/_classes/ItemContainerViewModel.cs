@@ -1,4 +1,3 @@
-using CCEnvs.Disposables;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;
@@ -35,6 +34,8 @@ namespace CCEnvs.Unity.UI.Storages
 
             isActiveContainer = new ReactiveCommand<bool>(toModel,
                 initialValue: false);
+
+            BindIsActiveContainer();
         }
 
         public void ActivateContainer()
@@ -46,15 +47,25 @@ namespace CCEnvs.Unity.UI.Storages
 
         private void BindItemIcon()
         {
-            model.Item.SubscribeWithState(itemIcon, static (x, prop) => prop.Value = x.Map(item => item.Icon).Access(UCC.TranparentSprite.Value))
+            model.Item.SubscribeWithState(itemIcon,
+                      static (x, prop) => prop.Value = x.Map(item => item.Icon)
+                        .Access(UCC.TranparentSprite.Value))
                       .AddTo(disposables);
         }
 
         private void BindItemCount()
         {
             model.ItemCount.Select(itemCount => itemCount <= 0 ? string.Empty : itemCount.ToString())
-                           .SubscribeWithState(itemCount, static (countStr, prop) => prop.Value = countStr)
+                           .SubscribeWithState(itemCount, 
+                           static (countStr, prop) => prop.Value = countStr)
                            .AddTo(disposables);
+        }
+
+        private void BindIsActiveContainer()
+        {
+            model.IsActiveContainer.SubscribeWithState(isActiveContainer,
+                                   static (state, prop) => prop.Execute(state))
+                                   .AddTo(disposables);
         }
     }
 }

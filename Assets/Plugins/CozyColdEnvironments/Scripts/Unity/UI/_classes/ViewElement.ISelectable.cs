@@ -11,6 +11,9 @@ namespace CCEnvs.Unity.UI.Elements
         protected readonly ReactiveProperty<bool> isSelected = new();
 
         [SerializeField]
+        protected bool selectableDisabled;
+
+        [SerializeField]
         protected Color selectableSelectionColor = Color.red;
 
         protected Color selectableBeforeSelectColor;
@@ -20,6 +23,7 @@ namespace CCEnvs.Unity.UI.Elements
         private void StartISelectable()
         {
             SelectablePreheat();
+            SelectableBindButton();
         }
 
         public virtual bool SelectAllowedPredicate(out Maybe<string> msg)
@@ -30,12 +34,12 @@ namespace CCEnvs.Unity.UI.Elements
 
         public virtual void DoSelect()
         {
-            if (IsSelected)
+            if (selectableDisabled || IsSelected)
                 return;
 
             isSelected.Value = true;
 
-            Img.IfSome(img =>
+            image.IfSome(img =>
             {
                 selectableBeforeSelectColor = img.color;
                 img.color *= selectableSelectionColor;
@@ -49,7 +53,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             isSelected.Value = false;
 
-            Img.IfSome(img => img.color = selectableBeforeSelectColor);
+            image.IfSome(img => img.color = selectableBeforeSelectColor);
         }
 
         public void SwitchSelectionState()
@@ -68,6 +72,14 @@ namespace CCEnvs.Unity.UI.Elements
         public IObservable<Unit> ObserveDeselect()
         {
             return isSelected.Where(x => !x).AsUnitObservable();
+        }
+
+        private void SelectableBindButton()
+        {
+            button.IfSome(button => button.OnClickAsObservable()
+                .SubscribeWithState(this, (_, @this) => @this.SwitchSelectionState())
+                .AddTo(this)
+                );
         }
 
         private void SelectablePreheat()
