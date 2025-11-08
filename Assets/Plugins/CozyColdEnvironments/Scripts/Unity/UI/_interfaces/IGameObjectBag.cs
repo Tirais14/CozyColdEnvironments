@@ -16,14 +16,30 @@ namespace CCEnvs.Unity.UI.Elements
         public enum Settings
         {
             None,
+
             DestroyOnRemove = 1,
+
             /// <summary>
             /// Use <see cref="RootMarker"/>.transform otherwise use added <see cref="GameObject.transform"/>
             /// </summary>
             ReparentByRootMarker = 2,
+
             ActivateOnAdd = 4,
+
             DeactivateOnRemove = 8,
-            Default = ReparentByRootMarker | ActivateOnAdd | DeactivateOnRemove
+
+            ///// <summary>
+            ///// Setup cell size of <see cref="UnityEngine.UI.LayoutGroup"/> reffering to <see cref="GameObject"/> size
+            ///// </summary>
+            //CellSizeOnLastAddedGameObject = 16,
+
+            Default = ReparentByRootMarker 
+                      | 
+                      ActivateOnAdd
+                      |
+                      DeactivateOnRemove
+                      //|
+                      //CellSizeOnLastAddedGameObject
         }
 
         Settings settings { get; set; }

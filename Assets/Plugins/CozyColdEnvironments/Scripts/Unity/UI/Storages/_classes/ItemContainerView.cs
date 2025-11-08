@@ -4,7 +4,6 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -47,6 +46,12 @@ namespace CCEnvs.Unity.UI.Storages
             BindItemIcon();
             BindItemCount();
             BindActiveContainer();
+        }
+
+        public override void DoSelect()
+        {
+            base.DoSelect();
+            viewModel.ActivateContainer();
         }
 
         protected override bool DragAllowedPredicate()

@@ -1,12 +1,12 @@
 using CCEnvs.FuncLanguage;
-using SuperLinq;
+using CCEnvs.Unity.Injections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
+using UnityEngine.UI;
 using static CCEnvs.Unity.UI.Elements.IGameObjectBag;
 
 #nullable enable
@@ -16,9 +16,13 @@ namespace CCEnvs.Unity.UI.Elements
     {
         protected readonly ReactiveCollection<GameObject> collection = new();
 
+        //[field: SerializeField, GetBySelf]
+        //private LayoutGroup m_LayoutGroup;
+
         public Settings settings { get; set; } = Settings.Default;
         public int Count => collection.Count;
 
+        //protected Maybe<LayoutGroup> layoutGroup => m_LayoutGroup;
         protected override bool showOnStart => true;
 
         GameObject IReadOnlyReactiveCollection<GameObject>.this[int index] {
@@ -113,34 +117,50 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected virtual void OnAdd(GameObject go)
         {
+            Transform goTransform = go.transform;
+
             if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
             {
                 var root = go.FindFor().Root();
 
-                root.IfRight(x =>
-                {
-                    if (settings.IsFlagSetted(Settings.ActivateOnAdd))
-                        x.gameObject.SetActive(true);
-
-                    x.transform.SetParent(transform);
-                });
+                goTransform = root.IfRight(r => r.transform)
+                                  .AccessUnsafe()
+                                  .As<Transform>();
             }
 
-            if (!settings.IsFlagSetted(Settings.ReparentByRootMarker))
-            {
-                if (settings.IsFlagSetted(Settings.ActivateOnAdd)
-                    &&
-                    go != null)
-                {
-                    go.SetActive(true);
-                }
+            goTransform.SetParent(transform);
 
-                go.transform.SetParent(transform);
-            }
+            if (settings.IsFlagSetted(Settings.ActivateOnAdd))
+                goTransform.gameObject.SetActive(true);
+
+            //if (settings.IsFlagSetted(Settings.CellSizeOnLastAddedGameObject)
+            //    &&
+            //    goTransform is RectTransform rectTransform)
+            //{
+            //    SetupLayoutGroup(rectTransform);
+            //}
 
             go.OnDestroyAsObservable()
               .Subscribe(_ => collection.Remove(go))
               .AddTo(go);
+
+            //void SetupLayoutGroup(RectTransform source)
+            //{
+            //    if (source.drivenByObject)
+            //        return;
+
+            //    layoutGroup.IfSome(layoutGroup =>
+            //    {
+            //        switch (layoutGroup)
+            //        {
+            //            case GridLayoutGroup grid:
+            //                grid.cellSize = source.sizeDelta;
+            //                break;
+            //            default:
+            //                break;
+            //        }
+            //    });
+            //}
         }
 
         protected virtual void OnRemove(GameObject go)
@@ -163,8 +183,7 @@ namespace CCEnvs.Unity.UI.Elements
                         x.gameObject.SetActive(false);
                 });
             }
-
-            if (!settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            else
             {
                 if (settings.IsFlagSetted(Settings.DestroyOnRemove))
                     Destroy(go);

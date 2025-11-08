@@ -8,20 +8,6 @@ namespace CCEnvs.Reflection
 {
     public static class TypeReflectionUtils
     {
-
-
-        private static Reflect imptQ => Reflect.self.Reset()
-                                                    .Static()
-                                                    .NonPublic()
-                                                    .ByFullName()
-                                                    .Name("op_Implicit");
-
-        private static Reflect exptQ => Reflect.self.Reset()
-                                                    .Static()
-                                                    .NonPublic()
-                                                    .ByFullName()
-                                                    .Name("op_Explicit");
-
         public static MethodInfo[] GetOverloadedCastOperators(this Type source)
         {
             CC.Guard.IsNotNull(source, nameof(source));

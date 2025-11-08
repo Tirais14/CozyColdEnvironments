@@ -13,12 +13,18 @@ namespace CCEnvs.Unity.UI.Storages
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite> itemIcon = new();
-        private readonly ReactiveProperty<string> itemCount = new();
+        /// <summary>
+        /// To prevent endless loop in some actions
+        /// </summary>
+        private readonly ReactiveProperty<bool> toModel = new(initialValue: false);
+
+        private readonly ReactiveProperty<Sprite> itemIcon = new(initialValue: UCC.TranparentSprite.Value);
+        private readonly ReactiveProperty<string> itemCount = new(initialValue: string.Empty);
+        private readonly ReactiveCommand<bool> isActiveContainer;
 
         public IReadOnlyReactiveProperty<Sprite> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
-        public IReadOnlyReactiveProperty<bool> IsActiveContainer => model.IsActiveContainer;
+        public IReactiveCommand<bool> IsActiveContainer => isActiveContainer;
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
@@ -26,6 +32,16 @@ namespace CCEnvs.Unity.UI.Storages
         {
             BindItemIcon();
             BindItemCount();
+
+            isActiveContainer = new ReactiveCommand<bool>(toModel,
+                initialValue: false);
+        }
+
+        public void ActivateContainer()
+        {
+            toModel.Value = true;
+            model.ActivateContainer();
+            toModel.Value = false;
         }
 
         private void BindItemIcon()

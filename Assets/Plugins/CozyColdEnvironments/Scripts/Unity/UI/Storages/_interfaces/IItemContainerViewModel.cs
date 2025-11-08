@@ -10,6 +10,8 @@ namespace CCEnvs.Unity.Storages
     {
         IReadOnlyReactiveProperty<Sprite> ItemIcon { get; }
         IReadOnlyReactiveProperty<string> ItemCount { get; }
-        IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
+        IReactiveCommand<bool> IsActiveContainer { get; }
+
+        void ActivateContainer();
     }
 }

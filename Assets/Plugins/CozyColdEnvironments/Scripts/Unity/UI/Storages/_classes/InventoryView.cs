@@ -18,12 +18,6 @@ namespace CCEnvs.Unity.UI.Storages
         public GameObjectBag SlotBag { get; private set; } = null!;
         public override bool IsMutable => true;
 
-        protected override void Start()
-        {
-            base.Start();
-            SetSlotBagSettings();
-        }
-
         protected override void InstallBingings()
         {
             base.InstallBingings();
@@ -42,15 +36,6 @@ namespace CCEnvs.Unity.UI.Storages
         {
             SlotBag.Clear();
             SlotBag.AddRange(viewModel.GetInventoryContainerGameObjects());
-        }
-
-        private void SetSlotBagSettings()
-        {
-            SlotBag.settings = IGameObjectBag.Settings.ReparentByRootMarker
-                               |
-                               IGameObjectBag.Settings.ActivateOnAdd
-                               |
-                               IGameObjectBag.Settings.DeactivateOnRemove;
         }
 
         private void BindAddContainer()

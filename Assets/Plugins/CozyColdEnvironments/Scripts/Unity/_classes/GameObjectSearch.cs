@@ -393,7 +393,7 @@ namespace CCEnvs.Unity
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<T> Model<T>()
+        public Result<T> Model<T>()
         {
             return Model(typeof(T)).Cast<T>();
         }
