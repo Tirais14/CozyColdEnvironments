@@ -71,6 +71,14 @@ namespace CCEnvs.Unity.UI.Storages
             viewModel.DeactivateContainer();
         }
 
+        protected override void OnEndDrag(PointerEventData eventData)
+        {
+            base.OnEndDrag(eventData);
+
+            if (model.IsEmpty)
+                viewModel.DeactivateContainer();
+        }
+
         protected override void OnDrop(PointerEventData eventData)
         {
             if (!DropAllowedPredicate()

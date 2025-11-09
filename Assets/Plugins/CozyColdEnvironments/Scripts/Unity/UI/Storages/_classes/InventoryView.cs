@@ -1,8 +1,10 @@
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Storages;
 using CCEnvs.Unity.UI.Elements;
 using CCEnvs.Unity.UI.MVVM;
+using Cysharp.Threading.Tasks;
 using UniRx;
 
 #nullable enable
@@ -17,6 +19,12 @@ namespace CCEnvs.Unity.UI.Storages
         [field: GetByChildren]
         public GameObjectBag SlotBag { get; private set; } = null!;
         public override bool IsMutable => true;
+
+        protected override void Start()
+        {
+            base.Start();
+            SetupOnAddSlotGameObject();
+        }
 
         protected override void InstallBingings()
         {
@@ -50,6 +58,32 @@ namespace CCEnvs.Unity.UI.Storages
             viewModel.ObserveRemoveContainer()
                      .SubscribeWithState(SlotBag, (go, bag) => bag.Remove(go))
                      .AddTo(this);
+        }
+
+        private void SetupOnAddSlotGameObject()
+        {
+            SlotBag.ObserveAdd()
+                .Select(ev => ev.Value)
+                .Where(go => go.activeSelf)
+                .SubscribeWithState(this, static (go, @this) =>
+                {
+                    go.SetActive(false);
+
+                    UniTask.Create(async () =>
+                    {
+                        await UniTask.DelayFrame(1); //waiting for all active components would be started.
+
+                        if (!@this.IsVisible) //pass control of visibility state to @this
+                        {
+                            @this.Show();
+                            @this.Hide();
+                        }
+
+                        go.SetActive(true);
+                    })
+                    .Forget(ex => @this.PrintException(ex));
+                })
+                .AddTo(this);
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<Inventory>, Inventory>

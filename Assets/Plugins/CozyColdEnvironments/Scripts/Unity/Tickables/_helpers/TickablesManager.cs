@@ -131,7 +131,7 @@ namespace CCEnvs.Unity.Tickables
             CCDebug.PrintLog("Registering tickers started.", self);
             var stopwatch = new Stopwatch();
 
-            var tickersFiltered = FindInScene.Q.IncludeInactive().Components<ITicker>()
+            var tickersFiltered = GameObjectSearch.Instance.Reset().IncludeInactive().Components<ITicker>()
                 .AsValueEnumerable()
                 .Where(ticker => !IsTickerRegistered(ticker));
 
@@ -152,7 +152,7 @@ namespace CCEnvs.Unity.Tickables
             var stopwatch = new Stopwatch();
 
             var toRegister =
-               from tickable in FindInScene.Q.IncludeInactive().Components<ITickableBase>().ZL()
+               from tickable in GameObjectSearch.Instance.Reset().IncludeInactive().Components<ITickableBase>().ZL()
                select (tickable, state: Tickable.TryGetTickerType(tickable, out Type? tickerType), tickerType) into item
                where item.state && !IsTickableRegistered(item.tickable)
                select item;

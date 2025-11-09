@@ -227,6 +227,8 @@ namespace CCEnvs.Unity
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> Components(Type? type = null)
         {
             return Target.Match(
