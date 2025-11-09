@@ -17,8 +17,6 @@ namespace CCEnvs.Unity
 
         public Result(T? value, Exception? exception)
         {
-            Guard.IsNotNull(exception, nameof(exception));
-
             this.raw = new Lazy<T?>(value);
             this.exception = exception;
         }

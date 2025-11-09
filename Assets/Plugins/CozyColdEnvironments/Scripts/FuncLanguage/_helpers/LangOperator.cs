@@ -13,7 +13,7 @@ namespace CCEnvs.FuncLanguage
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsSome<T>(T obj) => obj.IsNull();
+        public static bool IsSome<T>(T obj) => obj.IsNotNull();
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSome<T>(T obj,

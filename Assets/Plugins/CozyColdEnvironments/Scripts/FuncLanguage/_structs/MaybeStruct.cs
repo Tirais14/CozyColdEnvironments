@@ -28,7 +28,6 @@ namespace CCEnvs.FuncLanguage
         [UnityEngine.Range(int.MinValue, int.MaxValue)]
         private T @default;
 
-        [field: UnityEngine.SerializeField]
         public bool IsSome { get; private set; }
 #else
         private readonly T inner;

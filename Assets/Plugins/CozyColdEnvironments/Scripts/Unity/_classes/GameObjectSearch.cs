@@ -423,7 +423,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<GameObject> GameObject()
         {
-            return (GameObjects().FirstOrDefault(), new ComponentNotFoundException(typeof(GameObject), context: Target.Raw));
+            return (GameObjects().FirstOrDefault(), new GameObjectNotFoundException(name.Raw));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -452,6 +452,8 @@ namespace CCEnvs.Unity
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
         {
             CC.Guard.IsNotNull(target, nameof(target));
+            if (type == typeof(GameObject))
+                throw new ArgumentException($"Type cannot be: {type.GetFullName()}.");
 
             bool anyType = type is null;
             type ??= typeof(Component);
@@ -514,8 +516,13 @@ namespace CCEnvs.Unity
                                   return x.go.name.ContainsOrdinal(name, settings.IsFlagSetted(Settings.IgnoreCase));
                           }).Raw
                           where !layerMask.HasValue || x.go.layer == layerMask
-                          where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
+                          where tag.Match(
+                              some: tag => x.go.CompareTag(tag),
+                              none: () => true)
+                          .Raw
                           select x.cmp;
+
+                results = results.ToArray();
             }
 
             if (settings.IsFlagSetted(Settings.ExcludeSelf))
