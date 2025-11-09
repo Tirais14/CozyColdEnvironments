@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -40,15 +41,16 @@ namespace CCEnvs.Unity
         /// <summary>
         /// May be null
         /// </summary>
-        public GameObject Target { get; protected set; } = null!;
-        public Settings settings { get; protected set; } = Settings.Default;
+        public Maybe<GameObject> Target { get; protected set; } = null!;
+        public Settings settings { get; protected set; }
+        public FindMode findMode { get; protected set; }
+        public FindObjectsSortMode sortMode { get; protected set; }
         public Maybe<string> name { get; protected set; }
         /// <summary>
         /// <see cref="Settings.ByFullName"/>, <see cref="Settings.IgnoreCase"/> doesn' affect
         /// </summary>
         public Maybe<string> tag { get; protected set; }
         public int? layerMask { get; protected set; }
-        public FindMode findMode { get; protected set; } = FindMode.Self;
 
         public GameObjectSearch()
         {
@@ -134,7 +136,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch Name(string? name = null)
+        public GameObjectSearch ByName(string? name = null)
         {
             this.name = name;
 
@@ -143,7 +145,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch Tag(string? tag = null)
+        public GameObjectSearch ByTag(string? tag = null)
         {
             this.tag = tag;
 
@@ -152,7 +154,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch Layers(int? layerMask = null)
+        public GameObjectSearch ByLayerMask(int? layerMask = null)
         {
             this.layerMask = layerMask;
 
@@ -161,7 +163,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch InSelf()
+        public GameObjectSearch BySelf()
         {
             findMode = FindMode.Self;
 
@@ -170,7 +172,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch InChildren()
+        public GameObjectSearch ByChildren()
         {
             findMode = FindMode.InChilds;
 
@@ -179,7 +181,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectSearch InParent()
+        public GameObjectSearch ByParent()
         {
             findMode = FindMode.InParents;
 
@@ -200,94 +202,49 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch SortByInstanceID(bool state = true)
+        {
+            if (state)
+                sortMode = FindObjectsSortMode.InstanceID;
+            else
+                sortMode = FindObjectsSortMode.None;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectSearch Reset()
         {
             Target = default!;
             settings = Settings.Default;
+            findMode = FindMode.Self;
+            sortMode = FindObjectsSortMode.None;
             name = Maybe<string>.None;
             tag = Maybe<string>.None;
             layerMask = default;
-            findMode = FindMode.Self;
 
             return this;
         }
 
         public IEnumerable<object> Components(Type? type = null)
         {
-            Guard.IsNotNull(Target, nameof(Target));
-
-            bool anyType = type is null;
-            type ??= typeof(Component);
-
-            IEnumerable<Component> results;
-            if (anyType || type.IsType<Component>())
-            {
-                results = findMode switch
+            return Target.Match(
+                some: target => ComponentsInternal(target, type),
+                none: () =>
                 {
-                    FindMode.Self => Target.GetComponents(type),
-                    FindMode.InChilds => Target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                    FindMode.InParents => Target.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                    _ => throw new InvalidOperationException(findMode.ToString())
-                };
-            }
-            else
-            {
-                results = findMode switch
-                {
-                    FindMode.Self => Target.Components()
-                                           .Where(cmp => anyType || cmp.IsIntanceOfType(type!)),
+                    var includeInactiveState = settings.IsFlagSetted(Settings.IncludeInactive)
+                        ?
+                        FindObjectsInactive.Include
+                        :
+                        FindObjectsInactive.Exclude;
 
-                    FindMode.InChilds => InChildren().GameObjects()
-                                                     .SelectMany(x => x.Components())
-                                                     .Where(x => anyType || x.IsIntanceOfType(type!)),
-
-                    FindMode.InParents => InParent().GameObjects()
-                                                    .SelectMany(x => x.Components())
-                                                    .Where(x => anyType || x.IsIntanceOfType(type!)),
-
-                    _ => throw new InvalidOperationException(findMode.ToString())
-                };
-            }
-
-            if (settings.IsFlagSetted(Settings.NotRecursive)
-                && 
-                findMode.IsFlagSetted(FindMode.InChilds))
-            {
-                var goTransform = Target.transform;
-
-                results = from cmp in results
-                          where cmp.gameObject != Target
-                          where cmp.transform.parent == goTransform
-                          select cmp;
-            }
-
-            if (layerMask.HasValue
-                ||
-                name.IsSome
-                ||
-                tag.IsSome)
-            {
-                results = from cmp in results
-                          select (cmp, go: cmp.gameObject) into x
-                          where name.Map(name =>
-                          {
-                              if (settings.IsFlagSetted(Settings.ByFullName))
-                                  return x.go.name == name;
-                              else
-                                  return x.go.name.ContainsOrdinal(name, settings.IsFlagSetted(Settings.IgnoreCase));
-                          }).Raw
-                          where !layerMask.HasValue || x.go.layer == layerMask
-                          where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
-                          select x.cmp;
-            }
-
-            if (settings.IsFlagSetted(Settings.ExcludeSelf))
-                results = results.Where(cmp => cmp.gameObject != Target);
-
-            //if (!settings.IsFlagSetted(Settings.Reusable))
-            //    Reset();
-
-            return results;
+                    return Object.FindObjectsByType<Transform>(includeInactiveState, sortMode)
+                        .Select(transform => transform.gameObject)
+                        .Select(go => ComponentsInternal(go, type))
+                        .SelectMany(x => x);
+                })
+                .AccessUnsafe();
         }
 
         [DebuggerStepThrough]
@@ -303,7 +260,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
+            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target.Raw));
         }
 
         [DebuggerStepThrough]
@@ -372,7 +329,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (ViewModels(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
+            return (ViewModels(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target.Raw));
         }
 
         [DebuggerStepThrough]
@@ -415,7 +372,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Models(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
+            return (Models(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target.Raw));
         }
 
         /// <inheritdoc cref="Models"/>
@@ -434,24 +391,24 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<Transform> Transform()
         {
-            return (Transforms().FirstOrDefault(), new ComponentNotFoundException(typeof(Transform), context: Target));
+            return (Transforms().FirstOrDefault(), new ComponentNotFoundException(typeof(Transform), context: Target.Raw));
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameObject> ChildrenGameObjects() => InChildren().GameObjects();
+        public IEnumerable<GameObject> ChildrenGameObjects() => ByChildren().GameObjects();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Transform> ChildrenTransforms() => InChildren().Transforms();
+        public IEnumerable<Transform> ChildrenTransforms() => ByChildren().Transforms();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameObject> ParentGameObjects() => InParent().GameObjects();
+        public IEnumerable<GameObject> ParentGameObjects() => ByParent().GameObjects();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Transform> ParentTranforms() => InParent().Transforms();
+        public IEnumerable<Transform> ParentTranforms() => ByParent().Transforms();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -464,17 +421,17 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<GameObject> GameObject()
         {
-            return (GameObjects().FirstOrDefault(), new ComponentNotFoundException(typeof(GameObject), context: Target));
+            return (GameObjects().FirstOrDefault(), new ComponentNotFoundException(typeof(GameObject), context: Target.Raw));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Either<Transform, RootMarker> RootRaw()
         {
-            var marker = InParent().IncludeInactive()
+            var marker = ByParent().IncludeInactive()
                                    .Component<RootMarker>()
                                    .Lax();
 
-            return (marker.Map(x => x.transform).Access(Target.transform.root), marker.Raw);
+            return (marker.Map(x => x.transform).Access(Target.AccessUnsafe().transform.root), marker.Raw);
         }
 
         [DebuggerStepThrough]
@@ -487,7 +444,82 @@ namespace CCEnvs.Unity
                     Left: l => l)
                 .Access()
                 .AsOrDefault<Transform>()
-                .Access(Target.transform);
+                .Access(Target.AccessUnsafe().transform);
+        }
+
+        protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
+        {
+            CC.Guard.IsNotNull(target, nameof(target));
+
+            bool anyType = type is null;
+            type ??= typeof(Component);
+
+            IEnumerable<Component> results;
+            if (anyType || type.IsType<Component>())
+            {
+                results = findMode switch
+                {
+                    FindMode.Self => target.GetComponents(type),
+                    FindMode.InChilds => target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                    FindMode.InParents => target.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                    _ => throw new InvalidOperationException(findMode.ToString())
+                };
+            }
+            else
+            {
+                results = findMode switch
+                {
+                    FindMode.Self => target.Components()
+                                           .Where(cmp => anyType || cmp.IsIntanceOfType(type!)),
+
+                    FindMode.InChilds => ByChildren().GameObjects()
+                                                     .SelectMany(x => x.Components())
+                                                     .Where(x => anyType || x.IsIntanceOfType(type!)),
+
+                    FindMode.InParents => ByParent().GameObjects()
+                                                    .SelectMany(x => x.Components())
+                                                    .Where(x => anyType || x.IsIntanceOfType(type!)),
+
+                    _ => throw new InvalidOperationException(findMode.ToString())
+                };
+            }
+
+            if (settings.IsFlagSetted(Settings.NotRecursive)
+                &&
+                findMode.IsFlagSetted(FindMode.InChilds))
+            {
+                var goTransform = target.transform;
+
+                results = from cmp in results
+                          where cmp.gameObject != Target
+                          where cmp.transform.parent == goTransform
+                          select cmp;
+            }
+
+            if (layerMask.HasValue
+                ||
+                name.IsSome
+                ||
+                tag.IsSome)
+            {
+                results = from cmp in results
+                          select (cmp, go: cmp.gameObject) into x
+                          where name.Map(name =>
+                          {
+                              if (settings.IsFlagSetted(Settings.ByFullName))
+                                  return x.go.name == name;
+                              else
+                                  return x.go.name.ContainsOrdinal(name, settings.IsFlagSetted(Settings.IgnoreCase));
+                          }).Raw
+                          where !layerMask.HasValue || x.go.layer == layerMask
+                          where tag.Map(tag => x.go.CompareTag(tag)).Access(true)
+                          select x.cmp;
+            }
+
+            if (settings.IsFlagSetted(Settings.ExcludeSelf))
+                results = results.Where(cmp => cmp.gameObject != Target);
+
+            return results;
         }
 
         [DebuggerStepThrough]

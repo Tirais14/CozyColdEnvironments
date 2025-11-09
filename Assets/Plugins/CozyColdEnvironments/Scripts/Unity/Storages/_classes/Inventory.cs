@@ -125,7 +125,7 @@ namespace CCEnvs.Unity.Storages
 
             UnityEngine.Object.Instantiate(toInstantiate)
                               .FindFor()
-                              .InChildren()
+                              .ByChildren()
                               .IncludeInactive()
                               .Model<IItemContainer>()
                               .Lax()

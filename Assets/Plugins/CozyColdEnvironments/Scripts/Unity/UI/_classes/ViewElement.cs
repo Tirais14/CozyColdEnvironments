@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             canvasController = new Lazy<ICanvasController>(
                 () => this.FindFor()
-                    .InParent()
+                    .ByParent()
                     .IncludeInactive()
                     .Component<ICanvasController>()
                     .Strict()

@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.UI.Elements
                 return;
 
             target = this.FindFor()
-                         .InParent()
+                         .ByParent()
                          .IncludeInactive()
                          .Component<IViewElement>()
                          .Strict();

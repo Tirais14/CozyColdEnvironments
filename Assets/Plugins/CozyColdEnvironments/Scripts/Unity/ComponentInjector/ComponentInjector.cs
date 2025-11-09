@@ -91,21 +91,21 @@ namespace CCEnvs.Unity.Injections
                     InjectFrom.Self => source.FindFor().Component(injectType).Strict(),
 
                     InjectFrom.Parent => source.FindFor()
-                                               .InParent()
+                                               .ByParent()
                                                .IncludeInactive()
                                                .Component(injectType)
                                                .Strict(),
 
                     InjectFrom.Child => source.FindFor()
-                                              .InChildren()
+                                              .ByChildren()
                                               .IncludeInactive()
                                               .Component(injectType)
                                               .Strict(),
 
                     InjectFrom.GameObject => source.FindFor()
-                                                   .InChildren()
+                                                   .ByChildren()
                                                    .IncludeInactive()
-                                                   .Name(attribute.UnityName)
+                                                   .ByName(attribute.UnityName)
                                                    .GameObject()
                                                    .Strict()
                                                    .FindFor()

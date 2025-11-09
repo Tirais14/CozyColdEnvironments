@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.UI.Elements
         protected override void Start()
         {
             base.Start();
-            //Refresh();
+            Refresh();
         }
 
         protected override void OnDestroy()
@@ -36,6 +36,7 @@ namespace CCEnvs.Unity.UI.Elements
         public void Refresh()
         {
             this.FindFor()
+                .NotRecursive()
                 .ChildrenGameObjects()
                 .ZL()
                 .Where(go => !Contains(go))
