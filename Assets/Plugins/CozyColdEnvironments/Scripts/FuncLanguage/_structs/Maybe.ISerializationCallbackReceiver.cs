@@ -1,20 +1,19 @@
+#if UNITY_2017_1_OR_NEWER
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
-using static UnityEngine.GraphicsBuffer;
+using static CCEnvs.FuncLanguage.LangOperator;
 
 namespace CCEnvs.FuncLanguage
 {
-    public partial struct Maybe : ISerializationCallbackReceiver
+    public partial struct Maybe<T> : ISerializationCallbackReceiver
     {
-#if UNITY_2017_1_OR_NEWER
         readonly void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            IsSome = target.IsNotNull();
+            IsSome = IsSome(target);
         }
-#endif
     }
 }
+#endif

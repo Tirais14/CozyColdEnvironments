@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -13,10 +14,33 @@ namespace CCEnvs.FuncLanguage
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSome<T>(T obj) => obj.IsNull();
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSome<T>(T obj,
+            T @default,
+            IEqualityComparer<T>? comparer = null)
+
+            where T : struct
+        {
+            comparer ??= EqualityComparer<T>.Default;
+
+            return !comparer.Equals(obj, @default);
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNone<T>(T obj) => !IsSome(obj);
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNone<T>(T obj,
+            T @default,
+            IEqualityComparer<T>? comparer = null)
+
+            where T : struct
+        {
+            return !IsSome(obj, @default, comparer);
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,10 +1,9 @@
-using CCEnvs.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+using static CCEnvs.FuncLanguage.LangOperator;
 
 #nullable enable
 #pragma warning disable S3236
@@ -23,7 +22,6 @@ namespace CCEnvs.FuncLanguage
         [UnityEngine.SerializeField]
         private T? target;
 
-        [field: UnityEngine.SerializeField]
         public bool IsSome { get; private set; }
 #else
         private readonly T? inner;
@@ -34,13 +32,11 @@ namespace CCEnvs.FuncLanguage
         public readonly bool IsNone => !IsSome;
         public readonly T? Raw => target;
 
-        Lang
-
         public Maybe(T value)
         {
             target = value;
 
-            IsSome = value.IsNotNull();
+            IsSome = IsSome(value);
         }
 
         [DebuggerStepThrough]

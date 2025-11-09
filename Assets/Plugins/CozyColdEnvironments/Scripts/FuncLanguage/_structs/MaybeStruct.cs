@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using static CCEnvs.FuncLanguage.LangOperator;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -25,7 +26,7 @@ namespace CCEnvs.FuncLanguage
 
         [UnityEngine.SerializeField]
         [UnityEngine.Range(int.MinValue, int.MaxValue)]
-        private T defaultValue;
+        private T @default;
 
         [field: UnityEngine.SerializeField]
         public bool IsSome { get; private set; }
@@ -44,15 +45,15 @@ namespace CCEnvs.FuncLanguage
             :
             this()
         {
-            this.target = value;
-            IsSome = !this.target.Equals(defaultValue);
+            target = value;
+            IsSome = IsSome(value, @default);
         }
 
-        public MaybeStruct(T value, T defaultValue)
-            :
-            this(value)
+        public MaybeStruct(T value, T @default)
         {
-            this.defaultValue = defaultValue;
+            target = value;
+            this.@default = @default;
+            IsSome = IsSome(value, @default);
         }
 
         public MaybeStruct(T value, bool hasValue)
