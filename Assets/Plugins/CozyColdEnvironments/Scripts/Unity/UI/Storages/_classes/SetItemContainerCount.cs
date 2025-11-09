@@ -6,10 +6,10 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.UI.Storages
 {
-    public sealed class SetItemContainerCount : CCBehaviourTemporary
+    public sealed class SetItemContainerCount : ViewElementComponentCommand
     {
         [SerializeField]
-        private GameObject itemContainerPrefab;
+        private GameObject prefab;
 
         [Min(0)]
         [SerializeField]
@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.UI.Storages
 
         protected override void OnUpdate()
         {
-            if (itemContainerPrefab == null)
+            if (prefab == null)
             {
                 this.PrintError("Item container prefab not found.");
                 return;
@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.UI.Storages
                 return;
 
             this.FindFor().Model<IInventory>().Lax().Match(
-                some: inv => inv.SetContainerCount(count, itemContainerPrefab),
+                some: inv => inv.SetContainerCount(count, prefab),
                 none: () => this.PrintError("Not found inventory model.")
                 );
         }

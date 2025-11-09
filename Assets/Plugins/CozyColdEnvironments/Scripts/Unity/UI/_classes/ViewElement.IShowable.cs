@@ -26,25 +26,27 @@ namespace CCEnvs.Unity.UI.Elements
 
         private void StartIShowable()
         {
+            ShowablePreheat();
+
             if (showOnStart)
                 Show();
             else
                 Hide();
         }
 
+        public virtual bool ShowableShowAllowedPredicate() => true;
+
         public virtual void Hide(IShowable.Settings settings)
         {
-            Showable.Hide(
-                gameObject,
-                showableGraphicSnapshots,
-                showableSettings);
-
-            isVisible.Value = false;
+            Hide(force: false);
         }
         public void Hide() => Hide(showableSettings);
 
         public virtual void Show(IShowable.Settings settings)
         {
+            if (!ShowableShowAllowedPredicate())
+                return;
+
             Showable.Show(
                 gameObject,
                 showableGraphicSnapshots,
@@ -72,6 +74,25 @@ namespace CCEnvs.Unity.UI.Elements
         public IObservable<Unit> ObserveHide()
         {
             return isVisible.Where(x => !x).AsUnitObservable();
+        }
+
+        protected void Hide(bool force)
+        {
+            if (!force && !IsVisible)
+                return;
+
+            Showable.Hide(
+                gameObject,
+                showableGraphicSnapshots,
+                showableSettings);
+
+            isVisible.Value = false;
+        }
+
+        private void ShowablePreheat()
+        {
+            Hide(force: true);
+            Show();
         }
     }
 }

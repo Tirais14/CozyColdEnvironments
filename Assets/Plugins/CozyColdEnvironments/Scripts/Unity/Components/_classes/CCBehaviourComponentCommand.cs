@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Unity.Components
 {
-    public class CCBehaviourTemporary : CCBehaviour
+    public class CCBehaviourComponentCommand : CCBehaviour
     {
         private int updateFrameCount;
         private int fixedUpdateFrameCount;
@@ -15,32 +15,49 @@ namespace CCEnvs.Unity.Components
 
         private void Update()
         {
-            if (updateFrameCount > 0)
+            if (!didStart
+                || 
+                !didAwake 
+                || 
+                updateFrameCount > 0
+                )
                 return;
 
             OnUpdate();
-
             updateFrameCount++;
         }
 
         private void FixedUpdate()
         {
-            if (fixedUpdateFrameCount > 0)
+            if (!didStart 
+                ||
+                !didAwake
+                ||
+                fixedUpdateFrameCount > 0
+                )
                 return;
 
             OnFixedUpdate();
-
             fixedUpdateFrameCount++;
         }
 
         private void LateUpdate()
         {
-            if (lateUpdateFrameCount > 0)
+            if (!didStart
+                ||
+                !didAwake
+                || 
+                lateUpdateFrameCount > 0
+                )
                 return;
 
             OnLateUpdate();
-
             lateUpdateFrameCount++;
+        }
+
+        protected virtual void OnDestroy()
+        {
+
         }
 
         /// <summary>

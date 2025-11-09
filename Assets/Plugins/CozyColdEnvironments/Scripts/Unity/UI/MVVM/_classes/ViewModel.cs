@@ -4,10 +4,10 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UniRx;
 using UnityEngine;
+using System.Linq;
 
 #pragma warning disable S1699
 namespace CCEnvs.Unity.UI.MVVM
@@ -41,13 +41,13 @@ namespace CCEnvs.Unity.UI.MVVM
 
         public virtual void ForceNotify()
         {
-            foreach (var rxProp in from field in this.Reflect()
-                           .NonPublic()
-                           .TypeFilter(typeof(IReactiveProperty<>))
-                           .MatchTypesByBaseGenericTypeDefinition()
-                           .Cache()
-                           .Fields()
-                   select field.GetValue(this))
+            foreach (var rxProp in this.Reflect()
+                                   .NonPublic()
+                                   .TypeFilter(typeof(IReactiveProperty<>))
+                                   .MatchTypesByBaseGenericTypeDefinition()
+                                   .Cache()
+                                   .Fields()
+                                   .Select(field => field.GetValue(this)))
             {
                 PropertyInfo? valueProp = rxProp.Reflect()
                                                 .Name(nameof(ReactiveProperty<object>.Value))

@@ -25,6 +25,10 @@ namespace CCEnvs.Unity
             ExcludeSelf = 4,
             ByFullName = 8,
             IgnoreCase = 16,
+            /// <summary>
+            /// Except in depth childrens from results
+            /// </summary>
+            NotRecursive = 32,
             Default = None
         }
 
@@ -184,6 +188,18 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch NotRecursive(bool state = true)
+        {
+            if (state)
+                settings |= Settings.NotRecursive;
+            else
+                settings &= ~Settings.NotRecursive;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectSearch Reset()
         {
             Target = default!;
@@ -196,22 +212,6 @@ namespace CCEnvs.Unity
             return this;
         }
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<object> Component(Type type)
-        {
-            Guard.IsNotNull(type, nameof(type));
-
-            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T> Component<T>()
-        {
-            return Component(typeof(T)).Cast<T>();
-        }
-
         public IEnumerable<object> Components(Type? type = null)
         {
             Guard.IsNotNull(Target, nameof(Target));
@@ -220,7 +220,7 @@ namespace CCEnvs.Unity
             type ??= typeof(Component);
 
             IEnumerable<Component> results;
-            if (anyType || type!.IsType<Component>())
+            if (anyType || type.IsType<Component>())
             {
                 results = findMode switch
                 {
@@ -247,6 +247,18 @@ namespace CCEnvs.Unity
 
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };
+            }
+
+            if (settings.IsFlagSetted(Settings.NotRecursive)
+                && 
+                findMode.IsFlagSetted(FindMode.InChilds))
+            {
+                var goTransform = Target.transform;
+
+                results = from cmp in results
+                          where cmp.gameObject != Target
+                          where cmp.transform.parent == goTransform
+                          select cmp;
             }
 
             if (layerMask.HasValue
@@ -283,6 +295,22 @@ namespace CCEnvs.Unity
         public IEnumerable<T> Components<T>()
         {
             return Components(typeof(T)).Cast<T>();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<object> Component(Type type)
+        {
+            Guard.IsNotNull(type, nameof(type));
+
+            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<T> Component<T>()
+        {
+            return Component(typeof(T)).Cast<T>();
         }
 
         [DebuggerStepThrough]

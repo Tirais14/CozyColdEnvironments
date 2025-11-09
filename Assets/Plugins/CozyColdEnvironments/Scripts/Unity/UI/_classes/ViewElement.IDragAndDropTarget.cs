@@ -63,9 +63,9 @@ namespace CCEnvs.Unity.UI.Elements
                 );
         }
 
-        protected virtual bool DragAllowedPredicate() => true;
+        public virtual bool DragAllowedPredicate() => true;
 
-        protected virtual bool DropAllowedPredicate() => false;
+        public virtual bool DropAllowedPredicate() => false;
 
         protected virtual void OnBeginDrag(PointerEventData eventData)
         {

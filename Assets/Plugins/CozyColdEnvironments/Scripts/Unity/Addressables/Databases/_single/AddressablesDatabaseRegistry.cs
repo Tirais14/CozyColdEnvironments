@@ -22,7 +22,7 @@ using Object = UnityEngine.Object;
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public abstract class AddressablesDatabaseRegistry<TThis>
-        : CCBehaviourStaticIt<TThis>,
+        : CCBehaviourStaticPublic<TThis>,
         IAddressablesDatabaseRegistry
 
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry

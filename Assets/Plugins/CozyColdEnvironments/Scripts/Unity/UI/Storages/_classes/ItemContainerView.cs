@@ -47,29 +47,12 @@ namespace CCEnvs.Unity.UI.Storages
             BindActiveContainer();
         }
 
-        public override void DoSelect()
+        public override void OnButtonClick()
         {
-            base.DoSelect();
-
-            if (selectableDisabled
-                ||
-                viewModel.IsActiveContainer.Value) //to prevent double triggering
-                return;
-
             viewModel.ActivateContainer();
         }
 
-        public override void DoDeselect()
-        {
-            base.DoDeselect();
-
-            if (!viewModel.IsActiveContainer.Value) //to prevent double triggering
-                return;
-
-            viewModel.DeactivateContainer();
-        }
-
-        protected override bool DragAllowedPredicate()
+        public override bool DragAllowedPredicate()
         {
             if (model.IsEmpty)
             {
@@ -80,7 +63,13 @@ namespace CCEnvs.Unity.UI.Storages
             return true;
         }
 
-        protected override bool DropAllowedPredicate() => true;
+        public override bool DropAllowedPredicate() => true;
+
+        public override void Hide(IShowable.Settings settings)
+        {
+            base.Hide(settings);
+            viewModel.DeactivateContainer();
+        }
 
         protected override void OnDrop(PointerEventData eventData)
         {

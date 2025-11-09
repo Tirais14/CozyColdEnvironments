@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -49,12 +50,16 @@ namespace CCEnvs.Unity.UI
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                foreach (var child in gameObject.FindFor().ExcludeSelf().ChildrenGameObjects())
+                foreach (var child in gameObject.FindFor()
+                                                .ExcludeSelf()
+                                                .ChildrenGameObjects())
                 {
                     if (child.FindFor()
                              .Component<IShowable>()
                              .Lax()
-                             .TryAccess(out var showable))
+                             .TryAccess(out var showable)
+                       &&
+                       showable.IsVisible)
                     {
                         showable.Hide();
                     }
@@ -68,7 +73,11 @@ namespace CCEnvs.Unity.UI
             List<GraphicComponentStateSnapshot> graphicSnapshots, 
             IShowable.Settings settings)
         {
-            foreach (var cmp in gameObject.GetComponents<Graphic>())
+            foreach (var cmp in gameObject.GetComponents<Graphic>().ZL()
+                .Where(graphic =>
+                    !graphicSnapshots.Exists(graphicState =>
+                        graphicState.Target == graphic))
+                )
             {
                 graphicSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
 

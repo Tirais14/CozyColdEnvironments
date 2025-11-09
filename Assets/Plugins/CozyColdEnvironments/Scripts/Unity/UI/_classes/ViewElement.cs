@@ -6,6 +6,7 @@ using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,12 +49,31 @@ namespace CCEnvs.Unity.UI.Elements
         protected override void Start()
         {
             base.Start();
+            BindToButton();
             StartIShowable();
             StartISelectable();
         }
 
         protected virtual void OnDestroy()
         {
+        }
+
+        /// <summary>
+        /// By default will be invoked on <see cref="Button.onClick"/> event
+        /// <br/>Work only if parent <see cref="GameObject"/> has <see cref="Button"/> before <see cref="Awake"/>
+        /// </summary>
+        public virtual void OnButtonClick()
+        {
+        }
+
+        private void BindToButton()
+        {
+            button.IfSome(button =>
+            {
+                button.OnClickAsObservable()
+                    .SubscribeWithState(this, (_, view) => view.OnButtonClick())
+                    .AddTo(this);
+            });
         }
     }
 }

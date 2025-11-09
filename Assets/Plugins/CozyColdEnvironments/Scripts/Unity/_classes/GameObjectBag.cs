@@ -1,12 +1,10 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Injections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
-using UnityEngine.UI;
+using ZLinq;
 using static CCEnvs.Unity.UI.Elements.IGameObjectBag;
 
 #nullable enable
@@ -16,30 +14,32 @@ namespace CCEnvs.Unity.UI.Elements
     {
         protected readonly ReactiveCollection<GameObject> collection = new();
 
-        //[field: SerializeField, GetBySelf]
-        //private LayoutGroup m_LayoutGroup;
-
         public Settings settings { get; set; } = Settings.Default;
         public int Count => collection.Count;
-
-        //protected Maybe<LayoutGroup> layoutGroup => m_LayoutGroup;
 
         GameObject IReadOnlyReactiveCollection<GameObject>.this[int index] {
             get => collection[index];
         }
 
-        protected override void Awake()
+        protected override void Start()
         {
-            base.Awake();
-
-            showOnStart = true;
+            base.Start();
+            //Refresh();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-
             collection.Dispose();
+        }
+
+        public void Refresh()
+        {
+            this.FindFor()
+                .ChildrenGameObjects()
+                .ZL()
+                .Where(go => !Contains(go))
+                .ForEach(Add);
         }
 
         public void Add(GameObject item)
@@ -65,6 +65,7 @@ namespace CCEnvs.Unity.UI.Elements
             collection.CopyTo(array, arrayIndex);
         }
 
+#pragma warning disable UNT0029
         public bool Remove(GameObject item)
         {
             if (item is null)
@@ -78,6 +79,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             return false;
         }
+#pragma warning restore UNT0029
 
         public IObservable<CollectionAddEvent<GameObject>> ObserveAdd()
         {
@@ -119,47 +121,16 @@ namespace CCEnvs.Unity.UI.Elements
             Transform goTransform = go.transform;
 
             if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
-            {
-                var root = go.FindFor().RootRaw();
-
-                goTransform = root.IfRight(r => r.transform)
-                                  .AccessUnsafe()
-                                  .As<Transform>();
-            }
+                goTransform = go.FindFor().RootTransform();
 
             goTransform.SetParent(transform);
 
             if (settings.IsFlagSetted(Settings.ActivateOnAdd))
                 goTransform.gameObject.SetActive(true);
 
-            //if (settings.IsFlagSetted(Settings.CellSizeOnLastAddedGameObject)
-            //    &&
-            //    goTransform is RectTransform rectTransform)
-            //{
-            //    SetupLayoutGroup(rectTransform);
-            //}
-
             go.OnDestroyAsObservable()
               .Subscribe(_ => collection.Remove(go))
               .AddTo(go);
-
-            //void SetupLayoutGroup(RectTransform source)
-            //{
-            //    if (source.drivenByObject)
-            //        return;
-
-            //    layoutGroup.IfSome(layoutGroup =>
-            //    {
-            //        switch (layoutGroup)
-            //        {
-            //            case GridLayoutGroup grid:
-            //                grid.cellSize = source.sizeDelta;
-            //                break;
-            //            default:
-            //                break;
-            //        }
-            //    });
-            //}
         }
 
         protected virtual void OnRemove(GameObject go)

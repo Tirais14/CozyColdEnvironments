@@ -27,18 +27,16 @@ namespace CCEnvs.Unity.UI.Elements
         private void StartISelectable()
         {
             SelectablePreheat();
-            SelectableBindButton();
         }
 
-        public virtual bool SelectAllowedPredicate(out Maybe<string> msg)
+        public virtual bool SelectAllowedPredicate()
         {
-            msg = null;
-            return true;
+            return !selectableDisabled;
         }
 
         public virtual void DoSelect()
         {
-            if (selectableDisabled || IsSelected)
+            if (!SelectAllowedPredicate() || IsSelected)
                 return;
 
             isSelected.Value = true;
@@ -71,14 +69,6 @@ namespace CCEnvs.Unity.UI.Elements
         public IObservable<bool> ObserveIsSelected()
         {
             return isSelected.Where(x => x);
-        }
-
-        private void SelectableBindButton()
-        {
-            button.IfSome(button => button.OnClickAsObservable()
-                .SubscribeWithState(this, (_, @this) => @this.DoSelect())
-                .AddTo(this)
-                );
         }
 
         private void SelectablePreheat()
