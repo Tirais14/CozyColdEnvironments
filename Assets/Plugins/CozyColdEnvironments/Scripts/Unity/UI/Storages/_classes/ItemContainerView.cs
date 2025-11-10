@@ -91,7 +91,7 @@ namespace CCEnvs.Unity.UI.Storages
                 .Map(go => go.FindFor().Model<IItemContainer>().Raw!)
                 .Map(cnt => (source: cnt, rest: model.PutItem(cnt)))
                 .Where(cnt => cnt.rest.IsSome)
-                .IfSome(cnt => cnt.source.PutItem(cnt.rest.AccessUnsafe()));
+                .IfSome(cnt => cnt.source.PutItem(cnt.rest.GetValueUnsafe()));
         }
 
         private void BindItemIcon()

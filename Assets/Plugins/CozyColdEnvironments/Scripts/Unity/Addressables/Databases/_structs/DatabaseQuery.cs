@@ -31,8 +31,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg[dbKey, key],
-                () => db.Map(x => x[key]).AccessUnsafe()
-                ).AccessUnsafe();
+                () => db.Map(x => x[key]).GetValueUnsafe()
+                ).GetValueUnsafe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -45,8 +45,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg.GetAsset<T>(dbKey, key),
-                () => db.Map(x => x.GetAsset<T>(key)).AccessUnsafe()
-                ).AccessUnsafe();
+                () => db.Map(x => x.GetAsset<T>(key)).GetValueUnsafe()
+                ).GetValueUnsafe();
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 .Match(
                 some: x => x.FindFor().Component<TSecondary>().Strict(),
                 none: () => GetAsset<TPrimary>().As<TSecondary>())
-                .AccessUnsafe();
+                .GetValueUnsafe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,8 +81,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg.FindAsset(dbKey, key),
-                () => db.Map(x => x.FindAsset(key).Access())!
-                ).Access();
+                () => db.Map(x => x.FindAsset(key).GetValue())!
+                ).GetValue();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,8 +95,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return dbRegistry.Match(
                 reg => reg.FindAsset<T>(dbKey, key),
-                () => db.Map(x => x.FindAsset<T>(key).Access())!
-                ).Access();
+                () => db.Map(x => x.FindAsset<T>(key).GetValue())!
+                ).GetValue();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,17 +111,17 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 some: x => x.FindFor()
                             .Component<TSecondary>()
                             .Lax()
-                            .Access(),
+                            .GetValue(),
 
-                none: () => GetAsset<TPrimary>().AsOrDefault<TSecondary>().Access())
-                .Access()!;
+                none: () => GetAsset<TPrimary>().AsOrDefault<TSecondary>().GetValue())
+                .GetValue()!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery WithDatabaseID(UniID id)
         {
-            dbKey = new AssetDatabaseKey(dbKey.AssetType.Access(), id);
-            key = new AssetKey(key.AssetName.Access(), key.AssetID);
+            dbKey = new AssetDatabaseKey(dbKey.AssetType.GetValue(), id);
+            key = new AssetKey(key.AssetName.GetValue(), key.AssetID);
 
             return this;
         }
@@ -217,7 +217,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DatabaseQuery WithAssetID(int assetID)
         {
-            key = new AssetKey(key.AssetName.Access(), assetID);
+            key = new AssetKey(key.AssetName.GetValue(), assetID);
 
             return this;
         }

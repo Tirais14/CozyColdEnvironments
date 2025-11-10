@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Storages
 
         bool SwitchContainerActiveState(int id);
 
-        MaybeStruct<int> GetContainerID(IItemContainer itemContainer);
+        Maybe<int> GetContainerID(IItemContainer itemContainer);
 
         IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer();
     }

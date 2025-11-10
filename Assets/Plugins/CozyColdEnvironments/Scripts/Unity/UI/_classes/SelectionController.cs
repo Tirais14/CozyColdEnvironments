@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.UI
         IDisposable
     {
         private readonly ReactiveProperty<(TKey key, Maybe<TValue> value)> selection = new();
-        private readonly Catched<Func<TKey, TValue>> valueGetter;
+        private readonly Func<TKey, TValue> valueGetter;
         private bool disposed;
 
         public IReadOnlyReactiveProperty<(TKey key, Maybe<TValue> it)> Selection => selection;
@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.UI
 
         public void DoSelect(TKey key)
         {
-            selection.Value = (key, valueGetter.Map(x => x(key)).AccessUnsafe());
+            selection.Value = (key, new Catched(logType: LogType.Error).Do(key, valueGetter));
 
             this.PrintLog($"Selected by key: {key}.");
         }

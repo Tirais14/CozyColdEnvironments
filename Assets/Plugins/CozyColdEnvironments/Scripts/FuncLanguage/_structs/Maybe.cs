@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,9 +23,13 @@ namespace CCEnvs.FuncLanguage
         [UnityEngine.SerializeField]
         private T? target;
 
+        [UnityEngine.SerializeField]
+        private T? @default;
+
         public bool IsSome { get; private set; }
 #else
-        private readonly T? inner;
+        private readonly T? target;
+        private readonly T? @default;
 
         public readonly bool IsSome { get; }
 #endif
@@ -32,16 +37,43 @@ namespace CCEnvs.FuncLanguage
         public readonly bool IsNone => !IsSome;
         public readonly T? Raw => target;
 
-        public Maybe(T value)
+        public Maybe(T? value)
+            :
+            this()
         {
             target = value;
 
             IsSome = IsSome(value);
         }
 
+        public Maybe(T? value, T? @default)
+        {
+            target = value;
+            this.@default = @default;
+
+            IsSome = IsSome(value, @default);
+        }
+
+        public Maybe(T? value, Predicate<T?> isSome)
+            :
+            this()
+        {
+            Guard.IsNotNull(isSome, nameof(isSome));
+            target = value;
+
+            IsSome = isSome(value);
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Maybe<T>(T? source) => new(source!);
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Maybe<T>((T? value, T? @default) input)
+        {
+            return new Maybe<T>(input.value, input.@default);
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -63,10 +95,6 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Catch() => target;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IfElse<T> Resolve(Predicate<T>? predicate = null)
         {
             return (target, predicate);
@@ -80,6 +108,7 @@ namespace CCEnvs.FuncLanguage
         {
             return obj is Maybe<T> typed && Equals(typed);
         }
+
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(target);

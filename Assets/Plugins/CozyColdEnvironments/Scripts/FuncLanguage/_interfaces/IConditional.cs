@@ -30,38 +30,38 @@ namespace CCEnvs.FuncLanguage
 
         object? IConditional.Target => Raw;
 
-        new T? Access();
-        T Access(T defaultValue);
-        T Access(Func<T> defaultValueFactory);
+        new T? GetValue();
+        T GetValue(T defaultValue);
+        T GetValue(Func<T> defaultValueFactory);
 
-        new T AccessUnsafe();
+        new T GetValueUnsafe();
 
-        bool TryAccess([NotNullWhen(true)] out T? result);
+        bool TryGetValue([NotNullWhen(true)] out T? result);
 
-        bool ItIs(T? value);
-        bool ItIs(Predicate<T> predicate);
+        bool Contains(T? value);
+        bool Contains(Predicate<T> predicate);
 
-        bool ItIsUnsafe(Predicate<T?> predicate);
+        bool ContainsUnsafe(Predicate<T?> predicate);
 
         Either<T, R> Cast<R>();
 
         Either<T, R> Select<R>(Func<T, R> selector);
 
-        object? IConditional.Access() => Access();
+        object? IConditional.Access() => GetValue();
         object IConditional.Access(object defaultValue)
         {
-            return Access(defaultValue.As<T>())!;
+            return GetValue(defaultValue.As<T>())!;
         }
         object IConditional.Access(Func<object> defaultValueFactory)
         {
             return Access(() => defaultValueFactory())!;
         }
 
-        object IConditional.AccessUnsafe() => AccessUnsafe()!;
+        object IConditional.AccessUnsafe() => GetValueUnsafe()!;
 
         bool IConditional.TryAccess([NotNullWhen(true)] out object? result)
         {
-            var t = TryAccess(out T? tR);
+            var t = TryGetValue(out T? tR);
 
             result = tR;
             return t;
@@ -69,16 +69,16 @@ namespace CCEnvs.FuncLanguage
 
         bool IConditional.ItIs(object? value)
         {
-            return ItIs(value.AsOrDefault<T>().Access());
+            return Contains(value.AsOrDefault<T>().GetValue());
         }
         bool IConditional.ItIs(Predicate<object> predicate)
         {
-            return ItIs(x => predicate(x!));
+            return Contains(x => predicate(x!));
         }
 
         bool IConditional.ItIsUnsafe(Predicate<object?> predicate)
         {
-            return ItIsUnsafe(x => predicate(x!));
+            return ContainsUnsafe(x => predicate(x!));
         }
     }
 

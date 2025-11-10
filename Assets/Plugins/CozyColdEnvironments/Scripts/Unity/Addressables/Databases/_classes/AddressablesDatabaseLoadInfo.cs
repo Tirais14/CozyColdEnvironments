@@ -1,4 +1,3 @@
-using CCEnvs;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.EditorSerialization;
 using System;
@@ -13,7 +12,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     {
         [SerializeField]
         [Tooltip("Often implied category. If null or empty will be used this.name without \"LoadInfo\" suffix if exists.")]
-        private MaybeStruct<UniID> ID;
+        private Maybe<UniID> ID;
 
         [SerializeField]
         private SerializedType databaseType = new(false);
@@ -25,14 +24,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public AssetLabels AssetLabels { get; private set; }
 
         public AssetDatabaseKey AssetDatabaseKey {
-            get => ID.IsSome
-                   ?
-                   new(AssetType, ID.Access())
-                   :
-                   new(AssetType, new UniID
-                       {
-                           Str0 = name
-                       });
+            get => ID.Match(
+                some: id => new AssetDatabaseKey(AssetType, id),
+                none: () => new AssetDatabaseKey(AssetType, new UniID() { Str0 = name })
+                ).Raw;
         }
 
         public Type GetDatabaseType()

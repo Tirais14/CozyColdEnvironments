@@ -12,78 +12,23 @@ namespace CCEnvs.FuncLanguage
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> Maybe<TValue>(this TValue input) => input;
+        public static Maybe<TValue> Maybe<TValue>(this TValue source) => source;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<TValue>(this TValue input, TValue defaultValue)
-            where TValue : struct
+        public static Maybe<TValue> Maybe<TValue>(this TValue source, TValue @default)
         {
-            return new MaybeStruct<TValue>(input, defaultValue);
+            return (source, @default);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<TValue>(this TValue input, bool hasValue)
-            where TValue : struct
+        public static Maybe<TValue> Maybe<TValue>(this TValue source,
+            Predicate<TValue?> isSome)
         {
-            return new MaybeStruct<TValue>(input, hasValue);
-        }
+            Guard.IsNotNull(isSome, nameof(isSome));
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<TValue>(this TValue input, Predicate<TValue> predicate)
-            where TValue : struct
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            return new MaybeStruct<TValue>(input, predicate(input));
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, TValue defaultValue)
-            where T : struct, IMaybe<TValue>
-            where TValue : struct
-        {
-            return new MaybeStruct<TValue>(input.Access(), defaultValue);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, bool hasValue)
-            where T : struct, IMaybe<TValue>
-            where TValue : struct
-        {
-            return new MaybeStruct<TValue>(input.Access(), hasValue);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaybeStruct<TValue> Maybe<T, TValue>(this T input, Predicate<TValue> predicate)
-            where T : struct, IMaybe<TValue>
-            where TValue : struct
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
-
-            return new MaybeStruct<TValue>(input.Access(), predicate(input.Access()));
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Catched<TValue> Catch<TValue>(this TValue source,
-            LogType logType = LogType.Log)
-        {
-            return new Catched<TValue>(source, logType);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Catched<TValue> Catch<T, TValue>(this T source,
-            LogType logType = LogType.Log)
-            where T : struct, IMaybe<TValue>
-        {
-            return new Catched<TValue>(source.Access(), logType);
+            return new Maybe<TValue>(source, isSome);
         }
 
         [DebuggerStepThrough]

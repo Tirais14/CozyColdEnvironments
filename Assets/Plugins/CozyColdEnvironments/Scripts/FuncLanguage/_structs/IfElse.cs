@@ -312,10 +312,6 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Catch() => target;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Either<T, R> Either<R>(R? right) => (target, right);
 
         public readonly IEnumerator<T> GetEnumerator()

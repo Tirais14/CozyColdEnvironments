@@ -180,7 +180,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             if (collection.TryGetValue(key, out TAsset asset)
                 ||
-                new Maybe<TAsset>(FindAsset(key).Access()!).TryAccess(out asset!)
+                new Maybe<TAsset>(FindAsset(key).GetValue()!).TryGetValue(out asset!)
                 )
                 return asset;
 

@@ -38,7 +38,7 @@ namespace CCEnvs.Unity.Interactables
             foreach (var item in from agent in otherAgents
                                  select agent.FindFor().Component<IInteractable>().Lax() into ible
                                  where ible.IsSome
-                                 select ible.AccessUnsafe())
+                                 select ible.GetValueUnsafe())
             {
                 yield return item;
             }

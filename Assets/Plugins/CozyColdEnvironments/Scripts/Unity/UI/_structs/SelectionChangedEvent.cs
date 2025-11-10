@@ -48,8 +48,8 @@ namespace CCEnvs.Unity.UI
         public readonly Maybe<TKey> newKey;
         public readonly Maybe<TValue> newValue;
 
-        public KeyValuePair<TKey, Maybe<TValue>> PreviousSelection => new(previousKey.Access()!, previousValue);
-        public KeyValuePair<TKey, Maybe<TValue>> NewSelection => new(newKey.Access()!, newValue); 
+        public KeyValuePair<TKey, Maybe<TValue>> PreviousSelection => new(previousKey.GetValue()!, previousValue);
+        public KeyValuePair<TKey, Maybe<TValue>> NewSelection => new(newKey.GetValue()!, newValue); 
 
         public SelectionChangedEvent(
             TKey? previousKey,

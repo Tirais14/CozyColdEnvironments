@@ -75,10 +75,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return Values.ZL()
                 .FirstOrDefault(
                     db => key.DatabaseID.Map(id => db.ID == id)
-                        .Access(true)
+                        .GetValue(true)
                         &&
                     key.AssetType.Map(type => type == key.AssetType)
-                        .Access(true)
+                        .GetValue(true)
                         )!.Maybe();
         }
 
@@ -109,16 +109,16 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             if (collection.TryGetValue(dbKey, out IAddressablesDatabase db)
                 &&
-                new Catched<Object>(() => db[key]).Access() is Object asset
+                new Catched().Do(() => db[key]).GetValue() is Object asset
                 )
                 return asset;
 
-            return FindDatabase(dbKey).Map(db => db.FindAsset(key).Access()!);
+            return FindDatabase(dbKey).Map(db => db.FindAsset(key).GetValue()!);
         }
 
         public Maybe<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
         {
-            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()).Access();
+            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()).GetValue();
         }
 
         public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)

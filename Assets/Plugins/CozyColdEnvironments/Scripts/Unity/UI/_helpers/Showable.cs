@@ -30,7 +30,7 @@ namespace CCEnvs.Unity.UI
                 foreach (var child in from go in gameObject.FindFor().ExcludeSelf().ChildrenGameObjects()
                                       select go.FindFor().Component<IShowable>().Lax() into cmp
                                       where cmp.IsSome
-                                      select cmp.AccessUnsafe())
+                                      select cmp.GetValueUnsafe())
                 {
                     child.Show(settings & ~IShowable.Settings.Recursive);
                 }
@@ -57,7 +57,7 @@ namespace CCEnvs.Unity.UI
                     if (child.FindFor()
                              .Component<IShowable>()
                              .Lax()
-                             .TryAccess(out var showable)
+                             .TryGetValue(out var showable)
                        &&
                        showable.IsVisible)
                     {

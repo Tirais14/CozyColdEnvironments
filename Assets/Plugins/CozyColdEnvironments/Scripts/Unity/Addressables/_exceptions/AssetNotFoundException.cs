@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.AddrsAssets
         }
         public AssetNotFoundException(AssetKey key, bool ignoreCase = false, Exception? innerException = null)
             :
-            this(key.AssetName.Access(), ignoreCase, innerException)
+            this(key.AssetName.GetValue(), ignoreCase, innerException)
         {
         }
 

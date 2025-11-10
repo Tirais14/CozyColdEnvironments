@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.UI.Storages
     public interface IInventoryViewModel<T> : IViewModel<T>
         where T : IInventory
     {
-        IReadOnlyReactiveProperty<MaybeStruct<int>> ActiveContainerID { get; }
+        IReadOnlyReactiveProperty<Maybe<int>> ActiveContainerID { get; }
 
         IObservable<GameObject> ObserveAddContainer();
 

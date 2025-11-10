@@ -246,7 +246,7 @@ namespace CCEnvs.Unity
                         .Select(go => ComponentsInternal(go, type))
                         .SelectMany(x => x);
                 })
-                .AccessUnsafe();
+                .GetValueUnsafe();
         }
 
         [DebuggerStepThrough]
@@ -313,7 +313,7 @@ namespace CCEnvs.Unity
 
             return from view in Views(type)
                    select view.viewModel into viewModel
-                   where anyType || viewModel.IsIntanceOfType(type!)
+                   where anyType || viewModel.IsInstanceOfType(type!)
                    select viewModel;
         }
 
@@ -352,8 +352,8 @@ namespace CCEnvs.Unity
 
             var results = from obj in Components()
                           select (obj, view: obj.AsOrDefault<IView>()) into x
-                          select x.view.Map(y => y.model).Access(x.obj) into obj
-                          where anyType || obj.IsIntanceOfType(type!)
+                          select x.view.Map(y => y.model).GetValue(x.obj) into obj
+                          where anyType || obj.IsInstanceOfType(type!)
                           select obj;
 
             return results;
@@ -433,7 +433,7 @@ namespace CCEnvs.Unity
                                    .Component<RootMarker>()
                                    .Lax();
 
-            return (marker.Map(x => x.transform).Access(Target.AccessUnsafe().transform.root), marker.Raw);
+            return (marker.Map(x => x.transform).GetValue(Target.GetValueUnsafe().transform.root), marker.Raw);
         }
 
         [DebuggerStepThrough]
@@ -446,7 +446,7 @@ namespace CCEnvs.Unity
                     Left: l => l)
                 .Access()
                 .AsOrDefault<Transform>()
-                .Access(Target.AccessUnsafe().transform);
+                .GetValue(Target.GetValueUnsafe().transform);
         }
 
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
@@ -474,15 +474,15 @@ namespace CCEnvs.Unity
                 results = findMode switch
                 {
                     FindMode.Self => target.Components()
-                                           .Where(cmp => anyType || cmp.IsIntanceOfType(type!)),
+                                           .Where(cmp => anyType || cmp.IsInstanceOfType(type!)),
 
                     FindMode.InChilds => ByChildren().GameObjects()
                                                      .SelectMany(x => x.Components())
-                                                     .Where(x => anyType || x.IsIntanceOfType(type!)),
+                                                     .Where(x => anyType || x.IsInstanceOfType(type!)),
 
                     FindMode.InParents => ByParent().GameObjects()
                                                     .SelectMany(x => x.Components())
-                                                    .Where(x => anyType || x.IsIntanceOfType(type!)),
+                                                    .Where(x => anyType || x.IsInstanceOfType(type!)),
 
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };

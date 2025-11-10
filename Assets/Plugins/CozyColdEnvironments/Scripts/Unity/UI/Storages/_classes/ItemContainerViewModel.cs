@@ -43,7 +43,7 @@ namespace CCEnvs.Unity.UI.Storages
             model.ObserveItem()
                 .SubscribeWithState(itemIcon,
                     static (x, prop) => prop.Value = x.Map(item => item.Icon)
-                        .Access(UCC.TranparentSprite.Value))
+                        .GetValue(UCC.TranparentSprite.Value))
                 .AddTo(disposables);
 
             itemIcon.AddTo(disposables);

@@ -17,7 +17,7 @@ namespace CCEnvs.U2D.Locations
     {
         [SerializeField]
         [Tooltip("If HasValue == false - use Tilemap.cellBounds")]
-        protected MaybeStruct<SerializedBoundsInt> _bounds;
+        protected Maybe<SerializedBoundsInt> _bounds;
 
         private MapInt<T> cells;
 
@@ -30,7 +30,7 @@ namespace CCEnvs.U2D.Locations
 
         public BoundsInt Bounds {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _bounds.Map(x => (BoundsInt)x).Access(Map.cellBounds);
+            get => _bounds.Map(x => (BoundsInt)x).GetValue(Map.cellBounds);
         }
 
         public T this[Vector3Int pos] {

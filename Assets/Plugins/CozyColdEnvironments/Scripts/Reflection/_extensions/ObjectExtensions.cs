@@ -6,7 +6,7 @@ namespace CCEnvs.Reflection
 {
     public static class ObjectExtensions
     {
-        public static bool IsIntanceOfType<T>(this T? value,
+        public static bool IsInstanceOfType<T>(this T? value,
             Type other,
             TypeMatchingSettings typeMatchingSettings = TypeMatchingSettings.Default)
         {
@@ -20,7 +20,7 @@ namespace CCEnvs.Reflection
             Type other,
             TypeMatchingSettings typeMatchingSettings = TypeMatchingSettings.Default)
         {
-            return !value.IsIntanceOfType(other, typeMatchingSettings);
+            return !value.IsInstanceOfType(other, typeMatchingSettings);
         }
     }
 }

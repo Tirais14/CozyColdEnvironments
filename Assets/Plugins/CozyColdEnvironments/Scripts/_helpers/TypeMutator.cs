@@ -34,12 +34,12 @@ namespace CCEnvs.Conversations
                 return input;
 
             var converted = ConvertByDefaultConverter(input, toType).Resolve()
-                .Else(() => ConvertByInterface(input).Access()!)
-                .Else(() => ConvertByOverloadedCastOperator(input, inputType, toType).Access()!)
-                .Else(() => ConvertByCustomConverter(input, inputType, toType).Access()!)
-                .Else(() => CreateByReflection(input, toType).Access()!)
+                .Else(() => ConvertByInterface(input).GetValue()!)
+                .Else(() => ConvertByOverloadedCastOperator(input, inputType, toType).GetValue()!)
+                .Else(() => ConvertByCustomConverter(input, inputType, toType).GetValue()!)
+                .Else(() => CreateByReflection(input, toType).GetValue()!)
                 .Else(() => throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}."))
-                .AccessUnsafe();
+                .GetValueUnsafe();
 
             return converted;
         }
@@ -52,21 +52,21 @@ namespace CCEnvs.Conversations
 
         private static Maybe<object> ConvertByDefaultConverter(object input, Type toType)
         {
-            return new Catched<object>(() => Convert.ChangeType(input, toType)).Access();
+            return new Catched().Do(() => Convert.ChangeType(input, toType));
         }
 
         private static Maybe<object> ConvertByOverloadedCastOperator(object input, Type fromType, Type toType)
         {
             return toType.GetOverloadedCastOperator(fromType)
                          .IfSome(x => x.Invoke(null, Range.From(input)))
-                         .Access();
+                         .GetValue();
         }
 
         private static Maybe<object> ConvertByInterface(object input)
         {
             return input.AsOrDefault<IMutable>()
                         .Map(x => x.MutateType())
-                        .Access();
+                        .GetValue();
         }
 
         private static Maybe<object> ConvertByCustomConverter(object input, Type fromType, Type toType)
@@ -80,7 +80,7 @@ namespace CCEnvs.Conversations
                 .Method()
                 .Lax()
                 .IfSome(m => m.Invoke(null, Range.From(input)))
-                .Access();
+                .GetValue();
         }
 
         private static Maybe<object> CreateByReflection(object arg, Type toType)
@@ -90,7 +90,7 @@ namespace CCEnvs.Conversations
                        .Constructor()
                        .Lax()
                        .Map(m => m.Invoke(Range.From(arg)))
-                       .Access();
+                       .GetValue();
         }
     }
 }

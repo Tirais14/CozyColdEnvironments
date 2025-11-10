@@ -57,7 +57,7 @@ namespace CCEnvs.Files.Json
 
         public T? Deserialize<T>(JsonSerializerSettings? settings = null)
         {
-            return Deserialize(typeof(T), settings).AsOrDefault<T>().Access();
+            return Deserialize(typeof(T), settings).AsOrDefault<T>().GetValue();
         }
     }
 }

@@ -13,9 +13,9 @@ namespace CCEnvs.Unity.UI.Storages
     public class InventoryViewModel<T> : ViewModel<T>, IInventoryViewModel<T>
         where T : IInventory
     {
-        private readonly ReactiveProperty<MaybeStruct<int>> activeContainerID = new();
+        private readonly ReactiveProperty<Maybe<int>> activeContainerID = new();
 
-        public IReadOnlyReactiveProperty<MaybeStruct<int>> ActiveContainerID => activeContainerID;
+        public IReadOnlyReactiveProperty<Maybe<int>> ActiveContainerID => activeContainerID;
         public override bool ModelMutable => true;
 
         public InventoryViewModel(T model, GameObject gameObject) 
@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.UI.Storages
             return from added in model.ObserveAddContainer()
                    select added.value.gameObject into go
                    where go.IsSome
-                   select go.AccessUnsafe() into go
+                   select go.GetValueUnsafe() into go
                    select go.FindFor().RootTransform().gameObject;
         }
 
@@ -49,7 +49,7 @@ namespace CCEnvs.Unity.UI.Storages
             return from added in model.ObserveRemoveContainer()
                    select added.value.gameObject into go
                    where go.IsSome
-                   select go.AccessUnsafe() into go
+                   select go.GetValueUnsafe() into go
                    select go.FindFor().RootTransform().gameObject;
         }
 

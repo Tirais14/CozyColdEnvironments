@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace CCEnvs.FuncLanguage
             Guard.IsNotNull(action, nameof(action));
 
             if (input.IsSome)
-                action(input.AccessUnsafe());
+                action(input.GetValueUnsafe());
 
             return input;
         }
@@ -40,7 +39,7 @@ namespace CCEnvs.FuncLanguage
         {
             Guard.IsNotNull(factory, nameof(factory));
 
-            L? left = input.Access();
+            L? left = input.GetValue();
             R? right = factory();
 
             return (left, right);
@@ -53,7 +52,7 @@ namespace CCEnvs.FuncLanguage
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return input.IsSome ? selector(input.AccessUnsafe()) : default!;
+            return input.IsSome ? selector(input.GetValueUnsafe()) : global::CCEnvs.FuncLanguage.Maybe<TOutValue>.None;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,7 +65,7 @@ namespace CCEnvs.FuncLanguage
             Guard.IsNotNull(none, nameof(none));
 
             if (input.IsSome)
-                some(input.AccessUnsafe());
+                some(input.GetValueUnsafe());
             else
                 none();
 
@@ -82,24 +81,24 @@ namespace CCEnvs.FuncLanguage
             Guard.IsNotNull(none, nameof(none));
 
             if (input.IsSome)
-                return some(input.AccessUnsafe());
+                return some(input.GetValueUnsafe());
             else
                 return none();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ItIs<T, TValue>(T input,
+        public static bool Contains<T, TValue>(T input,
             TValue? value,
             IEqualityComparer<TValue?>? comparer = null)
             where T : struct, IConditional<TValue>
         {
             comparer ??= EqualityComparer<TValue?>.Default;
 
-            return comparer.Equals(input.AccessUnsafe(), value);
+            return comparer.Equals(input.GetValueUnsafe(), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ItIs<T, TValue>(T input, Predicate<TValue> predicate)
+        public static bool Contains<T, TValue>(T input, Predicate<TValue> predicate)
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
@@ -107,32 +106,32 @@ namespace CCEnvs.FuncLanguage
 
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            return predicate(AccessUnsafe<T, TValue>(input));
+            return predicate(GetValueUnsafe<T, TValue>(input));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue Access<T, TValue>(T input, TValue defaultValue)
+        public static TValue GetValue<T, TValue>(T input, TValue defaultValue)
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
                 return defaultValue;
 
-            return input.AccessUnsafe();
+            return input.GetValueUnsafe();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue Access<T, TValue>(T input, Func<TValue> defaultValueFactory)
+        public static TValue GetValue<T, TValue>(T input, Func<TValue> defaultValueFactory)
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
                 return defaultValueFactory();
 
-            return input.AccessUnsafe();
+            return input.GetValueUnsafe();
         }
 
-        public static bool TryAccess<T, TValue>(T input, out TValue? result)
+        public static bool TryGetValue<T, TValue>(T input, out TValue? result)
             where T : struct, IConditional<TValue>
         {
-            result = input.Access();
+            result = input.GetValue();
 
             return input.IsSome;
         }
@@ -142,10 +141,8 @@ namespace CCEnvs.FuncLanguage
             return input.Access() switch
             {
                 Maybe<TValue> maybe => Unfold<Maybe<TValue>, TValue, TOutValue>(maybe),
-                Catched<TValue> catched => Unfold<Catched<TValue>, TValue, TOutValue>(catched),
                 IMaybe<TValue> untyped => Unfold<TValue, TOutValue>(untyped),
-                Maybe<TOutValue> maybe => maybe.Access(),
-                Catched<TOutValue> catched => catched.Access(),
+                Maybe<TOutValue> maybe => maybe.GetValue(),
                 IMaybe<TOutValue> untyped => Unfold<TValue, TOutValue>(untyped),
                 TOutValue value => value,
                 _ => default
@@ -155,13 +152,11 @@ namespace CCEnvs.FuncLanguage
         public static Maybe<TOutValue> Unfold<T, TValue, TOutValue>(T input)
             where T : struct, IConditional<TValue>
         {
-            return input.Access() switch
+            return input.GetValue() switch
             {
                 Maybe<TValue> maybe => Unfold<Maybe<TValue>, TValue, TOutValue>(maybe),
-                Catched<TValue> catched => Unfold<Catched<TValue>, TValue, TOutValue>(catched),
                 IMaybe<TValue> untyped => Unfold<TValue, TOutValue>(untyped),
-                Maybe<TOutValue> maybe => maybe.Access(),
-                Catched<TOutValue> catched => catched.Access(),
+                Maybe<TOutValue> maybe => maybe.GetValue(),
                 IMaybe<TOutValue> untyped => Unfold<TValue, TOutValue>(untyped),
                 TOutValue value => value,
                 _ => default
@@ -182,7 +177,7 @@ namespace CCEnvs.FuncLanguage
         public static Either<L, R> Cast<T, L, R>(T input)
             where T : struct, IConditional<L>
         {
-            L? left = input.Access();
+            L? left = input.GetValue();
             R? right = (R?)left.AsOrDefault<R>();
 
             return (left, right);
@@ -194,7 +189,7 @@ namespace CCEnvs.FuncLanguage
         {
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            if (input.IsSome && predicate(input.AccessUnsafe()))
+            if (input.IsSome && predicate(input.GetValueUnsafe()))
                 return input;
 
             return default!;
@@ -208,7 +203,7 @@ namespace CCEnvs.FuncLanguage
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            L? left = input.Access();
+            L? left = input.GetValue();
             R? right = default;
 
             if (input.IsSome)

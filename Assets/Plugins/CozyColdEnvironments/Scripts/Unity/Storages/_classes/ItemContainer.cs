@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.Storages
                 if (UnlockCapacity)
                     return int.MaxValue;
 
-                return Mathf.Min(item.Value.Map(item => item.MaxItemCount).Access(int.MaxValue), capacity);
+                return Mathf.Min(item.Value.Map(item => item.MaxItemCount).GetValue(int.MaxValue), capacity);
             }
             set
             {
@@ -101,7 +101,7 @@ namespace CCEnvs.Unity.Storages
             if (!ContainsItem())
                 return false;
 
-            return Item.ItIs(item);
+            return Item.Contains(item);
         }
         public bool ContainsItem(IItem? item, int count)
         {
@@ -141,8 +141,8 @@ namespace CCEnvs.Unity.Storages
 
             return itemContainer.TakeItem(count)
                 .Map(cnt => PutItem(
-                    cnt.Item.Access(),
-                    cnt.ItemCount).Access()
+                    cnt.Item.GetValue(),
+                    cnt.ItemCount).GetValue()
                     );
         }
 
@@ -161,7 +161,7 @@ namespace CCEnvs.Unity.Storages
             int taked = Math.Clamp(count, 1, ItemCount);
             itemCount.Value -= taked;
 
-            var result = new ItemContainer(Item.Access(), taked);
+            var result = new ItemContainer(Item.GetValue(), taked);
 
             if (itemCount.Value <= 0)
                 Clear();
@@ -181,7 +181,7 @@ namespace CCEnvs.Unity.Storages
 
         public IItemContainer ShallowClone()
         {
-            return new ItemContainer(Item.Access(), ItemCount);
+            return new ItemContainer(Item.GetValue(), ItemCount);
         }
 
         public void CopyFrom(IItemContainerInfo itemContainer)
@@ -197,14 +197,14 @@ namespace CCEnvs.Unity.Storages
             itemCount.Value = 0;
         }
 
-        public MaybeStruct<int> GetContainerID()
+        public Maybe<int> GetContainerID()
         {
             return parentInventory.Map(x => x.GetContainerID(this)).Raw;
         }
 
         public override string ToString()
         {
-            return $"{nameof(Item)}: {Item.Map(x => x.ToString()).Access("null")}; {nameof(ItemCount)}: {ItemCount}.";
+            return $"{nameof(Item)}: {Item.Map(x => x.ToString()).GetValue("null")}; {nameof(ItemCount)}: {ItemCount}.";
         }
 
         public void ActivateContainer()
@@ -220,7 +220,7 @@ namespace CCEnvs.Unity.Storages
 
             isActiveContainer.Value = true;
 
-            this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
+            this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
         public void DeactivateContainer()
@@ -228,7 +228,7 @@ namespace CCEnvs.Unity.Storages
             isActiveContainer.Value = false;
             parentInventory.IfSome(inv => inv.ActiveContainer = null);
 
-            this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).Access("null")}");
+            this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
         public IObservable<bool> ObserveIsActiveContainer() => isActiveContainer;

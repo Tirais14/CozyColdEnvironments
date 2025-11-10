@@ -6,139 +6,59 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.FuncLanguage
 {
-    public partial struct Catched<T> : IConditional<T, Catched<T>>
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Access() => target;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(T defaultValue)
-        {
-            return Lang.Access(this, defaultValue);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(Func<T> defaultValueFactory)
-        {
-            return Lang.Access(this, defaultValueFactory);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
-        {
-            return Lang.TryAccess(this, out result);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T AccessUnsafe()
-        {
-            return Lang.AccessUnsafe<Catched<T>, T>(this);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(T? value)
-        {
-            return Lang.ItIs(this, value);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(Predicate<T> predicate)
-        {
-            return Lang.ItIs(this, predicate);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
-        {
-            return Lang.CheckUnsafe(this, predicate);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Apply(T? value) => value!;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Cast<R>()
-        {
-            return Lang.Cast<Catched<T>, T, R>(this);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> Where(Predicate<T> predicate)
-        {
-            return Lang.Where(this, predicate);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Select<R>(Func<T, R> selector)
-        {
-            return Lang.Select(this, selector);
-        }
-    }
-
     public partial struct Maybe<T> : IConditional<T, Maybe<T>>
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Access() => target;
+        public readonly T? GetValue() => target;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly T Access(T defaultValue)
+        public readonly T GetValue(T defaultValue)
         {
-            return Lang.Access(this, defaultValue);
+            return Lang.GetValue(this, defaultValue);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(Func<T> defaultValueFactory)
+        public readonly T GetValue(Func<T> defaultValueFactory)
         {
-            return Lang.Access(this, defaultValueFactory);
+            return Lang.GetValue(this, defaultValueFactory);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
+        public readonly bool TryGetValue([NotNullWhen(true)] out T? result)
         {
-            return Lang.TryAccess(this, out result);
+            return Lang.TryGetValue(this, out result);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T AccessUnsafe()
+        public readonly T GetValueUnsafe()
         {
-            return Lang.AccessUnsafe<Maybe<T>, T>(this);
+            return Lang.GetValueUnsafe<Maybe<T>, T>(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly bool ItIs(T? value)
+        public readonly bool Contains(T? value)
         {
-            return Lang.ItIs(this, value);
+            return Lang.Contains(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly bool ItIs(Predicate<T> predicate)
+        public readonly bool Contains(Predicate<T> predicate)
         {
-            return Lang.ItIs(this, predicate);
+            return Lang.Contains(this, predicate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
+        public readonly bool ContainsUnsafe(Predicate<T?> predicate)
         {
-            return Lang.CheckUnsafe(this, predicate);
+            return Lang.ContainsUnsafe(this, predicate);
         }
 
         [DebuggerStepThrough]
@@ -167,143 +87,59 @@ namespace CCEnvs.FuncLanguage
         }
     }
 
-    public partial struct MaybeStruct<T> : IConditional<T, MaybeStruct<T>>
-    {
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access() => target;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(T defaultValue)
-        {
-            return Lang.Access(this, defaultValue);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(Func<T> defaultValueFactory)
-        {
-            return Lang.Access(this, defaultValueFactory);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccess([NotNullWhen(true)] out T result)
-        {
-            return Lang.TryAccess(this, out result);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T AccessUnsafe()
-        {
-            return Lang.AccessUnsafe<MaybeStruct<T>, T>(this);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(T value)
-        {
-            return Lang.ItIs(this, value);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(Predicate<T> predicate)
-        {
-            return Lang.ItIs(this, predicate);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIsUnsafe(Predicate<T> predicate)
-        {
-            return Lang.CheckUnsafe(this, predicate);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MaybeStruct<T> Apply(T value)
-        {
-            return value;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Cast<R>()
-        {
-            return Lang.Cast<MaybeStruct<T>, T, R>(this);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MaybeStruct<T> Where(Predicate<T> predicate)
-        {
-            return Lang.Where(this, predicate);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Select<R>(Func<T, R> selector)
-        {
-            return Lang.Select(this, selector);
-        }
-    }
-
     public partial struct IfElse<T> : IConditional<T, IfElse<T>>
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access() => target;
+        public readonly T GetValue() => target;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(T defaultValue)
+        public readonly T GetValue(T defaultValue)
         {
-            return Lang.Access(this, defaultValue);
+            return Lang.GetValue(this, defaultValue);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T Access(Func<T> defaultValueFactory)
+        public readonly T GetValue(Func<T> defaultValueFactory)
         {
-            return Lang.Access(this, defaultValueFactory);
+            return Lang.GetValue(this, defaultValueFactory);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccess([NotNullWhen(true)] out T? result)
+        public readonly bool TryGetValue([NotNullWhen(true)] out T? result)
         {
-            return Lang.TryAccess(this, out result);
+            return Lang.TryGetValue(this, out result);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T AccessUnsafe()
+        public readonly T GetValueUnsafe()
         {
-            return Lang.AccessUnsafe<IfElse<T>, T>(this);
+            return Lang.GetValueUnsafe<IfElse<T>, T>(this);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(T? value)
+        public readonly bool Contains(T? value)
         {
-            return Lang.ItIs(this, value);
+            return Lang.Contains(this, value);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIs(Predicate<T> predicate)
+        public readonly bool Contains(Predicate<T> predicate)
         {
-            return Lang.ItIs(this, predicate);
+            return Lang.Contains(this, predicate);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ItIsUnsafe(Predicate<T?> predicate)
+        public readonly bool ContainsUnsafe(Predicate<T?> predicate)
         {
-            return Lang.CheckUnsafe(this, predicate);
+            return Lang.ContainsUnsafe(this, predicate);
         }
 
         [DebuggerStepThrough]

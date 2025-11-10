@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
+using Humanizer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +11,6 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using ZLinq;
-using static CCEnvs.FuncLanguage.LangOperator;
 
 #pragma warning disable S3236
 #nullable enable
@@ -25,10 +25,7 @@ namespace CCEnvs.Unity.Storages
         private Subject<(int id, IItemContainer value)>? removeSubj;
         private int nextSlotID;
 
-        public IItemContainer this[int id] => Catch(() => collection[id]).Match(
-                                                      some: cnt => cnt,
-                                                      none: () => ItemContainer.Empty)
-                                                  .AccessUnsafe();
+        public IItemContainer this[int id] => collection[id];
 
         public event Action<(int id, IItemContainer value)>? OnAdd;
         public event Action<(int id, IItemContainer value)>? OnRemove;
@@ -238,7 +235,7 @@ namespace CCEnvs.Unity.Storages
         {
             if (item.IsNull() || count <= 0)
             {
-                this.PrintLog($"Item: {item.Maybe().Map(x => x!.ToString()).Access("null")}, count: {count}. Is not added.");
+                this.PrintLog($"Item: {item.Maybe().Map(x => x!.ToString()).GetValue("null")}, count: {count}. Is not added.");
                 return null!;
             }
 
@@ -254,7 +251,7 @@ namespace CCEnvs.Unity.Storages
 
                 this.PrintLog($"Item: {item}, count: {count}, item container id: {cnt.Key}. Is added.");
 
-                rest = restItems.Map(x => x.ItemCount).Access(0);
+                rest = restItems.Map(x => x.ItemCount).GetValue(0);
 
                 if (rest <= 0)
                     break;
@@ -275,7 +272,7 @@ namespace CCEnvs.Unity.Storages
         {
             return (from cnt in itemContainer.TakeItem(count)
                     where cnt.Item.IsSome
-                    let item = cnt.Item.AccessUnsafe()
+                    let item = cnt.Item.GetValueUnsafe()
                     select (cnt, rest: PutItem(item, count)))
                     .IfRight(x => x.rest.IfSome(
                         rest => itemContainer.PutItem(rest)).Raw)
@@ -286,7 +283,7 @@ namespace CCEnvs.Unity.Storages
         [DebuggerStepThrough]
         public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
         {
-            return PutItem(itemContainer.Item.Access(), itemContainer.ItemCount);
+            return PutItem(itemContainer.Item.GetValue(), itemContainer.ItemCount);
         }
 
         public Maybe<IItemContainer> TakeItem(IItem item, int count)
@@ -299,7 +296,7 @@ namespace CCEnvs.Unity.Storages
             foreach (var cnt in collection.Values.ZL().Where(x => x.ContainsItem(item)))
             {
                 taked = cnt.TakeItem(count);
-                count -= taked.AccessUnsafe().ItemCount;
+                count -= taked.GetValueUnsafe().ItemCount;
 
                 if (count <= 0)
                     break;
@@ -310,7 +307,7 @@ namespace CCEnvs.Unity.Storages
 
         public bool IsContainerActive(int id)
         {
-            return ActiveContainer.Map(cnt => cnt.GetContainerID()).ItIs(cntID => cntID == id);
+            return ActiveContainer.Map(cnt => cnt.GetContainerID()).Contains(cntID => cntID == id);
         }
 
         public bool IsContainerActive(IItemContainer itemContainer)
@@ -322,12 +319,11 @@ namespace CCEnvs.Unity.Storages
 
         public void ActivateContainer(int id)
         {
-            if (activeContainer.Value.ItIs(x => x.GetContainerID() == id))
+            if (activeContainer.Value.Contains(x => x.GetContainerID() == id))
                 return;
 
-            Catch(() => this[id]).Match(
-                some: cnt => cnt.ActivateContainer(),
-                none: () => this.PrintError($"Cannot find {nameof(ItemContainer)} with id: {id}"));
+            new Catched(onError: (_, _) => this.PrintError($"Cannot find {nameof(ItemContainer)} with id: {id}"))
+                .Do(this, id, static (@this, id) => @this[id].ActivateContainer());
         }
 
         public void DeactivateContainer()
@@ -343,14 +339,14 @@ namespace CCEnvs.Unity.Storages
             return this[id].SwitchContainerActiveState();
         }
 
-        public MaybeStruct<int> GetContainerID(IItemContainer itemContainer)
+        public Maybe<int> GetContainerID(IItemContainer itemContainer)
         {
             Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             return collection.FirstOrDefault(x => x.Value.Equals(itemContainer))
                              .Maybe()
                              .Map(x => x.Key.Maybe(x => x >= 0))
-                             .Access();
+                             .GetValue();
         }
 
         public IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer() => activeContainer;
@@ -382,7 +378,7 @@ namespace CCEnvs.Unity.Storages
 
         Maybe<IItemContainer> IItemAccessor.TakeItem() => null!;
 
-        MaybeStruct<int> IItemContainerInfoItemless.GetContainerID() => (-1, false);
+        Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 
         void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
         {

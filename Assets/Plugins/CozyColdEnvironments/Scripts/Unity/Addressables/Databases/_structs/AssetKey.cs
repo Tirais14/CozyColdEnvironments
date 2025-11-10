@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             AssetName = asset.name;
 
             if (asset is IIDMarked idMarked)
-                AssetID = idMarked.ID.AsOrDefault<int>().Access();
+                AssetID = idMarked.ID.AsOrDefault<int>().GetValue();
         }
 
         public static bool operator ==(AssetKey left, AssetKey right)
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
         public AssetKey With(int assetID)
         {
-            return new AssetKey(AssetName.Access(), assetID);
+            return new AssetKey(AssetName.GetValue(), assetID);
         }
 
         public bool Equals(AssetKey other)

@@ -1,6 +1,5 @@
 using CCEnvs.FuncLanguage;
 using System;
-using UniRx;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -19,7 +18,7 @@ namespace CCEnvs.Unity.Storages
         bool ContainsItem(IItem? item);
         bool ContainsItem(IItem? item, int count);
 
-        MaybeStruct<int> GetContainerID();
+        Maybe<int> GetContainerID();
 
         void ActivateContainer();
 

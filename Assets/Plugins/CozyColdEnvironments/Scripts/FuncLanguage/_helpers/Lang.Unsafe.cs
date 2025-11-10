@@ -16,26 +16,26 @@ namespace CCEnvs.FuncLanguage
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return selector(source.Access()!);
+            return selector(source.GetValue()!);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
+        public static bool ContainsUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
             where T : struct, IConditional<TValue>
         {
             Guard.IsNotNull(predicate, nameof(predicate));
 
-            return predicate(source.Access());
+            return predicate(source.GetValue());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue AccessUnsafe<T, TValue>(T source)
+        public static TValue GetValueUnsafe<T, TValue>(T source)
             where T : struct, IConditional<TValue>
         {
             if (source.IsNone)
                 throw new ValueIsNoneException();
 
-            return source.Access()!;
+            return source.GetValue()!;
         }
     }
 }

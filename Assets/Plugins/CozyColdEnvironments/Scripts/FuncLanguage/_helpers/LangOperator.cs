@@ -14,13 +14,12 @@ namespace CCEnvs.FuncLanguage
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSome<T>(T obj) => obj.IsNotNull();
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSome<T>(T obj,
             T @default,
             IEqualityComparer<T>? comparer = null)
-
-            where T : struct
         {
             comparer ??= EqualityComparer<T>.Default;
 
@@ -54,13 +53,6 @@ namespace CCEnvs.FuncLanguage
         public static Either<object, T> Right<T>(T value)
         {
             return new Either<object, T>(null, value);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Catched<T> Catch<T>(Func<T> factory, LogType logType = LogType.Log)
-        {
-            return new Catched<T>(factory, logType);
         }
     }
 }

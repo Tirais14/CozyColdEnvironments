@@ -1,134 +1,317 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using static UnityEngine.GraphicsBuffer;
 
 #nullable enable
 #pragma warning disable S3236
 #pragma warning disable IDE1006
 namespace CCEnvs.FuncLanguage
 {
-    [Serializable]
-    public
-#if !UNITY_2017_1_OR_NEWER
-        readonly
-#endif
-        partial struct Catched<T> : IEquatable<Catched<T>>
+    public readonly partial struct Catched
     {
-#if UNITY_2017_1_OR_NEWER
-        [UnityEngine.SerializeField]
-        private T? target;
+        public readonly static Catched None = new();
 
-        [field: UnityEngine.SerializeField]
-        public bool IsSome { get; private set; }
-
-        [field: UnityEngine.SerializeField]
-        public LogType logType { get; private set; }
-#else
-        private readonly T? inner;
-
-        public readonly bool IsSome { get; }
+        private readonly Maybe<Type> exceptionType;
+        private readonly Action? action;
+        private readonly Action<Exception, LogType>? onError;
 
         public LogType logType { get; }
-#endif
 
-        public readonly bool IsNone => !IsSome;
-        public readonly T? Raw => target;
-
-        public Catched(T? value, LogType logType = LogType.Log)
-            :
-            this()
+        public Catched(Type? exceptionType = null,
+            LogType logType = LogType.Log,
+            Action? action = null, 
+            Action<Exception, LogType>? onError = null)
         {
-            target = value;
+            this.exceptionType = exceptionType;
             this.logType = logType;
-
-            IsSome = value.IsNotDefault();
+            this.action = action;
+            this.onError = onError;
         }
 
-        public Catched(Func<T> valueFactory, LogType logType = LogType.Log)
-            :
-            this()
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched WithExceptionType(Type? type)
         {
+            return (type, logType, action, onError);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched WithLogType(LogType logType)
+        {
+            return (exceptionType.Raw, logType, action, onError);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched WithAction(Action? action)
+        {
+            return (exceptionType.Raw, logType, action, onError);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched WithActionOnError(Action<Exception, LogType>? onErro)
+        {
+            return (exceptionType.Raw, logType, action, onError);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Catched((Type? exceptionType, LogType logType, Action? action, Action<Exception, LogType>? onError) input)
+        {
+            return new Catched(exceptionType: input.exceptionType,
+                logType: input.logType,
+                action: input.action,
+                onError: input.onError
+                );
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Catched((Type? exceptionType, LogType logType, Action? action) input)
+        {
+            return new Catched(exceptionType: input.exceptionType,
+                logType: input.logType,
+                action: input.action
+                );
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Catched((Type? exceptionType, LogType logType) input)
+        {
+            return new Catched(exceptionType: input.exceptionType,
+                logType: input.logType
+                );
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Catched(Type? exceptionType)
+        {
+            return new Catched(exceptionType: exceptionType);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Catched(LogType logType)
+        {
+            return new Catched(logType: logType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Catched Do()
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            if (action is null)
+            {
+                this.PrintWarning("Action is null");
+                return this;
+            }
+
             try
             {
-                target = valueFactory();
-                this.logType = logType;
-
-                IsSome = target.IsNotDefault();
+                action();
             }
             catch (Exception ex)
             {
-                this.PrintDebug(ex, logType);
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
             }
-        }
 
-        public static bool operator ==(Catched<T> left, Catched<T> right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Catched<T> left, Catched<T> right)
-        {
-            return !(left == right);
-        }
-
-        public static implicit operator Catched<T>(T? source)
-        {
-            return new Catched<T>(source);
-        }
-
-        public static explicit operator T?(Catched<T> source)
-        {
-            return source.target;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Catched<T> With(LogType logType)
+        public readonly Catched Do(Action action)
         {
-            return new Catched<T>(target, logType);
+            Guard.IsNotNull(action, nameof(action));
+
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return this;
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Either<R>(R? right) => (target, right);
+        public readonly Catched Do<TArg>(TArg arg, Action<TArg> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
 
-        [DebuggerStepThrough]
+            try
+            {
+                action(arg);
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return this;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly IfElse<T> Resolve(Predicate<T>? predicate = null)
+        public readonly Catched Do<TArg, TArg1>(TArg arg,
+            TArg1 arg1,
+            Action<TArg, TArg1> action)
         {
-            return (target, predicate);
+            Guard.IsNotNull(action, nameof(action));
+
+            try
+            {
+                action(arg, arg1);
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return this;
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<T> Maybe() => target;
-
-        public readonly bool Equals(Catched<T> other)
+        public readonly Catched Do<TArg, TArg1, TArg2>(TArg arg,
+            TArg1 arg1,
+            TArg2 arg2,
+            Action<TArg, TArg1, TArg2> action)
         {
-            return EqualityComparer<T?>.Default.Equals(target, other.target);
-        }
-        public readonly override bool Equals(object obj)
-        {
-            return obj is Catched<T> typed && Equals(typed);
-        }
+            Guard.IsNotNull(action, nameof(action));
 
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(target);
-        }
+            try
+            {
+                action(arg, arg1, arg2);
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
 
-        public readonly IEnumerator<T> GetEnumerator()
-        {
-            if (IsNone)
-                yield break;
+                OnError(ex);
+            }
 
-            yield return target!;
+            return this;
         }
 
-        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Do<TOut>(Func<TOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            try
+            {
+                return selector();
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return Maybe<TOut>.None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Do<TArg, TOut>(TArg arg,
+            Func<TArg, TOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            try
+            {
+                return selector(arg);
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return Maybe<TOut>.None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Do<TArg, TArg1, TOut>(TArg arg,
+            TArg1 arg1,
+            Func<TArg, TArg1, TOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            try
+            {
+                return selector(arg, arg1);
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return Maybe<TOut>.None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TOut> Do<TArg, TArg1, TArg2, TOut>(TArg arg,
+            TArg1 arg1,
+            TArg2 arg2,
+            Func<TArg, TArg1, TArg2, TOut> selector)
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            try
+            {
+                return selector(arg, arg1, arg2);
+            }
+            catch (Exception ex)
+            {
+                if (IsThrowAllowed(ex))
+                    throw;
+
+                OnError(ex);
+            }
+
+            return Maybe<TOut>.None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsThrowAllowed(Exception ex)
+        {
+            return exceptionType.Map(type => ex.IsInstanceOfType(type)).GetValue(true);
+        }
+
+        private void OnError(Exception ex)
+        {
+            if (onError is not null)
+                onError(ex, logType);
+            else
+                this.PrintDebug(ex, logType);
+        }
     }
 }

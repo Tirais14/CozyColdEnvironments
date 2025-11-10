@@ -48,7 +48,7 @@ namespace CCEnvs.Reflection
                 if (cachedBaseTypes.IsNone && member is Type t)
                     cachedBaseTypes = t.CollectBaseTypes().ToArray();
 
-                return cachedBaseTypes.Access(Type.EmptyTypes);
+                return cachedBaseTypes.GetValue(Type.EmptyTypes);
             }
         }
         public Maybe<Type[]> attributes { get; private set; }
@@ -461,7 +461,7 @@ namespace CCEnvs.Reflection
                            :
                            method;
                 })
-                .Access(t);
+                .GetValue(t);
         }
 
         [DebuggerStepThrough]
@@ -476,7 +476,7 @@ namespace CCEnvs.Reflection
         {
             MethodInfo method = Method().Strict();
 
-            var result = method.Invoke(target.Access(), arguments.Access(Type.EmptyTypes));
+            var result = method.Invoke(target.GetValue(), arguments.GetValue(Type.EmptyTypes));
 
             PrintMethodInvoked(method);
 
@@ -492,7 +492,7 @@ namespace CCEnvs.Reflection
         {
             ConstructorInfo ctor = Constructor().Strict();
 
-            var result = ctor.Invoke(arguments.Access(Type.EmptyTypes));
+            var result = ctor.Invoke(arguments.GetValue(Type.EmptyTypes));
 
             if (result.IsNull())
                 throw new CCException("Error while invoking constructor. Result is null.");
@@ -524,7 +524,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<object> GetFieldValue()
         {
-            return Field().Strict().GetValue(target.Access());
+            return Field().Strict().GetValue(target.GetValue());
         }
 
         [DebuggerStepThrough]
@@ -552,7 +552,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect SetFieldValue()
         {
-            Field().Strict().SetValue(target.Access(), arguments.Map(x => x.FirstOrDefault()).Access());
+            Field().Strict().SetValue(target.GetValue(), arguments.Map(x => x.FirstOrDefault()).GetValue());
 
             return this;
         }
@@ -561,7 +561,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<object> GetPropertyValue()
         {
-            return Property().Strict().GetValue(target.Access());
+            return Property().Strict().GetValue(target.GetValue());
         }
 
         [DebuggerStepThrough]
@@ -589,7 +589,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect SetPropertyValue()
         {
-            Property().Strict().SetValue(target.Access(), arguments.Map(x => x.FirstOrDefault()).Access());
+            Property().Strict().SetValue(target.GetValue(), arguments.Map(x => x.FirstOrDefault()).GetValue());
 
             return this;
         }
@@ -660,7 +660,7 @@ namespace CCEnvs.Reflection
             {
                 right = arguments.Map(x => x.FirstOrDefault())
                                  .Map(arg => arg.GetType())
-                                 .AccessUnsafe();
+                                 .GetValueUnsafe();
             }
 
             return right.Match(
@@ -704,7 +704,7 @@ namespace CCEnvs.Reflection
             Maybe<FieldInfo> field = member as FieldInfo;
             Maybe<PropertyInfo> prop = member as PropertyInfo;
 
-            Type underlyingType = field.Map(x => x.FieldType).Access(() => prop.AccessUnsafe().PropertyType);
+            Type underlyingType = field.Map(x => x.FieldType).GetValue(() => prop.GetValueUnsafe().PropertyType);
 
             if (!CompareName(member.Name))
                 return false;
@@ -720,7 +720,7 @@ namespace CCEnvs.Reflection
         {
             var parameters = method.GetParameters();
             ParameterModifier paramMods = parameters.GetParameterModifiers();
-            var argumentTypes = this.argumentTypes.Access(Type.EmptyTypes);
+            var argumentTypes = this.argumentTypes.GetValue(Type.EmptyTypes);
 
             if (!CompareName(method.Name))
                 return false;
@@ -738,7 +738,7 @@ namespace CCEnvs.Reflection
         {
             var parameters = ctor.GetParameters();
             ParameterModifier paramMods = parameters.GetParameterModifiers();
-            var argumentTypes = this.argumentTypes.Access(Type.EmptyTypes);
+            var argumentTypes = this.argumentTypes.GetValue(Type.EmptyTypes);
 
             if (!CompareAttributes(ctor))
                 return false;
@@ -750,7 +750,7 @@ namespace CCEnvs.Reflection
 
         private void PrintMethodInvoked(MethodBase methodBase)
         {
-            this.PrintLog($"{(methodBase is ConstructorInfo ? "Constructor" : "Method")} invoked: {methodBase}, argumentsTypes: {argumentTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma())}, genericArguments: {genericTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma()).Access(string.Empty)}.");
+            this.PrintLog($"{(methodBase is ConstructorInfo ? "Constructor" : "Method")} invoked: {methodBase}, argumentsTypes: {argumentTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma())}, genericArguments: {genericTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma()).GetValue(string.Empty)}.");
         }
     }
 
