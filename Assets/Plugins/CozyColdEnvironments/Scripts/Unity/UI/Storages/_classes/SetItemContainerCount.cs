@@ -1,5 +1,4 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Storages;
 using UnityEngine;
 
@@ -17,18 +16,48 @@ namespace CCEnvs.Unity.UI.Storages
 
         protected override void OnUpdate()
         {
-            if (prefab == null)
+            if (Application.isPlaying)
             {
-                this.PrintError("Item container prefab not found.");
-                return;
-            }
-            if (count <= 0)
-                return;
 
-            this.FindFor().Model<IInventory>().Lax().Match(
-                some: inv => inv.SetContainerCount(count, prefab),
-                none: () => this.PrintError("Not found inventory model.")
-                );
+                if (prefab == null)
+                {
+                    this.PrintError("Item container prefab not found.");
+                    return;
+                }
+                if (count <= 0)
+                    return;
+
+                this.Appeal().Model<IInventory>().Lax().Match(
+                    some: inv => inv.SetContainerCount(count, prefab),
+                    none: () => this.PrintError("Not found inventory model.")
+                    );
+            }
         }
+
+//#if UNITY_EDITOR
+//        private void OnValidate()
+//        {
+//            if (!Application.isPlaying)
+//            {
+//                if (prefab == null)
+//                {
+//                    this.PrintError("Not found prefab");
+//                    return;
+//                }
+//                var bag = this.AskFor().ByChildren().Component<GameObjectBag>().Raw;
+//                if (bag == null)
+//                {
+//                    this.PrintError($"Not found {nameof(GameObjectBag)}".Humanize());
+//                    return;
+//                }
+
+//                foreach (var go in bag.AskFor().ExcludeSelf().ChildrenGameObjects())
+//                    DestroyImmediate(go);
+
+//                for (int i = 0; i < count; i++)
+//                    Instantiate(prefab).transform.SetParent(bag.transform);
+//            }
+//        }
+//#endif
     }
 }

@@ -121,7 +121,7 @@ namespace CCEnvs.Unity.Storages
             CC.Guard.IsNotNull(toInstantiate, nameof(toInstantiate));
 
             UnityEngine.Object.Instantiate(toInstantiate)
-                              .FindFor()
+                              .Appeal()
                               .ByChildren()
                               .IncludeInactive()
                               .Model<IItemContainer>()
@@ -268,20 +268,20 @@ namespace CCEnvs.Unity.Storages
             return null!;
         }
 
-        public Maybe<IItemContainer> PutItem(IItemContainer itemContainer, int count)
+        public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer, int count)
         {
             return (from cnt in itemContainer.TakeItem(count)
                     where cnt.Item.IsSome
                     let item = cnt.Item.GetValueUnsafe()
                     select (cnt, rest: PutItem(item, count)))
                     .IfRight(x => x.rest.IfSome(
-                        rest => itemContainer.PutItem(rest)).Raw)
+                        rest => itemContainer.PutItemFrom(rest)).Raw)
                     .RightTarget
                     .Maybe()!;
         }
 
         [DebuggerStepThrough]
-        public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
+        public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer)
         {
             return PutItem(itemContainer.Item.GetValue(), itemContainer.ItemCount);
         }

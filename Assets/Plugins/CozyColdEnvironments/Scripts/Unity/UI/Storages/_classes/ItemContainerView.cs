@@ -88,10 +88,10 @@ namespace CCEnvs.Unity.UI.Storages
                 return;
 
             eventData.pointerDrag.Maybe()
-                .Map(go => go.FindFor().Model<IItemContainer>().Raw!)
-                .Map(cnt => (source: cnt, rest: model.PutItem(cnt)))
+                .Map(go => go.Appeal().Model<IItemContainer>().Raw!)
+                .Map(cnt => (source: cnt, rest: model.PutItemFrom(cnt)))
                 .Where(cnt => cnt.rest.IsSome)
-                .IfSome(cnt => cnt.source.PutItem(cnt.rest.GetValueUnsafe()));
+                .IfSome(cnt => cnt.source.PutItemFrom(cnt.rest.GetValueUnsafe()));
         }
 
         private void BindItemIcon()

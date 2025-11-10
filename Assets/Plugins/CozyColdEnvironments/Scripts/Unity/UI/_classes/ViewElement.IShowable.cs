@@ -30,8 +30,6 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (showOnStart)
                 Show();
-            else
-                Hide();
         }
 
         public virtual bool ShowableShowAllowedPredicate() => true;
@@ -68,12 +66,12 @@ namespace CCEnvs.Unity.UI.Elements
 
         public IObservable<Unit> ObserveShow()
         {
-            return isVisible.Where(x => x).AsUnitObservable();
+            return isVisible.Where(_ => StartPassed).Where(x => x).AsUnitObservable();
         }
 
         public IObservable<Unit> ObserveHide()
         {
-            return isVisible.Where(x => !x).AsUnitObservable();
+            return isVisible.Where(_ => StartPassed).Where(x => !x).AsUnitObservable();
         }
 
         protected void Hide(bool force)

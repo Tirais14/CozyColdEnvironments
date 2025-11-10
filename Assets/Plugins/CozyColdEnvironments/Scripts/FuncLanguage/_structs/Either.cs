@@ -1,3 +1,4 @@
+using CCEnvs.Unity;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -77,12 +78,8 @@ namespace CCEnvs.FuncLanguage
             return !(left == right);
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly L? AccessLeft() => left;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly L AccessLeft(L defaultValue)
+        public readonly L GetLeftValue(L defaultValue)
         {
             Guard.IsNotNull(defaultValue, nameof(defaultValue));
 
@@ -93,19 +90,15 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccessLeft([NotNullWhen(true)] out L? left)
+        public readonly bool TryGetLeftValue([NotNullWhen(true)] out L? left)
         {
             left = this.left;
 
             return IsLeft;
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly R? AccessRight() => right;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly R AccessRight(R defaultValue)
+        public readonly R GetValueRight(R defaultValue)
         {
             Guard.IsNotNull(defaultValue, nameof(defaultValue));
 
@@ -116,7 +109,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryAccessRight([NotNullWhen(true)] out R? right)
+        public readonly bool TryGetRightValue([NotNullWhen(true)] out R? right)
         {
             right = this.right;
 
@@ -124,7 +117,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly object AccessUnsafe()
+        public readonly object GetValueUnsafe()
         {
             if (IsRight)
                 return right!;
@@ -136,7 +129,13 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly object? Access()
+        public readonly T GetValueUnsafe<T>()
+        {
+            return GetValueUnsafe().As<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly object? GetValue()
         {
             if (IsRight)
                 return right;
@@ -148,13 +147,13 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly object? Access(L leftDefault, R rightDefault)
+        public readonly object? GetValue(L leftDefault, R rightDefault)
         {
             if (IsRight)
-                return AccessRight(rightDefault);
+                return GetValueRight(rightDefault);
 
             if (IsLeft)
-                return AccessLeft(leftDefault);
+                return GetLeftValue(leftDefault);
 
             return null;
         }

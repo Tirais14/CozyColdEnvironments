@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.Diagnostics;
 using CCEnvs.Unity.UI.MVVM;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -33,8 +32,7 @@ namespace CCEnvs.Unity
             Default = None
         }
 
-        internal readonly static GameObjectSearch Instance = new GameObjectSearch().Reusable(false);
-        private readonly static GameObjectSearch empty = new();
+        internal readonly static GameObjectSearch Instance = new();
 
         public static GameObjectSearch Empty => new();
 
@@ -51,6 +49,7 @@ namespace CCEnvs.Unity
         /// </summary>
         public Maybe<string> tag { get; protected set; }
         public int? layerMask { get; protected set; }
+        public Maybe<Type> mustContainsType { get; protected set; }
 
         public GameObjectSearch()
         {
@@ -223,8 +222,25 @@ namespace CCEnvs.Unity
             name = Maybe<string>.None;
             tag = Maybe<string>.None;
             layerMask = default;
+            mustContainsType = null;
 
             return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch MustContainType(Type? componentType = null)
+        {
+            mustContainsType = componentType;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectSearch MustContainType<T>()
+        {
+            return MustContainType(typeof(T));
         }
 
         [DebuggerStepThrough]
@@ -262,7 +278,17 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Components(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target.Raw));
+            return (Components(type).FirstOrDefault(), new GameObjectAskException(
+                Target.Raw,
+                settings,
+                findMode,
+                message: $"Component not found.",
+                seekingComponentType: type,
+                name: name.Raw,
+                tag: tag.Raw,
+                layer: layerMask ?? -1,
+                componentFilter: mustContainsType.Raw)
+                );
         }
 
         [DebuggerStepThrough]
@@ -331,7 +357,17 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (ViewModels(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target.Raw));
+            return (ViewModels(type).FirstOrDefault(), new GameObjectAskException(
+                Target.Raw,
+                settings,
+                findMode,
+                message: "View model not found.",
+                seekingComponentType: type,
+                name: name.Raw,
+                tag: tag.Raw,
+                layer: layerMask ?? -1,
+                componentFilter: mustContainsType.Raw)
+                );
         }
 
         [DebuggerStepThrough]
@@ -374,7 +410,16 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Models(type).FirstOrDefault(), new ComponentNotFoundException(componentType: type, context: Target.Raw));
+            return (Models(type).FirstOrDefault(), new GameObjectAskException(
+                Target.Raw,
+                settings,
+                findMode,
+                message: "Model not found.",
+                seekingComponentType: type,
+                name: name.Raw,
+                tag: tag.Raw,
+                layer: layerMask ?? -1,
+                componentFilter: mustContainsType.Raw));
         }
 
         /// <inheritdoc cref="Models"/>
@@ -393,7 +438,17 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<Transform> Transform()
         {
-            return (Transforms().FirstOrDefault(), new ComponentNotFoundException(typeof(Transform), context: Target.Raw));
+            return (Transforms().FirstOrDefault(), new GameObjectAskException(
+                Target.Raw,
+                settings,
+                findMode,
+                message: "Transform not found.",
+                seekingComponentType: typeof(Transform),
+                name: name.Raw,
+                tag: tag.Raw,
+                layer: layerMask ?? -1,
+                componentFilter: mustContainsType.Raw)
+                );
         }
 
         [DebuggerStepThrough]
@@ -423,7 +478,17 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<GameObject> GameObject()
         {
-            return (GameObjects().FirstOrDefault(), new GameObjectNotFoundException(name.Raw));
+            return (GameObjects().FirstOrDefault(), new GameObjectAskException(
+                Target.Raw,
+                settings,
+                findMode,
+                message: "Game object not found.",
+                seekingComponentType: typeof(GameObject),
+                name: name.Raw,
+                tag: tag.Raw,
+                layer: layerMask ?? -1,
+                componentFilter: mustContainsType.Raw)
+                );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -444,7 +509,7 @@ namespace CCEnvs.Unity
                 .Match(
                     Right: r => r.transform,
                     Left: l => l)
-                .Access()
+                .GetValue()
                 .AsOrDefault<Transform>()
                 .GetValue(Target.GetValueUnsafe().transform);
         }
@@ -525,18 +590,15 @@ namespace CCEnvs.Unity
                 results = results.ToArray();
             }
 
+            results = mustContainsType.Match(
+                    some: type => results.Where(cmp => cmp.Appeal().Component(type).Lax().IsSome),
+                    none: () => results)
+                .GetValueUnsafe();
+
             if (settings.IsFlagSetted(Settings.ExcludeSelf))
                 results = results.Where(cmp => cmp.gameObject != Target);
 
             return results;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateInstance()
-        {
-            if (ReferenceEquals(this, Instance) && this != empty)
-                this.PrintError("Singleton not reseted before another using.");
         }
     }
 
@@ -544,7 +606,7 @@ namespace CCEnvs.Unity
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectSearch FindFor(this GameObject source)
+        public static GameObjectSearch Appeal(this GameObject source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
@@ -553,11 +615,29 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectSearch FindFor(this Component source)
+        public static GameObjectSearch Appeal(this Component source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
             return new GameObjectSearch().From(source);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObjectSearch AppealWithSingleton(this GameObject source)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            return GameObjectSearch.Instance.Reset().From(source);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObjectSearch AppealWithSingleton(this Component source)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            return GameObjectSearch.Instance.Reset().From(source);
         }
     }
 }

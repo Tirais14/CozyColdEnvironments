@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.Interactables
         public IEnumerable<IInteractable> GetInteractables()
         {
             foreach (var item in from agent in otherAgents
-                                 select agent.FindFor().Component<IInteractable>().Lax() into ible
+                                 select agent.Appeal().Component<IInteractable>().Lax() into ible
                                  where ible.IsSome
                                  select ible.GetValueUnsafe())
             {

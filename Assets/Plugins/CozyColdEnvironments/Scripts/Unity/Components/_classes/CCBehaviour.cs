@@ -3,7 +3,9 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.LowLevel;
 
 #nullable enable
 
@@ -31,6 +33,7 @@ namespace CCEnvs.Unity.Components
         public LazyCC<Transform> cTransform { get; private set; } = null!;
         /// <summary>Cached</summary>
         public LazyCC<GameObject> cGameObject { get; private set; } = null!;
+        public bool StartPassed { get; private set; }
 
         protected virtual void Awake()
         {
@@ -44,6 +47,8 @@ namespace CCEnvs.Unity.Components
         protected virtual void Start()
         {
             MemberValidator.ValidateInstance(this);
+
+            onEndFrame += () => StartPassed = true;
         }
 
         private async UniTask OnEndFrameAsync()

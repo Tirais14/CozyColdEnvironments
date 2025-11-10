@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.UI.Elements
             base.Awake();
 
             canvasController = new Lazy<ICanvasController>(
-                () => this.FindFor()
+                () => this.Appeal()
                     .ByParent()
                     .IncludeInactive()
                     .Component<ICanvasController>()

@@ -132,7 +132,7 @@ namespace CCEnvs.Unity.Storages
             return restItems;
         }
 
-        public Maybe<IItemContainer> PutItem(IItemContainer itemContainer, int count)
+        public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer, int count)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
@@ -146,11 +146,11 @@ namespace CCEnvs.Unity.Storages
                     );
         }
 
-        public Maybe<IItemContainer> PutItem(IItemContainer itemContainer)
+        public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
-            return PutItem(itemContainer, itemContainer.ItemCount);
+            return PutItemFrom(itemContainer, itemContainer.ItemCount);
         }
 
         public Maybe<IItemContainer> TakeItem(int count)

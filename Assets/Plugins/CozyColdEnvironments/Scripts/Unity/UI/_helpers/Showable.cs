@@ -27,8 +27,8 @@ namespace CCEnvs.Unity.UI
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                foreach (var child in from go in gameObject.FindFor().ExcludeSelf().ChildrenGameObjects()
-                                      select go.FindFor().Component<IShowable>().Lax() into cmp
+                foreach (var child in from go in gameObject.Appeal().ExcludeSelf().ChildrenGameObjects()
+                                      select go.Appeal().Component<IShowable>().Lax() into cmp
                                       where cmp.IsSome
                                       select cmp.GetValueUnsafe())
                 {
@@ -50,11 +50,11 @@ namespace CCEnvs.Unity.UI
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                foreach (var child in gameObject.FindFor()
+                foreach (var child in gameObject.Appeal()
                                                 .ExcludeSelf()
                                                 .ChildrenGameObjects())
                 {
-                    if (child.FindFor()
+                    if (child.Appeal()
                              .Component<IShowable>()
                              .Lax()
                              .TryGetValue(out var showable)

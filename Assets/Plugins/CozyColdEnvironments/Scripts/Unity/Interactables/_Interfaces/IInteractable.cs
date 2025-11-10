@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.Interactables
             return (t.LeftTarget, t.IfRight(
                 arr => arr.Select(
                     arr => arr.Raw.As<object>().Maybe()).ToArray())
-                .AccessRight(Array.Empty<Maybe<object>>())
+                .GetValueRight(Array.Empty<Maybe<object>>())
                 );
         }
     }

@@ -303,7 +303,7 @@ namespace CCEnvs.FuncLanguage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsThrowAllowed(Exception ex)
         {
-            return exceptionType.Map(type => ex.IsInstanceOfType(type)).GetValue(true);
+            return exceptionType.Map(type => ex.IsInstanceOfType(type)).GetValue(false);
         }
 
         private void OnError(Exception ex)
