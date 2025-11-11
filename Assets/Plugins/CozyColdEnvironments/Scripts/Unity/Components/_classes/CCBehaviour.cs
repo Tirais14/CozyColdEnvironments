@@ -1,11 +1,10 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Utils;
+using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.LowLevel;
 
 #nullable enable
 
@@ -14,21 +13,6 @@ namespace CCEnvs.Unity.Components
 {
     public class CCBehaviour : MonoBehaviour
     {
-        private SingleUseAction? onEndFrame;
-        private bool onEndFrameAsyncStarted;
-
-        public event SingleUseAction? OnEndFrame {
-            add
-            {
-                onEndFrame += value;
-
-                if (!onEndFrameAsyncStarted && onEndFrame is not null)
-                    OnEndFrameAsync().TimeoutWithoutException(TimeSpan.FromSeconds(30))
-                                     .Forget(ex => this.PrintException(ex));
-            }
-            remove => onEndFrame -= value;
-        }
-
         /// <summary>Cached</summary>
         public LazyCC<Transform> cTransform { get; private set; } = null!;
         /// <summary>Cached</summary>
@@ -48,18 +32,32 @@ namespace CCEnvs.Unity.Components
         {
             MemberValidator.ValidateInstance(this);
 
-            onEndFrame += () => StartPassed = true;
+            UniTask.Post(() => StartPassed = true, PlayerLoopTiming.PreUpdate);
         }
 
-        private async UniTask OnEndFrameAsync()
+        public static void AfterStart(Action action)
         {
-            onEndFrameAsyncStarted = true;
+            Guard.IsNotNull(action);
+
+            UniTask.Post(action, PlayerLoopTiming.PreUpdate);
+        }
+
+        public void OnEndFrame(Action action)
+        {
+            OnEndFrameInternal(action).Forget(ex => this.PrintException(ex));
+        }
+
+        private async UniTask OnEndFrameInternal(Action action)
+        {
+            if (action is null)
+            {
+                this.PrintError("Action is null.");
+                return;
+            }
 
             await UniTask.WaitForEndOfFrame();
 
-            onEndFrame!();
-
-            onEndFrameAsyncStarted = false;
+            action();
         }
     }
 }

@@ -59,9 +59,7 @@ namespace CCEnvs.Unity.Storages
 
         public ItemContainer(int capacity)
         {
-            Guard.IsGreaterThan(capacity, -1, nameof(capacity));
-
-            this.capacity = capacity;
+            Capacity = capacity;
         }
 
         public ItemContainer()

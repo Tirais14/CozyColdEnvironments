@@ -2,7 +2,8 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
-using Humanizer;
+using Cysharp.Threading.Tasks;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,9 +27,6 @@ namespace CCEnvs.Unity.Storages
         private int nextSlotID;
 
         public IItemContainer this[int id] => collection[id];
-
-        public event Action<(int id, IItemContainer value)>? OnAdd;
-        public event Action<(int id, IItemContainer value)>? OnRemove;
 
         public int ContainerCount => collection.Count;
         public int Capacity {
@@ -109,33 +107,39 @@ namespace CCEnvs.Unity.Storages
                 Do.While(() => collection.ContainsKey(nextSlotID), () => nextSlotID++);
 
                 addSubj?.OnNext((nextSlotID, itemContainer));
-                OnAdd?.Invoke((nextSlotID, itemContainer));
             }
             catch (Exception ex)
             {
                 this.PrintException(ex);
             }
         }
+
         public void AddContainer(GameObject toInstantiate)
         {
             CC.Guard.IsNotNull(toInstantiate, nameof(toInstantiate));
 
-            UnityEngine.Object.Instantiate(toInstantiate)
-                              .Appeal()
-                              .ByChildren()
-                              .IncludeInactive()
-                              .Model<IItemContainer>()
-                              .Lax()
-                              .Match(
-                              some: x => AddContainer(x),
-                              none: () => this.PrintError($"Cannot find {nameof(ItemContainer)} model.")
-                              );
+            var cnt = UnityEngine.Object.Instantiate(toInstantiate)
+                .AppealTo()
+                .ByChildren()
+                .IncludeInactive()
+                .Model<IItemContainer>()
+                .Strict();
+
+            AddContainer(cnt);
         }
 
-        public void AddContainerCount(int count, UnityEngine.GameObject toInstantiate)
+        public void AddContainerCount(int count, GameObject toInstantiate)
         {
-            for (int i = 0; i < count; i++)
-                AddContainer(toInstantiate);
+            UnityEngine.Object.InstantiateAsync(toInstantiate, count).ToUniTask().ContinueWith(loaded =>
+            {
+                loaded.Select(go => go.AppealTo()
+                        .ByChildren()
+                        .IncludeInactive()
+                        .Model<IItemContainer>()
+                        .Strict())
+                    .ForEach(AddContainer);
+            })
+            .Forget(ex => this.PrintException(ex));
         }
 
         public void AddContainerCount<T>(int count)
@@ -154,7 +158,6 @@ namespace CCEnvs.Unity.Storages
                 try
                 {
                     removeSubj?.OnNext((id, value));
-                    OnRemove?.Invoke((id, value));
                 }
                 catch (Exception ex)
                 {
@@ -187,8 +190,14 @@ namespace CCEnvs.Unity.Storages
 
         public void Clear()
         {
-            foreach (var id in collection.Keys.ToArray())
-                collection.Remove(id);
+            foreach (var cnt in this.ToArray())
+                RemoveContainer(cnt);
+        }
+
+        public void ClearContainers()
+        {
+            foreach (var cnt in this)
+                cnt.Clear();
         }
 
         public void SetContainerCount<T>(int count)
@@ -241,7 +250,7 @@ namespace CCEnvs.Unity.Storages
 
             int rest = count;
             Maybe<IItemContainer> restItems;
-            foreach (var cnt in from it in collection.ZL() //Searching for container with item or first empty container
+            foreach (var cnt in from it in collection.ZL() //Searching for the container with same item or first empty container
                                 where it.Value.IsEmpty || (it.Value.ContainsItem(item) && !it.Value.IsFull)
                                 select (it, priority: it.Value.ContainsItem(item) ? it.Key - 1 : it.Key) into pair
                                 orderby pair.priority
@@ -351,6 +360,11 @@ namespace CCEnvs.Unity.Storages
 
         public IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer() => activeContainer;
 
+        public IEnumerator<IItemContainer> GetEnumerator()
+        {
+            return collection.Values.GetEnumerator();
+        }
+
         public void Dispose() => Dispose(disposing: true);
 
         private bool disposed;
@@ -365,11 +379,6 @@ namespace CCEnvs.Unity.Storages
             }
 
             disposed = true;
-        }
-
-        public IEnumerator<IItemContainer> GetEnumerator()
-        {
-            return collection.Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -409,5 +418,6 @@ namespace CCEnvs.Unity.Storages
         {
             return Observable.Empty<int>();
         }
+
     }
 }

@@ -2,12 +2,15 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity;
 using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 using BindingFlags = System.Reflection.BindingFlags;
 
 #nullable enable

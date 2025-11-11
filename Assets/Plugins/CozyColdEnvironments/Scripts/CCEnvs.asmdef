@@ -31,11 +31,7 @@
         "C5.dll",
         "CommunityToolkit.Common.dll",
         "CommunityToolkit.Diagnostics.dll",
-        "LanguageExt.Core.dll",
-        "LanguageExt.Parsec.dll",
-        "LanguageExt.Rx.dll",
-        "LanguageExt.Streaming.dll",
-        "LanguageExt.Sys.dll"
+        "Microsoft.Extensions.Caching.Memory.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

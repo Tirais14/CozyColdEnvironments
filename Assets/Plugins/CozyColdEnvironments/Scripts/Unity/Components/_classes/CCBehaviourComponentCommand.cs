@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Components
         protected override void Awake()
         {
             base.Awake();
-            OnEndFrame += () => Destroy(this);
+            OnEndFrame(() => Destroy(this));
         }
 
         private void Update()

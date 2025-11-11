@@ -106,8 +106,8 @@ namespace CCEnvs.Unity.UI.MVVM
         /// </summary>
         protected virtual void InstallBingings()
         {
-            ObserveShow().SubscribeWithState(this, static (_, view) => view.viewModel.ForceNotify())
-                         .AddTo(this);
+            //ObserveShow().SubscribeWithState(this, static (_, view) => view.viewModel.ForceNotify())
+            //             .AddTo(this);
         }
     }
 }

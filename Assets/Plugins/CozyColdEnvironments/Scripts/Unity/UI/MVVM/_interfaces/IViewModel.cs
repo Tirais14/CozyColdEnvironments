@@ -8,7 +8,7 @@ namespace CCEnvs.Unity.UI.MVVM
     {
         object model { get; }
 
-        void ForceNotify();
+        //void ForceNotify();
     }
     public interface IViewModel<out TModel> : IViewModel
     {

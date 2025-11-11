@@ -69,10 +69,8 @@ namespace CCEnvs.Unity.UI.Storages
                 {
                     go.SetActive(false);
 
-                    UniTask.Create(async () =>
+                    AfterStart(() =>
                     {
-                        await UniTask.DelayFrame(1); //waiting for all active components would be started.
-
                         if (!@this.IsVisible) //pass control of visibility state to @this
                         {
                             @this.Show();
@@ -80,8 +78,7 @@ namespace CCEnvs.Unity.UI.Storages
                         }
 
                         go.SetActive(true);
-                    })
-                    .Forget(ex => @this.PrintException(ex));
+                    });
                 })
                 .AddTo(this);
         }

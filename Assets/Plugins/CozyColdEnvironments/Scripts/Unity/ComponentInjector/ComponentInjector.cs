@@ -86,27 +86,27 @@ namespace CCEnvs.Unity.Injections
             {
                 foundComponent = injectFrom switch
                 {
-                    InjectFrom.Self => source.Appeal().Component(injectType).Strict(),
+                    InjectFrom.Self => source.AppealTo().Component(injectType).Strict(),
 
-                    InjectFrom.Parent => source.Appeal()
+                    InjectFrom.Parent => source.AppealTo()
                                                .ByParent()
                                                .IncludeInactive()
                                                .Component(injectType)
                                                .Strict(),
 
-                    InjectFrom.Child => source.Appeal()
+                    InjectFrom.Child => source.AppealTo()
                                               .ByChildren()
                                               .IncludeInactive()
                                               .Component(injectType)
                                               .Strict(),
 
-                    InjectFrom.GameObject => source.Appeal()
+                    InjectFrom.GameObject => source.AppealTo()
                                                    .ByChildren()
                                                    .IncludeInactive()
                                                    .ByName(attribute.UnityName)
                                                    .GameObject()
                                                    .Strict()
-                                                   .Appeal()
+                                                   .AppealTo()
                                                    .Component(injectType)
                                                    .Strict(),
 

@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.UI.Storages
                 if (count <= 0)
                     return;
 
-                this.Appeal().Model<IInventory>().Lax().Match(
+                this.AppealTo().Model<IInventory>().Lax().Match(
                     some: inv => inv.SetContainerCount(count, prefab),
                     none: () => this.PrintError("Not found inventory model.")
                     );

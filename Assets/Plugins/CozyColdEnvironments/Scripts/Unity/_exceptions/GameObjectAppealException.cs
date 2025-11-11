@@ -6,10 +6,10 @@ using CCEnvs.Reflection;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public class GameObjectAskException : CCException
+    public class GameObjectAppealException : CCException
     {
-        public GameObjectAskException(GameObject? target,
-            GameObjectSearch.Settings settings,
+        public GameObjectAppealException(GameObject? target,
+            GameObjectAppeal.Settings settings,
             FindMode findMode,
             Type? seekingComponentType = null,
             string? name = null,
@@ -19,7 +19,7 @@ namespace CCEnvs.Unity
             string? message = null)
             :
             base(Sentence.Empty
-                    .AddIfNotDefault(() => $"{message}....", message)
+                    .AddIfNotDefault(() => $"{message}...", message)
                     .AddIfNotDefault(() => $"Target: {target!.name},...", target)
                     .Add($"Settings: {settings},...")
                     .Add($"Find Mode: {findMode},...")

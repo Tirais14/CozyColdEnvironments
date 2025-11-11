@@ -14,9 +14,6 @@ namespace CCEnvs.Unity.Storages
     {
         IItemContainer this[int id] { get; }
 
-        event Action<(int id, IItemContainer value)> OnAdd;
-        event Action<(int id, IItemContainer value)> OnRemove;
-
         IEnumerable<int> IDs { get; }
         IEnumerable<IItemContainer> Containers { get; }
         int ContainerCount { get; }
@@ -49,6 +46,8 @@ namespace CCEnvs.Unity.Storages
         void ActivateContainer(int id);
 
         bool SwitchContainerActiveState(int id);
+
+        void ClearContainers();
 
         Maybe<int> GetContainerID(IItemContainer itemContainer);
 

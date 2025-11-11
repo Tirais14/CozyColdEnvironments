@@ -39,39 +39,39 @@ namespace CCEnvs.Unity.UI.MVVM
             AddDisposableViewModelDataToList();
         }
 
-        public virtual void ForceNotify()
-        {
-            foreach (var rxProp in this.Reflect()
-                                   .NonPublic()
-                                   .TypeFilter(typeof(IReactiveProperty<>))
-                                   .MatchTypesByBaseGenericTypeDefinition()
-                                   .Cache()
-                                   .Fields()
-                                   .Select(field => field.GetValue(this)))
-            {
-                PropertyInfo? valueProp = rxProp.Reflect()
-                                                .Name(nameof(ReactiveProperty<object>.Value))
-                                                .Property()
-                                                .Strict();
+        //public virtual void ForceNotify()
+        //{
+        //    foreach (var rxProp in this.Reflect()
+        //                           .NonPublic()
+        //                           .TypeFilter(typeof(IReactiveProperty<>))
+        //                           .MatchTypesByBaseGenericTypeDefinition()
+        //                           .Cache()
+        //                           .Fields()
+        //                           .Select(field => field.GetValue(this)))
+        //    {
+        //        PropertyInfo? valueProp = rxProp.Reflect()
+        //                                        .Name(nameof(ReactiveProperty<object>.Value))
+        //                                        .Property()
+        //                                        .Strict();
 
-                object propValue = valueProp.GetValue(rxProp);
+        //        object propValue = valueProp.GetValue(rxProp);
 
-                if (propValue.IsNull())
-                {
-                    rxProp.Reflect()
-                          .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
-                          .ArgumentTypes(valueProp.PropertyType)
-                          .InvokeMethod();
-                }
-                else
-                {
-                    rxProp.Reflect()
-                          .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
-                          .Arguments(propValue)
-                          .InvokeMethod();
-                }
-            }
-        }
+        //        if (propValue.IsNull())
+        //        {
+        //            rxProp.Reflect()
+        //                  .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
+        //                  .ArgumentTypes(valueProp.PropertyType)
+        //                  .InvokeMethod();
+        //        }
+        //        else
+        //        {
+        //            rxProp.Reflect()
+        //                  .Name(nameof(ReactiveProperty<object>.SetValueAndForceNotify))
+        //                  .Arguments(propValue)
+        //                  .InvokeMethod();
+        //        }
+        //    }
+        //}
 
         public void Dispose() => Dispose(disposing: true);
 

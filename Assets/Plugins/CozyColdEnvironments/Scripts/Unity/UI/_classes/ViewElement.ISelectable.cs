@@ -48,9 +48,11 @@ namespace CCEnvs.Unity.UI.Elements
             });
         }
 
-        public virtual void DoDeselect()
+        public virtual void DoDeselect() => DoDeselect(force: false);
+
+        protected void DoDeselect(bool force)
         {
-            if (!IsSelected)
+            if (!force && !IsSelected)
                 return;
 
             isSelected.Value = false;
@@ -73,8 +75,8 @@ namespace CCEnvs.Unity.UI.Elements
 
         private void SelectablePreheat()
         {
-            DoSelect();
-            DoDeselect();
+            //DoSelect();
+            DoDeselect(force: true);
         }
     }
 }

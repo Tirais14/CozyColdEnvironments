@@ -66,7 +66,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
                 .Match(
-                some: x => x.Appeal().Component<TSecondary>().Strict(),
+                some: x => x.AppealTo().Component<TSecondary>().Strict(),
                 none: () => GetAsset<TPrimary>().As<TSecondary>())
                 .GetValueUnsafe();
         }
@@ -108,7 +108,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             return GetAsset<TPrimary>(assetType).AsOrDefault<GameObject>()
                 .Match(
-                some: x => x.Appeal()
+                some: x => x.AppealTo()
                             .Component<TSecondary>()
                             .Lax()
                             .GetValue(),
