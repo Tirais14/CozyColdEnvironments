@@ -32,7 +32,7 @@ namespace CCEnvs.Unity
             Default = None
         }
 
-        internal readonly static GameObjectAppeal Instance = new();
+        public readonly static GameObjectAppeal Instance = new();
 
         public static GameObjectAppeal Empty => new();
 
@@ -453,19 +453,19 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameObject> ChildrenGameObjects() => ByChildren().GameObjects();
+        public IEnumerable<GameObject> ChildrenGameObjects() => ByChildren().ExcludeSelf().GameObjects();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Transform> ChildrenTransforms() => ByChildren().Transforms();
+        public IEnumerable<Transform> ChildrenTransforms() => ByChildren().ExcludeSelf().Transforms();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameObject> ParentGameObjects() => ByParent().GameObjects();
+        public IEnumerable<GameObject> ParentGameObjects() => ByParent().ExcludeSelf().GameObjects();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Transform> ParentTranforms() => ByParent().Transforms();
+        public IEnumerable<Transform> ParentTranforms() => ByParent().ExcludeSelf().Transforms();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

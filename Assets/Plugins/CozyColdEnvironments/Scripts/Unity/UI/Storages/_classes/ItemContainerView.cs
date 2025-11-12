@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.UI.Storages
                            |
                            DragAndDropSettings.InHighPriorityCanvas;
 
-            showableSettings = IShowable.Settings.KeepRaycastTargetState;
+            ShowableSettings = IShowable.Settings.KeepRaycastTargetState;
         }
 
         protected override void InstallBingings()

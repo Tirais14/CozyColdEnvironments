@@ -18,11 +18,16 @@ namespace CCEnvs.Unity.UI.Elements
         : CCBehaviour,
         IViewElement
     {
-        [field: SerializeField, GetBySelf]
-        public Maybe<Image> image { get; private set; }
+        [GetBySelf(IsOptional = true)]
+        [SerializeField]
+        protected Image m_Image;
 
-        [field: SerializeField, GetBySelf]
-        public Maybe<Button> button { get; private set; }
+        [GetBySelf(IsOptional = true)]
+        [SerializeField]
+        protected Button m_Button;
+
+        public Maybe<Image> image => m_Image;
+        public Maybe<Button> button => m_Button;
 
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
@@ -51,7 +56,11 @@ namespace CCEnvs.Unity.UI.Elements
             base.Start();
             BindToButton();
             StartIShowable();
-            StartISelectable();
+        }
+
+        protected virtual void OnTransformChildrenChanged()
+        {
+            SelectableOnTransformChildrenChanged();
         }
 
         protected virtual void OnDestroy()

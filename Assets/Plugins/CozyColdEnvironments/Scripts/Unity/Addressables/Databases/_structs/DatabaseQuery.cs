@@ -118,7 +118,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(UniID id)
+        public DatabaseQuery ByDatabaseID(UniID id)
         {
             dbKey = new AssetDatabaseKey(dbKey.AssetType.GetValue(), id);
             key = new AssetKey(key.AssetName.GetValue(), key.AssetID);
@@ -127,12 +127,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(int num0,
+        public DatabaseQuery ByDatabaseID(int num0,
                                             int num1,
                                             string str0,
                                             string str1)
         {
-            return WithDatabaseID(new UniID
+            return ByDatabaseID(new UniID
             {
                 Num0 = num0,
                 Num1 = num1,
@@ -142,80 +142,80 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(int num0,
+        public DatabaseQuery ByDatabaseID(int num0,
                                             int num1,
                                             string str0)
         {
-            return WithDatabaseID(num0, num1, str0, string.Empty);
+            return ByDatabaseID(num0, num1, str0, string.Empty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(int num0, int num1)
+        public DatabaseQuery ByDatabaseID(int num0, int num1)
         {
-            return WithDatabaseID(num0, num1, string.Empty, string.Empty);
+            return ByDatabaseID(num0, num1, string.Empty, string.Empty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(int num0)
+        public DatabaseQuery ByDatabaseID(int num0)
         {
-            return WithDatabaseID(num0, default, string.Empty, string.Empty);
+            return ByDatabaseID(num0, default, string.Empty, string.Empty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(int num0,
+        public DatabaseQuery ByDatabaseID(int num0,
                                             string str0,
                                             string str1)
         {
-            return WithDatabaseID(num0, default, str0, str1);
+            return ByDatabaseID(num0, default, str0, str1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(string str0,
+        public DatabaseQuery ByDatabaseID(string str0,
                                             string str1)
         {
-            return WithDatabaseID(default, default, str0, str1);
+            return ByDatabaseID(default, default, str0, str1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(string str0)
+        public DatabaseQuery ByDatabaseID(string str0)
         {
-            return WithDatabaseID(default, default, str0, string.Empty);
+            return ByDatabaseID(default, default, str0, string.Empty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(Enum value0)
+        public DatabaseQuery ByDatabaseID(Enum value0)
         {
-            return WithDatabaseID(UniID.FromEnum(value0));
+            return ByDatabaseID(UniID.FromEnum(value0));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID(Enum value0, Enum value1)
+        public DatabaseQuery ByDatabaseID(Enum value0, Enum value1)
         {
-            return WithDatabaseID(UniID.FromEnum(value0, value1));
+            return ByDatabaseID(UniID.FromEnum(value0, value1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID<T0>(T0 value0)
+        public DatabaseQuery ByDatabaseID<T0>(T0 value0)
             where T0 : struct, Enum
         {
-            return WithDatabaseID(UniID.FromEnum(value0));
+            return ByDatabaseID(UniID.FromEnum(value0));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithDatabaseID<T0, T1>(T0 value0, T1 value1)
+        public DatabaseQuery ByDatabaseID<T0, T1>(T0 value0, T1 value1)
              where T0 : struct, Enum
              where T1 : struct, Enum
         {
-            return WithDatabaseID(UniID.FromEnum(value0, value1));
+            return ByDatabaseID(UniID.FromEnum(value0, value1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithAssetName(string? assetName)
+        public DatabaseQuery ByAssetName(string? assetName)
         {
             key = new AssetKey(assetName, key.AssetID);
 
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DatabaseQuery WithAssetID(int assetID)
+        public DatabaseQuery ByAssetID(int assetID)
         {
             key = new AssetKey(key.AssetName.GetValue(), assetID);
 

@@ -10,15 +10,23 @@ namespace CCEnvs.Unity.UI.Elements
     {
         protected readonly List<GraphicComponentStateSnapshot> showableGraphicSnapshots = new();
 
-        [Space]
-        [Header(nameof(Showable) + " Settings")]
-        [Space]
+        [Header("Showable settings")]
+        [Space(8)]
 
         [SerializeField]
-        protected IShowable.Settings showableSettings = IShowable.Settings.Default;
+        protected IShowable.Settings m_ShowableSettings = IShowable.Settings.Default;
 
         [SerializeField]
-        protected bool showOnStart;
+        protected bool m_ShowOnStart;
+
+        public IShowable.Settings ShowableSettings {
+            get => m_ShowableSettings;
+            set => m_ShowableSettings = value;
+        }
+        public bool ShowOnStart {
+            get => m_ShowOnStart;
+            set => m_ShowOnStart = value;
+        }
 
         private readonly ReactiveProperty<bool> isVisible = new();
 
@@ -28,7 +36,7 @@ namespace CCEnvs.Unity.UI.Elements
         {
             ShowablePreheat();
 
-            if (showOnStart)
+            if (ShowOnStart)
                 Show();
         }
 
@@ -38,7 +46,7 @@ namespace CCEnvs.Unity.UI.Elements
         {
             Hide(force: false);
         }
-        public void Hide() => Hide(showableSettings);
+        public void Hide() => Hide(ShowableSettings);
 
         protected void Hide(bool force)
         {
@@ -48,7 +56,7 @@ namespace CCEnvs.Unity.UI.Elements
             Showable.Hide(
                 gameObject,
                 showableGraphicSnapshots,
-                showableSettings);
+                ShowableSettings);
 
             isVisible.Value = false;
         }
@@ -61,11 +69,11 @@ namespace CCEnvs.Unity.UI.Elements
             Showable.Show(
                 gameObject,
                 showableGraphicSnapshots,
-                showableSettings);
+                ShowableSettings);
 
             isVisible.Value = true;
         }
-        public void Show() => Show(showableSettings);
+        public void Show() => Show(ShowableSettings);
 
         public bool SwitchVisibleState()
         {

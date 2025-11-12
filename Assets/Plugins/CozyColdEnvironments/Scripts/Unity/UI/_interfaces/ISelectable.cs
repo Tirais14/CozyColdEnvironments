@@ -4,8 +4,9 @@ using UniRx;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface ISelectable
+    public interface ISelectable 
     {
+        bool IsEnabled { get; set; }
         bool IsSelected { get; }
 
         void DoSelect();

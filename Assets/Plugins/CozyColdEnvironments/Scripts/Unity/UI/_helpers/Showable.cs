@@ -50,9 +50,7 @@ namespace CCEnvs.Unity.UI
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                foreach (var child in gameObject.AppealTo()
-                                                .ExcludeSelf()
-                                                .ChildrenGameObjects())
+                foreach (var child in gameObject.AppealTo().ChildrenGameObjects())
                 {
                     if (child.AppealTo()
                              .Component<IShowable>()

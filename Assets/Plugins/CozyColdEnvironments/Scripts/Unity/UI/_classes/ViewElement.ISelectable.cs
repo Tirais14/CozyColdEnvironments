@@ -1,63 +1,71 @@
+using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using System;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Elements
 {
+    [Serializable]
     public partial class ViewElement : ISelectable
     {
         protected readonly ReactiveProperty<bool> isSelected = new();
 
-        [Space]
-        [Header(nameof(Selectable) + " Settings")]
-        [Space]
+        [Header("Selectable settings")]
+        [Space(8)]
 
         [SerializeField]
-        protected bool selectableDisabled;
+        protected bool m_SelectableEnabled;
 
         [SerializeField]
-        protected Color selectableSelectionColor = Color.red;
+        protected Maybe<Image> m_SelectionOverlay;
 
-        protected Color selectableBeforeSelectColor;
+        [SerializeField]
+        protected Color m_SelectableSelectionColor = Color.lightYellow.WithAlpha(0.25f);
 
-        public bool IsSelected => isSelected.Value; 
+        public bool SelectableEnabled {
+            get => m_SelectableEnabled;
+            set => m_SelectableEnabled = value;
+        }
+        public Maybe<Image> selectionOverlay {
+            get => m_SelectionOverlay;
+            set => m_SelectionOverlay = value;
+        }
+        public Color selectableSelectionColor {
+            get => m_SelectableSelectionColor;
+            set => m_SelectableSelectionColor = value;
+        }
+        public bool IsSelected => isSelected.Value;
 
-        private void StartISelectable()
-        {
-            SelectablePreheat();
+        bool ISelectable.IsEnabled {
+            get => SelectableEnabled;
+            set => SelectableEnabled = value;    
         }
 
-        public virtual bool SelectAllowedPredicate()
-        {
-            return !selectableDisabled;
-        }
+        public virtual bool SelectAllowedPredicate() => SelectableEnabled && !IsSelected;
 
         public virtual void DoSelect()
         {
-            if (!SelectAllowedPredicate() || IsSelected)
+            if (!SelectAllowedPredicate())
                 return;
 
-            isSelected.Value = true;
+            SelectableSelectionOverlayTryInit();
 
-            image.IfSome(img =>
-            {
-                selectableBeforeSelectColor = img.color;
-                img.color *= selectableSelectionColor;
-            });
+            isSelected.Value = true;
+            selectionOverlay.GetValueUnsafe().gameObject.SetActive(IsSelected);
         }
 
         public virtual void DoDeselect() => DoDeselect(force: false);
 
         protected void DoDeselect(bool force)
         {
-            if (!force && !IsSelected)
+            if (selectionOverlay.IsNone || (!force && !IsSelected))
                 return;
 
             isSelected.Value = false;
-
-            image.IfSome(img => img.color = selectableBeforeSelectColor);
+            selectionOverlay.GetValueUnsafe().gameObject.SetActive(IsSelected);
         }
 
         public void SwitchSelectionState()
@@ -73,10 +81,24 @@ namespace CCEnvs.Unity.UI.Elements
             return isSelected.Where(x => x);
         }
 
-        private void SelectablePreheat()
+        private void SelectableOnTransformChildrenChanged()
         {
-            //DoSelect();
-            DoDeselect(force: true);
+            selectionOverlay.IfSome(img => img.transform.SetAsLastSibling());
+        }
+
+        private void SelectableSelectionOverlayTryInit()
+        {
+            if (selectionOverlay.IsNone)
+            {
+                var t = new GameObject(nameof(selectionOverlay), typeof(Image)).AppealTo()
+                    .Component<Image>()
+                    .Strict();
+
+                t.transform.SetParent(transform);
+                t.gameObject.SetActive(isSelected.Value);
+
+                selectionOverlay = t;
+            }
         }
     }
 }
