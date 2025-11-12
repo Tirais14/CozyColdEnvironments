@@ -1,4 +1,3 @@
-using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using System;
 using UniRx;

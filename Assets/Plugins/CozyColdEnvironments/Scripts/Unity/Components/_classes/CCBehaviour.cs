@@ -17,6 +17,9 @@ namespace CCEnvs.Unity.Components
         public LazyCC<Transform> cTransform { get; private set; } = null!;
         /// <summary>Cached</summary>
         public LazyCC<GameObject> cGameObject { get; private set; } = null!;
+        /// <summary>
+        /// Is true before update and after start
+        /// </summary>
         public bool StartPassed { get; private set; }
 
         protected virtual void Awake()

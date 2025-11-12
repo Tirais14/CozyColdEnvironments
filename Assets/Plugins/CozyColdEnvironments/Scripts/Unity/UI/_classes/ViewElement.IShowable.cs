@@ -95,6 +95,7 @@ namespace CCEnvs.Unity.UI.Elements
             return isVisible.Where(_ => StartPassed).Where(x => !x).AsUnitObservable();
         }
 
+        //To reset visibility state
         private void ShowablePreheat()
         {
             Show();
