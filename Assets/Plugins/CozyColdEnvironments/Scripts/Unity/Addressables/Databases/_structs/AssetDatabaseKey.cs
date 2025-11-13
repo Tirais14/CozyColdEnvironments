@@ -10,12 +10,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
     public readonly struct AssetDatabaseKey
         : IEquatable<AssetDatabaseKey>, 
-        IIDMarked<UniID>
+        IIDMarked<Identifier>
     {
         public Maybe<Type> AssetType { get; }
-        public Maybe<UniID> DatabaseID { get; }
+        public Maybe<Identifier> DatabaseID { get; }
 
-        UniID IIDMarked<UniID>.ID => DatabaseID.GetValue();
+        Identifier IIDMarked<Identifier>.ID => DatabaseID.GetValue();
 
         public AssetDatabaseKey(Type? dbAssetType)
             :
@@ -25,14 +25,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         public AssetDatabaseKey(Type? assetType,
-                                UniID id)
+                                Identifier id)
             :
             this(assetType)
         {
             DatabaseID = id;
         }
 
-        public AssetDatabaseKey(IAddressablesDatabase database, UniID id)
+        public AssetDatabaseKey(IAddressablesDatabase database, Identifier id)
             :
             this(database.AssetType, id)
         {
@@ -60,7 +60,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AssetDatabaseKey With(UniID id)
+        public AssetDatabaseKey With(Identifier id)
         {
             return new AssetDatabaseKey(AssetType.GetValueUnsafe(), id);
         }

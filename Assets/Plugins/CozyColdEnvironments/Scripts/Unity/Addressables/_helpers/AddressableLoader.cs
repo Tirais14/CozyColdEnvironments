@@ -76,7 +76,7 @@ namespace CCEnvs.Unity.AddrsAssets
         }
 
         public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsAsync<T>(
-            AssetLabels labels,
+            string[] labels,
             Action<T>? callback = null,
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
             where T : Object
@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.AddrsAssets
         }
 
         public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsPrioritizedAsync<T>(
-            AssetLabels labels,
+            string[] labels,
             Action<T>? callback = null,
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
             where T : Object

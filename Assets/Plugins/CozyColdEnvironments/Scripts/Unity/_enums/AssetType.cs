@@ -15,7 +15,7 @@ namespace CCEnvs.Unity
         Object,
         Prefab,
 
-        [MetaString("Scriptable Object")]
+        [MetaString("Config")]
         ScriptableObject,
 
         Texture2D,

@@ -11,34 +11,13 @@ namespace CCEnvs.Unity.AddrsAssets
         {
         }
 
-        public AssetNotFoundException(string? assetName, bool ignoreCase, Exception? innerException = null)
+        public AssetNotFoundException(IAddressablesDatabase? db, Identifier id, Type? type)
             : 
-            base($"{nameof(assetName)}: {assetName} | {nameof(ignoreCase)}: {ignoreCase}.", innerException)
+            base(Sentence.Empty.AddIfNotDefault(() => $"Database: {db},...", db)
+                .Add($"ID: {id},...")
+                .AddIfNotDefault(() => $"type: {type},...", type)
+                .ToString())
         {
-        }
-        public AssetNotFoundException(AssetKey key, bool ignoreCase = false, Exception? innerException = null)
-            :
-            this(key.AssetName.GetValue(), ignoreCase, innerException)
-        {
-        }
-
-        public AssetNotFoundException(object assetID, Exception? innerException = null)
-            :
-            base($"{nameof(assetID)}: {assetID}.", innerException)
-        {
-        }
-
-        protected AssetNotFoundException(string message, Exception? innerException = null)
-            :
-            base(message, innerException)
-        {
-        }
-
-        public static AssetNotFoundException ByMessage(
-            string message,
-            Exception? innerException = null)
-        {
-            return new AssetNotFoundException(message, innerException);
         }
     }
 }

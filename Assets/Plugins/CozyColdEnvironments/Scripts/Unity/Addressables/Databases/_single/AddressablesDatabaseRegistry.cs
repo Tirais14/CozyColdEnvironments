@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
         private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> collection = new();
-        private readonly DatabaseQuery query = new();
+        private readonly AddressablesDatabaseSearch query = new();
 
         [SerializeField]
         [Tooltip("All loading tasks will be registered in CC.NeccessaryTasks")]
@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public int Count => collection.Count;
         public bool IsLoading => collection.Values.Any(db => db.IsLoading);
         public bool IsLoaded => !IsLoading && Count > 0;
-        public DatabaseQuery Q => Query();
+        public AddressablesDatabaseSearch Q => Query();
 
         protected override void Awake()
         {
@@ -58,14 +58,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             TryLoadByOrder();
         }
 
-        public DatabaseQuery Query() => query.Reset().In(this);
+        public AddressablesDatabaseSearch Query() => query.Reset().In(this);
 
-        public void RegisterDatabase(IAddressablesDatabase database)
+        public void Add(IAddressablesDatabase database)
         {
             collection.Add(new AssetDatabaseKey(database.AssetType, database.ID), database);
         }
 
-        public bool UnregisterDatabase(AssetDatabaseKey key) => collection.Remove(key);
+        public bool Remove(AssetDatabaseKey key) => collection.Remove(key);
 
         public Maybe<IAddressablesDatabase> FindDatabase(AssetDatabaseKey key)
         {

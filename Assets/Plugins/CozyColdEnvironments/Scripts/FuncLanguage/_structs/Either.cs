@@ -147,6 +147,9 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T? GetValue<T>() => (T?)GetValue();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly object? GetValue(L leftDefault, R rightDefault)
         {
             if (IsRight)

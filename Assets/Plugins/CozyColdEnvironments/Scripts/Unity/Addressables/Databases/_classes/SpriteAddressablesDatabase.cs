@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         /// </summary>
         public bool TexturesAsSprites { get; set; }
 
-        public SpriteAddressablesDatabase(UniID id, int capacity) : base(id, capacity)
+        public SpriteAddressablesDatabase(Identifier id, int capacity) : base(id, capacity)
         {
         }
 
@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
         }
 
-        public SpriteAddressablesDatabase(UniID id) : base(id)
+        public SpriteAddressablesDatabase(Identifier id) : base(id)
         {
         }
 
@@ -63,8 +63,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             var tasks = new List<UniTask>()
             {
                 base.LoadAssetsAsync(assetLabels),
-                LoadAssetsAsync<SpriteAtlas>(assetLabels, ConvertAtlasAsset),
-                TexturesAsSprites ? LoadAssetsAsync<Texture2D>(assetLabels, ConvertTextureAsset) : UniTask.CompletedTask
+                LoadAssetsByLabelsAsync<SpriteAtlas>(assetLabels, ConvertAtlasAsset),
+                TexturesAsSprites ? LoadAssetsByLabelsAsync<Texture2D>(assetLabels, ConvertTextureAsset) : UniTask.CompletedTask
             };
 
             await UniTask.WhenAll(tasks);

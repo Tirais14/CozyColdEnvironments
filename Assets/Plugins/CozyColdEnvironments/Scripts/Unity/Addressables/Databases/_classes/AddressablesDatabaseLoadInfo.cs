@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     {
         [SerializeField]
         [Tooltip("Often implied category. If null or empty will be used this.name without \"LoadInfo\" suffix if exists.")]
-        private Maybe<UniID> ID;
+        private Maybe<Identifier> ID;
 
         [SerializeField]
         private SerializedType databaseType = new(false);
@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public AssetDatabaseKey AssetDatabaseKey {
             get => ID.Match(
                 some: id => new AssetDatabaseKey(AssetType, id),
-                none: () => new AssetDatabaseKey(AssetType, new UniID() { Str0 = name })
+                none: () => new AssetDatabaseKey(AssetType, new Identifier() { Text = name })
                 ).Raw;
         }
 

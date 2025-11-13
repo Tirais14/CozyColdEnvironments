@@ -1,10 +1,7 @@
-using CCEnvs.FuncLanguage;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -14,85 +11,55 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         : IDisposable,
         IEnumerable,
         ILoadable,
-        IIDMarked<UniID>
+        IIDMarked<Identifier>
     {
+        Result<Object> this[Identifier key] { get; }
+
+        IEnumerable<Identifier> IDs { get; }
+        IEnumerable<Object> Assets { get; }
         Type AssetType { get; }
-        Func<Object, AssetKey>? KeyFactory { get; set; }
-        Func<Object, int>? IDFactory { get; set; }
-        Func<string, string>? AssetNameProcessor { get; set; }
-        IEnumerable<AssetKey> Keys { get; }
-        IEnumerable<Object> Values { get; }
-        Object this[AssetKey key] { get; }
-        DatabaseQuery Q { get; }
+        Func<Object, Identifier>? AssetIdFactory { get; set; }
 
-        void AddAsset(Object asset);
+        void Add(Object asset);
+        void Add(Identifier id, Object asset);
 
-        void AddAssets(IEnumerable<Object> assets);
+        bool Remove(Identifier id);
 
-        UniTask LoadAssetsAsync(AssetLabels assetLabels);
+        bool Contains(Identifier id);
 
-        Maybe<Object> FindAsset(AssetKey key);
-        Maybe<T> FindAsset<T>(AssetKey key);
+        UniTask LoadAssetsByLabelsAsync<T>(string[] labels,
+            Func<T, Object[]>? converter = null)
+            where T : Object;
 
-        Object GetAsset(AssetKey key);
-        T GetAsset<T>(AssetKey key);
-
-        DatabaseQuery Query();
+        AddressablesDatabaseSearch Search();
     }
     public interface IAddressablesDatabase<TAsset>
         : IAddressablesDatabase,
-        IReadOnlyDictionary<AssetKey, TAsset>,
-        ITrimmable
+        IEnumerable<KeyValuePair<Identifier, TAsset>>
 
         where TAsset : Object
     {
-        new TAsset this[AssetKey key] { get; }
+        new Result<TAsset> this[Identifier key] { get; }
 
-        new IEnumerable<AssetKey> Keys { get; }
-        new IEnumerable<TAsset> Values { get; }
+        new IEnumerable<Identifier> IDs { get; }
+        new IEnumerable<TAsset> Assets { get; }
 
-        Object IAddressablesDatabase.this[AssetKey key] => this[key];
-
-        IEnumerable<AssetKey> IAddressablesDatabase.Keys => Keys;
-        IEnumerable<Object> IAddressablesDatabase.Values => Values;
-
-        UniTask LoadAssetsAsync<TSub>(AssetLabels assetLabels) where TSub : TAsset;
-        UniTask LoadAssetsAsync<TAnyAsset>(AssetLabels assetLabels, Func<TAnyAsset, TAsset[]> converter)
-            where TAnyAsset : Object;
-
-        void AddAsset(TAsset asset);
-
-        void AddAssets(IEnumerable<TAsset> assets);
-
-        new Maybe<TAsset> FindAsset(AssetKey key);
-
-        new TAsset GetAsset(AssetKey key);
-
-        void IAddressablesDatabase.AddAsset(Object asset)
-        {
-            CC.Guard.IsNotNull(asset, nameof(asset));
-
-            AddAsset(asset.As<TAsset>());
+        Result<Object> IAddressablesDatabase.this[Identifier key] {
+            get => this[key].Cast<Object>();
         }
 
-        void IAddressablesDatabase.AddAssets(IEnumerable<Object> assets)
+        IEnumerable<Object> IAddressablesDatabase.Assets => Assets;
+
+        void Add(TAsset asset);
+        void Add(Identifier id, TAsset asset);
+
+        void IAddressablesDatabase.Add(Object asset)
         {
-            CC.Guard.IsNotNull(assets, nameof(assets));
-
-            AddAssets(assets.Select(x => x.As<TAsset>()));
+            Add(asset.As<TAsset>());
         }
-
-        Maybe<Object> IAddressablesDatabase.FindAsset(AssetKey key)
+        void IAddressablesDatabase.Add(Identifier id, Object asset)
         {
-            return FindAsset(key).Map(x => x.As<Object>())!;
+            Add(id, asset.As<TAsset>());
         }
-
-        Object IAddressablesDatabase.GetAsset(AssetKey key) => GetAsset(key);
-
-        UniTask<IAddressablesDatabase<TNew>> ConvertAsync<TNew>(
-            ConverterAsync<TAsset, TNew> dbItemConverter,
-            ConverterAsync<TAsset, TNew> dbConverter,
-            bool disposePreviousDb)
-            where TNew : Object;
     }
 }
