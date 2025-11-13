@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs
 {
     public readonly struct Result<T>
     {

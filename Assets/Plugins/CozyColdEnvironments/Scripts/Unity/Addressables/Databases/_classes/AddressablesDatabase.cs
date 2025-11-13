@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
@@ -7,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
@@ -38,7 +40,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         };
 
         protected readonly List<AsyncOperationHandle> loadHandles = new(0);
-        private readonly Dictionary<Identifier, TAsset> collection;
+        private readonly CCDictionary<Identifier, TAsset> collection;
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
         private readonly AddressablesDatabaseSearch search = new();
         private bool disposedValue;
@@ -48,13 +50,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public event Action OnLoaded = null!;
 
         public Result<TAsset> this[Identifier id] {
-            get
-            {
-                if (collection.TryGetValue(id, out var asset))
-                    return (asset, null);
-
-                return (null, new AssetNotFoundException(this, id, AssetType));
-            }
+            get => collection[id];
+            set => collection[id] = value;
         }
 
         public Identifier ID { get; private set; }
@@ -66,14 +63,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, Identifier>? AssetIdFactory { get; set; } = DefaultAssetIdFactory;
 
-        public IEnumerable<Identifier> IDs => throw new NotImplementedException();
-
-        public IEnumerable<TAsset> Assets => throw new NotImplementedException();
+        public bool IsReadOnly => throw new NotImplementedException();
 
         public AddressablesDatabase(Identifier id, int capacity)
         {
             ID = id;
-            collection = new Dictionary<Identifier, TAsset>(capacity);
+            collection = new CCDictionary<Identifier, TAsset>(capacity);
         }
 
         public AddressablesDatabase(int capacity)
@@ -96,12 +91,17 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             :
             this()
         {
-            collection = new Dictionary<Identifier, TAsset>(values);
+            collection = new CCDictionary<Identifier, TAsset>(values);
         }
 
-        public void Add(Identifier id, TAsset asset)
+        public void Add(Identifier id, TAsset value)
         {
-            collection.Add(id, asset);
+            collection.Add(id, value);
+        }
+
+        public void Add(KeyValuePair<Identifier, TAsset> item)
+        {
+            collection.Add(item);
         }
 
         public void Add(TAsset asset)
@@ -115,14 +115,34 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             Add(AssetIdFactory(asset), asset);
         }
 
+        public bool Contains(KeyValuePair<Identifier, TAsset> item)
+        {
+            return collection.Contains(item);
+        }
+
+        public bool ContainsKey(Identifier key)
+        {
+            return collection.ContainsKey(key);
+        }
+
+        public bool Remove(KeyValuePair<Identifier, TAsset> item)
+        {
+            return collection.Remove(item);
+        }
+
         public bool Remove(Identifier id)
         {
             return collection.Remove(id);
         }
 
-        public bool Contains(Identifier id)
+        public void Clear()
         {
-            return collection.ContainsKey(id);
+            collection.Clear();
+        }
+
+        public void CopyTo(KeyValuePair<Identifier, TAsset>[] array, int arrayIndex)
+        {
+            collection.CopyTo(array, arrayIndex);
         }
 
         public AddressablesDatabaseSearch Search() => search;
@@ -166,11 +186,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             {
                 loadingCount--;
                 OnLoadedInternal();
-                TrimExcess();
             }
         }
-
-        public void TrimExcess() => collection.TrimExcess();
 
         public void Dispose() => Dispose(disposing: true);
 
@@ -184,7 +201,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             if (disposing)
             {
                 collection.Clear();
-                collection.TrimExcess();
 
                 loadHandles.ForEach(x => x.Release());
                 loadHandles.Clear();
@@ -212,7 +228,5 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-
     }
 }

@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
@@ -15,17 +16,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     {
         Result<Object> this[Identifier key] { get; }
 
-        IEnumerable<Identifier> IDs { get; }
-        IEnumerable<Object> Assets { get; }
+        IEnumerable<Identifier> Keys { get; }
+        IEnumerable<Object> Values { get; }
         Type AssetType { get; }
         Func<Object, Identifier>? AssetIdFactory { get; set; }
 
         void Add(Object asset);
-        void Add(Identifier id, Object asset);
-
-        bool Remove(Identifier id);
-
-        bool Contains(Identifier id);
 
         UniTask LoadAssetsByLabelsAsync<T>(string[] labels,
             Func<T, Object[]>? converter = null)
@@ -35,31 +31,23 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     }
     public interface IAddressablesDatabase<TAsset>
         : IAddressablesDatabase,
-        IEnumerable<KeyValuePair<Identifier, TAsset>>
+        ICCDictionary<Identifier, TAsset>
 
         where TAsset : Object
     {
-        new Result<TAsset> this[Identifier key] { get; }
-
-        new IEnumerable<Identifier> IDs { get; }
-        new IEnumerable<TAsset> Assets { get; }
-
         Result<Object> IAddressablesDatabase.this[Identifier key] {
             get => this[key].Cast<Object>();
         }
 
-        IEnumerable<Object> IAddressablesDatabase.Assets => Assets;
+        IEnumerable<Object> IAddressablesDatabase.Values {
+            get => this.As<IAddressablesDatabase>().Values;
+        }
 
         void Add(TAsset asset);
-        void Add(Identifier id, TAsset asset);
 
         void IAddressablesDatabase.Add(Object asset)
         {
             Add(asset.As<TAsset>());
-        }
-        void IAddressablesDatabase.Add(Identifier id, Object asset)
-        {
-            Add(id, asset.As<TAsset>());
         }
     }
 }

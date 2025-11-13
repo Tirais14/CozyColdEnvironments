@@ -1,14 +1,14 @@
+using CCEnvs.Collections;
 using System;
-using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public interface IAddressablesDatabaseRegistry 
-        : IDictionary<Identifier, IAddressablesDatabase>,
+        : ICCDictionary<Identifier, IAddressablesDatabase>,
         IDisposable,
         ILoadable
     {
-        AddressablesDatabaseSearch Get();
+        AddressablesDatabaseSearch Search();
     }
 }

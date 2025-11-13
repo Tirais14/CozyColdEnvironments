@@ -1,4 +1,5 @@
 using CCEnvs;
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
@@ -27,120 +28,106 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
     {
-        private readonly Dictionary<AssetDatabaseKey, IAddressablesDatabase> collection = new();
-        private readonly AddressablesDatabaseSearch query = new();
+        private readonly CCDictionary<Identifier, IAddressablesDatabase> collection = new();
+        private readonly AddressablesDatabaseSearch search = new();
 
         [SerializeField]
         [Tooltip("All loading tasks will be registered in CC.NeccessaryTasks")]
         private AddressablesDatabaseLoadInfo[] loadOrder;
 
         private Stopwatch? stopwatch;
-        private bool disposedValue;
 
         public event Action? OnStartLoading;
         public event Action? OnLoaded;
 
-        public IAddressablesDatabase this[AssetDatabaseKey key] => GetDatabase(key);
-        public Object this[AssetDatabaseKey dbKey, AssetKey key] =>  GetAsset(dbKey, key);
+        public Result<IAddressablesDatabase> this[Identifier key] {
+            get => collection[key];
+            set => collection[key] = value;
+        }
 
-        public IEnumerable<AssetDatabaseKey> Keys => collection.Keys;
+        public IEnumerable<Identifier> Keys => collection.Keys;
         public IEnumerable<IAddressablesDatabase> Values => collection.Values;
         public int Count => collection.Count;
         public bool IsLoading => collection.Values.Any(db => db.IsLoading);
         public bool IsLoaded => !IsLoading && Count > 0;
-        public AddressablesDatabaseSearch Q => Query();
+
+        bool ICollection<KeyValuePair<Identifier, IAddressablesDatabase>>.IsReadOnly => false;
 
         protected override void Awake()
         {
             base.Awake();
 
             BindEvents();
-            TryLoadByOrder();
         }
 
-        public AddressablesDatabaseSearch Query() => query.Reset().In(this);
-
-        public void Add(IAddressablesDatabase database)
+        public AddressablesDatabaseSearch Search()
         {
-            collection.Add(new AssetDatabaseKey(database.AssetType, database.ID), database);
+            return search.Reset().From(this);
         }
 
-        public bool Remove(AssetDatabaseKey key) => collection.Remove(key);
-
-        public Maybe<IAddressablesDatabase> FindDatabase(AssetDatabaseKey key)
+        public void Add(Identifier key, IAddressablesDatabase value)
         {
-            if (collection.TryGetValue(key, out IAddressablesDatabase db))
-                return db.Maybe();
-
-            return Values.ZL()
-                .FirstOrDefault(
-                    db => key.DatabaseID.Map(id => db.ID == id)
-                        .GetValue(true)
-                        &&
-                    key.AssetType.Map(type => type == key.AssetType)
-                        .GetValue(true)
-                        )!.Maybe();
+            collection.Add(key, value);
         }
 
-        public Maybe<T> FindDatabase<T>(AssetDatabaseKey key) where T : IAddressablesDatabase
+        public void Add(KeyValuePair<Identifier, IAddressablesDatabase> item)
         {
-            return FindDatabase(key).Map(db => db.As<T>());
+            collection.Add(item);
         }
 
-        public IAddressablesDatabase GetDatabase(AssetDatabaseKey key)
+        public bool Remove(Identifier key)
         {
-            if (!collection.TryGetValue(key, out IAddressablesDatabase db))
+            return collection.Remove(key);
+        }
+
+        public bool Remove(KeyValuePair<Identifier, IAddressablesDatabase> item)
+        {
+            return collection.Remove(item.Key);
+        }
+
+        public bool ContainsKey(Identifier key)
+        {
+            return collection.ContainsKey(key);
+        }
+
+        public bool Contains(KeyValuePair<Identifier, IAddressablesDatabase> item)
+        {
+            return collection.Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<Identifier, IAddressablesDatabase>[] array, int arrayIndex)
+        {
+            collection.CopyTo(array, arrayIndex);
+        }
+
+        public void Clear()
+        {
+            collection.Clear();
+        }
+
+        public void Dispose() => Dispose(true);
+
+        private bool disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
             {
-                Maybe<IAddressablesDatabase> t = FindDatabase(key);
-
-                if (t.IsNone)
-                    throw new DatabaseNotFoundException(key);
+                collection.Values.CForEach(x => x.Dispose());
+                collection.Clear();
             }
 
-            return db;
-        }
-        public T GetDatabase<T>(AssetDatabaseKey key)
-            where T : IAddressablesDatabase
-        {
-            return GetDatabase(key).As<T>();
+            disposed = true;
         }
 
-        public Maybe<Object> FindAsset(AssetDatabaseKey dbKey, AssetKey key)
-        {
-            if (collection.TryGetValue(dbKey, out IAddressablesDatabase db)
-                &&
-                new Catched().Do(() => db[key]).GetValue() is Object asset
-                )
-                return asset;
-
-            return FindDatabase(dbKey).Map(db => db.FindAsset(key).GetValue()!);
-        }
-
-        public Maybe<T> FindAsset<T>(AssetDatabaseKey dbKey, AssetKey key)
-        {
-            return FindAsset(dbKey, key).Map(x => x.AsOrDefault<T>()).GetValue();
-        }
-
-        public Object GetAsset(AssetDatabaseKey dbKey, AssetKey assetkey)
-        {
-            return GetDatabase(dbKey).GetAsset(assetkey);
-        }
-        public T GetAsset<T>(AssetDatabaseKey dbKey, AssetKey assetkey)
-        {
-            return GetAsset(dbKey, assetkey).As<T>();
-        }
-
-        public void Dispose() => Dispose(disposing: true);
-
-        public IEnumerator<KeyValuePair<AssetDatabaseKey, IAddressablesDatabase>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Identifier, IAddressablesDatabase>> GetEnumerator()
         {
             return collection.GetEnumerator();
         }
 
-        public bool ContainsKey(AssetDatabaseKey key)
-        {
-            return collection.ContainsKey(key);
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         protected void BindEvents()
         {
@@ -156,50 +143,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 stopwatch!.Stop();
                 this.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalSeconds} seconds.");
             };
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposedValue) 
-                return;
-
-            if (disposing)
-            {
-                collection.Values.CForEach(x => x.Dispose());
-                collection.Clear();
-                collection.TrimExcess();
-            }
-
-            disposedValue = true;
-        }
-
-        private void TryLoadByOrder()
-        {
-            if (loadOrder.IsNullOrEmpty())
-                return;
-
-            var tasks = (from loadInfo in loadOrder
-                         select (loadInfo, value: loadInfo.GetDatabaseType()) into dbType
-                         select (dbType.loadInfo, value: dbType.value.Reflect()
-                         .NonPublic()
-                         .Constructor()
-                         .Strict()
-                         .Invoke(Array.Empty<object>())
-                         .As<IAddressablesDatabase>()) into db
-                         select (value: db.value.LoadAssetsAsync(db.loadInfo.AssetLabels), db: db.value)
-                         ).Do(task => RegisterDatabase(task.db))
-                         .Select(task => task.value);
-
-            tasks.ForEach(CC.NeccesaryTasks.RegisterTask);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        bool IReadOnlyDictionary<AssetDatabaseKey, IAddressablesDatabase>.TryGetValue(
-            AssetDatabaseKey key,
-            out IAddressablesDatabase value)
-        {
-            return collection.TryGetValue(key, out value);
         }
     }
 }
