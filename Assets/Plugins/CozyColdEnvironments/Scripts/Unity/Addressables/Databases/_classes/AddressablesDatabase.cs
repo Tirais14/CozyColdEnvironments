@@ -8,7 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using ZLinq;
@@ -40,7 +39,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         };
 
         protected readonly List<AsyncOperationHandle> loadHandles = new(0);
-        private readonly CCDictionary<Identifier, TAsset> collection;
+        private readonly CCDictionary<Identifier, TAsset> collection = new();
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
         private readonly AddressablesDatabaseSearch search = new();
         private bool disposedValue;
@@ -54,7 +53,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             set => collection[id] = value;
         }
 
-        public Identifier ID { get; private set; }
+        public Identifier ID { get; init; }
         public IEnumerable<Identifier> Keys => collection.Keys;
         public IEnumerable<TAsset> Values => collection.Values;
         public int Count => collection.Count;
@@ -63,35 +62,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Type AssetType { get; } = typeof(TAsset);
         public Func<Object, Identifier>? AssetIdFactory { get; set; } = DefaultAssetIdFactory;
 
-        public bool IsReadOnly => throw new NotImplementedException();
+        bool ICollection<KeyValuePair<Identifier, TAsset>>.IsReadOnly => false;
 
-        public AddressablesDatabase(Identifier id, int capacity)
+        public AddressablesDatabase(int capacity)
         {
-            ID = id;
             collection = new CCDictionary<Identifier, TAsset>(capacity);
         }
 
-        public AddressablesDatabase(int capacity)
-            :
-            this(id: default, capacity)
+        public AddressablesDatabase()
         {
-        }
-
-        public AddressablesDatabase(Identifier id)
-            :
-            this(id, 4)
-        {
-        }
-
-        public AddressablesDatabase() : this(capacity: 4)
-        {
-        }
-
-        public AddressablesDatabase(IEnumerable<KeyValuePair<Identifier, TAsset>> values)
-            :
-            this()
-        {
-            collection = new CCDictionary<Identifier, TAsset>(values);
         }
 
         public void Add(Identifier id, TAsset value)
@@ -147,7 +126,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public AddressablesDatabaseSearch Search() => search;
 
-        public async UniTask LoadAssetsByLabelsAsync<T>(string[] labels,
+        public virtual async UniTask LoadAssetsByLabelsAsync<T>(string[] labels,
             Func<T, Object[]>? converter = null)
             where T : Object
         {

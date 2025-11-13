@@ -1,10 +1,10 @@
-using CCEnvs;
-using CCEnvs.Collections.Performance;
 using CCEnvs.FuncLanguage;
 using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
+using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets.Databases
@@ -58,13 +58,14 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 texture.GetPixels().Length).AsBox().ToArray();
         }
 
-        public override async UniTask LoadAssetsAsync(AssetLabels assetLabels)
+        public override async UniTask LoadAssetsByLabelsAsync<T>(string[] labels,
+            Func<T, Object[]>? converter = null)
         {
             var tasks = new List<UniTask>()
             {
-                base.LoadAssetsAsync(assetLabels),
-                LoadAssetsByLabelsAsync<SpriteAtlas>(assetLabels, ConvertAtlasAsset),
-                TexturesAsSprites ? LoadAssetsByLabelsAsync<Texture2D>(assetLabels, ConvertTextureAsset) : UniTask.CompletedTask
+                base.LoadAssetsByLabelsAsync<Sprite>(labels),
+                LoadAssetsByLabelsAsync<SpriteAtlas>(labels, ConvertAtlasAsset),
+                TexturesAsSprites ? LoadAssetsByLabelsAsync<Texture2D>(labels, ConvertTextureAsset) : UniTask.CompletedTask
             };
 
             await UniTask.WhenAll(tasks);

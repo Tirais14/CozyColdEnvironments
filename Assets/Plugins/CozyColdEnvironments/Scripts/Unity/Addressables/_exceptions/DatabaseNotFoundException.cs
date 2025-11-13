@@ -12,10 +12,10 @@ namespace CCEnvs.Unity.AddrsAssets
             IAddressablesDatabaseRegistry? reg = null,
             Type? assetType = null)
             :
-            this(Sentence.Empty.Add($"ID: {id},...")
+            base(Sentence.Empty.Add($"ID: {id},...")
                 .AddIfNotDefault(() => $"Registry: {reg},...", reg)
                 .AddIfNotDefault(() => $"Asset type: {assetType.GetFullName()}...", assetType)
-                .ToString()))
+                .ToString())
         {
         }
     }

@@ -1,21 +1,14 @@
-using CCEnvs;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
-using Cysharp.Threading.Tasks;
-using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using ZLinq;
-using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S3881
@@ -30,10 +23,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
     {
         private readonly CCDictionary<Identifier, IAddressablesDatabase> collection = new();
         private readonly AddressablesDatabaseSearch search = new();
-
-        [SerializeField]
-        [Tooltip("All loading tasks will be registered in CC.NeccessaryTasks")]
-        private AddressablesDatabaseLoadInfo[] loadOrder;
 
         private Stopwatch? stopwatch;
 
