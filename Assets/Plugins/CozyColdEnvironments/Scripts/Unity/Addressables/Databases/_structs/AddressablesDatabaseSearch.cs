@@ -93,31 +93,34 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ByDatabase(Type type, Type? assetType = null)
+        public AddressablesDatabaseSearch InDatabase(Type? type = null, Type? assetType = null)
         {
-            database = Database(type, assetType);
+            database = Database(type, assetType).Strict().Maybe();
             ResetFilters();
 
             return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<IAddressablesDatabase> Databases(Type type, Type? assetType = null)
+        public IEnumerable<IAddressablesDatabase> Databases(Type? type = null, Type? assetType = null)
         {
-            Guard.IsNotNull(type);
+            CC.Guard.IsNotNull(registry.Raw, nameof(registry));
 
             var reg = registry.GetValueUnsafe();
 
             return from item in reg
                    where FilterType(item.Value.GetType(), type)
+                   where FilterType(item.Value.AssetType, assetType)
                    where FilterText(item.Key.Text)
                    where FilterNumber(item.Key.Number)
                    select item.Value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IAddressablesDatabase> Database(Type type, Type? assetType = null)
+        public Result<IAddressablesDatabase> Database(Type? type = null, Type? assetType = null)
         {
+            CC.Guard.IsNotNull(registry.Raw, nameof(registry));
+
             var reg = registry.GetValueUnsafe();
 
             var id = new Identifier()
@@ -151,13 +154,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> Assets(Type? type = null)
         {
+            CC.Guard.IsNotNull(database.Raw, nameof(database));
+
             IAddressablesDatabase db = database.GetValueUnsafe();
 
-            return from item in db.Cast<KeyValuePair<Identifier, Object>>()
-                   where FilterType(item.Value.GetType(), type)
-                   where FilterText(item.Key.Text)
-                   where FilterNumber(item.Key.Number)
-                   select item.Value;
+            return from item in db.Keys.Zip(db.Values, (key, value) => (key, value))
+                   where FilterType(item.value.GetType(), type)
+                   where FilterText(item.key.Text)
+                   where FilterNumber(item.key.Number)
+                   select item.value;
         }
 
         [DebuggerStepThrough]
@@ -170,6 +175,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<object> Asset(Type? type = null)
         {
+            CC.Guard.IsNotNull(database.Raw, nameof(database));
+
             var db = database.GetValueUnsafe();
 
             var id = new Identifier()
@@ -215,7 +222,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return textIdFilter.Map(filter =>
                         text.Map(text =>
                             text.ContainsOrdinal(filter)).GetValue(true)
-                            ).Raw;
+                            ).GetValue(true);
         }
 
         protected bool FilterNumber(Maybe<int> number)
@@ -223,7 +230,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return numberIdFilter.Map(filter =>
                         number.Map(number =>
                             number == filter).GetValue(true)
-                            ).Raw;
+                            ).GetValue(true);
         }
     }
 }

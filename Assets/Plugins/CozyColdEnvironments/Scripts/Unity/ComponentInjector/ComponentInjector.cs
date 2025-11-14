@@ -75,10 +75,15 @@ namespace CCEnvs.Unity.Injections
                 typeof(ComponentInjector).PrintError($"Unsupported inject type: {injectType.GetFullName()}.");
                 return;
             }
-            if (field.GetValue(source).IsNotDefault())
+            if (field.GetValue(source) is object fieldValue)
             {
-                CCDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
-                return;
+                fieldValue = fieldValue.AsOrDefault<IConditional>().Map(x => x.GetValue()).Raw!;
+
+                if (fieldValue.IsNotNull())
+                {
+                    CCDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
+                    return;
+                }
             }
 
             object? foundComponent;
@@ -134,7 +139,7 @@ namespace CCEnvs.Unity.Injections
                     return;
                 }
 
-                foundComponent = conditional.AccessUnsafe();
+                foundComponent = conditional.GetValueUnsafe();
             }
 
             if (injectType.IsNotType(field.FieldType))

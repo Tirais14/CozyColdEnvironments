@@ -11,13 +11,13 @@ namespace CCEnvs.FuncLanguage
         bool IsNone { get; }
         object? Target { get; }
 
-        object? Access();
-        object Access(object defaultValue);
-        object Access(Func<object> defaultValueFactory);
+        object? GetValue();
+        object GetValue(object defaultValue);
+        object GetValue(Func<object> defaultValueFactory);
 
-        object AccessUnsafe();
+        object GetValueUnsafe();
 
-        bool TryAccess([NotNullWhen(true)] out object? result);
+        bool TryGetValue([NotNullWhen(true)] out object? result);
 
         bool ItIs(object? value);
         bool ItIs(Predicate<object> predicate);
@@ -47,19 +47,19 @@ namespace CCEnvs.FuncLanguage
 
         Either<T, R> Select<R>(Func<T, R> selector);
 
-        object? IConditional.Access() => GetValue();
-        object IConditional.Access(object defaultValue)
+        object? IConditional.GetValue() => GetValue();
+        object IConditional.GetValue(object defaultValue)
         {
             return GetValue(defaultValue.As<T>())!;
         }
-        object IConditional.Access(Func<object> defaultValueFactory)
+        object IConditional.GetValue(Func<object> defaultValueFactory)
         {
-            return Access(() => defaultValueFactory())!;
+            return GetValue(() => defaultValueFactory())!;
         }
 
-        object IConditional.AccessUnsafe() => GetValueUnsafe()!;
+        object IConditional.GetValueUnsafe() => GetValueUnsafe()!;
 
-        bool IConditional.TryAccess([NotNullWhen(true)] out object? result)
+        bool IConditional.TryGetValue([NotNullWhen(true)] out object? result)
         {
             var t = TryGetValue(out T? tR);
 

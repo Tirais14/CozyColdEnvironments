@@ -138,7 +138,7 @@ namespace CCEnvs.FuncLanguage
 
         public static Maybe<TOutValue> Unfold<TValue, TOutValue>(IConditional input)
         {
-            return input.Access() switch
+            return input.GetValue() switch
             {
                 Maybe<TValue> maybe => Unfold<Maybe<TValue>, TValue, TOutValue>(maybe),
                 IMaybe<TValue> untyped => Unfold<TValue, TOutValue>(untyped),
@@ -170,7 +170,7 @@ namespace CCEnvs.FuncLanguage
             if (input.IsNone)
                 return default!;
 
-            return input.Access().AsOrDefault<TOutValue>();
+            return input.GetValue().AsOrDefault<TOutValue>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
