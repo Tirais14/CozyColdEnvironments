@@ -1,13 +1,9 @@
 using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Unity.Components;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using UnityEngine;
 using ZLinq;
 
 #nullable enable
@@ -24,11 +20,6 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         private readonly CCDictionary<Identifier, IAddressablesDatabase> collection = new();
         private readonly AddressablesDatabaseSearch search = new();
 
-        private Stopwatch? stopwatch;
-
-        public event Action? OnStartLoading;
-        public event Action? OnLoaded;
-
         public Result<IAddressablesDatabase> this[Identifier key] {
             get => collection[key];
             set => collection[key] = value;
@@ -37,17 +28,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public IEnumerable<Identifier> Keys => collection.Keys;
         public IEnumerable<IAddressablesDatabase> Values => collection.Values;
         public int Count => collection.Count;
-        public bool IsLoading => collection.Values.Any(db => db.IsLoading);
-        public bool IsLoaded => !IsLoading && Count > 0;
 
         bool ICollection<KeyValuePair<Identifier, IAddressablesDatabase>>.IsReadOnly => false;
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            BindEvents();
-        }
 
         public AddressablesDatabaseSearch Search()
         {
@@ -56,12 +38,23 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public void Add(Identifier key, IAddressablesDatabase value)
         {
+            if (key.Number.IsNone)
+            {
+                key = key.WithNumber(0);
+
+                if (collection.ContainsKey(key))
+                {
+                    int nextNumber = Keys.Where(other => other.Text == key.Text).Max(key => key.Number.Raw) + 1;
+                    key = key.WithNumber(nextNumber);
+                }
+            }
+
             collection.Add(key, value);
         }
 
         public void Add(KeyValuePair<Identifier, IAddressablesDatabase> item)
         {
-            collection.Add(item);
+            Add(item.Key, item.Value);
         }
 
         public bool Remove(Identifier key)
@@ -94,9 +87,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             collection.Clear();
         }
 
+        private bool disposed;
         public void Dispose() => Dispose(true);
 
-        private bool disposed;
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
@@ -104,7 +97,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             if (disposing)
             {
-                collection.Values.CForEach(x => x.Dispose());
+                collection.Values.DisposeAll();
                 collection.Clear();
             }
 
@@ -117,21 +110,5 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        protected void BindEvents()
-        {
-            OnStartLoading += () =>
-            {
-                stopwatch ??= new Stopwatch();
-                stopwatch.Start();
-                this.PrintLog("Loading started");
-            };
-
-            OnLoaded += () =>
-            {
-                stopwatch!.Stop();
-                this.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalSeconds} seconds.");
-            };
-        }
     }
 }

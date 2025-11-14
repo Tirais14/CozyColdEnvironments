@@ -1,16 +1,9 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -18,9 +11,8 @@ using Object = UnityEngine.Object;
 namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public class AddressablesDatabase<TAsset> : IAddressablesDatabase<TAsset>
-        where TAsset : Object
     {
-        public static Func<Object, Identifier> DefaultAssetIdFactory { get; } = asset =>
+        public static Func<object, Identifier> DefaultAssetIdFactory { get; } = asset =>
         {
             if (asset is IIDMarked idMarked)
             {
@@ -35,32 +27,23 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 }
             }
 
-            return asset.name;
+            return asset.As<Object>().name;
         };
 
-        protected readonly List<AsyncOperationHandle> loadHandles = new(0);
         private readonly CCDictionary<Identifier, TAsset> collection = new();
         private readonly System.Diagnostics.Stopwatch stopwatch = new();
         private readonly AddressablesDatabaseSearch search = new();
-        private bool disposedValue;
-        private int loadingCount;
-
-        public event Action OnStartLoading = null!;
-        public event Action OnLoaded = null!;
 
         public Result<TAsset> this[Identifier id] {
             get => collection[id];
             set => collection[id] = value;
         }
 
-        public Identifier ID { get; init; }
         public IEnumerable<Identifier> Keys => collection.Keys;
         public IEnumerable<TAsset> Values => collection.Values;
         public int Count => collection.Count;
-        public bool IsLoading => loadingCount > 0;
-        public bool IsLoaded => !IsLoading && Count > 0;
         public Type AssetType { get; } = typeof(TAsset);
-        public Func<Object, Identifier>? AssetIdFactory { get; set; } = DefaultAssetIdFactory;
+        public Func<object, Identifier>? AssetIdFactory { get; set; } = DefaultAssetIdFactory;
 
         bool ICollection<KeyValuePair<Identifier, TAsset>>.IsReadOnly => false;
 
@@ -91,7 +74,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 return;
             }
 
-            Add(AssetIdFactory(asset), asset);
+            Add(AssetIdFactory(asset.As<Object>()), asset);
         }
 
         public bool Contains(KeyValuePair<Identifier, TAsset> item)
@@ -124,83 +107,39 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             collection.CopyTo(array, arrayIndex);
         }
 
-        public AddressablesDatabaseSearch Search() => search;
-
-        public virtual async UniTask LoadAssetsByLabelsAsync<T>(string[] labels,
-            Func<T, Object[]>? converter = null)
-            where T : Object
+        public AddressablesDatabaseSearch Search()
         {
-            Guard.IsNotNull(labels);
-            if (labels.IsEmpty())
-                return;
-            if (typeof(TAsset).IsNotType<T>())
-            {
-                this.PrintError($"Invalid asset type: {typeof(T).GetFullName()}.");
-                return;
-            }
-
-            converter ??= input => Range.From(input.As<T>());
-
-            try
-            {
-                loadingCount++;
-                OnStartLoadingInternal();
-
-                var handle = await AddressableLoader.LoadAssetsPrioritizedAsync<T>(
-                    labels,
-                    mergeMode: Addressables.MergeMode.Intersection);
-
-                loadHandles.Add(handle);
-
-                handle.Result.ZL()
-                    .SelectMany(x => converter(x))
-                    .ForEach((asset) => Add(asset.As<TAsset>())
-                    );
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
-            finally
-            {
-                loadingCount--;
-                OnLoadedInternal();
-            }
+            return search.Reset().From(this);
         }
 
+        private bool disposed;
         public void Dispose() => Dispose(disposing: true);
-
-        public IEnumerator<KeyValuePair<Identifier, TAsset>> GetEnumerator() => collection.GetEnumerator();
-
         protected virtual void Dispose(bool disposing)
         {
-            if (disposedValue)
+            if (disposed)
                 return;
 
             if (disposing)
             {
-                collection.Clear();
+                foreach (var asset in collection.Values)
+                    Addressables.Release(asset);
 
-                loadHandles.ForEach(x => x.Release());
-                loadHandles.Clear();
-                loadHandles.TrimExcess();
+                collection.Clear();
             }
 
-            disposedValue = true;
+            disposed = true;
         }
 
-        protected virtual void OnStartLoadingInternal()
-        {
-            OnStartLoading?.Invoke();
+        public IEnumerator<KeyValuePair<Identifier, TAsset>> GetEnumerator() => collection.GetEnumerator();
 
+        protected virtual void OnLoadingInternal()
+        {
             this.PrintLog("Loading started.");
             stopwatch.Start();
         }
 
         protected virtual void OnLoadedInternal()
         {
-            OnLoaded?.Invoke();
-
             stopwatch.Stop();
             this.PrintLog($"Loading finished in {stopwatch.Elapsed.TotalMilliseconds} ms.");
             stopwatch.Reset();

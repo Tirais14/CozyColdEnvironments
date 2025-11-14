@@ -4,6 +4,8 @@ using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Returnables;
+using Humanizer;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
@@ -24,6 +26,10 @@ namespace CCEnvs
         public const string FULL_NAME = "CozyColdEnvironments";
         public const string COPYRIGHT_STAMP = "@Tirais: " + FULL_NAME;
 
+        public static MemoryCache Cache { get; } = new(new MemoryCacheOptions
+        {
+            ExpirationScanFrequency = 5.Seconds(),
+        });
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
         public static AsyncTaskRegistry BackgroundTasks { get; } = new();
         public static object EmptyObject { get; } = new object();

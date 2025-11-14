@@ -19,6 +19,33 @@ namespace CCEnvs
 #endif
         public Maybe<string> Text { get; init; }
 
+        public Identifier(Maybe<int> number, string? text)
+        {
+            Number = number;
+            Text = text;
+        }
+
+        public Identifier(Maybe<int> number)
+            :
+            this()
+        {
+            Number = number;
+        }
+
+        public Identifier(string text)
+            :
+            this()
+        {
+            Text = text;
+        }
+
+        public Identifier(Enum @enum)
+            :
+            this()
+        {
+            Text = @enum.ToString();
+        }
+
         public static bool operator ==(Identifier left, Identifier right)
         {
             return left.Equals(right);
@@ -57,37 +84,24 @@ namespace CCEnvs
             return new Identifier(@enum);
         }
 
-        public Identifier(int number, string text)
-        {
-            Number = number;
-            Text = text;
-        }
-
-        public Identifier(int number)
-            :
-            this()
-        {
-            Number = number;
-        }
-
-        public Identifier(string text)
-            :
-            this()
-        {
-            Text = text;
-        }
-
-        public Identifier(Enum @enum)
-            :
-            this()
-        {
-            Text = @enum.ToString();
-        }
-
         public static Identifier Create<T>(T value)
             where T : struct, Enum
         {
             return new Identifier(value.ToString());
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Identifier WithText(string? text)
+        {
+            return new Identifier(Number.Raw, text);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Identifier WithNumber(Maybe<int> number)
+        {
+            return new Identifier(number, Text.Raw);
         }
 
         public readonly bool Equals(Identifier other)

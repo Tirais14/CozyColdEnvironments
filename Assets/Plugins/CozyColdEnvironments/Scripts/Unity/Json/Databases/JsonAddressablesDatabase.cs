@@ -14,18 +14,19 @@ namespace CCEnvs.Json.AddressableAssets.Databases
     public abstract class JsonAddressablesDatabase<TKey, TValue> 
         : Database<TKey, TValue>
     {
-        public async UniTask LoadAssetsAsync(AssetLabels textAssetLabels,
+        public async UniTask LoadAssetsAsync(string[] labels,
             Func<TValue, TKey> keySelector)
         {
-            CC.Guard.IsNotNull(keySelector, nameof(keySelector));
+            throw new NotImplementedException();
+            //CC.Guard.IsNotNull(keySelector, nameof(keySelector));
 
-            using var textAssets = new AddressablesDatabase<TextAsset>();
+            //using var textAssets = new AddressablesDatabase<TextAsset>();
 
-            await textAssets!.LoadAssetsAsync(textAssetLabels);
+            //await textAssets!.LoadAssetsByLabelsAsync<TextAsset>(labels);
 
-            textAssets.Values.CForEach(item => Deserialize(item, keySelector));
+            //textAssets.Values.CForEach(item => Deserialize(item, keySelector));
 
-            TrimExcess();
+            //TrimExcess();
         }
 
         /// <returns><see langword="null"/> for deleting any converter of <see langword="TItem"/> or value for override converter</returns>

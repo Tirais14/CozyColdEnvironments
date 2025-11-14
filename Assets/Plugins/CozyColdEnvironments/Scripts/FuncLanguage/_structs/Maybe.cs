@@ -18,6 +18,7 @@ namespace CCEnvs.FuncLanguage
         partial struct Maybe<T> : IEquatable<Maybe<T>>
     {
         public readonly static Maybe<T> None = default;
+        //private static readonly Lazy<bool> targetIsStruct = new((() => typeof(T).IsValueType));
 
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
@@ -102,7 +103,13 @@ namespace CCEnvs.FuncLanguage
 
         public readonly bool Equals(Maybe<T> other)
         {
-            return EqualityComparer<T?>.Default.Equals(target, other.target);
+            var comparer = EqualityComparer<T?>.Default;
+
+            return comparer.Equals(target, other.target)
+                   &&
+                   comparer.Equals(@default, other.@default)
+                   &&
+                   IsSome && other.IsSome;
         }
         public readonly override bool Equals(object obj)
         {
@@ -111,7 +118,12 @@ namespace CCEnvs.FuncLanguage
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(target);
+            return HashCode.Combine(target, @default, IsSome);
+        }
+
+        public readonly override string ToString()
+        {
+            return $"{target}, IsSome: {IsSome}";
         }
 
         public readonly IEnumerator<T> GetEnumerator()

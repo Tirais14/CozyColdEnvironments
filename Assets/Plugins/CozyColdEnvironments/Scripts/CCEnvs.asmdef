@@ -31,7 +31,9 @@
         "C5.dll",
         "CommunityToolkit.Common.dll",
         "CommunityToolkit.Diagnostics.dll",
-        "Microsoft.Extensions.Caching.Memory.dll"
+        "Microsoft.Extensions.Caching.Memory.dll",
+        "Microsoft.Extensions.Logging.Abstractions.dll",
+        "Microsoft.Extensions.Options.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

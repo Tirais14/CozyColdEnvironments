@@ -6,8 +6,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 {
     public interface IAddressablesDatabaseRegistry 
         : ICCDictionary<Identifier, IAddressablesDatabase>,
-        IDisposable,
-        ILoadable
+        IDisposable
     {
         AddressablesDatabaseSearch Search();
     }

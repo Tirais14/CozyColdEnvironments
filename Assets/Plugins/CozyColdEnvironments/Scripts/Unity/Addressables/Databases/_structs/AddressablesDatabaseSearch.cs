@@ -70,6 +70,28 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AddressablesDatabaseSearch ByNumberID(Maybe<int> number = default)
+        {
+            ByNumberID(number.GetValue(int.MinValue));
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AddressablesDatabaseSearch ByEnumID<T>(T input)
+            where T : unmanaged, Enum
+        {
+            var id = Identifier.Create(input);
+
+            ByNumberID(id.Number.GetValue(int.MinValue));
+            ByTextID(id.Text.Raw);
+
+            return this;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AddressablesDatabaseSearch ByDatabase(Type type, Type? assetType = null)
         {
@@ -86,11 +108,11 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             var reg = registry.GetValueUnsafe();
 
-            return from db in reg.Values
-                   where FilterType(db.GetType(), type)
-                   where FilterText(db.ID.Text)
-                   where FilterNumber(db.ID.Number)
-                   select db;
+            return from item in reg
+                   where FilterType(item.Value.GetType(), type)
+                   where FilterText(item.Key.Text)
+                   where FilterNumber(item.Key.Number)
+                   select item.Value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,7 +126,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 Text = textIdFilter
             };
 
-            if (reg.TryGetValue(id, out IAddressablesDatabase db)
+            if (reg[id].Lax().TryGetValue(out IAddressablesDatabase? db)
                 &&
                 FilterType(db.GetType(), type)
                 &&
@@ -118,6 +140,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return (dbs.SingleOrDefault(), new DatabaseNotFoundException(id, reg, assetType));
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<T> Database<T>(Type? assetType = null)
             where T : IAddressablesDatabase
@@ -125,7 +148,8 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             return Database(typeof(T), assetType).Cast<T>();
         }
 
-        public IEnumerable<Object> Assets(Type? type = null)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<object> Assets(Type? type = null)
         {
             IAddressablesDatabase db = database.GetValueUnsafe();
 
@@ -136,8 +160,15 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                    select item.Value;
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<Object> Asset(Type? type = null)
+        public IEnumerable<T> Assets<T>()
+        {
+            return Assets(typeof(T)).Cast<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<object> Asset(Type? type = null)
         {
             var db = database.GetValueUnsafe();
 
@@ -151,6 +182,13 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 some: asset => (asset, null!),
                 none: () => (Assets(type).SingleOrDefault(), new AssetNotFoundException(db, id, type)))
                 .GetValueUnsafe();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<T> Asset<T>()
+        {
+            return Asset(typeof(T)).Cast<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

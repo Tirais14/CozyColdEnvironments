@@ -12,6 +12,9 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using ZLinq;
 using Object = UnityEngine.Object;
+using Microsoft.Extensions.Caching.Memory;
+using Humanizer;
+using System.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets
@@ -79,43 +82,6 @@ namespace CCEnvs.Unity.AddrsAssets
             string[] labels,
             Action<T>? callback = null,
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
-            where T : Object
-        {
-            CC.Guard.Argument(labels.IsDefault(), nameof(labels));
-
-            var locationsHandle = await LoadLocationsAsync(labels, mergeMode, assetType: typeof(T));
-
-            IList<IResourceLocation> locations = await locationsHandle;
-
-            if (!isValidOperation(out var failedResourcesHandle))
-                return failedResourcesHandle;
-
-            return Addressables.LoadAssetsAsync(locations, callback);
-
-            bool isValidOperation(out AsyncOperationHandle<IList<T>> failed)
-            {
-                if (locationsHandle.Status != AsyncOperationStatus.Succeeded
-                    ||
-                    !locationsHandle.IsValid())
-                {
-                    locationsHandle.Release();
-                    failed = Addressables.ResourceManager.CreateCompletedOperation(
-                        (IList<T>)Array.Empty<T>(),
-                        string.Empty);
-
-                    return false;
-                }
-
-                failed = default;
-                return true;
-            }
-        }
-
-        public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsPrioritizedAsync<T>(
-            string[] labels,
-            Action<T>? callback = null,
-            Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
-            where T : Object
         {
             CC.Guard.Argument(labels.IsDefault(), nameof(labels));
 
