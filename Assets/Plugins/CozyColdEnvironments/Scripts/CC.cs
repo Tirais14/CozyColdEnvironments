@@ -63,6 +63,17 @@ namespace CCEnvs
             {
                 throw new IndexOutOfRangeException($"Index = {index}.");
             }
+
+            [DoesNotReturn]
+            public static object ArgumentException(object argument, string argName)
+            {
+                throw new ArgumentException($"Argument: {argName} cannot be {argName}.");
+            }
+
+            public static object InvalidOperation(object arg, string? argName = null)
+            {
+                throw new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg}");
+            }
         }
 #pragma warning restore S112
 

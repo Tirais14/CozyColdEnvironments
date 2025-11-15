@@ -1,9 +1,11 @@
 #nullable enable
+using System;
+
 namespace CCEnvs.Unity.Items
 {
     public interface IHarvestableConfig
     {
-        IItemContainer[] OutputItems { get; }
-        IItem[] RequiredItems { get; }
+        Lazy<IItemContainer[]> OutputItems { get; }
+        Lazy<IItem[]> RequiredItems { get; }
     }
 }

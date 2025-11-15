@@ -58,18 +58,18 @@ namespace CCEnvs.Unity.Items
         {
             if (item.IsNull())
             {
-                if (config.OutputItems.IsEmpty())
+                if (config.OutputItems.Value.IsEmpty())
                     return true;
                 else
                     return false;
             }
 
-            return config.RequiredItems.Contains(item);
+            return config.RequiredItems.Value.Contains(item);
         }
 
         protected IItemContainer[] GetHarvestedItems()
         {
-            return config.OutputItems;
+            return config.OutputItems.Value;
         }
 
         protected virtual void OnSetConfig() { }

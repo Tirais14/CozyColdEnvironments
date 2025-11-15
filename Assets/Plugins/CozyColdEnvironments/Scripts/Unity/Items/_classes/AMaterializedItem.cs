@@ -1,19 +1,14 @@
-using UnityEngine;
+using CCEnvs.Unity.Components;
 
 #nullable enable
 #pragma warning disable S4035
 namespace CCEnvs.Unity.Items
 {
-    public abstract class AMaterializedItem : IItem
+    public abstract class AMaterializedItem : CCBehaviour
     {
         protected IItem item { get; set; } = null!;
 
-        public string Name => item.Name;
-        public int ID => item.ID;
-        public Sprite Icon => item.Icon;
-        public int MaxItemCount => item.MaxItemCount;
-
-        public void SetInternalItem(IItem item)
+        public void SetItem(IItem item)
         {
             CC.Guard.IsNotNull(item, nameof(item));
 
@@ -21,24 +16,11 @@ namespace CCEnvs.Unity.Items
             OnSetInternalItem();
         }
 
-        public bool Equals(IItem other)
+        public IItem Dematerialize()
         {
-            return item.Equals(other);
-        }
+            Destroy(gameObject);
 
-        public override bool Equals(object obj)
-        {
-            return item.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return item.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return item.ToString();
+            return item;
         }
 
         protected abstract void OnSetInternalItem();

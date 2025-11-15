@@ -9,9 +9,9 @@ namespace CCEnvs.Unity.Items
     public class MaterializedItem2D : AMaterializedItem
     {
         [field: GetBySelf]
-        protected SpriteRenderer renderer { get; private set; } = null!;
+        new protected SpriteRenderer renderer { get; private set; } = null!;
 
-        public static MaterializedItem2D Create(IItem item, Vector3 position, Action<MaterializedItem2D>? callback = null)
+        public static MaterializedItem2D Create(IItem item, Vector2 position, Action<MaterializedItem2D>? callback = null)
         {
             CC.Guard.IsNotNull(item, nameof(item));
 

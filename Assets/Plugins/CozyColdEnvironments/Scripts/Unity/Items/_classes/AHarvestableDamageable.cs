@@ -2,9 +2,10 @@ using CCEnvs.Unity.Injections;
 using UniRx;
 using UnityEngine;
 
+#nullable enable
 namespace CCEnvs.Unity.Items
 {
-    public class HarvestableDamageable<TConfig, TDamageable> : Harvestable<TConfig>
+    public abstract class AHarvestableDamageable<TConfig, TDamageable> : Harvestable<TConfig>
         where TConfig : IHarvestableConfig
         where TDamageable : Component, IDamageable
     {
@@ -19,10 +20,13 @@ namespace CCEnvs.Unity.Items
                 .AddTo(damageable);
         }
 
+        protected override bool HarvestPredicate(IItem? item) => false;
+
+        protected abstract void DistributeHarvestedItems();
+
         private void OnDurablityOut()
         {
-
-
+            DistributeHarvestedItems();
             Destroy(gameObject);
         }
     }
