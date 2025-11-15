@@ -5,9 +5,9 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S1244
-namespace CCEnvs.Unity.Items.Components
+namespace CCEnvs.Unity.Items
 {
-    public class HasDurability : CCBehaviour, IHasDurability
+    public class Damageable : CCBehaviour, IDamageable
     {
         [SerializeField]
         private ReactiveProperty<float> durability = new();
@@ -23,6 +23,12 @@ namespace CCEnvs.Unity.Items.Components
         [field: SerializeField]
         public float MaxDurability { get; set; }
 
+        protected override void Start()
+        {
+            if (Durability == default)
+                Durability = MaxDurability;
+        }
+
         public float DecreaseDurability(float value)
         {
             value = Mathf.Abs(value);
@@ -32,6 +38,12 @@ namespace CCEnvs.Unity.Items.Components
             Durability = Mathf.Clamp(Durability - value, MinDurability, MaxDurability);
 
             return previous - Durability;
+        }
+        public float DecreaseDurability(IDamager damager)
+        {
+            CC.Guard.IsNotNull(damager, nameof(damager));
+
+            return DecreaseDurability(damager.DamageValue);
         }
 
         public float IncreaseDurability(float value)
@@ -47,16 +59,30 @@ namespace CCEnvs.Unity.Items.Components
 
         public IObservable<ChangedDurabilityEvent> ObserveDecreaseDurability()
         {
-            return durability.Pairwise()
+            return durability.Where(_ => StartPassed)
+                .Pairwise()
                 .Where(pair => pair.Current < pair.Previous)
                 .Select(pair => new ChangedDurabilityEvent(pair.Previous, pair.Current));
         }
 
         public IObservable<ChangedDurabilityEvent> ObserveIncreaseDurability()
         {
-            return durability.Pairwise()
+            return durability.Where(_ => StartPassed)
+                .Pairwise()
                 .Where(pair => pair.Current > pair.Previous)
                 .Select(pair => new ChangedDurabilityEvent(pair.Previous, pair.Current));
+        }
+
+        public IObservable<float> ObserveOnMaxDurability()
+        {
+            return durability.Where(_ => StartPassed)
+                .Where(x => x.NearlyEquals(MaxDurability));
+        }
+
+        public IObservable<float> ObserveOnMinDurability()
+        {
+            return durability.Where(_ => StartPassed)
+                .Where(x => x.NearlyEquals(MinDurability));
         }
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.Unity
 {
     public readonly struct ChangedDurabilityEvent
     {
