@@ -4,7 +4,7 @@ using CCEnvs.Unity.Components;
 #pragma warning disable S4035
 namespace CCEnvs.Unity.Items
 {
-    public abstract class AMaterializedItem : CCBehaviour
+    public abstract class AMaterializedItem : CCBehaviour, ICollectable
     {
         protected IItem item { get; set; } = null!;
 
@@ -16,11 +16,10 @@ namespace CCEnvs.Unity.Items
             OnSetInternalItem();
         }
 
-        public IItem Dematerialize()
+        public IItemContainer[] CollectItems()
         {
             Destroy(gameObject);
-
-            return item;
+            return Range.From(new ItemContainer(item));
         }
 
         protected abstract void OnSetInternalItem();

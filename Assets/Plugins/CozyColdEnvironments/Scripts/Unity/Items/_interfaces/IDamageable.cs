@@ -10,7 +10,8 @@ namespace CCEnvs.Unity.Items
         float MaxDurability { get; set; }
 
         float DecreaseDurability(float value);
-        float DecreaseDurability(IDamager damager);
+
+        float DecreaseDurabilityBy(IDamager damager);
 
         float IncreaseDurability(float value);
 

@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Unity.Components;
 using System;
 using UniRx;
@@ -9,7 +10,9 @@ namespace CCEnvs.Unity.Items
 {
     public class Damageable : CCBehaviour, IDamageable
     {
+        [OptionalField]
         [SerializeField]
+        [Tooltip("Keep deafult to use MaxDurability on Start.")]
         private ReactiveProperty<float> durability = new();
 
         public float Durability {
@@ -39,7 +42,7 @@ namespace CCEnvs.Unity.Items
 
             return previous - Durability;
         }
-        public float DecreaseDurability(IDamager damager)
+        public float DecreaseDurabilityBy(IDamager damager)
         {
             CC.Guard.IsNotNull(damager, nameof(damager));
 

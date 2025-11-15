@@ -1,43 +1,36 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using SuperLinq;
-using System;
-using System.Linq;
 
 namespace CCEnvs.Unity.Interactables
 {
     public interface IInteractable
     {
-        /// <returns>Left is message, right is returned value</returns>
-        Either<InvokeInfo, Maybe<object>[]> Interact(params object?[]? tools);
+        bool RequireInput { get; }
+        bool HasOutput { get; }
+
+        bool TryInteract(object? input, out Maybe<object> result);
     }
     public interface IInteractable<in TIn>
         : IInteractable
     {
-        /// <inheritdoc cref="IInteractable.Interact(object?)"/>
-        Either<InvokeInfo, Maybe<object>[]> Interact(params TIn?[]? tools);
+        bool TryInteract(TIn? input, out Maybe<object> result);
 
-        Either<InvokeInfo, Maybe<object>[]> IInteractable.Interact(params object?[]? tools)
+        bool IInteractable.TryInteract(object? input, out Maybe<object> result)
         {
-            return Interact(tools.Cast<TIn>().ToArray());
+            return TryInteract(input.AsOrDefault<TIn>().Raw, out result);
         }
     }
     public interface IInteractable<in TIn, TOut> 
         : IInteractable<TIn>
     {
-        /// <inheritdoc cref="IInteractable.Interact(object?)"/>
-        new Either<InvokeInfo, Maybe<TOut>[]> Interact(params TIn?[]? tools);
+        bool TryInteract(TIn? input, out Maybe<TOut> result);
 
-        Either<InvokeInfo, Maybe<object>[]> IInteractable<TIn>.Interact(params TIn?[]? tools)
+        bool IInteractable<TIn>.TryInteract(TIn? input, out Maybe<object> result)
         {
-            var t = Interact(tools);
+            var t = TryInteract(input, out Maybe<TOut> resultTyped);
+            result = resultTyped;
 
-            return (t.LeftTarget, t.IfRight(
-                arr => arr.Select(
-                    arr => arr.Raw.As<object>().Maybe()).ToArray())
-                .GetValueRight(Array.Empty<Maybe<object>>())
-                );
+            return t;
         }
     }
 }
