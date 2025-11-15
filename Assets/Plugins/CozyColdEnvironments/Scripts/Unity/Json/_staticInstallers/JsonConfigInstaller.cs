@@ -3,7 +3,7 @@ using CCEnvs.Collections;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Unity.Json.Converters;
-using CCEnvs.Unity.Storages;
+using CCEnvs.Unity.Items;
 
 #nullable enable
 #pragma warning disable S1144
