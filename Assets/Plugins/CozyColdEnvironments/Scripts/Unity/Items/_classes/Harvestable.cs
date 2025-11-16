@@ -4,13 +4,15 @@ using CCEnvs.Unity.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace CCEnvs.Unity.Items
 {
     public class Harvestable<TConfig> : CCBehaviour, IHarvestable
         where TConfig : IHarvestableConfig
     {
-        protected TConfig config { get; private set; } = default!;
+        [field: SerializeField]
+        protected TConfig config;
 
         public void SetConfig(TConfig config)
         {
@@ -22,7 +24,8 @@ namespace CCEnvs.Unity.Items
         public IEnumerable<IItem> OutputItems => GetHarvestedItems()
             .Select(cnt => cnt.Item)
             .Where(item => item.IsSome)
-            .Select(item => item.GetValueUnsafe());
+            .Select(item => item.GetValueUnsafe()
+            );
 
         public bool CanHarvestedBy(IItem? item) => HarvestPredicate(item);
 
@@ -58,18 +61,18 @@ namespace CCEnvs.Unity.Items
         {
             if (item.IsNull())
             {
-                if (config.OutputItems.Value.IsEmpty())
+                if (config.OutputItems.IsEmpty())
                     return true;
                 else
                     return false;
             }
 
-            return config.RequiredItems.Value.Contains(item);
+            return config.RequiredItems.Contains(item);
         }
 
         protected IItemContainer[] GetHarvestedItems()
         {
-            return config.OutputItems.Value;
+            return config.OutputItems.ToArray();
         }
 
         protected virtual void OnSetConfig() { }

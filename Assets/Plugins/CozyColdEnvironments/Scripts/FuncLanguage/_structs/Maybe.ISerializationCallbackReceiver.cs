@@ -12,7 +12,7 @@ namespace CCEnvs.FuncLanguage
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            IsSome = IsSome(target);
+            IsSome = IsSome(target, @default);
         }
     }
 }

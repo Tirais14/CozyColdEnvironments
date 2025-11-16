@@ -1,4 +1,5 @@
 using CCEnvs.Attributes;
+using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using System;
 using UniRx;
@@ -12,7 +13,7 @@ namespace CCEnvs.Unity.Items
     {
         [OptionalField]
         [SerializeField]
-        [Tooltip("Keep deafult to use MaxDurability on Start.")]
+        [Tooltip("Keep default value to use MaxDurability on Start.")]
         private ReactiveProperty<float> durability = new();
 
         public float Durability {
@@ -28,6 +29,7 @@ namespace CCEnvs.Unity.Items
 
         protected override void Start()
         {
+            base.Start();
             if (Durability == default)
                 Durability = MaxDurability;
         }
@@ -73,7 +75,8 @@ namespace CCEnvs.Unity.Items
             return durability.Where(_ => StartPassed)
                 .Pairwise()
                 .Where(pair => pair.Current > pair.Previous)
-                .Select(pair => new ChangedDurabilityEvent(pair.Previous, pair.Current));
+                .Select(pair => new ChangedDurabilityEvent(pair.Previous, pair.Current)
+                );
         }
 
         public IObservable<float> ObserveOnMaxDurability()

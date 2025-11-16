@@ -3,6 +3,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.UI.MVVM;
 using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks.Triggers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,12 +24,10 @@ namespace CCEnvs.Unity
             Reusable,
             IncludeInactive = 2,
             ExcludeSelf = 4,
-            ByFullName = 8,
-            IgnoreCase = 16,
             /// <summary>
             /// Except in depth childrens from results
             /// </summary>
-            NotRecursive = 32,
+            NotRecursive = 8,
             Default = None
         }
 
@@ -39,17 +38,18 @@ namespace CCEnvs.Unity
         /// <summary>
         /// May be null
         /// </summary>
-        public Maybe<GameObject> Target { get; protected set; } = null!;
-        public Settings settings { get; protected set; }
-        public FindMode findMode { get; protected set; }
-        public FindObjectsSortMode sortMode { get; protected set; }
-        public Maybe<string> name { get; protected set; }
+        public Maybe<GameObject> Target { get; set; } = null!;
+        public Settings settings { get; set; }
+        public StringMatchSettings stringMatchSettings { get; set; }
+        public FindMode findMode { get; set; }
+        public FindObjectsSortMode sortMode { get; set; }
+        public Maybe<string> name { get; set; }
         /// <summary>
         /// <see cref="Settings.ByFullName"/>, <see cref="Settings.IgnoreCase"/> doesn' affect
         /// </summary>
-        public Maybe<string> tag { get; protected set; }
-        public int? layerMask { get; protected set; }
-        public Maybe<Type> mustContainsType { get; protected set; }
+        public Maybe<string> tag { get; set; }
+        public int? layerMask { get; set; }
+        public Maybe<Type> mustContainsType { get; set; }
 
         public GameObjectAppeal()
         {
@@ -126,9 +126,9 @@ namespace CCEnvs.Unity
         public GameObjectAppeal ByFullName(bool state = true)
         {
             if (state)
-                settings |= Settings.ByFullName;
+                stringMatchSettings &= ~StringMatchSettings.Partial;
             else
-                settings &= ~Settings.ByFullName;
+                stringMatchSettings |= StringMatchSettings.Partial;
 
             return this;
         }
@@ -523,10 +523,10 @@ namespace CCEnvs.Unity
             bool anyType = type is null;
             type ??= typeof(Component);
 
-            IEnumerable<Component> results;
+            IEnumerable<Component> components;
             if (anyType || type.IsType<Component>())
             {
-                results = findMode switch
+                components = findMode switch
                 {
                     FindMode.Self => target.GetComponents(type),
                     FindMode.InChilds => target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
@@ -536,7 +536,7 @@ namespace CCEnvs.Unity
             }
             else
             {
-                results = findMode switch
+                components = findMode switch
                 {
                     FindMode.Self => target.Components()
                                            .Where(cmp => anyType || cmp.IsInstanceOfType(type!)),
@@ -553,52 +553,39 @@ namespace CCEnvs.Unity
                 };
             }
 
+            if (mustContainsType.IsSome)
+                components = components.Where(cmp =>
+                    cmp.gameObject.AppealTo()
+                    .Component(mustContainsType.GetValueUnsafe())
+                    .Lax()
+                    .IsSome
+                    );
+
             if (settings.IsFlagSetted(Settings.NotRecursive)
                 &&
                 findMode.IsFlagSetted(FindMode.InChilds))
             {
                 var goTransform = target.transform;
 
-                results = from cmp in results
-                          where cmp.gameObject != Target
-                          where cmp.transform.parent == goTransform
-                          select cmp;
+                components = from cmp in components
+                             where cmp.gameObject != Target
+                             where cmp.transform.parent == goTransform
+                             select cmp;
             }
 
-            if (layerMask.HasValue
-                ||
-                name.IsSome
-                ||
-                tag.IsSome)
-            {
-                results = from cmp in results
-                          select (cmp, go: cmp.gameObject) into x
-                          where name.Map(name =>
-                          {
-                              if (settings.IsFlagSetted(Settings.ByFullName))
-                                  return x.go.name == name;
-                              else
-                                  return x.go.name.ContainsOrdinal(name, settings.IsFlagSetted(Settings.IgnoreCase));
-                          }).Raw
-                          where !layerMask.HasValue || x.go.layer == layerMask
-                          where tag.Match(
-                              some: tag => x.go.CompareTag(tag),
-                              none: () => true)
-                          .Raw
-                          select x.cmp;
+            if (layerMask.HasValue)
+                components = components.Where(cmp => cmp.gameObject.layer == layerMask);
 
-                results = results.ToArray();
-            }
+            if (name.IsSome)
+                components = components.Where(cmp => cmp.gameObject.name.Match(name.GetValueUnsafe()));
 
-            results = mustContainsType.Match(
-                    some: type => results.Where(cmp => cmp.AppealTo().Component(type).Lax().IsSome),
-                    none: () => results)
-                .GetValueUnsafe();
+            if (tag.IsSome)
+                components = components.Where(cmp => cmp.gameObject.CompareTag(tag.GetValueUnsafe()));
 
             if (settings.IsFlagSetted(Settings.ExcludeSelf))
-                results = results.Where(cmp => cmp.gameObject != Target);
+                components = components.Where(cmp => cmp.gameObject != target);
 
-            return results;
+            return components;
         }
     }
 

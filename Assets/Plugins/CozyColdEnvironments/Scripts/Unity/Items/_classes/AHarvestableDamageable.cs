@@ -22,11 +22,11 @@ namespace CCEnvs.Unity.Items
 
         protected override bool HarvestPredicate(IItem? item) => false;
 
-        protected abstract void DistributeHarvestedItems();
+        protected abstract void OnHarvested();
 
         private void OnDurablityOut()
         {
-            DistributeHarvestedItems();
+            OnHarvested();
             Destroy(gameObject);
         }
     }

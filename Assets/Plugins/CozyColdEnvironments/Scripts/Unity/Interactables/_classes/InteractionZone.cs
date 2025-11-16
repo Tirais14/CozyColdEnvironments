@@ -1,28 +1,30 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
-using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 using ZLinq;
 
 #nullable enable
-#pragma warning disable IDE0044
 namespace CCEnvs.Unity.Interactables
 {
-    /// <summary>
-    /// The child should be call explicitly <see cref="TryAddInteractableBy(Component?)"/> and <see cref="TryRemoveInteractableBy(Component?)"/>
-    /// </summary>
-    public abstract class InteractionZone<TAgent> : CCBehaviour, IInteractionZone<TAgent>
+    public abstract class InteractionZone<TItem, TAgent> : CCBehaviour, IInteractionZone<TItem, TAgent>
         where TAgent : Component
     {
         protected readonly C5.HashSet<TAgent> otherAgents = new();
-        private readonly HashSet<IInteractable> interactables = new();
+        protected readonly HashSet<TItem> items = new();
+        protected Subject<TItem>? itemEnterSubj;
+        protected Subject<TItem>? itemExitSubj;
 
         [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
+
+        public Type ItemType { get; } = typeof(TItem);
+        public Type AgentType { get; } = typeof(TAgent);
 
         protected TAgent agent => InteractionAgent;
 
@@ -33,39 +35,34 @@ namespace CCEnvs.Unity.Interactables
             otherAgents.CollectionChanged += OnOtherAgentsChanged;
         }
 
-        public IEnumerable<IInteractable> GetInteractables()
+        public IEnumerable<TItem> GetInteractables()
         {
-            foreach (var item in from agent in otherAgents
-                                 select agent.AppealTo().Component<IInteractable>().Lax() into ible
-                                 where ible.IsSome
-                                 select ible.GetValueUnsafe())
+            foreach (var item in from agent in otherAgents.ZL()
+                                 select agent.AppealTo().Component<TItem>().Lax() into item
+                                 where item.IsSome
+                                 select item.GetValueUnsafe())
             {
                 yield return item;
             }
         }
 
-        public IEnumerable<T> GetInteractables<T>() where T : IInteractable
-        {
-            return GetInteractables().Where(x => x.Is<T>()).Cast<T>();
-        }
+        public abstract bool ContainsPoint(Vector2 point);
+        public abstract bool ContainsPoint(Vector3 point);
 
-        public abstract bool Contains(Vector2 point);
-        public abstract bool Contains(Vector3 point);
-
-        public bool Contains(IInteractable? interactable)
+        public bool ContainsItem(TItem? item)
         {
-            if (interactable.IsNull())
+            if (item.IsNull())
                 return false;
 
-            if (interactables.Count > 0)
-                return interactables.Contains(interactable);
+            if (items.Count > 0)
+                return items.Contains(item);
 
-            interactables.AddRange(GetInteractables());
+            items.AddRange(GetInteractables());
 
-            return interactables.Contains(interactable);
+            return items.Contains(item);
         }
 
-        public bool Contains(TAgent? agent)
+        public bool ContainsAgent(TAgent? agent)
         {
             if (agent == null)
                 return false;
@@ -73,10 +70,93 @@ namespace CCEnvs.Unity.Interactables
             return otherAgents.Contains(agent);
         }
 
+        public IObservable<TItem> ObserveItemEnter()
+        {
+            if (itemEnterSubj is null)
+            {
+                itemEnterSubj = new Subject<TItem>();
+                itemEnterSubj.AddTo(this);
+            }
+            
+            return itemEnterSubj;
+        }
+
+        public IObservable<TItem> ObserveItemExit()
+        {
+            if (itemExitSubj is null)
+            {
+                itemExitSubj = new Subject<TItem>();
+                itemExitSubj.AddTo(this);
+            }
+
+            return itemExitSubj;
+        }
+
         private void OnOtherAgentsChanged(object _)
         {
-            if (interactables.Count > 0)
-                interactables.Clear();
+            if (items.Count > 0)
+                items.Clear();
+        }
+    }
+    public class InteractionZone : InteractionZone<object, Collider>
+    {
+        protected override void Start()
+        {
+            base.Start();
+            agent.isTrigger = true;
+        }
+
+        protected virtual void OnTriggerEnter(Collider other)
+        {
+            if (items.Add(other) && itemEnterSubj is not null)
+                itemEnterSubj.OnNext(other);
+        }
+
+        protected virtual void OnTriggerExit(Collider other)
+        {
+            if (items.Remove(other) && itemExitSubj is not null)
+                itemExitSubj.OnNext(other);
+        }
+
+        public override bool ContainsPoint(Vector3 point)
+        {
+            return agent.bounds.Contains(point);
+        }
+
+        public override bool ContainsPoint(Vector2 point)
+        {
+            return ContainsPoint((Vector3)point);
+        }
+    }
+
+    public class InteractionZone2D : InteractionZone<object, Collider2D>
+    {
+        protected override void Start()
+        {
+            base.Start();
+            agent.isTrigger = true;
+        }
+
+        protected virtual void OnTriggerEnter2D(Collider2D other)
+        {
+            if (items.Add(other) && itemEnterSubj is not null)
+                itemEnterSubj.OnNext(other);
+        }
+
+        protected virtual void OnTriggerExit2D(Collider2D other)
+        {
+            if (items.Remove(other) && itemExitSubj is not null)
+                itemExitSubj.OnNext(other);
+        }
+
+        public override bool ContainsPoint(Vector2 point)
+        {
+            return agent.OverlapPoint(point);
+        }
+
+        public override bool ContainsPoint(Vector3 point)
+        {
+            return ContainsPoint((Vector2)point);
         }
     }
 }

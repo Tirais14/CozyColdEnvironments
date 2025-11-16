@@ -1,11 +1,12 @@
 #nullable enable
 using System;
+using System.Collections.Immutable;
 
 namespace CCEnvs.Unity.Items
 {
     public interface IHarvestableConfig
     {
-        Lazy<IItemContainer[]> OutputItems { get; }
-        Lazy<IItem[]> RequiredItems { get; }
+        ImmutableArray<IItemContainer> OutputItems { get; }
+        ImmutableArray<IItem> RequiredItems { get; }
     }
 }

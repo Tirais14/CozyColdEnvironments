@@ -57,24 +57,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ByNumberID(int id = int.MinValue)
-        {
-            if (id == int.MinValue)
-            {
-                numberIdFilter = Maybe<int>.None;
-                return this;
-            }
-
-            numberIdFilter = id;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AddressablesDatabaseSearch ByNumberID(Maybe<int> number = default)
         {
-            ByNumberID(number.GetValue(int.MinValue));
+            numberIdFilter = number;
 
             return this;
         }
@@ -86,7 +71,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         {
             var id = Identifier.Create(input);
 
-            ByNumberID(id.Number.GetValue(int.MinValue));
+            ByNumberID(id.Number);
             ByTextID(id.Text.Raw);
 
             return this;

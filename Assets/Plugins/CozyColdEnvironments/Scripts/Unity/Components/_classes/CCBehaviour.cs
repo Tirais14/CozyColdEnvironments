@@ -35,10 +35,14 @@ namespace CCEnvs.Unity.Components
         {
             MemberValidator.ValidateInstance(this);
 
-            UniTask.Post(() => StartPassed = true, PlayerLoopTiming.PreUpdate);
+            ToPreUpdate(() =>
+            {
+                StartPassed = true;
+                this.PrintLog("Start Passed");
+            });
         }
 
-        public static void AfterStart(Action action)
+        public static void ToPreUpdate(Action action)
         {
             Guard.IsNotNull(action);
 
