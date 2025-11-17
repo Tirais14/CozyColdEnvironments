@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.Storages.UI
                     some: inv =>
                     {
                         inv.ObserveAddContainer().Subscribe(() => )
-                        inv.SetContainerCount<ItemContainer>(count);
+                        inv.SetContainerCountByPrefab(count, prefab);
                     },
                     none: () => this.PrintError("Not found inventory model.")
                     );

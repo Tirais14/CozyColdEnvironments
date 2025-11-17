@@ -21,12 +21,16 @@ namespace CCEnvs.Unity.Items
         Maybe<GameObject> ItemContainerPrefab { get; set; }
 
         void AddContainer(IItemContainer itemContainer);
-        void AddContainerByPrefab(in IItemContainer itemContainer, GameObject prefab);
-        void AddContainerByPrefab(in IItemContainer itemContainer);
+        IItemContainer AddContainerByPrefab(in IItemContainer itemContainer, GameObject prefab);
+        IItemContainer AddContainerByPrefab(in IItemContainer itemContainer);
 
-        void AddContainerCount<T>(int count) where T : IItemContainer, new();
-        void AddContainerCountByPrefab(int count, GameObject prefab);
-        void AddContainerCountByPrefab(int count);
+        IItemContainer[] AddContainerCount<T>(int count) where T : IItemContainer, new();
+        IItemContainer[] AddContainerCountByPrefab(int count, GameObject prefab);
+        IItemContainer[] AddContainerCountByPrefab(int count);
+
+        IItemContainer[] SetContainerCount<T>(int count) where T : IItemContainer, new();
+        IItemContainer[] SetContainerCountByPrefab(int count, GameObject prefab);
+        IItemContainer[] SetContainerCountByPrefab(int count);
 
         bool RemoveContainer(int id);
         bool RemoveContainer(IItemContainer itemContainer);
@@ -35,10 +39,6 @@ namespace CCEnvs.Unity.Items
 
         bool ContainsContainer(int id);
         bool ContainsContainer(IItemContainer itemContainer);
-
-        void SetContainerCount<T>(int count) where T : IItemContainer, new();
-        void SetContainerCountByPrefab(int count, GameObject prefab);
-        void SetContainerCountByPrefab(int count);
 
         bool IsContainerActive(int id);
         bool IsContainerActive(IItemContainer itemContainer);

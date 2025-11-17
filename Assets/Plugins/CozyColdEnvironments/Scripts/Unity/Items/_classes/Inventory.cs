@@ -122,7 +122,7 @@ namespace CCEnvs.Unity.Items
             }
         }
 
-        public void AddContainerByPrefab(in IItemContainer itemContainer, 
+        public IItemContainer AddContainerByPrefab(in IItemContainer itemContainer, 
             GameObject prefab)
         {
             CC.Guard.IsNotNull(prefab, nameof(prefab));
@@ -130,65 +130,88 @@ namespace CCEnvs.Unity.Items
             var go = UnityEngine.Object.Instantiate(prefab);
             var cnt = go.AppealTo().Component<IItemContainer>().Strict();
             cnt.BindGameObject(go);
-            AddContainer(itemContainer);
+            AddContainer(cnt);
+
+            return cnt;
         }
 
-        public void AddContainerByPrefab(in IItemContainer itemContainer)
+        public IItemContainer AddContainerByPrefab(in IItemContainer itemContainer)
         {
-            AddContainerByPrefab(itemContainer, itemContainerPrefabUnsafe);
+            return AddContainerByPrefab(itemContainer, itemContainerPrefabUnsafe);
         }
 
-        public void AddContainerCount<T>(int count)
+        public IItemContainer[] AddContainerCount<T>(int count)
             where T : IItemContainer, new()
         {
+            if (count == 0)
+                return Array.Empty<IItemContainer>();
+
+            var cnts = new List<IItemContainer>(count);
+            T cnt;
             for (int i = 0; i < count; i++)
-                AddContainer(new T());
+            {
+                cnt = new T();
+                AddContainer(cnt);
+                cnts.Add(cnt);
+            }
+
+            return Array.Empty<IItemContainer>();
         }
 
-        public void AddContainerCountByPrefab(int count, GameObject prefab)
+        public IItemContainer[] AddContainerCountByPrefab(int count, GameObject prefab)
         {
+            if (count == 0)
+                return Array.Empty<IItemContainer>();
+
+            count = Math.Abs(count);
+            var cnts = new List<IItemContainer>(count);
             var empty = ItemContainer.Empty;
             for (int i = 0; i < count; i++)
-                AddContainerByPrefab(empty, prefab);
+                cnts.Add(AddContainerByPrefab(empty, prefab));
+
+            return cnts.ToArray();
         }
 
-        public void AddContainerCountByPrefab(int count)
+        public IItemContainer[] AddContainerCountByPrefab(int count)
         {
-            AddContainerCountByPrefab(count, itemContainerPrefabUnsafe);
+            return AddContainerCountByPrefab(count, itemContainerPrefabUnsafe);
         }
 
-        public void SetContainerCount<T>(int count)
+        public IItemContainer[] SetContainerCount<T>(int count)
             where T : IItemContainer, new()
         {
-            SetContainerCount<T>(count, prefab: null);
+            return SetContainerCount<T>(count, prefab: null);
         }
 
-        public void SetContainerCountByPrefab(int count, GameObject prefab)
+        public IItemContainer[] SetContainerCountByPrefab(int count, GameObject prefab)
         {
-            SetContainerCount<ItemContainer>(count, prefab);
+            return SetContainerCount<ItemContainer>(count, prefab);
         }
 
-        private void SetContainerCount<T>(int count, Maybe<GameObject> prefab)
+        private IItemContainer[] SetContainerCount<T>(int count, Maybe<GameObject> prefab)
             where T : IItemContainer, new()
         {
             if (count == ContainerCount)
-                return;
+                return Array.Empty<IItemContainer>();
 
             int delta = count - ContainerCount;
             if (delta < 0)
+            {
                 RemoveContainerCount(Math.Abs(delta));
+                return Array.Empty<IItemContainer>();
+            }
             else
             {
-                prefab.Match(
-                    some: prefab => AddContainerCountByPrefab(delta, prefab),
-                    none: () => AddContainerCount<T>(count)
-                    );
+                return prefab.Match(
+                        some: prefab => AddContainerCountByPrefab(delta, prefab),
+                        none: () => AddContainerCount<T>(count)
+                    ).GetValueUnsafe();
             }
         }
 
-        public void SetContainerCountByPrefab(int count)
+        public IItemContainer[] SetContainerCountByPrefab(int count)
         {
-            SetContainerCount<ItemContainer>(count, itemContainerPrefabUnsafe);
+            return SetContainerCount<ItemContainer>(count, itemContainerPrefabUnsafe);
         }
 
         public bool RemoveContainer(int id)
