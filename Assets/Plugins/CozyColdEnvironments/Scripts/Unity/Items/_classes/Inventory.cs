@@ -128,7 +128,7 @@ namespace CCEnvs.Unity.Items
             CC.Guard.IsNotNull(prefab, nameof(prefab));
 
             var go = UnityEngine.Object.Instantiate(prefab);
-            var cnt = go.AppealTo().Component<IItemContainer>().Strict();
+            var cnt = go.AppealTo().ByChildren().Model<IItemContainer>().Strict();
             cnt.BindGameObject(go);
             AddContainer(cnt);
 
@@ -183,11 +183,6 @@ namespace CCEnvs.Unity.Items
             return SetContainerCount<T>(count, prefab: null);
         }
 
-        public IItemContainer[] SetContainerCountByPrefab(int count, GameObject prefab)
-        {
-            return SetContainerCount<ItemContainer>(count, prefab);
-        }
-
         private IItemContainer[] SetContainerCount<T>(int count, Maybe<GameObject> prefab)
             where T : IItemContainer, new()
         {
@@ -207,6 +202,11 @@ namespace CCEnvs.Unity.Items
                         none: () => AddContainerCount<T>(count)
                     ).GetValueUnsafe();
             }
+        }
+
+        public IItemContainer[] SetContainerCountByPrefab(int count, GameObject prefab)
+        {
+            return SetContainerCount<ItemContainer>(count, prefab);
         }
 
         public IItemContainer[] SetContainerCountByPrefab(int count)

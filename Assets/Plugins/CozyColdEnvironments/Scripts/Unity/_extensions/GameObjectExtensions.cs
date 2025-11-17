@@ -11,20 +11,6 @@ namespace CCEnvs.Unity
 {
     public static class GameObjectExtensions
     {
-        public static GameModel ToGameModel(this GameObject value,
-            bool throwIfNotFound = true)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-
-            var model = value.GetComponent<GameModel>();
-
-            if (throwIfNotFound && model == null)
-                throw new GameObjectNotFoundException(typeof(GameModel));
-
-            return model;
-        }
-
         /// <exception cref="System.ArgumentNullException"></exception>
         public static void ApplySettings(this GameObject value, GameObjectSettings settings)
         {

@@ -9,7 +9,7 @@ using UnityEngine;
 namespace CCEnvs.Unity._3D
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class FirstPersonController : GameModel
+    public class FirstPersonController : CCBehaviour
     {
         private const int MAX_RAYCAST_HITS = 3;
         private const float RAYCAST_SURFACE_OFFSET = 10f;

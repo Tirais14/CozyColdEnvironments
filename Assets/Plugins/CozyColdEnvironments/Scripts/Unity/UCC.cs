@@ -1,3 +1,4 @@
+using CCEnvs.Unity.Items;
 using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
@@ -10,14 +11,9 @@ namespace CCEnvs.Unity
 
     public static class UCC
     {
-        public static class Tags
-        {
-            public const string TRANSFORM_OVERRIDE = "TransformOverride";
-            public const string GAME_OBJECT_OVERRIDE = "GameObjectOverride";
-        }
-
         public static Lazy<Sprite> ColorSprite { get; } = new(() => Resources.Load<Sprite>("Textures/ColorSprite"));
         public static Lazy<Sprite> TranparentSprite { get; } = new(() => Resources.Load<Sprite>("Textures/DummySprite"));
         public static Lazy<Sprite> ErrorSprite { get; } = new(() => Resources.Load<Sprite>("Textures/ErrorSprite"));
+        public static Lazy<IInventory> WorldInventory { get; } = new(() => new Inventory());
     }
 }
