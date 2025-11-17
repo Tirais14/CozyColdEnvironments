@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using UniRx;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -26,8 +27,16 @@ namespace CCEnvs.Unity.Items
 
         bool SwitchContainerActiveState();
 
-        IObservable<bool> ObserveIsActiveContainer();
+        IObservable<bool> ObserveActiveState();
 
-        IObservable<int> ObserveItemCount();
+        IObservable<bool> ObserveDeactivateContainer();
+
+        IObservable<bool> ObserveActivateContainer();
+
+        IObservable<Pair<int>> ObserveItemCount();
+
+        IObservable<Pair<int>> ObserveDecreasedItemCount();
+
+        IObservable<Pair<int>> ObserveIncreaseItemCount();
     }
 }

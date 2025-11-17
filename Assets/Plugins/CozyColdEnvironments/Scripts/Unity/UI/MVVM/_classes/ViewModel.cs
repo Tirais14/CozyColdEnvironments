@@ -1,18 +1,14 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using UniRx;
 using UnityEngine;
-using System.Linq;
 
 #pragma warning disable S1699
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable
+    public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable, IGameObjectBindable
     {
         protected readonly List<IDisposable> disposables = new();
         private bool disposed;
@@ -91,5 +87,7 @@ namespace CCEnvs.Unity.UI.MVVM
             foreach (var item in this.Reflect().Cache().GetFieldValues<IDisposable>())
                 disposables.Add(item);
         }
+
+        bool IGameObjectBindable.BindGameObject(GameObject gameObject) => false;
     }
 }

@@ -41,23 +41,31 @@ namespace CCEnvs.Unity.Items
         }
         public bool IsEmpty => collection.Values.Any(x => x.ContainsItem());
         public bool IsFull => collection.Values.All(x => x.ContainsItem());
+        public Maybe<GameObject> ItemContainerPrefab { get; set; }
+
+        protected GameObject itemContainerPrefabUnsafe {
+            get => ItemContainerPrefab.IfNone(
+                   static () => throw new InvalidOperationException($"{nameof(ItemContainerPrefab)} not found."))
+                .GetValueUnsafe();
+        }
 
         int IItemContainerInfoItemless.ItemCount => throw new NotImplementedException();
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
         bool IItemContainerInfoItemless.IsActiveContainer => throw new NotImplementedException();
 
-        public Inventory(int initialContainerCount)
+        public Inventory(int containerCount)
         {
-            collection = new Dictionary<int, IItemContainer>(initialContainerCount);
+            collection = new Dictionary<int, IItemContainer>(containerCount);
 
-            SetContainerCount<ItemContainer>(initialContainerCount);
+            SetContainerCount<ItemContainer>(containerCount);
         }
 
-        public Inventory(int initialContainerCount, GameObject toInstantiate)
+        public Inventory(int containerCount, GameObject? itemContainerPrefab)
         {
-            collection = new Dictionary<int, IItemContainer>(initialContainerCount);
+            collection = new Dictionary<int, IItemContainer>(containerCount);
+            ItemContainerPrefab = itemContainerPrefab;
 
-            SetContainerCount(initialContainerCount, toInstantiate);
+            SetContainerCountByPrefab(containerCount);
         }
 
         public Inventory()
@@ -114,32 +122,20 @@ namespace CCEnvs.Unity.Items
             }
         }
 
-        public void AddContainer(GameObject toInstantiate)
+        public void AddContainerByPrefab(in IItemContainer itemContainer, 
+            GameObject prefab)
         {
-            CC.Guard.IsNotNull(toInstantiate, nameof(toInstantiate));
+            CC.Guard.IsNotNull(prefab, nameof(prefab));
 
-            var cnt = UnityEngine.Object.Instantiate(toInstantiate)
-                .AppealTo()
-                .ByChildren()
-                .IncludeInactive()
-                .Model<IItemContainer>()
-                .Strict();
-
-            AddContainer(cnt);
+            var go = UnityEngine.Object.Instantiate(prefab);
+            var cnt = go.AppealTo().Component<IItemContainer>().Strict();
+            cnt.BindGameObject(go);
+            AddContainer(itemContainer);
         }
 
-        public void AddContainerCount(int count, GameObject toInstantiate)
+        public void AddContainerByPrefab(in IItemContainer itemContainer)
         {
-            UnityEngine.Object.InstantiateAsync(toInstantiate, count).ToUniTask().ContinueWith(loaded =>
-            {
-                loaded.Select(go => go.AppealTo()
-                        .ByChildren()
-                        .IncludeInactive()
-                        .Model<IItemContainer>()
-                        .Strict())
-                    .ForEach(AddContainer);
-            })
-            .Forget(ex => this.PrintException(ex));
+            AddContainerByPrefab(itemContainer, itemContainerPrefabUnsafe);
         }
 
         public void AddContainerCount<T>(int count)
@@ -147,6 +143,52 @@ namespace CCEnvs.Unity.Items
         {
             for (int i = 0; i < count; i++)
                 AddContainer(new T());
+        }
+
+        public void AddContainerCountByPrefab(int count, GameObject prefab)
+        {
+            var empty = ItemContainer.Empty;
+            for (int i = 0; i < count; i++)
+                AddContainerByPrefab(empty, prefab);
+        }
+
+        public void AddContainerCountByPrefab(int count)
+        {
+            AddContainerCountByPrefab(count, itemContainerPrefabUnsafe);
+        }
+
+        public void SetContainerCount<T>(int count)
+            where T : IItemContainer, new()
+        {
+            SetContainerCount<T>(count, prefab: null);
+        }
+
+        public void SetContainerCountByPrefab(int count, GameObject prefab)
+        {
+            SetContainerCount<ItemContainer>(count, prefab);
+        }
+
+        private void SetContainerCount<T>(int count, Maybe<GameObject> prefab)
+            where T : IItemContainer, new()
+        {
+            if (count == ContainerCount)
+                return;
+
+            int delta = count - ContainerCount;
+            if (delta < 0)
+                RemoveContainerCount(Math.Abs(delta));
+            else
+            {
+                prefab.Match(
+                    some: prefab => AddContainerCountByPrefab(delta, prefab),
+                    none: () => AddContainerCount<T>(count)
+                    );
+            }
+        }
+
+        public void SetContainerCountByPrefab(int count)
+        {
+            SetContainerCount<ItemContainer>(count, itemContainerPrefabUnsafe);
         }
 
         public bool RemoveContainer(int id)
@@ -198,32 +240,6 @@ namespace CCEnvs.Unity.Items
         {
             foreach (var cnt in this)
                 cnt.Clear();
-        }
-
-        public void SetContainerCount<T>(int count)
-            where T : IItemContainer, new()
-        {
-            if (count == ContainerCount)
-                return;
-
-            int delta = count - ContainerCount;
-            if (delta < 0)
-                RemoveContainerCount(Math.Abs(delta));
-            else
-                AddContainerCount<T>(delta);
-        }
-        public void SetContainerCount(int count, GameObject toInstantiate)
-        {
-            CC.Guard.IsNotNull(toInstantiate, nameof(toInstantiate));
-
-            if (count == ContainerCount)
-                return;
-
-            int delta = count - ContainerCount;
-            if (delta < 0)
-                RemoveContainerCount(Math.Abs(delta));
-            else
-                AddContainerCount(delta, toInstantiate);
         }
 
         public IObservable<(int id, IItemContainer value)> ObserveAddContainer()
@@ -409,15 +425,34 @@ namespace CCEnvs.Unity.Items
             throw new NotImplementedException();
         }
 
-        IObservable<bool> IItemContainerInfoItemless.ObserveIsActiveContainer()
+        IObservable<bool> IItemContainerInfoItemless.ObserveActiveState()
         {
-            return Observable.Empty<bool>();
+            throw new NotImplementedException();
         }
 
-        IObservable<int> IItemContainerInfoItemless.ObserveItemCount()
+        IObservable<bool> IItemContainerInfoItemless.ObserveDeactivateContainer()
         {
-            return Observable.Empty<int>();
+            throw new NotImplementedException();
         }
 
+        IObservable<bool> IItemContainerInfoItemless.ObserveActivateContainer()
+        {
+            throw new NotImplementedException();
+        }
+
+        IObservable<Pair<int>> IItemContainerInfoItemless.ObserveDecreasedItemCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        IObservable<Pair<int>> IItemContainerInfoItemless.ObserveIncreaseItemCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        IObservable<Pair<int>> IItemContainerInfoItemless.ObserveItemCount()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

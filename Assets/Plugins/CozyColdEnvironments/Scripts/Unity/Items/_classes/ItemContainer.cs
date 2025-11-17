@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CommunityToolkit.Diagnostics;
 using System;
 using UniRx;
 using UnityEngine;
@@ -229,8 +228,6 @@ namespace CCEnvs.Unity.Items
             this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
-        public IObservable<bool> ObserveIsActiveContainer() => isActiveContainer;
-
         public bool SwitchContainerActiveState()
         {
             if (isActiveContainer.Value)
@@ -241,9 +238,48 @@ namespace CCEnvs.Unity.Items
             return isActiveContainer.Value;
         }
 
+        public bool BindGameObject(GameObject gameObject)
+        {
+            return this.gameObject.Match(
+                some: _ => false,
+                none: () =>
+                {
+                    this.gameObject = gameObject;
+                    return true;
+                }).Raw;
+        }
+
         public IObservable<Maybe<IItem>> ObserveItem() => item;
 
-        public IObservable<int> ObserveItemCount() => itemCount;
+        public IObservable<bool> ObserveActiveState()
+        {
+            return isActiveContainer;
+        }
+
+        public IObservable<bool> ObserveDeactivateContainer()
+        {
+            return isActiveContainer.Where(x => !x);
+        }
+
+        public IObservable<bool> ObserveActivateContainer()
+        {
+            return isActiveContainer.Where(x => x);
+        }
+
+        public IObservable<Pair<int>> ObserveItemCount()
+        {
+            return itemCount.Pairwise();
+        }
+
+        public IObservable<Pair<int>> ObserveDecreasedItemCount()
+        {
+            return itemCount.Pairwise().Where(pair => pair.Current < pair.Previous);
+        }
+
+        public IObservable<Pair<int>> ObserveIncreaseItemCount()
+        {
+            return itemCount.Pairwise().Where(pair => pair.Current > pair.Previous);
+        }
 
         public void Dispose() => Dispose(disposing: true);
 

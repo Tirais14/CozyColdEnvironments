@@ -1,6 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
+using UniRx;
 using UnityEngine;
 
 #nullable enable
@@ -29,7 +30,11 @@ namespace CCEnvs.Unity.Storages.UI
                     return;
 
                 this.AppealTo().Model<IInventory>().Lax().Match(
-                    some: inv => inv.SetContainerCount(count, prefab),
+                    some: inv =>
+                    {
+                        inv.ObserveAddContainer().Subscribe(() => )
+                        inv.SetContainerCount<ItemContainer>(count);
+                    },
                     none: () => this.PrintError("Not found inventory model.")
                     );
             }

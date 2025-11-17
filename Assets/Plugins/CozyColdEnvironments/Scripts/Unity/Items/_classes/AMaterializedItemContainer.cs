@@ -23,6 +23,13 @@ namespace CCEnvs.Unity.Items
             OnSetItemContainer();
         }
 
+        public void SetItem(IItem item)
+        {
+            CC.Guard.IsNotNull(item, nameof(item));
+
+            SetItemContainer(new ItemContainer(item));
+        }
+
         public IItemContainer[] CollectItems()
         {
             Destroy(gameObject);

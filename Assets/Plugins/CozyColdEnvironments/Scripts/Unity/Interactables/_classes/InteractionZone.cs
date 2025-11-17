@@ -1,162 +1,164 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UniRx;
 using UnityEngine;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Interactables
 {
-    public abstract class InteractionZone<TItem, TAgent> : CCBehaviour, IInteractionZone<TItem, TAgent>
+    public abstract class InteractionZone<TAgent> : CCBehaviour, IInteractionZone<TAgent>
         where TAgent : Component
     {
-        protected readonly C5.HashSet<TAgent> otherAgents = new();
-        protected readonly HashSet<TItem> items = new();
-        protected Subject<TItem>? itemEnterSubj;
-        protected Subject<TItem>? itemExitSubj;
+        protected readonly C5.HashedArrayList<GameObject> gameObjects = new();
+        protected Subject<GameObject>? goEnterSubj;
+        protected Subject<GameObject>? goStaySubj;
+        protected Subject<GameObject>? goExitSubj;
+        protected Subject<Unit>? goDestroySubj;
 
         [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
+        public IEnumerable<GameObject> GameObjects => gameObjects;
 
-        public Type ItemType { get; } = typeof(TItem);
-        public Type AgentType { get; } = typeof(TAgent);
-
-        protected TAgent agent => InteractionAgent;
+        public abstract bool Contains(Vector2 point);
+        public abstract bool Contains(Vector3 point);
 
         protected override void Awake()
         {
             base.Awake();
-
-            otherAgents.CollectionChanged += OnOtherAgentsChanged;
-        }
-
-        public IEnumerable<TItem> GetInteractables()
-        {
-            foreach (var item in from agent in otherAgents.ZL()
-                                 select agent.AppealTo().Component<TItem>().Lax() into item
-                                 where item.IsSome
-                                 select item.GetValueUnsafe())
+            UniTask.RunOnThreadPool(async () =>
             {
-                yield return item;
-            }
+                while (true)
+                {
+                    for (int i = 0; i < gameObjects.Count; i++)
+                    {
+                        if (gameObjects[i] == null)
+                            gameObjects.RemoveAt(i);
+                    }
+
+                    await UniTask.Yield();
+                }
+            }).AttachExternalCancellation(destroyCancellationToken)
+            .SuppressCancellationThrow()
+            .Forget();
         }
 
-        public abstract bool ContainsPoint(Vector2 point);
-        public abstract bool ContainsPoint(Vector3 point);
-
-        public bool ContainsItem(TItem? item)
+        public bool Contains(GameObject? gameObject)
         {
-            if (item.IsNull())
+            if (gameObject == null)
                 return false;
 
-            if (items.Count > 0)
-                return items.Contains(item);
-
-            items.AddRange(GetInteractables());
-
-            return items.Contains(item);
+            return gameObjects.Contains(gameObject);
         }
 
-        public bool ContainsAgent(TAgent? agent)
+        public bool ContainsComponent(object? component)
         {
-            if (agent == null)
+            if (component.IsNull())
                 return false;
 
-            return otherAgents.Contains(agent);
+            return gameObjects.SelectMany(go => go.AppealTo().Components(component.GetType()))
+                .Any(cmp => cmp.Equals(component));
         }
 
-        public IObservable<TItem> ObserveItemEnter()
+        public IObservable<GameObject> ObserveOnEnter()
         {
-            if (itemEnterSubj is null)
+            if (goEnterSubj is null)
             {
-                itemEnterSubj = new Subject<TItem>();
-                itemEnterSubj.AddTo(this);
+                goEnterSubj = new Subject<GameObject>();
+                goEnterSubj.AddTo(this);
             }
             
-            return itemEnterSubj;
+            return goEnterSubj;
         }
 
-        public IObservable<TItem> ObserveItemExit()
+        public IObservable<GameObject> ObesrveOnStay()
         {
-            if (itemExitSubj is null)
+            if (goStaySubj is null)
             {
-                itemExitSubj = new Subject<TItem>();
-                itemExitSubj.AddTo(this);
+                goStaySubj = new Subject<GameObject>();
+                goStaySubj.AddTo(this);
             }
 
-            return itemExitSubj;
+            return goStaySubj;
         }
 
-        private void OnOtherAgentsChanged(object _)
+        /// <summary>
+        /// Also triggered when object in zone will be destroyed.
+        /// </summary>
+        /// <returns></returns>
+        public IObservable<GameObject> ObserveOnExit()
         {
-            if (items.Count > 0)
-                items.Clear();
+            if (goExitSubj is null)
+            {
+                goExitSubj = new Subject<GameObject>();
+                goExitSubj.AddTo(this);
+            }
+
+            return goExitSubj;
+        }
+
+        protected void OnEnter(GameObject gameObject)
+        {
+            if (gameObject == null)
+                return;
+
+            if (gameObjects.Add(gameObject))
+                goEnterSubj?.OnNext(gameObject);
+        }
+
+        protected void OnStay(GameObject gameObject)
+        {
+            if (gameObject == null)
+                return;
+
+            goStaySubj?.OnNext(gameObject);
+        }
+
+        protected void OnExit(GameObject gameObject)
+        {
+            if (gameObject == null)
+                return;
+
+            if (gameObjects.Remove(gameObject))
+                goExitSubj?.OnNext(gameObject);
         }
     }
-    public class InteractionZone : InteractionZone<object, Collider>
+    public class InteractionZone : InteractionZone<Collider>
     {
         protected override void Start()
         {
             base.Start();
-            agent.isTrigger = true;
+            InteractionAgent.isTrigger = true;
         }
 
         protected virtual void OnTriggerEnter(Collider other)
         {
-            if (items.Add(other) && itemEnterSubj is not null)
-                itemEnterSubj.OnNext(other);
+            OnEnter(other.gameObject);
+        }
+
+        protected virtual void OnTriggerStay(Collider other)
+        {
+            OnStay(other.gameObject);
         }
 
         protected virtual void OnTriggerExit(Collider other)
         {
-            if (items.Remove(other) && itemExitSubj is not null)
-                itemExitSubj.OnNext(other);
+            OnExit(other.gameObject);
         }
 
-        public override bool ContainsPoint(Vector3 point)
+        public override bool Contains(Vector3 point)
         {
-            return agent.bounds.Contains(point);
+            return InteractionAgent.bounds.Contains(point);
         }
 
-        public override bool ContainsPoint(Vector2 point)
+        public override bool Contains(Vector2 point)
         {
-            return ContainsPoint((Vector3)point);
-        }
-    }
-
-    public class InteractionZone2D : InteractionZone<object, Collider2D>
-    {
-        protected override void Start()
-        {
-            base.Start();
-            agent.isTrigger = true;
-        }
-
-        protected virtual void OnTriggerEnter2D(Collider2D other)
-        {
-            if (items.Add(other) && itemEnterSubj is not null)
-                itemEnterSubj.OnNext(other);
-        }
-
-        protected virtual void OnTriggerExit2D(Collider2D other)
-        {
-            if (items.Remove(other) && itemExitSubj is not null)
-                itemExitSubj.OnNext(other);
-        }
-
-        public override bool ContainsPoint(Vector2 point)
-        {
-            return agent.OverlapPoint(point);
-        }
-
-        public override bool ContainsPoint(Vector3 point)
-        {
-            return ContainsPoint((Vector2)point);
+            return Contains((Vector3)point);
         }
     }
 }

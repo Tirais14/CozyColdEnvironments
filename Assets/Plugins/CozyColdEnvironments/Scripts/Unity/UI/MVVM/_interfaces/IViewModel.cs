@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public interface IViewModel : IGameObjectBindable
+    public interface IViewModel
     {
         object model { get; }
 

@@ -18,16 +18,15 @@ namespace CCEnvs.Unity.Items
         IEnumerable<IItemContainer> Containers { get; }
         int ContainerCount { get; }
         Maybe<IItemContainer> ActiveContainer { get; set; }
-
-        IObservable<(int id, IItemContainer value)> ObserveAddContainer();
-
-        IObservable<(int id, IItemContainer value)> ObserveRemoveContainer();
+        Maybe<GameObject> ItemContainerPrefab { get; set; }
 
         void AddContainer(IItemContainer itemContainer);
-        void AddContainer(GameObject toInstantiate);
+        void AddContainerByPrefab(in IItemContainer itemContainer, GameObject prefab);
+        void AddContainerByPrefab(in IItemContainer itemContainer);
 
-        void AddContainerCount(int count, GameObject toInstantiate);
         void AddContainerCount<T>(int count) where T : IItemContainer, new();
+        void AddContainerCountByPrefab(int count, GameObject prefab);
+        void AddContainerCountByPrefab(int count);
 
         bool RemoveContainer(int id);
         bool RemoveContainer(IItemContainer itemContainer);
@@ -37,8 +36,9 @@ namespace CCEnvs.Unity.Items
         bool ContainsContainer(int id);
         bool ContainsContainer(IItemContainer itemContainer);
 
-        void SetContainerCount(int count, GameObject toInstantiate);
         void SetContainerCount<T>(int count) where T : IItemContainer, new();
+        void SetContainerCountByPrefab(int count, GameObject prefab);
+        void SetContainerCountByPrefab(int count);
 
         bool IsContainerActive(int id);
         bool IsContainerActive(IItemContainer itemContainer);
@@ -50,6 +50,10 @@ namespace CCEnvs.Unity.Items
         void ClearContainers();
 
         Maybe<int> GetContainerID(IItemContainer itemContainer);
+
+        IObservable<(int id, IItemContainer value)> ObserveAddContainer();
+
+        IObservable<(int id, IItemContainer value)> ObserveRemoveContainer();
 
         IObservable<Maybe<IItemContainer>> ObserveActiveItemContainer();
     }

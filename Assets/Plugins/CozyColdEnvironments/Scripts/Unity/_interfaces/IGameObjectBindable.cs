@@ -7,5 +7,7 @@ namespace CCEnvs.Unity
     public interface IGameObjectBindable
     {
         Maybe<GameObject> gameObject { get; }
+
+        bool BindGameObject(GameObject gameObject);
     }
 }

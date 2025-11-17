@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             BindItemIcon();
             BindItemCount();
-            IsActiveContainer = model.ObserveIsActiveContainer().ToReactiveProperty();
+            IsActiveContainer = model.ObserveActiveState().ToReactiveProperty();
         }
 
         public void ActivateContainer()
@@ -52,6 +52,7 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindItemCount()
         {
             model.ObserveItemCount()
+                .Select(pair => pair.Current)
                 .Select(itemCount => itemCount <= 0 ? string.Empty : itemCount.ToString())
                 .SubscribeWithState(itemCount, 
                     static (countStr, prop) => prop.Value = countStr)

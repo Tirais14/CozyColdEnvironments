@@ -585,7 +585,11 @@ namespace CCEnvs.Unity
             if (settings.IsFlagSetted(Settings.ExcludeSelf))
                 components = components.Where(cmp => cmp.gameObject != target);
 
-            return components;
+            IEnumerable<object> results = components;
+            var providerObjects = components.OfType<IObjectProvider>().Select(x => x.InternalObject).Where(x => anyType || x.IsInstanceOfType(type));
+            results = results.Concat(providerObjects);
+
+            return results;
         }
     }
 
