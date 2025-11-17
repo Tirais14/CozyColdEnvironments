@@ -15,7 +15,7 @@ using Object = UnityEngine.Object;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public record GameObjectAppeal
+    public record GameObjectQuery
     {
         [Flags]
         public enum Settings
@@ -31,9 +31,9 @@ namespace CCEnvs.Unity
             Default = None
         }
 
-        public readonly static GameObjectAppeal Instance = new();
+        public readonly static GameObjectQuery Instance = new();
 
-        public static GameObjectAppeal Empty => new();
+        public static GameObjectQuery Empty => new();
 
         /// <summary>
         /// May be null
@@ -51,14 +51,14 @@ namespace CCEnvs.Unity
         public int? layerMask { get; set; }
         public Maybe<Type> mustContainsType { get; set; }
 
-        public GameObjectAppeal()
+        public GameObjectQuery()
         {
             Reset();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal From(GameObject gameObject)
+        public GameObjectQuery From(GameObject gameObject)
         {
             if (gameObject == null)
             {
@@ -72,7 +72,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal From(Component component)
+        public GameObjectQuery From(Component component)
         {
             if (component == null)
             {
@@ -86,7 +86,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal IncludeInactive(bool state = true)
+        public GameObjectQuery IncludeInactive(bool state = true)
         {
             if (state)
                 settings |= Settings.IncludeInactive;
@@ -98,7 +98,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ExcludeSelf(bool state = true)
+        public GameObjectQuery ExcludeSelf(bool state = true)
         {
             if (state)
                 settings |= Settings.ExcludeSelf;
@@ -109,7 +109,7 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal Reusable(bool state = true)
+        public GameObjectQuery Reusable(bool state = true)
         {
             if (this == Instance)
                 return this;
@@ -123,7 +123,7 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ByFullName(bool state = true)
+        public GameObjectQuery ByFullName(bool state = true)
         {
             if (state)
                 stringMatchSettings &= ~StringMatchSettings.Partial;
@@ -135,7 +135,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ByName(string? name = null)
+        public GameObjectQuery ByName(string? name = null)
         {
             this.name = name;
 
@@ -144,7 +144,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ByTag(string? tag = null)
+        public GameObjectQuery ByTag(string? tag = null)
         {
             this.tag = tag;
 
@@ -153,7 +153,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ByLayerMask(int? layerMask = null)
+        public GameObjectQuery ByLayerMask(int? layerMask = null)
         {
             this.layerMask = layerMask;
 
@@ -162,7 +162,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal BySelf()
+        public GameObjectQuery BySelf()
         {
             findMode = FindMode.Self;
 
@@ -171,7 +171,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ByChildren()
+        public GameObjectQuery ByChildren()
         {
             findMode = FindMode.InChilds;
 
@@ -180,7 +180,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal ByParent()
+        public GameObjectQuery ByParent()
         {
             findMode = FindMode.InParents;
 
@@ -189,7 +189,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal NotRecursive(bool state = true)
+        public GameObjectQuery NotRecursive(bool state = true)
         {
             if (state)
                 settings |= Settings.NotRecursive;
@@ -201,7 +201,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal SortByInstanceID(bool state = true)
+        public GameObjectQuery SortByInstanceID(bool state = true)
         {
             if (state)
                 sortMode = FindObjectsSortMode.InstanceID;
@@ -213,7 +213,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal Reset()
+        public GameObjectQuery Reset()
         {
             Target = default!;
             settings = Settings.Default;
@@ -229,7 +229,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal MustContainType(Type? componentType = null)
+        public GameObjectQuery MustContainType(Type? componentType = null)
         {
             mustContainsType = componentType;
 
@@ -238,7 +238,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectAppeal MustContainType<T>()
+        public GameObjectQuery MustContainType<T>()
         {
             return MustContainType(typeof(T));
         }
@@ -555,7 +555,7 @@ namespace CCEnvs.Unity
 
             if (mustContainsType.IsSome)
                 components = components.Where(cmp =>
-                    cmp.gameObject.AppealTo()
+                    cmp.gameObject.QueryTo()
                     .Component(mustContainsType.GetValueUnsafe())
                     .Lax()
                     .IsSome
@@ -597,38 +597,38 @@ namespace CCEnvs.Unity
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectAppeal AppealTo(this GameObject source)
+        public static GameObjectQuery QueryTo(this GameObject source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new GameObjectAppeal().From(source);
+            return new GameObjectQuery().From(source);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectAppeal AppealTo(this Component source)
+        public static GameObjectQuery QueryTo(this Component source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new GameObjectAppeal().From(source);
+            return new GameObjectQuery().From(source);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectAppeal AppealToBySingleton(this GameObject source)
+        public static GameObjectQuery QueryToBySingleton(this GameObject source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectAppeal.Instance.Reset().From(source);
+            return GameObjectQuery.Instance.Reset().From(source);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectAppeal AppealToBySingleton(this Component source)
+        public static GameObjectQuery QueryToBySingleton(this Component source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectAppeal.Instance.Reset().From(source);
+            return GameObjectQuery.Instance.Reset().From(source);
         }
     }
 }

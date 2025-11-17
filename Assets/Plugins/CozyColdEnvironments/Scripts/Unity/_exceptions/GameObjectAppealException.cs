@@ -9,7 +9,7 @@ namespace CCEnvs.Unity
     public class GameObjectAppealException : CCException
     {
         public GameObjectAppealException(GameObject? target,
-            GameObjectAppeal.Settings settings,
+            GameObjectQuery.Settings settings,
             FindMode findMode,
             Type? seekingComponentType = null,
             string? name = null,

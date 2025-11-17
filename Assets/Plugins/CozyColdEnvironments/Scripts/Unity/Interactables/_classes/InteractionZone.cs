@@ -61,7 +61,7 @@ namespace CCEnvs.Unity.Interactables
             if (component.IsNull())
                 return false;
 
-            return gameObjects.SelectMany(go => go.AppealTo().Components(component.GetType()))
+            return gameObjects.SelectMany(go => go.QueryTo().Components(component.GetType()))
                 .Any(cmp => cmp.Equals(component));
         }
 

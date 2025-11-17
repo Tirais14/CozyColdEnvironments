@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.Storages.UI
                 if (itemContainerCount <= 0)
                     return;
 
-                this.AppealTo()
+                this.QueryTo()
                     .Model<IInventory>()
                     .Lax()
                     .Match(

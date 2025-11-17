@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.UI.Elements
             if (!Application.isPlaying)
                 return;
 
-            target = this.AppealTo()
+            target = this.QueryTo()
                          .ByParent()
                          .IncludeInactive()
                          .Component<IViewElement>()

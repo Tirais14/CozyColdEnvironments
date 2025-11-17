@@ -128,7 +128,7 @@ namespace CCEnvs.Unity.Items
             CC.Guard.IsNotNull(prefab, nameof(prefab));
 
             var go = UnityEngine.Object.Instantiate(prefab);
-            var cnt = go.AppealTo().ByChildren().Model<IItemContainer>().Strict();
+            var cnt = go.QueryTo().ByChildren().Model<IItemContainer>().Strict();
             cnt.BindGameObject(go);
             AddContainer(cnt);
 

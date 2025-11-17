@@ -89,7 +89,7 @@ namespace CCEnvs.Unity.Storages.UI
                 return;
 
             eventData.pointerDrag.Maybe()
-                .Map(go => go.AppealTo().Model<IItemContainer>().Raw!)
+                .Map(go => go.QueryTo().Model<IItemContainer>().Raw!)
                 .Map(cnt => (source: cnt, rest: model.PutItemFrom(cnt)))
                 .Where(cnt => cnt.rest.IsSome)
                 .IfSome(cnt => cnt.source.PutItemFrom(cnt.rest.GetValueUnsafe()));

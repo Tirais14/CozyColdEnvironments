@@ -89,7 +89,7 @@ namespace CCEnvs.Unity.UI.Elements
         {
             if (selectionOverlay.IsNone)
             {
-                var t = new GameObject(nameof(selectionOverlay), typeof(Image)).AppealTo()
+                var t = new GameObject(nameof(selectionOverlay), typeof(Image)).QueryTo()
                     .Component<Image>()
                     .Strict();
 

@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public void Refresh()
         {
-            this.AppealTo()
+            this.QueryTo()
                 .NotRecursive()
                 .ChildrenGameObjects()
                 .ZL()
@@ -122,7 +122,7 @@ namespace CCEnvs.Unity.UI.Elements
             Transform goTransform = go.transform;
 
             if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
-                goTransform = go.AppealTo().RootTransform();
+                goTransform = go.QueryTo().RootTransform();
 
             goTransform.SetParent(transform);
 
@@ -141,7 +141,7 @@ namespace CCEnvs.Unity.UI.Elements
 
             if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
             {
-                var root = go.AppealTo().RootRaw();
+                var root = go.QueryTo().RootRaw();
 
                 root.IfRight(x =>
                 {
