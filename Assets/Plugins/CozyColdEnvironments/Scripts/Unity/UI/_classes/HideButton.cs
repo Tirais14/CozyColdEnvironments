@@ -41,6 +41,9 @@ namespace CCEnvs.Unity.UI.Elements
 
         protected override void OnDestroy()
         {
+            if (!Application.isPlaying)
+                return;
+
             onClick.RemoveListener(target.Hide);
         }
     }

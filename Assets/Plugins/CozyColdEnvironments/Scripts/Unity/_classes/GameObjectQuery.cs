@@ -382,35 +382,42 @@ namespace CCEnvs.Unity
         /// Also include <see cref="Components(Type?)"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<object> Models(Type? type = null)
+        public IEnumerable<object> Models(Type? type = null, bool includeComponents = true)
         {
             bool anyType = type is null;
+            type ??= typeof(object);
 
-            var results = from obj in Components()
-                          select (obj, view: obj.AsOrDefault<IView>()) into x
-                          select x.view.Map(y => y.model).GetValue(x.obj) into obj
-                          where anyType || obj.IsInstanceOfType(type!)
-                          select obj;
+            var cmps = Components();
 
-            return results;
+            var models = cmps.OfType<IView>()
+                .Select(view => view.model)
+                .Where(model => anyType || model.IsInstanceOfType(type));
+
+            if (includeComponents)
+            {
+                models = cmps.Where(cmp => anyType || cmp.IsInstanceOfType(type))
+                             .Concat(models);
+            }
+
+            return models;
         }
 
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<T> Models<T>()
+        public IEnumerable<T> Models<T>(bool includeComponents = true)
         {
-            return Models(typeof(T)).Cast<T>();
+            return Models(typeof(T), includeComponents).Cast<T>();
         }
 
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<object> Model(Type type)
+        public Result<object> Model(Type type, bool includeComponents = true)
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Models(type).FirstOrDefault(), new GameObjectAppealException(
+            return (Models(type, includeComponents).FirstOrDefault(), new GameObjectAppealException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -425,9 +432,9 @@ namespace CCEnvs.Unity
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T> Model<T>()
+        public Result<T> Model<T>(bool includeComponents = true)
         {
-            return Model(typeof(T)).Cast<T>();
+            return Model(typeof(T), includeComponents).Cast<T>();
         }
 
         [DebuggerStepThrough]
@@ -577,7 +584,7 @@ namespace CCEnvs.Unity
                 components = components.Where(cmp => cmp.gameObject.layer == layerMask);
 
             if (name.IsSome)
-                components = components.Where(cmp => cmp.gameObject.name.Match(name.GetValueUnsafe()));
+                components = components.Where(cmp => cmp.gameObject.name.Match(name.GetValueUnsafe(), stringMatchSettings));
 
             if (tag.IsSome)
                 components = components.Where(cmp => cmp.gameObject.CompareTag(tag.GetValueUnsafe()));

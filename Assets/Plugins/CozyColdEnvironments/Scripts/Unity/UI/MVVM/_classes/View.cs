@@ -23,9 +23,12 @@ namespace CCEnvs.Unity.UI.MVVM
     {
         protected Lazy<TViewModel> _viewModel;
 
+        [SerializeField]
+        protected bool isMutable;
+
         public TModel model => viewModel.model;
         public TViewModel viewModel => _viewModel.Value;
-        public virtual bool IsMutable => false;
+        public bool IsMutable => isMutable;
 
         protected override void Awake()
         {
