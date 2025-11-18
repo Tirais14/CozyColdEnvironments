@@ -7,12 +7,12 @@ using CCEnvs.Unity.UI.MVVM;
 namespace CCEnvs.Unity.UI
 {
     public class ViewComponentCommand<T> : CCBehaviourComponentCommand
-        where T : class, IGUIPanel
+        where T : class, IView
     {
         [field: GetBySelf(IsOptional = true)]
         protected T view { get; private set; } = null!;
     }
-    public class ViewComponentCommand : ViewComponentCommand<IGUIPanel>
+    public class ViewComponentCommand : ViewComponentCommand<IView>
     {
 
     }

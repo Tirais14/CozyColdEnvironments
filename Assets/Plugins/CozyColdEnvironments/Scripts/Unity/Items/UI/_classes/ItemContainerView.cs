@@ -25,12 +25,12 @@ namespace CCEnvs.Unity.Storages.UI
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainer, new()
     {
+        [Header("Item Container Settings")]
+        [Space(8)]
+
         [SerializeField]
         [GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> counterMesh;
-
-        [SerializeField]
-        protected CompareAction<float> showCounterPredicate;
 
         [SerializeField]
         protected bool switchActiveStateOnClick = true;
@@ -52,7 +52,6 @@ namespace CCEnvs.Unity.Storages.UI
         protected override void InstallBingings()
         {
             base.InstallBingings();
-            viewModel.ShowCounterPredicate = showCounterPredicate;
             BindItemIcon();
             BindItemCount();
             BindActiveContainer();

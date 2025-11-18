@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.Storages.UI
         public IReadOnlyReactiveProperty<Sprite> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
         public IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
-        public CompareAction<float> ShowCounterPredicate { get; set; }
+        public Maybe<CompareAction<int>> ShowItemCounterPredicate { get; set; }
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
@@ -58,7 +58,16 @@ namespace CCEnvs.Unity.Storages.UI
         {
             model.ObserveItemCount()
                 .Select(pair => pair.Current)
-                .Select(itemCount => ShowCounterPredicate.Invoke(itemCount) ? itemCount.ToString() : string.Empty)
+                .Select(itemCount => ShowItemCounterPredicate.BiMap(
+                            some: predicate =>
+                            {
+                                if (predicate.Invoke(itemCount))
+                                    return itemCount.ToString();
+                                else
+                                    return string.Empty;
+                            },
+                            none: () => itemCount > 1 ? itemCount.ToString() : string.Empty
+                            ).GetValueUnsafe())
                 .SubscribeWithState(itemCount, 
                     static (countStr, prop) => prop.Value = countStr)
                 .AddTo(disposables);

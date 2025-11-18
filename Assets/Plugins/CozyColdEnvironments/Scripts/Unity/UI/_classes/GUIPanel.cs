@@ -18,6 +18,9 @@ namespace CCEnvs.Unity.UI
         : CCBehaviour,
         IGUIPanel
     {
+        [Header("GUI Panel Settings")]
+        [Space(8)]
+
         [GetBySelf(IsOptional = true)]
         [SerializeField]
         protected Image m_Image;

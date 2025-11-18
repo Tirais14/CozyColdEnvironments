@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Items
         IReadOnlyReactiveProperty<Sprite> ItemIcon { get; }
         IReadOnlyReactiveProperty<string> ItemCount { get; }
         IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
-        CompareAction<float> ShowCounterPredicate { get; set; }
+        Maybe<CompareAction<int>> ShowItemCounterPredicate { get; set; }
 
         void SetActiveState(Maybe<bool> state = default);
     }
