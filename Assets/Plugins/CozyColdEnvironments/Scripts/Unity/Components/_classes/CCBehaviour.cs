@@ -55,22 +55,17 @@ namespace CCEnvs.Unity.Components
             .Forget();
         }
 
-        public void OnEndFrame(Action action)
+        public void EnfOfFrameAction(Action action)
         {
-            OnEndFrameInternal(action).Forget(ex => this.PrintException(ex));
-        }
+            Guard.IsNotNull(action);
 
-        private async UniTask OnEndFrameInternal(Action action)
-        {
-            if (action is null)
+            UniTask.Create(action, static async action =>
             {
-                this.PrintError("Action is null.");
-                return;
-            }
-
-            await UniTask.WaitForEndOfFrame();
-
-            action();
+                await UniTask.WaitForEndOfFrame();
+                action();
+            }).AttachExternalCancellation(destroyCancellationToken)
+            .SuppressCancellationThrow()
+            .Forget();
         }
     }
 }

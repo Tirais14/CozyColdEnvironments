@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.UI
                        &&
                        showable.IsVisible)
                     {
-                        showable.Hide(IShowable.Settings.Recursive & ~IShowable.Settings.Recursive);
+                        showable.Hide(settings & ~IShowable.Settings.Recursive);
                     }
                     else
                         HideGraphics(child, graphicSnapshots, settings);
@@ -71,18 +71,28 @@ namespace CCEnvs.Unity.UI
             List<GraphicComponentStateSnapshot> graphicSnapshots, 
             IShowable.Settings settings)
         {
-            foreach (var cmp in gameObject.GetComponents<Graphic>().ZL()
-                .Where(graphic =>
-                    !graphicSnapshots.Exists(graphicState =>
-                        graphicState.Target == graphic))
-                )
+            if (graphicSnapshots.Exists(x => x.Target.gameObject == gameObject))
+                return;
+
+            Graphic[] snapshotTargets = graphicSnapshots.Select(cmp => cmp.Target).ToArray();
+
+            foreach (var cmp in gameObject.QueryTo()
+                .Components<Graphic>()
+                .ZL()
+                .Where(cmp => cmp.enabled)
+                .Where(cmp => !snapshotTargets.Contains(cmp)))
             {
                 graphicSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
 
-                if (!settings.IsFlagSetted(IShowable.Settings.KeepRaycastTargetState))
-                    cmp.raycastTarget = false;
+                if (settings.IsFlagSetted(IShowable.Settings.ByComponentState))
+                    cmp.enabled = false;
+                else
+                {
+                    if (!settings.IsFlagSetted(IShowable.Settings.KeepRaycastTargetState))
+                        cmp.raycastTarget = false;
 
-                cmp.color = cmp.color.WithAlpha(0f);
+                    cmp.color = cmp.color.WithAlpha(0f);
+                }
             }
         }
     }

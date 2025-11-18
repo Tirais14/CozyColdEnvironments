@@ -13,8 +13,8 @@ namespace CCEnvs.Unity.UI
             None = 0,
             KeepRaycastTargetState = 1,
             Recursive = 2,
-            ByGameObjectActivation = 4,
-            Default = Recursive,
+            ByComponentState = 4,
+            Default = Recursive | ByComponentState,
         }
         bool IsVisible { get; }
 

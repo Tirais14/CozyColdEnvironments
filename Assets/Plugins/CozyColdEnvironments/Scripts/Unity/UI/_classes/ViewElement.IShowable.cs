@@ -42,11 +42,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         private void IShowableOnTransformChildrenChanged()
         {
-            PreUpdateAction(() =>
-            {
-                if (cGameObject.Value != null)
-                    Redraw();
-            });
+            PreUpdateAction(Redraw);
         }
 
         public virtual bool ShowableShowAllowedPredicate() => true;
@@ -62,14 +58,9 @@ namespace CCEnvs.Unity.UI.Elements
             if (!force && !IsVisible)
                 return;
 
-            if (settings.IsFlagSetted(IShowable.Settings.ByGameObjectActivation))
-                cGameObject.Value.SetActive(false);
-            else
-            {
-                Showable.Hide(gameObject,
-                    showableGraphicSnapshots,
-                    settings);
-            }
+            Showable.Hide(gameObject,
+                showableGraphicSnapshots,
+                settings);
 
             isVisible.Value = false;
         }
@@ -79,14 +70,9 @@ namespace CCEnvs.Unity.UI.Elements
             if (!ShowableShowAllowedPredicate())
                 return;
 
-            if (settings.IsFlagSetted(IShowable.Settings.ByGameObjectActivation))
-                cGameObject.Value.SetActive(true);
-            else
-            {
-                Showable.Show(gameObject,
-                    showableGraphicSnapshots,
-                    ShowableSettings);
-            }
+            Showable.Show(gameObject,
+                showableGraphicSnapshots,
+                ShowableSettings);
 
             isVisible.Value = true;
         }
