@@ -14,6 +14,7 @@ using UnityEngine.UI;
 
 #nullable enable
 #pragma warning disable IDE0044
+#pragma warning disable S1125
 namespace CCEnvs.Unity.Storages.UI
 {
     [RequireComponent(typeof(Image))]
@@ -24,8 +25,15 @@ namespace CCEnvs.Unity.Storages.UI
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainer, new()
     {
-        [field: SerializeField, GetByChildren(IsOptional = true)]
+        [SerializeField]
+        [GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> counterMesh;
+
+        [SerializeField]
+        protected CompareAction<float> showCounterPredicate;
+
+        [SerializeField]
+        protected bool switchActiveStateOnClick = true;
 
         protected override void Awake()
         {
@@ -44,6 +52,7 @@ namespace CCEnvs.Unity.Storages.UI
         protected override void InstallBingings()
         {
             base.InstallBingings();
+            viewModel.ShowCounterPredicate = showCounterPredicate;
             BindItemIcon();
             BindItemCount();
             BindActiveContainer();
@@ -51,7 +60,7 @@ namespace CCEnvs.Unity.Storages.UI
 
         public override void OnButtonClick()
         {
-            viewModel.ActivateContainer();
+            viewModel.SetActiveState(switchActiveStateOnClick ? Maybe<bool>.None : true);
         }
 
         public override bool DragAllowedPredicate()
@@ -70,7 +79,7 @@ namespace CCEnvs.Unity.Storages.UI
         public override void Hide(IShowable.Settings settings)
         {
             base.Hide(settings);
-            viewModel.DeactivateContainer();
+            viewModel.SetActiveState(false);
         }
 
         protected override void OnEndDrag(PointerEventData eventData)
@@ -78,7 +87,7 @@ namespace CCEnvs.Unity.Storages.UI
             base.OnEndDrag(eventData);
 
             if (model.IsEmpty)
-                viewModel.DeactivateContainer();
+                viewModel.SetActiveState(false);
         }
 
         protected override void OnDrop(PointerEventData eventData)

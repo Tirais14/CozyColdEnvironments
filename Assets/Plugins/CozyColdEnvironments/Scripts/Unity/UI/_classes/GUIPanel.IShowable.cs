@@ -4,9 +4,9 @@ using UniRx;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI
 {
-    public partial class ViewElement : IShowable
+    public partial class GUIPanel : IShowable
     {
         protected readonly List<GraphicComponentStateSnapshot> showableGraphicSnapshots = new();
 

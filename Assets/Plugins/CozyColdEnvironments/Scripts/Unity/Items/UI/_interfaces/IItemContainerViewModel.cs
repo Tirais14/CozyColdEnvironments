@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;
 using UnityEngine;
@@ -11,9 +12,8 @@ namespace CCEnvs.Unity.Items
         IReadOnlyReactiveProperty<Sprite> ItemIcon { get; }
         IReadOnlyReactiveProperty<string> ItemCount { get; }
         IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
+        CompareAction<float> ShowCounterPredicate { get; set; }
 
-        void ActivateContainer();
-
-        void DeactivateContainer();
+        void SetActiveState(Maybe<bool> state = default);
     }
 }

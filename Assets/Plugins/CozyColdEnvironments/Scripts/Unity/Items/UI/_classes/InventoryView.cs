@@ -1,7 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI.Elements;
+using CCEnvs.Unity.UI;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
 using UniRx;

@@ -5,12 +5,12 @@ using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
 using ZLinq;
-using static CCEnvs.Unity.UI.Elements.IGameObjectBag;
+using static CCEnvs.Unity.UI.IGameObjectBag;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI
 {
-    public class GameObjectBag : ViewElement, IGameObjectBag
+    public class GameObjectBag : GUIPanel, IGameObjectBag
     {
         protected readonly ReactiveCollection<GameObject> collection = new();
 

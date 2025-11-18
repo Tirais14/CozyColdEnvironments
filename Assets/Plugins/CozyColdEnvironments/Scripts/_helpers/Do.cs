@@ -10,6 +10,44 @@ namespace CCEnvs
     {
         public delegate T?[] MoveNext<T>(T current, LoopState loopState);
 
+        public static bool Compare(int value, CompareTypes compareTypes)
+        {
+            if (compareTypes.IsFlagSetted(CompareTypes.Equals))
+            {
+                if (compareTypes.IsFlagSetted(CompareTypes.Smaller))
+                    return value <= 0;
+                else if (compareTypes.IsFlagSetted(CompareTypes.Bigger))
+                    return value >= 0;
+                else
+                    return value == 0;
+            }
+            else if (compareTypes.IsFlagSetted(CompareTypes.Smaller))
+                return value < 0;
+            else if (compareTypes.IsFlagSetted(CompareTypes.Bigger))
+                return value > 0;
+
+            return CC.Throw.InvalidOperation(compareTypes, nameof(compareTypes)).As<bool>();
+        }
+
+        public static bool CompareTo<T>(this T left, T right, CompareTypes compareTypes)
+            where T : IComparable<T>
+        {
+            CC.Guard.IsNotNull(left, nameof(left));
+            CC.Guard.IsNotNull(right, nameof(right));
+
+            return Compare(left.CompareTo(right), compareTypes);
+        }
+
+        public static bool CompareTo<T>(this T left,
+            T right,
+            CompareTypes compareTypes,
+            IComparer<T> comparer)
+        {
+            CC.Guard.IsNotNull(comparer, nameof(comparer));
+
+            return Compare(comparer.Compare(left, right), compareTypes);
+        }
+
         public static void Nothing()
         {
         }

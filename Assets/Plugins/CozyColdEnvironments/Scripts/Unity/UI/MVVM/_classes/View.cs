@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.UI.Elements;
+using CCEnvs.Unity.UI;
 using System;
 using UniRx;
 using UnityEngine;
@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.UI.MVVM
     /// <typeparam name="TViewModel"></typeparam>
     /// <typeparam name="TModel"></typeparam>
     public abstract class View<TViewModel, TModel>
-        : ViewElement,
+        : GUIPanel,
         IView<TViewModel, TModel>
 
         where TViewModel : ViewModel<TModel>

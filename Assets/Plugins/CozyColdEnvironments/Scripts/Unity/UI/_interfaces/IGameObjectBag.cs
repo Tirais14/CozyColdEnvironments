@@ -6,7 +6,7 @@ using System;
 
 #nullable enable
 #pragma warning disable S3444
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI
 {
     public interface IGameObjectBag
         : IReadOnlyReactiveCollection<GameObject>,

@@ -11,6 +11,17 @@ namespace CCEnvs.Unity
 {
     public static class GameObjectExtensions
     {
+        public static RectTransform RectTransform(this GameObject source)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            return source.transform.As<RectTransform>();
+        }
+        public static RectTransform RectTransform(this Component source)
+        {
+            return source.gameObject.RectTransform();
+        }
+
         /// <exception cref="System.ArgumentNullException"></exception>
         public static void ApplySettings(this GameObject value, GameObjectSettings settings)
         {

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Storages.UI
 {
     [DisallowMultipleComponent]
-    public sealed class InventorySettings : ViewElementComponentCommand
+    public sealed class InventorySettings : ViewComponentCommand
     {
         [SerializeField]
         private GameObject itemContainerPrefab;

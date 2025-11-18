@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI.MVVM;
 using UniRx;
@@ -18,6 +19,7 @@ namespace CCEnvs.Unity.Storages.UI
         public IReadOnlyReactiveProperty<Sprite> ItemIcon => itemIcon;
         public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
         public IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
+        public CompareAction<float> ShowCounterPredicate { get; set; }
 
         public ItemContainerViewModel(T model, GameObject gameObject)
             :
@@ -28,16 +30,19 @@ namespace CCEnvs.Unity.Storages.UI
             IsActiveContainer = model.ObserveActiveState().ToReactiveProperty();
         }
 
-        public void ActivateContainer()
+        public void SetActiveState(Maybe<bool> state = default)
         {
-            model.ActivateContainer();
+            state.Match(
+                some: state =>
+                {
+                    if (state)
+                        model.ActivateContainer();
+                    else
+                        model.DeactivateContainer();
+                },
+                none: () => model.SwitchContainerActiveState()
+                );
         }
-
-        public void DeactivateContainer()
-        {
-            model.DeactivateContainer();
-        }
-
         private void BindItemIcon()
         {
             model.ObserveItem()
@@ -53,7 +58,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             model.ObserveItemCount()
                 .Select(pair => pair.Current)
-                .Select(itemCount => itemCount <= 0 ? string.Empty : itemCount.ToString())
+                .Select(itemCount => ShowCounterPredicate.Invoke(itemCount) ? itemCount.ToString() : string.Empty)
                 .SubscribeWithState(itemCount, 
                     static (countStr, prop) => prop.Value = countStr)
                 .AddTo(disposables);

@@ -1,13 +1,10 @@
 using CCEnvs.FuncLanguage;
 using UnityEngine.UI;
 
-
 namespace CCEnvs.Unity.UI
 {
-    public interface IViewElement : IShowable, ISelectable
+    public interface IGUIPanel : IShowable, ISelectable
     {
         Maybe<Image> image { get; }
-
-        void Redraw();
     }
 }

@@ -11,12 +11,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #pragma warning disable S4144
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI
 {
     [DisallowMultipleComponent]
-    public partial class ViewElement 
+    public partial class GUIPanel 
         : CCBehaviour,
-        IViewElement
+        IGUIPanel
     {
         [GetBySelf(IsOptional = true)]
         [SerializeField]
@@ -74,6 +74,7 @@ namespace CCEnvs.Unity.UI.Elements
         /// </summary>
         public virtual void OnButtonClick()
         {
+            SwitchSelectionState();
         }
 
         private void BindToButton()

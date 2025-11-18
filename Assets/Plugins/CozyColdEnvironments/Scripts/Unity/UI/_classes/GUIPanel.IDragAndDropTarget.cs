@@ -7,9 +7,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Elements
+namespace CCEnvs.Unity.UI
 {
-    public partial class ViewElement : IDragAndDropTarget
+    public partial class GUIPanel : IDragAndDropTarget
     {
         [Flags]
         protected enum DragAndDropSettings
@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.UI.Elements
         protected DragAndDropSettings dragSettings = DragAndDropSettings.Default;
         private Vector2 dragStartPos;
         private int dragStartSiblingIndex;
-        private Maybe<ViewElement> dragThisCloned;
+        private Maybe<GUIPanel> dragThisCloned;
         private Maybe<Transform> startDraggingParent;
         private bool? dragAllowed;
 
