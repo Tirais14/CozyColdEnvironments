@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public AssetLabels AssetLabels { get; private set; }
 
         public AssetDatabaseKey AssetDatabaseKey {
-            get => ID.Match(
+            get => ID.BiMap(
                 some: id => new AssetDatabaseKey(AssetType, id),
                 none: () => new AssetDatabaseKey(AssetType, new Identifier() { Text = name })
                 ).Raw;

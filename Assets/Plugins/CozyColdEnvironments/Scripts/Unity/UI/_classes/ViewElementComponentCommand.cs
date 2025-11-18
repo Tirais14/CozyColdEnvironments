@@ -18,10 +18,10 @@ namespace CCEnvs.Unity.UI
 
         protected override void OnDestroy()
         {
-            view.Match(
-                some: view => view.IsVisible.Resolve().If(view.Show).Else(view.Hide),
-                none: () => this.PrintError($"Not found {nameof(ViewElement).Humanize()}.")
-                );
+            //view.Match(
+            //    some: view => view.IsVisible.Resolve().If(view.Show).Else(view.Hide),
+            //    none: () => this.PrintError($"Not found {nameof(ViewElement).Humanize()}.")
+            //    );
         }
     }
 }

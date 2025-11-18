@@ -80,7 +80,7 @@ namespace CCEnvs.Unity.UI.Elements
             return isSelected.Where(x => x);
         }
 
-        private void SelectableOnTransformChildrenChanged()
+        private void ISelectableOnTransformChildrenChanged()
         {
             selectionOverlay.IfSome(img => img.transform.SetAsLastSibling());
         }

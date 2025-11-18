@@ -90,7 +90,7 @@ namespace CCEnvs.Unity.UI.MVVM
         protected virtual TViewModel ViewModelFactory(TModel? model = default)
         {
             model = model.Maybe()
-                         .Match(
+                         .BiMap(
                 some: m => m,
                 none: () => ModelFactory())
                          .Raw;

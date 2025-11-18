@@ -24,6 +24,9 @@ namespace CCEnvs.Unity.UI
 
         public void Restore()
         {
+            if (Target == null)
+                return;
+
             Target.raycastTarget = RaycastTarget;
             Target.color = Color;
             Target.enabled = enabled;

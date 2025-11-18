@@ -27,10 +27,10 @@ namespace CCEnvs.Unity.UI
 
             if (settings.IsFlagSetted(IShowable.Settings.Recursive))
             {
-                foreach (var child in from go in gameObject.QueryTo().ExcludeSelf().ChildrenGameObjects()
-                                      select go.QueryTo().Component<IShowable>().Lax() into cmp
-                                      where cmp.IsSome
-                                      select cmp.GetValueUnsafe())
+                foreach (var child in gameObject.QueryTo()
+                                                .ByChildren()
+                                                .ExcludeSelf()
+                                                .Models<IShowable>())
                 {
                     child.Show(settings & ~IShowable.Settings.Recursive);
                 }
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.UI
                        &&
                        showable.IsVisible)
                     {
-                        showable.Hide();
+                        showable.Hide(IShowable.Settings.Recursive & ~IShowable.Settings.Recursive);
                     }
                     else
                         HideGraphics(child, graphicSnapshots, settings);

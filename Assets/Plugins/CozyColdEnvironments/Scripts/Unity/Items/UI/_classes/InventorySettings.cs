@@ -16,13 +16,12 @@ namespace CCEnvs.Unity.Storages.UI
         [SerializeField]
         private int itemContainerCount;
 
-        protected override void OnUpdate()
+        protected override void Start()
         {
-            if (Application.isPlaying)
-            {
-                if (itemContainerCount <= 0)
-                    return;
+            base.Start();
 
+            PreUpdateAction(() =>
+            {
                 this.QueryTo()
                     .Model<IInventory>()
                     .Lax()
@@ -33,8 +32,8 @@ namespace CCEnvs.Unity.Storages.UI
                             inv.SetContainerCountByPrefab(itemContainerCount);
                         },
                         none: () => this.PrintError("Not found inventory.")
-                    );
-            }
+                        );
+            });
         }
     }
 }

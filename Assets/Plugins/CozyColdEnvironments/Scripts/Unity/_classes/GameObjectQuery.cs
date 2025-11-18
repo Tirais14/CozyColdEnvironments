@@ -247,7 +247,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> Components(Type? type = null)
         {
-            return Target.Match(
+            return Target.BiMap(
                 some: target => ComponentsInternal(target, type),
                 none: () =>
                 {
@@ -596,7 +596,7 @@ namespace CCEnvs.Unity
             var providerObjects = components.OfType<IObjectProvider>().Select(x => x.InternalObject).Where(x => anyType || x.IsInstanceOfType(type));
             results = results.Concat(providerObjects);
 
-            return results;
+            return results.Where(x => x.IsNotNull());
         }
     }
 

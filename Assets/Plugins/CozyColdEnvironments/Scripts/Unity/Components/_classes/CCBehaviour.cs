@@ -35,18 +35,24 @@ namespace CCEnvs.Unity.Components
         {
             MemberValidator.ValidateInstance(this);
 
-            ToPreUpdate(() =>
+            PreUpdateAction(() =>
             {
                 StartPassed = true;
                 this.PrintLog("Start Passed");
             });
         }
 
-        public static void ToPreUpdate(Action action)
+        public void PreUpdateAction(Action action)
         {
             Guard.IsNotNull(action);
 
-            UniTask.Post(action, PlayerLoopTiming.PreUpdate);
+            UniTask.Create(action, static async (action) =>
+            {
+                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+                action();
+            }).AttachExternalCancellation(destroyCancellationToken)
+            .SuppressCancellationThrow()
+            .Forget();
         }
 
         public void OnEndFrame(Action action)

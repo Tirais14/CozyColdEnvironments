@@ -170,7 +170,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 Text = textIdFilter
             };
 
-            return db[id].Lax().Match(
+            return db[id].Lax().BiMap(
                 some: asset => (asset, null!),
                 none: () => (Assets(type).SingleOrDefault(), new AssetNotFoundException(db, id, type)))
                 .GetValueUnsafe();

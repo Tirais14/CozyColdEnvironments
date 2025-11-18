@@ -38,7 +38,7 @@ namespace CCEnvs.FuncLanguage
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none)
+        public readonly Maybe<TOut> BiMap<TOut>(Func<T, TOut?> some, Func<TOut?> none)
         {
             return Lang.Match(this, some, none);
         }

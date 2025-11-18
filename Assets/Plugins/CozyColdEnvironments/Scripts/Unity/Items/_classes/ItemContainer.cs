@@ -240,7 +240,7 @@ namespace CCEnvs.Unity.Items
 
         public bool BindGameObject(GameObject gameObject)
         {
-            return this.gameObject.Match(
+            return this.gameObject.BiMap(
                 some: _ => false,
                 none: () =>
                 {

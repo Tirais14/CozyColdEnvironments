@@ -1,6 +1,4 @@
-using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 #nullable enable
@@ -32,18 +30,12 @@ namespace CCEnvs.Unity.UI.Elements
         protected override void Start()
         {
             base.Start();
-
-            if (!Application.isPlaying)
-                return;
-
             onClick.AddListener(target.Hide);
         }
 
         protected override void OnDestroy()
         {
-            if (!Application.isPlaying)
-                return;
-
+            base.OnDestroy();
             onClick.RemoveListener(target.Hide);
         }
     }

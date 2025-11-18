@@ -662,7 +662,7 @@ namespace CCEnvs.Reflection
                                  .GetValueUnsafe();
             }
 
-            return right.Match(
+            return right.BiMap(
                 some: right => CompareType(left, right),
                 none: () => true).Raw;
         }
@@ -670,7 +670,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareName(string other)
         {
-            return name.Match(
+            return name.BiMap(
                 some: name =>
                 {
                     if (settings.IsFlagSetted(Settings.ByFullName))
@@ -691,7 +691,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareAttributes(MemberInfo member)
         {
-            return attributes.Match(
+            return attributes.BiMap(
                 some: types => types.All(type => member.IsDefined(type)),
                 none: () => true)
                 .Raw;

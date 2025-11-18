@@ -25,7 +25,7 @@ namespace CCEnvs.FuncLanguage
 
         Maybe<TOut> Map<TOut>(Func<T, TOut?> selector);
 
-        Maybe<TOut> Match<TOut>(Func<T, TOut?> some, Func<TOut?> none);
+        Maybe<TOut> BiMap<TOut>(Func<T, TOut?> some, Func<TOut?> none);
 
         Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector);
 
@@ -38,7 +38,7 @@ namespace CCEnvs.FuncLanguage
 
         IMaybe IMaybe.Map(Func<object, object?> selector) => Map(x => selector(x!));
 
-        IMaybe IMaybe.Match(Func<object, object?> some, Func<object?> none) => Match(x => some(x!), () => none());
+        IMaybe IMaybe.Match(Func<object, object?> some, Func<object?> none) => BiMap(x => some(x!), () => none());
 
         IMaybe IMaybe.MapUnsafe(Func<object?, object?> selector) => MapUnsafe((x) => selector(x));
     }

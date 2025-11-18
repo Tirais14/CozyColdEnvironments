@@ -13,6 +13,7 @@ namespace CCEnvs.Unity.UI
             None = 0,
             KeepRaycastTargetState = 1,
             Recursive = 2,
+            ByGameObjectActivation = 4,
             Default = Recursive,
         }
         bool IsVisible { get; }
@@ -22,6 +23,8 @@ namespace CCEnvs.Unity.UI
 
         void Show(Settings settings);   
         void Show();
+
+        void Redraw();
 
         bool SwitchVisibleState();
 

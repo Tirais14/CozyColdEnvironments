@@ -36,8 +36,6 @@ namespace CCEnvs
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
         public static string WordSeparator { get; set; } = "_";
 
-        public static Result DoNothing() => new();
-
 #pragma warning disable S112
         public static class Throw
         {
@@ -70,6 +68,7 @@ namespace CCEnvs
                 throw new ArgumentException($"Argument: {argName} cannot be {argName}.");
             }
 
+            [DoesNotReturn]
             public static object InvalidOperation(object arg, string? argName = null)
             {
                 throw new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg}");

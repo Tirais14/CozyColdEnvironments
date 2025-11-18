@@ -11,9 +11,9 @@ namespace CCEnvs.Unity.Items
         public static ItemCustom Empty { get; } = new();
 
         public string Name { get; init; } = "None";
-        public int ID { get; init; }
-        public Sprite Icon { get; init; } = UCC.ErrorSprite.Value;
-        public int MaxItemCount { get; init; }
+        public int ID { get; init; } = int.MinValue;
+        public Sprite Icon { get; init; } = UCC.RedCrossSprite.Value;
+        public int MaxItemCount { get; init; } = int.MaxValue;
 
         public static bool operator ==(ItemCustom? left, ItemCustom? right)
         {

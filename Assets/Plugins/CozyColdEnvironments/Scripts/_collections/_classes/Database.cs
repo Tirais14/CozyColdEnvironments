@@ -42,7 +42,7 @@ namespace CCEnvs.Collections
                 return;
 
             if (disposing)
-                CC.DoNothing();
+                Do.Nothing();
 
             disposeValue = true;
         }

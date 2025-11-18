@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.UI.Elements
 
         public bool IsVisible => isVisible.Value;
 
-        private void StartIShowable()
+        private void IShowableStart()
         {
             ShowablePreheat();
 
@@ -40,23 +40,36 @@ namespace CCEnvs.Unity.UI.Elements
                 Show();
         }
 
+        private void IShowableOnTransformChildrenChanged()
+        {
+            PreUpdateAction(() =>
+            {
+                if (cGameObject.Value != null)
+                    Redraw();
+            });
+        }
+
         public virtual bool ShowableShowAllowedPredicate() => true;
 
         public virtual void Hide(IShowable.Settings settings)
         {
-            Hide(force: false);
+            Hide(force: false, settings);
         }
         public void Hide() => Hide(ShowableSettings);
 
-        protected void Hide(bool force)
+        protected void Hide(bool force, IShowable.Settings settings)
         {
             if (!force && !IsVisible)
                 return;
 
-            Showable.Hide(
-                gameObject,
-                showableGraphicSnapshots,
-                ShowableSettings);
+            if (settings.IsFlagSetted(IShowable.Settings.ByGameObjectActivation))
+                cGameObject.Value.SetActive(false);
+            else
+            {
+                Showable.Hide(gameObject,
+                    showableGraphicSnapshots,
+                    settings);
+            }
 
             isVisible.Value = false;
         }
@@ -66,10 +79,14 @@ namespace CCEnvs.Unity.UI.Elements
             if (!ShowableShowAllowedPredicate())
                 return;
 
-            Showable.Show(
-                gameObject,
-                showableGraphicSnapshots,
-                ShowableSettings);
+            if (settings.IsFlagSetted(IShowable.Settings.ByGameObjectActivation))
+                cGameObject.Value.SetActive(true);
+            else
+            {
+                Showable.Show(gameObject,
+                    showableGraphicSnapshots,
+                    ShowableSettings);
+            }
 
             isVisible.Value = true;
         }
@@ -85,6 +102,20 @@ namespace CCEnvs.Unity.UI.Elements
             return IsVisible;
         }
 
+        public void Redraw()
+        {
+            if (IsVisible)
+            {
+                Hide();
+                Show();
+            }
+            else
+            {
+                Show();
+                Hide();
+            }
+        }
+
         public IObservable<Unit> ObserveShow()
         {
             return isVisible.Where(_ => StartPassed).Where(x => x).AsUnitObservable();
@@ -98,8 +129,7 @@ namespace CCEnvs.Unity.UI.Elements
         //To reset visibility state
         private void ShowablePreheat()
         {
-            Show();
-            Hide(force: true);
+            Hide(force: true, ShowableSettings);
         }
     }
 }

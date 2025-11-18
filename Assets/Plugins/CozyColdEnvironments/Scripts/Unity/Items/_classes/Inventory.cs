@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniRx;
 using UnityEngine;
@@ -42,6 +43,7 @@ namespace CCEnvs.Unity.Items
         public bool IsEmpty => collection.Values.Any(x => x.ContainsItem());
         public bool IsFull => collection.Values.All(x => x.ContainsItem());
         public Maybe<GameObject> ItemContainerPrefab { get; set; }
+        public Maybe<GameObject> gameObject { get; private set; }
 
         protected GameObject itemContainerPrefabUnsafe {
             get => ItemContainerPrefab.IfNone(
@@ -130,6 +132,7 @@ namespace CCEnvs.Unity.Items
             var go = UnityEngine.Object.Instantiate(prefab);
             var cnt = go.QueryTo().ByChildren().Model<IItemContainer>().Strict();
             cnt.BindGameObject(go);
+            cnt.CopyFrom(itemContainer);
             AddContainer(cnt);
 
             return cnt;
@@ -197,7 +200,7 @@ namespace CCEnvs.Unity.Items
             }
             else
             {
-                return prefab.Match(
+                return prefab.BiMap(
                         some: prefab => AddContainerCountByPrefab(delta, prefab),
                         none: () => AddContainerCount<T>(count)
                     ).GetValueUnsafe();
@@ -214,7 +217,7 @@ namespace CCEnvs.Unity.Items
             return SetContainerCount<ItemContainer>(count, itemContainerPrefabUnsafe);
         }
 
-        public bool RemoveContainer(int id)
+        public Maybe<IItemContainer> RemoveContainer(int id)
         {
             if (collection.Remove(id, out IItemContainer value))
             {
@@ -229,10 +232,10 @@ namespace CCEnvs.Unity.Items
                     this.PrintException(ex);
                 }
 
-                return true;
+                return value.Maybe();
             }
 
-            return false;
+            return null!;
         }
         public bool RemoveContainer(IItemContainer itemContainer)
         {
@@ -242,16 +245,28 @@ namespace CCEnvs.Unity.Items
             if (found.IsDefault())
                 return false;
 
-            return RemoveContainer(found.Key);
+            return RemoveContainer(found.Key).IsSome;
         }
 
-        public void RemoveContainerCount(int count)
+        public IItemContainer[] RemoveContainerCount(int count)
         {
+            var removed = new List<IItemContainer>(count);
+            IItemContainer? itemContainer;
             for (int i = 0; i < count; i++)
-                RemoveLast();
+            {
+                if (RemoveLast(out itemContainer))
+                    removed.Add(itemContainer);
+            }
+
+            return removed.ToArray();
         }
 
-        public bool RemoveLast() => RemoveContainer(collection.Keys.Max());
+        public bool RemoveLast([NotNullWhen(true)] out IItemContainer? removed)
+        {
+            removed = RemoveContainer(collection.Keys.Max()).GetValue();
+
+            return removed.IsNotNull();
+        }
 
         public void Clear()
         {
@@ -385,6 +400,19 @@ namespace CCEnvs.Unity.Items
         public bool SwitchContainerActiveState(int id)
         {
             return this[id].SwitchContainerActiveState();
+        }
+
+        public bool BindGameObject(GameObject gameObject)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+
+            return this.gameObject.BiMap(
+                some: _ => false,
+                none: () =>
+                {
+                    this.gameObject = gameObject;
+                    return true;
+                }).Raw;
         }
 
         public Maybe<int> GetContainerID(IItemContainer itemContainer)

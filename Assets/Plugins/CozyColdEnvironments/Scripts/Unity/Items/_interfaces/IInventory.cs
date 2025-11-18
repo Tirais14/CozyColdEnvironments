@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.UI.MVVM;
 using System;
 using System.Collections.Generic;
-using UniRx;
 using UnityEngine;
 
 #nullable enable
@@ -10,7 +10,8 @@ namespace CCEnvs.Unity.Items
     public interface IInventory
         : IItemAccessor,
         IItemContainerInfoItemless,
-        IEnumerable<IItemContainer>
+        IEnumerable<IItemContainer>,
+        IModel
     {
         IItemContainer this[int id] { get; }
 
@@ -32,10 +33,10 @@ namespace CCEnvs.Unity.Items
         IItemContainer[] SetContainerCountByPrefab(int count, GameObject prefab);
         IItemContainer[] SetContainerCountByPrefab(int count);
 
-        bool RemoveContainer(int id);
+        Maybe<IItemContainer> RemoveContainer(int id);
         bool RemoveContainer(IItemContainer itemContainer);
 
-        void RemoveContainerCount(int count);
+        IItemContainer[] RemoveContainerCount(int count);
 
         bool ContainsContainer(int id);
         bool ContainsContainer(IItemContainer itemContainer);

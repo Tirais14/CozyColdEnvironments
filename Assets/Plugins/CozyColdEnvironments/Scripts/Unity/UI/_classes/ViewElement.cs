@@ -55,12 +55,13 @@ namespace CCEnvs.Unity.UI.Elements
         {
             base.Start();
             BindToButton();
-            StartIShowable();
+            IShowableStart();
         }
 
         protected virtual void OnTransformChildrenChanged()
         {
-            SelectableOnTransformChildrenChanged();
+            ISelectableOnTransformChildrenChanged();
+            IShowableOnTransformChildrenChanged();
         }
 
         protected virtual void OnDestroy()

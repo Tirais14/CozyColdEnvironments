@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.Storages.UI
         where TContainer : IItemContainer, new()
     {
         [field: SerializeField, GetByChildren(IsOptional = true)]
-        protected Maybe<TextMeshProUGUI> counterMesh { get; private set; } = null!;
+        protected Maybe<TextMeshProUGUI> counterMesh;
 
         protected override void Awake()
         {

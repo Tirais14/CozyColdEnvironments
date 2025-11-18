@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.Storages.UI
                 {
                     go.SetActive(false);
 
-                    ToPreUpdate(() =>
+                    @this.PreUpdateAction(() =>
                     {
                         if (!@this.IsVisible) //pass control of visibility state to @this
                         {

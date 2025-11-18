@@ -13,7 +13,7 @@ namespace CCEnvs.Unity
     {
         public static Lazy<Sprite> ColorSprite { get; } = new(() => Resources.Load<Sprite>("Textures/ColorSprite"));
         public static Lazy<Sprite> TranparentSprite { get; } = new(() => Resources.Load<Sprite>("Textures/DummySprite"));
-        public static Lazy<Sprite> ErrorSprite { get; } = new(() => Resources.Load<Sprite>("Textures/ErrorSprite"));
+        public static Lazy<Sprite> RedCrossSprite { get; } = new(() => Resources.Load<Sprite>("Textures/RedCross"));
         public static Lazy<IInventory> WorldInventory { get; } = new(() => new Inventory());
     }
 }
