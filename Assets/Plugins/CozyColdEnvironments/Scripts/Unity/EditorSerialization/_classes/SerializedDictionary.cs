@@ -1,50 +1,40 @@
-using CCEnvs.Diagnostics;
-using ZLinq;
+using CCEnvs;
+using CCEnvs.Collections;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
-using CCEnvs.Linq;
-using CCEnvs;
+using System.Linq;
+using UnityEngine;
+using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.Unity.Serialization
 {
     [Serializable]
     public sealed class SerializedDictionary<TKey, TValue>
-        : Serialized<SerializedTuple<TKey, TValue>[], Dictionary<TKey, TValue>>
+        : Serialized<Dictionary<TKey, TValue>>
     {
+        [SerializeField]
+        private SerializedTuple<TKey, TValue>[] items;
+
         public SerializedDictionary()
         {
         }
 
-        protected override SerializedTuple<TKey, TValue>[] ConvertToInput(Dictionary<TKey, TValue> output)
+        public SerializedDictionary(Dictionary<TKey, TValue> defaultValue)
+            :
+            base(defaultValue)
         {
-            return Value.AsValueEnumerable()
-                        .Select(x => new SerializedTuple<TKey, TValue>(x.Key, x.Value))
-                        .ToArray();
         }
 
-        protected override Dictionary<TKey, TValue> ConvertToOutput(
-            SerializedTuple<TKey, TValue>[] input)
+        protected override Dictionary<TKey, TValue> ValueFactory()
         {
-            return new Dictionary<TKey, TValue>(
-                input.ZL().Select(x => x.Value.ToKeyValuePair()).ToArrayPool().Array);
-        }
+            var collection = new Dictionary<TKey, TValue>(this.items.Length);
 
-        protected override void OnBeforeSerialize()
-        {
-            try
-            {
-                input = input.AsValueEnumerable().DistinctBy(pair => pair.Value.Item1).ToArray() //by key
-                        ??
-                        Array.Empty<SerializedTuple<TKey, TValue>>();
-            }
-            catch (Exception ex)
-            {
-                CCDebug.PrintException(ex);
-            }
+            var items = this.items.Select(x => x.Value.ToKeyValuePair()).DistinctBy(pair => pair.Key);
+            collection.AddRange(items);
 
-            base.OnBeforeSerialize();
+            return collection;
         }
     }
 }

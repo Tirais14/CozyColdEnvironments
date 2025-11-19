@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.Unity.Serialization
 {
     [Flags]
     public enum MemberBindings

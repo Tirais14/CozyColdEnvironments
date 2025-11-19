@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
 using System;
 using System.Linq;
 
@@ -6,13 +7,10 @@ namespace CCEnvs.Reflection
 {
     public record TypeSearchArguments
     {
-        public string AssemblyName { get; set; } = string.Empty;
-        public string NamespaceName { get; set; } = string.Empty;
-        public string TypeName { get; set; } = string.Empty;
+        public Maybe<string> Assembly { get; set; } = string.Empty;
+        public Maybe<string> Namespace { get; set; } = string.Empty;
+        public Maybe<string> TypeName { get; set; } = string.Empty;
         public bool IgnoreCase { get; set; }
-        public bool HasAssemblyName => AssemblyName.IsNotNullOrEmpty();
-        public bool HasNamespaceName => NamespaceName.IsNotNullOrEmpty();
-        public bool HasTypeName => TypeName.IsNotNullOrEmpty();
         public Type[] DefinedAttributeTypes { get; set; } = Type.EmptyTypes;
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -22,20 +20,20 @@ namespace CCEnvs.Reflection
                 throw new ArgumentNullException(nameof(type));
 
             bool result = true;
-            if (HasAssemblyName)
-                result = type.Assembly.GetName().Name.ContainsOrdinal(AssemblyName, IgnoreCase);
+            if (Assembly.IsSome)
+                result = type.Assembly.GetName().Name.ContainsOrdinal(Assembly.GetValueUnsafe(), IgnoreCase);
 
             if (!result)
                 return false;
 
-            if (HasNamespaceName && type.Namespace.IsNotNullOrEmpty())
-                result = type.Namespace.ContainsOrdinal(NamespaceName, IgnoreCase);
+            if (Namespace.IsSome && type.Namespace.IsNotNullOrEmpty())
+                result = type.Namespace.ContainsOrdinal(Namespace.GetValueUnsafe(), IgnoreCase);
 
             if (!result)
                 return false;
 
-            if (HasTypeName)
-                result = type.GetName().ContainsOrdinal(TypeName, IgnoreCase);
+            if (TypeName.IsSome)
+                result = type.GetName().ContainsOrdinal(TypeName.GetValueUnsafe(), IgnoreCase);
 
             if (DefinedAttributeTypes.IsNotEmpty()
                 &&

@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Unity.EditorSerialization;
+using CCEnvs.Unity.Serialization;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;

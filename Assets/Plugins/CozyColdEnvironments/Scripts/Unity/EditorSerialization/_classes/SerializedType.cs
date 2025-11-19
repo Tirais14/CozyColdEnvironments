@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using System;
 
@@ -5,44 +6,44 @@ using System;
 #pragma warning disable S1117
 
 using UnityEngine;
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.Unity.Serialization
 {
     [Serializable]
-    public sealed class SerializedType : Serialized<TypeInfo, Type>
+    public sealed class SerializedType : Serialized<Type>
     {
         [SerializeField]
         private bool throwIfNotFound = true;
 
+        [field: SerializeField]
+        public Maybe<string> Assembly { get; private set; } = default!;
+
+        [field: SerializeField]
+        public Maybe<string> Namespace { get; private set; } = default!;
+
+        [field: SerializeField]
+        public Maybe<string> TypeName { get; private set; } = default!;
+
+        [field: SerializeField]
+        public bool IgnoreCase { get; private set; } = default!;
+
         public SerializedType()
         {
-        }
-
-        public SerializedType(bool throwIfNotFound)
-        {
-            this.throwIfNotFound = throwIfNotFound;
         }
 
         public SerializedType(Type defaultValue) : base(defaultValue)
         {
         }
 
-        protected override Type ConvertToOutput(TypeInfo input)
+        protected override Type ValueFactory()
         {
             return TypeSearch.FindTypeInAppDomain(new TypeSearchArguments
             {
-                AssemblyName = input.Assembly,
-                NamespaceName = input.Namespace,
-                TypeName = input.TypeName,
-                IgnoreCase = input.IgnoreCase,  
+                Assembly = Assembly.Raw,
+                Namespace = Namespace,
+                TypeName = TypeName,
+                IgnoreCase = IgnoreCase,  
             },
             throwIfNotFound);
-        }
-
-        protected override TypeInfo ConvertToInput(Type output)
-        {
-            return new TypeInfo(output.Assembly.GetName().Name,
-                                output.GetName(),
-                                output.Namespace);
         }
     }
 }

@@ -37,8 +37,8 @@ namespace CCEnvs.Json.DTO
             return TypeSearch.FindTypeInAppDomain(
                 new TypeSearchArguments
                 {
-                    AssemblyName = AssemblyName,
-                    NamespaceName = Namespace,
+                    Assembly = AssemblyName,
+                    Namespace = Namespace,
                     TypeName = TypeName,
                 },
                 throwOnError: true);

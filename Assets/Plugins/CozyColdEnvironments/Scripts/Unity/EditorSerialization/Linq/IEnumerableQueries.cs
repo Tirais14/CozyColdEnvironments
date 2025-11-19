@@ -3,7 +3,7 @@ using System.Linq;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization.Linq
+namespace CCEnvs.Unity.Serialization.Linq
 {
     public static class IEnumerableQueries
     {

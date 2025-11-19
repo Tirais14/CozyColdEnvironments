@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S1144
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.Unity.Serialization
 {
     [Serializable]
     public struct AssemblyInfo

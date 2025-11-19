@@ -26,7 +26,7 @@ namespace CCEnvs.Reflection
                                                bool throwOnError = true)
         {
             CC.Guard.IsNotNull(parameters, nameof(parameters));
-            CC.Guard.StringArgument(parameters.TypeName,
+            CC.Guard.StringArgument(parameters.TypeName.Raw,
                 Syntax.Chain(nameof(parameters), nameof(parameters.TypeName)));
 
             Type[] foundTypes = FindTypesInternal(parameters);
@@ -62,7 +62,7 @@ namespace CCEnvs.Reflection
             {
                 foundTypes = foundTypes.Where(
                     x => x.GetName(TypeNameConvertingAttributes.None)
-                          .EqualsOrdinal(parameters.TypeName)).ToArray();
+                          .EqualsOrdinal(parameters.TypeName.Raw)).ToArray();
             }
 
             void FilterFoundsStrict()
@@ -70,7 +70,7 @@ namespace CCEnvs.Reflection
                 if (foundTypes.Count() > 1)
                     foundTypes = foundTypes.Where(
                         x => x.GetName(TypeNameConvertingAttributes.IncludeGenericArguments)
-                              .EqualsOrdinal(parameters.TypeName)).ToArray();
+                              .EqualsOrdinal(parameters.TypeName.Raw)).ToArray();
             }
 
             void TryThrowNotFound()
@@ -92,7 +92,7 @@ namespace CCEnvs.Reflection
         {
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            bool hasAssemblyNameFilter = parameters.HasAssemblyName;
+            bool hasAssemblyNameFilter = parameters.Assembly.IsSome;
             var allTypes = new ConcurrentBag<IEnumerable<Type>>();
             Parallel.ForEach(assemblies, (assembly) =>
             {
@@ -102,7 +102,7 @@ namespace CCEnvs.Reflection
 
                     if (assemblyName.Name.IsNullOrEmpty()
                         ||
-                        !assembly.GetName().Name.ContainsOrdinal(parameters.AssemblyName, parameters.IgnoreCase)
+                        !assembly.GetName().Name.ContainsOrdinal(parameters.Assembly.Raw, parameters.IgnoreCase)
                         )
                         return;
                 }
@@ -118,8 +118,8 @@ namespace CCEnvs.Reflection
                 }
             });
 
-            bool hasNamespaceFilter = parameters.HasNamespaceName;
-            bool hasTypeNameFilter = parameters.HasTypeName;
+            bool hasNamespaceFilter = parameters.Namespace.IsSome;
+            bool hasTypeNameFilter = parameters.TypeName.IsSome;
 
             IEnumerable<Type> filteredTypes = allTypes.SelectMany(x => x);
 
@@ -127,11 +127,11 @@ namespace CCEnvs.Reflection
                 filteredTypes = filteredTypes.Where(
                     type => type.Namespace is not null
                     && 
-                    type.Namespace.ContainsOrdinal(parameters.NamespaceName, parameters.IgnoreCase));
+                    type.Namespace.ContainsOrdinal(parameters.Namespace.Raw, parameters.IgnoreCase));
 
             if (hasTypeNameFilter)
                 filteredTypes = filteredTypes.Where(
-                    type => type.GetName().ContainsOrdinal(parameters.TypeName, parameters.IgnoreCase));
+                    type => type.GetName().ContainsOrdinal(parameters.TypeName.Raw, parameters.IgnoreCase));
 
             return filteredTypes.ToArray();
         }

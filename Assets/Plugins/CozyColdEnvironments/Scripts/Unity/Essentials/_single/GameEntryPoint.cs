@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections.Immutable;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,9 +9,6 @@ namespace CCEnvs.Unity.Essentials
 {
     public class GameEntryPoint : ASceneEntryPoint
     {
-        [SerializeField]
-        protected LevelLoadOrder? levelLoadOrder;
-
         protected override async void Start()
         {
             base.Start();
@@ -34,29 +30,15 @@ namespace CCEnvs.Unity.Essentials
 
         private async UniTask LoadEssentials()
         {
-            var loadInfos = levelLoadOrder == null
-                            ?
-                            ImmutableArray<LevelLoadInfo>.Empty
-                            :
-                            levelLoadOrder.Order.Value;
-
-            foreach (var loadInfo in loadInfos)
+            for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
             {
                 try
                 {
-                    await LevelLoader.LoadLevelAsync(loadInfo.SceneKey.ToString(), loadInfo.LoadMode);
-
-                    //Prevent unloading current scene
-                    if (loadInfo.LoadMode == LoadSceneMode.Additive
-                        &&
-                        loadInfo.DestroyAfterActivated
-                        )
-                        await LevelLoader.UnloadLevelAsync(loadInfo.SceneKey.ToString());
+                    await SceneLoader.LoadSceneAsync(i);
                 }
                 catch (Exception ex)
                 {
                     this.PrintException(ex);
-                    return;
                 }
             }
 

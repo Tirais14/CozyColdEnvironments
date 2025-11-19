@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4887495896817095722}
   - component: {fileID: 7214224250128295484}
   - component: {fileID: 4870077130562778628}
+  - component: {fileID: 1250365896754494607}
   - component: {fileID: 7488897992172910028}
   m_Layer: 0
   m_Name: HideButton
@@ -76,7 +77,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7488897992172910028
+--- !u!114 &1250365896754494607
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -85,9 +86,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3533883797208302591}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7d118808e1c1c5459ff57ac7aadde8b, type: 3}
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: CCEnvs.Unity::CCEnvs.Unity.UI.Elements.HideButton
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
     m_Mode: 3
     m_WrapAround: 0
@@ -120,3 +121,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7488897992172910028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3533883797208302591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7d118808e1c1c5459ff57ac7aadde8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CCEnvs.Unity::CCEnvs.Unity.UI.Elements.HideButton

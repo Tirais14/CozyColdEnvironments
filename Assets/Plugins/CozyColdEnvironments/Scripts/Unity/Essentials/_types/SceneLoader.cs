@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Essentials
     /// <summary>
     /// Have similar methods as <see cref="SceneManager"/>, but awaits tasks in <see cref="TaskRegistries"/> before the new scene loaded and unloaded
     /// </summary>
-    public sealed class LevelLoader : CCBehaviourStatic<LevelLoader>
+    public sealed class SceneLoader : CCBehaviourStatic<SceneLoader>
     {
         private static readonly Stopwatch stopwatch = new();
 
@@ -60,10 +60,10 @@ namespace CCEnvs.Unity.Essentials
 
             delayTimer += Time.deltaTime;
         }
-        /// <summary>Do not add this task to any of <see cref="LevelLoader.TaskRegistries"/></summary>
+        /// <summary>Do not add this task to any of <see cref="SceneLoader.TaskRegistries"/></summary>
         /// <param name="sceneKey">build scene id or scene name</param>
         /// <exception cref="ArgumentException"></exception>
-        public static async UniTask<Scene> LoadLevelAsync(object sceneKey,
+        public static async UniTask<Scene> LoadSceneAsync(object sceneKey,
             LoadSceneParameters loadParams,
             Action<AsyncOperation>? beforeLoading = null)
         {
@@ -97,11 +97,11 @@ namespace CCEnvs.Unity.Essentials
                 FinishProcessing($"Loading level: {sceneKey}");
             }
         }
-        /// <inheritdoc cref="LoadLevelAsync"/>
-        public static async UniTask<Scene> LoadLevelAsync(object sceneKey,
+        /// <inheritdoc cref="LoadSceneAsync"/>
+        public static async UniTask<Scene> LoadSceneAsync(object sceneKey,
             LoadSceneMode loadMode = LoadSceneMode.Single)
         {
-            return await LoadLevelAsync(sceneKey, new LoadSceneParameters(loadMode));
+            return await LoadSceneAsync(sceneKey, new LoadSceneParameters(loadMode));
         }
 
         public static async UniTask UnloadLevelAsync(object sceneKey)

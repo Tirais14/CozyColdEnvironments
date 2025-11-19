@@ -1,26 +1,28 @@
-using System.Linq;
 using System;
 using System.Collections.Immutable;
-using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.Unity.Serialization
 {
     [Serializable]
-    public class SerializedImmutableArray<T> : Serialized<T[], ImmutableArray<T>>
+    public sealed class SerializedImmutableArray<T> : Serialized<ImmutableArray<T>>
     {
+        [UnityEngine.SerializeField]
+        private T[] items = null!;
+
         public SerializedImmutableArray()
         {
         }
 
-        public SerializedImmutableArray(IEnumerable<T> collection)
+        public SerializedImmutableArray(ImmutableArray<T> defaultValue) 
             :
-            base(collection.ToImmutableArray())
+            base(defaultValue)
         {
         }
 
-        protected override T[] ConvertToInput(ImmutableArray<T> output) => Value.ToArray();
-
-        protected override ImmutableArray<T> ConvertToOutput(T[] input) => input.ToImmutableArray();
+        protected override ImmutableArray<T> ValueFactory()
+        {
+            return items.ToImmutableArray();
+        }
     }
 }
