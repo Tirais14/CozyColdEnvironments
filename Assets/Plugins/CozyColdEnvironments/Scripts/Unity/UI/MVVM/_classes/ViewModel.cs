@@ -22,15 +22,8 @@ namespace CCEnvs.Unity.UI.MVVM
             this.model = model;
             this.gameObject = gameObject;
 
-            model.Maybe()
-                .Map(x => x as IGameObjectBindable)
-                .Where(x => x is not UnityEngine.Object)
-                .IfSome(target => target.Reflect()
-                    .NonPublic()
-                    .Name(nameof(IGameObjectBindable.gameObject))
-                    .Arguments(gameObject.Maybe())
-                    .SetFieldValue()
-                    );
+            if (model is IGameObjectBindable goBindable)
+                goBindable.BindGameObject(gameObject);
 
             AddDisposableViewModelDataToList();
         }

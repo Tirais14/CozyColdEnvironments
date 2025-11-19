@@ -173,10 +173,7 @@ namespace CCEnvs.Unity.Items
 
         Maybe<IItemContainer> IItemAccessor.TakeItem() => null!;
 
-        void IItemAccessor.Reset()
-        {
-            throw new NotImplementedException();
-        }
+        void IItemAccessor.Reset() => Clear();
 
         Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 

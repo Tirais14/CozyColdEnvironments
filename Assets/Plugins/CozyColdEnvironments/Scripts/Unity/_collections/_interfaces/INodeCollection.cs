@@ -57,7 +57,7 @@ namespace CCEnvs.Unity.Collections
 
         IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveAddNodeByPrefab();
 
-        IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveRemoveNodeByPrefab();
+        IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveRemoveNodeWithGameObject();
 
         IObservable<KeyValuePair<TKey, TNode>> ObserveAddNode();
 
