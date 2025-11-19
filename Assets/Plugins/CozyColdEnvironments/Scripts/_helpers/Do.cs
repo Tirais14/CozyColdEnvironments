@@ -1,14 +1,34 @@
 #nullable enable
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CCEnvs
 {
     public static class Do
     {
         public delegate T?[] MoveNext<T>(T current, LoopState loopState);
+
+        public static bool TryFindHoleInRange(int start, int count, IEnumerable<int> range, out int hole)
+        {
+            var zipped = Enumerable.Range(start, count).EquiZip(range.OrderBy(x => x));
+
+            foreach (var pair in zipped)
+            {
+                if (pair.Item1 != pair.Item2)
+                {
+                    hole = pair.Item1;
+                    return true;
+                }
+            }
+
+            hole = default;
+            return false;
+        }
 
         public static bool Compare(int value, CompareTypes compareTypes)
         {

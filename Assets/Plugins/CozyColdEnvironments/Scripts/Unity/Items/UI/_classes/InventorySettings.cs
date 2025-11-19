@@ -28,8 +28,8 @@ namespace CCEnvs.Unity.Storages.UI
                     .Match(
                         some: inv =>
                         {
-                            inv.ItemContainerPrefab = itemContainerPrefab;
-                            inv.SetContainerCountByPrefab(itemContainerCount);
+                            inv.NodePrefab = itemContainerPrefab;
+                            inv.SetNodeCountByPrefab(itemContainerCount);
                         },
                         none: () => this.PrintError("Not found inventory.")
                         );

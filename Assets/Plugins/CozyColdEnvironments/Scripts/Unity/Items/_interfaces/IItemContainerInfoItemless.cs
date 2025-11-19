@@ -6,11 +6,11 @@ using UniRx;
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity.Items
 {
-    public interface IItemContainerInfoItemless
+    public interface IItemContainerInfoItemless : IActivatable
     {
         int ItemCount { get; }
         Maybe<IInventory> ParentInventory { get; set; }
-        bool IsActiveContainer { get; }
+        bool IsActive { get; }
         int Capacity { get; set; }
         bool IsEmpty { get; }
         bool IsFull { get; }
@@ -20,18 +20,6 @@ namespace CCEnvs.Unity.Items
         bool ContainsItem(IItem? item, int count);
 
         Maybe<int> GetContainerID();
-
-        void ActivateContainer();
-
-        void DeactivateContainer();
-
-        bool SwitchContainerActiveState();
-
-        IObservable<bool> ObserveActiveState();
-
-        IObservable<bool> ObserveDeactivateContainer();
-
-        IObservable<bool> ObserveActivateContainer();
 
         IObservable<Pair<int>> ObserveItemCount();
 

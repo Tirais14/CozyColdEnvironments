@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Items
     {
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
-        private readonly ReactiveProperty<bool> isActiveContainer = new();
+        private readonly ReactiveProperty<bool> isActive = new();
         private Maybe<IInventory> parentInventory;
         private int capacity;
 
@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.Items
         }
         public bool IsEmpty => !ContainsItem();
         public bool IsFull => ItemCount >= Capacity;
-        public bool IsActiveContainer => isActiveContainer.Value;
+        public bool IsActive => isActive.Value;
         /// <summary>
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
@@ -161,7 +161,7 @@ namespace CCEnvs.Unity.Items
             var result = new ItemContainer(Item.GetValue(), taked);
 
             if (itemCount.Value <= 0)
-                Clear();
+                Reset();
 
             return result;
         }
@@ -188,7 +188,7 @@ namespace CCEnvs.Unity.Items
             capacity = itemContainer.Capacity;
         }
 
-        public void Clear()
+        public void Reset()
         {
             item.Value = null;
             itemCount.Value = 0;
@@ -196,7 +196,7 @@ namespace CCEnvs.Unity.Items
 
         public Maybe<int> GetContainerID()
         {
-            return parentInventory.Map(x => x.GetContainerID(this)).Raw;
+            return parentInventory.Map(x => x.GetNodeKey(this)).Raw;
         }
 
         public override string ToString()
@@ -204,38 +204,31 @@ namespace CCEnvs.Unity.Items
             return $"{nameof(Item)}: {Item.Map(x => x.ToString()).GetValue("null")}; {nameof(ItemCount)}: {ItemCount}.";
         }
 
-        public void ActivateContainer()
+        public void Activate()
         {
             if (IsEmpty)
                 return;
 
-            parentInventory.IfSome(inv =>
-            {
-                inv.ActiveContainer.IfSome(cnt => cnt.DeactivateContainer());
-                inv.ActiveContainer = this;
-            });
-
-            isActiveContainer.Value = true;
+            isActive.Value = true;
 
             this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
-        public void DeactivateContainer()
+        public void Deactivate()
         {
-            isActiveContainer.Value = false;
-            parentInventory.IfSome(inv => inv.ActiveContainer = null);
+            isActive.Value = false;
 
             this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
-        public bool SwitchContainerActiveState()
+        public bool SwitchActiveState()
         {
-            if (isActiveContainer.Value)
-                DeactivateContainer();
+            if (isActive.Value)
+                Deactivate();
             else
-                ActivateContainer();
+                Activate();
 
-            return isActiveContainer.Value;
+            return isActive.Value;
         }
 
         public bool BindGameObject(GameObject gameObject)
@@ -253,17 +246,17 @@ namespace CCEnvs.Unity.Items
 
         public IObservable<bool> ObserveActiveState()
         {
-            return isActiveContainer;
+            return isActive;
         }
 
-        public IObservable<bool> ObserveDeactivateContainer()
+        public IObservable<bool> ObserveDeactivate()
         {
-            return isActiveContainer.Where(x => !x);
+            return isActive.Where(x => !x);
         }
 
-        public IObservable<bool> ObserveActivateContainer()
+        public IObservable<bool> ObserveActivate()
         {
-            return isActiveContainer.Where(x => x);
+            return isActive.Where(x => x);
         }
 
         public IObservable<Pair<int>> ObserveItemCount()
@@ -293,7 +286,7 @@ namespace CCEnvs.Unity.Items
             {
                 item.Dispose();
                 itemCount.Dispose();
-                isActiveContainer.Dispose();
+                isActive.Dispose();
             }
 
             disposed = true;

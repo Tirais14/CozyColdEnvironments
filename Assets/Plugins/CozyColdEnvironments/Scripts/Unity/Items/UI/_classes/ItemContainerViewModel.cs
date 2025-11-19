@@ -36,11 +36,11 @@ namespace CCEnvs.Unity.Storages.UI
                 some: state =>
                 {
                     if (state)
-                        model.ActivateContainer();
+                        model.Activate();
                     else
-                        model.DeactivateContainer();
+                        model.Deactivate();
                 },
-                none: () => model.SwitchContainerActiveState()
+                none: () => model.SwitchActiveState()
                 );
         }
         private void BindItemIcon()

@@ -15,6 +15,6 @@ namespace CCEnvs.Unity.Items
 
         void CopyFrom(IItemContainerInfo itemContainer);
 
-        void Clear();
+        void Reset();
     }
 }
