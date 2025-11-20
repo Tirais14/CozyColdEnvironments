@@ -67,6 +67,9 @@ namespace CCEnvs.Unity.Collections
                 .SubscribeWithState2(activeNode, KeyValuePair.Create(key, node),
                     static (_, prop, node) =>
                     {
+                        if (prop.Value == node)
+                            return;
+
                         prop.Value.IfSome(n => n.Value.Deactivate());
                         prop.Value = node;
                     })

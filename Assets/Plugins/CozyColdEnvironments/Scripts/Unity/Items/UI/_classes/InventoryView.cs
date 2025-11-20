@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Storages.UI
     public abstract class InventoryView<TViewModel, TInventory>
         : View<TViewModel, TInventory>
 
-        where TViewModel : ViewModel<TInventory>, IInventoryViewModel<TInventory>
+        where TViewModel : Presenter<TInventory>, IInventoryViewModel<TInventory>
         where TInventory : IInventory
     {
         [field: GetByChildren]

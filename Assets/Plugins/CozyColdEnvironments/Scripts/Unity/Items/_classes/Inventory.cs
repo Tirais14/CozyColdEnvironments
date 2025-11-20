@@ -167,6 +167,14 @@ namespace CCEnvs.Unity.Items
             return default!;
         }
 
+        protected override void OnInstantiateInternal(Maybe<IItemContainer> inputNode, IItemContainer newNode, GameObject go)
+        {
+            base.OnInstantiateInternal(inputNode, newNode, go);
+
+            if (inputNode.IsSome)
+                newNode.CopyFrom(inputNode.GetValueUnsafe());
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         Maybe<IItemContainer> IItemAccessor.TakeItem(int count) => null!;

@@ -4,16 +4,16 @@ using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public interface IViewModel
+    public interface IPresenter
     {
         object model { get; }
 
         //void ForceNotify();
     }
-    public interface IViewModel<out TModel> : IViewModel
+    public interface IPresenter<out TModel> : IPresenter
     {
         new TModel model { get; }
 
-        object IViewModel.model => model!;
+        object IPresenter.model => model!;
     }
 }

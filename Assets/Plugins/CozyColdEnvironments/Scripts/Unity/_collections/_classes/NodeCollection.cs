@@ -1,5 +1,7 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +9,6 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using static CCEnvs.FuncLanguage.LangOperator;
 
 #nullable enable
 #pragma warning disable S1121
@@ -18,13 +19,11 @@ namespace CCEnvs.Unity.Collections
         IDisposable
     {
         protected readonly Dictionary<TKey, TNode> collection = new();
-        protected readonly HashSet<GameObject> instantiatedGameObjects = new();
-        private readonly Lazy<Dictionary<TNode, GameObject>> gameObjects = new(() => new Dictionary<TNode, GameObject>());
-        private Subject<(KeyValuePair<TKey, TNode> node, GameObject go)>? addNodeByPrefabSubj;
-        private Subject<(KeyValuePair<TKey, TNode> node, GameObject go)>? removeNodeByPrefabSubj;
+        protected readonly Lazy<HashSet<GameObject>> instantiatedGameObjects = new(() => new HashSet<GameObject>());
+        private Subject<NodeCollectionInstantiateEvent<TNode>>? instantiateSubj;
         private Subject<Unit>? clearSubj;
-        private Subject<KeyValuePair<TKey, TNode>>? addNodeSubj;
-        private Subject<KeyValuePair<TKey, TNode>>? removeNodeSubj;
+        private Subject<NodeCollectionCountChangedEvent<TKey, TNode>>? addNodeSubj;
+        private Subject<NodeCollectionCountChangedEvent<TKey, TNode>>? removeNodeSubj;
 
         public TNode this[TKey key] {
             get => collection[key];
@@ -41,7 +40,13 @@ namespace CCEnvs.Unity.Collections
             }
         }
 
-        public IReadOnlyDictionary<TNode, GameObject> GameObjects => gameObjects.Value;
+        public bool DestroyInstantiatedOnRemove { get; set; } = true;
+
+        public IEnumerable<GameObject> GameObjects => from node in collection.Values
+                                                      select node as IGameObjectBindable into x
+                                                      where x.IsNotNull() && x.gameObject.IsSome
+                                                      select x.gameObject.GetValueUnsafe();
+
         public int Count => collection.Count;
         public IEnumerable<TKey> Keys => collection.Keys;
         public IEnumerable<TNode> Nodes => collection.Values;
@@ -114,7 +119,9 @@ namespace CCEnvs.Unity.Collections
             return KeyValuePair.Create(key, node);
         }
 
-        public TNode AddNodeByPrefab(TKey key, GameObject prefab, Maybe<TNode> node = default)
+        public TNode AddNodeByPrefab(TKey key, 
+            GameObject prefab,
+            Maybe<TNode> node = default)
         {
             return AddNodeByPrefabInternal(prefab, node: node).Value;
         }
@@ -146,7 +153,8 @@ namespace CCEnvs.Unity.Collections
             return nodes.ToArray();
         }
 
-        public KeyValuePair<TKey, TNode>[] AddNodeCountByPrefab(int count, GameObject prefab)
+        public KeyValuePair<TKey, TNode>[] AddNodeCountByPrefab(int count, 
+            GameObject prefab)
         {
             CC.Guard.IsNotNull(prefab, nameof(prefab));
 
@@ -177,7 +185,8 @@ namespace CCEnvs.Unity.Collections
             return Array.Empty<KeyValuePair<TKey, TNode>>();
         }
 
-        public KeyValuePair<TKey, TNode>[] SetNodeCountByPrefab(int count, GameObject prefab)
+        public KeyValuePair<TKey, TNode>[] SetNodeCountByPrefab(int count,
+            GameObject prefab)
         {
             var delta = count - Count;
 
@@ -287,8 +296,6 @@ namespace CCEnvs.Unity.Collections
 
             if (disposing)
             {
-                addNodeByPrefabSubj?.Dispose();
-                removeNodeByPrefabSubj?.Dispose();
                 clearSubj?.Dispose();
                 addNodeSubj?.Dispose();
                 removeNodeSubj?.Dispose();
@@ -297,30 +304,33 @@ namespace CCEnvs.Unity.Collections
             disposed = true;
         }
 
-        public IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveAddNodeByPrefab()
+        public IObservable<NodeCollectionInstantiateEvent<TNode>> ObserveInstantiate()
         {
-            addNodeByPrefabSubj ??= new Subject<(KeyValuePair<TKey, TNode> node, GameObject go)>();
+            instantiateSubj ??= new Subject<NodeCollectionInstantiateEvent<TNode>>();
 
-            return addNodeByPrefabSubj;
+            return instantiateSubj;
         }
 
-        public IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveRemoveNodeWithGameObject()
+        public IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveAddNodeByPrefab()
         {
-            removeNodeByPrefabSubj = new Subject<(KeyValuePair<TKey, TNode> node, GameObject go)>();
-
-            return removeNodeByPrefabSubj;
+            return ObserveAddNode().Where(ev => ev.NodeGameObject.IsSome);
         }
 
-        public IObservable<KeyValuePair<TKey, TNode>> ObserveAddNode()
+        public IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveRemoveNodeByPrefab()
         {
-            addNodeSubj ??= new Subject<KeyValuePair<TKey, TNode>>();
+            return ObserveRemoveNode().Where(ev => ev.NodeGameObject.IsSome);
+        }
+
+        public IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveAddNode()
+        {
+            addNodeSubj ??= new Subject<NodeCollectionCountChangedEvent<TKey, TNode>>();
 
             return addNodeSubj;
         }
 
-        public IObservable<KeyValuePair<TKey, TNode>> ObserveRemoveNode()
+        public IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveRemoveNode()
         {
-            removeNodeSubj ??= new Subject<KeyValuePair<TKey, TNode>>();
+            removeNodeSubj ??= new Subject<NodeCollectionCountChangedEvent<TKey, TNode>>();
 
             return removeNodeSubj;
         }
@@ -342,31 +352,58 @@ namespace CCEnvs.Unity.Collections
             return go.QueryTo().ByChildren().Model<TNode>().Strict();
         }
 
+        protected virtual void OnInstantiateInternal(Maybe<TNode> inputNode, TNode newNode, GameObject go)
+        {
+            instantiatedGameObjects.Value.Add(go);
+            instantiateSubj?.OnNext(new NodeCollectionInstantiateEvent<TNode>
+            {
+                InputNode = inputNode,
+                GameObjectNode = newNode,
+                Instantiated = go
+            });
+        }
+
         protected virtual void OnAdd(TKey key, TNode node)
         {
-            if (addNodeByPrefabSubj is not null
-                &&
-                node is IGameObjectBindable goBindable
-                &&
-                goBindable.gameObject.TryGetValue(out GameObject? go))
+            Maybe<GameObject> go = node.AsOrDefault<IGameObjectBindable>()
+                .Map(static cmp => cmp.gameObject)
+                .Map(static go => go.Raw);
+
+            addNodeSubj?.OnNext(new NodeCollectionCountChangedEvent<TKey, TNode>
             {
-                addNodeByPrefabSubj.OnNext((KeyValuePair.Create(key, node), go));
-            }
-            else
-                addNodeSubj?.OnNext(KeyValuePair.Create(key, node));
+                Node = KeyValuePair.Create(key, node),
+                NodeGameObject = go,
+                GameObjectInstantiated = go.IsSome && instantiatedGameObjects.Value.Contains(go),
+            });
         }
 
         protected virtual void OnRemove(TKey key, TNode node)
         {
-            if (GameObjects.TryGetValue(node, out GameObject go))
-            {
-                removeNodeByPrefabSubj?.OnNext((KeyValuePair.Create(key, node), go));
+            GameObject? go = node.AsOrDefault<IGameObjectBindable>().Map(x => x.gameObject.GetValue()).Raw;
+            bool hasGO = go.IsNotNull();
 
-                if (instantiatedGameObjects.Contains(go))
+            if (hasGO)
+            {
+                if (DestroyInstantiatedOnRemove
+                    &&
+                    instantiatedGameObjects.IsValueCreated
+                    &&
+                    instantiatedGameObjects.Value.Contains(go!))
+                {
                     Object.Destroy(go);
+                }
             }
-            else
-                removeNodeSubj?.OnNext(KeyValuePair.Create(key, node));
+
+            removeNodeSubj?.OnNext(new NodeCollectionCountChangedEvent<TKey, TNode>
+            {
+                Node = KeyValuePair.Create(key, node),
+                NodeGameObject = go,
+                GameObjectInstantiated = hasGO 
+                                         &&
+                                         instantiatedGameObjects.IsValueCreated 
+                                         && 
+                                         instantiatedGameObjects.Value.Contains(go!),
+            });
         }
 
         private KeyValuePair<TKey, TNode> AddNodeByPrefabInternal(
@@ -376,9 +413,28 @@ namespace CCEnvs.Unity.Collections
         {
             CC.Guard.IsNotNull(prefab, nameof(prefab));
 
-            GameObject go = GetOrInstantiateNodeGameObject(node, prefab);
+            GameObject go = GetOrInstantiateNodeGameObject(node, prefab, out bool instantiated);
             TNode newNode = GetComponentFromGameObject(go);
-            key = key.GetValue(() => KeyFactoryUnsafe.Invoke(this, newNode));
+
+            if (!key.BiMap(
+                some: key => AddNode(key, newNode),
+                none: () =>
+                {
+                    if (AddNode(newNode).TryGetValue(out var node))
+                    {
+                        key = node.Key;
+                        return true;
+                    }
+
+                    return false;
+                }
+                ).Raw)
+            {
+                return default;
+            }
+
+            if (instantiated)
+                OnInstantiateInternal(node, newNode, go);
 
             if (node.IsSome
                 &&
@@ -387,14 +443,13 @@ namespace CCEnvs.Unity.Collections
                 SetupClonedNodeAction(node.GetValueUnsafe(), newNode);
             }
 
-            if (AddNode(key.GetValueUnsafe(), newNode))
-                gameObjects.Value.Add(newNode, go);
-
             return KeyValuePair.Create(key.GetValueUnsafe(), newNode);
         }
 
-        private GameObject GetOrInstantiateNodeGameObject(Maybe<TNode> node, GameObject prefab)
+        private GameObject GetOrInstantiateNodeGameObject(Maybe<TNode> node, GameObject prefab, out bool instantiated)
         {
+            instantiated = false;
+
             if (node.IsSome
                 &&
                 node.GetValueUnsafe() is IGameObjectBindable goBindable)
@@ -404,13 +459,12 @@ namespace CCEnvs.Unity.Collections
                 else
                 {
                     GameObject go = Object.Instantiate(prefab);
-                    instantiatedGameObjects.Add(go);
-
                     var isBinded = goBindable.BindGameObject(go);
 
                     if (!isBinded)
                         this.PrintWarning("Binding failured.");
 
+                    instantiated = true;
                     return go;
                 }
             }

@@ -13,7 +13,8 @@ namespace CCEnvs.Unity.Collections
     {
         TNode this[TKey key] { get; set; }
 
-        IReadOnlyDictionary<TNode, GameObject> GameObjects { get; }
+        bool DestroyInstantiatedOnRemove { get; set; }
+        IEnumerable<GameObject> GameObjects { get; }
         int Count { get; }
         IEnumerable<TKey> Keys { get; }
         IEnumerable<TNode> Nodes { get; }
@@ -55,13 +56,15 @@ namespace CCEnvs.Unity.Collections
 
         void Clear();
 
-        IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveAddNodeByPrefab();
+        IObservable<NodeCollectionInstantiateEvent<TNode>> ObserveInstantiate();
 
-        IObservable<(KeyValuePair<TKey, TNode> node, GameObject go)> ObserveRemoveNodeWithGameObject();
+        IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveAddNodeByPrefab();
 
-        IObservable<KeyValuePair<TKey, TNode>> ObserveAddNode();
+        IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveRemoveNodeByPrefab();
 
-        IObservable<KeyValuePair<TKey, TNode>> ObserveRemoveNode();
+        IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveAddNode();
+
+        IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveRemoveNode();
 
         IObservable<Unit> ObserveClear();
     }

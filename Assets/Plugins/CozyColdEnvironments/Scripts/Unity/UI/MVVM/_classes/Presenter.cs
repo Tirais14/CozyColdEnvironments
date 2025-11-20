@@ -8,16 +8,15 @@ using UnityEngine;
 #pragma warning disable S1699
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable, IGameObjectBindable
+    public abstract class Presenter<TModel> : IPresenter<TModel>, IDisposable, IGameObjectBindable
     {
         protected readonly List<IDisposable> disposables = new();
         private bool disposed;
 
         public Maybe<GameObject> gameObject { get; private set; }
         public TModel model { get; private set; }
-        public virtual bool ModelMutable => false;
 
-        protected ViewModel(TModel model, GameObject gameObject)
+        protected Presenter(TModel model, GameObject gameObject)
         {
             this.model = model;
             this.gameObject = gameObject;

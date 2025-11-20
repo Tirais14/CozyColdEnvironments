@@ -331,9 +331,9 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<IViewModel> ViewModels(Type? type = null)
+        public IEnumerable<IPresenter> ViewModels(Type? type = null)
         {
-            type ??= typeof(IViewModel);
+            type ??= typeof(IPresenter);
 
             bool anyType = type is null;
 
@@ -346,14 +346,14 @@ namespace CCEnvs.Unity
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> ViewModels<T>()
-            where T : IViewModel
+            where T : IPresenter
         {
             return ViewModels(typeof(T)).Cast<T>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IViewModel> ViewModel(Type type)
+        public Result<IPresenter> ViewModel(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
@@ -373,7 +373,7 @@ namespace CCEnvs.Unity
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<T> ViewModel<T>()
-            where T : IViewModel
+            where T : IPresenter
         {
             return ViewModel(typeof(T)).Cast<T>();
         }

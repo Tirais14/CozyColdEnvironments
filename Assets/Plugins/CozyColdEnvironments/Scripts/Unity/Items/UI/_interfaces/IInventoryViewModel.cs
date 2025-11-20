@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.Storages.UI
 {
-    public interface IInventoryViewModel<T> : IViewModel<T>
+    public interface IInventoryViewModel<T> : IPresenter<T>
         where T : IInventory
     {
         IReadOnlyReactiveProperty<Maybe<int>> ActiveContainerID { get; }

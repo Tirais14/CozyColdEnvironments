@@ -6,7 +6,7 @@ namespace CCEnvs.Unity.UI.MVVM
 {
     public interface IView
     {
-        IViewModel viewModel { get; }
+        IPresenter viewModel { get; }
         object model { get; }
         bool IsMutable { get; }
 
@@ -15,11 +15,11 @@ namespace CCEnvs.Unity.UI.MVVM
         Maybe<object> SetModelUnsafe(object model);
     }
     public interface IView<TViewModel> : IView
-        where TViewModel : IViewModel
+        where TViewModel : IPresenter
     {
         new TViewModel viewModel { get; }
 
-        IViewModel IView.viewModel => viewModel;
+        IPresenter IView.viewModel => viewModel;
 
         void SetViewModelUnsafe(TViewModel viewModel);
 
@@ -29,11 +29,11 @@ namespace CCEnvs.Unity.UI.MVVM
         }
     }
     public interface IView<TViewModel, TModel> : IView<TViewModel>
-        where TViewModel : IViewModel
+        where TViewModel : IPresenter
     {
         new TModel model { get; }
 
-        IViewModel IView.viewModel => viewModel;
+        IPresenter IView.viewModel => viewModel;
         object IView.model => model!;
 
         Maybe<TModel> SetModelUnsafe(TModel model);

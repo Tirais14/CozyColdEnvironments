@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
-    public class InventoryViewModel<T> : ViewModel<T>, IInventoryViewModel<T>
+    public class InventoryViewModel<T> : Presenter<T>, IInventoryViewModel<T>
         where T : IInventory
     {
         private readonly ReactiveProperty<Maybe<int>> activeContainerID = new();
@@ -38,8 +38,8 @@ namespace CCEnvs.Unity.Storages.UI
 
         public IObservable<GameObject> ObserveAddContainer()
         {
-            return from added in model.ObserveAddNode()
-                   select added.Value.gameObject into go
+            return from ev in model.ObserveAddNode()
+                   select ev.Node.Value.gameObject into go
                    where go.IsSome
                    select go.GetValueUnsafe() into go
                    select go.QueryTo().RootTransform().gameObject;
@@ -47,8 +47,8 @@ namespace CCEnvs.Unity.Storages.UI
 
         public IObservable<GameObject> ObserveRemoveContainer()
         {
-            return from added in model.ObserveRemoveNode()
-                   select added.Value.gameObject into go
+            return from ev in model.ObserveRemoveNode()
+                   select ev.Node.Value.gameObject into go
                    where go.IsSome
                    select go.GetValueUnsafe() into go
                    select go.QueryTo().RootTransform().gameObject;
@@ -57,7 +57,7 @@ namespace CCEnvs.Unity.Storages.UI
 
         public IEnumerable<GameObject> GetInventoryContainerGameObjects()
         {
-            return model.GameObjects.Values;
+            return model.GameObjects;
         }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Storages.UI
 {
     public class ItemContainerViewModel<T>
-        : ViewModel<T>,
+        : Presenter<T>,
         IItemContainerViewModel<T>
 
         where T : IItemContainer

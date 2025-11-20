@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Storages.UI
         : View<TViewModel, TContainer>,
         IItemContainerView<TViewModel, TContainer>
 
-        where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
+        where TViewModel : Presenter<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainer, new()
     {
         [Header("Item Container Settings")]

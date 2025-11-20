@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.Items
 {
-    public interface IItemContainerViewModel<T> : IViewModel<T>
+    public interface IItemContainerViewModel<T> : IPresenter<T>
         where T : IItemContainerInfo
     {
         IReadOnlyReactiveProperty<Sprite> ItemIcon { get; }

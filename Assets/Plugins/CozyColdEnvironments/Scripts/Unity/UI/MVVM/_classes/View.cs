@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.UI;
 using System;
 using UniRx;
 using UnityEngine;
@@ -19,7 +18,7 @@ namespace CCEnvs.Unity.UI.MVVM
         : GUIPanel,
         IView<TViewModel, TModel>
 
-        where TViewModel : ViewModel<TModel>
+        where TViewModel : Presenter<TModel>
     {
         protected Lazy<TViewModel> _viewModel;
 
