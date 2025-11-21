@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Items.UI
                     viewType.GetGenericTypeDefinition().IsType(typeof(IItemContainerView<,>)))
                 {
                     view.viewModel.Reflect()
-                        .Name(nameof(IItemContainerViewModel<ItemContainer>.ShowItemCounterPredicate))
+                        .Name(nameof(IItemContainerViewModel<ItemContainer>.ShowCounterTextPredicate))
                         .Property()
                         .Strict()
                         .SetValue(view.viewModel, ShowItemCounterPredicate);

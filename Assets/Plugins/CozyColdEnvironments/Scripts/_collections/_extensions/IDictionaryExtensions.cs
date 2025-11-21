@@ -1,5 +1,7 @@
+using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #nullable enable
 
@@ -7,6 +9,13 @@ namespace CCEnvs.Collections
 {
     public static class IDictionaryExtensions
     {
+        public static Maybe<TKey> GetKey<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source, TValue value)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            return source.FirstOrDefault(pair => EqualityComparer<TValue>.Default.Equals(pair.Value, value)).Key;
+        }
+
         public static bool TrySetValue<TKey, TValue>(this IDictionary<TKey, TValue> collection,
                                                      TKey key,
                                                      TValue value)

@@ -35,6 +35,8 @@ namespace CCEnvs
         public static object EmptyObject { get; } = new object();
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
         public static string WordSeparator { get; set; } = "_";
+        public static Func<bool> TruePredicate { get; } = static () => true;
+        public static Func<bool> FalsePredicate { get; } = static () => false;
 
 #pragma warning disable S112
         public static class Throw

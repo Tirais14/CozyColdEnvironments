@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using System;
@@ -196,7 +197,7 @@ namespace CCEnvs.Unity.Items
 
         public Maybe<int> GetContainerID()
         {
-            return parentInventory.Map(x => x.GetNodeKey(this)).Raw;
+            return parentInventory.Map(inv => inv.GetKey(this)).Raw;
         }
 
         public override string ToString()

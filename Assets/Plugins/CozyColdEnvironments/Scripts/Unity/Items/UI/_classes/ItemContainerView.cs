@@ -1,15 +1,12 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using TMPro;
 using UniRx;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 #nullable enable
@@ -25,28 +22,23 @@ namespace CCEnvs.Unity.Storages.UI
         where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
         where TContainer : IItemContainer, new()
     {
-        [Header("Item Container Settings")]
-        [Space(8)]
-
         [SerializeField]
         [GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> counterMesh;
 
-        [SerializeField]
-        protected bool switchActiveStateOnClick = true;
+        public CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Bigger);
 
         protected override void Awake()
         {
             base.Awake();
-
-            dragSettings = DragAndDropSettings.ResetPos
-                           |
-                           DragAndDropSettings.SetAsLastSiblingWhenDragging
-                           |
-                           DragAndDropSettings.InHighPriorityCanvas;
-
             ShowableSettings |= IShowable.Settings.KeepRaycastTargetState;
             ShowableSettings &= ~IShowable.Settings.ByComponentState;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            viewModel.ShowCounterTextPredicate = ShowCounterTextPredicate;
         }
 
         protected override void InstallBingings()
@@ -54,61 +46,13 @@ namespace CCEnvs.Unity.Storages.UI
             base.InstallBingings();
             BindItemIcon();
             BindItemCount();
-            BindActiveContainer();
-        }
-
-        public override void OnButtonClick()
-        {
-            viewModel.SetActiveState(switchActiveStateOnClick ? Maybe<bool>.None : true);
-        }
-
-        public override bool DragAllowedPredicate()
-        {
-            if (model.IsEmpty)
-            {
-                this.PrintLog($"Dragging is not possible. {nameof(ItemContainer).Humanize()} is empty.");
-                return false;
-            }
-
-            return true;
-        }
-
-        public override bool DropAllowedPredicate() => true;
-
-        public override void Hide(IShowable.Settings settings)
-        {
-            base.Hide(settings);
-            viewModel.SetActiveState(false);
-        }
-
-        protected override void OnEndDrag(PointerEventData eventData)
-        {
-            base.OnEndDrag(eventData);
-
-            if (model.IsEmpty)
-                viewModel.SetActiveState(false);
-        }
-
-        protected override void OnDrop(PointerEventData eventData)
-        {
-            if (!DropAllowedPredicate()
-                || 
-                eventData.pointerDrag == cGameObject.Value
-                )
-                return;
-
-            eventData.pointerDrag.Maybe()
-                .Map(go => go.QueryTo().Model<IItemContainer>().Raw!)
-                .Map(cnt => (source: cnt, rest: model.PutItemFrom(cnt)))
-                .Where(cnt => cnt.rest.IsSome)
-                .IfSome(cnt => cnt.source.PutItemFrom(cnt.rest.GetValueUnsafe()));
         }
 
         private void BindItemIcon()
         {
             image.IfSome(img =>
             {
-                viewModel.ItemIcon.SubscribeWithState(img,
+                viewModel.ItemView.SubscribeWithState(img,
                         static (sprite, img) => img.sprite = sprite)
                     .AddTo(this);
             });
@@ -118,19 +62,10 @@ namespace CCEnvs.Unity.Storages.UI
         {
             counterMesh.IfSome(mesh =>
             {
-                viewModel.ItemCount.SubscribeWithState(mesh,
+                viewModel.CounterText.SubscribeWithState(mesh,
                         static (text, mesh) => mesh.text = text)
                     .AddTo(this);
             });
-        }
-
-        private void BindActiveContainer()
-        {
-            viewModel.IsActiveContainer.SubscribeWithState(this, 
-                    static (state, self) => state.Resolve()
-                        .If(self.DoSelect)
-                        .Else(self.DoDeselect))
-                .AddTo(this);
         }
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>

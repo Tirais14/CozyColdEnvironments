@@ -1,3 +1,4 @@
+using CCEnvs.Unity.Collections;
 using UniRx;
 
 #nullable enable
@@ -9,5 +10,7 @@ namespace CCEnvs.Unity.Items
         IReactiveDictionary<int, IItemContainer>
     {
         void ResetItemContainers();
+
+        void Add(IItemContainer itemContainer);
     }
 }

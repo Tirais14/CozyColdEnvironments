@@ -1,12 +1,13 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
+using System.Collections.Generic;
 using UniRx;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface ISelectionController<TKey, TValue>
+    public interface ISelectableController<TKey, TValue>
     {
-        IReadOnlyReactiveProperty<(TKey key, Maybe<TValue> it)> Selection { get; }
+        IReadOnlyReactiveProperty<Maybe<KeyValuePair<TKey, TValue>>> Selection { get; }
 
         void DoSelect(TKey key);
 

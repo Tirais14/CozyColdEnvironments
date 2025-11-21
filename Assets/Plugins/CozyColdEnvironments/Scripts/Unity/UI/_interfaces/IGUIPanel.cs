@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface IGUIPanel : IShowable, ISelectable
+    public interface IGUIPanel : IShowable
     {
         Maybe<Image> image { get; }
     }

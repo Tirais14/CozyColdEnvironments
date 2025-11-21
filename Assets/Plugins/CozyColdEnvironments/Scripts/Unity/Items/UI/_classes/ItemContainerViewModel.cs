@@ -13,52 +13,37 @@ namespace CCEnvs.Unity.Storages.UI
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite> itemIcon = new(initialValue: UCC.TranparentSprite.Value);
-        private readonly ReactiveProperty<string> itemCount = new(initialValue: string.Empty);
+        private readonly ReactiveProperty<Sprite> itemView = new(initialValue: UCC.Transparent.Value);
+        private readonly ReactiveProperty<string> counterText = new(initialValue: string.Empty);
 
-        public IReadOnlyReactiveProperty<Sprite> ItemIcon => itemIcon;
-        public IReadOnlyReactiveProperty<string> ItemCount => itemCount;
-        public IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
-        public Maybe<CompareAction<int>> ShowItemCounterPredicate { get; set; }
+        public IReadOnlyReactiveProperty<Sprite> ItemView => itemView;
+        public IReadOnlyReactiveProperty<string> CounterText => counterText;
+        public Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
 
-        public ItemContainerViewModel(T model, GameObject gameObject)
+        public ItemContainerViewModel(T model)
             :
-            base(model, gameObject)
+            base(model)
         {
-            BindItemIcon();
-            BindItemCount();
-            IsActiveContainer = model.ObserveActiveState().ToReactiveProperty();
+            BindItemView();
+            BindCounterText();
         }
 
-        public void SetActiveState(Maybe<bool> state = default)
-        {
-            state.Match(
-                some: state =>
-                {
-                    if (state)
-                        model.Activate();
-                    else
-                        model.Deactivate();
-                },
-                none: () => model.SwitchActiveState()
-                );
-        }
-        private void BindItemIcon()
+        private void BindItemView()
         {
             model.ObserveItem()
-                .SubscribeWithState(itemIcon,
+                .SubscribeWithState(itemView,
                     static (x, prop) => prop.Value = x.Map(item => item.Icon)
-                        .GetValue(UCC.TranparentSprite.Value))
+                        .GetValue(UCC.Transparent.Value))
                 .AddTo(disposables);
 
-            itemIcon.AddTo(disposables);
+            itemView.AddTo(disposables);
         }
 
-        private void BindItemCount()
+        private void BindCounterText()
         {
             model.ObserveItemCount()
                 .Select(pair => pair.Current)
-                .Select(itemCount => ShowItemCounterPredicate.BiMap(
+                .Select(itemCount => ShowCounterTextPredicate.BiMap(
                             some: predicate =>
                             {
                                 if (predicate.Invoke(itemCount))
@@ -68,11 +53,11 @@ namespace CCEnvs.Unity.Storages.UI
                             },
                             none: () => itemCount > 1 ? itemCount.ToString() : string.Empty
                             ).GetValueUnsafe())
-                .SubscribeWithState(itemCount, 
+                .SubscribeWithState(counterText, 
                     static (countStr, prop) => prop.Value = countStr)
                 .AddTo(disposables);
 
-            itemCount.AddTo(disposables);
+            counterText.AddTo(disposables);
         }
     }
 }

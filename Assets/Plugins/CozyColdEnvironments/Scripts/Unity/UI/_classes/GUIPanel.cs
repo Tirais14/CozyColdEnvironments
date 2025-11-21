@@ -21,16 +21,30 @@ namespace CCEnvs.Unity.UI
         [Header("GUI Panel Settings")]
         [Space(8)]
 
-        [GetBySelf(IsOptional = true)]
         [SerializeField]
+        [GetBySelf(IsOptional = true)]
         protected Image m_Image;
 
-        [GetBySelf(IsOptional = true)]
         [SerializeField]
+        [GetBySelf(IsOptional = true)]
         protected Button m_Button;
+
+        [SerializeField]
+        [GetBySelf(IsOptional = true)]
+        protected Selectable m_Selectable;
+
+        [SerializeField]
+        [GetBySelf(IsOptional = true)]
+        protected DragAndDropTarget m_DragAndDropTarget;
+
+        [SerializeField]
+        [Tooltip("If false, only do selection on button click")]
+        protected bool switchSelectableOnButtonClick;
 
         public Maybe<Image> image => m_Image;
         public Maybe<Button> button => m_Button;
+        public Maybe<Selectable> selectable => m_Selectable;
+        public Maybe<DragAndDropTarget> dragAndDropTarget => m_DragAndDropTarget;
 
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
@@ -50,20 +64,16 @@ namespace CCEnvs.Unity.UI
             pointerInput = new Lazy<InputActionRx<Vector2>>(
                 () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
                 );
-
-            AwakeIDragAndDropTarget();
         }
 
         protected override void Start()
         {
             base.Start();
-            BindToButton();
             IShowableStart();
         }
 
         protected virtual void OnTransformChildrenChanged()
         {
-            ISelectableOnTransformChildrenChanged();
             IShowableOnTransformChildrenChanged();
         }
 
@@ -71,23 +81,22 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        /// <summary>
-        /// By default will be invoked on <see cref="Button.onClick"/> event
-        /// <br/>Work only if parent <see cref="GameObject"/> has <see cref="Button"/> before <see cref="Awake"/>
-        /// </summary>
-        public virtual void OnButtonClick()
+        private void BindSelectable()
         {
-            SwitchSelectionState();
-        }
+            if (!this.button.TryGetValue(out Button? button))
+                return;
 
-        private void BindToButton()
-        {
-            button.IfSome(button =>
-            {
-                button.OnClickAsObservable()
-                    .SubscribeWithState(this, (_, view) => view.OnButtonClick())
-                    .AddTo(this);
-            });
+            selectable.IfSome(cmp =>
+                    button.OnClickAsObservable()
+                           .SubscribeWithState2(cmp, this,
+                               static (_, cmp, @this) =>
+                               {
+                                   if (@this.switchSelectableOnButtonClick)
+                                       cmp.SwitchSelectionState();
+                                   else
+                                       cmp.DoSelect();
+                               })
+                .AddTo(this));
         }
     }
 }

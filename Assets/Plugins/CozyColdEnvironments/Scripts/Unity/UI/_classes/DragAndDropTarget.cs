@@ -1,101 +1,144 @@
+using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Dependencies;
+using CCEnvs.Unity.Injections;
 using System;
-using System.Collections.Generic;
-using UniRx;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public class DragAndDropTarget : IDragAndDropTarget
+    public class DragAndDropTarget : CCBehaviour, IDragAndDropTarget
     {
-        private readonly List<IDisposable> disposables = new(4);
+        public DragAndDropSettings dragSettings;
 
-        private readonly GameObject target;
-        private readonly DragAndDropAction? onBeginDrag;
-        private readonly DragAndDropAction? onDrag;
-        private readonly DragAndDropAction? onEndDrag;
-        private readonly DragAndDropAction? onDrop;
+        [SerializeReference]
+        [GetBySelf(IsOptional = true)]
+        private Maybe<IShowable> m_Showable;
 
-        public int BindingCount { get; private set; }
+        private Vector2 startPos;
+        private int startSiblingIndex;
+        private Maybe<DragAndDropTarget> thisClone;
+        private Maybe<Transform> startDraggingParent;
 
-        public DragAndDropTarget(
-            GameObject target,
-            DragAndDropAction? onBeginDrag = null!,
-            DragAndDropAction? onDrag = null!,
-            DragAndDropAction? onEndDrag = null!,
-            DragAndDropAction? onDrop = null!)
+        public Maybe<IShowable> showable => m_Showable;
+
+        public bool DragAllowed => DragPredicate();
+        protected Lazy<AnonymousDragAndDropTarget> dragAndDrop { get; private set; } = null!;
+        /// <summary>
+        /// It's cached result of the <see cref="DragAllowedPredicate(out Maybe{string})"/>
+        /// </summary>
+        protected Lazy<Maybe<Canvas>> highPriorityCanvas = new(() => new Catched(logType: CCEnvs.Diagnostics.LogType.Error).Do(() => DependencyContainer.Resolve<Canvas>(UnityDependecyID.HighPriorityCanvas)));
+
+        int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
+
+        protected override void Awake()
         {
-            this.target = target;
-            this.onBeginDrag = onBeginDrag;
-            this.onDrag = onDrag;
-            this.onEndDrag = onEndDrag;
-            this.onDrop = onDrop;
+            base.Awake();
+
+            dragAndDrop = new Lazy<AnonymousDragAndDropTarget>(
+                () => new AnonymousDragAndDropTarget(
+                    gameObject,
+                    OnBeginDrag,
+                    OnDrag,
+                    OnEndDrag,
+                    OnDrop)
+                );
         }
 
-        public static implicit operator bool(DragAndDropTarget source)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual bool DragPredicate() => true;
+
+        protected virtual bool DropPredicate() => true;
+
+        protected virtual void OnBeginDrag(PointerEventData eventData)
         {
-            return source.BindingCount > 0;
-        }
-
-        public void ActivateDragAndDropAbility()
-        {
-            if (BindingCount > 0)
-            {
-                BindingCount++;
-                return;
-            }
-
-            if (target.TryGetComponent<DragHandler>(out var dragHandler))
-            {
-                if (onBeginDrag is not null)
-                {
-                    disposables.Add(dragHandler.ObserveOnBeginDrag()
-                                               .Subscribe(x => onBeginDrag(x))
-                                               .AddTo(target));
-                }
-
-                if (onDrag is not null)
-                {
-                    disposables.Add(dragHandler.ObserveOnDrag()
-                                               .Subscribe(x => onDrag(x))
-                                               .AddTo(target));
-                }
-
-                if (onEndDrag is not null)
-                {
-                    disposables.Add(dragHandler.ObserveOnEndDrag()
-                                               .Subscribe(x => onEndDrag(x))
-                                               .AddTo(target));
-                }
-            }
-            else
-                this.PrintLog($"Cannot find {nameof(DragHandler)}. Drag is disabled.");
-
-            if (target.TryGetComponent<DropHandler>(out var dropHandler))
-            {
-                if (onDrop is not null)
-                {
-                    disposables.Add(dropHandler.ObserveOnDrop()
-                                               .Subscribe(x => onDrop(x))
-                                               .AddTo(target));
-                }
-            }
-            else
-                this.PrintLog($"Cannot find {nameof(DropHandler)}. Drop is disabled.");
-
-            BindingCount++;
-        }
-
-        public void DeactivateDragAndDropAbility()
-        {
-            if (BindingCount <= 0)
+            if (!DragAllowed)
                 return;
 
-            disposables!.ForEach(x => x.Dispose());
-            disposables.Clear();
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.ResetPos))
+                startPos = cTransform.Value.position;
 
-            BindingCount--;
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
+            {
+                thisClone = Instantiate(this, cTransform.Value.parent);
+                thisClone.IfSome(x =>
+                {
+                    x.transform.position = cTransform.Value.position;
+                    x.showable.IfSome(cmp => cmp.Hide(IShowable.Settings.None));
+                    //Hides it and disable any interaction with the copy.
+                });
+            }
+
+            //Save sibling index before it moved to high priority canvas
+            //to correctly restore it position
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
+                startSiblingIndex = transform.GetSiblingIndex();
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.InHighPriorityCanvas))
+            {
+                highPriorityCanvas.Value.IfSome(x =>
+                {
+                    startDraggingParent = cTransform.Value.parent;
+                    cTransform.Value.SetParent(x.transform);
+                });
+            }
+
+            //Set sibling index after moving to high priority canvas for correctly overlapping
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
+                cTransform.Value.SetAsLastSibling();
+        }
+
+        protected virtual void OnDrag(PointerEventData eventData)
+        {
+            if (!DragAllowed)
+                return;
+
+            cTransform.Value.position = eventData.position;
+        }
+
+        protected virtual void OnEndDrag(PointerEventData eventData)
+        {
+            if (!DragAllowed)
+                return;
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.InHighPriorityCanvas))
+            {
+                highPriorityCanvas.Value.IfSome(_ =>
+                {
+                    startDraggingParent.Match(
+                        some: parent => cTransform.Value.SetParent(parent),
+                        none: () => this.PrintError("Cannot find previous parent transfrom.")
+                        );
+                });
+            }
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.ResetPos))
+                cTransform.Value.position = startPos;
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.RefillEmptySpace))
+                thisClone.IfSome(static x => Destroy(x.gameObject));
+
+            if (dragSettings.IsFlagSetted(DragAndDropSettings.SetAsLastSiblingWhenDragging))
+                cTransform.Value.SetSiblingIndex(startSiblingIndex);
+        }
+
+        protected virtual void OnDrop(PointerEventData eventData)
+        {
+        }
+
+        void IDragAndDropTarget.ActivateDragAndDropAbility()
+        {
+            dragAndDrop.Value.ActivateDragAndDropAbility();
+        }
+
+        void IDragAndDropTarget.DeactivateDragAndDropAbility()
+        {
+            dragAndDrop.Value.DeactivateDragAndDropAbility();
         }
     }
 }

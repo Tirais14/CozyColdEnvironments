@@ -9,11 +9,8 @@ namespace CCEnvs.Unity.Items
     public interface IItemContainerViewModel<T> : IViewModel<T>
         where T : IItemContainerInfo
     {
-        IReadOnlyReactiveProperty<Sprite> ItemIcon { get; }
-        IReadOnlyReactiveProperty<string> ItemCount { get; }
-        IReadOnlyReactiveProperty<bool> IsActiveContainer { get; }
-        Maybe<CompareAction<int>> ShowItemCounterPredicate { get; set; }
-
-        void SetActiveState(Maybe<bool> state = default);
+        IReadOnlyReactiveProperty<Sprite> ItemView { get; }
+        IReadOnlyReactiveProperty<string> CounterText { get; }
+        Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
     }
 }

@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.UI.MVVM
             Type modelType = typeof(TModel);
 
             if (modelType.IsType<Component>())
-                throw new InvalidOperationException($"View not contain model. Unity objects must be instantiated by Unity instead of creating new instance. Model: {modelType.GetFullName()}.");
+                throw new InvalidOperationException($"View not contains model. Unity objects must be instantiated by Unity instead of creating new instance. Model: {modelType.GetFullName()}.");
 
             TModel model = typeof(TModel).Reflect().Cache().CreateInstance<TModel>();
 
@@ -93,16 +93,16 @@ namespace CCEnvs.Unity.UI.MVVM
         {
             model = model.Maybe()
                          .BiMap(
-                some: m => m,
-                none: () => ModelFactory())
-                         .Raw;
+                             some: m => m,
+                             none: () => ModelFactory()
+                             ).Raw;
 
             if (model.IsNull())
                 return default!;
 
             return typeof(TViewModel).Reflect()
                                      .Cache()            
-                                     .Arguments(model!, gameObject)
+                                     .Arguments(model)
                                      .CreateInstance<TViewModel>();
         }
 

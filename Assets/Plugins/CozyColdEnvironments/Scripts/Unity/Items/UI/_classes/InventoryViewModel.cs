@@ -44,10 +44,15 @@ namespace CCEnvs.Unity.Storages.UI
         private void InstallBindings()
         {
             add.SubscribeWithState(this,
-                static (cnt, @this) =>
-                {
-                    @this.model.Remove(cnt.);
-                })
+                    static (cnt, @this) => @this.model.Add(cnt.Key, cnt.Value))
+                .AddTo(disposables);
+
+            remove.SubscribeWithState(this,
+                    static (id, @this) => @this.model.Remove(id))
+                .AddTo(disposables);
+
+            replace.SubscribeWithState(this,
+                    static (cnt, @this) => @this.model.As<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value)
                 .AddTo(disposables);
         }
     }

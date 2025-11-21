@@ -148,6 +148,28 @@ namespace CCEnvs.Unity.Items
             return default!;
         }
 
+        public void Add(IItemContainer itemContainer)
+        {
+            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
+
+            Add(ResolveID(itemContainer), itemContainer);
+        }
+
+        protected virtual int ResolveID(IItemContainer itemContainer)
+        {
+            if (Do.TryFindHoleInRange(0,
+                Count,
+                Values.Select(x => x.GetContainerID())
+                      .Where(x => x.IsSome)
+                      .Select(x => x.Raw), out int hole)
+                )
+            {
+                return hole;
+            }
+
+            return Count;
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         Maybe<IItemContainer> IItemAccessor.TakeItem(int count) => null!;
