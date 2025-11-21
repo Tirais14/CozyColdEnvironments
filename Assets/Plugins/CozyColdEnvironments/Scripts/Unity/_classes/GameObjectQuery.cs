@@ -331,9 +331,9 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<IPresenter> ViewModels(Type? type = null)
+        public IEnumerable<IViewModel> ViewModels(Type? type = null)
         {
-            type ??= typeof(IPresenter);
+            type ??= typeof(IViewModel);
 
             bool anyType = type is null;
 
@@ -346,14 +346,14 @@ namespace CCEnvs.Unity
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> ViewModels<T>()
-            where T : IPresenter
+            where T : IViewModel
         {
             return ViewModels(typeof(T)).Cast<T>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IPresenter> ViewModel(Type type)
+        public Result<IViewModel> ViewModel(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
@@ -373,7 +373,7 @@ namespace CCEnvs.Unity
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<T> ViewModel<T>()
-            where T : IPresenter
+            where T : IViewModel
         {
             return ViewModel(typeof(T)).Cast<T>();
         }
@@ -519,6 +519,26 @@ namespace CCEnvs.Unity
                 .GetValue()
                 .AsOrDefault<Transform>()
                 .GetValue(Target.GetValueUnsafe().transform);
+        }
+
+        public bool ContainsComponent(object component)
+        {
+            return Components(component.GetType()).Contains(component);
+        }
+
+        public bool ContainsModel(object model, bool includeComponents = true)
+        {
+            return Models(model.GetType(), includeComponents: includeComponents).Contains(model);
+        }
+
+        public bool ContainsViewModel(object viewModel)
+        {
+            return ViewModels(viewModel.GetType()).Contains(viewModel);
+        }
+
+        public bool ContainsView(object view)
+        {
+            return Views(view.GetType()).Contains(view);
         }
 
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)

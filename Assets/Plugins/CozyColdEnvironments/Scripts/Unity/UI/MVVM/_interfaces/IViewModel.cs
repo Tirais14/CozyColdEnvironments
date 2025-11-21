@@ -1,19 +1,17 @@
 #nullable enable
 #pragma warning disable IDE1006
-using System.Runtime.CompilerServices;
-
 namespace CCEnvs.Unity.UI.MVVM
 {
-    public interface IPresenter
+    public interface IViewModel
     {
         object model { get; }
 
         //void ForceNotify();
     }
-    public interface IPresenter<out TModel> : IPresenter
+    public interface IViewModel<out TModel> : IViewModel
     {
         new TModel model { get; }
 
-        object IPresenter.model => model!;
+        object IViewModel.model => model!;
     }
 }

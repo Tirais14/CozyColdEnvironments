@@ -9,8 +9,7 @@ using System;
 namespace CCEnvs.Unity.UI
 {
     public interface IGameObjectBag
-        : IReadOnlyReactiveCollection<GameObject>,
-        ICollection<GameObject>
+        : IReactiveCollection<GameObject>
     {
         [Flags]
         public enum Settings

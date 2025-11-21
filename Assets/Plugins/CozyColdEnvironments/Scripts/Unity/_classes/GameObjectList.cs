@@ -1,24 +1,33 @@
+using CCEnvs.Unity.Components;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
-using ZLinq;
 using static CCEnvs.Unity.UI.IGameObjectBag;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public class GameObjectBag : GUIPanel, IGameObjectBag
+    [DisallowMultipleComponent]
+    public class GameObjectList : CCBehaviour, IGameObjectBag
     {
         protected readonly ReactiveCollection<GameObject> collection = new();
 
         public Settings settings { get; set; } = Settings.Default;
         public int Count => collection.Count;
 
-        GameObject IReadOnlyReactiveCollection<GameObject>.this[int index] {
+        public GameObject this[int index] {
             get => collection[index];
+            set => collection[index] = value;
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Setup();
         }
 
         protected override void Start()
@@ -27,20 +36,26 @@ namespace CCEnvs.Unity.UI
             Refresh();
         }
 
-        protected override void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            base.OnDestroy();
             collection.Dispose();
+        }
+
+        protected virtual void OnTransformChildrenChanged()
+        {
+            GameObject child;
+            foreach (var idx in Enumerable.Range(0, cTransform.Value.childCount))
+            {
+                child = cTransform.Value.GetChild(idx).gameObject;
+                if (!collection.Contains(child))
+                    Add(child);
+            }
         }
 
         public void Refresh()
         {
-            this.QueryTo()
-                .NotRecursive()
-                .ChildrenGameObjects()
-                .ZL()
-                .Where(go => !Contains(go))
-                .ForEach(Add);
+            for (int i = 0; i < Count; i++)
+                collection[i].transform.SetSiblingIndex(i);
         }
 
         public void Add(GameObject item)
@@ -49,28 +64,47 @@ namespace CCEnvs.Unity.UI
 
             collection.Add(item);
             OnAdd(item);
+            Refresh();
+        }
+
+        public void Insert(int index, GameObject item)
+        {
+            collection.Insert(index, item);
+            OnAdd(item);
+            Refresh();
         }
 
         public void Clear()
         {
-            foreach (var go in collection)
-                OnRemove(go);
+            foreach (var go in collection.ToArray())
+                Remove(go);
 
             collection.Clear();
         }
 
         public bool Contains(GameObject item) => collection.Contains(item);
 
+        public void Move(int oldIndex, int newIndex)
+        {
+            collection.Move(oldIndex, newIndex);
+        }
+
+        public int IndexOf(GameObject item)
+        {
+            return collection.IndexOf(item);
+        }
+
         public void CopyTo(GameObject[] array, int arrayIndex)
         {
             collection.CopyTo(array, arrayIndex);
         }
 
-#pragma warning disable UNT0029
         public bool Remove(GameObject item)
         {
+#pragma warning disable UNT0029
             if (item is null)
                 return false;
+#pragma warning restore UNT0029
 
             if (collection.Remove(item))
             {
@@ -80,7 +114,11 @@ namespace CCEnvs.Unity.UI
 
             return false;
         }
-#pragma warning restore UNT0029
+
+        public void RemoveAt(int index)
+        {
+            collection.RemoveAt(index);
+        }
 
         public IObservable<CollectionAddEvent<GameObject>> ObserveAdd()
         {
@@ -168,6 +206,18 @@ namespace CCEnvs.Unity.UI
                     go.SetActive(false);
                 }
             }
+        }
+
+        private void Setup()
+        {
+            collection.ObserveReplace()
+                .SubscribeWithState(this,
+                static (ev, @this) =>
+                {
+                    @this.OnRemove(ev.OldValue);
+                    @this.OnAdd(ev.NewValue);
+                })
+                .AddTo(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

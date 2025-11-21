@@ -8,28 +8,20 @@ using UnityEngine;
 namespace CCEnvs.Unity.Collections
 {
     public interface INodeCollection<TKey, TNode> 
-        : IEnumerable<KeyValuePair<TKey, TNode>>,
-        IGameObjectBindable
+        : IEnumerable<KeyValuePair<TKey, TNode>>
     {
         TNode this[TKey key] { get; set; }
 
         bool DestroyInstantiatedOnRemove { get; set; }
-        IEnumerable<GameObject> GameObjects { get; }
         int Count { get; }
         IEnumerable<TKey> Keys { get; }
         IEnumerable<TNode> Nodes { get; }
-        Maybe<GameObject> NodePrefab { get; set; }
         Func<IEnumerable<KeyValuePair<TKey, TNode>>, TNode, TKey>? KeyFactory { get; set; }
 
         Result<TNode> GetNode(TKey key);
 
         bool AddNode(TKey key, TNode node);
         Maybe<KeyValuePair<TKey, TNode>> AddNode(TNode node);
-
-        TNode AddNodeByPrefab(TKey key, GameObject prefab, Maybe<TNode> node = default);
-        TNode AddNodeByPrefab(TKey key, Maybe<TNode> node = default);
-        KeyValuePair<TKey, TNode> AddNodeByPrefab(GameObject prefab, Maybe<TNode> node = default);
-        KeyValuePair<TKey, TNode> AddNodeByPrefab(Maybe<TNode> node = default);
 
         KeyValuePair<TKey, TNode>[] AddNodeCount<T>(int count) where T : TNode, new();
 
@@ -55,8 +47,6 @@ namespace CCEnvs.Unity.Collections
         bool ContainsNode(TNode node);
 
         void Clear();
-
-        IObservable<NodeCollectionInstantiateEvent<TNode>> ObserveInstantiate();
 
         IObservable<NodeCollectionCountChangedEvent<TKey, TNode>> ObserveAddNodeByPrefab();
 

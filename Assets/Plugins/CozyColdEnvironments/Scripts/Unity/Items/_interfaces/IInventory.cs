@@ -1,5 +1,4 @@
-using CCEnvs.Unity.Collections;
-using CCEnvs.Unity.UI.MVVM;
+using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.Items
@@ -7,9 +6,7 @@ namespace CCEnvs.Unity.Items
     public interface IInventory
         : IItemAccessor,
         IItemContainerInfoItemless,
-        INodeCollection<int, IItemContainer>,
-        IActivatableController<int, IItemContainer>,
-        IModel
+        IReactiveDictionary<int, IItemContainer>
     {
         void ResetItemContainers();
     }

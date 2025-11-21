@@ -1,7 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
-using CCEnvs.Unity.Collections;
 using Cysharp.Threading.Tasks;
 using SuperLinq;
 using System;
@@ -10,24 +9,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UniRx;
-using UnityEngine;
 using ZLinq;
 
 #pragma warning disable S3236
 #nullable enable
 namespace CCEnvs.Unity.Items
 {
-    public class Inventory 
-        : ActivatableNodeCollection<int,
-        IItemContainer>,
-        IInventory
+    public class Inventory : ReactiveDictionary<int, IItemContainer>, IInventory
     {
-        public int Capacity {
-            get => collection.Count;
-            set => collection.EnsureCapacity(value);
-        }
-        public bool IsEmpty => collection.Values.Any(x => x.ContainsItem());
-        public bool IsFull => collection.Values.All(x => x.ContainsItem());
+        public bool IsEmpty => Values.Any(cnt => !cnt.IsEmpty);
+        public bool IsFull => Values.All(cnt => cnt.IsFull);
 
         protected int NextSlotID {
             get
@@ -39,57 +30,47 @@ namespace CCEnvs.Unity.Items
             }
         }
 
-        bool IActivatable.IsActive => throw new NotImplementedException();
         int IItemContainerInfoItemless.ItemCount => throw new NotImplementedException();
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
-        bool IItemContainerInfoItemless.IsActive => throw new NotImplementedException();
+        int IItemContainerInfoItemless.Capacity {
+            get => Count;
+            set => throw new NotSupportedException();
+        }
 
         public Inventory()
         {
-            KeyFactory = (_, _) => NextSlotID;
         }
 
-        public Inventory(int capacity) : base(capacity)
+        public Inventory(IEqualityComparer<int> comparer) : base(comparer)
         {
-            KeyFactory = (_, _) => NextSlotID;
         }
 
-        public Inventory(IEnumerable<KeyValuePair<int, IItemContainer>> nodes)
-            :
-            base(nodes)
+        public Inventory(Dictionary<int, IItemContainer> innerDictionary) : base(innerDictionary)
         {
-            KeyFactory = (_, _) => NextSlotID;
-        }
-
-        public Inventory(int nodeCount, GameObject nodePrefab)
-            :
-            base(nodeCount, nodePrefab)
-        {
-            KeyFactory = (_, _) => NextSlotID;
         }
 
         public bool ContainsItem()
         {
-            return collection.Values.ZL().Any(x => x.ContainsItem());
+            return Values.ZL().Any(x => x.ContainsItem());
         }
 
         public bool ContainsItem(IItem? item)
         {
-            return collection.Values.ZL().Any(x => x.ContainsItem(item));
+            return Values.ZL().Any(x => x.ContainsItem(item));
         }
 
         public bool ContainsItem(IItem? item, int count)
         {
-            int containedCount = collection.Values.ZL()
-                                                  .Where(x => x.ContainsItem(item))
-                                                  .Sum(x => x.ItemCount);
+            int containedCount = Values.ZL()
+                .Where(x => x.ContainsItem(item))
+                .Sum(x => x.ItemCount);
 
             return containedCount >= count;
         }
 
         public void ResetItemContainers()
         {
-            foreach (var cnt in Nodes)
+            foreach (var cnt in Values)
                 cnt.Reset();
         }
 
@@ -103,11 +84,11 @@ namespace CCEnvs.Unity.Items
 
             int rest = count;
             Maybe<IItemContainer> restItems;
-            foreach (var cnt in from it in collection.ZL() //Searching for the container with same item or first empty container
-                                where it.Value.IsEmpty || (it.Value.ContainsItem(item) && !it.Value.IsFull)
-                                select (it, priority: it.Value.ContainsItem(item) ? it.Key - 1 : it.Key) into pair
+            foreach (var cnt in from cnt in this.ZL() //Searching for the container with same item or first empty container
+                                where cnt.Value.IsEmpty || (cnt.Value.ContainsItem(item) && !cnt.Value.IsFull)
+                                select (cnt, priority: cnt.Value.ContainsItem(item) ? cnt.Key - 1 : cnt.Key) into pair
                                 orderby pair.priority
-                                select pair.it)
+                                select pair.cnt)
             {
                 restItems = cnt.Value.PutItem(item, rest);
 
@@ -155,7 +136,7 @@ namespace CCEnvs.Unity.Items
                 return null!;
 
             Maybe<IItemContainer> taked;
-            foreach (var cnt in collection.Values.ZL().Where(x => x.ContainsItem(item)))
+            foreach (var cnt in Values.ZL().Where(x => x.ContainsItem(item)))
             {
                 taked = cnt.TakeItem(count);
                 count -= taked.GetValueUnsafe().ItemCount;
@@ -165,14 +146,6 @@ namespace CCEnvs.Unity.Items
             }
 
             return default!;
-        }
-
-        protected override void OnInstantiateInternal(Maybe<IItemContainer> inputNode, IItemContainer newNode, GameObject go)
-        {
-            base.OnInstantiateInternal(inputNode, newNode, go);
-
-            if (inputNode.IsSome)
-                newNode.CopyFrom(inputNode.GetValueUnsafe());
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -186,36 +159,6 @@ namespace CCEnvs.Unity.Items
         Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 
         void IItemAccessor.CopyFrom(IItemContainerInfo itemContainer)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IActivatable.Activate()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IActivatable.Deactivate()
-        {
-            throw new NotImplementedException();
-        }
-
-        bool IActivatable.SwitchActiveState()
-        {
-            throw new NotImplementedException();
-        }
-
-        IObservable<bool> IActivatable.ObserveActiveState()
-        {
-            throw new NotImplementedException();
-        }
-
-        IObservable<bool> IActivatable.ObserveDeactivate()
-        {
-            throw new NotImplementedException();
-        }
-
-        IObservable<bool> IActivatable.ObserveActivate()
         {
             throw new NotImplementedException();
         }

@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.UI.MVVM
         : GUIPanel,
         IView<TViewModel, TModel>
 
-        where TViewModel : Presenter<TModel>
+        where TViewModel : IViewModel<TModel>
     {
         protected Lazy<TViewModel> _viewModel;
 
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.UI.MVVM
                 throw new InvalidOperationException("Cannot set new view model.");
             CC.Guard.IsNotNull(viewModel, nameof(viewModel));
 
-            this.viewModel.Maybe().IfSome(viewModel => viewModel.Dispose());
+            this.viewModel.AsOrDefault<IDisposable>().IfSome(static viewModel => viewModel.Dispose());
 
             _viewModel = new Lazy<TViewModel>(viewModel);
 
@@ -98,7 +98,7 @@ namespace CCEnvs.Unity.UI.MVVM
                          .Raw;
 
             if (model.IsNull())
-                return null!;
+                return default!;
 
             return typeof(TViewModel).Reflect()
                                      .Cache()            
@@ -111,8 +111,6 @@ namespace CCEnvs.Unity.UI.MVVM
         /// </summary>
         protected virtual void InstallBingings()
         {
-            //ObserveShow().SubscribeWithState(this, static (_, view) => view.viewModel.ForceNotify())
-            //             .AddTo(this);
         }
     }
 }

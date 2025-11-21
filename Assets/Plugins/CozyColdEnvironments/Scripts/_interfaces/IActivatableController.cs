@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace CCEnvs.Unity
 {
-    public interface IActivatableController<TKey, TNode>
+    public interface IActivatableController<TKey, TValue>
     {
-        Maybe<KeyValuePair<TKey, TNode>> ActiveNode { get; }
+        Maybe<KeyValuePair<TKey, TValue>> ActiveObject { get; }
 
         void ActivateAt(TKey key);
 
@@ -15,6 +15,6 @@ namespace CCEnvs.Unity
 
         bool SwitchActiveStateAt(TKey key);
 
-        IObservable<PreviousCurrentPair<Maybe<KeyValuePair<TKey, TNode>>>> ObserveActiveNode();
+        IObservable<PreviousCurrentPair<Maybe<KeyValuePair<TKey, TValue>>>> ObserveActiveNode();
     }
 }

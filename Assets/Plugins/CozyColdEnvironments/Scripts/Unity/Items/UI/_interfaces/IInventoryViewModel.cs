@@ -1,22 +1,15 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI.MVVM;
-using System;
 using System.Collections.Generic;
-using UniRx;
-using UnityEngine;
 
+#nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
-    public interface IInventoryViewModel<T> : IPresenter<T>
+    public interface IInventoryViewModel<T> 
+        : IViewModel<T>, 
+        IReactiveDictionaryViewModel<T, int, IItemContainer>
+
         where T : IInventory
     {
-        IReadOnlyReactiveProperty<Maybe<int>> ActiveContainerID { get; }
-
-        IObservable<GameObject> ObserveAddContainer();
-
-        IObservable<GameObject> ObserveRemoveContainer();
-
-        IEnumerable<GameObject> GetInventoryContainerGameObjects();
     }
 }

@@ -1,63 +1,54 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI.MVVM;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
-    public class InventoryViewModel<T> : Presenter<T>, IInventoryViewModel<T>
-        where T : IInventory
+    public class InventoryViewModel<TModel> : ViewModel<TModel>, IInventoryViewModel<TModel>
+
+        where TModel : IInventory
     {
-        private readonly ReactiveProperty<Maybe<int>> activeContainerID = new();
+        private readonly ReactiveCommand<KeyValuePair<int, IItemContainer>> add = new();
+        private readonly ReactiveCommand<int> remove = new();
+        private readonly ReactiveCommand<KeyValuePair<int, IItemContainer>> replace = new();
 
-        public IReadOnlyReactiveProperty<Maybe<int>> ActiveContainerID => activeContainerID;
-        public override bool ModelMutable => true;
+        public IReactiveCommand<KeyValuePair<int, IItemContainer>> Add => add;
+        public IReactiveCommand<int> Remove => remove;
+        public IReactiveCommand<KeyValuePair<int, IItemContainer>> Replace => replace;
 
-        public InventoryViewModel(T model, GameObject gameObject) 
+        public InventoryViewModel(TModel model) 
             :
-            base(model, gameObject)
+            base(model)
         {
-            BindActiveContainer();
+
         }
 
-        private void BindActiveContainer()
+        public IObservable<DictionaryAddEvent<int, IItemContainer>> ObserveAdd()
         {
-            model.ObserveActiveNode()
-                .Select(pair => pair.Current)
-                .Select(cnt => cnt.Map(cnt => cnt.Value.GetContainerID()).Raw)
-                .SubscribeWithState(activeContainerID, (id, prop) => prop.Value = id)
+            return model.ObserveAdd();
+        }
+
+        public IObservable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemove()
+        {
+            return model.ObserveRemove();
+        }
+
+        public IObservable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplace()
+        {
+            return model.ObserveReplace();
+        }
+
+        private void InstallBindings()
+        {
+            add.SubscribeWithState(this,
+                static (cnt, @this) =>
+                {
+                    @this.model.Remove(cnt.);
+                })
                 .AddTo(disposables);
-
-            activeContainerID.AddTo(disposables);
-        }
-
-        public IObservable<GameObject> ObserveAddContainer()
-        {
-            return from ev in model.ObserveAddNode()
-                   select ev.Node.Value.gameObject into go
-                   where go.IsSome
-                   select go.GetValueUnsafe() into go
-                   select go.QueryTo().RootTransform().gameObject;
-        }
-
-        public IObservable<GameObject> ObserveRemoveContainer()
-        {
-            return from ev in model.ObserveRemoveNode()
-                   select ev.Node.Value.gameObject into go
-                   where go.IsSome
-                   select go.GetValueUnsafe() into go
-                   select go.QueryTo().RootTransform().gameObject;
-        }
-
-
-        public IEnumerable<GameObject> GetInventoryContainerGameObjects()
-        {
-            return model.GameObjects;
         }
     }
 }

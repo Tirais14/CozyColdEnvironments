@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.Collections
         protected readonly ReactiveProperty<Maybe<KeyValuePair<TKey, TNode>>> activeNode = new();
         protected readonly List<IDisposable> disposables = new();
 
-        public Maybe<KeyValuePair<TKey, TNode>> ActiveNode => activeNode.Value;
+        public Maybe<KeyValuePair<TKey, TNode>> ActiveObject => activeNode.Value;
 
         public ActivatableNodeCollection()
         {
