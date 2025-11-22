@@ -1,6 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;

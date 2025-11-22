@@ -1,26 +1,25 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using UniRx;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.UI.MVVM
+namespace CCEnvs.Unity.UI
 {
     /// <summary>
     /// <see cref="TModel"/> must have empty constructor by default
     /// </summary>
     /// <typeparam name="TViewModel"></typeparam>
     /// <typeparam name="TModel"></typeparam>
-    public abstract class View<TViewModel, TModel>
+    public abstract class View<TViewModel>
         : GUIPanel,
-        IView<TViewModel, TModel>
+        IView<TViewModel>
 
-        where TViewModel : IViewModel<TModel>
+        where TViewModel : IViewModel
     {
-        protected Lazy<TViewModel> _viewModel;
+        protected Lazy<Maybe<TViewModel>> _viewModel = new(() => default);
 
         [Header("View Settings")]
         [Space(8)]
@@ -28,88 +27,50 @@ namespace CCEnvs.Unity.UI.MVVM
         [SerializeField]
         protected bool isMutableView;
 
-        public TModel model => viewModel.model;
-        public TViewModel viewModel => _viewModel.Value;
+        public Maybe<TViewModel> viewModel => _viewModel.Value;
+        public Maybe<object> model => viewModel.Map(x => x.model).GetValue();
+        public TViewModel viewModelUnsafe => viewModel.IfNone(() => throw new InvalidOperationException("View model is not setted.")).GetValueUnsafe();
+        public object modelUnsafe => viewModelUnsafe.model;
         public bool IsMutable => isMutableView;
 
-        protected override void Awake()
+        public void SetViewModelUnsafe(TViewModel viewModel)
         {
-            base.Awake();
+            if (_viewModel.Value.IsSome && !IsMutable)
+                throw new InvalidOperationException("Cannot set view model.");
 
-            _viewModel = new Lazy<TViewModel>(() => ViewModelFactory());
-        }
-
-        protected override void Start()
-        {
-            base.Start();
-
-            viewModel.Maybe().IfSome(_ => InstallBingings());
-        }
-
-        public virtual void SetViewModelUnsafe(TViewModel viewModel)
-        {
-            if (!IsMutable)
-                throw new InvalidOperationException("Cannot set new view model.");
-            CC.Guard.IsNotNull(viewModel, nameof(viewModel));
-
-            this.viewModel.AsOrDefault<IDisposable>().IfSome(static viewModel => viewModel.Dispose());
-
-            _viewModel = new Lazy<TViewModel>(viewModel);
+            _viewModel.AsOrDefault<IDisposable>().IfSome(static viewModel => viewModel.Dispose());
+            _viewModel = new Lazy<Maybe<TViewModel>>(viewModel);
 
             if (viewModel is IDisposable disp)
                 disp.AddTo(this);
 
-            InstallBingings();
+            Init();
         }
 
-        public Maybe<TModel> SetModelUnsafe(TModel model)
+        public void SetViewModelFactoryUnsafe(Func<TViewModel> factory)
         {
-            if (!IsMutable)
-                throw new InvalidOperationException("Cannot set new model.");
+            Guard.IsNotNull(factory);
 
-            var tModel = viewModel.Maybe().Map(viewModel => viewModel.model).Raw;
+            _viewModel = new Lazy<Maybe<TViewModel>>(() =>
+            {
+                var viewModel = factory();
+                SetViewModelUnsafe(viewModel);
 
-            SetViewModelUnsafe(ViewModelFactory(model));
-
-            return tModel;
+                return viewModel;
+            });
         }
 
-        protected virtual TModel ModelFactory()
+        public T GetModelUnsafe<T>()
         {
-            Type modelType = typeof(TModel);
-
-            if (modelType.IsType<Component>())
-                throw new InvalidOperationException($"View not contains model. Unity objects must be instantiated by Unity instead of creating new instance. Model: {modelType.GetFullName()}.");
-
-            TModel model = typeof(TModel).Reflect().Cache().CreateInstance<TModel>();
-
-            if (model is IDisposable disposable)
-                disposable.AddTo(this);
-
-            return model;
+            return modelUnsafe.As<T>();
         }
 
-        protected virtual TViewModel ViewModelFactory(TModel? model = default)
-        {
-            model = model.Maybe()
-                         .BiMap(
-                             some: m => m,
-                             none: () => ModelFactory()
-                             ).Raw;
-
-            if (model.IsNull())
-                return default!;
-
-            return typeof(TViewModel).Reflect()
-                                     .Cache()            
-                                     .Arguments(model)
-                                     .CreateInstance<TViewModel>();
-        }
+        public Maybe<T> GetModel<T>() => model.Raw.AsOrDefault<T>();
 
         /// <summary>
         /// Invokes in <see cref="Start"/>, <see cref="SetViewModelUnsafe(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
-        protected virtual void InstallBingings()
+        protected virtual void Init()
         {
         }
     }

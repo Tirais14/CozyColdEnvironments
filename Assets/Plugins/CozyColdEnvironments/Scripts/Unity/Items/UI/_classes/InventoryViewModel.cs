@@ -1,5 +1,5 @@
 using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 using System;
 using System.Collections.Generic;
 using UniRx;
@@ -7,7 +7,7 @@ using UniRx;
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
-    public class InventoryViewModel<TModel> : ViewModel<TModel>, IInventoryViewModel<TModel>
+    public class InventoryViewModel<TModel> : ViewModel<TModel>, IInventoryViewModel
 
         where TModel : IInventory
     {

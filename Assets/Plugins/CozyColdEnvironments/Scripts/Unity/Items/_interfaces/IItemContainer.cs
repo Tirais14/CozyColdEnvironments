@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 
 namespace CCEnvs.Unity.Items
 {

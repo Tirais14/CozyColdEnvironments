@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System;
@@ -13,8 +12,18 @@ namespace CCEnvs
     {
         public delegate T?[] MoveNext<T>(T current, LoopState loopState);
 
+        public static object? ReturnNull() => null;
+
+        public static T? ReturnDefault<T>() => default;
+
         public static bool TryFindHoleInRange(int start, int count, IEnumerable<int> range, out int hole)
         {
+            if (range.IsEmpty() || start == count - 1)
+            {
+                hole = default;
+                return false;
+            }
+
             var zipped = Enumerable.Range(start, count).EquiZip(range.OrderBy(x => x));
 
             foreach (var pair in zipped)

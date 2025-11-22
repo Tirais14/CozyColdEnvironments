@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks.Triggers;
 using System;
@@ -33,7 +33,7 @@ namespace CCEnvs.Unity
 
         public readonly static GameObjectQuery Instance = new();
 
-        public static GameObjectQuery Empty => new();
+        public static GameObjectQuery Scene => new();
 
         /// <summary>
         /// May be null
@@ -338,7 +338,8 @@ namespace CCEnvs.Unity
             bool anyType = type is null;
 
             return from view in Views(type)
-                   select view.viewModel into viewModel
+                   select view.viewModel.Raw into viewModel
+                   where viewModel.IsNotNull()
                    where anyType || viewModel.IsInstanceOfType(type!)
                    select viewModel;
         }
@@ -389,9 +390,12 @@ namespace CCEnvs.Unity
 
             var cmps = Components();
 
-            var models = cmps.OfType<IView>()
-                .Select(view => view.model)
-                .Where(model => anyType || model.IsInstanceOfType(type));
+            var models = from view in cmps.OfType<IView>()
+                         select view.model into model
+                         where model.IsSome
+                         select model.GetValueUnsafe() into model
+                         where anyType || model.IsInstanceOfType(type)
+                         select model;
 
             if (includeComponents)
             {

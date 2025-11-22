@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Items
     public interface IInventory
         : IItemAccessor,
         IItemContainerInfoItemless,
-        IReactiveDictionary<int, IItemContainer>
+        IReactiveDictionaryExtended<int, IItemContainer>
     {
         void ResetItemContainers();
 

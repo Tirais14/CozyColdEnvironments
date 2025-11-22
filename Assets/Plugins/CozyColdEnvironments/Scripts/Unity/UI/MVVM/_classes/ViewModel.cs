@@ -7,7 +7,7 @@ using UniRx;
 using UnityEngine;
 
 #pragma warning disable S1699
-namespace CCEnvs.Unity.UI.MVVM
+namespace CCEnvs.Unity.UI
 {
     public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable
     {

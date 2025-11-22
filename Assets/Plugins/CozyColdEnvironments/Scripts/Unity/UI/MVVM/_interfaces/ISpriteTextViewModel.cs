@@ -2,7 +2,7 @@ using UniRx;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.MVVM
+namespace CCEnvs.Unity.UI
 {
     public interface ISpriteTextViewModel<TModel> : IViewModel<TModel>
     {

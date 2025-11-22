@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UniRx;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.MVVM
+namespace CCEnvs.Unity.UI
 {
-    public interface IReactiveDictionaryViewModel<TModel, TKey, TValue> : IViewModel<TModel>
+    public interface IReactiveDictionaryViewModel<TKey, TValue> : IViewModel
     {
         IReactiveCommand<KeyValuePair<TKey, TValue>> Add { get; }
 

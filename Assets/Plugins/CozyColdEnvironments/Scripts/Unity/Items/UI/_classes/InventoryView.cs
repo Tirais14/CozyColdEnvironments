@@ -1,29 +1,27 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
-using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
-    public abstract class InventoryView<TViewModel, TInventory>
-        : View<TViewModel, TInventory>
+    public abstract class InventoryView<TViewModel>
+        : View<TViewModel>
 
-        where TViewModel : ViewModel<TInventory>, IInventoryViewModel<TInventory>
-        where TInventory : IInventory
+        where TViewModel : IInventoryViewModel
     {
         public GameObject ContainerPrefab;
 
         [GetByChildren]
         [SerializeField]
         protected GameObjectList slotBag;
+
+        [SerializeField]
+        protected int itemContainerCount;
 
         public GameObjectList SlotBag => slotBag;
 
@@ -33,9 +31,9 @@ namespace CCEnvs.Unity.Storages.UI
             SetupOnAddSlotGameObject();
         }
 
-        protected override void InstallBingings()
+        protected override void Init()
         {
-            base.InstallBingings();
+            base.Init();
             BindAddContainer();
             BindRemoveContainer();
         }
@@ -48,7 +46,7 @@ namespace CCEnvs.Unity.Storages.UI
 
         private void BindAddContainer()
         {
-            viewModel.ObserveAdd()
+            viewModelUnsafe.ObserveAdd()
                      .SubscribeWithState(this,
                      static (cnt, @this) =>
                      {
@@ -56,7 +54,7 @@ namespace CCEnvs.Unity.Storages.UI
                          go.transform.SetSiblingIndex(cnt.Key);
                          var goCnt = go.QueryTo().ByChildren().Model<IItemContainer>().Strict();
 
-                         @this.viewModel.Replace.Execute(KeyValuePair.Create(cnt.Key, goCnt));
+                         @this.viewModelUnsafe.Replace.Execute(KeyValuePair.Create(cnt.Key, goCnt));
                          @this.slotBag.Add(go);
                      })
                      .AddTo(this);
@@ -64,11 +62,11 @@ namespace CCEnvs.Unity.Storages.UI
 
         private void BindRemoveContainer()
         {
-            viewModel.ObserveRemove()
+            viewModelUnsafe.ObserveRemove()
                      .SubscribeWithState(this,
                      static (cnt, @this) =>
                      {
-                         @this.viewModel.Remove.Execute(cnt.Key);
+                         @this.viewModelUnsafe.Remove.Execute(cnt.Key);
                          @this.slotBag.Remove(@this.transform.GetChild(cnt.Key).gameObject);
                      })
                      .AddTo(this);
@@ -81,7 +79,7 @@ namespace CCEnvs.Unity.Storages.UI
                    .AddTo(this);
         }
     }
-    public class InventoryView : InventoryView<InventoryViewModel<Inventory>, Inventory>
+    public class InventoryView : InventoryView<InventoryViewModel<Inventory>>
     {
     }
 }

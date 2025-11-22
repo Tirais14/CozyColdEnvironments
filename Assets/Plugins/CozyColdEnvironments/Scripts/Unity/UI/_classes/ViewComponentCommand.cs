@@ -1,6 +1,6 @@
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 
 #nullable enable
 #pragma warning disable IDE0044

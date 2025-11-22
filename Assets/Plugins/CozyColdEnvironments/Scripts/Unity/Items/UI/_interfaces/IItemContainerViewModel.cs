@@ -1,13 +1,12 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 using UniRx;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Items
 {
-    public interface IItemContainerViewModel<T> : IViewModel<T>
-        where T : IItemContainerInfo
+    public interface IItemContainerViewModel : IViewModel
     {
         IReadOnlyReactiveProperty<Sprite> ItemView { get; }
         IReadOnlyReactiveProperty<string> CounterText { get; }

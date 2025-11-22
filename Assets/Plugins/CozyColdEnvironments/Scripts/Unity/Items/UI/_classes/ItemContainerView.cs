@@ -2,7 +2,6 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
-using CCEnvs.Unity.UI.MVVM;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UniRx;
@@ -15,12 +14,11 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.Storages.UI
 {
     [RequireComponent(typeof(Image))]
-    public abstract class ItemContainerView<TViewModel, TContainer>
-        : View<TViewModel, TContainer>,
-        IItemContainerView<TViewModel, TContainer>
+    public abstract class ItemContainerView<TViewModel>
+        : View<TViewModel>,
+        IItemContainerView
 
-        where TViewModel : ViewModel<TContainer>, IItemContainerViewModel<TContainer>
-        where TContainer : IItemContainer, new()
+        where TViewModel : IItemContainerViewModel
     {
         [SerializeField]
         [GetByChildren(IsOptional = true)]
@@ -38,12 +36,12 @@ namespace CCEnvs.Unity.Storages.UI
         protected override void Start()
         {
             base.Start();
-            viewModel.ShowCounterTextPredicate = ShowCounterTextPredicate;
+            viewModelUnsafe.ShowCounterTextPredicate = ShowCounterTextPredicate;
         }
 
-        protected override void InstallBingings()
+        protected override void Init()
         {
-            base.InstallBingings();
+            base.Init();
             BindItemIcon();
             BindItemCount();
         }
@@ -52,7 +50,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             image.IfSome(img =>
             {
-                viewModel.ItemView.SubscribeWithState(img,
+                viewModelUnsafe.ItemView.SubscribeWithState(img,
                         static (sprite, img) => img.sprite = sprite)
                     .AddTo(this);
             });
@@ -62,13 +60,13 @@ namespace CCEnvs.Unity.Storages.UI
         {
             counterMesh.IfSome(mesh =>
             {
-                viewModel.CounterText.SubscribeWithState(mesh,
+                viewModelUnsafe.CounterText.SubscribeWithState(mesh,
                         static (text, mesh) => mesh.text = text)
                     .AddTo(this);
             });
         }
     }
-    public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>, ItemContainer>
+    public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>>
     {
     }
 }

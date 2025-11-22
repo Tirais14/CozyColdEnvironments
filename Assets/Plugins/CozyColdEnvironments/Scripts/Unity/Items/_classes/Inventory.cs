@@ -20,21 +20,11 @@ namespace CCEnvs.Unity.Items
         public bool IsEmpty => Values.Any(cnt => !cnt.IsEmpty);
         public bool IsFull => Values.All(cnt => cnt.IsFull);
 
-        protected int NextSlotID {
-            get
-            {
-                if (Do.TryFindHoleInRange(0, Count, Keys, out int hole))
-                    return hole;
-
-                return Count;
-            }
-        }
-
         int IItemContainerInfoItemless.ItemCount => throw new NotImplementedException();
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
         int IItemContainerInfoItemless.Capacity {
             get => Count;
-            set => throw new NotSupportedException();
+            set => SetCount<ItemContainer>(value);
         }
 
         public Inventory()
@@ -47,6 +37,28 @@ namespace CCEnvs.Unity.Items
 
         public Inventory(Dictionary<int, IItemContainer> innerDictionary) : base(innerDictionary)
         {
+        }
+
+        public Inventory(IEnumerable<KeyValuePair<int, IItemContainer>> values)
+            :
+            this(new Dictionary<int, IItemContainer>(values))
+        {
+        }
+
+        public Inventory(int containerCount)
+            :
+            this(new Dictionary<int, IItemContainer>())
+        {
+            SetCount<ItemContainer>(containerCount);
+        }
+
+        public static Inventory Create<T>(int containerCount)
+            where T : IItemContainer, new()
+        {
+            var inv = new Inventory();
+            inv.SetCount<T>(containerCount);
+
+            return inv;
         }
 
         public bool ContainsItem()
@@ -153,6 +165,52 @@ namespace CCEnvs.Unity.Items
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             Add(ResolveID(itemContainer), itemContainer);
+        }
+
+        public T[] AddCount<T>(int count) where T : IItemContainer, new()
+        {
+            count = Math.Abs(count);
+            var results = new List<T>(count);
+            T cnt;
+            foreach (var _ in Enumerable.Range(0, count))
+            {
+                cnt = new T();
+                Add(cnt);
+                results.Add(cnt);
+            }
+
+            return results.ToArray();
+        }
+
+        public IItemContainer[] SetCount<T>(int count) where T : IItemContainer, new()
+        {
+            count = Math.Abs(count);
+            int delta = count - Count;
+
+            if (delta < 0)
+                return RemoveCount(delta);
+            else if (delta > 0)
+                return AddCount<T>(delta).Cast<IItemContainer>().ToArray();
+            else
+                return Array.Empty<IItemContainer>();
+        }
+
+        public IItemContainer[] RemoveCount(int count)
+        {
+            var removed = new List<IItemContainer>(count);
+            IItemContainer cnt;
+            int id;
+            foreach (var _ in Enumerable.Range(0, count))
+            {
+                if (Count == 0)
+                    break;
+
+                id = Keys.Last();
+                cnt = this[id];
+                Remove(id);
+            }
+
+            return removed.ToArray();
         }
 
         protected virtual int ResolveID(IItemContainer itemContainer)

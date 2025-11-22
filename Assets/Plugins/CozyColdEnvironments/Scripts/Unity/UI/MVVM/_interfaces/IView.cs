@@ -1,43 +1,46 @@
 #nullable enable
 #pragma warning disable IDE1006
 using CCEnvs.FuncLanguage;
+using System;
 
-namespace CCEnvs.Unity.UI.MVVM
+namespace CCEnvs.Unity.UI
 {
     public interface IView
     {
-        IViewModel viewModel { get; }
-        object model { get; }
+        Maybe<IViewModel> viewModel { get; }
+        Maybe<object> model { get; }
+        IViewModel viewModelUnsafe { get; }
+        object modelUnsafe { get; }
         bool IsMutable { get; }
 
         void SetViewModelUnsafe(object viewModel);
 
-        Maybe<object> SetModelUnsafe(object model);
+        void SetViewModelFactoryUnsafe(Func<object> factory);
+
+        Maybe<T> GetModel<T>();
+        T GetModelUnsafe<T>();
     }
     public interface IView<TViewModel> : IView
         where TViewModel : IViewModel
     {
-        new TViewModel viewModel { get; }
+        new Maybe<TViewModel> viewModel { get; }
+        new TViewModel viewModelUnsafe { get; }
 
-        IViewModel IView.viewModel => viewModel;
+        Maybe<IViewModel> IView.viewModel => viewModel.Raw;
+        IViewModel IView.viewModelUnsafe => viewModelUnsafe;
 
         void SetViewModelUnsafe(TViewModel viewModel);
+
+        void SetViewModelFactoryUnsafe(Func<TViewModel> factory);
 
         void IView.SetViewModelUnsafe(object viewModel)
         {
             SetViewModelUnsafe(viewModel.As<TViewModel>());
         }
-    }
-    public interface IView<TViewModel, TModel> : IView<TViewModel>
-        where TViewModel : IViewModel
-    {
-        new TModel model { get; }
 
-        IViewModel IView.viewModel => viewModel;
-        object IView.model => model!;
-
-        Maybe<TModel> SetModelUnsafe(TModel model);
-
-        Maybe<object> IView.SetModelUnsafe(object model) => SetModelUnsafe(model.As<TModel>()).Raw;
+        void IView.SetViewModelFactoryUnsafe(Func<object> factory)
+        {
+            SetViewModelFactoryUnsafe(() => factory().As<TViewModel>());
+        }
     }
 }

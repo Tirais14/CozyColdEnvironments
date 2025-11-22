@@ -11,6 +11,12 @@ namespace CCEnvs.Unity.Components
         {
             base.Awake();
             EnfOfFrameAction(() => Destroy(this));
+            PreUpdateAction(OnPreUpdate);
+        }
+
+        protected virtual void OnPreUpdate()
+        {
+
         }
 
         private void Update()

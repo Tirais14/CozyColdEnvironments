@@ -1,6 +1,6 @@
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.UI.MVVM
+namespace CCEnvs.Unity.UI
 {
     public interface IViewModel
     {
@@ -8,7 +8,7 @@ namespace CCEnvs.Unity.UI.MVVM
 
         //void ForceNotify();
     }
-    public interface IViewModel<out TModel> : IViewModel
+    public interface IViewModel<TModel> : IViewModel
     {
         new TModel model { get; }
 

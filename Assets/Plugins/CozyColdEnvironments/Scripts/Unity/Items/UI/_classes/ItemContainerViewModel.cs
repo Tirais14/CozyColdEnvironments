@@ -1,6 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI.MVVM;
+using CCEnvs.Unity.UI;
 using UniRx;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Storages.UI
 {
     public class ItemContainerViewModel<T>
         : ViewModel<T>,
-        IItemContainerViewModel<T>
+        IItemContainerViewModel
 
         where T : IItemContainer
     {
