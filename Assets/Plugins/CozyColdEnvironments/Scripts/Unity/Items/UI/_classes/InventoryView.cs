@@ -4,6 +4,7 @@ using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -23,6 +24,8 @@ namespace CCEnvs.Unity.Storages.UI
 
         [SerializeField]
         protected int itemContainerCount;
+
+        protected Dictionary<int, GameObject> instantiatedGameObjects = new();
 
         public GameObjectList Slots => slots;
 
@@ -54,11 +57,10 @@ namespace CCEnvs.Unity.Storages.UI
                      {
                          var go = Instantiate(@this.ContainerPrefab, @this.transform);
                          go.transform.SetSiblingIndex(cnt.Key);
-                         var goCnt = go.QueryTo().ByChildren().Model<IItemContainer>().Strict();
-                         goCnt.CopyFrom(cnt.Value);
-
-                         @this.viewModelUnsafe.Replace.Execute(KeyValuePair.Create(cnt.Key, goCnt));
+                         var view = go.QueryTo().ByChildren().Views().First(view => view.model.Raw is IItemContainer);
+                         view.SetViewModelUnsafe(new ItemContainerViewModel<IItemContainer>(cnt.Value));
                          @this.slots.Add(go);
+                         @this.instantiatedGameObjects.Add(cnt.Key, go);
                      })
                      .AddTo(this);
         }
@@ -69,8 +71,8 @@ namespace CCEnvs.Unity.Storages.UI
                      .SubscribeWithState(this,
                      static (cnt, @this) =>
                      {
-                         @this.viewModelUnsafe.Remove.Execute(cnt.Key);
-                         @this.slots.Remove(@this.transform.GetChild(cnt.Key).gameObject);
+                         if (@this.instantiatedGameObjects.Remove(cnt.Key, out GameObject go))
+                             @this.slots.Remove(go);
                      })
                      .AddTo(this);
         }
@@ -78,7 +80,12 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindResetInventory()
         {
             viewModelUnsafe.ObserveReset()
-                           .SubscribeWithState(this, (_, @this) => @this.slots.Clear())
+                           .SubscribeWithState(this,
+                           static (_, @this) =>
+                           {
+                               @this.slots.Clear();
+                               @this.instantiatedGameObjects.Clear();
+                           })
                            .AddTo(this);
         }
 

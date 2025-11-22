@@ -31,6 +31,7 @@ namespace CCEnvs.Unity.Storages.UI
             base.Awake();
             ShowableSettings |= IShowable.Settings.KeepRaycastTargetState;
             ShowableSettings &= ~IShowable.Settings.ByComponentState;
+            isMutableView = true;
         }
 
         protected override void Start()

@@ -40,6 +40,13 @@ namespace CCEnvs.FuncLanguage
             return Lang.GetValueUnsafe<Maybe<T>, T>(this);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T GetValueUnsafe(Exception exception)
+        {
+            return Lang.GetValueUnsafe<Maybe<T>, T>(this, exception);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
         public readonly bool Contains(T? value)
@@ -119,6 +126,13 @@ namespace CCEnvs.FuncLanguage
         public readonly T GetValueUnsafe()
         {
             return Lang.GetValueUnsafe<IfElse<T>, T>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T GetValueUnsafe(Exception exception)
+        {
+            return Lang.GetValueUnsafe<IfElse<T>, T>(this, exception);
         }
 
         [DebuggerStepThrough]

@@ -96,7 +96,7 @@ namespace CCEnvs.Unity.UI
             RectTransform overlayTransform;
             RectTransform thisTransfrom = transform.As<RectTransform>();
 
-            m_SelectionOverlayPrefab.Match(
+            m_SelectionOverlayPrefab.Do(
                 some: prefab =>
                 {
                     selectionOverlay = Instantiate(prefab, transform);

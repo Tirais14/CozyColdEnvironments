@@ -317,9 +317,9 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IView> View(Type type)
+        public Result<IView> View(Type? type = null)
         {
-            return Component(type).Cast<IView>();
+            return Component(type ?? typeof(IView)).Cast<IView>();
         }
 
         [DebuggerStepThrough]

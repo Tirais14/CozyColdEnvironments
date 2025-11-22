@@ -5,6 +5,7 @@ using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CCEnvs
 {
@@ -77,11 +78,15 @@ namespace CCEnvs
             return Compare(comparer.Compare(left, right), compareTypes);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Nothing()
         {
         }
 
-        public static T? Nothing<T>() => default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Nothing<T>(T _)
+        {
+        }
 
         /// <summary>
         /// Same as the recursion loop, but use heap memory

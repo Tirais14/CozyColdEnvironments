@@ -32,13 +32,21 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly Maybe<T> Match(Action<T> some, Action none)
+        public readonly Maybe<T> Do(Action<T> some, Action none)
+        {
+            return Lang.Do(this, some, none);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly TOut Match<TOut>(Func<T, TOut> some, Func<TOut> none)
         {
             return Lang.Match(this, some, none);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         [DebuggerStepThrough]
-        public readonly Maybe<TOut> BiMap<TOut>(Func<T, TOut?> some, Func<TOut?> none)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Match(Action<T> some, Func<T> none)
         {
             return Lang.Match(this, some, none);
         }
@@ -52,16 +60,16 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
+        public readonly Maybe<TOut> BiMap<TOut>(Func<T, TOut?> some, Func<TOut?> none)
+        {
+            return Lang.Match(this, some, none);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         public readonly Maybe<TOut> MapUnsafe<TOut>(Func<T?, TOut?> selector)
         {
             return Lang.MapUnsafe(this, selector);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Maybe<TOut> Unfold<TOut>()
-        {
-            return Lang.Unfold<Maybe<T>, T, TOut>(this);
         }
     }
 }

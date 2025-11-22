@@ -16,6 +16,7 @@ namespace CCEnvs.FuncLanguage
         object GetValue(Func<object> defaultValueFactory);
 
         object GetValueUnsafe();
+        object GetValueUnsafe(Exception exception);
 
         bool TryGetValue([NotNullWhen(true)] out object? result);
 
@@ -35,6 +36,7 @@ namespace CCEnvs.FuncLanguage
         T GetValue(Func<T> defaultValueFactory);
 
         new T GetValueUnsafe();
+        new T GetValueUnsafe(Exception exception);
 
         bool TryGetValue([NotNullWhen(true)] out T? result);
 
@@ -58,6 +60,8 @@ namespace CCEnvs.FuncLanguage
         }
 
         object IConditional.GetValueUnsafe() => GetValueUnsafe()!;
+
+        object IConditional.GetValueUnsafe(Exception exception) => GetValueUnsafe(exception)!;
 
         bool IConditional.TryGetValue([NotNullWhen(true)] out object? result)
         {

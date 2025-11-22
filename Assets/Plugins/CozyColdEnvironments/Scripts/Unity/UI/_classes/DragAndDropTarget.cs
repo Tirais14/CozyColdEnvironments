@@ -110,7 +110,7 @@ namespace CCEnvs.Unity.UI
             {
                 highPriorityCanvas.Value.IfSome(_ =>
                 {
-                    startDraggingParent.Match(
+                    startDraggingParent.Do(
                         some: parent => cTransform.Value.SetParent(parent),
                         none: () => this.PrintError("Cannot find previous parent transfrom.")
                         );

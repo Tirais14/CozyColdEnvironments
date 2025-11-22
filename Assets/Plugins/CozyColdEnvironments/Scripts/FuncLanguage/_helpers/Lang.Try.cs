@@ -56,7 +56,7 @@ namespace CCEnvs.FuncLanguage
         {
             try
             {
-                Match(source, some, noneOrCatched);
+                Do(source, some, noneOrCatched);
             }
             catch (Exception ex)
             {

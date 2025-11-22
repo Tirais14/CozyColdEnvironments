@@ -1,5 +1,4 @@
 using CCEnvs.Unity.Collections;
-using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.Items

@@ -181,7 +181,7 @@ namespace CCEnvs.Unity.Injections
                             InjectFrom.Parent);
                         break;
                     case GetByChildrenAttribute byChild:
-                        byChild.UnityName.Maybe().Match(
+                        byChild.UnityName.Maybe().Do(
                             _ => SetField(
                             source,
                             field,

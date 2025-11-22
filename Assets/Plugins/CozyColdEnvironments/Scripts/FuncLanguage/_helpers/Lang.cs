@@ -56,7 +56,22 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Match<T, TValue>(T input,
+        public static Maybe<TOutValue> BiMap<T, TValue, TOutValue>(T input,
+            Func<TValue, TOutValue?> some,
+            Func<TOutValue?> none)
+            where T : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(some, nameof(some));
+            Guard.IsNotNull(none, nameof(none));
+
+            if (input.IsSome)
+                return some(input.GetValueUnsafe());
+            else
+                return none();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Do<T, TValue>(T input,
             Action<TValue> some,
             Action none)
             where T : struct, IConditional<TValue>
@@ -71,10 +86,11 @@ namespace CCEnvs.FuncLanguage
 
             return input;
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> Match<T, TValue, TOutValue>(T input,
-            Func<TValue, TOutValue?> some,
-            Func<TOutValue?> none)
+        public static TOutValue Match<T, TValue, TOutValue>(T input, 
+            Func<TValue, TOutValue> some,
+            Func<TOutValue> none)
             where T : struct, IConditional<TValue>
         {
             Guard.IsNotNull(some, nameof(some));
@@ -82,6 +98,25 @@ namespace CCEnvs.FuncLanguage
 
             if (input.IsSome)
                 return some(input.GetValueUnsafe());
+            else
+                return none();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TValue Match<T, TValue>(T input,
+            Action<TValue> some,
+            Func<TValue> none)
+            where T : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(some, nameof(some));
+            Guard.IsNotNull(none, nameof(none));
+
+            if (input.IsSome)
+            {
+                var value = input.GetValueUnsafe();
+                some(value);
+                return value;
+            }
             else
                 return none();
         }
