@@ -68,5 +68,10 @@ namespace CCEnvs.Unity.Storages.UI
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>>
     {
+        protected override Maybe<ItemContainerViewModel<ItemContainer>> ViewModelFactory()
+        {
+            var cnt = new ItemContainer();
+            return new ItemContainerViewModel<ItemContainer>(cnt);
+        }
     }
 }

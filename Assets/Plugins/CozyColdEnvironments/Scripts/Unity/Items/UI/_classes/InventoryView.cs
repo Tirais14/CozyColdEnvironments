@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
@@ -81,5 +82,10 @@ namespace CCEnvs.Unity.Storages.UI
     }
     public class InventoryView : InventoryView<InventoryViewModel<Inventory>>
     {
+        protected override Maybe<InventoryViewModel<Inventory>> ViewModelFactory()
+        {
+            var inv = new Inventory(itemContainerCount);
+            return new InventoryViewModel<Inventory>(inv);
+        }
     }
 }

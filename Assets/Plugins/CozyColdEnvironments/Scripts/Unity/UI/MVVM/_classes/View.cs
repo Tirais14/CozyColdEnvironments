@@ -33,37 +33,47 @@ namespace CCEnvs.Unity.UI
         public object modelUnsafe => viewModelUnsafe.model;
         public bool IsMutable => isMutableView;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            ViewModelFactory().IfSome(viewModel => SetViewModelUnsafe(viewModel));
+            ObserveViewModel();
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            DisposeViewModel(_viewModel);
+        }
+
+        protected static void DisposeViewModel(Lazy<Maybe<TViewModel>> viewModel)
+        {
+            if (viewModel.IsValueCreated
+                &&
+                viewModel.Value.TryGetValue(out TViewModel? value)
+                &&
+                value is IDisposable disp)
+            {
+                disp.Dispose();
+            }
+        }
+
         public void SetViewModelUnsafe(TViewModel viewModel)
         {
-            if (_viewModel.Value.IsSome && !IsMutable)
-                throw new InvalidOperationException("Cannot set view model.");
-
-            _viewModel.AsOrDefault<IDisposable>().IfSome(static viewModel => viewModel.Dispose());
-            _viewModel = new Lazy<Maybe<TViewModel>>(viewModel);
-
-            if (viewModel is IDisposable disp)
-                disp.AddTo(this);
-
-            Init();
+            SetViewModelFactoryUnsafe(() => viewModel);
         }
 
         public void SetViewModelFactoryUnsafe(Func<TViewModel> factory)
         {
             Guard.IsNotNull(factory);
 
-            _viewModel = new Lazy<Maybe<TViewModel>>(() =>
-            {
-                var viewModel = factory();
-                SetViewModelUnsafe(viewModel);
+            if (_viewModel.Value.IsSome && !IsMutable)
+                throw new InvalidOperationException("Cannot set view model.");
 
-                return viewModel;
-            });
+            _viewModel = new Lazy<Maybe<TViewModel>>(() => factory());
         }
 
-        public T GetModelUnsafe<T>()
-        {
-            return modelUnsafe.As<T>();
-        }
+        public T GetModelUnsafe<T>() => modelUnsafe.As<T>();
 
         public Maybe<T> GetModel<T>() => model.Raw.AsOrDefault<T>();
 
@@ -72,6 +82,25 @@ namespace CCEnvs.Unity.UI
         /// </summary>
         protected virtual void Init()
         {
+        }
+
+        protected virtual Maybe<TViewModel> ViewModelFactory()
+        {
+            return Maybe<TViewModel>.None;
+        }
+
+        private void ObserveViewModel()
+        {
+            this.ObserveEveryValueChanged(static (@this) => @this._viewModel)
+                .Pairwise()
+                .SubscribeWithState(this, (pair, @this) =>
+                {
+                    DisposeViewModel(pair.Previous);
+
+                    if (pair.Current.Value.IsSome)
+                        Init();
+                })
+                .AddTo(this);
         }
     }
 }
