@@ -36,8 +36,8 @@ namespace CCEnvs.Unity.UI
         protected override void Awake()
         {
             base.Awake();
-            ViewModelFactory().IfSome(viewModel => SetViewModelUnsafe(viewModel));
             ObserveViewModel();
+            ViewModelFactory().IfSome(viewModel => SetViewModelUnsafe(viewModel));
         }
 
         protected override void OnDestroy()
@@ -73,9 +73,17 @@ namespace CCEnvs.Unity.UI
             _viewModel = new Lazy<Maybe<TViewModel>>(() => factory());
         }
 
-        public T GetModelUnsafe<T>() => modelUnsafe.As<T>();
-
-        public Maybe<T> GetModel<T>() => model.Raw.AsOrDefault<T>();
+        public Result<T> GetModel<T>()
+        {
+            try
+            {
+                return (modelUnsafe.As<T>(), null);
+            }
+            catch (Exception ex)
+            {
+                return (default, ex);
+            }
+        }
 
         /// <summary>
         /// Invokes in <see cref="Start"/>, <see cref="SetViewModelUnsafe(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>

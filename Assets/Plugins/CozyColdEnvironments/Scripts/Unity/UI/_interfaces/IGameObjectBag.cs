@@ -43,7 +43,6 @@ namespace CCEnvs.Unity.UI
 
         Settings settings { get; set; }
 
-        int IReadOnlyReactiveCollection<GameObject>.Count => this.As<IReadOnlyCollection<GameObject>>().Count;
         bool ICollection<GameObject>.IsReadOnly => false;
     }
 }

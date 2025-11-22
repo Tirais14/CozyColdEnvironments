@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.Storages.UI
             :
             base(model)
         {
-
+            InstallBindings();
         }
 
         public IObservable<DictionaryAddEvent<int, IItemContainer>> ObserveAdd()
@@ -39,6 +39,11 @@ namespace CCEnvs.Unity.Storages.UI
         public IObservable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplace()
         {
             return model.ObserveReplace();
+        }
+
+        public IObservable<Unit> ObserveReset()
+        {
+            return model.ObserveReset();
         }
 
         private void InstallBindings()

@@ -77,7 +77,7 @@ namespace CCEnvs.Unity.UI
         public void Clear()
         {
             foreach (var go in collection.ToArray())
-                Remove(go);
+                OnRemove(go);
 
             collection.Clear();
         }

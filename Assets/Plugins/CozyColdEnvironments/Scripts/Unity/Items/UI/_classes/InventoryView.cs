@@ -19,12 +19,12 @@ namespace CCEnvs.Unity.Storages.UI
 
         [GetByChildren]
         [SerializeField]
-        protected GameObjectList slotBag;
+        protected GameObjectList slots;
 
         [SerializeField]
         protected int itemContainerCount;
 
-        public GameObjectList SlotBag => slotBag;
+        public GameObjectList Slots => slots;
 
         protected override void Start()
         {
@@ -37,12 +37,13 @@ namespace CCEnvs.Unity.Storages.UI
             base.Init();
             BindAddContainer();
             BindRemoveContainer();
+            BindResetInventory();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            SlotBag.Clear();
+            Slots.Clear();
         }
 
         private void BindAddContainer()
@@ -54,9 +55,10 @@ namespace CCEnvs.Unity.Storages.UI
                          var go = Instantiate(@this.ContainerPrefab, @this.transform);
                          go.transform.SetSiblingIndex(cnt.Key);
                          var goCnt = go.QueryTo().ByChildren().Model<IItemContainer>().Strict();
+                         goCnt.CopyFrom(cnt.Value);
 
                          @this.viewModelUnsafe.Replace.Execute(KeyValuePair.Create(cnt.Key, goCnt));
-                         @this.slotBag.Add(go);
+                         @this.slots.Add(go);
                      })
                      .AddTo(this);
         }
@@ -68,16 +70,24 @@ namespace CCEnvs.Unity.Storages.UI
                      static (cnt, @this) =>
                      {
                          @this.viewModelUnsafe.Remove.Execute(cnt.Key);
-                         @this.slotBag.Remove(@this.transform.GetChild(cnt.Key).gameObject);
+                         @this.slots.Remove(@this.transform.GetChild(cnt.Key).gameObject);
                      })
                      .AddTo(this);
         }
 
+        private void BindResetInventory()
+        {
+            viewModelUnsafe.ObserveReset()
+                           .SubscribeWithState(this, (_, @this) => @this.slots.Clear())
+                           .AddTo(this);
+        }
+
         private void SetupOnAddSlotGameObject()
         {
-            SlotBag.ObserveAdd()
-                   .SubscribeWithState(this, static (_, @this) => @this.Redraw())
-                   .AddTo(this);
+            slots.settings |= IGameObjectBag.Settings.DestroyOnRemove;
+            Slots.ObserveAdd()
+                 .SubscribeWithState(this, static (_, @this) => @this.Redraw())
+                 .AddTo(this);
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<Inventory>>

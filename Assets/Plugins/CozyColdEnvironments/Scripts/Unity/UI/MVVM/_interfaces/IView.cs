@@ -17,8 +17,7 @@ namespace CCEnvs.Unity.UI
 
         void SetViewModelFactoryUnsafe(Func<object> factory);
 
-        Maybe<T> GetModel<T>();
-        T GetModelUnsafe<T>();
+        Result<T> GetModel<T>();
     }
     public interface IView<TViewModel> : IView
         where TViewModel : IViewModel

@@ -18,5 +18,7 @@ namespace CCEnvs.Unity.UI
         IObservable<DictionaryRemoveEvent<TKey, TValue>> ObserveRemove();
 
         IObservable<DictionaryReplaceEvent<TKey, TValue>> ObserveReplace();
+
+        IObservable<Unit> ObserveReset();
     }
 }
