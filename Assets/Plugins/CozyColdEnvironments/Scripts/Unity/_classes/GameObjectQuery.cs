@@ -572,13 +572,13 @@ namespace CCEnvs.Unity
                     FindMode.Self => target.Components()
                                            .Where(cmp => anyType || cmp.IsInstanceOfType(type!)),
 
-                    FindMode.InChilds => ByChildren().GameObjects()
-                                                     .SelectMany(x => x.Components())
-                                                     .Where(x => anyType || x.IsInstanceOfType(type!)),
+                    FindMode.InChilds => target.GetComponentsInChildren<Transform>(settings.IsFlagSetted(Settings.IncludeInactive))
+                                               .SelectMany(x => x.gameObject.Components())
+                                               .Where(x => anyType || x.IsInstanceOfType(type!)),
 
-                    FindMode.InParents => ByParent().GameObjects()
-                                                    .SelectMany(x => x.Components())
-                                                    .Where(x => anyType || x.IsInstanceOfType(type!)),
+                    FindMode.InParents => target.GetComponentsInParent<Transform>(settings.IsFlagSetted(Settings.IncludeInactive))
+                                                .SelectMany(x => x.gameObject.Components())
+                                                .Where(x => anyType || x.IsInstanceOfType(type!)),
 
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };

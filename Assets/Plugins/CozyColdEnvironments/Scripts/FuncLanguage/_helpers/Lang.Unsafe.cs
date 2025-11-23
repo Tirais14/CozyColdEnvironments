@@ -49,5 +49,17 @@ namespace CCEnvs.FuncLanguage
 
             return source.GetValue()!;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TValue GetValueUnsafe<T, TValue>(T source, Func<Exception> exceptionFactory)
+            where T : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(exceptionFactory);
+
+            if (source.IsNone)
+                throw exceptionFactory();
+
+            return source.GetValue()!;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
@@ -24,14 +25,17 @@ namespace CCEnvs.Unity.Storages.UI
         [GetByChildren(IsOptional = true)]
         protected Maybe<TextMeshProUGUI> counterMesh;
 
-        public CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Bigger);
+        [SerializeField]
+        protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Bigger);
 
         protected override void Awake()
         {
             base.Awake();
-            ShowableSettings |= IShowable.Settings.KeepRaycastTargetState;
-            ShowableSettings &= ~IShowable.Settings.ByComponentState;
             isMutableView = true;
+
+            image.Raw.ObserveEveryValueChanged(cmp => cmp!.enabled).Subscribe(state => 
+            this.PrintLog(state)
+            );
         }
 
         protected override void Start()
@@ -67,12 +71,12 @@ namespace CCEnvs.Unity.Storages.UI
             });
         }
     }
-    public class ItemContainerView : ItemContainerView<ItemContainerViewModel<ItemContainer>>
+    public class ItemContainerView : ItemContainerView<ItemContainerViewModel<IItemContainer>>
     {
-        protected override Maybe<ItemContainerViewModel<ItemContainer>> ViewModelFactory()
+        protected override Maybe<ItemContainerViewModel<IItemContainer>> ViewModelFactory()
         {
             var cnt = new ItemContainer();
-            return new ItemContainerViewModel<ItemContainer>(cnt);
+            return new ItemContainerViewModel<IItemContainer>(cnt);
         }
     }
 }

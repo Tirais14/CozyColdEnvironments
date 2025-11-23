@@ -14,11 +14,6 @@ namespace CCEnvs.Linq
 {
     public static class IEnumerableQuries
     {
-        public static PooledArray<T> ToArrayPooled<T>(this IEnumerable<T> source)
-        {
-            return new PooledArray<T>(source);
-        }
-
         public static IEnumerable<KeyValuePair<TKey, TValue>> AsKeyValuePairs<TKey, TValue>(
             this IEnumerable<(TKey, TValue)> source)
         {

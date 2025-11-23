@@ -6,6 +6,8 @@ using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +20,8 @@ namespace CCEnvs.Unity.UI
         : CCBehaviour,
         IGUIPanel
     {
+        protected readonly HashSet<Component> showableDisabledComponents = new();
+
         [Header("GUI Panel Settings")]
         [Space(8)]
 
@@ -39,7 +43,7 @@ namespace CCEnvs.Unity.UI
 
         [SerializeField]
         [Tooltip("If false, only do selection on button click")]
-        protected bool switchSelectableOnButtonClick;
+        protected bool switchSelectableOnButtonClick = true;
 
         public Maybe<Image> image => m_Image;
         public Maybe<Button> button => m_Button;
@@ -70,6 +74,7 @@ namespace CCEnvs.Unity.UI
         {
             base.Start();
             IShowableStart();
+            BindSelectable();
         }
 
         protected virtual void OnTransformChildrenChanged()
@@ -79,6 +84,12 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnDestroy()
         {
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Maybe<IGUIPanel> GetParentGUI()
+        {
+            return this.QueryTo().ByParent().ExcludeSelf().Component<IGUIPanel>().Lax();
         }
 
         private void BindSelectable()

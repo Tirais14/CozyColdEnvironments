@@ -106,7 +106,12 @@ namespace CCEnvs.Unity.UI
                     DisposeViewModel(pair.Previous);
 
                     if (pair.Current.Value.IsSome)
+                    {
+                        if (pair.Current.Value.Raw is IDisposable disp)
+                            disp.AddTo(this);
+
                         Init();
+                    }
                 })
                 .AddTo(this);
         }

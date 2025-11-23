@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using ZLinq;
+using static UnityEditor.Progress;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -38,6 +40,7 @@ namespace CCEnvs.Unity.Storages.UI
         protected override void Init()
         {
             base.Init();
+            InitItemContainers();
             BindAddContainer();
             BindRemoveContainer();
             BindResetInventory();
@@ -49,25 +52,32 @@ namespace CCEnvs.Unity.Storages.UI
             Slots.Clear();
         }
 
+        private static void OnAddContainer(DictionaryAddEvent<int, IItemContainer> cnt,
+            InventoryView<TViewModel> @this)
+        {
+            var go = Instantiate(@this.ContainerPrefab, @this.transform);
+
+            var view = go.QueryTo().ByChildren().IncludeInactive().Views().First(view => view.model.Raw is IItemContainer);
+            view.SetViewModelUnsafe(new ItemContainerViewModel<IItemContainer>(cnt.Value));
+            @this.instantiatedGameObjects.Add(cnt.Key, go);
+            @this.slots.Add(go);
+        }
+
         private void BindAddContainer()
         {
-            viewModelUnsafe.ObserveAdd()
-                     .SubscribeWithState(this,
-                     static (cnt, @this) =>
-                     {
-                         var go = Instantiate(@this.ContainerPrefab, @this.transform);
-                         go.transform.SetSiblingIndex(cnt.Key);
-                         var view = go.QueryTo().ByChildren().Views().First(view => view.model.Raw is IItemContainer);
-                         view.SetViewModelUnsafe(new ItemContainerViewModel<IItemContainer>(cnt.Value));
-                         @this.slots.Add(go);
-                         @this.instantiatedGameObjects.Add(cnt.Key, go);
-                     })
+            viewModel.IfSome(viewModel =>
+            {
+                viewModel.ObserveAdd()
+                     .SubscribeWithState(this, OnAddContainer)
                      .AddTo(this);
+            });
         }
 
         private void BindRemoveContainer()
         {
-            viewModelUnsafe.ObserveRemove()
+            viewModel.IfSome(viewModel =>
+            {
+                viewModel.ObserveRemove()
                      .SubscribeWithState(this,
                      static (cnt, @this) =>
                      {
@@ -75,18 +85,22 @@ namespace CCEnvs.Unity.Storages.UI
                              @this.slots.Remove(go);
                      })
                      .AddTo(this);
+            });
         }
 
         private void BindResetInventory()
         {
-            viewModelUnsafe.ObserveReset()
-                           .SubscribeWithState(this,
-                           static (_, @this) =>
-                           {
-                               @this.slots.Clear();
-                               @this.instantiatedGameObjects.Clear();
-                           })
-                           .AddTo(this);
+            viewModel.IfSome(viewModel =>
+            {
+                viewModel.ObserveReset()
+                .SubscribeWithState(this,
+                    static (_, @this) =>
+                    {
+                        @this.instantiatedGameObjects.Clear();
+                        @this.slots.Clear();
+                    })
+                    .AddTo(this);
+            });
         }
 
         private void SetupOnAddSlotGameObject()
@@ -96,13 +110,28 @@ namespace CCEnvs.Unity.Storages.UI
                  .SubscribeWithState(this, static (_, @this) => @this.Redraw())
                  .AddTo(this);
         }
+
+        private void InitItemContainers()
+        {
+            if (!modelUnsafe.As<IInventory>().Any())
+                return;
+
+            foreach (var ev in modelUnsafe.As<IInventory>()
+                .ZL()
+                .Select(pair => new DictionaryAddEvent<int, IItemContainer>(pair.Key, pair.Value)))
+            {
+                OnAddContainer(ev, this);
+            }
+
+            Redraw();
+        }
     }
-    public class InventoryView : InventoryView<InventoryViewModel<Inventory>>
+    public class InventoryView : InventoryView<InventoryViewModel<IInventory>>
     {
-        protected override Maybe<InventoryViewModel<Inventory>> ViewModelFactory()
+        protected override Maybe<InventoryViewModel<IInventory>> ViewModelFactory()
         {
             var inv = new Inventory(itemContainerCount);
-            return new InventoryViewModel<Inventory>(inv);
+            return new InventoryViewModel<IInventory>(inv);
         }
     }
 }

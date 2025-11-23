@@ -10,8 +10,8 @@ namespace CCEnvs.Unity.Components
         protected override void Awake()
         {
             base.Awake();
-            EnfOfFrameAction(() => Destroy(this));
-            PreUpdateAction(OnPreUpdate);
+            OnEndOfFrameAction(this, static @this => Destroy(@this));
+            OnPreUpdateAction(OnPreUpdate);
         }
 
         protected virtual void OnPreUpdate()

@@ -5,7 +5,7 @@ using System;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface IView
+    public interface IView : IShowable
     {
         Maybe<IViewModel> viewModel { get; }
         Maybe<object> model { get; }

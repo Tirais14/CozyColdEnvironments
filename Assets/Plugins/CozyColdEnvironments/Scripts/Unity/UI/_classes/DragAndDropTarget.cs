@@ -69,7 +69,7 @@ namespace CCEnvs.Unity.UI
                 thisClone.IfSome(x =>
                 {
                     x.transform.position = cTransform.Value.position;
-                    x.showable.IfSome(cmp => cmp.Hide(IShowable.Settings.None));
+                    x.showable.IfSome(cmp => cmp.Hide());
                     //Hides it and disable any interaction with the copy.
                 });
             }

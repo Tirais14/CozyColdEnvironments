@@ -1,8 +1,9 @@
 using CCEnvs.Diagnostics;
-using CommunityToolkit.Diagnostics;
+using CCEnvs.Linq;
 using SuperLinq;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using ZLinq;
@@ -12,86 +13,49 @@ namespace CCEnvs.Unity.UI
 {
     public static class Showable
     {
-        public static void Show(GameObject gameObject,
-            List<GraphicComponentStateSnapshot> graphicSnapshots,
-            IShowable.Settings settings = IShowable.Settings.Default)
+        public static void Show(GameObject gameObject, ICollection<GraphicStateSnaphsot> hidedComponents)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
-            Guard.IsNotNull(graphicSnapshots, nameof(graphicSnapshots));
 
-            if (graphicSnapshots.IsEmpty())
-                return;
-
-            foreach (var cmpShapshot in graphicSnapshots)
-                cmpShapshot.Restore();
-
-            if (settings.IsFlagSetted(IShowable.Settings.Recursive))
+            foreach (var state in hidedComponents.ZL()
+                .Where(state => state.graphic != null))
             {
-                foreach (var child in gameObject.QueryTo()
-                                                .ByChildren()
-                                                .ExcludeSelf()
-                                                .Models<IShowable>())
-                {
-                    child.Show(settings & ~IShowable.Settings.Recursive);
-                }
+                state.Restore();
             }
+
+            hidedComponents.Clear();
         }
 
-        public static void Hide(GameObject gameObject,
-            List<GraphicComponentStateSnapshot> graphicSnapshots,
-            IShowable.Settings settings = IShowable.Settings.Default)
+        public static void Hide(GameObject gameObject, 
+            ICollection<GraphicStateSnaphsot> hidedComponents,
+            ShowableSettings settings = ShowableSettings.Default)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
-            Guard.IsNotNull(graphicSnapshots, nameof(graphicSnapshots));
+            CC.Guard.IsNotNull(hidedComponents, nameof(hidedComponents));
 
-            graphicSnapshots.Clear();
+            bool hideByColor = settings.IsFlagSetted(ShowableSettings.HideByColor);
+            bool keepRaycastTargetState = settings.IsFlagSetted(ShowableSettings.KeepRaycastTargetState);
+            bool hideByState = !hideByColor;
 
-            HideGraphics(gameObject, graphicSnapshots, settings);
-
-            if (settings.IsFlagSetted(IShowable.Settings.Recursive))
-            {
-                foreach (var child in gameObject.QueryTo().ChildrenGameObjects())
-                {
-                    if (child.QueryTo()
-                             .Component<IShowable>()
-                             .Lax()
-                             .TryGetValue(out var showable)
-                       &&
-                       showable.IsVisible)
-                    {
-                        showable.Hide(settings & ~IShowable.Settings.Recursive);
-                    }
-                    else
-                        HideGraphics(child, graphicSnapshots, settings);
-                }
-            }
-        }
-
-        private static void HideGraphics(GameObject gameObject,
-            List<GraphicComponentStateSnapshot> graphicSnapshots, 
-            IShowable.Settings settings)
-        {
-            if (graphicSnapshots.Exists(x => x.Target.gameObject == gameObject))
-                return;
-
-            Graphic[] snapshotTargets = graphicSnapshots.Select(cmp => cmp.Target).ToArray();
+            hidedComponents.Clear();
 
             foreach (var cmp in gameObject.QueryTo()
-                .Components<Graphic>()
-                .ZL()
-                .Where(cmp => cmp.enabled)
-                .Where(cmp => !snapshotTargets.Contains(cmp)))
+                                          .ByChildren()
+                                          .IncludeInactive()
+                                          .Components<Graphic>()
+                                          .Where(cmp => cmp.enabled))
             {
-                graphicSnapshots.Add(new GraphicComponentStateSnapshot(cmp));
+                hidedComponents!.Add(cmp);
 
-                if (settings.IsFlagSetted(IShowable.Settings.ByComponentState))
+                if (hideByState)
                     cmp.enabled = false;
                 else
                 {
-                    if (!settings.IsFlagSetted(IShowable.Settings.KeepRaycastTargetState))
-                        cmp.raycastTarget = false;
+                    if (hideByColor)
+                        cmp.color = cmp.color.WithAlpha(0f);
 
-                    cmp.color = cmp.color.WithAlpha(0f);
+                    if (!keepRaycastTargetState)
+                        cmp.raycastTarget = false;
                 }
             }
         }

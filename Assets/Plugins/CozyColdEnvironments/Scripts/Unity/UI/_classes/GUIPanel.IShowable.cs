@@ -1,28 +1,24 @@
+using CCEnvs.Diagnostics;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
     public partial class GUIPanel : IShowable
     {
-        protected readonly List<GraphicComponentStateSnapshot> showableGraphicSnapshots = new();
+        protected readonly HashSet<GraphicStateSnaphsot> hidedComponents = new();
 
         [Header("Showable settings")]
         [Space(8)]
 
         [SerializeField]
-        protected IShowable.Settings m_ShowableSettings = IShowable.Settings.Default;
-
-        [SerializeField]
         protected bool m_ShowOnStart;
 
-        public IShowable.Settings ShowableSettings {
-            get => m_ShowableSettings;
-            set => m_ShowableSettings = value;
-        }
         public bool ShowOnStart {
             get => m_ShowOnStart;
             set => m_ShowOnStart = value;
@@ -31,52 +27,40 @@ namespace CCEnvs.Unity.UI
         private readonly ReactiveProperty<bool> isVisible = new();
 
         public bool IsVisible => isVisible.Value;
+        public virtual bool ShowAllowed => true;
 
         private void IShowableStart()
         {
-            ShowablePreheat();
-
-            if (ShowOnStart)
-                Show();
+            Show();
+            OnPreUpdateAction(this, @this =>
+            {
+                if (!@this.ShowOnStart && @this.GetParentGUI().IsNone)
+                    @this.Hide();
+            });
         }
 
         private void IShowableOnTransformChildrenChanged()
         {
-            PreUpdateAction(Redraw);
+            OnPreUpdateAction(Redraw);
         }
 
-        public virtual bool ShowableShowAllowedPredicate() => true;
-
-        public virtual void Hide(IShowable.Settings settings)
+        public virtual void Hide()
         {
-            Hide(force: false, settings);
-        }
-        public void Hide() => Hide(ShowableSettings);
+            //if (GetPanelParent().Map(gui => !gui.IsVisible).GetValue(false))
+            //    return;
 
-        protected void Hide(bool force, IShowable.Settings settings)
-        {
-            if (!force && !IsVisible)
-                return;
-
-            Showable.Hide(gameObject,
-                showableGraphicSnapshots,
-                settings);
-
+            Showable.Hide(gameObject, hidedComponents);
             isVisible.Value = false;
         }
 
-        public virtual void Show(IShowable.Settings settings)
+        public virtual void Show()
         {
-            if (!ShowableShowAllowedPredicate())
-                return;
+            //if (GetPanelParent().Map(gui => gui.IsVisible).GetValue(false))
+            //    return;
 
-            Showable.Show(gameObject,
-                showableGraphicSnapshots,
-                ShowableSettings);
-
+            Showable.Show(gameObject, hidedComponents);
             isVisible.Value = true;
         }
-        public void Show() => Show(ShowableSettings);
 
         public bool SwitchVisibleState()
         {
@@ -100,6 +84,8 @@ namespace CCEnvs.Unity.UI
                 Show();
                 Hide();
             }
+
+            this.PrintLog($"{nameof(Redraw)} called.");
         }
 
         public IObservable<Unit> ObserveShow()
@@ -110,12 +96,6 @@ namespace CCEnvs.Unity.UI
         public IObservable<Unit> ObserveHide()
         {
             return isVisible.Where(_ => StartPassed).Where(x => !x).AsUnitObservable();
-        }
-
-        //To reset visibility state
-        private void ShowablePreheat()
-        {
-            Hide(force: true, ShowableSettings);
         }
     }
 }

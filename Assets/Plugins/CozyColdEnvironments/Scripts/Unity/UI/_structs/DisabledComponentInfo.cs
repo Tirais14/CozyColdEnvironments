@@ -1,33 +1,47 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace CCEnvs.Unity.UI
 {
-    public readonly struct GraphicComponentStateSnapshot
+    public readonly struct GraphicStateSnaphsot
     {
-        public Graphic Target { get; }
-        public Color Color { get; }
+        public Graphic graphic { get; }
+        public Color color { get; }
         public bool RaycastTarget { get; }
-        public bool enabled { get; }
+        public bool Enabled { get; }
 
-        public GraphicComponentStateSnapshot(Graphic target)
+        public GraphicStateSnaphsot(Graphic target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
-            Target = target;
+            graphic = target;
+            color =  target.color;
             RaycastTarget = target.raycastTarget;
-            Color = target.color;
-            enabled = target.enabled;
+            Enabled = target.enabled;
+        }
+
+        public static implicit operator GraphicStateSnaphsot(Graphic graphic)
+        {
+            return new GraphicStateSnaphsot(graphic);
         }
 
         public void Restore()
         {
-            if (Target == null)
+            if (graphic == null)
                 return;
 
-            Target.raycastTarget = RaycastTarget;
-            Target.color = Color;
-            Target.enabled = enabled;
+            graphic.enabled = Enabled;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(graphic);
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(graphic)}: {graphic}; {nameof(Enabled)}: {Enabled}.";
         }
     }
 }
