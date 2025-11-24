@@ -9,7 +9,7 @@ using UniRx;
 #pragma warning disable S2328
 namespace CCEnvs.Unity.Timers
 {
-    public sealed class TimerBase : IObserver, ITimer, IEquatable<TimerBase>
+    public sealed class TimerBase : IObserver<Mock>, ITimer, IEquatable<TimerBase>
     {
         private readonly Subject<TimeSpan> onTargetReached = new();
         private readonly Subject<TimeSpan> onTick = new();
@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.Timers
             return !left.Equals(right);
         }
 
-        public void DoTick() => this.As<IObserver>().OnNext(default);
+        public void DoTick() => this.As<IObserver<Mock>>().OnNext(default);
 
         public ITimer StartTimer()
         {
