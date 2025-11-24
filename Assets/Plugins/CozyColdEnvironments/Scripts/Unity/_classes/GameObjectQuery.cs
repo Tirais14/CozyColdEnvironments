@@ -310,7 +310,6 @@ namespace CCEnvs.Unity
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> Views<T>()
-            where T : IView
         {
             return Views(typeof(T)).Cast<T>();
         }

@@ -6,7 +6,6 @@ using UniRx;
 namespace CCEnvs.Unity.UI
 {
     public interface ISelectableObserver<T>
-        where T : ISelectable
     {
         Maybe<T> Selection { get; }
 

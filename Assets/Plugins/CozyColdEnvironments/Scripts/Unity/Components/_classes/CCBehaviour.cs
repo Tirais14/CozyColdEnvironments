@@ -118,5 +118,31 @@ namespace CCEnvs.Unity.Components
             .SuppressCancellationThrow()
             .Forget();
         }
+
+        public void OnNextFrame<T>(T state, Action<T> action)
+        {
+            Guard.IsNotNull(action);
+
+            UniTask.Create((action, state), static async input =>
+            {
+                await UniTask.NextFrame();
+                input.action(input.state);
+            }).AttachExternalCancellation(destroyCancellationToken)
+            .SuppressCancellationThrow()
+            .Forget();
+        }
+
+        public void OnNextFrame(Action action)
+        {
+            Guard.IsNotNull(action);
+
+            UniTask.Create(action, static async action =>
+            {
+                await UniTask.NextFrame();
+                action();
+            }).AttachExternalCancellation(destroyCancellationToken)
+            .SuppressCancellationThrow()
+            .Forget();
+        }
     }
 }

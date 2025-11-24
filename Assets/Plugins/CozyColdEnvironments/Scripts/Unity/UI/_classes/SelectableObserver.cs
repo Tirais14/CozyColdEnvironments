@@ -1,26 +1,62 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 using ZLinq;
 
 #nullable enable
 #pragma warning disable S3881
 namespace CCEnvs.Unity.UI
 {
+    [DisallowMultipleComponent]
     public class SelectableObserver<T> : CCBehaviour, ISelectableObserver<T>
         where T : ISelectable
     {
         protected readonly ReactiveProperty<Maybe<T>> selection = new();
-        protected readonly HashSet<T> selectables = new();
+        protected readonly C5.HashSet<T> selectables = new();
+        private CompositeDisposable disposables = new();
+        private bool collectSelectablesScheduled;
 
         public Maybe<T> Selection => selection.Value;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            selectables.CollectionCleared += OnSelectablesClear;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            InitSelectables();
+        }
+
         protected virtual void OnTransformChildrenChanged()
         {
-            CollectSelectables();
+            InitSelectables();
+        }
+
+        protected virtual void OnDestroy()
+        {
+            selectables.CollectionCleared -= OnSelectablesClear;
+            disposables.Dispose();
+        }
+
+        protected static void FindSelected(Unit _, SelectableObserver<T> @this)
+        {
+            @this.selection.Value.IfSome(x => x.DoDeselect());
+
+            @this.selection.Value = @this.selectables.ZL()
+                .Where(sel => sel.IsNotNull())
+                .FirstOrDefault(sel => sel.IsSelected);
+        }
+
+        protected static void OnAdd<TValue>(SelectableObserver<T> @this, T cmp)
+        {
+            cmp.ObserveDoSelect().SubscribeWithState(@this, FindSelected).AddTo(@this.disposables);
         }
 
         public IObservable<Unit> ObserveDeselected()
@@ -42,17 +78,29 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void CollectSelectables()
         {
-            selectables.Clear();
-            foreach (var cmp in this.QueryTo()
-                                     .NotRecursive()
-                                     .ChildrenGameObjects()
-                                     .ZL()
-                                     .Select(go => go.QueryTo().ByChildren().Model<T>().Lax())
-                                     .Where(cmp => cmp.IsSome)
-                                     .Select(cmp => cmp.GetValueUnsafe()))
+            foreach (var cmp in this.QueryTo().ByChildren().ExcludeSelf().Models<T>())
             {
                 selectables.Add(cmp);
+                OnAdd<T>(this, cmp);
             }
+        }
+
+        protected void InitSelectables()
+        {
+            if (collectSelectablesScheduled)
+                return;
+
+            selectables.Clear();
+            selection.Value = Maybe<T>.None;
+            OnNextFrame(CollectSelectables);
+            collectSelectablesScheduled = true;
+            OnNextFrame(this, static (@this) => @this.collectSelectablesScheduled = false);
+        }
+
+        private void OnSelectablesClear(object sender, EventArgs args)
+        {
+            disposables.Dispose();
+            disposables = new CompositeDisposable();
         }
     }
     public class SelectableObserver : SelectableObserver<ISelectable>
