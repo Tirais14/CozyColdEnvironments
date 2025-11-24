@@ -26,13 +26,13 @@ namespace CCEnvs.Unity.UI
         [Space(8)]
 
         [SerializeField]
-        protected bool isMutableView;
+        protected bool isMutable;
 
         public Maybe<TViewModel> viewModel => _viewModel.Value;
         public Maybe<object> model => viewModel.Map(x => x.model).GetValue();
         public TViewModel viewModelUnsafe => viewModel.IfNone(() => throw new InvalidOperationException("View model is not setted.")).GetValueUnsafe();
         public object modelUnsafe => viewModelUnsafe.model;
-        public bool IsMutable => isMutableView;
+        public bool IsMutable => isMutable;
 
         protected override void Awake()
         {

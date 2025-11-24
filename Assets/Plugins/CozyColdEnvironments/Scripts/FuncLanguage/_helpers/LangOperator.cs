@@ -21,6 +21,9 @@ namespace CCEnvs.FuncLanguage
             T @default,
             IEqualityComparer<T>? comparer = null)
         {
+            if (obj.IsNull())
+                return false;
+
             comparer ??= EqualityComparer<T>.Default;
 
             return !comparer.Equals(obj, @default);

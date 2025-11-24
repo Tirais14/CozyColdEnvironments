@@ -25,6 +25,7 @@ namespace CCEnvs.FuncLanguage
         private T? target;
 
         [UnityEngine.SerializeField]
+        [UnityEngine.Tooltip("If target == default value marked as none.")]
         private T? @default;
 
         public bool IsSome { get; private set; }

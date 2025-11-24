@@ -8,7 +8,6 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using ZLinq;
-using static UnityEditor.Progress;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -27,14 +26,19 @@ namespace CCEnvs.Unity.Storages.UI
         [SerializeField]
         protected int itemContainerCount;
 
-        [GetBySelf(IsOptional = true)]
-        protected ISelectableObserver<IItemContainer>? m_SelectableObserver;
-
         protected Dictionary<int, GameObject> instantiatedGameObjects = new();
 
         public GameObjectList Slots => slots;
+        public ISelectableObserver<IItemContainer> SelectableObserver { get; private set; } = null!;
 
-        public Maybe<ISelectableObserver<IItemContainer>> SelectableObserver => m_SelectableObserver.Maybe()!;
+        protected override void Awake()
+        {
+            base.Awake();
+            SelectableObserver = this.QueryTo()
+                .Component<ISelectableObserver<IItemContainer>>()
+                .Lax()
+                .GetValue(() => gameObject.AddComponent<ModelSelectableObserver<IItemContainer>>());
+        }
 
         protected override void Start()
         {
