@@ -567,7 +567,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetPropertyValue<T>()
         {
-            return TypeFilter<T>().GetPropertyValue().Cast<T>().GetValueUnsafe().As<T>();
+            return TypeFilter<T>().GetPropertyValue().Cast<T>().GetValueUnsafe<T>();
         }
 
         [DebuggerStepThrough]

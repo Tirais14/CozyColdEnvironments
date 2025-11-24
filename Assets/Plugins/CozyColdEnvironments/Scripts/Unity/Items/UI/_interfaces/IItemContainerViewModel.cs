@@ -2,14 +2,12 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.UI;
 using UniRx;
-using UnityEngine;
 
 namespace CCEnvs.Unity.Items
 {
-    public interface IItemContainerViewModel : IViewModel
+    public interface IItemContainerViewModel : IViewModel, IIconViewModel
     {
-        IReadOnlyReactiveProperty<Sprite> ItemView { get; }
-        IReadOnlyReactiveProperty<string> CounterText { get; }
+        IReadOnlyReactiveProperty<string> CounterView { get; }
         Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
     }
 }

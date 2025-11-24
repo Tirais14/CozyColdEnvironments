@@ -1,8 +1,12 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using static UnityEditorInternal.ReorderableList;
 
 #nullable enable
 #pragma warning disable S3236
@@ -75,60 +79,116 @@ namespace CCEnvs.FuncLanguage
             return !(left == right);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly L GetLeftValue(L defaultValue)
-        {
-            Guard.IsNotNull(defaultValue, nameof(defaultValue));
+        public readonly R? GetRightValue() => right;
 
-            if (IsNotLeft)
-                return defaultValue;
-
-            return left;
-        }
-
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryGetLeftValue([NotNullWhen(true)] out L? left)
-        {
-            left = this.left;
-
-            return IsLeft;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly R GetValueRight(R defaultValue)
-        {
-            Guard.IsNotNull(defaultValue, nameof(defaultValue));
-
-            if (IsNotRight)
-                return defaultValue;
-
-            return right;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool TryGetRightValue([NotNullWhen(true)] out R? right)
-        {
-            right = this.right;
-
-            return IsRight;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly object GetValueUnsafe()
+        public readonly R GetRightValue(R @default)
         {
             if (IsRight)
                 return right!;
 
+            return @default;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly R GetRightValue(Func<R> factory)
+        {
+            Guard.IsNotNull(factory);
+
+            if (IsRight)
+                return right!;
+
+            return factory();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly R GetRightValueUnsafe()
+        {
+            if (!IsRight)
+                throw new ValueIsNoneException();
+
+            return right!;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly R GetRightValueUnsafe(Func<Exception> exceptionFactory)
+        {
+            Guard.IsNotNull(exceptionFactory);
+
+            if (!IsLeft)
+                throw exceptionFactory();
+
+            return right!;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryGetRightValue(out R right)
+        {
+            right = this.right;
+            return IsRight;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly L? GetLeftValue() => left;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly L GetLeftValue(L @default)
+        {
             if (IsLeft)
                 return left!;
 
-            throw new ValueIsNoneException();
+            return @default;
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T GetValueUnsafe<T>()
+        public readonly L GetLeftValue(Func<L> factory)
         {
-            return GetValueUnsafe().As<T>();
+            Guard.IsNotNull(factory);
+
+            if (IsLeft)
+                return left!;
+
+            return factory();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly L GetLeftValueUnsafe()
+        {
+            if (!IsLeft)
+                throw new ValueIsNoneException();
+
+            return left!;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly L GetLeftValueUnsafe(Func<Exception> exceptionFactory)
+        {
+            Guard.IsNotNull(exceptionFactory);
+
+            if (!IsLeft)
+                throw exceptionFactory();
+
+            return left!;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryGetLeftValue(out R right)
+        {
+            right = this.right;
+            return IsRight;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -136,26 +196,64 @@ namespace CCEnvs.FuncLanguage
         {
             if (IsRight)
                 return right;
-
-            if (IsLeft)
+            else if (IsLeft)
                 return left;
 
             return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? GetValue<T>() => (T?)GetValue();
+        public readonly T GetValue<T>(T @default)
+        {
+            if (IsRight && right.Is<T>(out var r))
+                return r;
+            else if (IsLeft && left.Is<T>(out var l))
+                return l;
+
+            return @default;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly object? GetValue(L leftDefault, R rightDefault)
+        public readonly T GetValue<T>(Func<T> factory)
         {
-            if (IsRight)
-                return GetValueRight(rightDefault);
+            Guard.IsNotNull(factory);
 
-            if (IsLeft)
-                return GetLeftValue(leftDefault);
+            if (IsRight && right.Is<T>(out var r))
+                return r;
+            else if (IsLeft && left.Is<T>(out var l))
+                return l;
 
-            return null;
+            return factory();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryGetValue<T>([NotNullWhen(true)] out object? result)
+        {
+            result = GetValue();
+            return IsRight || IsLeft;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool TryGetValue<T>([NotNullWhen(true)] out T? result)
+        {
+            var x = GetValue().AsOrDefault<T>();
+            var state = x.IsSome;
+            result = x.Raw;
+
+            return state;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T? GetValueUnsafe<T>()
+        {
+            var x = GetValue();
+
+            if (x.IsNull())
+                return default;
+
+            return x.As<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -225,6 +323,35 @@ namespace CCEnvs.FuncLanguage
                 lOut = Left(left);
 
             return (lOut, rOut);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly TOut Match<TOut>(Func<R, TOut> Right, Func<L, TOut> Left, Func<TOut> Other)
+        {
+            Guard.IsNotNull(Right);
+            Guard.IsNotNull(Left);
+            Guard.IsNotNull(Other);
+
+            if (IsRight)
+                return Right(right);
+            else if (IsLeft)
+                return Left(left);
+
+            return Other();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly TOut MatchUnsafe<TOut>(Func<R, TOut> Right, Func<L, TOut> Left)
+        {
+            Guard.IsNotNull(Right);
+            Guard.IsNotNull(Left);
+
+            if (IsRight)
+                return Right(right);
+            else if (IsLeft)
+                return Left(left);
+
+            throw new ValueIsNoneException();
         }
 
         public readonly Either<LOut, ROut> Cast<LOut, ROut>()

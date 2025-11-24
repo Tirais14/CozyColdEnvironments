@@ -27,9 +27,14 @@ namespace CCEnvs.Unity.Storages.UI
         [SerializeField]
         protected int itemContainerCount;
 
+        [GetBySelf(IsOptional = true)]
+        protected ISelectableObserver<ISelectable>? m_SelectableObserver;
+
         protected Dictionary<int, GameObject> instantiatedGameObjects = new();
 
         public GameObjectList Slots => slots;
+
+        public Maybe<ISelectableObserver<ISelectable>> SelectableObserver => m_SelectableObserver.Maybe()!;
 
         protected override void Start()
         {
@@ -100,6 +105,16 @@ namespace CCEnvs.Unity.Storages.UI
                         @this.slots.Clear();
                     })
                     .AddTo(this);
+            });
+        }
+
+        private void BindSelectableObserver()
+        {
+            SelectableObserver.IfSome(selectableObserver =>
+            {
+                selectableObserver.ObserveSelection()
+                                  .Subscribe(static pair => pair.Previous.IfSome(x => x.DoDeselect()))
+                                  .AddTo(this);
             });
         }
 

@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEngine;
 
@@ -96,6 +97,9 @@ namespace CCEnvs.Unity.UI
         {
             return Maybe<TViewModel>.None;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override bool SelectableDoSelectPredicate() => viewModel.IsSome;
 
         private void ObserveViewModel()
         {

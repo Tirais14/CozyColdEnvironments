@@ -13,11 +13,11 @@ namespace CCEnvs.Unity.Storages.UI
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite> itemView = new(initialValue: UCC.Transparent.Value);
-        private readonly ReactiveProperty<string> counterText = new(initialValue: string.Empty);
+        private readonly ReactiveProperty<Sprite> iconView = new(initialValue: UCC.Transparent.Value);
+        private readonly ReactiveProperty<string> counterView = new(initialValue: string.Empty);
 
-        public IReadOnlyReactiveProperty<Sprite> ItemView => itemView;
-        public IReadOnlyReactiveProperty<string> CounterText => counterText;
+        public IReadOnlyReactiveProperty<Sprite> IconView => iconView;
+        public IReadOnlyReactiveProperty<string> CounterView => counterView;
         public Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
 
         public ItemContainerViewModel(T model)
@@ -31,12 +31,12 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindItemView()
         {
             model.ObserveItem()
-                .SubscribeWithState(itemView,
+                .SubscribeWithState(iconView,
                     static (x, prop) => prop.Value = x.Map(item => item.Icon)
                         .GetValue(UCC.Transparent.Value))
                 .AddTo(disposables);
 
-            itemView.AddTo(disposables);
+            iconView.AddTo(disposables);
         }
 
         private void BindCounterText()
@@ -53,11 +53,11 @@ namespace CCEnvs.Unity.Storages.UI
                             },
                             none: () => itemCount > 1 ? itemCount.ToString() : string.Empty
                             ).GetValueUnsafe())
-                .SubscribeWithState(counterText, 
+                .SubscribeWithState(counterView, 
                     static (countStr, prop) => prop.Value = countStr)
                 .AddTo(disposables);
 
-            counterText.AddTo(disposables);
+            counterView.AddTo(disposables);
         }
     }
 }

@@ -4,6 +4,7 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -16,8 +17,7 @@ namespace CCEnvs.Unity.Storages.UI
 {
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel>
-        : View<TViewModel>,
-        IItemContainerView
+        : View<TViewModel>
 
         where TViewModel : IItemContainerViewModel
     {
@@ -51,11 +51,24 @@ namespace CCEnvs.Unity.Storages.UI
             BindItemCount();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override bool SelectableDoSelectPredicate()
+        {
+            return base.SelectableDoSelectPredicate()
+                   &&
+                   viewModel.Map(vm => vm.model)
+                            .Cast<IItemContainer>()
+                            .Match(Right: cnt => !cnt.IsEmpty,
+                                   Left: _ => false,
+                                   Other: () => false
+                                   );
+        }
+
         private void BindItemIcon()
         {
             image.IfSome(img =>
             {
-                viewModelUnsafe.ItemView.SubscribeWithState(img,
+                viewModelUnsafe.IconView.SubscribeWithState(img,
                         static (sprite, img) => img.sprite = sprite)
                     .AddTo(this);
             });
@@ -65,7 +78,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             counterMesh.IfSome(mesh =>
             {
-                viewModelUnsafe.CounterText.SubscribeWithState(mesh,
+                viewModelUnsafe.CounterView.SubscribeWithState(mesh,
                         static (text, mesh) => mesh.text = text)
                     .AddTo(this);
             });

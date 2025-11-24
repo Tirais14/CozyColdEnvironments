@@ -1,5 +1,5 @@
 using CCEnvs.Diagnostics;
-using Cysharp.Threading.Tasks;
+using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using UniRx;
@@ -19,6 +19,9 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         protected bool m_ShowOnStart;
 
+        private Maybe<Graphic> graphic;
+        private float graphicColorAlpha;
+
         public bool ShowOnStart {
             get => m_ShowOnStart;
             set => m_ShowOnStart = value;
@@ -28,14 +31,24 @@ namespace CCEnvs.Unity.UI
 
         public bool IsVisible => isVisible.Value;
         public virtual bool ShowAllowed => true;
-
         private void IShowableStart()
         {
             Show();
-            OnPreUpdateAction(this, @this =>
+
+            graphic = this.QueryTo().Component<Graphic>().Lax().Map(graphic =>
+            {
+                graphicColorAlpha = graphic.color.a;
+                graphic.color = graphic.color.WithAlpha(0f);
+
+                return graphic;
+            });
+
+            OnPreUpdateAction(this, static @this =>
             {
                 if (!@this.ShowOnStart && @this.GetParentGUI().IsNone)
                     @this.Hide();
+
+                @this.graphic.IfSome(graphic => graphic.color = graphic.color.WithAlpha(@this.graphicColorAlpha));
             });
         }
 

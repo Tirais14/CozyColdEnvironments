@@ -92,6 +92,9 @@ namespace CCEnvs.Unity.UI
             return this.QueryTo().ByParent().ExcludeSelf().Component<IGUIPanel>().Lax();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual bool SelectableDoSelectPredicate() => true;
+
         private void BindSelectable()
         {
             if (!this.button.TryGetValue(out Button? button))
@@ -102,6 +105,12 @@ namespace CCEnvs.Unity.UI
                            .SubscribeWithState2(cmp, this,
                                static (_, cmp, @this) =>
                                {
+                                   if (!cmp.IsSelected
+                                       &&
+                                       !@this.SelectableDoSelectPredicate()
+                                       )
+                                       return;
+
                                    if (@this.switchSelectableOnButtonClick)
                                        cmp.SwitchSelectionState();
                                    else
