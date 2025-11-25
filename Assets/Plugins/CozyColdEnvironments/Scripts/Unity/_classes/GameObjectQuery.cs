@@ -524,24 +524,56 @@ namespace CCEnvs.Unity
                 .GetValue(Target.GetValueUnsafe().transform);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsComponent(object component)
         {
             return Components(component.GetType()).Contains(component);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsModel(object model, bool includeComponents = true)
         {
             return Models(model.GetType(), includeComponents: includeComponents).Contains(model);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsViewModel(object viewModel)
         {
             return ViewModels(viewModel.GetType()).Contains(viewModel);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsView(object view)
         {
             return Views(view.GetType()).Contains(view);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Component AddComponent(Type type)
+        {
+            Guard.IsNotNull(type);
+
+            if (type.IsNotType<Component>())
+                throw new ArgumentException($"{nameof(type)} cannot be non derived from {typeof(Component)}.");
+
+            if (Target.IsNone)
+                throw new InvalidOperationException("Game object is none.");
+
+            if (type.IsGenericType)
+                throw new InvalidOperationException("Cannot add open generic component type to game object.");
+
+            return Target.GetValueUnsafe().AddComponent(type);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Component AddComponent<T>() where T : Component
+        {
+            return AddComponent(typeof(T)); 
         }
 
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
@@ -659,6 +691,34 @@ namespace CCEnvs.Unity
             CC.Guard.IsNotNull(source, nameof(source));
 
             return GameObjectQuery.Instance.Reset().From(source);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObjectQuery Q(this GameObject source)
+        {
+            return source.QueryTo();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObjectQuery Q(this Component source)
+        {
+            return source.QueryTo();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObjectQuery QPerf(this GameObject source)
+        {
+            return source.QueryToBySingleton();
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObjectQuery QPerf(this Component source)
+        {
+            return source.QueryToBySingleton();
         }
     }
 }

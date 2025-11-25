@@ -99,7 +99,7 @@ namespace CCEnvs.Unity.Items
             if (!ContainsItem())
                 return false;
 
-            return Item.Contains(item);
+            return Item.Has(item);
         }
         public bool ContainsItem(IItem? item, int count)
         {

@@ -20,7 +20,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
+        public static bool HasUnsafe<T, TValue>(T source, Predicate<TValue?> predicate)
             where T : struct, IConditional<TValue>
         {
             Guard.IsNotNull(predicate, nameof(predicate));

@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -122,7 +123,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Contains<T, TValue>(T input,
+        public static bool Has<T, TValue>(T input,
             TValue? value,
             IEqualityComparer<TValue?>? comparer = null)
             where T : struct, IConditional<TValue>
@@ -133,7 +134,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Contains<T, TValue>(T input, Predicate<TValue> predicate)
+        public static bool Has<T, TValue>(T input, Predicate<TValue> predicate)
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
@@ -145,20 +146,32 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue GetValue<T, TValue>(T input, TValue defaultValue)
+        public static TValue GetValue<T, TValue>(T input, TValue @default)
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
-                return defaultValue;
+            {
+                if (@default.IsNull())
+                    throw new ValueIsNoneException();
+
+                return @default;
+            }
 
             return input.GetValueUnsafe();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue GetValue<T, TValue>(T input, Func<TValue> defaultValueFactory)
+        public static TValue GetValue<T, TValue>(T input, Func<TValue> factory)
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
-                return defaultValueFactory();
+            {
+                var t = factory();
+
+                if (t.IsNull())
+                    throw new ValueIsNoneException();
+
+                return t;
+            }
 
             return input.GetValueUnsafe();
         }

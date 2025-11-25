@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.Storages.UI
             SelectableObserver = this.QueryTo()
                 .Component<ISelectableObserver<IItemContainer>>()
                 .Lax()
-                .GetValue(() => gameObject.AddComponent<ModelSelectableObserver<IItemContainer>>());
+                .GetValue(() => gameObject.AddComponent<ItemContainerViewSelectableObserver>());
         }
 
         protected override void Start()

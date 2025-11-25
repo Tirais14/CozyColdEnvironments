@@ -56,23 +56,23 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly bool Contains(T? value)
+        public readonly bool Has(T? value)
         {
-            return Lang.Contains(this, value);
+            return Lang.Has(this, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly bool Contains(Predicate<T> predicate)
+        public readonly bool Has(Predicate<T> predicate)
         {
-            return Lang.Contains(this, predicate);
+            return Lang.Has(this, predicate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly bool ContainsUnsafe(Predicate<T?> predicate)
+        public readonly bool HasUnsafe(Predicate<T?> predicate)
         {
-            return Lang.ContainsUnsafe(this, predicate);
+            return Lang.HasUnsafe(this, predicate);
         }
 
         [DebuggerStepThrough]
@@ -151,23 +151,23 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Contains(T? value)
+        public readonly bool Has(T? value)
         {
-            return Lang.Contains(this, value);
+            return Lang.Has(this, value);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Contains(Predicate<T> predicate)
+        public readonly bool Has(Predicate<T> predicate)
         {
-            return Lang.Contains(this, predicate);
+            return Lang.Has(this, predicate);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ContainsUnsafe(Predicate<T?> predicate)
+        public readonly bool HasUnsafe(Predicate<T?> predicate)
         {
-            return Lang.ContainsUnsafe(this, predicate);
+            return Lang.HasUnsafe(this, predicate);
         }
 
         [DebuggerStepThrough]

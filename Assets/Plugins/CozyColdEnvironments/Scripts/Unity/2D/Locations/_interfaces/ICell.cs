@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -9,19 +10,23 @@ namespace CCEnvs.U2D.Locations
     {
         Vector3Int Position { get; }
         ILocation Location { get; }
-        bool HasTile { get; }
+        Maybe<object> Owner { get; }
 
-        TileBase? GetTile();
-        T? GetTile<T>() where T : TileBase;
-
-        bool TryGetTile([NotNullWhen(true)] out TileBase? tile);
-        bool TryGetTile<T>([NotNullWhen(true)] out T? tile)
-            where T : TileBase;
+        Maybe<TileBase> GetTile();
+        Maybe<T> GetTile<T>() where T : TileBase;
 
         void SetTile(TileBase? tile);
 
-        void ClearTile();
+        bool RemoveTile();
+        bool RemoveTile([NotNullWhen(true)] out TileBase? result);
 
-        Bounds GetBoundsLocal();
+        Bounds GetBounds();
+
+        bool HasTile();
+
+        bool HasOwner();
+        bool HasOwner(object owner);
+
+        bool SetOwner(object owner);
     }
 }

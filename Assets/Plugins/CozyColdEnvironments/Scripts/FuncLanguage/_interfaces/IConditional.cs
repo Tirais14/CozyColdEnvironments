@@ -42,10 +42,10 @@ namespace CCEnvs.FuncLanguage
 
         bool TryGetValue([NotNullWhen(true)] out T? result);
 
-        bool Contains(T? value);
-        bool Contains(Predicate<T> predicate);
+        bool Has(T? value);
+        bool Has(Predicate<T> predicate);
 
-        bool ContainsUnsafe(Predicate<T?> predicate);
+        bool HasUnsafe(Predicate<T?> predicate);
 
         Either<T, R> Cast<R>();
 
@@ -78,16 +78,16 @@ namespace CCEnvs.FuncLanguage
 
         bool IConditional.ItIs(object? value)
         {
-            return Contains(value.AsOrDefault<T>().GetValue());
+            return Has(value.AsOrDefault<T>().GetValue());
         }
         bool IConditional.ItIs(Predicate<object> predicate)
         {
-            return Contains(x => predicate(x!));
+            return Has(x => predicate(x!));
         }
 
         bool IConditional.ItIsUnsafe(Predicate<object?> predicate)
         {
-            return ContainsUnsafe(x => predicate(x!));
+            return HasUnsafe(x => predicate(x!));
         }
     }
 

@@ -1,4 +1,4 @@
-using System;
+using CCEnvs.FuncLanguage;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -6,74 +6,64 @@ using UnityEngine.Tilemaps;
 #nullable enable
 namespace CCEnvs.U2D.Locations
 {
-    public readonly struct Cell : ICell, IEquatable<Cell>
+    public class Cell : ICell
     {
         public ILocation Location { get; }
         public Vector3Int Position { get; }
-        public bool HasTile => GetTile() != null;
+        public Maybe<object> Owner { get; private set; }
 
         public Cell(ILocation location, Vector3Int position)
         {
+            CC.Guard.IsNotNull(location, nameof(location));
+
             Location = location;
             Position = position;
         }
 
-        public static bool operator ==(Cell left, Cell right)
+        public Cell(ILocation location, Vector3Int position, object? owner)
+            :
+            this(location, position)
         {
-            return left.Equals(right);
+            Owner = owner;
         }
 
-        public static bool operator !=(Cell left, Cell right)
+        public Maybe<TileBase> GetTile()
         {
-            return !(left == right);
+            return Location.tilemap.GetTile(Position);
         }
-
-        public TileBase? GetTile()
+        public Maybe<T> GetTile<T>() where T : TileBase
         {
-            return Location.Map.GetTile(Position);
-        }
-        public T? GetTile<T>() where T : TileBase
-        {
-            return Location.Map.GetTile<T>(Position);
-        }
-
-        public bool TryGetTile([NotNullWhen(true)] out TileBase? tile)
-        {
-            tile = GetTile();
-
-            return tile != null;
-        }
-
-        public bool TryGetTile<T>([NotNullWhen(true)] out T? tile) where T : TileBase
-        {
-            tile = GetTile<T>();
-
-            return tile != null;
+            return Location.tilemap.GetTile<T>(Position);
         }
 
         public void SetTile(TileBase? tile)
         {
-            Location.Map.SetTile(Position, tile);
+            Location.tilemap.SetTile(Position, tile);
         }
 
-        public void ClearTile() => SetTile(null);
-
-        public Bounds GetBoundsLocal() => Location.Map.GetBoundsLocal(Position);
-
-        public bool Equals(Cell other)
+        public bool RemoveTile([NotNullWhen(true)] out TileBase? tile)
         {
-            return Location.Equals(other.Location)
-                   &&
-                   Position == other.Position;
+            if (GetTile().TryGetValue(out tile))
+            {
+                SetTile(null);
+                return true;
+            }
+
+            return false;
         }
-        public override bool Equals(object obj)
-        {
-            return obj is Cell typed && Equals(typed);
-        }
+        public bool RemoveTile() => RemoveTile(out _);
 
-        public override int GetHashCode()
+        public Bounds GetBounds() => Location.tilemap.GetBoundsLocal(Position);
+
+        public bool HasTile() => GetTile().IsSome;
+
+        public bool HasOwner() => Owner.IsSome;
+        public bool HasOwner(object owner) => Owner.Has(owner);
+
+        public bool SetOwner(object owner)
         {
-            return HashCode.Combine(Location, Position);
+            Owner = owner;
+            return true;
         }
     }
 }

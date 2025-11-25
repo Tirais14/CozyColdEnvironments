@@ -1,5 +1,4 @@
 using CCEnvs.Diagnostics;
-using System;
 using UnityEngine;
 
 #nullable enable
@@ -7,20 +6,13 @@ namespace CCEnvs.U2D
 {
     public class LocationOutOfBoundsException : CCException
     {
-        public LocationOutOfBoundsException()
-        {
+        public LocationOutOfBoundsException() : base() 
+        { 
         }
 
-        public LocationOutOfBoundsException(string message, Exception? innerException = null)
+        public LocationOutOfBoundsException(Vector3 position)
             : 
-            base(message, innerException)
-        {
-        }
-
-        public LocationOutOfBoundsException(Vector2 pos,
-                                            Exception? innerException = null) 
-            :
-            base($"Position: {pos}.", innerException)
+            base(Sentence.Empty.Add($"{nameof(position)}: {position}.").ToString())
         {
         }
     }
