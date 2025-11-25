@@ -9,7 +9,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public partial class GUIPanel : IShowable
+    public partial class GUITab : IShowable
     {
         protected readonly HashSet<GraphicStateSnaphsot> hidedComponents = new();
 

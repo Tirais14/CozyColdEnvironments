@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.UI
     /// <typeparam name="TViewModel"></typeparam>
     /// <typeparam name="TModel"></typeparam>
     public abstract class View<TViewModel>
-        : GUIPanel,
+        : GUITab,
         IView<TViewModel>
 
         where TViewModel : IViewModel

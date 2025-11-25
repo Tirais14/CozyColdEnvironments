@@ -8,13 +8,13 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.Items
 {
-    public class Harvestable<TConfig> : CCBehaviour, IHarvestable
-        where TConfig : IHarvestableConfig
+    public class Harvestable<TItem> : CCBehaviour, IHarvestable
+        where TItem : IHarvestableItem
     {
         [field: SerializeField]
-        protected TConfig config;
+        protected TItem config;
 
-        public void SetConfig(TConfig config)
+        public void SetConfig(TItem config)
         {
             CC.Guard.IsNotNull(config, nameof(config));
 

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Items
 {
     public abstract class AHarvestableDamageable<TConfig, TDamageable> : Harvestable<TConfig>
-        where TConfig : IHarvestableConfig
+        where TConfig : IHarvestable
         where TDamageable : Component, IDamageable
     {
         [GetBySelf]

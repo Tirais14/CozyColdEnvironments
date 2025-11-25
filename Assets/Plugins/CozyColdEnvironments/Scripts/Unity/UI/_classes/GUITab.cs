@@ -16,7 +16,7 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.UI
 {
     [DisallowMultipleComponent]
-    public partial class GUIPanel 
+    public partial class GUITab 
         : CCBehaviour,
         IGUIPanel
     {
