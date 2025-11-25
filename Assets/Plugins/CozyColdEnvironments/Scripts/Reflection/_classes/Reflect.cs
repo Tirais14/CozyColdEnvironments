@@ -290,15 +290,24 @@ namespace CCEnvs.Reflection
                 );
         }
 
+        /// <summary>
+        /// Arguments can be null, if types setted by <see cref="ArgumentTypes(Type[])"/>
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect Arguments(params object[] args)
         {
-            if (args.Any(x => x.IsNull()))
-                ThrowHelper.ThrowArgumentNullException(nameof(args), "Array contains null");
-
             arguments = args;
-            argumentTypes = args.Select(x => x.GetType()).ToArray();
+
+            if (argumentTypes.IsNone)
+            {
+                if (args.Any(x => x.IsNull()))
+                    ThrowHelper.ThrowArgumentNullException(nameof(args), "Array contains null");
+
+                argumentTypes = args.Select(x => x.GetType()).ToArray();
+            }
 
             return this;
         }

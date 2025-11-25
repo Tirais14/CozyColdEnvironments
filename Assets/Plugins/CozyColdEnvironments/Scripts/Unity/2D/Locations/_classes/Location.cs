@@ -1,140 +1,88 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
-using CCEnvs.Unity.Collections;
+using CCEnvs.Unity._2D;
+using CCEnvs.Unity._2D.Locations;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Serialization;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
-#nullable enable
-namespace CCEnvs.U2D.Locations
+namespace CCEnvs.Unity
 {
-    [RequireComponent(typeof(Tilemap))]
-    public class Location<T> : CCBehaviour, ILocation<T>
-        where T : ICell
+    public class Location : CCBehaviour, ILocation
     {
+        protected readonly Dictionary<string, ILocationLayer> layers = new();
+
         [SerializeField]
-        [Tooltip("If none will be used Tilemap.cellBounds")]
-        protected Maybe<SerializedBoundsInt> _bounds;
+        protected SerializedBoundsInt m_CellBounds;
 
-        private MapInt<T> cells;
+        private bool refreshScheduled;
 
-        public Result<T> this[Vector3Int pos] {
+        public Result<ILocationLayer> this[string name] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (!Contains(pos))
-                    return new Result<T>(default, new LocationOutOfBoundsException(pos));
+                if (!layers.TryGetValue(name, out ILocationLayer layer))
+                    return (null, new KeyNotFoundException($"{nameof(name)}: {name}/"));
 
-                return Result.Lazy(() => cells[pos]);
+                return (layer, null);
             }
         }
 
-        public Result<T> this[Vector2Int pos] {
+        public Result<ILocationLayer> this[Enum key] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[(Vector3Int)pos];
-        }
-
-        public Result<T> this[Vector3 pos] {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[tilemap.WorldToCell(pos)];
-        }
-
-        public Result<T> this[Vector2 pos] {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[tilemap.WorldToCell(pos)];
-        }
-
-        public Result<T> this[int x, int y] {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[new Vector3Int(x, y)];
-        }
-
-        public Result<T> this[float x, float y] {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[new Vector2(x, y)];
-        }
-
-        public BoundsInt Bounds {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _bounds.Map(x => (BoundsInt)x).GetValue(tilemap.cellBounds);
-        }
-
-        [field: GetBySelf]
-        public Tilemap tilemap {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            private set;
-        } = null!;
-
-        public bool Contains() => cells.Count > 0;
-        public bool Contains(T? cell)
-        {
-            if (cell.IsNull())
-                return false;
-
-            return cells.Contains(cell);
-        }
-        public bool Contains(Vector3Int pos) => cells.Contains(pos);
-        public bool Contains(Vector2Int pos) => cells.Contains(pos);
-        public bool Contains(Vector3 pos)
-        {
-            var t = tilemap.WorldToCell(pos);
-            return Contains(t);
-        }
-        public bool Contains(Vector2 pos)
-        {
-            var t = tilemap.WorldToCell(pos);
-            return Contains(t);
-        }
-        public bool Contains(int x, int y)
-        {
-            return Contains(new Vector3Int(x, y));
-        }
-        public bool Contains(float x, float y)
-        {
-            return Contains(new Vector2(x, y));
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
-            cells = new MapInt<T>(Bounds);
+            get => this[key.ToString()];
         }
 
         protected override void Start()
         {
             base.Start();
-            InitCells();
+            Refresh();
         }
 
-        private void InitCells()
+        protected virtual void OnTransformChildrenChanged()
         {
-            T cell;
-            foreach (var pos in Bounds.allPositionsWithin)
+            if (refreshScheduled)
+                return;
+
+            refreshScheduled = true;
+            OnNextFrame(this, static @this =>
             {
-                cell = typeof(T).Reflect()
-                                .NonPublic()
-                                .Arguments(this, pos)
-                                .Cache()
-                                .CreateInstance<T>();
-
-                cells[pos] = cell;
-                this.PrintLog($"Cell inited; position: {pos}; tile: {cell.GetTile().Map(x => x.name).GetValue("none")}.");
-            }
+                try
+                {
+                    @this.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    @this.PrintException(ex);
+                }
+                finally
+                {
+                    @this.refreshScheduled = false;
+                }
+            });
         }
-    }
 
-    public class Location : Location<Cell>
-    {
+        public BoundsInt GetCellBounds() => m_CellBounds.Value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<ILocationLayer> GetLocationLayer<T>(T key) where T : unmanaged, Enum
+        {
+            return this[key.ToString()];
+        }
+
+        public virtual void Refresh()
+        {
+            InitLayers();
+        }
+
+        private void InitLayers()
+        {
+            foreach (var layer in this.Q().ByChildren().Components<ILocationLayer>())
+                layers.Add(layer.Name, layer);
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace CCEnvs.Diagnostics
             return new DebugContext(value, arguments);
         }
 
-        public static Result PrintDebug(this object? source,
+        public static object PrintDebug(this object? source,
                                         object message,
                                         LogType logType,
                                         DebugArguments args = DebugArguments.Default)
@@ -42,52 +42,52 @@ namespace CCEnvs.Diagnostics
                     throw new InvalidOperationException(message.ToString());
             }
 
-            return default;
+            return default!;
         }
 
-        public static Result PrintLog(this object? source,
+        public static object PrintLog(this object? source,
                                       object message,
                                       DebugArguments args = DebugArguments.Default) 
         {
             CCDebug.PrintLog(message, new DebugContext(source, args));
 
-            return default;
+            return default!;
         }
 
-        public static Result PrintWarning(this object? source,
+        public static object PrintWarning(this object? source,
                                           object message,
                                           DebugArguments args = DebugArguments.Default)
         {
             CCDebug.PrintWarning(message, new DebugContext(source, args));
 
-            return default;
+            return default!;
         }
 
-        public static Result PrintError(this object? source,
+        public static object PrintError(this object? source,
                                         object message,
                                         DebugArguments args = DebugArguments.Default)
         {
             CCDebug.PrintError(message, new DebugContext(source, args));
 
-            return default;
+            return default!;
         }
 
-        public static Result PrintException(this object? source,
+        public static object PrintException(this object? source,
                                             Exception exception,
                                             DebugArguments args = DebugArguments.Default)
         {
             CCDebug.PrintException(exception, new DebugContext(source, args));
 
-            return default;
+            return default!;
         }
 
-        public static Result PrintExceptionAsLog(this object? source,
+        public static object PrintExceptionAsLog(this object? source,
                                                  Exception exception,
                                                  DebugArguments args = DebugArguments.Default)
         {
             CCDebug.PrintExceptionAsLog(exception, new DebugContext(source, args));
 
-            return default;
+            return default!;
         }
 
         /// <summary>Checks for unity or system <see langword="null"/></summary>

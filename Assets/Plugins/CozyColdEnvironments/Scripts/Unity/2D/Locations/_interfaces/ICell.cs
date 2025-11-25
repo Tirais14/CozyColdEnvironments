@@ -4,12 +4,12 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 #nullable enable
-namespace CCEnvs.U2D.Locations
+namespace CCEnvs.Unity._2D.Locations
 {
     public interface ICell
     {
         Vector3Int Position { get; }
-        ILocation Location { get; }
+        ILocationLayer Location { get; }
         Maybe<object> Owner { get; }
 
         Maybe<TileBase> GetTile();

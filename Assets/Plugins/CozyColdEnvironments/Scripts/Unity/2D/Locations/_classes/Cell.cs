@@ -4,15 +4,15 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 #nullable enable
-namespace CCEnvs.U2D.Locations
+namespace CCEnvs.Unity._2D.Locations
 {
     public class Cell : ICell
     {
-        public ILocation Location { get; }
+        public ILocationLayer Location { get; }
         public Vector3Int Position { get; }
         public Maybe<object> Owner { get; private set; }
 
-        public Cell(ILocation location, Vector3Int position)
+        public Cell(ILocationLayer location, Vector3Int position)
         {
             CC.Guard.IsNotNull(location, nameof(location));
 
@@ -20,7 +20,7 @@ namespace CCEnvs.U2D.Locations
             Position = position;
         }
 
-        public Cell(ILocation location, Vector3Int position, object? owner)
+        public Cell(ILocationLayer location, Vector3Int position, object? owner)
             :
             this(location, position)
         {

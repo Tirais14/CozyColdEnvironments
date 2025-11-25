@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 #nullable enable
-namespace CCEnvs.U2D
+namespace CCEnvs.Unity._2D
 {
     public static class TileFactory
     {

@@ -30,6 +30,13 @@ namespace CCEnvs
         {
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator TypeValuePair((Type type, object? value) input)
+        {
+            return new TypeValuePair(input.type, input.value);
+        }
+
         public static TypeValuePair T<T>()
         {
             return new TypeValuePair(typeof(T));
@@ -47,13 +54,6 @@ namespace CCEnvs
         public static bool operator !=(TypeValuePair left, TypeValuePair right)
         {
             return !left.Equals(right);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator TypeValuePair((Type type, object value) input)
-        {
-            return new TypeValuePair(input.type, input.value);
         }
 
         public bool Equals(TypeValuePair other)
