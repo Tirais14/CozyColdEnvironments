@@ -10,12 +10,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public record GameObjectQuery
+    public record GameObjectQuery : IShallowCloneable<GameObjectQuery>
     {
         [Flags]
         public enum Settings
@@ -50,7 +51,8 @@ namespace CCEnvs.Unity
         /// </summary>
         public Maybe<string> tag { get; set; }
         public int? layerMask { get; set; }
-        public Maybe<Type> mustContainsType { get; set; }
+        public Maybe<Type> hasType { get; set; }
+        public Maybe<Type> searchDepthLimiter { get; set; }
 
         public GameObjectQuery()
         {
@@ -225,6 +227,22 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery SearchDepthLimiter(Type? type = null)
+        {
+            searchDepthLimiter = type;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery SearchDepthLimiter<T>()
+        {
+            return SearchDepthLimiter(typeof(T));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery Reset()
         {
             Target = default!;
@@ -234,7 +252,7 @@ namespace CCEnvs.Unity
             name = Maybe<string>.None;
             tag = Maybe<string>.None;
             layerMask = default;
-            mustContainsType = null;
+            hasType = null;
 
             return this;
         }
@@ -243,7 +261,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery HasComponent(Type? componentType = null)
         {
-            mustContainsType = componentType;
+            hasType = componentType;
 
             return this;
         }
@@ -299,7 +317,7 @@ namespace CCEnvs.Unity
                 name: name.Raw,
                 tag: tag.Raw,
                 layer: layerMask ?? -1,
-                componentFilter: mustContainsType.Raw)
+                componentFilter: hasType.Raw)
                 );
         }
 
@@ -378,7 +396,7 @@ namespace CCEnvs.Unity
                 name: name.Raw,
                 tag: tag.Raw,
                 layer: layerMask ?? -1,
-                componentFilter: mustContainsType.Raw)
+                componentFilter: hasType.Raw)
                 );
         }
 
@@ -441,7 +459,7 @@ namespace CCEnvs.Unity
                 name: name.Raw,
                 tag: tag.Raw,
                 layer: layerMask ?? -1,
-                componentFilter: mustContainsType.Raw));
+                componentFilter: hasType.Raw));
         }
 
         /// <inheritdoc cref="Models"/>
@@ -469,7 +487,7 @@ namespace CCEnvs.Unity
                 name: name.Raw,
                 tag: tag.Raw,
                 layer: layerMask ?? -1,
-                componentFilter: mustContainsType.Raw)
+                componentFilter: hasType.Raw)
                 );
         }
 
@@ -509,7 +527,7 @@ namespace CCEnvs.Unity
                 name: name.Raw,
                 tag: tag.Raw,
                 layer: layerMask ?? -1,
-                componentFilter: mustContainsType.Raw)
+                componentFilter: hasType.Raw)
                 );
         }
 
@@ -588,6 +606,13 @@ namespace CCEnvs.Unity
             return AddComponent(typeof(T)); 
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery ShallowClone()
+        {
+            return new GameObjectQuery(this);
+        }
+
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
         {
             CC.Guard.IsNotNull(target, nameof(target));
@@ -612,25 +637,25 @@ namespace CCEnvs.Unity
             {
                 components = findMode switch
                 {
-                    FindMode.Self => target.Components()
+                    FindMode.Self => target.GetComponents<Component>()
                                            .Where(cmp => anyType || cmp.IsInstanceOfType(type!)),
 
                     FindMode.InChilds => target.GetComponentsInChildren<Transform>(settings.IsFlagSetted(Settings.IncludeInactive))
-                                               .SelectMany(x => x.gameObject.Components())
+                                               .SelectMany(x => x.gameObject.GetComponents<Component>())
                                                .Where(x => anyType || x.IsInstanceOfType(type!)),
 
                     FindMode.InParents => target.GetComponentsInParent<Transform>(settings.IsFlagSetted(Settings.IncludeInactive))
-                                                .SelectMany(x => x.gameObject.Components())
+                                                .SelectMany(x => x.gameObject.GetComponents<Component>())
                                                 .Where(x => anyType || x.IsInstanceOfType(type!)),
 
                     _ => throw new InvalidOperationException(findMode.ToString())
                 };
             }
 
-            if (mustContainsType.IsSome)
+            if (hasType.IsSome)
                 components = components.Where(cmp =>
                     cmp.gameObject.QueryTo()
-                    .Component(mustContainsType.GetValueUnsafe())
+                    .Component(hasType.GetValueUnsafe())
                     .Lax()
                     .IsSome
                     );
@@ -642,8 +667,7 @@ namespace CCEnvs.Unity
                 var goTransform = target.transform;
 
                 components = from cmp in components
-                             where cmp.gameObject != Target
-                             where cmp.transform.parent == goTransform
+                             where cmp.gameObject == Target || cmp.transform.parent == goTransform
                              select cmp;
             }
 
@@ -658,6 +682,22 @@ namespace CCEnvs.Unity
 
             if (settings.IsFlagSetted(Settings.ExcludeSelf))
                 components = components.Where(cmp => cmp.gameObject != target);
+
+            if (searchDepthLimiter.TryGetValue(out var depthLimiter))
+            {
+                //Exclude all childs, which contains depth limiter component in parents
+                components = components.Where(
+                    cmp => !(cmp.QueryToBySingleton()
+                                .ByParent()
+                                .Component(depthLimiter)
+                                .Lax()
+                                .TryGetValue(out var limiter)
+                                &&
+                                limiter.AsOrDefault<Component>()
+                                    .Map(cmp => cmp.gameObject != target)
+                                    .GetValue(false))
+                                    );
+            }
 
             IEnumerable<object> results = components;
             var providerObjects = components.OfType<IObjectProvider>().Select(x => x.InternalObject).Where(x => anyType || x.IsInstanceOfType(type));

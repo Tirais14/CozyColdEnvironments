@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,8 +11,11 @@ namespace CCEnvs.Unity.UI
         public Color color { get; }
         public bool RaycastTarget { get; }
         public bool Enabled { get; }
+        public Maybe<bool> IsVisible { get; }
 
         public GraphicStateSnaphsot(Graphic target)
+            :
+            this()
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
@@ -19,6 +23,9 @@ namespace CCEnvs.Unity.UI
             color =  target.color;
             RaycastTarget = target.raycastTarget;
             Enabled = target.enabled;
+
+            if (target.Q().Component<IShowable>().Lax().TryGetValue(out var showable))
+                IsVisible = showable.IsVisible;
         }
 
         public static implicit operator GraphicStateSnaphsot(Graphic graphic)

@@ -2,9 +2,12 @@ using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs
@@ -156,6 +159,7 @@ namespace CCEnvs
         /// <summary>
         /// Also checks for unity null
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDefault([NotNullWhen(false)] this object? value,
             EqualsDefaultOption option = EqualsDefaultOption.None)
         {
@@ -187,6 +191,7 @@ namespace CCEnvs
 
             return false;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDefault([NotNullWhen(false)] this object? obj,
             object[] customDefaultValues,
             EqualsDefaultOption option = EqualsDefaultOption.None)
@@ -197,12 +202,13 @@ namespace CCEnvs
             return false;
         }
 
-        /// <summary>Inverted</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
             EqualsDefaultOption option = EqualsDefaultOption.None)
         {
             return !obj.IsDefault(option);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
             object[] customDefaultValues,
             EqualsDefaultOption option = EqualsDefaultOption.None)
@@ -210,6 +216,7 @@ namespace CCEnvs
             return !obj.IsDefault(customDefaultValues, option);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T As<T>(this object? obj)
         {
             if (obj.IsNull())
@@ -225,14 +232,16 @@ namespace CCEnvs
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Maybe<T> AsOrDefault<T>(this object? obj)
         {
-            return obj is T typedObj ? typedObj : default!;
+            return obj.Is<T>(out var typedObj) ? typedObj : default!;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Maybe<TValue> AsOrDefault<TObj, TValue>(this TObj? obj)
         {
-            return obj is TValue typedObj ? typedObj : default!;
+            return obj.Is<TValue>(out var typedObj) ? typedObj : default!;
         }
 
         /// <summary>

@@ -27,25 +27,25 @@ namespace CCEnvs.Unity.UI
 
         [SerializeField]
         [GetBySelf(IsOptional = true)]
-        protected Image m_Image;
+        protected Graphic? m_Graphic;
 
         [SerializeField]
         [GetBySelf(IsOptional = true)]
-        protected Button m_Button;
+        protected Button? m_Button;
 
         [SerializeField]
         [GetBySelf(IsOptional = true)]
-        protected Selectable m_Selectable;
+        protected Selectable? m_Selectable;
 
         [SerializeField]
         [GetBySelf(IsOptional = true)]
-        protected DragAndDropTarget m_DragAndDropTarget;
+        protected DragAndDropTarget? m_DragAndDropTarget;
 
         [SerializeField]
         [Tooltip("If false, only do selection on button click")]
         protected bool switchSelectableOnButtonClick = true;
 
-        public Maybe<Image> image => m_Image;
+        public Maybe<Image> image => m_Graphic.AsOrDefault<Image>();
         public Maybe<Button> button => m_Button;
         public Maybe<Selectable> selectable => m_Selectable;
         public Maybe<DragAndDropTarget> dragAndDropTarget => m_DragAndDropTarget;

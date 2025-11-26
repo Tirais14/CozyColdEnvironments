@@ -1,10 +1,8 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 using ZLinq;
 
 #nullable enable
@@ -20,7 +18,6 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         protected bool m_ShowOnInited;
 
-        private Maybe<Graphic> graphic;
         private float graphicColorAlpha;
 
         public bool ShowOnInited {
@@ -28,43 +25,35 @@ namespace CCEnvs.Unity.UI
             set => m_ShowOnInited = value;
         }
 
-        private readonly ReactiveProperty<bool> isVisible = new();
+        private readonly ReactiveProperty<bool> isVisible = new(true);
 
-        public bool IsVisible => isVisible.Value;
+        public bool IsVisible {
+            get => isVisible.Value
+                   &&
+                   enabled
+                   &&
+                   gameObject.activeSelf
+                   &&
+                   GetParentGUI().Map(gui => gui.IsVisible).GetValue(true);
+        }
         public virtual bool ShowAllowed => true;
+        public virtual bool HideAllowed => StartPassed;
         private void IShowableStart()
         {
-            Show();
+            if (m_Graphic != null)
+            {
+                graphicColorAlpha = m_Graphic.color.a;
+                m_Graphic.color = m_Graphic.color.WithAlpha(0f);
+            }
 
-            graphic = this.QueryTo()
-                .Component<Graphic>()
-                .Lax()
-                .Map(graphic =>
-                {
-                    //Does the graphic component transparent until the next frame to resolve flickering when instantiated.
-                    graphicColorAlpha = graphic.color.a;
-                    graphic.color = graphic.color.WithAlpha(0f);
-
-                    return graphic;
-                });
-
-            OnPreUpdateAction(this, 
+            OnPreUpdateAction(this,
                 static @this =>
                 {
-                    @this.graphic.IfSome(graphic => graphic.color = graphic.color.WithAlpha(@this.graphicColorAlpha));
+                    if (@this.m_Graphic != null)
+                        @this.m_Graphic.color = @this.m_Graphic.color.WithAlpha(@this.graphicColorAlpha);
 
-                    //if (!@this.ShowOnInited)
-                    //    @this.Hide();
-
-                    foreach (var cmp in @this.Q()
-                        .ByChildren()
-                        .NotRecursive()
-                        .Components<IShowable>()
-                        .ZL()
-                        .Where(cmp => !cmp.ShowOnInited))
-                    {
-                        cmp.Hide();
-                    }
+                    if (!@this.ShowOnInited)
+                        @this.Hide();
                 });
         }
 
@@ -75,17 +64,12 @@ namespace CCEnvs.Unity.UI
 
         public virtual void Hide()
         {
-            //if (GetPanelParent().Map(gui => !gui.IsVisible).GetValue(false))
-            //    return;
-
             Showable.Hide(gameObject, hidedComponents);
             isVisible.Value = false;
         }
 
         public virtual void Show()
         {
-            //if (GetPanelParent().Map(gui => gui.IsVisible).GetValue(false))
-            //    return;
             Showable.Show(gameObject, hidedComponents);
             isVisible.Value = true;
         }

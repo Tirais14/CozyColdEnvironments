@@ -1,5 +1,4 @@
 using CCEnvs.Linq;
-using CCEnvs.TypeMatching;
 using SuperLinq;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +44,9 @@ namespace CCEnvs.Unity.UI
             foreach (var cmp in gameObject.QueryTo()
                                           .ByChildren()
                                           .IncludeInactive()
+                                          .SearchDepthLimiter<IShowable>()
                                           .Components<Graphic>()
+                                          .ZL()
                                           .Where(cmp => cmp.enabled))
             {
                 hidedComponents!.Add(cmp);
