@@ -8,6 +8,7 @@ namespace CCEnvs.Unity.UI
     {
         bool IsVisible { get; }
         bool ShowAllowed { get; }
+        bool ShowOnInited { get; set; }
 
         void Hide();
  
@@ -16,6 +17,8 @@ namespace CCEnvs.Unity.UI
         void Redraw();
 
         bool SwitchVisibleState();
+
+        void SwitchVisibleStateVoid();
 
         IObservable<Unit> ObserveShow();
 

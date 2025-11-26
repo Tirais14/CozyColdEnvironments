@@ -1,10 +1,11 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
+using CCEnvs.TypeMatching;
 using SuperLinq;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 using ZLinq;
 
@@ -16,6 +17,8 @@ namespace CCEnvs.Unity.UI
         public static void Show(GameObject gameObject, ICollection<GraphicStateSnaphsot> hidedComponents)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+
+            using var d = ListPool<GraphicStateSnaphsot>.Get(out var list);
 
             foreach (var state in hidedComponents.ZL()
                 .Where(state => state.graphic != null))

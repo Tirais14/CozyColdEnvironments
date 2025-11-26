@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -17,14 +18,14 @@ namespace CCEnvs.Unity.UI
         [Space(8)]
 
         [SerializeField]
-        protected bool m_ShowOnStart;
+        protected bool m_ShowOnInited;
 
         private Maybe<Graphic> graphic;
         private float graphicColorAlpha;
 
-        public bool ShowOnStart {
-            get => m_ShowOnStart;
-            set => m_ShowOnStart = value;
+        public bool ShowOnInited {
+            get => m_ShowOnInited;
+            set => m_ShowOnInited = value;
         }
 
         private readonly ReactiveProperty<bool> isVisible = new();
@@ -35,21 +36,36 @@ namespace CCEnvs.Unity.UI
         {
             Show();
 
-            graphic = this.QueryTo().Component<Graphic>().Lax().Map(graphic =>
-            {
-                graphicColorAlpha = graphic.color.a;
-                graphic.color = graphic.color.WithAlpha(0f);
+            graphic = this.QueryTo()
+                .Component<Graphic>()
+                .Lax()
+                .Map(graphic =>
+                {
+                    //Does the graphic component transparent until the next frame to resolve flickering when instantiated.
+                    graphicColorAlpha = graphic.color.a;
+                    graphic.color = graphic.color.WithAlpha(0f);
 
-                return graphic;
-            });
+                    return graphic;
+                });
 
-            OnPreUpdateAction(this, static @this =>
-            {
-                if (!@this.ShowOnStart && @this.GetParentGUI().IsNone)
-                    @this.Hide();
+            OnPreUpdateAction(this, 
+                static @this =>
+                {
+                    @this.graphic.IfSome(graphic => graphic.color = graphic.color.WithAlpha(@this.graphicColorAlpha));
 
-                @this.graphic.IfSome(graphic => graphic.color = graphic.color.WithAlpha(@this.graphicColorAlpha));
-            });
+                    //if (!@this.ShowOnInited)
+                    //    @this.Hide();
+
+                    foreach (var cmp in @this.Q()
+                        .ByChildren()
+                        .NotRecursive()
+                        .Components<IShowable>()
+                        .ZL()
+                        .Where(cmp => !cmp.ShowOnInited))
+                    {
+                        cmp.Hide();
+                    }
+                });
         }
 
         private void IShowableOnTransformChildrenChanged()
@@ -70,7 +86,6 @@ namespace CCEnvs.Unity.UI
         {
             //if (GetPanelParent().Map(gui => gui.IsVisible).GetValue(false))
             //    return;
-
             Showable.Show(gameObject, hidedComponents);
             isVisible.Value = true;
         }
@@ -84,6 +99,8 @@ namespace CCEnvs.Unity.UI
 
             return IsVisible;
         }
+
+        public void SwitchVisibleStateVoid() => SwitchVisibleState();
 
         public void Redraw()
         {

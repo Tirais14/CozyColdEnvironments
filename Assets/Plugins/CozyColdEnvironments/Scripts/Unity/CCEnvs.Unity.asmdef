@@ -41,7 +41,7 @@
         "Microsoft.Extensions.Caching.Memory.dll",
         "Microsoft.Extensions.Options.dll",
         "Microsoft.Extensions.Logging.Abstractions.dll",
-        "Microsoft.Extensions.Primitives.dll"
+        "Microsoft.Extensions.Caching.Abstractions.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

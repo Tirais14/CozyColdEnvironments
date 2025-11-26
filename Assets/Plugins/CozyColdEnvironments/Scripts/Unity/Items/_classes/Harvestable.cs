@@ -12,20 +12,24 @@ namespace CCEnvs.Unity.Items
         where TItem : IHarvestableItem
     {
         [field: SerializeField]
-        protected TItem config;
+        protected TItem item;
 
-        public void SetConfig(TItem config)
+        public void SetItem(TItem item)
         {
-            CC.Guard.IsNotNull(config, nameof(config));
+            CC.Guard.IsNotNull(item, nameof(item));
 
-            this.config = config;
+            this.item = item;
         }
 
-        public IEnumerable<IItem> OutputItems => GetHarvestedItems()
-            .Select(cnt => cnt.Item)
-            .Where(item => item.IsSome)
-            .Select(item => item.GetValueUnsafe()
-            );
+        public IEnumerable<IItem> OutputItems {
+            get
+            {
+                return GetHarvestedItems().Select(cnt => cnt.Item)
+                    .Where(item => item.IsSome)
+                    .Select(item => item.GetValueUnsafe()
+                    );
+            }
+        }
 
         public bool CanHarvestedBy(IItem? item) => HarvestPredicate(item);
 
@@ -61,20 +65,20 @@ namespace CCEnvs.Unity.Items
         {
             if (item.IsNull())
             {
-                if (config.OutputItems.IsEmpty())
+                if (this.item.OutputItems.IsEmpty())
                     return true;
                 else
                     return false;
             }
 
-            return config.RequiredItems.Contains(item);
+            return this.item.RequiredItems.Contains(item);
         }
 
         protected IItemContainer[] GetHarvestedItems()
         {
-            return config.OutputItems.ToArray();
+            return item.OutputItems.ToArray();
         }
 
-        protected virtual void OnSetConfig() { }
+        protected virtual void OnSetItem() { }
     }
 }

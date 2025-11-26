@@ -18,11 +18,11 @@ namespace CCEnvs.Unity.UI
     [DisallowMultipleComponent]
     public partial class GUITab 
         : CCBehaviour,
-        IGUIPanel
+        IGUITab
     {
         protected readonly HashSet<Component> showableDisabledComponents = new();
 
-        [Header("GUI Panel Settings")]
+        [Header("Tab Settings")]
         [Space(8)]
 
         [SerializeField]
@@ -87,9 +87,13 @@ namespace CCEnvs.Unity.UI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<IGUIPanel> GetParentGUI()
+        public Maybe<IGUITab> GetParentGUI()
         {
-            return this.QueryTo().ByParent().ExcludeSelf().Component<IGUIPanel>().Lax();
+            return this.QueryTo()
+                .ByParent()
+                .ExcludeSelf()
+                .Component<IGUITab>()
+                .Lax();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

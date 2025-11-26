@@ -28,6 +28,7 @@ namespace CCEnvs.Unity
             /// Except in depth childrens from results
             /// </summary>
             NotRecursive = 8,
+            CacheResult = 16,
             Default = None
         }
 
@@ -121,6 +122,17 @@ namespace CCEnvs.Unity
 
             return this;
         }
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public GameObjectQuery CacheResult(TimeSpan lifeTime, bool state = true)
+        //{
+        //    if (state)
+        //        settings |= Settings.CacheResult;
+        //    else
+        //        settings &= ~Settings.CacheResult;
+
+        //    return this;
+        //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery ByFullName(bool state = true)
@@ -229,7 +241,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery MustContainType(Type? componentType = null)
+        public GameObjectQuery HasComponent(Type? componentType = null)
         {
             mustContainsType = componentType;
 
@@ -238,9 +250,9 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery MustContainType<T>()
+        public GameObjectQuery HasComponent<T>()
         {
-            return MustContainType(typeof(T));
+            return HasComponent(typeof(T));
         }
 
         [DebuggerStepThrough]
