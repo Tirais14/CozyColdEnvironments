@@ -31,7 +31,7 @@ namespace CCEnvs.Unity
             /// </summary>
             NotRecursive = 8,
             CacheResult = 16,
-            Nearest = 32,
+            OnlyFirst = 32,
             Default = None
         }
 
@@ -211,6 +211,18 @@ namespace CCEnvs.Unity
                 settings |= Settings.NotRecursive;
             else
                 settings &= ~Settings.NotRecursive;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery OnlyFirst(bool state = true)
+        {
+            if (state)
+                settings |= Settings.OnlyFirst;
+            else
+                settings &= ~Settings.OnlyFirst;
 
             return this;
         }
@@ -617,9 +629,9 @@ namespace CCEnvs.Unity
 
         protected virtual IEnumerable<Component> GetComponentsFrom(GameObject target, Type type, bool anyType)
         {
-            bool isComponentType = type.IsType<Component>();
             bool isTransformType = type.IsType<Transform>();
             bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
+            bool onlyFirst = settings.IsFlagSetted(Settings.OnlyFirst);
 
             if (findMode == FindMode.Self)
             {
@@ -630,14 +642,36 @@ namespace CCEnvs.Unity
             {
                 if (isNotRecursive)
                 {
+                    Transform targetTransform = target.transform;
                     var cmps = new List<Component>();
-                    foreach (var child in target.transform.ZL().Cast<Transform>())
+                    foreach (var child in targetTransform.ZL().Cast<Transform>().Append(targetTransform))
                     {
                         cmps.AddRange(child.Q()
                                 .Components(type)
                                 .Cast<Component>()
                                 );
                     }
+
+                    return cmps;
+                }
+                else if (onlyFirst)
+                {
+                    Transform targetTransform = target.transform;
+                    var cmps = new List<Component>(targetTransform.childCount);
+                    foreach (var child in targetTransform.ZL().Cast<Transform>().Append(targetTransform))
+                    {
+                        if (child.Q()
+                                 .ByChildren()
+                                 .IncludeInactive(settings.IsFlagSetted(Settings.IncludeInactive))
+                                 .Component(type)
+                                 .Lax()
+                                 .TryGetValue(out var cmp))
+                        {
+                            cmps.Add(cmp.As<Component>());
+                        }
+                    }
+
+                    return cmps;
                 }
                 else
                 {

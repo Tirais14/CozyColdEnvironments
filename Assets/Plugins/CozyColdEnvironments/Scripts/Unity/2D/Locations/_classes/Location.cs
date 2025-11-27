@@ -3,6 +3,7 @@ using CCEnvs.Unity._2D;
 using CCEnvs.Unity._2D.Locations;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Serialization;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,8 +50,10 @@ namespace CCEnvs.Unity
                 return;
 
             refreshScheduled = true;
-            OnNextFrame(this, static @this =>
+            this.DoActionAsync(static async @this =>
             {
+                await UniTask.NextFrame();
+
                 try
                 {
                     @this.Refresh();

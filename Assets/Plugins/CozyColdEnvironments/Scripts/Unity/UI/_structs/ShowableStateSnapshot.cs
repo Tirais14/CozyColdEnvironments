@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
+using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
@@ -27,6 +28,11 @@ namespace CCEnvs.Unity.UI
         {
             if (IsShown)
                 Target.Show();
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Target, gameObject);
         }
 
         public override string ToString()

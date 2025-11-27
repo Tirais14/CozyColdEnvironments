@@ -35,112 +35,47 @@ namespace CCEnvs.Unity.Components
         {
             MemberValidator.ValidateInstance(this);
 
-            OnPreUpdateAction(() =>
+            this.DoActionAsync(static async @this =>
             {
-                StartPassed = true;
-                this.PrintLog("Start Passed");
+                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+
+                @this.StartPassed = true;
+                @this.PrintLog("Start Passed");
             });
         }
 
-        public void OnPreUpdateAction<T>(T state, Action<T> action)
+        public void OnAfterStartAction<T>(T state, Action<T> action)
         {
             Guard.IsNotNull(action);
 
-            UniTask.Create((action, @this: this, state), static async (input) =>
+            UniTask.Create((action, state, @this: this), static async input =>
             {
-                await UniTask.WaitUntil(() => input.@this.didAwake);
-                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+                await UniTask.WaitUntil(input.@this,
+                    static @this => @this.StartPassed,
+                    timing: PlayerLoopTiming.PreUpdate
+                    );
+
                 input.action(input.state);
-            }).AttachExternalCancellation(destroyCancellationToken)
+            })
+            .AttachExternalCancellation(destroyCancellationToken)
             .SuppressCancellationThrow()
             .Forget();
         }
-        public void OnPreUpdateAction(Action action)
+
+        public void OnAfterStartAction(Action action)
         {
             Guard.IsNotNull(action);
 
-            UniTask.Create((action, @this: this), static async (input) =>
+            UniTask.Create((action, @this: this), static async input =>
             {
-                await UniTask.WaitUntil(() => input.@this.didAwake);
-                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+                await UniTask.WaitUntil(input.@this,
+                    static @this => @this.StartPassed,
+                    timing: PlayerLoopTiming.PreUpdate
+                    );
+
                 input.action();
-            }).AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
-
-        public void OnUpdateAction<T>(T state, Action<T> action)
-        {
-            Guard.IsNotNull(action);
-
-            UniTask.Create((action, state), static async (input) =>
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                input.action(input.state);
-            }).AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
-        public void OnUpdateAction(Action action)
-        {
-            Guard.IsNotNull(action);
-
-            UniTask.Create(action, static async action =>
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                action();
-            }).AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
-
-        public void OnEndOfFrameAction<T>(T state, Action<T> action)
-        {
-            Guard.IsNotNull(action);
-
-            UniTask.Create((action, state), static async input =>
-            {
-                await UniTask.WaitForEndOfFrame();
-                input.action(input.state);
-            }).AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
-        public void OnEndOfFrameAction(Action action)
-        {
-            Guard.IsNotNull(action);
-
-            UniTask.Create(action, static async action =>
-            {
-                await UniTask.WaitForEndOfFrame();
-                action();
-            }).AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
-
-        public void OnNextFrame<T>(T state, Action<T> action)
-        {
-            Guard.IsNotNull(action);
-
-            UniTask.Create((action, state), static async input =>
-            {
-                await UniTask.NextFrame();
-                input.action(input.state);
-            }).AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
-
-        public void OnNextFrame(Action action)
-        {
-            Guard.IsNotNull(action);
-
-            UniTask.Create(action, static async action =>
-            {
-                await UniTask.NextFrame();
-                action();
-            }).AttachExternalCancellation(destroyCancellationToken)
+            })
+            .AttachExternalCancellation(destroyCancellationToken)
             .SuppressCancellationThrow()
             .Forget();
         }

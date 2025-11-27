@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using SuperLinq;
 using System.Collections.Generic;
@@ -45,8 +46,10 @@ namespace CCEnvs.Unity.UI
             bool keepRaycastTargetState = settings.IsFlagSetted(ShowableSettings.KeepRaycastTargetState);
             bool hideByState = !hideByColor;
 
+            if (graphicStates.IsNotEmpty())
+                typeof(Showable).PrintWarning($"{nameof(graphicStates)} is not empty.");
+
             graphicStates.Clear();
-            
             foreach (var graphic in gameObject.QueryTo()
                                               .ByChildren()
                                               .IncludeInactive()
@@ -69,11 +72,17 @@ namespace CCEnvs.Unity.UI
                 }
             }
 
+            if (showableStates.IsNotEmpty())
+                typeof(Showable).PrintWarning($"{nameof(showableStates)} is not empty.");
+
+            showableStates.Clear();
             foreach (var showable in gameObject.Q()
                                                .ByChildren()
                                                .IncludeInactive()
                                                .ExcludeSelf()
-                                               .Components<IShowable>())
+                                               .OnlyFirst()
+                                               .Components<IShowable>()
+                                               .Where(showable => showable.IsShown))
             {
                 showableStates.Add(new ShowableStateSnapshot(showable));
                 showable.Hide();

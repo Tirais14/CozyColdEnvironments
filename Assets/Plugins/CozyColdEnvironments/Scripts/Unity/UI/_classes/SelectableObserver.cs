@@ -1,6 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
 using UniRx;
@@ -92,9 +93,25 @@ namespace CCEnvs.Unity.UI
 
             selectables.Clear();
             selection.Value = Maybe<T>.None;
-            OnNextFrame(CollectSelectables);
             collectSelectablesScheduled = true;
-            OnNextFrame(this, static (@this) => @this.collectSelectablesScheduled = false);
+
+            this.DoActionAsync(static async @this =>
+            {
+                await UniTask.NextFrame();
+                try
+                {
+                    @this.CollectSelectables();
+                }
+                catch (Exception ex)
+                {
+                    @this.PrintError(ex);
+                }
+                finally
+                {
+                    await UniTask.WaitForEndOfFrame();
+                    @this.collectSelectablesScheduled = false;
+                }
+            });
         }
 
         private void OnSelectablesClear(object sender, EventArgs args)

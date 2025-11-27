@@ -1,4 +1,6 @@
 #nullable enable
+using Cysharp.Threading.Tasks;
+
 namespace CCEnvs.Unity.Components
 {
     public class CCBehaviourComponentCommand : CCBehaviour
@@ -10,8 +12,17 @@ namespace CCEnvs.Unity.Components
         protected override void Awake()
         {
             base.Awake();
-            OnEndOfFrameAction(this, static @this => Destroy(@this));
-            OnPreUpdateAction(OnPreUpdate);
+            this.DoActionAsync(static async @this =>
+            {
+                await UniTask.WaitForEndOfFrame();
+                Destroy(@this);
+            });
+
+            this.DoActionAsync(static async @this =>
+            {
+                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+                @this.OnPreUpdate();
+            });
         }
 
         protected virtual void OnPreUpdate()
