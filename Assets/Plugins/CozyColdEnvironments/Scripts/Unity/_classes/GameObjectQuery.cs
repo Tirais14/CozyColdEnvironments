@@ -236,7 +236,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery SearchDepthLimiter<T>()
+        public GameObjectQuery DepthLimiter<T>()
         {
             return SearchDepthLimiter(typeof(T));
         }
@@ -625,13 +625,28 @@ namespace CCEnvs.Unity
             IEnumerable<Component> components;
             if (anyType || type.IsType<Component>())
             {
-                components = findMode switch
+                if (type.IsType<Transform>() && findMode == FindMode.InParents)
                 {
-                    FindMode.Self => target.GetComponents(type),
-                    FindMode.InChilds => target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                    FindMode.InParents => target.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                    _ => throw new InvalidOperationException(findMode.ToString())
-                };
+                    var parents = new List<Transform>();
+                    Transform current = target.transform.parent;
+                    while (current != null)
+                    {
+                        parents.Add(current);
+                        current = current.parent;
+                    }
+
+                    components = parents.ToArray();
+                }
+                else
+                {
+                    components = findMode switch
+                    {
+                        FindMode.Self => target.GetComponents(type),
+                        FindMode.InChilds => target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                        FindMode.InParents => target.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
+                        _ => throw new InvalidOperationException(findMode.ToString())
+                    };
+                }
             }
             else
             {

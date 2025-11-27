@@ -6,7 +6,7 @@ using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEngine;
@@ -20,8 +20,6 @@ namespace CCEnvs.Unity.UI
         : CCBehaviour,
         IGUITab
     {
-        protected readonly HashSet<Component> showableDisabledComponents = new();
-
         [Header("Tab Settings")]
         [Space(8)]
 
@@ -82,18 +80,32 @@ namespace CCEnvs.Unity.UI
             IShowableOnTransformChildrenChanged();
         }
 
+        protected virtual void OnTransformParentChanged()
+        {
+
+        }
+
         protected virtual void OnDestroy()
         {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<IGUITab> GetParentGUI()
+        public Maybe<IGUITab> GetParentGui()
         {
             return this.QueryTo()
                 .ByParent()
                 .ExcludeSelf()
                 .Component<IGUITab>()
                 .Lax();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsGuiChildOf(IGUITab guiTab)
+        {
+            CC.Guard.IsNotNull(guiTab, nameof(guiTab));
+
+            return GetParentGui().Map(parent => parent is MonoBehaviour mono && transform.IsChildOf(mono.transform))
+                                 .GetValue(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -6,6 +6,7 @@ namespace CCEnvs.Unity.UI
 {
     public interface IShowable
     {
+        bool IsShown { get; }
         bool IsVisible { get; }
         bool ShowAllowed { get; }
         bool HideAllowed { get; }
@@ -17,9 +18,9 @@ namespace CCEnvs.Unity.UI
 
         void Redraw();
 
-        bool SwitchVisibleState();
+        bool SwitchShownState();
 
-        void SwitchVisibleStateVoid();
+        void SwitchShownStateVoid();
 
         IObservable<Unit> ObserveShow();
 

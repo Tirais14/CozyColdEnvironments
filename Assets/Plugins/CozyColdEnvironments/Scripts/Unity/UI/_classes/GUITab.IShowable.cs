@@ -10,7 +10,8 @@ namespace CCEnvs.Unity.UI
 {
     public partial class GUITab : IShowable
     {
-        protected readonly HashSet<GraphicStateSnaphsot> hidedComponents = new();
+        private readonly HashSet<GraphicStateSnaphsot> graphicStates = new();
+        private readonly HashSet<ShowableStateSnapshot> showableStates = new();
 
         [Header("Showable settings")]
         [Space(8)]
@@ -25,16 +26,17 @@ namespace CCEnvs.Unity.UI
             set => m_ShowOnInited = value;
         }
 
-        private readonly ReactiveProperty<bool> isVisible = new(true);
+        private readonly ReactiveProperty<bool> isShown = new(true);
 
+        public bool IsShown => isShown.Value;
         public bool IsVisible {
-            get => isVisible.Value
+            get => isShown.Value
                    &&
                    enabled
                    &&
                    gameObject.activeSelf
                    &&
-                   GetParentGUI().Map(gui => gui.IsVisible).GetValue(true);
+                   GetParentGui().Map(gui => gui.IsShown).GetValue(true);
         }
         public virtual bool ShowAllowed => true;
         public virtual bool HideAllowed => StartPassed;
@@ -64,31 +66,31 @@ namespace CCEnvs.Unity.UI
 
         public virtual void Hide()
         {
-            Showable.Hide(gameObject, hidedComponents);
-            isVisible.Value = false;
+            Showable.Hide(gameObject, graphicStates, showableStates);
+            isShown.Value = false;
         }
 
         public virtual void Show()
         {
-            Showable.Show(gameObject, hidedComponents);
-            isVisible.Value = true;
+            Showable.Show(gameObject, graphicStates, showableStates);
+            isShown.Value = true;
         }
 
-        public bool SwitchVisibleState()
+        public bool SwitchShownState()
         {
-            if (IsVisible)
+            if (IsShown)
                 Hide();
             else
                 Show();
 
-            return IsVisible;
+            return IsShown;
         }
 
-        public void SwitchVisibleStateVoid() => SwitchVisibleState();
+        public void SwitchShownStateVoid() => SwitchShownState();
 
         public void Redraw()
         {
-            if (IsVisible)
+            if (IsShown)
             {
                 Hide();
                 Show();
@@ -104,12 +106,12 @@ namespace CCEnvs.Unity.UI
 
         public IObservable<Unit> ObserveShow()
         {
-            return isVisible.Where(_ => StartPassed).Where(x => x).AsUnitObservable();
+            return isShown.Where(_ => StartPassed).Where(x => x).AsUnitObservable();
         }
 
         public IObservable<Unit> ObserveHide()
         {
-            return isVisible.Where(_ => StartPassed).Where(x => !x).AsUnitObservable();
+            return isShown.Where(_ => StartPassed).Where(x => !x).AsUnitObservable();
         }
     }
 }

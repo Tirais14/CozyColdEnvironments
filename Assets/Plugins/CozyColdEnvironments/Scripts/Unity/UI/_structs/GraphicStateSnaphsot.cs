@@ -1,17 +1,15 @@
-using CCEnvs.FuncLanguage;
 using System;
-using UnityEngine;
 using UnityEngine.UI;
 
+#nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public readonly struct GraphicStateSnaphsot
+    public readonly struct GraphicStateSnaphsot : ISnapshot<Graphic>
     {
-        public Graphic graphic { get; }
-        public Color color { get; }
+        public Graphic Target { get; }
+        public float ColorAlpha { get; }
         public bool RaycastTarget { get; }
         public bool Enabled { get; }
-        public Maybe<bool> IsVisible { get; }
 
         public GraphicStateSnaphsot(Graphic target)
             :
@@ -19,13 +17,10 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
-            graphic = target;
-            color =  target.color;
+            Target = target;
+            ColorAlpha =  target.color.a;
             RaycastTarget = target.raycastTarget;
             Enabled = target.enabled;
-
-            if (target.Q().Component<IShowable>().Lax().TryGetValue(out var showable))
-                IsVisible = showable.IsVisible;
         }
 
         public static implicit operator GraphicStateSnaphsot(Graphic graphic)
@@ -35,20 +30,19 @@ namespace CCEnvs.Unity.UI
 
         public void Restore()
         {
-            if (graphic == null)
+            if (Target == null)
                 return;
 
-            graphic.enabled = Enabled;
+            Target.color = Target.color.WithAlpha(ColorAlpha);
+            Target.raycastTarget = RaycastTarget;
+            Target.enabled = Enabled;
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(graphic);
-        }
+        public override int GetHashCode() => HashCode.Combine(Target);
 
         public override string ToString()
         {
-            return $"{nameof(graphic)}: {graphic}; {nameof(Enabled)}: {Enabled}.";
+            return $"{nameof(Target)}: {Target}; {nameof(Enabled)}: {Enabled}.";
         }
     }
 }
