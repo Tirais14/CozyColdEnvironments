@@ -28,5 +28,10 @@ namespace CCEnvs.Unity.UI
             if (IsShown)
                 Target.Show();
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(Target)}: {Target}.";
+        }
     }
 }

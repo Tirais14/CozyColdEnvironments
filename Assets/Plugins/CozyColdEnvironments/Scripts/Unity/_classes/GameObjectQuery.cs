@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
@@ -30,6 +31,7 @@ namespace CCEnvs.Unity
             /// </summary>
             NotRecursive = 8,
             CacheResult = 16,
+            Nearest = 32,
             Default = None
         }
 
@@ -613,6 +615,60 @@ namespace CCEnvs.Unity
             return new GameObjectQuery(this);
         }
 
+        protected virtual IEnumerable<Component> GetComponentsFrom(GameObject target, Type type, bool anyType)
+        {
+            bool isComponentType = type.IsType<Component>();
+            bool isTransformType = type.IsType<Transform>();
+            bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
+
+            if (findMode == FindMode.Self)
+            {
+                return target.GetComponents<Component>()
+                             .Where(cmp => anyType || cmp.IsInstanceOfType(type));
+            }
+            else if (findMode == FindMode.InChilds)
+            {
+                if (isNotRecursive)
+                {
+                    var cmps = new List<Component>();
+                    foreach (var child in target.transform.ZL().Cast<Transform>())
+                    {
+                        cmps.AddRange(child.Q()
+                                .Components(type)
+                                .Cast<Component>()
+                                );
+                    }
+                }
+                else
+                {
+                    return target.GetComponentsInChildren<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
+                                 .Where(x => anyType || x.IsInstanceOfType(type));
+                }
+            }
+            else if (findMode == FindMode.InParents)
+            {
+                if (isTransformType)
+                {
+                    var parents = new List<Transform>();
+                    Transform current = target.transform;
+                    while (current != null)
+                    {
+                        parents.Add(current);
+                        current = current.parent;
+                    }
+
+                    return parents;
+                }
+                else
+                {
+                    return target.GetComponentsInParent<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
+                                 .Where(x => anyType || x.IsInstanceOfType(type!));
+                }
+            }
+
+            return CC.Throw.InvalidOperation(findMode, nameof(findMode)).As<IEnumerable<Component>>();
+        }
+
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
         {
             CC.Guard.IsNotNull(target, nameof(target));
@@ -622,50 +678,7 @@ namespace CCEnvs.Unity
             bool anyType = type is null;
             type ??= typeof(Component);
 
-            IEnumerable<Component> components;
-            if (anyType || type.IsType<Component>())
-            {
-                if (type.IsType<Transform>() && findMode == FindMode.InParents)
-                {
-                    var parents = new List<Transform>();
-                    Transform current = target.transform.parent;
-                    while (current != null)
-                    {
-                        parents.Add(current);
-                        current = current.parent;
-                    }
-
-                    components = parents.ToArray();
-                }
-                else
-                {
-                    components = findMode switch
-                    {
-                        FindMode.Self => target.GetComponents(type),
-                        FindMode.InChilds => target.GetComponentsInChildren(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                        FindMode.InParents => target.GetComponentsInParent(type, settings.IsFlagSetted(Settings.IncludeInactive)),
-                        _ => throw new InvalidOperationException(findMode.ToString())
-                    };
-                }
-            }
-            else
-            {
-                components = findMode switch
-                {
-                    FindMode.Self => target.GetComponents<Component>()
-                                           .Where(cmp => anyType || cmp.IsInstanceOfType(type!)),
-
-                    FindMode.InChilds => target.GetComponentsInChildren<Transform>(settings.IsFlagSetted(Settings.IncludeInactive))
-                                               .SelectMany(x => x.gameObject.GetComponents<Component>())
-                                               .Where(x => anyType || x.IsInstanceOfType(type!)),
-
-                    FindMode.InParents => target.GetComponentsInParent<Transform>(settings.IsFlagSetted(Settings.IncludeInactive))
-                                                .SelectMany(x => x.gameObject.GetComponents<Component>())
-                                                .Where(x => anyType || x.IsInstanceOfType(type!)),
-
-                    _ => throw new InvalidOperationException(findMode.ToString())
-                };
-            }
+            IEnumerable<Component> components = GetComponentsFrom(target, type, anyType);
 
             if (hasType.IsSome)
                 components = components.Where(cmp =>
