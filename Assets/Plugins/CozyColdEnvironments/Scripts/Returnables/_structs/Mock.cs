@@ -5,7 +5,7 @@ namespace CCEnvs.Returnables
 {
     public readonly struct Mock : IEquatable<Mock>
     {
-
+        public static Mock Default { get; } = new();
 
         public static bool operator ==(Mock left, Mock right) => true;
 

@@ -38,8 +38,6 @@ namespace CCEnvs.Unity.UI
             Target.enabled = Enabled;
         }
 
-        public override int GetHashCode() => HashCode.Combine(Target);
-
         public override string ToString()
         {
             return $"{nameof(Target)}: {Target}; {nameof(Enabled)}: {Enabled}.";

@@ -217,7 +217,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery OnlyFirst(bool state = true)
+        public GameObjectQuery Nearest(bool state = true)
         {
             if (state)
                 settings |= Settings.OnlyFirst;

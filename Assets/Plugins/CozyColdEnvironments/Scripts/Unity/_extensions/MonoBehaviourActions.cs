@@ -1,8 +1,10 @@
+using CCEnvs.Conversations;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using System;
 using UnityEngine;
+using UnityEngine.Windows;
 
 namespace CCEnvs.Unity
 {
@@ -226,7 +228,6 @@ namespace CCEnvs.Unity
                 {
                     await action();
                 })
-                .Timeout(10.Seconds(), delayType: DelayType.Realtime)
                 .AttachExternalCancellation(source.destroyCancellationToken)
                 .SuppressCancellationThrow()
                 .Forget();
@@ -242,7 +243,6 @@ namespace CCEnvs.Unity
                 {
                     await input.action(input.state);
                 })
-                                .Timeout(10.Seconds(), delayType: DelayType.Realtime)
                 .AttachExternalCancellation(source.destroyCancellationToken)
                 .SuppressCancellationThrow()
                 .Forget();
@@ -259,7 +259,6 @@ namespace CCEnvs.Unity
                 {
                     await input.action(input.source);
                 })
-                .Timeout(10.Seconds(), delayType: DelayType.Realtime)
                 .AttachExternalCancellation(source.destroyCancellationToken)
                 .SuppressCancellationThrow()
                 .Forget();
@@ -276,7 +275,6 @@ namespace CCEnvs.Unity
                 {
                     await input.action(input.source, input.state);
                 })
-                .Timeout(10.Seconds(), delayType: DelayType.Realtime)
                 .AttachExternalCancellation(source.destroyCancellationToken)
                 .SuppressCancellationThrow()
                 .Forget();

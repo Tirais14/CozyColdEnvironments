@@ -11,6 +11,7 @@ namespace CCEnvs.Unity.UI
         bool ShowAllowed { get; }
         bool HideAllowed { get; }
         bool ShowOnInited { get; set; }
+        bool IsInited { get;}
 
         void Hide();
  

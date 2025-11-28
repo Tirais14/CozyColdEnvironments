@@ -33,7 +33,8 @@
         "CommunityToolkit.Diagnostics.dll",
         "Microsoft.Extensions.Caching.Memory.dll",
         "Microsoft.Extensions.Logging.Abstractions.dll",
-        "Microsoft.Extensions.Options.dll"
+        "Microsoft.Extensions.Options.dll",
+        "Microsoft.Extensions.Caching.Abstractions.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

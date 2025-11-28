@@ -1,12 +1,13 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
+using Humanizer;
+using Microsoft.Extensions.Caching.Memory;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 
 namespace CCEnvs
@@ -14,6 +15,25 @@ namespace CCEnvs
     public static class Do
     {
         public delegate T?[] MoveNext<T>(T current, LoopState loopState);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeSubject<T>(ref Subject<T>? subj)
+        {
+            if (subj is null)
+                return;
+
+            try
+            {
+                subj.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                subj.OnError(ex);
+            }
+
+            subj.Dispose();
+            subj = null!;
+        }
 
         public static object? ReturnNull() => null;
 

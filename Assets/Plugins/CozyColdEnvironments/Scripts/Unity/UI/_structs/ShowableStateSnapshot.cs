@@ -30,11 +30,6 @@ namespace CCEnvs.Unity.UI
                 Target.Show();
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Target, gameObject);
-        }
-
         public override string ToString()
         {
             return $"{nameof(Target)}: {Target}.";
