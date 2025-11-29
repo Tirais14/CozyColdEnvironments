@@ -37,7 +37,7 @@ namespace CCEnvs.Patterns.States
             stateMachine.ForceStopState(this);
 
             if (message.IsNotNullOrEmpty())
-                CCDebug.PrintWarning($"{this.GetTypeName()} stopped. {message.Trim('.')}.");
+                CCDebug.Instance.PrintWarning($"{this.GetTypeName()} stopped. {message.Trim('.')}.");
         }
 
         void IState.Enter() => OnEnter();

@@ -4,7 +4,7 @@ using System;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public partial class AnonymousCommand : ACommand, ICommand
+    public partial class AnonymousCommand : Command, ICommand
     {
         private readonly Func<bool> isReadyToExecute;
         private readonly Action execute;
@@ -13,9 +13,13 @@ namespace CCEnvs.Patterns.Commands
 
         public AnonymousCommand(Func<bool> isReadyToExecute,
             Action execute,
-            string? name = null)
+            string? name = null,
+            CommandInfo[]? undoCommandsOnAdd = null,
+            bool singleCommand = false)
             :
-            base(name)
+            base(name: name,
+                undoCommandsOnAdd: undoCommandsOnAdd,
+                singleCommand: singleCommand)
         {
             Guard.IsNotNull(isReadyToExecute);
             Guard.IsNotNull(execute);
@@ -25,8 +29,13 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public override void Execute() => execute();
+
+        public override string ToString()
+        {
+            return $"{nameof(CommandName)}: {CommandName}";
+        }
     }
-    public class AnonymousCommand<T> : ACommand, ICommand
+    public class AnonymousCommand<T> : Command, ICommand
     {
         private readonly T state;
         private readonly Predicate<T> isReadyToExecute;
@@ -37,9 +46,13 @@ namespace CCEnvs.Patterns.Commands
         public AnonymousCommand(T state,
             Predicate<T> isReadyToExecute,
             Action<T> execute,
-            string? name = null)
+            string? name = null,
+            CommandInfo[]? undoCommandsOnAdd = null,
+            bool singleCommand = false)
             :
-            base(name)
+            base(name: name,
+                undoCommandsOnAdd: undoCommandsOnAdd,
+                singleCommand: singleCommand)
         {
             Guard.IsNotNull(isReadyToExecute);
             Guard.IsNotNull(execute);
@@ -50,8 +63,13 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public override void Execute() => execute(state);
+
+        public override string ToString()
+        {
+            return $"{nameof(CommandName)}: {CommandName}; {nameof(state)}: {state}";
+        }
     }
-    public class AnonymousCommand<T, T1> : ACommand, ICommand
+    public class AnonymousCommand<T, T1> : Command, ICommand
     {
         private readonly T state;
         private readonly T1 state1;
@@ -64,9 +82,13 @@ namespace CCEnvs.Patterns.Commands
             T1 state1,
             Func<T, T1, bool> isReadyToExecute,
             Action<T, T1> execute,
-            string? name = null)
+            string? name = null,
+            CommandInfo[]? undoCommandsOnAdd = null,
+            bool singleCommand = false)
             :
-            base(name)
+            base(name: name,
+                undoCommandsOnAdd: undoCommandsOnAdd,
+                singleCommand: singleCommand)
         {
             Guard.IsNotNull(isReadyToExecute);
             Guard.IsNotNull(execute);
@@ -78,8 +100,13 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public override void Execute() => execute(state, state1);
+
+        public override string ToString()
+        {
+            return $"{nameof(CommandName)}: {CommandName}; {nameof(state)}: {state}; {nameof(state1)}: {state1}";
+        }
     }
-    public class AnonymousCommand<T, T1, T2> : ACommand, ICommand
+    public class AnonymousCommand<T, T1, T2> : Command, ICommand
     {
         private readonly T state;
         private readonly T1 state1;
@@ -94,9 +121,13 @@ namespace CCEnvs.Patterns.Commands
             T2 state2,
             Func<T, T1, T2, bool> isReadyToExecute,
             Action<T, T1, T2> execute,
-            string? name = null)
+            string? name = null,
+            CommandInfo[]? undoCommandsOnAdd = null,
+            bool singleCommand = false)
             :
-            base(name)
+            base(name: name,
+                undoCommandsOnAdd: undoCommandsOnAdd,
+                singleCommand: singleCommand)
         {
             Guard.IsNotNull(isReadyToExecute);
             Guard.IsNotNull(execute);
@@ -109,5 +140,10 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public override void Execute() => execute(state, state1, state2);
+
+        public override string ToString()
+        {
+            return $"{nameof(CommandName)}: {CommandName}; {nameof(state)}: {state}; {nameof(state1)}: {state1}; {nameof(state2)}: {state2}";
+        }
     }
 }

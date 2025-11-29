@@ -119,7 +119,7 @@ namespace CCEnvs
         }
 
         /// <inheritdoc cref="ZL(IEnumerable)"/>
-        public static ValueEnumerable<FromHashSet<T>, T> ZL<T>(this HashSet<T> source)
+        public static ValueEnumerable<FromHashSet<T>, T> ZLinq<T>(this HashSet<T> source)
         {
             return source.AsValueEnumerable();
         }

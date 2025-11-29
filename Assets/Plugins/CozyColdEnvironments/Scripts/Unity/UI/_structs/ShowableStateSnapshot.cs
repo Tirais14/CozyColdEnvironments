@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
@@ -32,7 +31,7 @@ namespace CCEnvs.Unity.UI
 
         public override string ToString()
         {
-            return $"{nameof(Target)}: {Target}.";
+            return $"{nameof(Target)}: {Target}; {nameof(IsShown)}: {IsShown}; {nameof(gameObject)}: {gameObject}.";
         }
     }
 }

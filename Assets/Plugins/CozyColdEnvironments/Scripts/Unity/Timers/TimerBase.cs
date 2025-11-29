@@ -146,7 +146,7 @@ namespace CCEnvs.Unity.Timers
 
         void IObserver<Mock>.OnError(Exception error)
         {
-            CCDebug.PrintException(error);
+            CCDebug.Instance.PrintException(error);
         }
 
         void IObserver<Mock>.OnCompleted()

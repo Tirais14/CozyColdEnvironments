@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.EditorC
             {
                 Files.PathEntry rootPath = Application.dataPath.ToFilePath() - "Assets" + ".vs";
 
-                CCDebug.PrintLog($"Deleting {rootPath}.", new DebugContext(typeof(VisualStudioClearCacheTool)).Additive().Editor());
+                CCDebug.Instance.PrintLog($"Deleting {rootPath}.", new DebugContext(typeof(VisualStudioClearCacheTool)).Additive().Editor());
                 var directory = new DirectoryInfo(rootPath);
 
                 if (directory.Exists)
@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.EditorC
             }
             catch (System.Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
             }
         }
     }

@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Editor
                 return;
 
             RequestReload();
-            CCDebug.PrintLog("Reloading domain initiated.",
+            CCDebug.Instance.PrintLog("Reloading domain initiated.",
                              typeof(ForceReloadDomain));
         }
 

@@ -1,16 +1,17 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Initables;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UniRx;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 using ZLinq;
-using static UnityEngine.Experimental.Rendering.GraphicsStateCollection;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -37,7 +38,7 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         protected bool m_ShowOnInited;
 
-        private bool redrawScheduled;
+        private bool isStateTransitioning;
 
         public bool ShowOnInited {
             get => m_ShowOnInited;
@@ -53,42 +54,65 @@ namespace CCEnvs.Unity.UI
                        &&
                        isActiveAndEnabled
                        &&
-                       GetParentGui().Map(gui => gui.IsShown).GetValue(true);
+                       GetParentGui().Map(gui => gui.IsVisible).GetValue(true);
             }
         }
 
-        public virtual bool ShowAllowed => IsInited;
-        public virtual bool HideAllowed => IsInited;
+        public virtual bool ShowAllowed => IsInited && !isStateTransitioning;
+        public virtual bool HideAllowed => IsInited && !isStateTransitioning;
         public bool IsInited { get; private set; }
+
+        private void IShowableAwake()
+        {
+            isShown.AddTo(this);
+        }
 
         private void IShowableStart()
         {
             if (m_Graphic != null)
-                UIHelper.DoTransparent(m_Graphic);
+                UIHelper.DoTranpsarentRecursive(m_Graphic);
 
             this.DoActionAsync(static async @this =>
             {
-                await UniTask.NextFrame();
+                await UniTask.NextFrame(timing: PlayerLoopTiming.PreUpdate);
 
-                var parentInitable = @this.Q()
-                    .ByParent()
-                    .ExcludeSelf()
-                    .Component<IInitableBase>()
-                    .Lax()
-                    .Where(x => x.Is<IShowable>()
-                    );
+                var childs = @this.Q()
+                                  .ByChildren()
+                                  .ExcludeSelf()
+                                  .Components<IInitableBase>()
+                                  .ZL()
+                                  .Where(x => x.Is<IShowable>())
+                                  .ToArray();
 
-                await UniTask.WaitUntil(parentInitable,
-                    static parentInitable => parentInitable.Map(x => x.IsInited).GetValue(true)
+                await UniTask.WaitUntil(
+                    childs,
+                    static childs => childs.IsEmpty() || childs.All(x => x.IsInited),
+                    timing: PlayerLoopTiming.PreUpdate
                     );
 
                 @this.IsInited = true;
 
                 if (@this.m_Graphic != null)
-                    UIHelper.UndoTransparent(@this.m_Graphic);
+                {
+                    var parents = @this.Q()
+                                       .ByParent()
+                                       .ExcludeSelf()
+                                       .Components<IInitableBase>()
+                                       .ZL()
+                                       .Where(x => x.Is<IShowable>())
+                                       .ToArray();
 
-                //if (!@this.ShowOnInited && @this.GetParentGui().IsNone)
-                //    @this.Hide();
+                    await UniTask.WaitUntil(
+                        parents,
+                        static parents => parents.IsEmpty() || parents.All(x => x.IsInited),
+                        timing: PlayerLoopTiming.PreUpdate
+                        );
+
+                    UIHelper.UndoTransparentRecursive(@this.m_Graphic);
+                }
+
+                if (!@this.ShowOnInited && @this.GetParentGui().IsNone)
+                    @this.Hide();
             });
         }
 
@@ -103,17 +127,15 @@ namespace CCEnvs.Unity.UI
             if (!IsShown)
                 return;
 
-            UIHelper.CaptureGraphicStates(gameObject, graphicStates);
+            UIHelper.CaptureGraphicStatesUntilShowable(gameObject, graphicStates);
             UIHelper.CaptureShowableStates(gameObject, showableStates);
 
-            var command = Command.Create(
-                this,
-                static @this => @this.HideAllowed,
-                static @this =>
-                {
-                    @this.HideInternal();
-                },
-                name: nameof(Hide)
+            var command = Command.Create(this,
+                isReadyToExecute: static @this => @this.HideAllowed,
+                execute: static @this => @this.HideInternal(@this),
+                name: nameof(Hide),
+                undoCommandsOnAdd: Range.From(new CommandInfo(commandName: nameof(Show))),
+                singleCommand: true
                 );
 
             commandScheduler.AddCommand(command);
@@ -124,14 +146,11 @@ namespace CCEnvs.Unity.UI
             if (IsShown)
                 return;
 
-            var command = Command.Create(
-                this,
-                static @this => @this.ShowAllowed,
-                static @this =>
-                {
-                    @this.ShowInternal();
-                },
-                name: nameof(Show)
+            var command = Command.Create(this,
+                isReadyToExecute: static @this => @this.ShowAllowed,
+                execute: static @this => @this.ShowInternal(@this),
+                name: nameof(Show),
+                singleCommand: true
                 );
 
             commandScheduler.AddCommand(command);
@@ -151,70 +170,73 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
-            if (redrawScheduled)
-                return;
-
-            //var command = Command.Create(
-            //    this,
-            //    static @this => @this.IsInited,
-            //    static @this =>
-            //    {
-            //        @this.redrawScheduled = true;
-
-            //        @this.DoActionAsync(@this,
-            //            static async @this =>
-            //            {
-            //                await UniTask.NextFrame();
-
-            //                Очистка старых состояний
-            //                @this.graphicStates.Clear();
-            //                @this.showableStates.Clear();
-
-            //                Перепоказ текущего состояния
-            //                if (@this.IsShown)
-            //                {
-            //                    Showable.Show(@this.gameObject, @this.graphicStates, @this.showableStates);
-            //                }
-            //                else
-            //                {
-            //                    Showable.Hide(@this.gameObject, @this.graphicStates, @this.showableStates);
-            //                }
-
-            //                @this.PrintLog($"{nameof(Redraw)} called.");
-            //                @this.redrawScheduled = false;
-            //            });
-            //    },
-            //    name: nameof(Redraw));
-
-            //commandScheduler.AddCommand(command);
+            //TODO:
         }
 
         public IObservable<Unit> ObserveShow()
         {
-            return isShown.Where(_ => IsInited).Where(x => x).AsUnitObservable();
+            return isShown.Where(x => x).AsUnitObservable();
         }
 
         public IObservable<Unit> ObserveHide()
         {
-            return isShown.Where(_ => IsInited).Where(x => !x).AsUnitObservable();
+            return isShown.Where(x => !x).AsUnitObservable();
         }
 
-        protected virtual void HideInternal()
+        protected virtual void HideInternal<T>(T @this)
+            where T : GUITab
         {
-            foreach (var graphicState in graphicStates)
-                graphicState.Target.enabled = false;
+            @this.OnHide();
 
-            foreach (var showableState in showableStates)
+            foreach (var graphic in @this.graphicStates.ZLinq().Select(x => x.Target))
+                @this.DisableGraphics(graphic);
+
+            foreach (var showableState in @this.showableStates)
+            {
                 showableState.Target.Hide();
+                EditorApplication.isPaused = true;
+            }
 
-            isShown.Value = false;
+            @this.OnHiden();
         }
 
-        protected virtual void ShowInternal()
+        protected virtual void OnHide()
         {
-            graphicStates.RestoreStates();
-            showableStates.RestoreStates();
+            isStateTransitioning = true;
+        }
+
+        protected virtual void OnHiden()
+        {
+            isShown.Value = false;
+            isStateTransitioning = false;
+        }
+
+        protected virtual void ShowInternal<T>(T @this)
+            where T : GUITab
+        {
+            @this.OnShow();
+            @this.graphicStates.RestoreStates();
+            @this.showableStates.RestoreStates();
+            @this.OnShown();
+        }
+
+        protected virtual void OnShow()
+        {
+            isStateTransitioning = true;
+        }
+
+        protected virtual void OnShown()
+        {
             isShown.Value = true;
+            isStateTransitioning = false;
+        }
+
+        protected virtual void DisableGraphics(Graphic graphic)
+        {
+            if (graphic == null)
+                return;
+
+            graphic.enabled = false;
         }
     }
 }

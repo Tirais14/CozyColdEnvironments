@@ -85,7 +85,7 @@ namespace CCEnvs.Unity
                  .CForEach(type => GetInstance(type))
                  .Length;
 
-            CCDebug.PrintLog($"Instant created class count = {instantCreatedClassCount}.",
+            CCDebug.Instance.PrintLog($"Instant created class count = {instantCreatedClassCount}.",
                              new DebugContext(this).Additive());
         }
 

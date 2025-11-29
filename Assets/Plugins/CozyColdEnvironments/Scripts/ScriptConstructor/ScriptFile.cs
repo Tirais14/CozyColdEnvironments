@@ -41,7 +41,7 @@ namespace CCEnvs.Files.ScriptUtils
                 throw new FileNotFoundException(path);
             if (customContent is null)
             {
-                CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
+                CCDebug.Instance.PrintError($"{nameof(FileEntry)}: content is null.");
                 return;
             }
             CC.Guard.StringArgument(Name, nameof(Name));
@@ -59,12 +59,12 @@ namespace CCEnvs.Files.ScriptUtils
                 return false;
             if (customContent is null)
             {
-                CCDebug.PrintError($"{nameof(FileEntry)}: content is null.");
+                CCDebug.Instance.PrintError($"{nameof(FileEntry)}: content is null.");
                 return false;
             }
             if (Name.IsNullOrEmpty())
             {
-                CCDebug.PrintError(new FileNameException(Name), this);
+                CCDebug.Instance.PrintError(new FileNameException(Name), this);
                 return false;
             }
 

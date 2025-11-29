@@ -32,10 +32,6 @@ namespace CCEnvs.Unity.Storages.UI
         {
             base.Awake();
             isMutable = true;
-
-            image.Raw.ObserveEveryValueChanged(cmp => cmp!.enabled).Subscribe(state => 
-            this.PrintLog(state)
-            );
         }
 
         protected override void Start()

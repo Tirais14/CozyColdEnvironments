@@ -17,7 +17,7 @@ namespace CCEnvs.Json.Diagnsotics
             IsEnabled = true;
             OnError = (sender, e) =>
             {
-                CCDebug.PrintException(e.ErrorContext.Error);
+                CCDebug.Instance.PrintException(e.ErrorContext.Error);
             };
         }
 

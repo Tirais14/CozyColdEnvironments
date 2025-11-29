@@ -48,7 +48,7 @@ namespace CCEnvs.Utils
                 {
                     fieldValue = field.GetValue(instance);
 
-                    CCDebug.AssertError(fieldValue.IsNotNull(),
+                    CCDebug.Instance.AssertError(fieldValue.IsNotNull(),
                         $"Field: {field.Name} in type: {instance.GetTypeName()} not setted but required.",
                         instance);
                 }
@@ -70,7 +70,7 @@ namespace CCEnvs.Utils
                 {
                     propertyValue = property.GetValue(instance);
 
-                    CCDebug.AssertError(propertyValue.IsNotNull(),
+                    CCDebug.Instance.AssertError(propertyValue.IsNotNull(),
                         $"Property: {property.Name} in type: {instance.GetTypeName()} not setted but required.",
                         instance);
                 }

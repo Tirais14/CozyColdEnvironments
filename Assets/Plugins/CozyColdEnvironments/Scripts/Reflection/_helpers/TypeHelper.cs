@@ -62,7 +62,7 @@ namespace CCEnvs.Reflection
                 sb.AppendLine($"Source: {source?.GetName()}. Target = {target?.GetName()}.");
             }
 
-            CCDebug.PrintLog(sb.ToString(), typeof(TypeHelper));
+            CCDebug.Instance.PrintLog(sb.ToString(), typeof(TypeHelper));
 
             //Creating graph
             foreach (var ifacePair in allIntefacePairs)
@@ -80,7 +80,7 @@ namespace CCEnvs.Reflection
             }
 
             var algorithm = new GraphvizAlgorithm<Type, Edge<Type>>(graph);
-            CCDebug.PrintWarning(algorithm.Generate());
+            CCDebug.Instance.PrintWarning(algorithm.Generate());
 
             var bfs = new BreadthFirstSearchAlgorithm<Type, Edge<Type>>(graph);
             var pathParts = new List<(Type, Type)>();

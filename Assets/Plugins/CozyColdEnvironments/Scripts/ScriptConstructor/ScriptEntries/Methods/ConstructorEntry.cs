@@ -155,7 +155,7 @@ namespace CCEnvs.Files.ScriptUtils
                     results.Add(parentArgumentNames[i]);
             }
 
-            CCDebug.AssertWarning(results.Count >= parentArgumentNames.Length, "Not all arguments found.");
+            CCDebug.Instance.AssertWarning(results.Count >= parentArgumentNames.Length, "Not all arguments found.");
 
             return results.JoinStrings(", ");
         }

@@ -30,7 +30,7 @@ namespace CCEnvs.Files.ScriptUtils
 
         protected override void BuildString()
         {
-            CCDebug.AssertError(NamespaceName.IsNotNullOrEmpty(), "Trying to create namespace without name.", this);
+            CCDebug.Instance.AssertError(NamespaceName.IsNotNullOrEmpty(), "Trying to create namespace without name.", this);
 
             WriteLine($"namespace {NamespaceName}");
 

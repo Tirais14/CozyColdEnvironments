@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Returnables;
 using System;
@@ -12,7 +11,8 @@ namespace CCEnvs.Unity.Commands
 {
     public class CommandScheduler : IDisposable, ICommandScheduler
     {
-        private readonly Queue<ICommand> queue = new();
+        private readonly Queue<ICommand> commands = new();
+        private readonly HashSet<ICommand> commandSet = new();
         private ReactiveCommand<ICommand>? addCommand;
         private ReactiveCommand<Mock>? commandsExecuted;
         private CancellationTokenSource? commandsExecutedCancellationTokenSource;
@@ -25,36 +25,44 @@ namespace CCEnvs.Unity.Commands
             }
         }
 
-        public bool HasCommands => queue.IsNotEmpty();
+        public bool HasCommands => commands.IsNotEmpty();
 
         public void AddCommand(ICommand command)
         {
             CC.Guard.IsNotNull(command, nameof(command));
 
-            queue.Enqueue(command);
+            OnCommandAdd(command);
+            commands.Enqueue(command);
+            commandSet.Add(command);
             addCommand?.Execute(command);
         }
 
-        public void Clear() => queue.Clear();
+        public void Clear()
+        {
+            commands.Clear();
+            commandSet.Clear();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoTick()
         {
-            while (queue.TryPeek(out ICommand command) && command.IsReadyToExecute)
+            while (commands.TryPeek(out ICommand command) && command.IsReadyToExecute)
             {
                 if (command.IsCancelled)
                 {
-                    var x = queue.Dequeue();
-                    CCDebug.PrintLog($"Command {x} Cancelled.");
+                    var x = commands.Dequeue();
+                    commandSet.Remove(x);
+                    this.PrintLog($"Command: {x} cancelled.");
                 }
                 else
                 {
-                    var x = queue.Dequeue();
+                    var x = commands.Dequeue();
+                    commandSet.Remove(x);
 
                     try
                     {
                         x.Execute();
-                        CCDebug.PrintLog($"Command {x} Executed.");
+                        this.PrintLog($"Command: {x} executed.");
                     }
                     catch (Exception ex)
                     {
@@ -63,7 +71,7 @@ namespace CCEnvs.Unity.Commands
                 }
             }
 
-            if (queue.IsEmpty())
+            if (commands.IsEmpty())
             {
                 commandsExecuted?.Execute(Mock.Default);
 
@@ -100,9 +108,41 @@ namespace CCEnvs.Unity.Commands
             {
                 addCommand?.Dispose();
                 commandsExecuted?.Dispose();
+                commandsExecutedCancellationTokenSource?.Dispose();
             }
 
             disposed = true;
+        }
+
+        protected void OnCommandAdd(ICommand command)
+        {
+            if (command.IsSingle
+                &&
+                commandSet.Contains(command))
+            {
+                CommandInfo info = command.GetCommandInfo();
+                foreach (var cmd in commands)
+                {
+                    if (!info.IsMatch(cmd))
+                        continue;
+
+                    cmd.Undo();
+                }
+            }
+
+            if (command.UndoCommandsOnAdd.IsNotEmpty())
+            {
+                CommandInfo info;
+                for (int i = 0; i < command.UndoCommandsOnAdd.Length; i++)
+                {
+                    info = command.UndoCommandsOnAdd[i];
+                    foreach (var cmd in commands)
+                    {
+                        if (info.IsMatch(cmd))
+                            cmd.Undo();
+                    }
+                }
+            }
         }
     }
 }

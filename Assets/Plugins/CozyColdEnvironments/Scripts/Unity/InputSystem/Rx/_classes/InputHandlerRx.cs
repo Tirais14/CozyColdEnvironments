@@ -51,11 +51,11 @@ namespace CCEnvs.Unity.InputSystem.Rx
                     item.Enable();
 
                 IsEnabled = true;
-                CCDebug.PrintLog("Enabled", new DebugContext(GetType()));
+                CCDebug.Instance.PrintLog("Enabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
                 IsEnabled = false;
             }
         }
@@ -69,11 +69,11 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
                 IsEnabled = false;
 
-                CCDebug.PrintLog("Disabled", new DebugContext(GetType()));
+                CCDebug.Instance.PrintLog("Disabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
                 IsEnabled = false;
             }
         }
@@ -126,7 +126,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
             if (props.IsNullOrEmpty())
             {
-                CCDebug.PrintError("Cannot find any input action properties.");
+                CCDebug.Instance.PrintError("Cannot find any input action properties.");
                 return;
             }
 
@@ -141,7 +141,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             }
 
             registeredActions.TrimExcess();
-            CCDebug.PrintLog("Initialized", new DebugContext(GetType()).Additive());
+            CCDebug.Instance.PrintLog("Initialized", new DebugContext(GetType()).Additive());
         }
     }
 }

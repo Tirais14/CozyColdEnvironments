@@ -3,6 +3,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -263,6 +264,26 @@ namespace CCEnvs
         public static bool IsNotEmptyObject<T>(this T? value)
         {
             return !value.IsEmptyObject();
+        }
+
+        public static bool Let<T>(this T? source, [NotNullWhen(true)] out T? local)
+        {
+            return source.Is<T>(out local);
+        }
+        public static bool Let<T, TOut>(
+            this T? source,
+            Func<T, TOut?> converter,
+            [NotNullWhen(true)] out TOut? local)
+        {
+            Guard.IsNotNull(converter);
+
+            if (source.IsNull())
+            {
+                local = default!;
+                return false;
+            }
+
+            return converter(source).Is<TOut>(out local);
         }
     }
 }

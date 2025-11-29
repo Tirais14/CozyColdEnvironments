@@ -52,7 +52,7 @@ namespace CCEnvs.Files
                 throw new FileOverwriteNotAllowedException(path);
             if (customContent is null)
             {
-                CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
+                CCDebug.Instance.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
                 return;
             }
             CC.Guard.StringArgument(Name, nameof(Name));
@@ -85,7 +85,7 @@ namespace CCEnvs.Files
                 throw new FileOverwriteNotAllowedException(path);
             if (customContent is null)
             {
-                CCDebug.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
+                CCDebug.Instance.PrintWarning($"{nameof(FileEntry)}: Nothing to save.");
                 return;
             }
             CC.Guard.StringArgument(Name, nameof(Name));
@@ -255,7 +255,7 @@ namespace CCEnvs.Files
             CC.Guard.StringArgument(Name, nameof(Name));
 
             File.Create(Path);
-            CCDebug.PrintLog($"File created: \"{Path}\"", this);
+            CCDebug.Instance.PrintLog($"File created: \"{Path}\"", this);
         }
         #endregion Default
 
@@ -310,7 +310,7 @@ namespace CCEnvs.Files
                 case string[] lines:
                     return lines;
                 default:
-                    CCDebug.PrintError($"{customContent?.GetTypeName()} type doesn't supported.");
+                    CCDebug.Instance.PrintError($"{customContent?.GetTypeName()} type doesn't supported.");
                     return Array.Empty<string>();
             }
         }

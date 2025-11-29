@@ -30,7 +30,7 @@ namespace CCEnvs.Json
                 deserialized = token.ToObject(type, serializer);
 
                 if (deserialized.IsNull())
-                    CCDebug.PrintWarning($"Deserialized object ({typeof(T).GetFullName()}) is null.",
+                    CCDebug.Instance.PrintWarning($"Deserialized object ({typeof(T).GetFullName()}) is null.",
                                          typeof(CCJsonConverter<T>));
 
                 if (deserialized is null)
@@ -135,7 +135,7 @@ namespace CCEnvs.Json
             JToken token = JToken.Load(reader);
 
             if (JsonSerializerDebug.IsEnabled)
-                CCDebug.PrintLog($"Deserializing token content => {token}",
+                CCDebug.Instance.PrintLog($"Deserializing token content => {token}",
                                  new DebugContext(this).Additive());
 
             reader = token.CreateReader();

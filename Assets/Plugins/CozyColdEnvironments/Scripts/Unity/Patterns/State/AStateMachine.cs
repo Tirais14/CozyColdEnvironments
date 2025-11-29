@@ -118,7 +118,7 @@ namespace CCEnvs.Patterns.States
             IFactory<Type, IState>? stateFactory = StateMachineHelper.FindFactoryInFields(this);
             if (stateFactory.IsNull())
             {
-                CCDebug.PrintError("Failed to find state factory in fields.");
+                CCDebug.Instance.PrintError("Failed to find state factory in fields.");
                 return;
             }
 

@@ -246,7 +246,7 @@ namespace CCEnvs
             MatchCollection matches = Regex.Matches(str, @"\{\d+\}");
             if (matches == null || matches.Count == 0)
             {
-                CCDebug.PrintError("Incorrect string to format.");
+                CCDebug.Instance.PrintError("Incorrect string to format.");
                 return str;
             }
 

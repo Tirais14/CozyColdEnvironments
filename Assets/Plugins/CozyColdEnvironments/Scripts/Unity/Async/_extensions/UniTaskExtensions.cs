@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.Async
         public static void Forget(UniTask source, object? context = null)
         {
             if (context.IsNull())
-                source.Forget(ex => CCDebug.PrintException(ex));
+                source.Forget(ex => CCDebug.Instance.PrintException(ex));
             else
                 source.Forget(ex => context.PrintException(ex));
         }
@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Async
         public static void Forget<T>(UniTask<T> source, object? context = null)
         {
             if (context.IsNull())
-                source.Forget(ex => CCDebug.PrintException(ex));
+                source.Forget(ex => CCDebug.Instance.PrintException(ex));
             else
                 source.Forget(ex => context.PrintException(ex));
         }

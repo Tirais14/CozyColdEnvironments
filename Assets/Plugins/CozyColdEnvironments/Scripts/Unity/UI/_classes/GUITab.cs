@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.Dependencies;
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Commands;
 using CCEnvs.Unity.Components;
@@ -9,7 +8,6 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using UniRx;
@@ -74,6 +72,7 @@ namespace CCEnvs.Unity.UI
                 );
 
             SetupCommandScheduler();
+            IShowableAwake();
         }
 
         protected override void Start()
@@ -145,30 +144,36 @@ namespace CCEnvs.Unity.UI
 
         private void SetupCommandScheduler()
         {
-            commandScheduler.ObserveAddCommand().SubscribeWithState(this,
-                static (_, @this) =>
-                {
-                    @this.DoActionAsync(static async @this =>
-                        {
-                            CancellationToken cancellationToken = @this.commandScheduler.CommandsExecutedCancellationToken;
+            //commandScheduler.ObserveAddCommand()
+            //    .SubscribeWithState(this,
+            //    static (_, @this) =>
+            //    {
+            //        @this.DoActionAsync(static async @this =>
+            //            {
+            //                CancellationToken cancellationToken = @this.commandScheduler.CommandsExecutedCancellationToken;
 
-                            await UniTask.NextFrame(
-                                timing: PlayerLoopTiming.Update,
-                                cancellationToken: cancellationToken
-                                );
+            //                await UniTask.NextFrame(
+            //                    timing: PlayerLoopTiming.Update,
+            //                    cancellationToken: cancellationToken
+            //                    );
 
-                            while (!cancellationToken.IsCancellationRequested)
-                            {
-                                @this.commandScheduler.DoTick();
+            //                while (!cancellationToken.IsCancellationRequested)
+            //                {
+            //                    @this.commandScheduler.DoTick();
 
-                                await UniTask.NextFrame(
-                                    timing: PlayerLoopTiming.Update,
-                                    cancellationToken: cancellationToken
-                                    );
-                            }
-                        });
-                })
-                .AddTo(this);
+            //                    await UniTask.NextFrame(
+            //                        timing: PlayerLoopTiming.Update,
+            //                        cancellationToken: cancellationToken
+            //                        );
+            //                }
+            //            });
+            //    })
+            //    .AddTo(this);
+        }
+
+        private void Update()
+        {
+            commandScheduler.DoTick();
         }
     }
 }

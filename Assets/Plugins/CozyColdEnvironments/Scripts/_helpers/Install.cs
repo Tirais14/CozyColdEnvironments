@@ -24,7 +24,7 @@ namespace CCEnvs
                                       select method)
             {
                 installer.Invoke(obj: null, Array.Empty<object>());
-                CCDebug.PrintLog($"{installer.ReflectedType.GetFullName()} executed.", typeof(Install));
+                CCDebug.Instance.PrintLog($"{installer.ReflectedType.GetFullName()} executed.", typeof(Install));
             }
         }
     }

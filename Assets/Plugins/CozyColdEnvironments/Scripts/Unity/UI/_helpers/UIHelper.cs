@@ -1,19 +1,12 @@
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Triggers;
-using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
+using CCEnvs.Reflection;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
-using System.Timers;
+using System.Linq;
 using UniRx;
-using UniRx.Triggers;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
-using ZLinq;
-using static UnityEngine.Experimental.Rendering.GraphicsStateCollection;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -34,7 +27,22 @@ namespace CCEnvs.Unity.UI
 
             return Disposable.CreateWithState(
                 graphic,
-                graphic => transparentGraphicStateSnapshots.Remove(graphic)
+                graphic => UndoTransparent(graphic)
+                );
+        }
+
+        public static IDisposable DoTranpsarentRecursive(Graphic graphic)
+        {
+            CC.Guard.IsNotNull(graphic, nameof(graphic));
+
+            using var _ = ListPool<IDisposable>.Get(out var cmps);
+
+            foreach (var child in graphic.Q().ByChildren().Components<Graphic>())
+                cmps.Add(DoTransparent(child));
+
+            return Disposable.CreateWithState(
+                cmps.ToArray(),
+                static cmps => cmps.ForEach(x => x.Dispose())
                 );
         }
 
@@ -47,7 +55,15 @@ namespace CCEnvs.Unity.UI
                 graphic.color = graphic.color.WithAlpha(colorAlpha);
         }
 
-        public static void CaptureGraphicStates(GameObject gameObject,
+        public static void UndoTransparentRecursive(Graphic graphic)
+        {
+            CC.Guard.IsNotNull(graphic, nameof(graphic));
+
+            foreach (var cmp in graphic.Q().ByChildren().Components<Graphic>())
+                UndoTransparent(cmp);
+        }
+
+        public static void CaptureGraphicStatesUntilShowable(GameObject gameObject,
             ICollection<GraphicStateSnaphsot> graphicStates)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
@@ -75,6 +91,7 @@ namespace CCEnvs.Unity.UI
                                                .ByChildren()
                                                .IncludeInactive()
                                                .ExcludeSelf()
+                                               .Nearest()
                                                .Components<IShowable>())
             {
                 showableStates!.Add(new ShowableStateSnapshot(showable));

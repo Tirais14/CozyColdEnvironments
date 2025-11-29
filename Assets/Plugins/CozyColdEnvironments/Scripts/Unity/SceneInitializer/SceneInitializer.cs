@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.Initables
             initable.Init();
             SetInited(initable);
 
-            CCDebug.PrintLog($"Inited => {initable.GetType().GetName()}.");
+            CCDebug.Instance.PrintLog($"Inited => {initable.GetType().GetName()}.");
         }
         /// <exception cref="CCException"></exception>
         public static async UniTask InitObjectAsync(IInitableAsync initableAsync)
@@ -43,11 +43,11 @@ namespace CCEnvs.Unity.Initables
 
                 SetInited(initableAsync);
 
-                CCDebug.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
+                CCDebug.Instance.PrintLog($"Inited => {initableAsync.GetType().GetName()}.");
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
             }
         }
 
@@ -385,7 +385,7 @@ namespace CCEnvs.Unity.Initables
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
             }
         }
 
@@ -405,12 +405,12 @@ namespace CCEnvs.Unity.Initables
                             item.initable,
                             item.attribute.InitableTypes,
                             allInitablesAsync))
-                                .Forget(ex => CCDebug.PrintException(ex));
+                                .Forget(ex => CCDebug.Instance.PrintException(ex));
                 }
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
             }
         }
 
@@ -425,7 +425,7 @@ namespace CCEnvs.Unity.Initables
             }
             catch (Exception ex)
             {
-                CCDebug.PrintException(ex);
+                CCDebug.Instance.PrintException(ex);
             }
         }
 

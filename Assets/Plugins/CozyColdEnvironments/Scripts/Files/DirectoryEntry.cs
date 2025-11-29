@@ -67,7 +67,7 @@ namespace CCEnvs.Files
             Directory.CreateDirectory(Path);
             ApplyChanges();
 
-            CCDebug.PrintLog($"Directory created: \"{Path}\"", this);
+            CCDebug.Instance.PrintLog($"Directory created: \"{Path}\"", this);
         }
 
         #region GetDirectoryPath

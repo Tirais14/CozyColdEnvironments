@@ -46,7 +46,7 @@ namespace CCEnvs.Unity.Tickables
                     ticker.GetType());
 
             self.tickers.Add(ticker.GetType(), ticker);
-            CCDebug.PrintLog($"Registered ticker: {ticker.GetType().GetName()}.");
+            CCDebug.Instance.PrintLog($"Registered ticker: {ticker.GetType().GetName()}.");
 
             return Subscription.Create(ticker, (x) => UnregisterTicker(x));
         }
@@ -85,7 +85,7 @@ namespace CCEnvs.Unity.Tickables
                     tickable.GetType());
 
             IDisposable result = ticker.Register(tickable);
-            CCDebug.PrintLog($"Registered tickable: {tickable.GetType().GetFullName()} to {tickerType.GetName()}.");
+            CCDebug.Instance.PrintLog($"Registered tickable: {tickable.GetType().GetFullName()} to {tickerType.GetName()}.");
 
             return result;
         }
@@ -110,7 +110,7 @@ namespace CCEnvs.Unity.Tickables
             CC.Guard.IsNotNull(tickerType, nameof(tickerType));
 
             var result = self.tickers[tickerType].Unregister(tickable);
-            CCDebug.PrintLog($"Unregistered tickable: {tickable.GetType().GetFullName()} from {tickerType.GetName()}.");
+            CCDebug.Instance.PrintLog($"Unregistered tickable: {tickable.GetType().GetFullName()} from {tickerType.GetName()}.");
 
             return result;
         }
@@ -128,7 +128,7 @@ namespace CCEnvs.Unity.Tickables
 
         public static int RegisterTickers()
         {
-            CCDebug.PrintLog("Registering tickers started.", self);
+            CCDebug.Instance.PrintLog("Registering tickers started.", self);
             var stopwatch = new Stopwatch();
 
             var tickersFiltered = GameObjectQuery.Instance.Reset().IncludeInactive().Components<ITicker>()
@@ -142,13 +142,13 @@ namespace CCEnvs.Unity.Tickables
                 registeredCount++;
             }
 
-            CCDebug.PrintLog($"Registering tickers finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", self);
+            CCDebug.Instance.PrintLog($"Registering tickers finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", self);
             return registeredCount;
         }
 
         public static int RegisterTickables()
         {
-            CCDebug.PrintLog("Registering tickables started.", self);
+            CCDebug.Instance.PrintLog("Registering tickables started.", self);
             var stopwatch = new Stopwatch();
 
             var toRegister =
@@ -164,7 +164,7 @@ namespace CCEnvs.Unity.Tickables
                 registeredCount++;
             }
 
-            CCDebug.PrintLog($"Registering tickables finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", self);
+            CCDebug.Instance.PrintLog($"Registering tickables finished in {stopwatch.Elapsed.TotalSeconds} seconds. Count: {registeredCount}.", self);
             return registeredCount;
         }
     }

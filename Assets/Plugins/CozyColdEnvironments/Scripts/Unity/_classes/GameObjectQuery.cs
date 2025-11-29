@@ -1,6 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.UI;
 using CommunityToolkit.Diagnostics;
@@ -11,7 +12,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.InputSystem.HID;
 using ZLinq;
+using static UnityEngine.GraphicsBuffer;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -31,7 +34,7 @@ namespace CCEnvs.Unity
             /// </summary>
             NotRecursive = 8,
             CacheResult = 16,
-            OnlyFirst = 32,
+            OnlyFirstComponentsOnBranch = 32,
             Default = None
         }
 
@@ -54,7 +57,7 @@ namespace CCEnvs.Unity
         public Maybe<string> tag { get; set; }
         public int? layerMask { get; set; }
         public Maybe<Type> hasType { get; set; }
-        public Maybe<Type> searchDepthLimiter { get; set; }
+        public Maybe<Type> depthLimiter { get; set; }
 
         public GameObjectQuery()
         {
@@ -220,9 +223,9 @@ namespace CCEnvs.Unity
         public GameObjectQuery Nearest(bool state = true)
         {
             if (state)
-                settings |= Settings.OnlyFirst;
+                settings |= Settings.OnlyFirstComponentsOnBranch;
             else
-                settings &= ~Settings.OnlyFirst;
+                settings &= ~Settings.OnlyFirstComponentsOnBranch;
 
             return this;
         }
@@ -241,9 +244,10 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery SearchDepthLimiter(Type? type = null)
+        public GameObjectQuery DepthLimiter(Type? type = null)
         {
-            searchDepthLimiter = type;
+            depthLimiter = type;
+
 
             return this;
         }
@@ -252,7 +256,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery DepthLimiter<T>()
         {
-            return SearchDepthLimiter(typeof(T));
+            return DepthLimiter(typeof(T));
         }
 
         [DebuggerStepThrough]
@@ -568,34 +572,6 @@ namespace CCEnvs.Unity
                 .GetValue(Target.GetValueUnsafe().transform);
         }
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ContainsComponent(object component)
-        {
-            return Components(component.GetType()).Contains(component);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ContainsModel(object model, bool includeComponents = true)
-        {
-            return Models(model.GetType(), includeComponents: includeComponents).Contains(model);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ContainsViewModel(object viewModel)
-        {
-            return ViewModels(viewModel.GetType()).Contains(viewModel);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ContainsView(object view)
-        {
-            return Views(view.GetType()).Contains(view);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Component AddComponent(Type type)
         {
@@ -627,11 +603,54 @@ namespace CCEnvs.Unity
             return new GameObjectQuery(this);
         }
 
+        protected virtual IEnumerable<Component> CustomBfsTransformSearch(
+            GameObject target,
+            Type type)
+        {
+            bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
+            var toProcess = new Queue<Transform>(target.Q().IncludeInactive(includeInactive).NotRecursive().ChildrenTransforms());
+            var cmps = new List<Component>();
+            bool onlyFirstComponentsOnBranch = settings.IsFlagSetted(Settings.OnlyFirstComponentsOnBranch);
+            bool hasDepthLimiter = depthLimiter.IsSome;
+
+            if (!settings.IsFlagSetted(Settings.ExcludeSelf))
+                cmps.AddRange(target.Q().Components(type).Cast<Component>());
+
+            Transform child;
+            while (toProcess.IsNotEmpty())
+            {
+                child = toProcess.Dequeue();
+
+                if (hasDepthLimiter 
+                    &&
+                    child.Q().IncludeInactive().Component(depthLimiter.GetValueUnsafe()).Lax().IsSome
+                    )
+                    continue;
+
+                bool cmpsFound = false;
+                if (child.Q().IncludeInactive(includeInactive).Components(type).Let(out var temp)
+                    &&
+                    temp.IsNotEmpty())
+                {
+                    cmpsFound = true;
+                    cmps.AddRange(temp.Cast<Component>());
+                }
+
+                if (onlyFirstComponentsOnBranch && cmpsFound)
+                    continue;
+
+                foreach (var item in child.Q().IncludeInactive(includeInactive).NotRecursive().ChildrenTransforms())
+                    toProcess.Enqueue(item);
+            }
+
+            return cmps;
+        }
+
         protected virtual IEnumerable<Component> GetComponentsFrom(GameObject target, Type type, bool anyType)
         {
             bool isTransformType = type.IsType<Transform>();
             bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
-            bool onlyFirst = settings.IsFlagSetted(Settings.OnlyFirst);
+            bool nearest = settings.IsFlagSetted(Settings.OnlyFirstComponentsOnBranch);
 
             if (findMode == FindMode.Self)
             {
@@ -647,32 +666,16 @@ namespace CCEnvs.Unity
                     foreach (var child in targetTransform.ZL().Cast<Transform>().Append(targetTransform))
                     {
                         cmps.AddRange(child.Q()
-                                .Components(type)
-                                .Cast<Component>()
-                                );
+                                           .Components(type)
+                                           .Cast<Component>()
+                                           );
                     }
 
                     return cmps;
                 }
-                else if (onlyFirst)
-                {
-                    Transform targetTransform = target.transform;
-                    var cmps = new List<Component>(targetTransform.childCount);
-                    foreach (var child in targetTransform.ZL().Cast<Transform>().Append(targetTransform))
-                    {
-                        if (child.Q()
-                                 .ByChildren()
-                                 .IncludeInactive(settings.IsFlagSetted(Settings.IncludeInactive))
-                                 .Component(type)
-                                 .Lax()
-                                 .TryGetValue(out var cmp))
-                        {
-                            cmps.Add(cmp.As<Component>());
-                        }
-                    }
-
-                    return cmps;
-                }
+                //Switch to custom BFS search only if those flags is true for performance reasons
+                else if (nearest || depthLimiter.IsSome)
+                    return CustomBfsTransformSearch(target, type);
                 else
                 {
                     return target.GetComponentsInChildren<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
@@ -745,21 +748,21 @@ namespace CCEnvs.Unity
             if (settings.IsFlagSetted(Settings.ExcludeSelf))
                 components = components.Where(cmp => cmp.gameObject != target);
 
-            if (searchDepthLimiter.TryGetValue(out var depthLimiter))
-            {
-                //Exclude all childs, which contains depth limiter component in parents
-                components = components.Where(
-                    cmp => !(cmp.QueryToBySingleton()
-                                .ByParent()
-                                .Component(depthLimiter)
-                                .Lax()
-                                .TryGetValue(out var limiter)
-                                &&
-                                limiter.AsOrDefault<Component>()
-                                    .Map(cmp => cmp.gameObject != target)
-                                    .GetValue(false))
-                                    );
-            }
+            //if (depthLimiter.TryGetValue(out var depthLimiter))
+            //{
+            //    //Exclude all childs, which contains depth limiter component in parents
+            //    components = components.Where(
+            //        cmp => !(cmp.QueryToBySingleton()
+            //                    .ByParent()
+            //                    .Component(depthLimiter)
+            //                    .Lax()
+            //                    .TryGetValue(out var limiter)
+            //                    &&
+            //                    limiter.AsOrDefault<Component>()
+            //                        .Map(cmp => cmp.gameObject != target)
+            //                        .GetValue(false))
+            //                        );
+            //}
 
             IEnumerable<object> results = components;
             var providerObjects = components.OfType<IObjectProvider>().Select(x => x.InternalObject).Where(x => anyType || x.IsInstanceOfType(type));

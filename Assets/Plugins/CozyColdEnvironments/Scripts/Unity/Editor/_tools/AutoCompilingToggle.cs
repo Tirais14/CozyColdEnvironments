@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.Editor
             PlayerPrefs.Save();
 
             if (!isInternal)
-                CCDebug.PrintLog($"Auto compiling enabled.",
+                CCDebug.Instance.PrintLog($"Auto compiling enabled.",
                                  typeof(AutoCompilingToggle));
         }
 
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Editor
             PlayerPrefs.Save();
 
             if (!isInternal)
-                CCDebug.PrintLog($"Auto compiling disabled.",
+                CCDebug.Instance.PrintLog($"Auto compiling disabled.",
                                  typeof(AutoCompilingToggle));
         }
 

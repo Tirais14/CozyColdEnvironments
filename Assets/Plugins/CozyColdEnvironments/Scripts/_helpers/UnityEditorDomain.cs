@@ -21,7 +21,7 @@ namespace CCEnvs
         {
             PlayModeEntranceCount = 0;
 
-            CCDebug.PrintLog($"{nameof(PlayModeEntranceCount)} is reseted.",
+            CCDebug.Instance.PrintLog($"{nameof(PlayModeEntranceCount)} is reseted.",
                              new DebugContext(typeof(UnityEditorDomain)).Additive().Editor());
         }
 
@@ -33,7 +33,7 @@ namespace CCEnvs
         {
             PlayModeEntranceCount++;
 
-            CCDebug.PrintLog($"{nameof(PlayModeEntranceCount)} = {PlayModeEntranceCount}",
+            CCDebug.Instance.PrintLog($"{nameof(PlayModeEntranceCount)} = {PlayModeEntranceCount}",
                              new DebugContext(typeof(UnityEditorDomain)).Additive().Editor());
         }
     }

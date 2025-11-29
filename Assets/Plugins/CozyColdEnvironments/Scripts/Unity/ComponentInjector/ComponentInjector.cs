@@ -81,7 +81,7 @@ namespace CCEnvs.Unity.Injections
 
                 if (fieldValue.IsNotNull())
                 {
-                    CCDebug.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
+                    CCDebug.Instance.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
                     return;
                 }
             }
