@@ -12,7 +12,13 @@ namespace CCEnvs.Unity.Commands
     public class CommandScheduler : IDisposable, ICommandScheduler
     {
         private readonly Queue<ICommand> commands = new();
-        private readonly HashSet<ICommand> commandSet = new();
+
+        private readonly HashSet<ICommand> commandSet = new(
+            new AnonymousEqualityComparer<ICommand>(
+                static (left, right) => left.CommandName == right.CommandName && left.GetType() == right.GetType(),
+                static x => HashCode.Combine(x.CommandName, x.GetType())
+                ));
+        
         private ReactiveCommand<ICommand>? addCommand;
         private ReactiveCommand<Mock>? commandsExecuted;
         private CancellationTokenSource? commandsExecutedCancellationTokenSource;
@@ -31,7 +37,13 @@ namespace CCEnvs.Unity.Commands
         {
             CC.Guard.IsNotNull(command, nameof(command));
 
+            if (command.IsCancelled)
+                return;
+
             OnCommandAdd(command);
+            if (command.IsCancelled)
+                return;
+
             commands.Enqueue(command);
             commandSet.Add(command);
             addCommand?.Execute(command);

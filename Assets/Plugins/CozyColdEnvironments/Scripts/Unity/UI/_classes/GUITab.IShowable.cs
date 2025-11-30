@@ -72,54 +72,56 @@ namespace CCEnvs.Unity.UI
             if (m_Graphic != null)
                 UIHelper.DoTranpsarentRecursive(m_Graphic);
 
-            this.DoActionAsync(static async @this =>
-            {
-                await UniTask.NextFrame(timing: PlayerLoopTiming.PreUpdate);
-
-                var childs = @this.Q()
-                                  .ByChildren()
-                                  .ExcludeSelf()
-                                  .Components<IInitableBase>()
-                                  .ZL()
-                                  .Where(x => x.Is<IShowable>())
-                                  .ToArray();
-
-                await UniTask.WaitUntil(
-                    childs,
-                    static childs => childs.IsEmpty() || childs.All(x => x.IsInited),
-                    timing: PlayerLoopTiming.PreUpdate
-                    );
-
-                @this.IsInited = true;
-
-                if (@this.m_Graphic != null)
-                {
-                    var parents = @this.Q()
-                                       .ByParent()
-                                       .ExcludeSelf()
-                                       .Components<IInitableBase>()
-                                       .ZL()
-                                       .Where(x => x.Is<IShowable>())
-                                       .ToArray();
-
-                    await UniTask.WaitUntil(
-                        parents,
-                        static parents => parents.IsEmpty() || parents.All(x => x.IsInited),
-                        timing: PlayerLoopTiming.PreUpdate
-                        );
-
-                    UIHelper.UndoTransparentRecursive(@this.m_Graphic);
-                }
-
-                if (!@this.ShowOnInited && @this.GetParentGui().IsNone)
-                    @this.Hide();
-            });
+            this.DoActionAsync(Init);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void IShowableOnTransformChildrenChanged()
         {
             Redraw();
+        }
+
+        private static async UniTask Init(GUITab @this)
+        {
+            await UniTask.NextFrame(timing: PlayerLoopTiming.LastInitialization);
+
+            var childs = @this.Q()
+                              .ByChildren()
+                              .ExcludeSelf()
+                              .Components<IInitableBase>()
+                              .ZL()
+                              .Where(x => x.Is<IShowable>())
+                              .ToArray();
+
+            await UniTask.WaitUntil(
+                childs,
+                static childs => childs.IsEmpty() || childs.All(x => x.IsInited),
+                timing: PlayerLoopTiming.LastInitialization
+                );
+
+            @this.IsInited = true;
+
+            if (@this.m_Graphic != null)
+            {
+                var parents = @this.Q()
+                                   .ByParent()
+                                   .ExcludeSelf()
+                                   .Components<IInitableBase>()
+                                   .ZL()
+                                   .Where(x => x.Is<IShowable>())
+                                   .ToArray();
+
+                await UniTask.WaitUntil(
+                    parents,
+                    static parents => parents.IsEmpty() || parents.All(x => x.IsInited),
+                    timing: PlayerLoopTiming.LastInitialization
+                    );
+
+                UIHelper.UndoTransparentRecursive(@this.m_Graphic);
+            }
+
+            if (!@this.ShowOnInited && @this.GetParentGui().IsNone)
+                @this.Hide();
         }
 
         public void Hide()
@@ -192,10 +194,7 @@ namespace CCEnvs.Unity.UI
                 @this.DisableGraphics(graphic);
 
             foreach (var showableState in @this.showableStates)
-            {
                 showableState.Target.Hide();
-                EditorApplication.isPaused = true;
-            }
 
             @this.OnHiden();
         }
@@ -216,7 +215,9 @@ namespace CCEnvs.Unity.UI
         {
             @this.OnShow();
             @this.graphicStates.RestoreStates();
+            @this.graphicStates.Clear();
             @this.showableStates.RestoreStates();
+            @this.showableStates.Clear();
             @this.OnShown();
         }
 

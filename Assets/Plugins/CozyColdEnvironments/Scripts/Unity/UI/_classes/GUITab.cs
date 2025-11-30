@@ -11,6 +11,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using UniRx;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -47,6 +48,8 @@ namespace CCEnvs.Unity.UI
         [Tooltip("If false, only do selection on button click")]
         protected bool switchSelectableOnButtonClick = true;
 
+        private bool commandSchedulerRunning;
+
         public Maybe<Image> image => m_Graphic.AsOrDefault<Image>();
         public Maybe<Button> button => m_Button;
         public Maybe<Selectable> selectable => m_Selectable;
@@ -71,13 +74,13 @@ namespace CCEnvs.Unity.UI
                 () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
                 );
 
-            SetupCommandScheduler();
             IShowableAwake();
         }
 
         protected override void Start()
         {
             base.Start();
+            RunCommandScheduler(this).Forget();
             IShowableStart();
             BindSelectable();
         }
@@ -94,6 +97,23 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnDestroy()
         {
+        }
+
+        private static async UniTask RunCommandScheduler(GUITab @this)
+        {
+            @this.commandSchedulerRunning = true;
+
+            while (!@this.destroyCancellationToken.IsCancellationRequested)
+            {
+                if (@this.enabled)
+                {
+                    await UniTask.WaitForEndOfFrame();
+                    @this.commandScheduler.DoTick();
+                }
+                await UniTask.NextFrame(PlayerLoopTiming.LastInitialization);
+            }
+
+            @this.commandSchedulerRunning = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,40 +160,6 @@ namespace CCEnvs.Unity.UI
                                        cmp.DoSelect();
                                })
                 .AddTo(this));
-        }
-
-        private void SetupCommandScheduler()
-        {
-            //commandScheduler.ObserveAddCommand()
-            //    .SubscribeWithState(this,
-            //    static (_, @this) =>
-            //    {
-            //        @this.DoActionAsync(static async @this =>
-            //            {
-            //                CancellationToken cancellationToken = @this.commandScheduler.CommandsExecutedCancellationToken;
-
-            //                await UniTask.NextFrame(
-            //                    timing: PlayerLoopTiming.Update,
-            //                    cancellationToken: cancellationToken
-            //                    );
-
-            //                while (!cancellationToken.IsCancellationRequested)
-            //                {
-            //                    @this.commandScheduler.DoTick();
-
-            //                    await UniTask.NextFrame(
-            //                        timing: PlayerLoopTiming.Update,
-            //                        cancellationToken: cancellationToken
-            //                        );
-            //                }
-            //            });
-            //    })
-            //    .AddTo(this);
-        }
-
-        private void Update()
-        {
-            commandScheduler.DoTick();
         }
     }
 }

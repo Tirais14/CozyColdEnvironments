@@ -69,7 +69,6 @@ namespace CCEnvs.Unity.UI
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(graphicStates, nameof(graphicStates));
 
-            graphicStates.Clear();
             foreach (var graphic in gameObject.QueryTo()
                                               .ByChildren()
                                               .IncludeInactive()
@@ -86,7 +85,6 @@ namespace CCEnvs.Unity.UI
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(showableStates, nameof(showableStates));
 
-            showableStates.Clear();
             foreach (var showable in gameObject.QueryTo()
                                                .ByChildren()
                                                .IncludeInactive()
