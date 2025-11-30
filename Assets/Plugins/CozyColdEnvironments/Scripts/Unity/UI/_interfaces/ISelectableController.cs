@@ -5,7 +5,7 @@ using UniRx;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface ISelectableObserver<T>
+    public interface ISelectableController<T>
     {
         Maybe<T> Selection { get; }
 

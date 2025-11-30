@@ -89,7 +89,7 @@ namespace CCEnvs.Unity.UI
                               .ByChildren()
                               .ExcludeSelf()
                               .Components<IInitableBase>()
-                              .ZL()
+                              .ZLinq()
                               .Where(x => x.Is<IShowable>())
                               .ToArray();
 
@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.UI
                                    .ByParent()
                                    .ExcludeSelf()
                                    .Components<IInitableBase>()
-                                   .ZL()
+                                   .ZLinq()
                                    .Where(x => x.Is<IShowable>())
                                    .ToArray();
 
@@ -130,7 +130,7 @@ namespace CCEnvs.Unity.UI
                 return;
 
             UIHelper.CaptureGraphicStatesUntilShowable(gameObject, graphicStates);
-            UIHelper.CaptureShowableStates(gameObject, showableStates);
+            UIHelper.CaptureShowableStatesUntilShowable(gameObject, showableStates);
 
             var command = Command.Create(this,
                 isReadyToExecute: static @this => @this.HideAllowed,

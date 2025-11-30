@@ -28,5 +28,7 @@ namespace CCEnvs.Unity._2D.Locations
         bool HasOwner(object owner);
 
         bool SetOwner(object owner);
+
+        void Refresh();
     }
 }

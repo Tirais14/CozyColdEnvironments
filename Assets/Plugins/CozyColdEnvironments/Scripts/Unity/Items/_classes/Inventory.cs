@@ -63,17 +63,17 @@ namespace CCEnvs.Unity.Items
 
         public bool ContainsItem()
         {
-            return Values.ZL().Any(x => x.ContainsItem());
+            return Values.ZLinq().Any(x => x.ContainsItem());
         }
 
         public bool ContainsItem(IItem? item)
         {
-            return Values.ZL().Any(x => x.ContainsItem(item));
+            return Values.ZLinq().Any(x => x.ContainsItem(item));
         }
 
         public bool ContainsItem(IItem? item, int count)
         {
-            int containedCount = Values.ZL()
+            int containedCount = Values.ZLinq()
                 .Where(x => x.ContainsItem(item))
                 .Sum(x => x.ItemCount);
 
@@ -96,7 +96,7 @@ namespace CCEnvs.Unity.Items
 
             int rest = count;
             Maybe<IItemContainer> restItems;
-            foreach (var cnt in from cnt in this.ZL() //Searching for the container with same item or first empty container
+            foreach (var cnt in from cnt in this.ZLinq() //Searching for the container with same item or first empty container
                                 where cnt.Value.IsEmpty || (cnt.Value.ContainsItem(item) && !cnt.Value.IsFull)
                                 select (cnt, priority: cnt.Value.ContainsItem(item) ? cnt.Key - 1 : cnt.Key) into pair
                                 orderby pair.priority
@@ -148,7 +148,7 @@ namespace CCEnvs.Unity.Items
                 return null!;
 
             Maybe<IItemContainer> taked;
-            foreach (var cnt in Values.ZL().Where(x => x.ContainsItem(item)))
+            foreach (var cnt in Values.ZLinq().Where(x => x.ContainsItem(item)))
             {
                 taked = cnt.TakeItem(count);
                 count -= taked.GetValueUnsafe().ItemCount;

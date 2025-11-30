@@ -29,13 +29,13 @@ namespace CCEnvs.Unity.Storages.UI
         protected Dictionary<int, GameObject> instantiatedGameObjects = new();
 
         public GameObjectList Slots => slots;
-        public ISelectableObserver<IItemContainer> SelectableObserver { get; private set; } = null!;
+        public ISelectableController<IItemContainer> SelectableObserver { get; private set; } = null!;
 
         protected override void Awake()
         {
             base.Awake();
             SelectableObserver = this.QueryTo()
-                .Component<ISelectableObserver<IItemContainer>>()
+                .Component<ISelectableController<IItemContainer>>()
                 .Lax()
                 .GetValue(() => gameObject.AddComponent<ItemContainerViewSelectableObserver>());
         }
@@ -126,7 +126,7 @@ namespace CCEnvs.Unity.Storages.UI
                 return;
 
             foreach (var ev in modelUnsafe.As<IInventory>()
-                .ZL()
+                .ZLinq()
                 .Select(pair => new DictionaryAddEvent<int, IItemContainer>(pair.Key, pair.Value)))
             {
                 OnAddContainer(ev, this);

@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -58,6 +59,11 @@ namespace CCEnvs
                         return left.EqualsOrdinal(right, ignoreCase: false);
                 }
             }
+        }
+        public static bool Match(this Maybe<string> left, Maybe<string> right,
+            StringMatchSettings settings = StringMatchSettings.Default)
+        {
+            return left.Raw.Match(right.Raw, settings);
         }
 
         public static bool EqualsInvariant(this string value,

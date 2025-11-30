@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
+using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -20,6 +21,7 @@ namespace CCEnvs.Unity._2D.Locations
         Maybe<ILocation> Location { get; }
         BoundsInt CellBounds { get; }
         string Name { get; }
+        Maybe<object> Owner { get; }
 
         bool Contains();
         bool Contains(ICell? cell);
@@ -29,6 +31,13 @@ namespace CCEnvs.Unity._2D.Locations
         bool Contains(Vector2 pos);
         bool Contains(int x, int y);
         bool Contains(float x, float y);
+
+        void SetCell(Vector3Int pos, ICell cell);
+        void SetCell(Vector2Int pos, ICell cell);
+        void SetCell(Vector3 pos, ICell cell);
+        void SetCell(Vector2 pos, ICell cell);
+        void SetCell(int x, int y, ICell cell);
+        void SetCell(float x, float y, ICell cell);
     }
     public interface ILocationLayer<T> : ILocationLayer
         where T : ICell
@@ -49,9 +58,41 @@ namespace CCEnvs.Unity._2D.Locations
 
         bool Contains(T? cell);
 
+        void SetCell(Vector3Int pos, T cell);
+        void SetCell(Vector2Int pos, T cell);
+        void SetCell(Vector3 pos, T cell);
+        void SetCell(Vector2 pos, T cell);
+        void SetCell(int x, int y, T cell);
+        void SetCell(float x, float y, T cell);
+
         bool ILocationLayer.Contains(ICell? cell)
         {
             return cell.Is<T>(out var typed) && Contains(typed);
+        }
+
+        void ILocationLayer.SetCell(Vector3Int pos, ICell cell)
+        {
+            SetCell(pos, cell.As<T>());
+        }
+        void ILocationLayer.SetCell(Vector2Int pos, ICell cell)
+        {
+            SetCell(pos, cell.As<T>());
+        }
+        void ILocationLayer.SetCell(Vector3 pos, ICell cell)
+        {
+            SetCell(pos, cell.As<T>());
+        }
+        void ILocationLayer.SetCell(Vector2 pos, ICell cell)
+        {
+            SetCell(pos, cell.As<T>());
+        }
+        void ILocationLayer.SetCell(int x, int y, ICell cell)
+        {
+            SetCell(x, y, cell.As<T>());
+        }
+        void ILocationLayer.SetCell(float x, float y, ICell cell)
+        {
+            SetCell(x, y, cell.As<T>());
         }
     }
 }

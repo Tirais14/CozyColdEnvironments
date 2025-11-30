@@ -1,8 +1,6 @@
-using CCEnvs.Reflection;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -79,7 +77,7 @@ namespace CCEnvs.Unity.UI
             }
         }
 
-        public static void CaptureShowableStates(GameObject gameObject,
+        public static void CaptureShowableStatesUntilShowable(GameObject gameObject,
             ICollection<ShowableStateSnapshot> showableStates)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));

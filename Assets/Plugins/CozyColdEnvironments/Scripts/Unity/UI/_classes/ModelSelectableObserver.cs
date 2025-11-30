@@ -9,11 +9,11 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public class ModelSelectableObserver<TModel> : SelectableObserver<ISelectable>, ISelectableObserver<TModel>
+    public class ModelSelectableObserver<TModel> : SelectableObserver<ISelectable>, ISelectableController<TModel>
     {
         protected readonly ReactiveProperty<Maybe<TModel>> modelSelection = new();
 
-        Maybe<TModel> ISelectableObserver<TModel>.Selection => modelSelection.Value;
+        Maybe<TModel> ISelectableController<TModel>.Selection => modelSelection.Value;
 
         protected override void Start()
         {
@@ -29,14 +29,14 @@ namespace CCEnvs.Unity
                 }).AddTo(this);
         }
 
-        IObservable<PreviousCurrentPair<Maybe<TModel>, TModel>> ISelectableObserver<TModel>.ObserveSelected()
+        IObservable<PreviousCurrentPair<Maybe<TModel>, TModel>> ISelectableController<TModel>.ObserveSelected()
         {
             return modelSelection.Where(x => x.IsSome)
                                  .Pairwise()
                                  .Select(pair => PreviousCurrentPair.CreateT(pair.Previous, pair.Current.GetValueUnsafe()));
         }
 
-        IObservable<PreviousCurrentPair<Maybe<TModel>>> ISelectableObserver<TModel>.ObserveSelection()
+        IObservable<PreviousCurrentPair<Maybe<TModel>>> ISelectableController<TModel>.ObserveSelection()
         {
             return modelSelection.Pairwise().Select(pair => PreviousCurrentPair.Create(pair.Previous, pair.Current));
         }

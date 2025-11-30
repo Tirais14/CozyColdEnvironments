@@ -107,10 +107,14 @@ namespace CCEnvs.Unity.UI
             {
                 if (@this.enabled)
                 {
-                    await UniTask.WaitForEndOfFrame();
+                    await UniTask.WaitForEndOfFrame(cancellationToken: @this.destroyCancellationToken);
                     @this.commandScheduler.DoTick();
                 }
-                await UniTask.NextFrame(PlayerLoopTiming.LastInitialization);
+
+                await UniTask.NextFrame(
+                    PlayerLoopTiming.Initialization, 
+                    cancellationToken: @this.destroyCancellationToken
+                    );
             }
 
             @this.commandSchedulerRunning = false;

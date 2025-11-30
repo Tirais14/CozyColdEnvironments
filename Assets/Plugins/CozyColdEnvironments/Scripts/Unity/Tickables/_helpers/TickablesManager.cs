@@ -152,7 +152,7 @@ namespace CCEnvs.Unity.Tickables
             var stopwatch = new Stopwatch();
 
             var toRegister =
-               from tickable in GameObjectQuery.Instance.Reset().IncludeInactive().Components<ITickableBase>().ZL()
+               from tickable in GameObjectQuery.Instance.Reset().IncludeInactive().Components<ITickableBase>().ZLinq()
                select (tickable, state: Tickable.TryGetTickerType(tickable, out Type? tickerType), tickerType) into item
                where item.state && !IsTickableRegistered(item.tickable)
                select item;

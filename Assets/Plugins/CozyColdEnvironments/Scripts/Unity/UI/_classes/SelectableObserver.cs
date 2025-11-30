@@ -13,7 +13,7 @@ using ZLinq;
 namespace CCEnvs.Unity.UI
 {
     [DisallowMultipleComponent]
-    public class SelectableObserver<T> : CCBehaviour, ISelectableObserver<T>
+    public class SelectableObserver<T> : CCBehaviour, ISelectableController<T>
         where T : ISelectable
     {
         protected readonly ReactiveProperty<Maybe<T>> selection = new();
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.UI
         {
             @this.selection.Value.IfSome(x => x.DoDeselect());
 
-            @this.selection.Value = @this.selectables.ZL()
+            @this.selection.Value = @this.selectables.ZLinq()
                 .Where(sel => sel.IsNotNull())
                 .FirstOrDefault(sel => sel.IsSelected);
         }

@@ -1,20 +1,16 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.UI;
 using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks.Triggers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
 using ZLinq;
-using static UnityEngine.GraphicsBuffer;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -55,7 +51,7 @@ namespace CCEnvs.Unity
         /// <see cref="Settings.ByFullName"/>, <see cref="Settings.IgnoreCase"/> doesn' affect
         /// </summary>
         public Maybe<string> tag { get; set; }
-        public int? layerMask { get; set; }
+        public Maybe<IntBitMask> layerMask { get; set; }
         public Maybe<Type> hasType { get; set; }
         public Maybe<Type> depthLimiter { get; set; }
 
@@ -174,7 +170,10 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery ByLayerMask(int? layerMask = null)
         {
-            this.layerMask = layerMask;
+            if (layerMask is null)
+                this.layerMask = Maybe<IntBitMask>.None;
+            else
+                this.layerMask = layerMask.Value.ToBitMask();
 
             return this;
         }
@@ -334,7 +333,7 @@ namespace CCEnvs.Unity
                 seekingComponentType: type,
                 name: name.Raw,
                 tag: tag.Raw,
-                layer: layerMask ?? -1,
+                layer: layerMask.GetValue(-1),
                 componentFilter: hasType.Raw)
                 );
         }
@@ -413,7 +412,7 @@ namespace CCEnvs.Unity
                 seekingComponentType: type,
                 name: name.Raw,
                 tag: tag.Raw,
-                layer: layerMask ?? -1,
+                layer: layerMask.GetValue(-1),
                 componentFilter: hasType.Raw)
                 );
         }
@@ -476,7 +475,7 @@ namespace CCEnvs.Unity
                 seekingComponentType: type,
                 name: name.Raw,
                 tag: tag.Raw,
-                layer: layerMask ?? -1,
+                layer: layerMask.GetValue(-1),
                 componentFilter: hasType.Raw));
         }
 
@@ -504,7 +503,7 @@ namespace CCEnvs.Unity
                 seekingComponentType: typeof(Transform),
                 name: name.Raw,
                 tag: tag.Raw,
-                layer: layerMask ?? -1,
+                layer: layerMask.GetValue(-1),
                 componentFilter: hasType.Raw)
                 );
         }
@@ -544,7 +543,7 @@ namespace CCEnvs.Unity
                 seekingComponentType: typeof(GameObject),
                 name: name.Raw,
                 tag: tag.Raw,
-                layer: layerMask ?? -1,
+                layer: layerMask.GetValue(-1),
                 componentFilter: hasType.Raw)
                 );
         }
@@ -603,7 +602,7 @@ namespace CCEnvs.Unity
             return new GameObjectQuery(this);
         }
 
-        protected virtual IEnumerable<Component> CustomBfsTransformSearch(
+        protected virtual IEnumerable<Component> CustomBfsChildsSearch(
             GameObject target,
             Type type)
         {
@@ -663,7 +662,12 @@ namespace CCEnvs.Unity
                 {
                     Transform targetTransform = target.transform;
                     var cmps = new List<Component>();
-                    foreach (var child in targetTransform.ZL().Cast<Transform>().Append(targetTransform))
+                    var childs = targetTransform.ZLinq().Cast<Transform>();
+
+                    if (!settings.IsFlagSetted(Settings.ExcludeSelf))
+                        childs.Prepend(targetTransform);
+
+                    foreach (var child in childs)
                     {
                         cmps.AddRange(child.Q()
                                            .Components(type)
@@ -675,7 +679,7 @@ namespace CCEnvs.Unity
                 }
                 //Switch to custom BFS search only if those flags is true for performance reasons
                 else if (nearest || depthLimiter.IsSome)
-                    return CustomBfsTransformSearch(target, type);
+                    return CustomBfsChildsSearch(target, type);
                 else
                 {
                     return target.GetComponentsInChildren<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
@@ -725,44 +729,14 @@ namespace CCEnvs.Unity
                     .IsSome
                     );
 
-            if (settings.IsFlagSetted(Settings.NotRecursive)
-                &&
-                findMode.IsFlagSetted(FindMode.InChilds))
-            {
-                var goTransform = target.transform;
-
-                components = from cmp in components
-                             where cmp.gameObject == Target || cmp.transform.parent == goTransform
-                             select cmp;
-            }
-
-            if (layerMask.HasValue)
-                components = components.Where(cmp => cmp.gameObject.layer == layerMask);
+            if (this.layerMask.TryGetValue(out var layerMask))
+                components = components.Where(cmp => layerMask.ContainsFlag(cmp.gameObject.layer));
 
             if (name.IsSome)
                 components = components.Where(cmp => cmp.gameObject.name.Match(name.GetValueUnsafe(), stringMatchSettings));
 
             if (tag.IsSome)
                 components = components.Where(cmp => cmp.gameObject.CompareTag(tag.GetValueUnsafe()));
-
-            if (settings.IsFlagSetted(Settings.ExcludeSelf))
-                components = components.Where(cmp => cmp.gameObject != target);
-
-            //if (depthLimiter.TryGetValue(out var depthLimiter))
-            //{
-            //    //Exclude all childs, which contains depth limiter component in parents
-            //    components = components.Where(
-            //        cmp => !(cmp.QueryToBySingleton()
-            //                    .ByParent()
-            //                    .Component(depthLimiter)
-            //                    .Lax()
-            //                    .TryGetValue(out var limiter)
-            //                    &&
-            //                    limiter.AsOrDefault<Component>()
-            //                        .Map(cmp => cmp.gameObject != target)
-            //                        .GetValue(false))
-            //                        );
-            //}
 
             IEnumerable<object> results = components;
             var providerObjects = components.OfType<IObjectProvider>().Select(x => x.InternalObject).Where(x => anyType || x.IsInstanceOfType(type));
@@ -824,19 +798,19 @@ namespace CCEnvs.Unity
             return source.QueryTo();
         }
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectQuery QPerf(this GameObject source)
-        {
-            return source.QueryToBySingleton();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static GameObjectQuery QPerf(this GameObject source)
+        //{
+        //    return source.QueryToBySingleton();
+        //}
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectQuery QPerf(this Component source)
-        {
-            return source.QueryToBySingleton();
-        }
+        //[DebuggerStepThrough]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static GameObjectQuery QPerf(this Component source)
+        //{
+        //    return source.QueryToBySingleton();
+        //}
     }
 }
 

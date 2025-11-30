@@ -41,13 +41,13 @@ namespace CCEnvs.Unity._2D.Locations
         public Result<T> this[Vector3 pos] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[tilemap.WorldToCell(pos)];
+            get => this[ConvertPosition(pos)];
         }
 
         public Result<T> this[Vector2 pos] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this[tilemap.WorldToCell(pos)];
+            get => this[ConvertPosition(pos)];
         }
 
         public Result<T> this[int x, int y] {
@@ -124,6 +124,42 @@ namespace CCEnvs.Unity._2D.Locations
             InitCells();
         }
 
+        public void SetCell(Vector3Int pos, T cell)
+        {
+            if (!Contains(pos))
+                throw new PointOutOfBoundsException(pos);
+
+            CC.Guard.IsNotNull(cell, nameof(cell));
+
+            cells[pos] = cell;
+            cell.SetTile(cell.GetTile().Raw);
+        }
+
+        public void SetCell(Vector2Int pos, T cell)
+        {
+            SetCell((Vector3Int)pos, cell);
+        }
+
+        public void SetCell(Vector3 pos, T cell)
+        {
+            SetCell(ConvertPosition(pos), cell);
+        }
+
+        public void SetCell(Vector2 pos, T cell)
+        {
+            SetCell(ConvertPosition(pos), cell);
+        }
+
+        public void SetCell(int x, int y, T cell)
+        {
+            SetCell(new Vector3Int(x, y), cell);
+        }
+
+        public void SetCell(float x, float y, T cell)
+        {
+            SetCell(new Vector3(x, y), cell);
+        }
+
         private void InitCells()
         {
             T cell;
@@ -138,6 +174,11 @@ namespace CCEnvs.Unity._2D.Locations
                 cells[pos] = cell;
                 this.PrintLog($"Cell inited; position: {pos}; tile: {cell.GetTile().Map(x => x.name).GetValue("none")}.");
             }
+        }
+
+        private Vector3Int ConvertPosition(Vector3 pos)
+        {
+            return tilemap.WorldToCell(pos);
         }
     }
 

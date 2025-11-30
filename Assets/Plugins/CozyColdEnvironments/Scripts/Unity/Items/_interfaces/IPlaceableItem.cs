@@ -1,10 +1,18 @@
+#nullable enable
 using UnityEngine;
 
-#nullable enable
 namespace CCEnvs.Unity.Items
 {
     public interface IPlaceableItem : IItem
     {
-        GameObject WorldPrefab { get; }
+        Object WorldObject { get; }
+    }
+
+    public interface IPlaceableItem<T> : IPlaceableItem
+        where T : UnityEngine.Object
+    {
+        new T WorldObject { get; }
+
+        Object IPlaceableItem.WorldObject => WorldObject;
     }
 }

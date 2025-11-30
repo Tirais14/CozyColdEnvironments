@@ -1,13 +1,12 @@
+using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ZLinq;
-using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S1117
@@ -20,6 +19,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         public Maybe<IAddressablesDatabaseRegistry> registry { get; set; }
         public Maybe<string> textIdFilter { get; set; }
         public Maybe<int> numberIdFilter { get; set; }
+        public StringMatchSettings TextMatchSettings { get; set; }
+
+        public AddressablesDatabaseSearch() => Reset();
 
         protected static bool FilterType(Type left, Type? right)
         {
@@ -42,6 +44,17 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             CC.Guard.IsNotNull(reg, nameof(reg));
 
             registry = reg.Maybe();
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AddressablesDatabaseSearch ByPartialName(bool state = true)
+        {
+            if (state)
+                TextMatchSettings |= StringMatchSettings.Partial;
+            else
+                TextMatchSettings &= ~StringMatchSettings.Partial;
 
             return this;
         }
@@ -143,11 +156,12 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             IAddressablesDatabase db = database.GetValueUnsafe();
 
-            return from item in db.Keys.Zip(db.Values, (key, value) => (key, value))
+            return (from item in db.Keys.ZLinq().Zip(db.Values, (key, value) => (key, value))
                    where FilterType(item.value.GetType(), type)
                    where FilterText(item.key.Text)
                    where FilterNumber(item.key.Number)
-                   select item.value;
+                   select item.value)
+                   .AsEnumerable();
         }
 
         [DebuggerStepThrough]
@@ -170,10 +184,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 Text = textIdFilter
             };
 
-            return db[id].Lax().BiMap(
-                some: asset => (asset, null!),
-                none: () => (Assets(type).SingleOrDefault(), new AssetNotFoundException(db, id, type)))
-                .GetValueUnsafe();
+            if (db[id].Lax().TryGetValue(out object? asset))
+                return (asset, null!);
+
+            return (Assets(type).FirstOrDefault(), new AssetNotFoundException(db, id, type));
         }
 
         [DebuggerStepThrough]
@@ -198,22 +212,23 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             database = null;
             registry = null;
             ResetFilters();
+            TextMatchSettings = StringMatchSettings.Default;
 
             return this;
         }
 
-        protected bool FilterText(Maybe<string> text)
+        protected bool FilterText(Maybe<string> other)
         {
-            return textIdFilter.Map(filter =>
-                        text.Map(text =>
-                            text.ContainsOrdinal(filter)).GetValue(true)
-                            ).GetValue(true);
+            if (textIdFilter.IsNone)
+                return true;
+
+            return other.Match(textIdFilter);
         }
 
-        protected bool FilterNumber(Maybe<int> number)
+        protected bool FilterNumber(Maybe<int> other)
         {
             return numberIdFilter.Map(filter =>
-                        number.Map(number =>
+                        other.Map(number =>
                             number == filter).GetValue(true)
                             ).GetValue(true);
         }
