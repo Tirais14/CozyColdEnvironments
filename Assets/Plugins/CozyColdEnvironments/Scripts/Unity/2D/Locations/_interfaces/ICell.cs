@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -14,6 +15,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         Maybe<TileBase> GetTile();
         Maybe<T> GetTile<T>() where T : TileBase;
+        Maybe<GameObject> GetInstantiatedGameObject();
 
         void SetTile(TileBase? tile);
 
@@ -30,5 +32,9 @@ namespace CCEnvs.Unity._2D.Locations
         bool SetOwner(object owner);
 
         void Refresh();
+
+        void SetPosition(Vector3Int pos);
+
+        IObservable<Vector3Int> ObservePosition();
     }
 }

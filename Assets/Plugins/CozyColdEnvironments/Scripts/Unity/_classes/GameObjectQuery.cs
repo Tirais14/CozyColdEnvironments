@@ -650,6 +650,7 @@ namespace CCEnvs.Unity
             bool isTransformType = type.IsType<Transform>();
             bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
             bool nearest = settings.IsFlagSetted(Settings.OnlyFirstComponentsOnBranch);
+            bool excludeSelf = settings.IsFlagSetted(Settings.ExcludeSelf);
 
             if (findMode == FindMode.Self)
             {
@@ -664,7 +665,7 @@ namespace CCEnvs.Unity
                     var cmps = new List<Component>();
                     var childs = targetTransform.ZLinq().Cast<Transform>();
 
-                    if (!settings.IsFlagSetted(Settings.ExcludeSelf))
+                    if (!excludeSelf)
                         childs.Prepend(targetTransform);
 
                     foreach (var child in childs)
@@ -678,7 +679,7 @@ namespace CCEnvs.Unity
                     return cmps;
                 }
                 //Switch to custom BFS search only if those flags is true for performance reasons
-                else if (nearest || depthLimiter.IsSome)
+                else if (nearest || depthLimiter.IsSome || excludeSelf)
                     return CustomBfsChildsSearch(target, type);
                 else
                 {

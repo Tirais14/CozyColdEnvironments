@@ -48,6 +48,8 @@ namespace CCEnvs.Unity._2D.Locations
 
         void SetOwner(object? owner);
 
+        void OnCellMoved(Vector3Int from, Vector3Int to);
+
         Vector3Int ConvertPosition(Vector3 position);
     }
     public interface ILocationLayer<T> : ILocationLayer

@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.UI
                 }
 
                 await UniTask.NextFrame(
-                    PlayerLoopTiming.Initialization, 
+                    PlayerLoopTiming.PreUpdate, 
                     cancellationToken: @this.destroyCancellationToken
                     );
             }

@@ -83,7 +83,7 @@ namespace CCEnvs.Unity.UI
 
         private static async UniTask Init(GUITab @this)
         {
-            await UniTask.NextFrame(timing: PlayerLoopTiming.LastInitialization);
+            await UniTask.NextFrame(timing: PlayerLoopTiming.PreUpdate);
 
             var childs = @this.Q()
                               .ByChildren()
@@ -93,11 +93,14 @@ namespace CCEnvs.Unity.UI
                               .Where(x => x.Is<IShowable>())
                               .ToArray();
 
-            await UniTask.WaitUntil(
-                childs,
-                static childs => childs.IsEmpty() || childs.All(x => x.IsInited),
-                timing: PlayerLoopTiming.LastInitialization
-                );
+            if (childs.IsNotEmpty())
+            {
+                await UniTask.WaitUntil(
+                    childs,
+                    static childs => childs.All(x => x.IsInited),
+                    timing: PlayerLoopTiming.PreUpdate
+                    );
+            }
 
             @this.IsInited = true;
 
@@ -114,7 +117,7 @@ namespace CCEnvs.Unity.UI
                 await UniTask.WaitUntil(
                     parents,
                     static parents => parents.IsEmpty() || parents.All(x => x.IsInited),
-                    timing: PlayerLoopTiming.LastInitialization
+                    timing: PlayerLoopTiming.PreUpdate
                     );
 
                 UIHelper.UndoTransparentRecursive(@this.m_Graphic);

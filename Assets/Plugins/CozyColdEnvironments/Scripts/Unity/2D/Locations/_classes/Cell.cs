@@ -1,18 +1,24 @@
 using CCEnvs.FuncLanguage;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 #nullable enable
 namespace CCEnvs.Unity._2D.Locations
 {
-    public class Cell : ICell
+    public class Cell : ICell, IDisposable
     {
         private Maybe<TileBase> tile = null!;
+        private readonly ReactiveProperty<Vector3Int> position = new();
 
         public ILocationLayer LocationLayer { get; }
-        public Vector3Int Position { get; }
+        public Vector3Int Position {
+            get => position.Value;
+            set => position.Value = value;  
+        }
         public Maybe<object> Owner { get; private set; }
 
         public Cell(
@@ -68,6 +74,11 @@ namespace CCEnvs.Unity._2D.Locations
             return GetTile().Raw.As<T>();
         }
 
+        public Maybe<GameObject> GetInstantiatedGameObject()
+        {
+            return LocationLayer.tilemap.GetInstantiatedObject(Position);
+        }
+
         public void SetTile(TileBase? tile)
         {
             this.tile = tile;
@@ -76,7 +87,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public bool RemoveTile([NotNullWhen(true)] out TileBase? tile)
         {
-            if (GetTile().TryGetValue(out tile))
+            if (this.tile.TryGetValue(out tile))
             {
                 SetTile(null);
                 return true;
@@ -98,15 +109,38 @@ namespace CCEnvs.Unity._2D.Locations
             Owner = owner;
             return true;
         }
+
         public void Refresh()
         {
             if (tile.Raw != LocationLayer.tilemap.GetTile(Position))
                 LocationLayer.tilemap.SetTile(Position, tile.Raw);
         }
 
+        public void SetPosition(Vector3Int pos)
+        {
+            Position = pos;
+        }
+
         public override string ToString()
         {
             return $"{nameof(tile)}: {tile}; {nameof(Position)}: {Position}; {nameof(LocationLayer)}: {LocationLayer}; {nameof(Owner)}: {Owner}";
         }
+
+        [NonSerialized]
+        private bool disposed;
+        public void Dispose() => Dispose(true);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+                position.Dispose();
+
+            disposed = true;
+        }
+
+        public IObservable<Vector3Int> ObservePosition() => position;
     }
 }
