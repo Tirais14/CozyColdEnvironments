@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CCEnvs.Unity.Collections;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
@@ -13,7 +12,7 @@ using UnityEngine.Tilemaps;
 namespace CCEnvs.Unity._2D.Locations
 {
     [RequireComponent(typeof(Tilemap))]
-    public class LocationLayer<T> : CCBehaviour, ILocationLayer<T>
+    public abstract class LocationLayer<T> : CCBehaviour, ILocationLayer<T>
         where T : ICell
     {
         [GetByParent(IsOptional = true)]
@@ -82,6 +81,19 @@ namespace CCEnvs.Unity._2D.Locations
         }
 
         public string Name => name;
+        public Maybe<object> Owner { get; private set; }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            cells = new MapInt<T>(CellBounds);
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            InitCells();
+        }
 
         public bool Contains() => cells.Count > 0;
         public bool Contains(T? cell)
@@ -110,18 +122,6 @@ namespace CCEnvs.Unity._2D.Locations
         public bool Contains(float x, float y)
         {
             return Contains(new Vector2(x, y));
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
-            cells = new MapInt<T>(CellBounds);
-        }
-
-        protected override void Start()
-        {
-            base.Start();
-            InitCells();
         }
 
         public void SetCell(Vector3Int pos, T cell)
@@ -160,29 +160,71 @@ namespace CCEnvs.Unity._2D.Locations
             SetCell(new Vector3(x, y), cell);
         }
 
+        public void MoveCell(Vector3Int from, Vector3Int to)
+        {
+            var replacingCell = this[from].Strict();
+            var replacedCell = this[to].Strict();
+            SetCell(from, replacedCell);
+            SetCell(to, replacingCell);
+        }
+
+        public void MoveCell(Vector2Int from, Vector2Int to)
+        {
+            MoveCell((Vector3Int)from, (Vector3Int)to);
+        }
+
+        public void MoveCell(Vector3 from, Vector3 to)
+        {
+            MoveCell(ConvertPosition(from), ConvertPosition(to));
+        }
+
+        public void MoveCell(Vector2 from, Vector2 to)
+        {
+            MoveCell(ConvertPosition(from), ConvertPosition(to));
+        }
+
+        public void MoveCell(int fromX, int fromY, int toX, int toY)
+        {
+            MoveCell(new Vector3Int(fromX, fromY), new Vector3Int(toX, toY));
+        }
+
+        public void MoveCell(float fromX, float fromY, float toX, float toY)
+        {
+            MoveCell(new Vector2(fromX, fromY), new Vector2(toX, toY));
+        }
+
+        public void SetOwner(object? owner) => Owner = owner;
+
+        public virtual Vector3Int ConvertPosition(Vector3 position)
+        {
+            return tilemap.WorldToCell(position);
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(tilemap)}: {tilemap}; {nameof(Name)}: {Name}; {nameof(Location)}: {Location}; {nameof(CellBounds)}; {CellBounds}";
+        }
+
+        protected abstract T CreateCell(Vector3Int pos, TileBase? tile);
+
         private void InitCells()
         {
             T cell;
             foreach (var pos in CellBounds.allPositionsWithin)
             {
-                cell = typeof(T).Reflect()
-                                .NonPublic()
-                                .Arguments((typeof(ILocationLayer), this), (typeof(Vector3Int), pos))
-                                .Cache()
-                                .CreateInstance<T>();
-
+                cell = CreateCell(pos, tilemap.GetTile(pos));
                 cells[pos] = cell;
-                this.PrintLog($"Cell inited; position: {pos}; tile: {cell.GetTile().Map(x => x.name).GetValue("none")}.");
-            }
-        }
 
-        private Vector3Int ConvertPosition(Vector3 pos)
-        {
-            return tilemap.WorldToCell(pos);
+                this.PrintLog($"{cell} inited,");
+            }
         }
     }
 
     public class LocationLayer : LocationLayer<Cell>
     {
+        protected override Cell CreateCell(Vector3Int pos, TileBase? tile)
+        {
+            return new Cell(this, pos, tile: tile, owner: Owner.Raw);
+        }
     }
 }

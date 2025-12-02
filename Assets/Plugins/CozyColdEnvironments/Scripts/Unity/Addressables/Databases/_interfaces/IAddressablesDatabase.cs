@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         void IAddressablesDatabase.Add(object asset)
         {
-            Add(asset.As<TAsset>());
+            Add(asset.To<TAsset>());
         }
     }
 }

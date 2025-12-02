@@ -22,18 +22,23 @@ namespace CCEnvs.Unity
             selection.SubscribeWithState(this,
                 static (sel, @this) =>
                 {
-                    @this.modelSelection.Value = sel.Raw.AsOrDefault<Component>()
+                    @this.modelSelection.Value = sel.Raw.As<Component>()
                         .Match(some: cmp => cmp.QueryTo().Model<TModel>().Lax().GetValue(),
-                               none: () => sel.AsOrDefault<TModel>().Raw
+                               none: () => sel.As<TModel>().Raw
                                );
                 }).AddTo(this);
         }
 
-        IObservable<PreviousCurrentPair<Maybe<TModel>, TModel>> ISelectableController<TModel>.ObserveSelected()
+        IObservable<TModel> ISelectableController<TModel>.ObserveDeselected()
         {
-            return modelSelection.Where(x => x.IsSome)
-                                 .Pairwise()
-                                 .Select(pair => PreviousCurrentPair.CreateT(pair.Previous, pair.Current.GetValueUnsafe()));
+            return modelSelection.Pairwise()
+                                 .Where(pair => pair.Current.IsNone && pair.Previous.IsSome)
+                                 .Select(pair => pair.Previous.GetValueUnsafe());
+        }
+
+        IObservable<TModel> ISelectableController<TModel>.ObserveSelected()
+        {
+            return modelSelection.Where(x => x.IsSome).Select(x => x.GetValueUnsafe());
         }
 
         IObservable<PreviousCurrentPair<Maybe<TModel>>> ISelectableController<TModel>.ObserveSelection()

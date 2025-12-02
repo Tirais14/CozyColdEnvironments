@@ -18,7 +18,7 @@ namespace CCEnvs
             if (value is IPrioritized<int> iface)
                 return iface.Priority;
 
-            if ((typeof(T) == typeof(Type) ? value.As<Type>() : value.GetType()).GetCustomAttribute<PriorityAttribute>() is not PriorityAttribute attribute)
+            if ((typeof(T) == typeof(Type) ? value.To<Type>() : value.GetType()).GetCustomAttribute<PriorityAttribute>() is not PriorityAttribute attribute)
             {
                 if (throwIfNotFound)
                     throw new CCException("Cannot resolve priority.");

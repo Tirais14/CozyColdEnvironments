@@ -25,15 +25,15 @@ namespace CCEnvs.Collections
     {
         object ITable.this[int colIdx, int rowIdx] {
             get => this[colIdx, rowIdx]!;
-            set => this[colIdx, rowIdx] = value.As<T>();
+            set => this[colIdx, rowIdx] = value.To<T>();
         }
         object ITable.this[TablePointer.Pos pos] {
             get => this[pos]!;
-            set => this[pos] = value.As<T>();
+            set => this[pos] = value.To<T>();
         }
         object ITable.this[TablePointer pointer] {
             get => this[pointer]!;
-            set => this[pointer] = value.As<T>();
+            set => this[pointer] = value.To<T>();
         }
 
         new T this[int colIdx, int rowIdx] { get; set; }

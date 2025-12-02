@@ -56,7 +56,7 @@ namespace CCEnvs.Unity.AddrsAssets
             }
 
             return Addressables.ResourceManager.CreateCompletedOperation(
-                locations.As<IList<IResourceLocation>>(),
+                locations.To<IList<IResourceLocation>>(),
                 string.Empty);
 
             bool isValidOperation(out AsyncOperationHandle<IList<IResourceLocation>> failed)
@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.AddrsAssets
             var assets = assetHandles.Select(x => x.Result).ToArray();
 
             return Addressables.ResourceManager.CreateCompletedOperation(
-                assets.As<IList<T>>(),
+                assets.To<IList<T>>(),
                 string.Empty);
         }
     }

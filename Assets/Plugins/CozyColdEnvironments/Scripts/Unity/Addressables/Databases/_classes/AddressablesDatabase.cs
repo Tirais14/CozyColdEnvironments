@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 }
             }
 
-            return asset.As<Object>().name;
+            return asset.To<Object>().name;
         };
 
         private readonly CCDictionary<Identifier, TAsset> collection = new();
@@ -74,7 +74,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 return;
             }
 
-            Add(AssetIdFactory(asset.As<Object>()), asset);
+            Add(AssetIdFactory(asset.To<Object>()), asset);
         }
 
         public bool Contains(KeyValuePair<Identifier, TAsset> item)

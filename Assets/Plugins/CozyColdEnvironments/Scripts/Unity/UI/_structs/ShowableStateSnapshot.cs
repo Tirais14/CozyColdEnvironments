@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.UI
             Target = target;
             IsShown = target.IsShown;
 
-            if (target.AsOrDefault<Component>().TryGetValue(out var cmp))
+            if (target.As<Component>().TryGetValue(out var cmp))
                 gameObject = cmp.gameObject;
         }
 

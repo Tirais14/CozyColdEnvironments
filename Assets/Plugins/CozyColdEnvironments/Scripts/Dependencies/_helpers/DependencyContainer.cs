@@ -29,7 +29,7 @@ namespace CCEnvs.Dependencies
 
             return result;
         }
-        public static T Resolve<T>(object? id = null) => Resolve(typeof(T), id).As<T>();
+        public static T Resolve<T>(object? id = null) => Resolve(typeof(T), id).To<T>();
 
         public static bool HasBinding(Type type, object? id = null)
         {

@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Interactables
 
         bool IInteractable.TryInteract(object? input, out Maybe<object> result)
         {
-            return TryInteract(input.AsOrDefault<TIn>().Raw, out result);
+            return TryInteract(input.As<TIn>().Raw, out result);
         }
     }
     public interface IInteractable<in TIn, TOut> 

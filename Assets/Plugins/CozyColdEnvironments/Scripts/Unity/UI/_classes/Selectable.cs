@@ -94,13 +94,13 @@ namespace CCEnvs.Unity.UI
         {
   
             RectTransform overlayTransform;
-            RectTransform thisTransfrom = transform.As<RectTransform>();
+            RectTransform thisTransfrom = transform.To<RectTransform>();
 
             m_SelectionOverlayPrefab.Do(
                 some: prefab =>
                 {
                     selectionOverlay = Instantiate(prefab, transform);
-                    overlayTransform = selectionOverlay.transform.As<RectTransform>();
+                    overlayTransform = selectionOverlay.transform.To<RectTransform>();
 
                     overlayTransform.position = thisTransfrom.position;
                     overlayTransform.sizeDelta = thisTransfrom.sizeDelta;
@@ -111,7 +111,7 @@ namespace CCEnvs.Unity.UI
                         .Component<Image>()
                         .Strict();
 
-                    overlayTransform = overlay.transform.As<RectTransform>();
+                    overlayTransform = overlay.transform.To<RectTransform>();
 
                     overlayTransform.SetParent(transform);
                     overlayTransform.position = transform.position;

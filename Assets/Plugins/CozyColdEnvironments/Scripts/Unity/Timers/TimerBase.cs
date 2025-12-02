@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Timers
             return !left.Equals(right);
         }
 
-        public void DoTick() => this.As<IObserver<Mock>>().OnNext(default);
+        public void DoTick() => this.To<IObserver<Mock>>().OnNext(default);
 
         public ITimer StartTimer()
         {

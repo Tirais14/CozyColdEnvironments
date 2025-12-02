@@ -54,7 +54,7 @@ namespace CCEnvs.FuncLanguage
         object? IConditional.GetValue() => GetValue();
         object IConditional.GetValue(object defaultValue)
         {
-            return GetValue(defaultValue.As<T>())!;
+            return GetValue(defaultValue.To<T>())!;
         }
         object IConditional.GetValue(Func<object> defaultValueFactory)
         {
@@ -78,7 +78,7 @@ namespace CCEnvs.FuncLanguage
 
         bool IConditional.ItIs(object? value)
         {
-            return Has(value.AsOrDefault<T>().GetValue());
+            return Has(value.As<T>().GetValue());
         }
         bool IConditional.ItIs(Predicate<object> predicate)
         {

@@ -57,7 +57,7 @@ namespace CCEnvs.Unity.Storages.UI
                 .AddTo(disposables);
 
             replace.SubscribeWithState(this,
-                    static (cnt, @this) => @this.model.As<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value)
+                    static (cnt, @this) => @this.model.To<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value)
                 .AddTo(disposables);
         }
     }

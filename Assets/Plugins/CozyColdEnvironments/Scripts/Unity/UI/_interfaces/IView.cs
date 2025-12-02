@@ -34,12 +34,12 @@ namespace CCEnvs.Unity.UI
 
         void IView.SetViewModelUnsafe(object viewModel)
         {
-            SetViewModelUnsafe(viewModel.As<TViewModel>());
+            SetViewModelUnsafe(viewModel.To<TViewModel>());
         }
 
         void IView.SetViewModelFactoryUnsafe(Func<object> factory)
         {
-            SetViewModelFactoryUnsafe(() => factory().As<TViewModel>());
+            SetViewModelFactoryUnsafe(() => factory().To<TViewModel>());
         }
     }
 }

@@ -30,9 +30,9 @@ namespace CCEnvs.Collections
 
         public TValue GetValue(TKey key) => Dictionary[key];
 
-        public T GetValue<T>(TKey key) => GetValue(key).As<T>();
+        public T GetValue<T>(TKey key) => GetValue(key).To<T>();
 
-        public void TrimExcess() => Dictionary.As<Dictionary<TKey, TValue>>().TrimExcess();
+        public void TrimExcess() => Dictionary.To<Dictionary<TKey, TValue>>().TrimExcess();
 
         public void Dispose() => Dispose(true);
 

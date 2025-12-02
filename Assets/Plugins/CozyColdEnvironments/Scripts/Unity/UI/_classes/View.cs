@@ -78,7 +78,7 @@ namespace CCEnvs.Unity.UI
         {
             try
             {
-                return (modelUnsafe.As<T>(), null);
+                return (modelUnsafe.To<T>(), null);
             }
             catch (Exception ex)
             {

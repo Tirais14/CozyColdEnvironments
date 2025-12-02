@@ -45,7 +45,7 @@ namespace CCEnvs
                 typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
             }
 
-            return source.As<TOutput>();
+            return source.To<TOutput>();
         }
         public static TOutput IfDefault<TInput, TOutput>(this TInput? source,
             Func<TOutput> factory)
@@ -62,7 +62,7 @@ namespace CCEnvs
                 typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
             }
 
-            return source.As<TOutput>();
+            return source.To<TOutput>();
         }
 
         public static TOutput? IfNotDefault<TInput, TOutput>(
@@ -218,7 +218,7 @@ namespace CCEnvs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T As<T>(this object? obj)
+        public static T To<T>(this object? obj)
         {
             if (obj.IsNull())
                 return default!;
@@ -234,13 +234,13 @@ namespace CCEnvs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> AsOrDefault<T>(this object? obj)
+        public static Maybe<T> As<T>(this object? obj)
         {
             return obj.Is<T>(out var typedObj) ? typedObj : default!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> AsOrDefault<TObj, TValue>(this TObj? obj)
+        public static Maybe<TValue> As<TObj, TValue>(this TObj? obj)
         {
             return obj.Is<TValue>(out var typedObj) ? typedObj : default!;
         }

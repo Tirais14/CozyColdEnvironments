@@ -29,7 +29,7 @@ namespace CCEnvs
                     source.PrintLog(message, args);
                     break;
                 case LogType.Exception:
-                    source.PrintException(message.As<Exception>(), args);
+                    source.PrintException(message.To<Exception>(), args);
                     break;
                 default:
                     throw new InvalidOperationException(message.ToString());

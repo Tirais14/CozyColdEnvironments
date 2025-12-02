@@ -78,7 +78,7 @@ namespace CCEnvs
             else if (compareTypes.IsFlagSetted(CompareTypes.Bigger))
                 return value > 0;
 
-            return CC.Throw.InvalidOperation(compareTypes, nameof(compareTypes)).As<bool>();
+            return CC.Throw.InvalidOperation(compareTypes, nameof(compareTypes)).To<bool>();
         }
 
         public static bool CompareTo<T>(this T left, T right, CompareTypes compareTypes)

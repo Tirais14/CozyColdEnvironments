@@ -567,7 +567,7 @@ namespace CCEnvs.Unity
                     Right: r => r.transform,
                     Left: l => l)
                 .GetValue()
-                .AsOrDefault<Transform>()
+                .As<Transform>()
                 .GetValue(Target.GetValueUnsafe().transform);
         }
 
@@ -707,7 +707,7 @@ namespace CCEnvs.Unity
                 }
             }
 
-            return CC.Throw.InvalidOperation(findMode, nameof(findMode)).As<IEnumerable<Component>>();
+            return CC.Throw.InvalidOperation(findMode, nameof(findMode)).To<IEnumerable<Component>>();
         }
 
         protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)

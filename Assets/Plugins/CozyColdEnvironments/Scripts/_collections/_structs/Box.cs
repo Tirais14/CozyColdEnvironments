@@ -281,7 +281,7 @@ namespace CCEnvs.FuncLanguage
         {
             var sb = ZString.CreateStringBuilder();
 
-            sb.AppendJoin("; ", this.As<IEnumerable<T>>());
+            sb.AppendJoin("; ", this.To<IEnumerable<T>>());
 
             return sb.ToString();
         }
@@ -392,7 +392,7 @@ namespace CCEnvs.FuncLanguage
 
         public readonly Box<TOut> Cast<TOut>()
         {
-            return ForEach((x) => x.As<TOut>());
+            return ForEach((x) => x.To<TOut>());
         }
 
         public readonly T[] ToArray()

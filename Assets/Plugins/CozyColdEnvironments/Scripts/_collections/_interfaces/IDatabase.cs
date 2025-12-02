@@ -36,9 +36,9 @@ namespace CCEnvs.Collections
 
         T IDatabase.GetValue<T>(object key)
         {
-            return this.As<IDatabase>()
+            return this.To<IDatabase>()
                        .GetValue(key)
-                       .As<T>();
+                       .To<T>();
         }
     }
 }

@@ -238,7 +238,7 @@ namespace CCEnvs.FuncLanguage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool TryGetValue<T>([NotNullWhen(true)] out T? result)
         {
-            var x = GetValue().AsOrDefault<T>();
+            var x = GetValue().As<T>();
             var state = x.IsSome;
             result = x.Raw;
 
@@ -253,7 +253,7 @@ namespace CCEnvs.FuncLanguage
             if (x.IsNull())
                 return default;
 
-            return x.As<T>();
+            return x.To<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -357,8 +357,8 @@ namespace CCEnvs.FuncLanguage
         public readonly Either<LOut, ROut> Cast<LOut, ROut>()
         {
             return new Either<LOut, ROut>(
-                (LOut?)left.AsOrDefault<LOut>(),
-                (ROut?)right.AsOrDefault<ROut>()
+                (LOut?)left.As<LOut>(),
+                (ROut?)right.As<ROut>()
                 );
         }
 

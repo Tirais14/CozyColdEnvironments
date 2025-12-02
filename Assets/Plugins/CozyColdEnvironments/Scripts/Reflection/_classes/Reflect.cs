@@ -52,7 +52,7 @@ namespace CCEnvs.Reflection
         }
         public Maybe<Type[]> attributes { get; private set; }
 
-        protected Type type => member.As<Type>();
+        protected Type type => member.To<Type>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect From(object instance)
@@ -493,7 +493,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T InvokeMethod<T>() => TypeFilter<T>().InvokeMethod().As<T>();
+        public T InvokeMethod<T>() => TypeFilter<T>().InvokeMethod().To<T>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object InvokeConstructor()
@@ -512,7 +512,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T InvokeConstructor<T>() => InvokeConstructor().As<T>();
+        public T InvokeConstructor<T>() => InvokeConstructor().To<T>();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -525,7 +525,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T CreateInstance<T>()
         {
-            return CreateInstance().As<T>();
+            return CreateInstance().To<T>();
         }
 
         [DebuggerStepThrough]
@@ -539,7 +539,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetFieldValue<T>()
         {
-            return TypeFilter<T>().GetFieldValue().Cast<T>().RightTarget.As<T>();
+            return TypeFilter<T>().GetFieldValue().Cast<T>().RightTarget.To<T>();
         }
 
         [DebuggerStepThrough]

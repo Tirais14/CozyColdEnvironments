@@ -20,7 +20,7 @@ namespace CCEnvs.Unity._2D
                 .Strict()
                 .SetValue(t, sprite);
 
-            return t.As<TileBase>();
+            return t.To<TileBase>();
         }
     }
 }

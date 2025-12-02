@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
+using SuperLinq;
 using System;
 using System.Linq;
 using UniRx;
@@ -60,16 +61,16 @@ namespace CCEnvs.Unity.UI
             cmp.ObserveDoSelect().SubscribeWithState(@this, FindSelected).AddTo(@this.disposables);
         }
 
-        public IObservable<Unit> ObserveDeselected()
+        public IObservable<T> ObserveDeselected()
         {
-            return selection.Where(x => x.IsNone).AsUnitObservable();
+            return selection.Pairwise()
+                            .Where(pair => pair.Current.IsNone)
+                            .Select(pair => pair.Previous.GetValueUnsafe());
         }
 
-        public IObservable<PreviousCurrentPair<Maybe<T>, T>> ObserveSelected()
+        public IObservable<T> ObserveSelected()
         {
-            return selection.Where(x => x.IsSome)
-                            .Pairwise()
-                            .Select(pair => PreviousCurrentPair.CreateT(pair.Previous, pair.Current.GetValueUnsafe()));
+            return selection.Where(x => x.IsSome).Select(x => x.GetValueUnsafe());
         }
 
         public IObservable<PreviousCurrentPair<Maybe<T>>> ObserveSelection()

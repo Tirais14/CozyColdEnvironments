@@ -218,7 +218,7 @@ namespace CCEnvs.FuncLanguage
             if (input.IsNone)
                 return default!;
 
-            return input.GetValue().AsOrDefault<TOutValue>();
+            return input.GetValue().As<TOutValue>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -226,7 +226,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<L>
         {
             L? left = input.GetValue();
-            R? right = (R?)left.AsOrDefault<R>();
+            R? right = (R?)left.As<R>();
 
             return (left, right);
         }

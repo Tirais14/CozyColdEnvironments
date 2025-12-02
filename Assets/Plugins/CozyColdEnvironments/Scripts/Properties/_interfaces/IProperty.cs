@@ -15,7 +15,7 @@ namespace CCEnvs.Properties
 
         object IProperty.Value {
             get => Value!;
-            set => Value = value.As<T>();
+            set => Value = value.To<T>();
         }
         object IReadOnlyProperty.Value => Value!;
     }

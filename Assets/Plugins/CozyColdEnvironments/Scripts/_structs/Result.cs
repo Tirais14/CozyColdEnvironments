@@ -130,7 +130,7 @@ namespace CCEnvs
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<TOut> Cast<TOut>()
         {
-            return (raw.Value.As<TOut>(), exception.Value);
+            return (raw.Value.To<TOut>(), exception.Value);
         }
 
         public override string ToString()

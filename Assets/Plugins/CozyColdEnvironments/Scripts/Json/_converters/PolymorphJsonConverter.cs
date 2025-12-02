@@ -43,7 +43,7 @@ namespace CCEnvs.Json.Converters
                 .Field()
                 .Strict()
                 .GetValue(serializer.ContractResolver)
-                .As<NamingStrategy>();
+                .To<NamingStrategy>();
 
             string keyName = namingStrategy.GetPropertyName(nameof(ITypeProvider.ObjectType), false);
             JToken? objectTypeToken = token[keyName];

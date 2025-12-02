@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.Collections
             return new T[size.x, size.y, size.z];
         }
 
-        public readonly IEnumerator<T> GetEnumerator() => values.As<IEnumerable<T>>().GetEnumerator();
+        public readonly IEnumerator<T> GetEnumerator() => values.To<IEnumerable<T>>().GetEnumerator();
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }

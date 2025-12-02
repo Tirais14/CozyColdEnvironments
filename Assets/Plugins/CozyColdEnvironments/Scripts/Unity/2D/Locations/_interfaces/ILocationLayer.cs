@@ -38,6 +38,17 @@ namespace CCEnvs.Unity._2D.Locations
         void SetCell(Vector2 pos, ICell cell);
         void SetCell(int x, int y, ICell cell);
         void SetCell(float x, float y, ICell cell);
+
+        void MoveCell(Vector3Int from, Vector3Int to);
+        void MoveCell(Vector2Int from, Vector2Int to);
+        void MoveCell(Vector3 from, Vector3 to);
+        void MoveCell(Vector2 from, Vector2 to);
+        void MoveCell(int fromX, int fromY, int toX, int toY);
+        void MoveCell(float fromX, float fromY, float toX, float toY);
+
+        void SetOwner(object? owner);
+
+        Vector3Int ConvertPosition(Vector3 position);
     }
     public interface ILocationLayer<T> : ILocationLayer
         where T : ICell
@@ -72,27 +83,27 @@ namespace CCEnvs.Unity._2D.Locations
 
         void ILocationLayer.SetCell(Vector3Int pos, ICell cell)
         {
-            SetCell(pos, cell.As<T>());
+            SetCell(pos, cell.To<T>());
         }
         void ILocationLayer.SetCell(Vector2Int pos, ICell cell)
         {
-            SetCell(pos, cell.As<T>());
+            SetCell(pos, cell.To<T>());
         }
         void ILocationLayer.SetCell(Vector3 pos, ICell cell)
         {
-            SetCell(pos, cell.As<T>());
+            SetCell(pos, cell.To<T>());
         }
         void ILocationLayer.SetCell(Vector2 pos, ICell cell)
         {
-            SetCell(pos, cell.As<T>());
+            SetCell(pos, cell.To<T>());
         }
         void ILocationLayer.SetCell(int x, int y, ICell cell)
         {
-            SetCell(x, y, cell.As<T>());
+            SetCell(x, y, cell.To<T>());
         }
         void ILocationLayer.SetCell(float x, float y, ICell cell)
         {
-            SetCell(x, y, cell.As<T>());
+            SetCell(x, y, cell.To<T>());
         }
     }
 }

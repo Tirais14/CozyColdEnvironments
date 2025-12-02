@@ -122,10 +122,10 @@ namespace CCEnvs.Unity.Storages.UI
 
         private void InitItemContainers()
         {
-            if (!modelUnsafe.As<IInventory>().Any())
+            if (!modelUnsafe.To<IInventory>().Any())
                 return;
 
-            foreach (var ev in modelUnsafe.As<IInventory>()
+            foreach (var ev in modelUnsafe.To<IInventory>()
                 .ZLinq()
                 .Select(pair => new DictionaryAddEvent<int, IItemContainer>(pair.Key, pair.Value)))
             {

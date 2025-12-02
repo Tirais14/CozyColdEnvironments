@@ -24,7 +24,7 @@ namespace CCEnvs.Events
 
         public static IObservable<T> Recieve<T>()
         {
-            return messages[typeof(T)].As<IObservable<T>>();
+            return messages[typeof(T)].To<IObservable<T>>();
         }
     }
 }

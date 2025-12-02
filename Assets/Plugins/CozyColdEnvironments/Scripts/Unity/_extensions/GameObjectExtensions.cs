@@ -12,7 +12,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.transform.As<RectTransform>();
+            return source.transform.To<RectTransform>();
         }
         public static RectTransform RectTransform(this Component source)
         {

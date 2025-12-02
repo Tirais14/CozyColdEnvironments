@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.UI
 
         private bool commandSchedulerRunning;
 
-        public Maybe<Image> image => m_Graphic.AsOrDefault<Image>();
+        public Maybe<Image> image => m_Graphic.As<Image>();
         public Maybe<Button> button => m_Button;
         public Maybe<Selectable> selectable => m_Selectable;
         public Maybe<DragAndDropTarget> dragAndDropTarget => m_DragAndDropTarget;

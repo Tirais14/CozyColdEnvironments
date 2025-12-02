@@ -35,7 +35,7 @@ namespace CCEnvs.FuncLanguage
 
         Either<object, object> IMaybe.IfNone(Func<object> factory)
         {
-            return IfNone(factory.As<Func<T>>()).Cast<object, object>();
+            return IfNone(factory.To<Func<T>>()).Cast<object, object>();
         }
 
         IMaybe IMaybe.Map(Func<object, object?> selector) => Map(x => selector(x!));

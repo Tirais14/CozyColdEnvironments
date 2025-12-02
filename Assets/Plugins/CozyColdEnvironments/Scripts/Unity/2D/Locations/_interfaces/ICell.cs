@@ -9,7 +9,7 @@ namespace CCEnvs.Unity._2D.Locations
     public interface ICell
     {
         Vector3Int Position { get; }
-        ILocationLayer Location { get; }
+        ILocationLayer LocationLayer { get; }
         Maybe<object> Owner { get; }
 
         Maybe<TileBase> GetTile();
