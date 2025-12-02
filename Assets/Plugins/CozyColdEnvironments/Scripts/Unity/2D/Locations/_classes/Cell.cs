@@ -24,14 +24,12 @@ namespace CCEnvs.Unity._2D.Locations
         public Cell(
             ILocationLayer locationLayer,
             Vector3Int position,
-            TileBase? tile = null,
             object? owner = null)
         {
             CC.Guard.IsNotNull(locationLayer, nameof(locationLayer));
 
             LocationLayer = locationLayer;
             Position = position;
-            this.tile = tile;
             Owner = owner;
 
             Refresh();
@@ -40,29 +38,26 @@ namespace CCEnvs.Unity._2D.Locations
         public Cell(
             ILocationLayer locationLayer,
             Vector2Int position,
-            TileBase? tile = null,
             object? owner = null)
             :
-            this(locationLayer, (Vector3Int)position, tile: tile, owner: owner)
+            this(locationLayer, (Vector3Int)position, owner: owner)
         {
         }
         public Cell(
             ILocationLayer locationLayer,
             Vector3 position,
-            TileBase? tile = null,
             object? owner = null)
             :
-            this(locationLayer, locationLayer.ConvertPosition(position), tile: tile, owner: owner)
+            this(locationLayer, locationLayer.ConvertPosition(position), owner: owner)
         {
         }
 
         public Cell(
             ILocationLayer locationLayer,
             Vector2 position,
-            TileBase? tile = null,
             object? owner = null)
             :
-            this(locationLayer, locationLayer.ConvertPosition(position), tile: tile, owner: owner)
+            this(locationLayer, locationLayer.ConvertPosition(position), owner: owner)
         {
         }
 
@@ -112,8 +107,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void Refresh()
         {
-            if (tile.Raw != LocationLayer.tilemap.GetTile(Position))
-                LocationLayer.tilemap.SetTile(Position, tile.Raw);
+            tile = LocationLayer.tilemap.GetTile(Position);
         }
 
         public void SetPosition(Vector3Int pos)

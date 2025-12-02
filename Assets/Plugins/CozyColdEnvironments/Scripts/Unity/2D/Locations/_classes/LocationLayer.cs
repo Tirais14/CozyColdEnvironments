@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
@@ -158,7 +159,9 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void MoveCell(Vector3Int from, Vector3Int to)
         {
-            if (!cells.TryGetValue(from, out T cellToMove))
+            if (!cells.TryGetValue(from, out T cellToMove)
+                ||
+                cellToMove.Position == to)
                 return;
 
             if (cells.TryGetValue(to, out T replacedCell))
@@ -167,8 +170,46 @@ namespace CCEnvs.Unity._2D.Locations
                 {
                     var repalcedGO = tilemap.GetInstantiatedObject(to);
                     var origGO = tileBasic.gameObject;
-                    tileBasic.gameObject = repalcedGO;
 
+                    tileBasic.gameObject = repalcedGO;
+                    replaceTile(this, to, cellToMove, replacedCell);
+                    tileBasic.gameObject = origGO;
+                }
+                else
+                    replaceTile(this, to, cellToMove, replacedCell);
+
+                replacedCell.Refresh();
+            }
+            else
+                replaceTile(this, to, cellToMove, replacedCell: default);
+
+            cellToMove.Refresh();
+
+            static void replaceTile(LocationLayer<T> @this,
+                                    Vector3Int newPos,
+                                    T cellToMove,
+                                    T? replacedCell)
+            {
+                Vector3Int oldPos = cellToMove.Position;
+
+                if (replacedCell.IsNotNull())
+                {
+                    TileBase? replacedTile = replacedCell.GetTile().Raw;
+
+                    replacedCell.SetTile(cellToMove.GetTile().Raw);
+                    cellToMove.SetTile(replacedTile);
+
+                    replacedCell.SetPosition(oldPos);
+                    cellToMove.SetPosition(newPos);
+
+                    @this.cells[oldPos] = replacedCell;
+                    @this.cells[newPos] = cellToMove;
+                }
+                else
+                {
+                    cellToMove.SetPosition(newPos);
+                    @this.cells.Remove(oldPos);
+                    @this.cells[newPos] = cellToMove;
                 }
             }
         }
