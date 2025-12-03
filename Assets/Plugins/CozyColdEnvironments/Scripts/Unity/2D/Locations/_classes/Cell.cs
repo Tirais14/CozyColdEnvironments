@@ -5,13 +5,13 @@ using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.WSA;
 
 #nullable enable
 namespace CCEnvs.Unity._2D.Locations
 {
     public class Cell : ICell, IDisposable
     {
-        private Maybe<TileBase> tile = null!;
         private readonly ReactiveProperty<Vector3Int> position = new();
 
         public ILocationLayer LocationLayer { get; }
@@ -20,6 +20,7 @@ namespace CCEnvs.Unity._2D.Locations
             set => position.Value = value;  
         }
         public Maybe<object> Owner { get; private set; }
+        public Tilemap tilemap => LocationLayer.tilemap;
 
         public Cell(
             ILocationLayer locationLayer,
@@ -62,7 +63,7 @@ namespace CCEnvs.Unity._2D.Locations
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<TileBase> GetTile() => tile;
+        public Maybe<TileBase> GetTile() => tilemap.GetTile(Position);
 
         public Maybe<T> GetTile<T>() where T : TileBase
         {
@@ -76,13 +77,12 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void SetTile(TileBase? tile)
         {
-            this.tile = tile;
             LocationLayer.tilemap.SetTile(Position, tile);
         }
 
         public bool RemoveTile([NotNullWhen(true)] out TileBase? tile)
         {
-            if (this.tile.TryGetValue(out tile))
+            if (GetTile().TryGetValue(out tile))
             {
                 SetTile(null);
                 return true;
@@ -94,7 +94,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public Bounds GetBounds() => LocationLayer.tilemap.GetBoundsLocal(Position);
 
-        public bool HasTile() => tile.IsSome;
+        public bool HasTile() => GetTile().IsSome;
 
         public bool HasOwner() => Owner.IsSome;
         public bool HasOwner(object owner) => Owner.Has(owner);
@@ -107,7 +107,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void Refresh()
         {
-            tile = LocationLayer.tilemap.GetTile(Position);
+            //TODO:
         }
 
         public void SetPosition(Vector3Int pos)
@@ -117,7 +117,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public override string ToString()
         {
-            return $"{nameof(tile)}: {tile}; {nameof(Position)}: {Position}; {nameof(LocationLayer)}: {LocationLayer}; {nameof(Owner)}: {Owner}";
+            return $"Tile: {GetTile().Raw}; {nameof(Position)}: {Position}; {nameof(Owner)}: {Owner}";
         }
 
         [NonSerialized]
@@ -133,6 +133,31 @@ namespace CCEnvs.Unity._2D.Locations
                 position.Dispose();
 
             disposed = true;
+        }
+
+        public GhostCell ToGhost(Tilemap? tilemap = null)
+        {
+            return new GhostCell(this, tilemap.Maybe().GetValue(this.tilemap));
+        }
+
+        public Maybe<TileData> GetTileData()
+        {
+            if (!GetTile().TryGetValue(out TileBase? tile))
+                return Maybe<TileData>.None;
+
+            TileData tileData = default;
+            tile.GetTileData(Position, LocationLayer.tilemap, ref tileData);
+            return tileData;
+        }
+
+        public Maybe<Sprite> GetTileSprite()
+        {
+            return GetTileData().Map(x => x.sprite);
+        }
+
+        public Maybe<GameObject> GetTilePrefab()
+        {
+            return GetTileData().Map(x => x.gameObject);
         }
 
         public IObservable<Vector3Int> ObservePosition() => position;

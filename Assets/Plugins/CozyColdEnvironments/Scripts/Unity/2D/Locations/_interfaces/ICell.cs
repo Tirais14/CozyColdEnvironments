@@ -12,6 +12,7 @@ namespace CCEnvs.Unity._2D.Locations
         Vector3Int Position { get; }
         ILocationLayer LocationLayer { get; }
         Maybe<object> Owner { get; }
+        Tilemap tilemap { get; }
 
         Maybe<TileBase> GetTile();
         Maybe<T> GetTile<T>() where T : TileBase;
@@ -34,6 +35,14 @@ namespace CCEnvs.Unity._2D.Locations
         void Refresh();
 
         void SetPosition(Vector3Int pos);
+
+        Maybe<Sprite> GetTileSprite();
+
+        Maybe<GameObject> GetTilePrefab();
+
+        GhostCell ToGhost(Tilemap? tilemap = null);
+
+        public Maybe<TileData> GetTileData();
 
         IObservable<Vector3Int> ObservePosition();
     }

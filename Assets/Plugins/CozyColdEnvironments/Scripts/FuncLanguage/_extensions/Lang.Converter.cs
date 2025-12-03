@@ -12,18 +12,18 @@ namespace CCEnvs.FuncLanguage
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> Maybe<TValue>(this TValue source) => source;
+        public static Maybe<TValue> Maybe<TValue>(this TValue? source) => source;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> Maybe<TValue>(this TValue source, TValue @default)
+        public static Maybe<TValue> Maybe<TValue>(this TValue? source, TValue @default)
         {
             return (source, @default);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> Maybe<TValue>(this TValue source,
+        public static Maybe<TValue> Maybe<TValue>(this TValue? source,
             Predicate<TValue?> isSome)
         {
             Guard.IsNotNull(isSome, nameof(isSome));

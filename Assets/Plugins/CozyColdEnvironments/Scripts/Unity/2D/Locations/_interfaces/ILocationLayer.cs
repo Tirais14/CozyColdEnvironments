@@ -20,7 +20,7 @@ namespace CCEnvs.Unity._2D.Locations
         Result<ICell> this[float x, float y] { get; }
 
         Tilemap tilemap { get; }
-        Maybe<ILocation> Location { get; }
+        ILocation Location { get; }
         BoundsInt CellBounds { get; }
         string Name { get; }
         Maybe<object> Owner { get; }

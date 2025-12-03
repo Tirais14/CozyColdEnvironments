@@ -18,14 +18,12 @@ namespace CCEnvs.Unity
         [SerializeField]
         protected SerializedBoundsInt m_CellBounds;
 
-        private bool refreshScheduled;
-
         public Result<ILocationLayer> this[string name] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (!layers.TryGetValue(name, out ILocationLayer layer))
-                    return (null, new KeyNotFoundException($"{nameof(name)}: {name}/"));
+                    return (null, new KeyNotFoundException($"{nameof(name)}: {name}."));
 
                 return (layer, null);
             }
@@ -35,6 +33,17 @@ namespace CCEnvs.Unity
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[key.ToString()];
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            m_CellBounds = new SerializedBoundsInt(
+                new BoundsInt(
+                    m_CellBounds.Value.position,
+                    m_CellBounds.Value.size.AddZ(1))
+                    );
         }
 
         protected override void Start()
@@ -52,7 +61,7 @@ namespace CCEnvs.Unity
         [Header("Editor")]
         [Space(8f)]
         [SerializeField]
-        private bool drawDebugBounds;
+        private bool drawDebugBounds = true;
 
         private void OnValidate()
         {
@@ -63,10 +72,10 @@ namespace CCEnvs.Unity
                 int yMin = GetCellBounds().yMin;
                 int yMax = GetCellBounds().yMax;
                 Vector3 center = GetCellBounds().center;
-                var bottomLeft = new Vector3(xMin, yMin) - center;
-                var bottomRight = new Vector3(xMax, yMin) - center;
-                var upperLeft = new Vector3(xMin, yMax) - center;
-                var upperRight = new Vector3(xMax, yMax) - center;
+                var bottomLeft = new Vector3(xMin, yMin);
+                var bottomRight = new Vector3(xMax, yMin);
+                var upperLeft = new Vector3(xMin, yMax);
+                var upperRight = new Vector3(xMax, yMax);
                 var color = Color.cyan;
                 var duration = 3f;
 
@@ -86,6 +95,7 @@ namespace CCEnvs.Unity
             return this[key.ToString()];
         }
 
+        private bool refreshScheduled;
         public virtual void Refresh()
         {
             if (refreshScheduled)
