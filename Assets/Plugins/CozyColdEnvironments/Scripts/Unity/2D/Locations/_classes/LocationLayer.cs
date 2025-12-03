@@ -1,9 +1,9 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using Humanizer;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -26,10 +26,10 @@ namespace CCEnvs.Unity._2D.Locations
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (!Contains(pos))
+                if (!cells.TryGetValue(pos, out var cell))
                     return new Result<T>(default, new PointOutOfBoundsException(pos));
 
-                return Result.Lazy(() => cells[pos]);
+                return Result.Create(cell);
             }
         }
 
@@ -64,22 +64,11 @@ namespace CCEnvs.Unity._2D.Locations
         }
 
         [field: GetBySelf]
-        public Tilemap tilemap {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            private set;
-        } = null!;
+        public Tilemap tilemap { get; private set; } = null!;
 
         public Maybe<ILocation> Location => m_Location.Maybe()!;
 
-        public BoundsInt CellBounds {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return Location.Map(static loc => loc.GetCellBounds()).GetValue(tilemap.cellBounds);
-            }
-        }
+        public BoundsInt CellBounds { get; private set; }
 
         public string Name => name;
         public Maybe<object> Owner { get; private set; }
@@ -87,8 +76,37 @@ namespace CCEnvs.Unity._2D.Locations
         protected override void Start()
         {
             base.Start();
-            cells = new Dictionary<Vector3Int, T>(CellBounds.size.x * CellBounds.size.y * (CellBounds.z + 1));
+            CellBounds = Location.Map(x => x.GetCellBounds()).GetValue(tilemap.cellBounds);
+            SetupCellCollection();
             InitCells();
+        }
+
+        public static void ReplaceTile(LocationLayer<T> instance,
+                                       Vector3Int newPos,
+                                       T cellToMove,
+                                       T? replacedCell)
+        {
+            Vector3Int oldPos = cellToMove.Position;
+
+            if (replacedCell.IsNotNull())
+            {
+                TileBase? replacedTile = replacedCell.GetTile().Raw;
+
+                replacedCell.SetTile(cellToMove.GetTile().Raw);
+                cellToMove.SetTile(replacedTile);
+
+                replacedCell.SetPosition(oldPos);
+                cellToMove.SetPosition(newPos);
+
+                instance.cells[oldPos] = replacedCell;
+                instance.cells[newPos] = cellToMove;
+            }
+            else
+            {
+                cellToMove.SetPosition(newPos);
+                instance.cells.Remove(oldPos);
+                instance.cells[newPos] = cellToMove;
+            }
         }
 
         public bool Contains() => cells.Count > 0;
@@ -129,8 +147,7 @@ namespace CCEnvs.Unity._2D.Locations
         public void SetCell(Vector3Int pos, T cell)
         {
             if (!Contains(pos))
-                throw new PointOutOfBoundsException(pos);
-
+                return;
             CC.Guard.IsNotNull(cell, nameof(cell));
 
             cells[pos] = cell;
@@ -159,9 +176,12 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void MoveCell(Vector3Int from, Vector3Int to)
         {
-            if (!cells.TryGetValue(from, out T cellToMove)
+            if (from == to
                 ||
-                cellToMove.Position == to)
+                cells.TryGetValue(from, out T cellToMove)
+                ||
+                !Contains(to)
+                )
                 return;
 
             if (cells.TryGetValue(to, out T replacedCell))
@@ -172,46 +192,18 @@ namespace CCEnvs.Unity._2D.Locations
                     var origGO = tileBasic.gameObject;
 
                     tileBasic.gameObject = repalcedGO;
-                    replaceTile(this, to, cellToMove, replacedCell);
+                    ReplaceTile(this, to, cellToMove, replacedCell);
                     tileBasic.gameObject = origGO;
                 }
                 else
-                    replaceTile(this, to, cellToMove, replacedCell);
+                    ReplaceTile(this, to, cellToMove, replacedCell);
 
                 replacedCell.Refresh();
             }
             else
-                replaceTile(this, to, cellToMove, replacedCell: default);
+                ReplaceTile(this, to, cellToMove, replacedCell: default);
 
             cellToMove.Refresh();
-
-            static void replaceTile(LocationLayer<T> @this,
-                                    Vector3Int newPos,
-                                    T cellToMove,
-                                    T? replacedCell)
-            {
-                Vector3Int oldPos = cellToMove.Position;
-
-                if (replacedCell.IsNotNull())
-                {
-                    TileBase? replacedTile = replacedCell.GetTile().Raw;
-
-                    replacedCell.SetTile(cellToMove.GetTile().Raw);
-                    cellToMove.SetTile(replacedTile);
-
-                    replacedCell.SetPosition(oldPos);
-                    cellToMove.SetPosition(newPos);
-
-                    @this.cells[oldPos] = replacedCell;
-                    @this.cells[newPos] = cellToMove;
-                }
-                else
-                {
-                    cellToMove.SetPosition(newPos);
-                    @this.cells.Remove(oldPos);
-                    @this.cells[newPos] = cellToMove;
-                }
-            }
         }
         public void MoveCell(Vector2Int from, Vector2Int to)
         {
@@ -233,6 +225,31 @@ namespace CCEnvs.Unity._2D.Locations
         {
             MoveCell(new Vector2(fromX, fromY), new Vector2(toX, toY));
         }
+        public void MoveCell(T cell, Vector3Int to)
+        {
+            CC.Guard.IsNotNull(cell, nameof(cell));
+            MoveCell(cell.Position, to);
+        }
+        public void MoveCell(T cell, Vector2Int to)
+        {
+            MoveCell(cell, (Vector3Int)to);
+        }
+        public void MoveCell(T cell, Vector3 to)
+        {
+            MoveCell(cell, ConvertPosition(to));
+        }
+        public void MoveCell(T cell, Vector2 to)
+        {
+            MoveCell(cell, ConvertPosition(to));
+        }
+        public void MoveCell(T cell, int toX, int toY)
+        {
+            MoveCell(cell, ConvertPosition(new Vector3(toX, toY)));
+        }
+        public void MoveCell(T cell, float toX, float toY)
+        {
+            MoveCell(cell, ConvertPosition(new Vector2(toX, toY)));
+        }
 
         public void SetOwner(object? owner) => Owner = owner;
 
@@ -246,19 +263,20 @@ namespace CCEnvs.Unity._2D.Locations
             return $"{nameof(tilemap)}: {tilemap}; {nameof(Name)}: {Name}; {nameof(Location)}: {Location}; {nameof(CellBounds)}; {CellBounds}";
         }
 
-        public virtual void OnCellMoved(Vector3Int from, Vector3Int to)
-        {
-            (cells[from], cells[to]) = (cells[to], cells[from]);
-        }
+        protected abstract T CreateCell(Vector3Int pos);
 
-        protected abstract T CreateCell(Vector3Int pos, TileBase? tile);
+        private void SetupCellCollection()
+        {
+            int capacity = CellBounds.size.x * CellBounds.size.y * (CellBounds.z + 1);
+            cells = new Dictionary<Vector3Int, T>(capacity);
+        }
 
         private void InitCells()
         {
             T cell;
             foreach (var pos in CellBounds.allPositionsWithin)
             {
-                cell = CreateCell(pos, tilemap.GetTile(pos));
+                cell = CreateCell(pos);
                 cells[pos] = cell;
 
                 this.PrintLog($"{cell} inited,");
@@ -268,9 +286,9 @@ namespace CCEnvs.Unity._2D.Locations
 
     public class LocationLayer : LocationLayer<Cell>
     {
-        protected override Cell CreateCell(Vector3Int pos, TileBase? tile)
+        protected override Cell CreateCell(Vector3Int pos)
         {
-            return new Cell(this, pos, tile: tile, owner: Owner.Raw);
+            return new Cell(this, pos, owner: Owner.Raw);
         }
     }
 }

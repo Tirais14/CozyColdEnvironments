@@ -94,7 +94,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public Bounds GetBounds() => LocationLayer.tilemap.GetBoundsLocal(Position);
 
-        public bool HasTile() => GetTile().IsSome;
+        public bool HasTile() => tile.IsSome;
 
         public bool HasOwner() => Owner.IsSome;
         public bool HasOwner(object owner) => Owner.Has(owner);

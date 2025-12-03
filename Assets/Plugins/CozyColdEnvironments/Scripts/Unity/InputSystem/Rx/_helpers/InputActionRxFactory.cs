@@ -9,33 +9,21 @@ namespace CCEnvs.Unity.InputSystem.Rx
     public static class InputActionRxFactory
     {
         /// <exception cref="ArgumentNullException"></exception>
-        public static IInputActionRx<T> Create<T>(InputAction inputAction)
-            where T : struct
+        public static T Create<T>(InputAction inputAction)
+            where T : IInputActionRx
         {
-            Guard.IsNotNull(inputAction, nameof(inputAction));
-
-            if (inputAction.type == InputActionType.Button || inputAction.expectedControlType == "Button")
-                return new ButtonActionRx(inputAction).To<IInputActionRx<T>>();
-
-            return new InputActionRx<T>(inputAction);
+            return Create(typeof(T), inputAction).To<T>();
         }
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public static IInputActionRx Create(Type valueType, InputAction inputAction)
+        public static IInputActionRx Create(Type type, InputAction inputAction)
         {
-            if (inputAction is null)
-                throw new ArgumentNullException(nameof(inputAction));
-            if (valueType is null)
-                return new InputActionRx(inputAction);
+            Guard.IsNotNull(type);
+            Guard.IsNotNull(inputAction);
 
-            return typeof(InputActionRxFactory).Reflect()
-                                               .Name(nameof(Create))
-                                               .Arguments(inputAction)
-                                               .GenericArguments(valueType)
-                                               .Method()
-                                               .Strict()
-                                               .Invoke(null, Range.From(inputAction))
-                                               .To<IInputActionRx>();
+            return type.Reflect()
+                       .Arguments(inputAction)
+                       .CreateInstance<IInputActionRx>();
         }
     }
 }

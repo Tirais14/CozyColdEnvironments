@@ -1,6 +1,8 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
+using Humanizer;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -45,10 +47,14 @@ namespace CCEnvs.Unity._2D.Locations
         void MoveCell(Vector2 from, Vector2 to);
         void MoveCell(int fromX, int fromY, int toX, int toY);
         void MoveCell(float fromX, float fromY, float toX, float toY);
+        void MoveCell(ICell cell, Vector3Int to);
+        void MoveCell(ICell cell, Vector2Int to);
+        void MoveCell(ICell cell, Vector3 to);
+        void MoveCell(ICell cell, Vector2 to);
+        void MoveCell(ICell cell, int toX, int toY);
+        void MoveCell(ICell cell, float toX, float toY);
 
         void SetOwner(object? owner);
-
-        void OnCellMoved(Vector3Int from, Vector3Int to);
 
         Vector3Int ConvertPosition(Vector3 position);
     }
@@ -78,6 +84,13 @@ namespace CCEnvs.Unity._2D.Locations
         void SetCell(int x, int y, T cell);
         void SetCell(float x, float y, T cell);
 
+        void MoveCell(T cell, Vector3Int to);
+        void MoveCell(T cell, Vector2Int to);
+        void MoveCell(T cell, Vector3 to);
+        void MoveCell(T cell, Vector2 to);
+        void MoveCell(T cell, int toX, int toY);
+        void MoveCell(T cell, float toX, float toY);
+
         bool ILocationLayer.Contains(ICell? cell)
         {
             return cell.Is<T>(out var typed) && Contains(typed);
@@ -106,6 +119,31 @@ namespace CCEnvs.Unity._2D.Locations
         void ILocationLayer.SetCell(float x, float y, ICell cell)
         {
             SetCell(x, y, cell.To<T>());
+        }
+
+        void ILocationLayer.MoveCell(ICell cell, Vector3Int to)
+        {
+            MoveCell(cell.To<T>(), to);
+        }
+        void ILocationLayer.MoveCell(ICell cell, Vector2Int to)
+        {
+            MoveCell(cell.To<T>(), to);
+        }
+        void ILocationLayer.MoveCell(ICell cell, Vector3 to)
+        {
+            MoveCell(cell.To<T>(), to);
+        }
+        void ILocationLayer.MoveCell(ICell cell, Vector2 to)
+        {
+            MoveCell(cell.To<T>(), to);
+        }
+        void ILocationLayer.MoveCell(ICell cell, int toX, int toY)
+        {
+            MoveCell(cell.To<T>(), toX, toY);
+        }
+        void ILocationLayer.MoveCell(ICell cell, float toX, float toY)
+        {
+            MoveCell(cell.To<T>(), toX, toY);
         }
     }
 }

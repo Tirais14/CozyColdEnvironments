@@ -99,14 +99,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
             disposables.Add(inputAction);
         }
 
-        private static Type? ResolveValueType(PropertyInfo prop)
-        {
-            return (Type?)TypeHelper.CollectBaseTypes(prop.PropertyType)
-                                    .FirstOrDefault(type => type.IsGenericType)
-                                    .Maybe()
-                                    .Map(type => type.GetGenericArguments()[0]);
-        }
-
         private InputAction ResolveInputAction(PropertyInfo prop)
         {
             InputAction resolved = ActionMap.FindAction(prop.Name, throwIfNotFound: true);
@@ -135,7 +127,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             IInputActionRx action;
             foreach (var prop in props)
             {
-                action = InputActionRxFactory.Create(ResolveValueType(prop), ResolveInputAction(prop));
+                action = InputActionRxFactory.Create(prop.PropertyType, ResolveInputAction(prop));
                 prop.SetValue(this, action);
                 RegsiterAction(action);
             }
