@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
@@ -47,18 +46,10 @@ namespace CCEnvs.Unity.UI
             disposables.Dispose();
         }
 
-        protected static void FindSelected(Unit _, SelectableObserver<T> inst)
-        {
-            //instance.selection.Value.IfSome(x => x.DoDeselect());
-
-            inst.selection.Value = inst.selectables.ZLinq()
-                .Where(sel => sel.IsNotNull())
-                .FirstOrDefault(sel => sel.IsSelected);
-        }
-
         protected static void OnSeleactableAdd<TValue>(SelectableObserver<T> inst, T cmp)
         {
             cmp.ObserveDoSelect()
+                .Merge(cmp.ObserveDoDeselect())
                 .SubscribeWithState(inst,
                 static (slct, inst) => inst.selection.Value = slct.As<T>())
                 .AddTo(inst.disposables);

@@ -92,7 +92,6 @@ namespace CCEnvs.Unity.UI
 
         private void CreateSelectionOverlay()
         {
-  
             RectTransform overlayTransform;
             RectTransform thisTransfrom = transform.To<RectTransform>();
 

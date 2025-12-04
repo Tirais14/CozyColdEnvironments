@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-
 namespace CCEnvs.Patterns.States
 {
     public interface IState
