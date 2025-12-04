@@ -47,8 +47,6 @@ namespace CCEnvs.Unity.UI
         [Tooltip("If false, only do selection on button click")]
         protected bool switchSelectableOnButtonClick = true;
 
-        private bool commandSchedulerRunning;
-
         public Maybe<Image> image => m_Graphic.As<Image>();
         public Maybe<Button> button => m_Button;
         public Maybe<Selectable> selectable => m_Selectable;
@@ -100,8 +98,6 @@ namespace CCEnvs.Unity.UI
 
         private static async UniTask RunCommandScheduler(GUITab instance)
         {
-            instance.commandSchedulerRunning = true;
-
             while (!instance.destroyCancellationToken.IsCancellationRequested)
             {
                 await UniTask.WaitForEndOfFrame(cancellationToken: instance.destroyCancellationToken);
@@ -113,8 +109,6 @@ namespace CCEnvs.Unity.UI
                     cancellationToken: instance.destroyCancellationToken
                     );
             }
-
-            instance.commandSchedulerRunning = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

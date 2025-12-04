@@ -36,7 +36,10 @@ namespace CCEnvs.Patterns.States
 
         protected void SetState(IState? state)
         {
+            State.IfSome(x => x.Exit());
+
             State = state.Maybe();
+            State.IfSome(x => x.Enter());
         }
     }
 }

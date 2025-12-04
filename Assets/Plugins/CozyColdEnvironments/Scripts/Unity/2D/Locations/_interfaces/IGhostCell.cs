@@ -1,4 +1,5 @@
 using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -10,5 +11,7 @@ namespace CCEnvs.Unity._2D.Locations
         void SetPosition(Vector3Int pos);
 
         void Materialize(Tilemap? otherTilemap = null);
+
+        IObservable<Unit> ObserveMaterialize();
     }
 }

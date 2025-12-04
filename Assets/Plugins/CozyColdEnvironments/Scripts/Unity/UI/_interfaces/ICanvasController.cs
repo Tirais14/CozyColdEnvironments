@@ -1,6 +1,5 @@
 using CCEnvs.Unity.InputSystem.Rx;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 #nullable enable
@@ -11,7 +10,7 @@ namespace CCEnvs.Unity.UI
     {
         GraphicRaycaster graphicRaycaster { get; }
         ICanvasRaycaster CanvasRaycaster { get; }
-        InputActionRx<Vector2> PointerInput { get; }
+        PointerInputActionRx PointerInput { get; }
         Canvas canvas { get; }
     }
 }

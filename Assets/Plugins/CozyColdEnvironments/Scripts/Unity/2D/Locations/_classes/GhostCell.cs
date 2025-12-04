@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
@@ -14,6 +15,7 @@ namespace CCEnvs.Unity._2D.Locations
         private readonly Maybe<GameObject> linkedGO;
         private readonly Maybe<Tile> ghostTile;
         private Maybe<Vector3Int> ghostTilePos;
+        private ReactiveCommand<Unit>? materilaizeCommand;
 
         public GhostCell(
             TileBase? tile,
@@ -83,6 +85,14 @@ namespace CCEnvs.Unity._2D.Locations
 
             if (ghostTilePos.TryGetValue(out Vector3Int pos))
                 otherTilemap.SetTile(pos, tile.Raw);
+
+            materilaizeCommand?.Execute(Unit.Default);
+        }
+
+        public IObservable<Unit> ObserveMaterialize()
+        {
+            materilaizeCommand ??= new ReactiveCommand<Unit>();
+            return materilaizeCommand;
         }
 
         private bool disposed;
@@ -93,6 +103,7 @@ namespace CCEnvs.Unity._2D.Locations
 
             linkedGO.IfSome(go => Object.Destroy(go));
             ghostTile.IfSome(tile => Object.Destroy(tile));
+            materilaizeCommand?.Dispose();
             disposed = true;
         }
     }
