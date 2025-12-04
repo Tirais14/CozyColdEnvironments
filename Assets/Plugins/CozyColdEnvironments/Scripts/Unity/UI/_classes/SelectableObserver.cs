@@ -49,10 +49,14 @@ namespace CCEnvs.Unity.UI
         protected static void OnSeleactableAdd<TValue>(SelectableObserver<T> inst, T cmp)
         {
             cmp.ObserveDoSelect()
-                .Merge(cmp.ObserveDoDeselect())
-                .SubscribeWithState(inst,
-                static (slct, inst) => inst.selection.Value = slct.As<T>())
-                .AddTo(inst.disposables);
+               .SubscribeWithState(inst,
+               static (slct, inst) => inst.selection.Value = slct.As<T>())
+               .AddTo(inst.disposables);
+
+            cmp.ObserveDoDeselect()
+               .SubscribeWithState(inst,
+               static (_, inst) => inst.selection.Value = Maybe<T>.None)
+               .AddTo(inst.disposables);
         }
 
         public IObservable<T> ObserveDeselected()

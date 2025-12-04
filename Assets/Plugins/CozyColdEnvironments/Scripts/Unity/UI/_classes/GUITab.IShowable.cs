@@ -122,7 +122,11 @@ namespace CCEnvs.Unity.UI
                 UIHelper.UndoTransparentRecursive(@this.m_Graphic);
             }
 
-            if (!@this.ShowOnInited && @this.GetParentGui().IsNone)
+            var parentGui = @this.GetParentGui();
+
+            if (parentGui.Has(@this))
+                @this.PrintError("Self");
+            if (!@this.ShowOnInited && parentGui.IsNone)
                 @this.Hide();
         }
 

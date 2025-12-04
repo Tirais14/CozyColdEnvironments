@@ -602,12 +602,12 @@ namespace CCEnvs.Unity
             return new GameObjectQuery(this);
         }
 
-        protected virtual IEnumerable<Component> CustomBfsChildsSearch(
+        protected virtual IEnumerable<Component> CustomBfsSearch(
             GameObject target,
             Type type)
         {
             bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
-            var toProcess = new Queue<Transform>(target.Q().IncludeInactive(includeInactive).NotRecursive().ChildrenTransforms());
+            var toProcess = new Queue<Transform>(getNextTransforms(target.transform, includeInactive, findMode));
             var cmps = new List<Component>();
             bool onlyFirstComponentsOnBranch = settings.IsFlagSetted(Settings.OnlyFirstComponentsOnBranch);
             bool hasDepthLimiter = depthLimiter.IsSome;
@@ -615,19 +615,27 @@ namespace CCEnvs.Unity
             if (!settings.IsFlagSetted(Settings.ExcludeSelf))
                 cmps.AddRange(target.Q().Components(type).Cast<Component>());
 
-            Transform child;
+            Transform transform;
             while (toProcess.IsNotEmpty())
             {
-                child = toProcess.Dequeue();
+                transform = toProcess.Dequeue();
 
                 if (hasDepthLimiter 
                     &&
-                    child.Q().IncludeInactive().Component(depthLimiter.GetValueUnsafe()).Lax().IsSome
+                    transform.Q()
+                    .IncludeInactive()
+                    .Component(depthLimiter.GetValueUnsafe())
+                    .Lax().IsSome
                     )
+                {
                     continue;
+                }
 
                 bool cmpsFound = false;
-                if (child.Q().IncludeInactive(includeInactive).Components(type).Let(out var temp)
+                if (transform.Q()
+                    .IncludeInactive(includeInactive)
+                    .Components(type)
+                    .Let(out var temp)
                     &&
                     temp.IsNotEmpty())
                 {
@@ -638,11 +646,41 @@ namespace CCEnvs.Unity
                 if (onlyFirstComponentsOnBranch && cmpsFound)
                     continue;
 
-                foreach (var item in child.Q().IncludeInactive(includeInactive).NotRecursive().ChildrenTransforms())
+                foreach (var item in getNextTransforms(transform, includeInactive, findMode))
                     toProcess.Enqueue(item);
             }
 
             return cmps;
+
+            static IEnumerable<Transform> getNextTransforms(
+                Transform tr,
+                bool includeInactive,
+                FindMode findMode)
+            {
+                switch (findMode)
+                {
+                    case FindMode.InChilds:
+                        foreach (var next in tr.ZLinq().Cast<Transform>())
+                        {
+                            if (!includeInactive && !next.gameObject.activeSelf)
+                                continue;
+
+                            yield return next;
+                        }
+                        break;
+                    case FindMode.InParents:
+                        Transform parent = tr.parent;
+                        while (parent != null)
+                        {
+                            yield return parent;
+                            parent = parent.parent;
+                        }
+                        break;
+                    default:
+                        CC.Throw.InvalidOperation(findMode).To<IEnumerable<Transform>>();
+                        break;
+                }
+            }
         }
 
         protected virtual IEnumerable<Component> GetComponentsFrom(GameObject target, Type type, bool anyType)
@@ -680,7 +718,7 @@ namespace CCEnvs.Unity
                 }
                 //Switch to custom BFS search only if those flags is true for performance reasons
                 else if (nearest || depthLimiter.IsSome || excludeSelf)
-                    return CustomBfsChildsSearch(target, type);
+                    return CustomBfsSearch(target, type);
                 else
                 {
                     return target.GetComponentsInChildren<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
@@ -701,6 +739,8 @@ namespace CCEnvs.Unity
 
                     return parents;
                 }
+                if (isNotRecursive || excludeSelf || depthLimiter.IsSome)
+                    return CustomBfsSearch(target, type);
                 else
                 {
                     return target.GetComponentsInParent<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
