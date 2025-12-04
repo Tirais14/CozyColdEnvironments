@@ -135,8 +135,11 @@ namespace CCEnvs.Unity._2D.Locations
             disposed = true;
         }
 
-        public GhostCell ToGhost(Tilemap? tilemap = null)
+        public Maybe<GhostCell> ToGhost(Tilemap? tilemap = null)
         {
+            if (GetTile().IsNone)
+                return Maybe<GhostCell>.None;
+
             return new GhostCell(this, tilemap.Maybe().GetValue(this.tilemap));
         }
 

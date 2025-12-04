@@ -15,30 +15,34 @@ namespace CCEnvs.Unity
 
         Maybe<TModel> ISelectableController<TModel>.Selection => modelSelection.Value;
 
-        protected override void Start()
+        protected override void Awake()
         {
-            base.Start();
+            base.Awake();
 
-            selection.SubscribeWithState(this,
-                static (sel, @this) =>
+            selection.Select(slct => slct.Raw.As<Component>())
+                .SubscribeWithState(this,
+                static (mCmp, @this) =>
                 {
-                    @this.modelSelection.Value = sel.Raw.As<Component>()
-                        .Match(some: cmp => cmp.QueryTo().Model<TModel>().Lax().GetValue(),
-                               none: () => sel.As<TModel>().Raw
-                               );
-                }).AddTo(this);
+                    if (mCmp.TryGetValue(out Component? cmp))
+                        @this.modelSelection.Value = cmp.Q().Model<TModel>().Lax();
+                    else
+                        @this.modelSelection.Value = cmp.As<TModel>();
+                })
+                .AddTo(this);
+
+            modelSelection.Subscribe(_ => this.PrintWarning("Changed"));
         }
 
         IObservable<TModel> ISelectableController<TModel>.ObserveDeselected()
         {
             return modelSelection.Pairwise()
-                                 .Where(pair => pair.Current.IsNone && pair.Previous.IsSome)
-                                 .Select(pair => pair.Previous.GetValueUnsafe());
+                                 .Where(static pair => pair.Current.IsNone && pair.Previous.IsSome)
+                                 .Select(static pair => pair.Previous.GetValueUnsafe());
         }
 
         IObservable<TModel> ISelectableController<TModel>.ObserveSelected()
         {
-            return modelSelection.Where(x => x.IsSome).Select(x => x.GetValueUnsafe());
+            return modelSelection.Where(static x => x.IsSome).Select(x => x.GetValueUnsafe());
         }
 
         IObservable<PreviousCurrentPair<Maybe<TModel>>> ISelectableController<TModel>.ObserveSelection()

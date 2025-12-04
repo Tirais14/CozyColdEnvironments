@@ -80,14 +80,14 @@ namespace CCEnvs.Unity.UI
             return isSelected.Where(x => x);
         }
 
-        public IObservable<Unit> ObserveDoSelect()
+        public IObservable<ISelectable> ObserveDoSelect()
         {
-            return isSelected.Where(x => x).AsUnitObservable();
+            return isSelected.Where(x => x).Select(_ => this);
         }
 
-        public IObservable<Unit> ObserveDoDeselect()
+        public IObservable<ISelectable> ObserveDoDeselect()
         {
-            return isSelected.Where(x => !x).AsUnitObservable();
+            return isSelected.Where(x => !x).Select(_ => this);
         }
 
         private void CreateSelectionOverlay()

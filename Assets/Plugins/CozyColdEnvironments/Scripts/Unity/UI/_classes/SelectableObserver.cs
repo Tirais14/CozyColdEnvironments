@@ -47,18 +47,21 @@ namespace CCEnvs.Unity.UI
             disposables.Dispose();
         }
 
-        protected static void FindSelected(Unit _, SelectableObserver<T> @this)
+        protected static void FindSelected(Unit _, SelectableObserver<T> inst)
         {
-            @this.selection.Value.IfSome(x => x.DoDeselect());
+            //instance.selection.Value.IfSome(x => x.DoDeselect());
 
-            @this.selection.Value = @this.selectables.ZLinq()
+            inst.selection.Value = inst.selectables.ZLinq()
                 .Where(sel => sel.IsNotNull())
                 .FirstOrDefault(sel => sel.IsSelected);
         }
 
-        protected static void OnAdd<TValue>(SelectableObserver<T> @this, T cmp)
+        protected static void OnSeleactableAdd<TValue>(SelectableObserver<T> inst, T cmp)
         {
-            cmp.ObserveDoSelect().SubscribeWithState(@this, FindSelected).AddTo(@this.disposables);
+            cmp.ObserveDoSelect()
+                .SubscribeWithState(inst,
+                static (slct, inst) => inst.selection.Value = slct.As<T>())
+                .AddTo(inst.disposables);
         }
 
         public IObservable<T> ObserveDeselected()
@@ -80,10 +83,13 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void CollectSelectables()
         {
-            foreach (var cmp in this.QueryTo().ByChildren().ExcludeSelf().Models<T>())
+            foreach (var cmp in this.QueryTo()
+                                    .ByChildren()
+                                    .ExcludeSelf()
+                                    .Models<T>())
             {
                 selectables.Add(cmp);
-                OnAdd<T>(this, cmp);
+                OnSeleactableAdd<T>(this, cmp);
             }
         }
 
@@ -98,7 +104,7 @@ namespace CCEnvs.Unity.UI
 
             this.DoActionAsync(static async @this =>
             {
-                await UniTask.NextFrame();
+                await UniTask.NextFrame(PlayerLoopTiming.LastInitialization);
                 try
                 {
                     @this.CollectSelectables();
@@ -109,7 +115,6 @@ namespace CCEnvs.Unity.UI
                 }
                 finally
                 {
-                    await UniTask.WaitForEndOfFrame();
                     @this.collectSelectablesScheduled = false;
                 }
             });

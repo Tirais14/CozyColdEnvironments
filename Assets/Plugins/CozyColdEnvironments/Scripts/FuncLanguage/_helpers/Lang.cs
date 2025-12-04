@@ -128,6 +128,9 @@ namespace CCEnvs.FuncLanguage
             IEqualityComparer<TValue?>? comparer = null)
             where T : struct, IConditional<TValue>
         {
+            if (input.IsNone)
+                return false;
+
             comparer ??= EqualityComparer<TValue?>.Default;
 
             return comparer.Equals(input.GetValueUnsafe(), value);

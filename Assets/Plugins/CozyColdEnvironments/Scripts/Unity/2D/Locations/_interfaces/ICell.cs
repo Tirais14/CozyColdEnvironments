@@ -40,7 +40,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         Maybe<GameObject> GetTilePrefab();
 
-        GhostCell ToGhost(Tilemap? tilemap = null);
+        Maybe<GhostCell> ToGhost(Tilemap? tilemap = null);
 
         public Maybe<TileData> GetTileData();
 

@@ -7,28 +7,32 @@ using Object = UnityEngine.Object;
 #nullable enable
 namespace CCEnvs.Unity._2D.Locations
 {
-    public struct GhostCell : IDisposable
+    public class GhostCell : IGhostCell
     {
-        private readonly TileBase tile;
+        private readonly Maybe<TileBase> tile;
         private readonly Tilemap tilemap;
         private readonly Maybe<GameObject> linkedGO;
-        private readonly Tile ghostTile;
+        private readonly Maybe<Tile> ghostTile;
+        private Maybe<Vector3Int> ghostTilePos;
 
         public GhostCell(
-            TileBase tile,
+            TileBase? tile,
             Sprite? tileSprite,
             GameObject? tilePrefab,
             Tilemap tilemap)
-            :
-            this()
         {
             CC.Guard.IsNotNull(tilemap, nameof(tilemap));  
-            CC.Guard.IsNotNull(tile, nameof(tile));
 
             this.tile = tile;
             this.tilemap = tilemap;
 
-            ghostTile = ScriptableObject.CreateInstance<Tile>();
+            var ghostTile = ScriptableObject.CreateInstance<Tile>();
+            ghostTile.name = "GhostTile";
+            this.ghostTile = ghostTile;
+
+            if (tile == null)
+                return;
+
             ghostTile.sprite = tileSprite;
 
             if (tilePrefab != null)
@@ -44,22 +48,41 @@ namespace CCEnvs.Unity._2D.Locations
 
         public GhostCell(ICell cell, Tilemap tilemap)
             :
-            this(cell.GetTile().Raw!, cell.GetTileSprite().Raw, cell.GetTilePrefab().Raw, tilemap)
+            this(cell.GetTile().Raw, cell.GetTileSprite().Raw, cell.GetTilePrefab().Raw, tilemap)
         {
         }
 
-        public readonly void SetPosition(Vector3Int pos)
+        public void SetPosition(Vector3Int pos)
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            Matrix4x4 tempTileTransform = ghostTile.transform;
-            tempTileTransform.MultiplyPoint3x4(pos);
+            if (!this.ghostTile.TryGetValue(out Tile? ghostTile))
+                return;
+
+            if (ghostTilePos.Has(pos))
+                return;
+
+            if (ghostTilePos.TryGetValue(out Vector3Int previousPos))
+                tilemap.SetTile(previousPos, tile: null);
 
             if (linkedGO.TryGetValue(out GameObject? go))
-                go.transform.position = pos;
+                go.transform.position = tilemap.GetCellCenterWorld(pos);
 
             tilemap.SetTile(pos, ghostTile);
+            ghostTilePos = pos;
+        }
+
+        public void Materialize(Tilemap? otherTilemap = null)
+        {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().FullName);
+
+            if (otherTilemap == null)
+                otherTilemap = tilemap;
+
+            if (ghostTilePos.TryGetValue(out Vector3Int pos))
+                otherTilemap.SetTile(pos, tile.Raw);
         }
 
         private bool disposed;
@@ -69,7 +92,7 @@ namespace CCEnvs.Unity._2D.Locations
                 return;
 
             linkedGO.IfSome(go => Object.Destroy(go));
-            Object.Destroy(ghostTile);
+            ghostTile.IfSome(tile => Object.Destroy(tile));
             disposed = true;
         }
     }

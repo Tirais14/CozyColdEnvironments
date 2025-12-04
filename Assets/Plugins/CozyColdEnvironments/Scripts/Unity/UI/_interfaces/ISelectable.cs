@@ -16,8 +16,8 @@ namespace CCEnvs.Unity.UI
 
         IObservable<bool> ObserveIsSelected();
 
-        IObservable<Unit> ObserveDoSelect();
+        IObservable<ISelectable> ObserveDoSelect();
 
-        IObservable<Unit> ObserveDoDeselect();
+        IObservable<ISelectable> ObserveDoDeselect();
     }
 }

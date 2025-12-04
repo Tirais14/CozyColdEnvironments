@@ -2,7 +2,6 @@ using CCEnvs.Patterns.Commands;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Initables;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +82,7 @@ namespace CCEnvs.Unity.UI
 
         private static async UniTask Init(GUITab @this)
         {
-            await UniTask.NextFrame(timing: PlayerLoopTiming.PreUpdate);
+            await UniTask.NextFrame(timing: PlayerLoopTiming.LastInitialization);
 
             var childs = @this.Q()
                               .ByChildren()
@@ -98,7 +97,7 @@ namespace CCEnvs.Unity.UI
                 await UniTask.WaitUntil(
                     childs,
                     static childs => childs.All(x => x.IsInited),
-                    timing: PlayerLoopTiming.PreUpdate
+                    timing: PlayerLoopTiming.LastInitialization
                     );
             }
 
@@ -117,7 +116,7 @@ namespace CCEnvs.Unity.UI
                 await UniTask.WaitUntil(
                     parents,
                     static parents => parents.IsEmpty() || parents.All(x => x.IsInited),
-                    timing: PlayerLoopTiming.PreUpdate
+                    timing: PlayerLoopTiming.LastInitialization
                     );
 
                 UIHelper.UndoTransparentRecursive(@this.m_Graphic);

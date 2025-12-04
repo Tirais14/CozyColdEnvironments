@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Dependencies;
 using CCEnvs.FuncLanguage;
+using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Commands;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
@@ -9,9 +10,7 @@ using CCEnvs.Unity.InputSystem.Rx;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using UniRx;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -99,25 +98,23 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        private static async UniTask RunCommandScheduler(GUITab @this)
+        private static async UniTask RunCommandScheduler(GUITab instance)
         {
-            @this.commandSchedulerRunning = true;
+            instance.commandSchedulerRunning = true;
 
-            while (!@this.destroyCancellationToken.IsCancellationRequested)
+            while (!instance.destroyCancellationToken.IsCancellationRequested)
             {
-                if (@this.enabled)
-                {
-                    await UniTask.WaitForEndOfFrame(cancellationToken: @this.destroyCancellationToken);
-                    @this.commandScheduler.DoTick();
-                }
+                await UniTask.WaitForEndOfFrame(cancellationToken: instance.destroyCancellationToken);
+                if (instance.enabled)
+                    instance.commandScheduler.DoTick();
 
                 await UniTask.NextFrame(
-                    PlayerLoopTiming.PreUpdate, 
-                    cancellationToken: @this.destroyCancellationToken
+                    PlayerLoopTiming.LastInitialization, 
+                    cancellationToken: instance.destroyCancellationToken
                     );
             }
 
-            @this.commandSchedulerRunning = false;
+            instance.commandSchedulerRunning = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -135,7 +132,7 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(guiTab, nameof(guiTab));
 
-            return GetParentGui().Map(parent => parent is MonoBehaviour mono && transform.IsChildOf(mono.transform))
+            return GetParentGui().Map(parent => parent.Is<MonoBehaviour>(out var mono) && transform.IsChildOf(mono.transform))
                                  .GetValue(false);
         }
 
@@ -163,7 +160,7 @@ namespace CCEnvs.Unity.UI
                                    else
                                        cmp.DoSelect();
                                })
-                .AddTo(this));
+                            .AddTo(this));
         }
     }
 }
