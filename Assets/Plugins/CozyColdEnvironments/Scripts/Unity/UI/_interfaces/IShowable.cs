@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.UI
         bool ShowAllowed { get; }
         bool HideAllowed { get; }
         bool ShowOnInited { get; set; }
-        bool IsInited { get;}
+        bool IsInited { get; }
 
         void Hide();
  
@@ -25,6 +25,8 @@ namespace CCEnvs.Unity.UI
         void SwitchShownStateVoid();
 
         void OnAddChildren(Transform child);
+
+        void InitShowable();
 
         IObservable<Unit> ObserveShow();
 

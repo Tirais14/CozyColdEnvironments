@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEngine;
 using UnityEngine.UI;
 using ZLinq;
@@ -16,7 +17,7 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public partial class GUITab : IShowable, IInitableBase
+    public partial class GUITab : IShowable
     {
         private readonly HashSet<GraphicStateSnaphsot> graphicStates = new(
             new AnonymousEqualityComparer<GraphicStateSnaphsot>(
@@ -66,14 +67,34 @@ namespace CCEnvs.Unity.UI
         private void IShowableAwake()
         {
             isShown.AddTo(this);
-
-            if (m_Graphic != null)
-                UIHelper.DoTranpsarentRecursive(m_Graphic);
         }
 
         private void IShowableStart()
         {
-            this.DoActionAsync(Init);
+            if (GetParentGui().IsNone)
+                transform.position *= 100;
+
+            this.DoActionAsync(static async (@this) =>
+            {
+                var childs = @this.Q()
+                                  .ExcludeSelf()
+                                  .ByChildren()
+                                  .Components<IShowable>()
+                                  .ToArray();
+
+                if (childs.IsNotEmpty())
+                    await UniTask.WaitUntil(childs, static childs => childs.All(x => x.IsInited));
+
+                if (@this.GetParentGui().IsNone)
+                {
+                    @this.transform.position /= 100;
+                    @this.HideInternal();
+                }
+
+                @this.IsInited = true;
+            });
+
+            //this.DoActionAsync(Init);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -82,79 +103,87 @@ namespace CCEnvs.Unity.UI
             //if (IsInited)
             //    Redraw();
 
-            if (redrawScheduled)
-                return;
+            //if (redrawScheduled)
+            //    return;
 
-            redrawScheduled = true;
-            this.DoActionAsync(static async @this =>
-            {
-                if (!@this.IsInited)
-                    await UniTask.WaitUntil(@this,
-                        static @this => @this.IsInited,
-                        timing: PlayerLoopTiming.PreUpdate
-                        );
+            //redrawScheduled = true;
+            //this.DoActionAsync(static async @this =>
+            //{
+            //    if (!@this.IsInited)
+            //        await UniTask.WaitUntil(@this,
+            //            static @this => @this.IsInited,
+            //            timing: PlayerLoopTiming.PreUpdate
+            //            );
 
-                await UniTask.WaitForEndOfFrame();
+            //    await UniTask.WaitForEndOfFrame();
 
-                try
-                {
-                    @this.Redraw();
-                }
-                catch (Exception ex)
-                {
-                    @this.PrintException(ex);
-                }
-                finally
-                {
-                    @this.redrawScheduled = false;
-                }
-            });
+            //    try
+            //    {
+            //        @this.Redraw();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        @this.PrintException(ex);
+            //    }
+            //    finally
+            //    {
+            //        @this.redrawScheduled = false;
+            //    }
+            //});
         }
 
         private static async UniTask Init(GUITab @this)
         {
-            var childs = @this.Q()
-                              .ByChildren()
-                              .ExcludeSelf()
-                              .Components<IInitableBase>()
-                              .ZLinq()
-                              .Where(x => x.Is<IShowable>())
-                              .ToArray();
 
-            if (childs.IsNotEmpty())
-            {
-                await UniTask.WaitUntil(
-                    childs,
-                    static childs => childs.All(x => x.IsInited),
-                    timing: PlayerLoopTiming.LastInitialization
-                    );
-            }
 
-            @this.IsInited = true;
-            if (@this.m_Graphic != null)
-            {
-                var parents = @this.Q()
-                                   .ByParent()
-                                   .ExcludeSelf()
-                                   .Components<IInitableBase>()
-                                   .ZLinq()
-                                   .Where(x => x.Is<IShowable>())
-                                   .ToArray();
+            //if (@this.ShowOnInited)
+            //    @this.ShowInternal();
 
-                await UniTask.WaitUntil(
-                    parents,
-                    static parents => parents.IsEmpty() || parents.All(x => x.IsInited),
-                    timing: PlayerLoopTiming.LastInitialization
-                    );
+            //var childs = @this.Q()
+            //                  .ByChildren()
+            //                  .ExcludeSelf()
+            //                  .Components<IInitableBase>()
+            //                  .ZLinq()
+            //                  .Where(x => x.Is<IShowable>())
+            //                  .ToArray();
 
-                UIHelper.UndoTransparentRecursive(@this.m_Graphic);
-            }
+            //if (childs.IsNotEmpty())
+            //{
+            //    await UniTask.WaitUntil(
+            //        childs,
+            //        static childs => childs.All(x => x.IsInited),
+            //        timing: PlayerLoopTiming.LastInitialization
+            //        );
+            //}
 
-            if (!@this.ShowOnInited
-                &&
-                @this.GetParentGui().IsNone
-                )
-                @this.HideInternal(@this);
+            //@this.IsInited = true;
+            //if (@this.m_Graphic != null)
+            //{
+            //    var parents = @this.Q()
+            //                       .ByParent()
+            //                       .ExcludeSelf()
+            //                       .Components<IInitableBase>()
+            //                       .ZLinq()
+            //                       .Where(x => x.Is<IShowable>())
+            //                       .ToArray();
+
+            //    if (parents.IsNotEmpty())
+            //    {
+            //        await UniTask.WaitUntil(
+            //            parents,
+            //            static parents => parents.All(x => x.IsInited),
+            //            timing: PlayerLoopTiming.LastInitialization
+            //            );
+            //    }
+
+            //    UIHelper.UndoTransparentRecursive(@this.m_Graphic);
+            //}
+
+            //if (!@this.ShowOnInited
+            //    &&
+            //    @this.GetParentGui().IsNone
+            //    )
+            //    @this.HideInternal(@this);
         }
 
         public void Hide()
@@ -164,7 +193,7 @@ namespace CCEnvs.Unity.UI
 
             var command = Command.Create(this,
                 isReadyToExecute: static @this => @this.HideAllowed,
-                execute: static @this => @this.HideInternal(@this),
+                execute: static @this => @this.HideInternal(),
                 name: nameof(Hide),
                 undoCommandsOnAdd: Range.From(new CommandInfo(commandName: nameof(Show))),
                 singleCommand: true
@@ -180,7 +209,7 @@ namespace CCEnvs.Unity.UI
 
             var command = Command.Create(this,
                 isReadyToExecute: static @this => @this.ShowAllowed,
-                execute: static @this => @this.ShowInternal(@this),
+                execute: static @this => @this.ShowInternal(),
                 name: nameof(Show),
                 singleCommand: true
                 );
@@ -202,8 +231,8 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
-            if (!IsShown)
-                Hide();
+            //if (!IsShown)
+            //    Hide();
         }
 
         public void OnAddChildren(Transform child)
@@ -236,25 +265,36 @@ namespace CCEnvs.Unity.UI
             return isShown.Where(x => !x).AsUnitObservable();
         }
 
-        protected virtual void HideInternal<T>(T @this)
-            where T : GUITab
+        public void InitShowable()
         {
-            @this.OnHide();
+            if (IsInited)
+                return;
 
-            UIHelper.CaptureGraphicStatesUntilShowable(@this.gameObject, @this.graphicStates);
-            UIHelper.CaptureShowableStatesUntilShowable(@this.gameObject, @this.showableStates);
+            if (GetParentGui().TryGetValue(out var parentGUI))
+                parentGUI.InitShowable();
+            else
+                HideInternal();
 
-            foreach (var graphic in @this.graphicStates.ZLinq().Select(x => x.Target))
-                @this.DisableGraphics(graphic);
+            IsInited = true;
+        }
 
-            foreach (var showableState in @this.showableStates)
-                showableState.Target.Hide();
+        protected void HideInternal()
+        {
+            OnHide();
 
-            @this.OnHiden();
+            foreach (var graphic in graphicStates.ZLinq().Select(x => x.Target))
+                DisableGraphics(graphic);
+
+            foreach (var showableState in showableStates.ZLinq().Where(x => x.IsShown).Select(x => x.Target))
+                showableState.Hide();
+
+            OnHiden();
         }
 
         protected virtual void OnHide()
         {
+            UIHelper.CaptureGraphicStatesUntilShowable(gameObject, graphicStates);
+            UIHelper.CaptureShowableStatesUntilShowable(gameObject, showableStates);
         }
 
         protected virtual void OnHiden()
@@ -262,15 +302,14 @@ namespace CCEnvs.Unity.UI
             isShown.Value = false;
         }
 
-        protected virtual void ShowInternal<T>(T @this)
-            where T : GUITab
+        protected virtual void ShowInternal()
         {
-            @this.OnShow();
-            @this.graphicStates.RestoreStates();
-            @this.graphicStates.Clear();
-            @this.showableStates.RestoreStates();
-            @this.showableStates.Clear();
-            @this.OnShown();
+            OnShow();
+            graphicStates.RestoreStates();
+            graphicStates.Clear();
+            showableStates.RestoreStates();
+            showableStates.Clear();
+            OnShown();
         }
 
         protected virtual void OnShow()
@@ -289,44 +328,5 @@ namespace CCEnvs.Unity.UI
 
             graphic.enabled = false;
         }
-
-        //protected void CollectControlledChilds()
-        //{
-        //    controlledChilds.Clear();
-        //    foreach (var child in this.Q().DepthLimiter<IShowable>().ChildrenTransforms())
-        //        controlledChilds.Add(child);
-        //}
-
-        //protected IEnumerable<Transform> GetNewChilds()
-        //{
-        //    using var _ = ListPool<Transform>.Get(out var newChilds);
-        //    foreach (var child in this.Q().DepthLimiter<IShowable>().ChildrenTransforms())
-        //    {
-        //        if (!controlledChilds.Contains(child))
-        //            newChilds.Add(child);
-        //    }
-
-        //    var t = newChilds.ToArray();
-        //    return t;
-        //}
-
-        //private void HideNewChilds()
-        //{
-        //    foreach (var graphic in GetNewChilds().ZLinq().SelectMany(child => child.Q().Components<Graphic>()))
-        //    {
-        //        graphic.DoTransparent();
-        //        graphic.DoActionAsync(graphic, static async (@this, graphic) =>
-        //        {
-        //            await UniTask.WaitUntil(graphic,
-        //                static graphic => graphic.didStart,
-        //                timing: PlayerLoopTiming.LastInitialization
-        //                );
-
-        //            await UniTask.NextFrame(timing: PlayerLoopTiming.Initialization);
-
-        //            graphic.UndoTransparent();
-        //        });
-        //    }
-        //}
     }
 }

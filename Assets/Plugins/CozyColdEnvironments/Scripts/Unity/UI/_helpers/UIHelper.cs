@@ -1,6 +1,7 @@
 using SuperLinq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -67,13 +68,20 @@ namespace CCEnvs.Unity.UI
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(graphicStates, nameof(graphicStates));
 
+            var t = gameObject.QueryTo()
+                              .ByChildren()
+                              .IncludeInactive()
+                              .DepthLimiter<IShowable>()
+                              .Components<Graphic>()
+                              .ToArray();
+
             foreach (var graphic in gameObject.QueryTo()
                                               .ByChildren()
                                               .IncludeInactive()
                                               .DepthLimiter<IShowable>()
                                               .Components<Graphic>())
             {
-                graphicStates!.Add(graphic);
+                graphicStates!.Add(new GraphicStateSnaphsot(graphic));
             }
         }
 
@@ -82,6 +90,16 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(showableStates, nameof(showableStates));
+
+            var t = gameObject.QueryTo()
+                              .ByChildren()
+                              .IncludeInactive()
+                              .ExcludeSelf()
+                              .Nearest()
+                              .Components<IShowable>()
+                              .ToArray();
+
+            _ = t;
 
             foreach (var showable in gameObject.QueryTo()
                                                .ByChildren()

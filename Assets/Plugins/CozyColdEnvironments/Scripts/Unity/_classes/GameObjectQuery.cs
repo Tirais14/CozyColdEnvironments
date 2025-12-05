@@ -623,9 +623,10 @@ namespace CCEnvs.Unity
                 if (hasDepthLimiter 
                     &&
                     transform.Q()
-                    .IncludeInactive()
+                    .IncludeInactive(includeInactive)
                     .Component(depthLimiter.GetValueUnsafe())
-                    .Lax().IsSome
+                    .Lax()
+                    .IsSome
                     )
                 {
                     continue;
