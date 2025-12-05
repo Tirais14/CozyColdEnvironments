@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using UnityEditor;
 using UnityEngine;
 using ZLinq;
 
@@ -66,7 +67,12 @@ namespace CCEnvs.Unity.Storages.UI
         {
             var go = Instantiate(@this.ContainerPrefab, @this.transform);
 
-            var view = go.QueryTo().ByChildren().IncludeInactive().Views().First(view => view.model.Raw is IItemContainer);
+            var view = go.QueryTo()
+                .ByChildren()
+                .IncludeInactive()
+                .Views()
+                .First(view => view.model.Raw is IItemContainer);
+
             view.SetViewModelUnsafe(new ItemContainerViewModel<IItemContainer>(cnt.Value));
             @this.instantiatedGameObjects.Add(cnt.Key, go);
             @this.slots.Add(go);

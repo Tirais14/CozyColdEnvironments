@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UniRx;
+using UnityEngine;
 
 namespace CCEnvs.Unity.UI
 {
@@ -22,6 +23,8 @@ namespace CCEnvs.Unity.UI
         bool SwitchShownState();
 
         void SwitchShownStateVoid();
+
+        void OnAddChildren(Transform child);
 
         IObservable<Unit> ObserveShow();
 

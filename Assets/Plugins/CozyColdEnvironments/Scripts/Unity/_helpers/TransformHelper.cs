@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -8,7 +6,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity
 {
-    public static class TransformExtensions
+    public static class TransformHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetParentCount(this Transform source)
@@ -48,36 +46,6 @@ namespace CCEnvs.Unity
                 throw new ArgumentNullException(nameof(value));
 
             return value.up * -1;
-        }
-
-        public static Transform? FindParent(this Transform transform, string n)
-        {
-            LoopFuse cyclePredicate = new(() => transform != null);
-            do
-            {
-                transform = transform.parent;
-
-                if (transform.name.Equals(n))
-                    return transform;
-            } while (cyclePredicate.Invoke());
-
-            return null;
-        }
-
-        public static bool TryFindParent(this Transform transform, string n, [NotNullWhen(true)] out Transform? result)
-        {
-            result = transform.FindParent(n);
-
-            return result != null;
-        }
-
-        public static bool TryFind(this Transform transform,
-                                   string n,
-                                   [NotNullWhen(true)] out Transform? result)
-        {
-            result = transform.Find(n);
-
-            return result != null;
         }
     }
 }

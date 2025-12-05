@@ -43,10 +43,10 @@ namespace CCEnvs.Unity.Timers
 
             return updateType switch
             {
-                UpdateType.Update => (ITimer)timersGO.Find(TIMERS_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerUpdate)),
-                UpdateType.FixedUpdate => (ITimer)timersGO.Find(TIMERS_FIXED_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerFixedUpdate)),
-                UpdateType.LateUpdate => (ITimer)timersGO.Find(TIMERS_LATE_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerLateUpdate)),
-                UpdateType.Custom => (ITimer)timersGO.Find(TIMERS_CUSTOM_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? throw new ArgumentNullException(nameof(creationType))),
+                UpdateType.Update => (ITimer)timersGO.Q().ExcludeSelf().ByChildren().ByName(TIMERS_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerUpdate)),
+                UpdateType.FixedUpdate => (ITimer)timersGO.Q().ExcludeSelf().ByChildren().ByName(TIMERS_FIXED_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerFixedUpdate)),
+                UpdateType.LateUpdate => (ITimer)timersGO.Q().ExcludeSelf().ByChildren().ByName(TIMERS_LATE_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? typeof(TimerLateUpdate)),
+                UpdateType.Custom => (ITimer)timersGO.Q().ExcludeSelf().ByChildren().ByName(TIMERS_CUSTOM_UPDATE_OBJ_NAME)!.AddComponent(creationType ?? throw new ArgumentNullException(nameof(creationType))),
                 _ => throw new InvalidOperationException($"{nameof(updateType)} = {updateType}."),
             };
         }
@@ -61,13 +61,13 @@ namespace CCEnvs.Unity.Timers
             if (go == null)
                 return false;
 
-            if (!go.TryFind(TIMERS_UPDATE_OBJ_NAME, out _)
+            if (!go.Q().ExcludeSelf().ByParent().ByName(TIMERS_UPDATE_OBJ_NAME).Transform().Lax().IsSome
                 ||
-                !go.TryFind(TIMERS_FIXED_UPDATE_OBJ_NAME, out _)
+                !go.Q().ExcludeSelf().ByParent().ByName(TIMERS_FIXED_UPDATE_OBJ_NAME).Transform().Lax().IsSome
                 ||
-                !go.TryFind(TIMERS_LATE_UPDATE_OBJ_NAME, out _)
+                !go.Q().ExcludeSelf().ByParent().ByName(TIMERS_LATE_UPDATE_OBJ_NAME).Transform().Lax().IsSome
                 ||
-                !go.TryFind(TIMERS_CUSTOM_UPDATE_OBJ_NAME, out _))
+                !go.Q().ExcludeSelf().ByParent().ByName(TIMERS_CUSTOM_UPDATE_OBJ_NAME).Transform().Lax().IsSome)
                 return false;
 
             return true;

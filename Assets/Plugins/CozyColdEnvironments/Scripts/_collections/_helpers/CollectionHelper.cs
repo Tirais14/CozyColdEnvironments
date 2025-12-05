@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Collections
 {
-    public static class ICollectionExtensions
+    public static class CollectionHelper
     {
         public static bool TryAdd<T>(this ICollection<T> source, T value)
         {

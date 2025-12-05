@@ -12,6 +12,8 @@ namespace CCEnvs.Unity._2D.Locations
 
         void Materialize(Tilemap? otherTilemap = null);
 
+        void ResetPosition();
+
         IObservable<Unit> ObserveMaterialize();
     }
 }

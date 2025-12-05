@@ -10,12 +10,13 @@ namespace CCEnvs.Unity._2D.Locations
 {
     public class GhostCell : IGhostCell
     {
-        private readonly Maybe<TileBase> tile;
-        private readonly Tilemap tilemap;
         private readonly Maybe<GameObject> linkedGO;
         private readonly Maybe<Tile> ghostTile;
-        private Maybe<Vector3Int> ghostTilePos;
         private ReactiveCommand<Unit>? materilaizeCommand;
+
+        public Maybe<TileBase> Tile { get; }
+        public Tilemap tilemap { get; }
+        public Maybe<Vector3Int> Position { get; private set; }
 
         public GhostCell(
             TileBase? tile,
@@ -25,17 +26,22 @@ namespace CCEnvs.Unity._2D.Locations
         {
             CC.Guard.IsNotNull(tilemap, nameof(tilemap));  
 
-            this.tile = tile;
+            Tile = tile;
             this.tilemap = tilemap;
-
-            var ghostTile = ScriptableObject.CreateInstance<Tile>();
-            ghostTile.name = "GhostTile";
-            this.ghostTile = ghostTile;
 
             if (tile == null)
                 return;
 
+            if (tileSprite == null)
+                tileSprite = tile.GetTileSprite().Raw;
+
+            var ghostTile = ScriptableObject.CreateInstance<Tile>();
+            ghostTile.name = $"GhostTile({tile.name})";
             ghostTile.sprite = tileSprite;
+            ghostTile.hideFlags = tile.hideFlags;
+
+            if (tilePrefab == null)
+                tilePrefab = tile.GetTileGameObject().Raw;
 
             if (tilePrefab != null)
             {
@@ -46,6 +52,8 @@ namespace CCEnvs.Unity._2D.Locations
                     tilemap.transform
                     );
             }
+
+            this.ghostTile = ghostTile;
         }
 
         public GhostCell(ICell cell, Tilemap tilemap)
@@ -62,17 +70,17 @@ namespace CCEnvs.Unity._2D.Locations
             if (!this.ghostTile.TryGetValue(out Tile? ghostTile))
                 return;
 
-            if (ghostTilePos.Has(pos))
+            if (Position.Has(pos))
                 return;
 
-            if (ghostTilePos.TryGetValue(out Vector3Int previousPos))
+            if (Position.TryGetValue(out Vector3Int previousPos))
                 tilemap.SetTile(previousPos, tile: null);
 
             if (linkedGO.TryGetValue(out GameObject? go))
                 go.transform.position = tilemap.GetCellCenterWorld(pos);
 
             tilemap.SetTile(pos, ghostTile);
-            ghostTilePos = pos;
+            Position = pos;
         }
 
         public void Materialize(Tilemap? otherTilemap = null)
@@ -80,13 +88,34 @@ namespace CCEnvs.Unity._2D.Locations
             if (disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            if (otherTilemap == null)
-                otherTilemap = tilemap;
+            if (Position.TryGetValue(out Vector3Int pos))
+            {
+                if (otherTilemap != null)
+                {
+                    if (tilemap.transform != otherTilemap.transform)
+                        this.PrintWarning("Tilemap transforms not equals");
+                    if (tilemap.layoutGrid != otherTilemap.layoutGrid)
+                        throw new ArgumentException("Other tilemap has other grid layout.");
 
-            if (ghostTilePos.TryGetValue(out Vector3Int pos))
-                otherTilemap.SetTile(pos, tile.Raw);
+                    tilemap.SetTile(pos, null);
+                    Vector3 worldPos = tilemap.CellToWorld(pos);
+                    Vector3Int otherPos = otherTilemap.WorldToCell(worldPos);
+                    otherTilemap.SetTile(otherPos, Tile.Raw);
+                }
+                else
+                    tilemap.SetTile(pos, Tile.Raw);
+            }
 
             materilaizeCommand?.Execute(Unit.Default);
+        }
+
+        public void ResetPosition()
+        {
+            if (!Position.TryGetValue(out var pos))
+                return;
+
+            tilemap.SetTile(pos, null);
+            Position = Maybe<Vector3Int>.None;
         }
 
         public IObservable<Unit> ObserveMaterialize()
@@ -96,14 +125,20 @@ namespace CCEnvs.Unity._2D.Locations
         }
 
         private bool disposed;
-        public void Dispose()
+        public void Dispose() => Dispose(true);
+        protected virtual void Dispose(bool disposing)
         {
             if (disposed)
                 return;
 
-            linkedGO.IfSome(go => Object.Destroy(go));
-            ghostTile.IfSome(tile => Object.Destroy(tile));
-            materilaizeCommand?.Dispose();
+            if (disposing)
+            {
+                ResetPosition();
+                linkedGO.IfSome(go => Object.Destroy(go));
+                ghostTile.IfSome(tile => Object.Destroy(tile));
+                materilaizeCommand?.Dispose();
+            }
+
             disposed = true;
         }
     }

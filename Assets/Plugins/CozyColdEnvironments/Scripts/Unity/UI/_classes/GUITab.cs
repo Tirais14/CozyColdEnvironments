@@ -71,13 +71,18 @@ namespace CCEnvs.Unity.UI
                 () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
                 );
 
+            commandScheduler.Start(
+                PlayerLoopTiming.LastInitialization,
+                cancellationToken: destroyCancellationToken
+                )
+                .AddTo(this);
+
             IShowableAwake();
         }
 
         protected override void Start()
         {
             base.Start();
-            RunCommandScheduler(this).Forget();
             IShowableStart();
             BindSelectable();
         }
@@ -96,29 +101,29 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        private static async UniTask RunCommandScheduler(GUITab instance)
-        {
-            while (!instance.destroyCancellationToken.IsCancellationRequested)
-            {
-                await UniTask.WaitForEndOfFrame(cancellationToken: instance.destroyCancellationToken);
-                if (instance.enabled)
-                    instance.commandScheduler.DoTick();
+        //private static async UniTask RunCommandScheduler(GUITab instance)
+        //{
+        //    while (!instance.destroyCancellationToken.IsCancellationRequested)
+        //    {
+        //        await UniTask.WaitForEndOfFrame(cancellationToken: instance.destroyCancellationToken);
+        //        if (instance.enabled)
+        //            instance.commandScheduler.DoTick();
 
-                await UniTask.NextFrame(
-                    PlayerLoopTiming.LastInitialization, 
-                    cancellationToken: instance.destroyCancellationToken
-                    );
-            }
-        }
+        //        await UniTask.NextFrame(
+        //            PlayerLoopTiming.LastInitialization, 
+        //            cancellationToken: instance.destroyCancellationToken
+        //            );
+        //    }
+        //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<IGUITab> GetParentGui()
         {
             return this.QueryTo()
-                .ByParent()
-                .ExcludeSelf()
-                .Component<IGUITab>()
-                .Lax();
+                       .ByParent()
+                       .ExcludeSelf()
+                       .Component<IGUITab>()
+                       .Lax();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,23 +143,25 @@ namespace CCEnvs.Unity.UI
             if (!this.button.TryGetValue(out Button? button))
                 return;
 
-            selectable.IfSome(cmp =>
-                    button.OnClickAsObservable()
-                           .SubscribeWithState2(cmp, this,
-                               static (_, cmp, @this) =>
-                               {
-                                   if (!cmp.IsSelected
-                                       &&
-                                       !@this.SelectableDoSelectPredicate()
-                                       )
-                                       return;
-
-                                   if (@this.switchSelectableOnButtonClick)
-                                       cmp.SwitchSelectionState();
-                                   else
-                                       cmp.DoSelect();
-                               })
-                            .AddTo(this));
+            if (selectable.TryGetValue(out var slct))
+            {
+                button.OnClickAsObservable()
+                      .SubscribeWithState2(slct, this,
+                          static (_, cmp, @this) =>
+                          {
+                              if (!cmp.IsSelected
+                                  &&
+                                  !@this.SelectableDoSelectPredicate()
+                                  )
+                                  return;
+                      
+                              if (@this.switchSelectableOnButtonClick)
+                                  cmp.SwitchSelectionState();
+                              else
+                                  cmp.DoSelect();
+                          })
+                      .AddTo(this);
+            }
         }
     }
 }

@@ -29,8 +29,6 @@ namespace CCEnvs.Unity
                         @this.modelSelection.Value = cmp.As<TModel>();
                 })
                 .AddTo(this);
-
-            modelSelection.Subscribe(_ => this.PrintWarning("Changed"));
         }
 
         IObservable<TModel> ISelectableController<TModel>.ObserveDeselected()

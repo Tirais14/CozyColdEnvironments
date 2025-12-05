@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.UI
     {
         private static readonly Dictionary<Graphic, float> transparentGraphicStateSnapshots = new();
 
-        public static IDisposable DoTransparent(Graphic graphic)
+        public static IDisposable DoTransparent(this Graphic graphic)
         {
             CC.Guard.IsNotNull(graphic, nameof(graphic));
 
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.UI
                 );
         }
 
-        public static IDisposable DoTranpsarentRecursive(Graphic graphic)
+        public static IDisposable DoTranpsarentRecursive(this Graphic graphic)
         {
             CC.Guard.IsNotNull(graphic, nameof(graphic));
 
@@ -44,7 +44,7 @@ namespace CCEnvs.Unity.UI
                 );
         }
 
-        public static void UndoTransparent(Graphic graphic)
+        public static void UndoTransparent(this Graphic graphic)
         {
             if (!transparentGraphicStateSnapshots.Remove(graphic, out float colorAlpha))
                 return;
@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.UI
                 graphic.color = graphic.color.WithAlpha(colorAlpha);
         }
 
-        public static void UndoTransparentRecursive(Graphic graphic)
+        public static void UndoTransparentRecursive(this Graphic graphic)
         {
             CC.Guard.IsNotNull(graphic, nameof(graphic));
 

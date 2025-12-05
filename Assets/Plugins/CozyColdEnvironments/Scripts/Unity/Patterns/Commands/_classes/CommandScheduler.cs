@@ -4,6 +4,7 @@ using CCEnvs.Returnables;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using UniRx;
@@ -25,7 +26,7 @@ namespace CCEnvs.Unity.Commands
         private CancellationTokenSource? onDisableCancellationTokenSource;
 
         public bool HasCommands => commands.IsNotEmpty();
-        public bool IsEnabled { get; private set; }
+        public bool IsRunning { get; private set; }
 
         public void AddCommand(ICommand command)
         {
@@ -98,36 +99,41 @@ namespace CCEnvs.Unity.Commands
         /// </summary>
         /// <param name="frameStartTiming"></param>
         /// <returns>Disposable which on Dispose invokes <see cref="Stop"/></returns>
-        public IDisposable Start(PlayerLoopTiming frameStartTiming = PlayerLoopTiming.LastInitialization)
+        public IDisposable Start(
+            PlayerLoopTiming frameStartTiming = PlayerLoopTiming.LastInitialization,
+            CancellationToken cancellationToken = default)
         {
-            if (IsEnabled)
+            if (IsRunning)
                 return Disposable.Empty;
 
             onDisableCancellationTokenSource = new CancellationTokenSource();
 
-            UniTask.Create((@this: this, frameStartTiming, cancellationToken: onDisableCancellationTokenSource.Token),
+            IsRunning = true;
+            var task = UniTask.Create((@this: this, frameStartTiming, cancellationToken: onDisableCancellationTokenSource.Token),
                 static async input =>
                 {
-                    while (input.@this.IsEnabled)
+                    while (input.@this.IsRunning)
                     {
                         await UniTask.WaitForEndOfFrame(cancellationToken: input.cancellationToken);
                         input.@this.DoTick();
 
                         await UniTask.NextFrame(
-                            input.frameStartTiming,
+                            timing: input.frameStartTiming,
                             cancellationToken: input.cancellationToken
                             );
                     }
-                })
-                .Forget();
+                });
 
-            IsEnabled = true;
+            if (cancellationToken != CancellationToken.None)
+                task.AttachExternalCancellation(cancellationToken);
+
+            IsRunning = true;
             return Disposable.CreateWithState(this, @this => @this.Stop());
         } 
 
         public void Stop()
         {
-            if (!IsEnabled)
+            if (!IsRunning)
                 return;
 
             if (onDisableCancellationTokenSource is not null)
@@ -156,32 +162,35 @@ namespace CCEnvs.Unity.Commands
             disposed = true;
         }
 
-        protected void OnCommandAdd(ICommand command)
+        protected virtual void OnCommandAdd(ICommand command)
         {
-            if (command.IsSingle
-                &&
-                commandSet.Contains(command))
+            bool isSingleCommand = command.IsSingle;
+            bool hasUndoCommands = command.UndoCommandsOnAdd.Length > 0;
+            if (commandSet.Contains(command)
+                && 
+                (isSingleCommand
+                ||
+                hasUndoCommands
+                ))
             {
                 CommandInfo info = command.GetCommandInfo();
                 foreach (var cmd in commands)
                 {
-                    if (!info.IsMatch(cmd))
-                        continue;
-
-                    cmd.Undo();
-                }
-            }
-
-            if (command.UndoCommandsOnAdd.IsNotEmpty())
-            {
-                CommandInfo info;
-                for (int i = 0; i < command.UndoCommandsOnAdd.Length; i++)
-                {
-                    info = command.UndoCommandsOnAdd[i];
-                    foreach (var cmd in commands)
+                    if (isSingleCommand && info.IsMatch(cmd))
                     {
-                        if (info.IsMatch(cmd))
-                            cmd.Undo();
+                        cmd.Undo();
+                        continue;
+                    }
+
+                    if (hasUndoCommands)
+                    {
+                        var undoCommandsOnAdd = command.UndoCommandsOnAdd;
+                        int count = undoCommandsOnAdd.Length;
+                        for (int i = 0; i < count; i++)
+                        {
+                            if (undoCommandsOnAdd[i].IsMatch(cmd))
+                                cmd.Undo();
+                        }
                     }
                 }
             }
