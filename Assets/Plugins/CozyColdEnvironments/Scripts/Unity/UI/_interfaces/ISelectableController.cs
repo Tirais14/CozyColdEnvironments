@@ -8,6 +8,8 @@ namespace CCEnvs.Unity.UI
     {
         Maybe<T> Selection { get; }
 
+        void ResetSelection();
+
         IObservable<T> ObserveSelected();
 
         IObservable<T> ObserveDeselected();

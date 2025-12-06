@@ -9,7 +9,7 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public class ModelSelectableObserver<TModel> : SelectableObserver<ISelectable>, ISelectableController<TModel>
+    public class ModelSelectableController<TModel> : SelectableController<ISelectable>, ISelectableController<TModel>
     {
         protected readonly ReactiveProperty<Maybe<TModel>> modelSelection = new();
 

@@ -16,6 +16,8 @@ namespace CCEnvs.Unity.UI
 {
     public partial class GUITab : IShowable
     {
+        protected static Vector3 PosOnInit { get; } = new(10000f, 10000f);
+
         private readonly List<ISnapshot> snapshots = new();
 
         private readonly ReactiveProperty<bool> isShown = new(true);
@@ -24,7 +26,10 @@ namespace CCEnvs.Unity.UI
         private bool redrawScheduled;
 
         [NonSerialized]
-        private Vector3 scaleOnInit;
+        private Vector3 scaleBeforeInit;
+
+        [NonSerialized]
+        private Vector3 posBeforeInit;
 
         [Header("Showable settings")]
         [Space(8)]
@@ -45,8 +50,13 @@ namespace CCEnvs.Unity.UI
         private void IShowableAwake()
         {
             isShown.AddTo(this);
-            scaleOnInit = transform.localScale;
+
+            scaleBeforeInit = transform.localScale;
+            posBeforeInit = transform.localPosition;
+
             transform.localScale = Vector3.zero;
+            transform.localPosition = PosOnInit;
+
         }
 
         private void IShowableStart()
@@ -63,7 +73,9 @@ namespace CCEnvs.Unity.UI
                 if (childs.IsNotEmpty())
                     await UniTask.WaitUntil(childs, static childs => childs.All(x => x.IsInited));
 
-                @this.transform.localScale = @this.scaleOnInit;
+                @this.transform.localScale = @this.scaleBeforeInit;
+                @this.transform.localPosition = @this.posBeforeInit;
+
                 if (!@this.ShowOnInited
                     &&
                     @this.GetParentGUI().IsNone)

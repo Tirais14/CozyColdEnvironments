@@ -20,9 +20,9 @@ namespace CCEnvs.Unity._2D.Locations
 
         public GhostCell(
             TileBase? tile,
-            Sprite? tileSprite,
-            GameObject? tilePrefab,
-            Tilemap tilemap)
+            Tilemap tilemap,
+            Sprite? overrideTileSprite = null,
+            GameObject? overrideTilePrefab = null)
         {
             CC.Guard.IsNotNull(tilemap, nameof(tilemap));  
 
@@ -32,6 +32,13 @@ namespace CCEnvs.Unity._2D.Locations
             if (tile == null)
                 return;
 
+            Sprite? tileSprite;
+
+            if (overrideTileSprite == null)
+                tileSprite = tile.GetTileSprite().Raw;
+            else
+                tileSprite = overrideTileSprite;
+
             if (tileSprite == null)
                 tileSprite = tile.GetTileSprite().Raw;
 
@@ -40,8 +47,12 @@ namespace CCEnvs.Unity._2D.Locations
             ghostTile.sprite = tileSprite;
             ghostTile.hideFlags = tile.hideFlags;
 
-            if (tilePrefab == null)
+            GameObject? tilePrefab;
+
+            if (overrideTilePrefab == null)
                 tilePrefab = tile.GetTileGameObject().Raw;
+            else
+                tilePrefab = overrideTilePrefab;
 
             if (tilePrefab != null)
             {
@@ -56,9 +67,16 @@ namespace CCEnvs.Unity._2D.Locations
             this.ghostTile = ghostTile;
         }
 
-        public GhostCell(ICell cell, Tilemap tilemap)
+        public GhostCell(
+            ICell cell,
+            Tilemap tilemap,
+            Sprite? overrideTileSprite = null,
+            GameObject? overrideTilePrefab = null)
             :
-            this(cell.GetTile().Raw, cell.GetTileSprite().Raw, cell.GetTilePrefab().Raw, tilemap)
+            this(cell.GetTile().Raw,
+                tilemap,
+                overrideTileSprite: overrideTileSprite,
+                overrideTilePrefab: overrideTilePrefab)
         {
         }
 

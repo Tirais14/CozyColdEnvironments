@@ -14,9 +14,9 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
-        public readonly T GetValue(T defaultValue)
+        public readonly T GetValue(T @default)
         {
-            return Lang.GetValue(this, defaultValue);
+            return Lang.GetValue(this, @default);
         }
 
         [DebuggerStepThrough]

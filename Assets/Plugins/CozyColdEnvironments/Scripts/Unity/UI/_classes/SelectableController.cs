@@ -13,7 +13,7 @@ using ZLinq;
 namespace CCEnvs.Unity.UI
 {
     [DisallowMultipleComponent]
-    public class SelectableObserver<T> : CCBehaviour, ISelectableController<T>
+    public class SelectableController<T> : CCBehaviour, ISelectableController<T>
         where T : ISelectable
     {
         protected readonly ReactiveProperty<Maybe<T>> selection = new();
@@ -46,17 +46,30 @@ namespace CCEnvs.Unity.UI
             disposables.Dispose();
         }
 
-        protected static void OnSeleactableAdd<TValue>(SelectableObserver<T> inst, T cmp)
+        protected static void OnSeleactableAdd<TValue>(SelectableController<T> inst, T cmp)
         {
             cmp.ObserveDoSelect()
                .SubscribeWithState(inst,
-               static (slct, inst) => inst.selection.Value = slct.As<T>())
+               static (slct, inst) =>
+               {
+                   inst.selection.Value.IfSome(x => x.DoDeselect());
+                   inst.selection.Value = slct.As<T>();
+               })
                .AddTo(inst.disposables);
 
             cmp.ObserveDoDeselect()
                .SubscribeWithState(inst,
-               static (_, inst) => inst.selection.Value = Maybe<T>.None)
+               static (_, inst) =>
+               {
+                   inst.selection.Value.IfSome(x => x.DoDeselect());
+                   inst.selection.Value = Maybe<T>.None;
+               })
                .AddTo(inst.disposables);
+        }
+
+        public void ResetSelection()
+        {
+            selection.Value.IfSome(x => x.DoDeselect());
         }
 
         public IObservable<T> ObserveDeselected()
@@ -121,7 +134,7 @@ namespace CCEnvs.Unity.UI
             disposables = new CompositeDisposable();
         }
     }
-    public class SelectableObserver : SelectableObserver<ISelectable>
+    public class SelectableObserver : SelectableController<ISelectable>
     {
     }
 }
