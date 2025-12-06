@@ -61,7 +61,7 @@ namespace CCEnvs.Unity.UI
 
             canvasController = new Lazy<ICanvasController>(
                 () => this.QueryTo()
-                    .ByParent()
+                    .FromParents()
                     .IncludeInactive()
                     .Component<ICanvasController>()
                     .Strict()
@@ -117,10 +117,10 @@ namespace CCEnvs.Unity.UI
         //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<IGUITab> GetParentGui()
+        public Maybe<IGUITab> GetParentGUI()
         {
             return this.QueryTo()
-                       .ByParent()
+                       .FromParents()
                        .ExcludeSelf()
                        .Component<IGUITab>()
                        .Lax();
@@ -131,7 +131,7 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(guiTab, nameof(guiTab));
 
-            return GetParentGui().Map(parent => parent.Is<MonoBehaviour>(out var mono) && transform.IsChildOf(mono.transform))
+            return GetParentGUI().Map(parent => parent.Is<MonoBehaviour>(out var mono) && transform.IsChildOf(mono.transform))
                                  .GetValue(false);
         }
 

@@ -94,21 +94,21 @@ namespace CCEnvs.Unity.Injections
                     InjectFrom.Self => source.QueryTo().Component(injectType).Strict(),
 
                     InjectFrom.Parent => source.QueryTo()
-                                               .ByParent()
+                                               .FromParents()
                                                .IncludeInactive()
                                                .Component(injectType)
                                                .Strict(),
 
                     InjectFrom.Child => source.QueryTo()
-                                              .ByChildren()
+                                              .FromChildrens()
                                               .IncludeInactive()
                                               .Component(injectType)
                                               .Strict(),
 
                     InjectFrom.GameObject => source.QueryTo()
-                                                   .ByChildren()
+                                                   .FromChildrens()
                                                    .IncludeInactive()
-                                                   .ByName(attribute.UnityName)
+                                                   .WithName(attribute.UnityName)
                                                    .GameObject()
                                                    .Strict()
                                                    .QueryTo()

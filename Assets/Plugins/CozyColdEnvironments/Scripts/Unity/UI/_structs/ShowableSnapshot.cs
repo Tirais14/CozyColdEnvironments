@@ -4,15 +4,13 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.UI
 {
-    public readonly struct ShowableStateSnapshot : ISnapshot<IShowable>
+    public class ShowableSnapshot : ISnapshot<IShowable>
     {
         public IShowable Target { get; }
         public bool IsShown { get; }
         public Maybe<GameObject> gameObject { get; }
 
-        public ShowableStateSnapshot(IShowable target)
-            :
-            this()
+        public ShowableSnapshot(IShowable target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 

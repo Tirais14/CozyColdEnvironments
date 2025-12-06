@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.UI
 
             using var _ = ListPool<IDisposable>.Get(out var cmps);
 
-            foreach (var child in graphic.Q().ByChildren().Components<Graphic>())
+            foreach (var child in graphic.Q().FromChildrens().Components<Graphic>())
                 cmps.Add(DoTransparent(child));
 
             return Disposable.CreateWithState(
@@ -58,57 +58,40 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(graphic, nameof(graphic));
 
-            foreach (var cmp in graphic.Q().ByChildren().Components<Graphic>())
+            foreach (var cmp in graphic.Q().FromChildrens().Components<Graphic>())
                 UndoTransparent(cmp);
         }
 
         public static void CaptureGraphicStatesUntilShowable(GameObject gameObject,
-            ICollection<GraphicStateSnaphsot> graphicStates)
+            ICollection<ISnapshot> graphicStates)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(graphicStates, nameof(graphicStates));
 
-            var t = gameObject.QueryTo()
-                              .ByChildren()
-                              .IncludeInactive()
-                              .DepthLimiter<IShowable>()
-                              .Components<Graphic>()
-                              .ToArray();
-
             foreach (var graphic in gameObject.QueryTo()
-                                              .ByChildren()
+                                              .FromChildrens()
                                               .IncludeInactive()
                                               .DepthLimiter<IShowable>()
                                               .Components<Graphic>())
             {
-                graphicStates!.Add(new GraphicStateSnaphsot(graphic));
+                graphicStates!.Add(new GraphicSnapshot(graphic));
             }
         }
 
         public static void CaptureShowableStatesUntilShowable(GameObject gameObject,
-            ICollection<ShowableStateSnapshot> showableStates)
+            ICollection<ISnapshot> showableStates)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             CC.Guard.IsNotNull(showableStates, nameof(showableStates));
 
-            var t = gameObject.QueryTo()
-                              .ByChildren()
-                              .IncludeInactive()
-                              .ExcludeSelf()
-                              .Nearest()
-                              .Components<IShowable>()
-                              .ToArray();
-
-            _ = t;
-
             foreach (var showable in gameObject.QueryTo()
-                                               .ByChildren()
+                                               .FromChildrens()
                                                .IncludeInactive()
                                                .ExcludeSelf()
-                                               .Nearest()
+                                               .FirstComponentsOnBranch()
                                                .Components<IShowable>())
             {
-                showableStates!.Add(new ShowableStateSnapshot(showable));
+                showableStates!.Add(new ShowableSnapshot(showable));
             }
         }
     }

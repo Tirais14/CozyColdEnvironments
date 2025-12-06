@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.Storages.UI
             var go = Instantiate(@this.ContainerPrefab, @this.transform);
 
             var view = go.QueryTo()
-                .ByChildren()
+                .FromChildrens()
                 .IncludeInactive()
                 .Views()
                 .First(view => view.model.Raw is IItemContainer);

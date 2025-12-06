@@ -30,7 +30,7 @@ namespace CCEnvs.Unity
             /// </summary>
             NotRecursive = 8,
             CacheResult = 16,
-            OnlyFirstComponentsOnBranch = 32,
+            FirstComponentsOnBranch = 32,
             Default = None
         }
 
@@ -60,9 +60,17 @@ namespace CCEnvs.Unity
             Reset();
         }
 
+        public static bool FilterByDepthLimiter(Transform target, Type limiterType, bool includeInactive)
+        {
+            return target.Q()
+                .IncludeInactive(includeInactive)
+                .Component(limiterType)
+                .Lax().IsNone;
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery From(GameObject gameObject)
+        public GameObjectQuery SetTarget(GameObject gameObject)
         {
             if (gameObject == null)
             {
@@ -76,7 +84,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery From(Component component)
+        public GameObjectQuery SetTarget(Component component)
         {
             if (component == null)
             {
@@ -150,7 +158,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ByName(string? name = null)
+        public GameObjectQuery WithName(string? name = null)
         {
             this.name = name;
 
@@ -159,7 +167,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ByTag(string? tag = null)
+        public GameObjectQuery WithTag(string? tag = null)
         {
             this.tag = tag;
 
@@ -180,7 +188,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery BySelf()
+        public GameObjectQuery FromSelf()
         {
             findMode = FindMode.Self;
 
@@ -189,7 +197,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ByChildren()
+        public GameObjectQuery FromChildrens()
         {
             findMode = FindMode.InChilds;
 
@@ -198,7 +206,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ByParent()
+        public GameObjectQuery FromParents()
         {
             findMode = FindMode.InParents;
 
@@ -219,12 +227,12 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery Nearest(bool state = true)
+        public GameObjectQuery FirstComponentsOnBranch(bool state = true)
         {
             if (state)
-                settings |= Settings.OnlyFirstComponentsOnBranch;
+                settings |= Settings.FirstComponentsOnBranch;
             else
-                settings &= ~Settings.OnlyFirstComponentsOnBranch;
+                settings &= ~Settings.FirstComponentsOnBranch;
 
             return this;
         }
@@ -292,7 +300,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<object> Components(Type? type = null)
+        public IEnumerable<Component> Components(Type? type = null)
         {
             return Target.BiMap(
                 some: target => ComponentsInternal(target, type),
@@ -321,7 +329,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<object> Component(Type type)
+        public Result<Component> Component(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
@@ -510,19 +518,19 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameObject> ChildrenGameObjects() => ByChildren().ExcludeSelf().GameObjects();
+        public IEnumerable<GameObject> ChildrenGameObjects() => FromChildrens().ExcludeSelf().GameObjects();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Transform> ChildrenTransforms() => ByChildren().ExcludeSelf().Transforms();
+        public IEnumerable<Transform> ChildrenTransforms() => FromChildrens().ExcludeSelf().Transforms();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameObject> ParentGameObjects() => ByParent().ExcludeSelf().GameObjects();
+        public IEnumerable<GameObject> ParentGameObjects() => FromParents().ExcludeSelf().GameObjects();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Transform> ParentTranforms() => ByParent().ExcludeSelf().Transforms();
+        public IEnumerable<Transform> ParentTranforms() => FromParents().ExcludeSelf().Transforms();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -551,7 +559,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Either<Transform, RootMarker> RootRaw()
         {
-            var marker = ByParent().IncludeInactive()
+            var marker = FromParents().IncludeInactive()
                                    .Component<RootMarker>()
                                    .Lax();
 
@@ -602,52 +610,101 @@ namespace CCEnvs.Unity
             return new GameObjectQuery(this);
         }
 
-        protected virtual IEnumerable<Component> CustomBfsSearch(
+        protected virtual IEnumerable<Component> CustomParentSearch(
+            GameObject target, 
+            Type type)
+        {
+            bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
+            bool hasDepthLimiter = depthLimiter.IsSome;
+            bool firstComponentsOnBranch = settings.IsFlagSetted(Settings.FirstComponentsOnBranch);
+            Transform current;
+
+            if (!settings.IsFlagSetted(Settings.ExcludeSelf))
+                current = target.transform;
+            else
+            {
+                current = target.transform.parent;
+
+                if (current == null)
+                    return Enumerable.Empty<Component>();
+            }
+
+            var cmps = new List<Component>();
+            while (current != null)
+            {
+                if (includeInactive
+                    &&
+                    !current.gameObject.activeSelf
+                    )
+                {
+                    current = current.parent;
+                    continue;
+                }
+
+                if (hasDepthLimiter
+                    &&
+                    !FilterByDepthLimiter(current, depthLimiter.GetValueUnsafe(), includeInactive)
+                    )
+                    return cmps;
+
+                bool foundAny = false;
+                if (current.Q().IncludeInactive(includeInactive).Components(type).Let(out var t)
+                    &&
+                    t.IsNotEmpty())
+                {
+                    foundAny = true;
+                    cmps.AddRange(t);
+                }
+
+                if (firstComponentsOnBranch
+                    &&
+                    foundAny
+                    )
+                    return cmps;
+
+                current = current.parent;
+            }
+
+            return cmps;
+        }
+
+        protected virtual IEnumerable<Component> CustomBfsChildSearch(
             GameObject target,
             Type type)
         {
             bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
-            var toProcess = new Queue<Transform>(getNextTransforms(target.transform, includeInactive, findMode));
-            var cmps = new List<Component>();
-            bool onlyFirstComponentsOnBranch = settings.IsFlagSetted(Settings.OnlyFirstComponentsOnBranch);
+            var toProcess = new Queue<Transform>(getNextTransforms(target.transform, includeInactive));
+            bool firstComponentsOnBranch = settings.IsFlagSetted(Settings.FirstComponentsOnBranch);
             bool hasDepthLimiter = depthLimiter.IsSome;
 
+            List<Component> cmps;
             if (!settings.IsFlagSetted(Settings.ExcludeSelf))
-                cmps.AddRange(target.Q().Components(type).Cast<Component>());
+            {
+                cmps = new List<Component>();
+                cmps.AddRange(target.Q().Components(type));
+            }
+            else if (target.transform.childCount == 0)
+                return Enumerable.Empty<Component>();
+            else
+                cmps = new List<Component>();
 
-            Transform transform;
+            Transform child;
             while (toProcess.IsNotEmpty())
             {
-                transform = toProcess.Dequeue();
+                child = toProcess.Dequeue();
 
                 if (hasDepthLimiter 
                     &&
-                    transform.Q()
-                    .IncludeInactive(includeInactive)
-                    .Component(depthLimiter.GetValueUnsafe())
-                    .Lax()
-                    .IsSome
+                    !FilterByDepthLimiter(child, depthLimiter.GetValueUnsafe(), includeInactive)
                     )
-                {
-                    continue;
-                }
-
-                bool cmpsFound = false;
-                if (transform.Q()
-                    .IncludeInactive(includeInactive)
-                    .Components(type)
-                    .Let(out var temp)
-                    &&
-                    temp.IsNotEmpty())
-                {
-                    cmpsFound = true;
-                    cmps.AddRange(temp.Cast<Component>());
-                }
-
-                if (onlyFirstComponentsOnBranch && cmpsFound)
                     continue;
 
-                foreach (var item in getNextTransforms(transform, includeInactive, findMode))
+                bool cmpsFound = addComponents(child, includeInactive, type, cmps);
+
+                if (firstComponentsOnBranch && cmpsFound)
+                    continue;
+
+                foreach (var item in getNextTransforms(child, includeInactive))
                     toProcess.Enqueue(item);
             }
 
@@ -655,40 +712,46 @@ namespace CCEnvs.Unity
 
             static IEnumerable<Transform> getNextTransforms(
                 Transform tr,
-                bool includeInactive,
-                FindMode findMode)
+                bool includeInactive)
             {
-                switch (findMode)
+                foreach (var next in tr.ZLinq().Cast<Transform>())
                 {
-                    case FindMode.InChilds:
-                        foreach (var next in tr.ZLinq().Cast<Transform>())
-                        {
-                            if (!includeInactive && !next.gameObject.activeSelf)
-                                continue;
+                    if (!includeInactive && !next.gameObject.activeSelf)
+                        continue;
 
-                            yield return next;
-                        }
-                        break;
-                    case FindMode.InParents:
-                        Transform parent = tr.parent;
-                        while (parent != null)
-                        {
-                            yield return parent;
-                            parent = parent.parent;
-                        }
-                        break;
-                    default:
-                        CC.Throw.InvalidOperation(findMode).To<IEnumerable<Transform>>();
-                        break;
+                    yield return next;
                 }
+            }
+
+            static bool addComponents(
+                Transform target,
+                bool includeInactive,
+                Type type,
+                List<Component> cmps)
+            {
+                if (target.Q()
+                    .IncludeInactive(includeInactive)
+                    .Components(type)
+                    .Let(out var t)
+                    &&
+                    t.IsNotEmpty())
+                {
+                    cmps.AddRange(t);
+                    return true;
+                }
+
+                return false;
             }
         }
 
-        protected virtual IEnumerable<Component> GetComponentsFrom(GameObject target, Type type, bool anyType)
+        protected virtual IEnumerable<Component> GetComponentsFrom(
+            GameObject target,
+            Type type,
+            bool anyType)
         {
             bool isTransformType = type.IsType<Transform>();
             bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
-            bool nearest = settings.IsFlagSetted(Settings.OnlyFirstComponentsOnBranch);
+            bool firstComponentsOnBranch = settings.IsFlagSetted(Settings.FirstComponentsOnBranch);
             bool excludeSelf = settings.IsFlagSetted(Settings.ExcludeSelf);
 
             if (findMode == FindMode.Self)
@@ -708,51 +771,20 @@ namespace CCEnvs.Unity
                         childs.Prepend(targetTransform);
 
                     foreach (var child in childs)
-                    {
-                        cmps.AddRange(child.Q()
-                                           .Components(type)
-                                           .Cast<Component>()
-                                           );
-                    }
+                        cmps.AddRange(child.Q().Components(type));
 
                     return cmps;
                 }
-                //Switch to custom BFS search only if those flags is true for performance reasons
-                else if (nearest || depthLimiter.IsSome || excludeSelf)
-                    return CustomBfsSearch(target, type);
                 else
-                {
-                    return target.GetComponentsInChildren<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
-                                 .Where(x => anyType || x.IsInstanceOfType(type));
-                }
+                    return CustomBfsChildSearch(target, type);
             }
             else if (findMode == FindMode.InParents)
-            {
-                if (isTransformType)
-                {
-                    var parents = new List<Transform>();
-                    Transform current = target.transform;
-                    while (current != null)
-                    {
-                        parents.Add(current);
-                        current = current.parent;
-                    }
-
-                    return parents;
-                }
-                if (isNotRecursive || excludeSelf || depthLimiter.IsSome)
-                    return CustomBfsSearch(target, type);
-                else
-                {
-                    return target.GetComponentsInParent<Component>(settings.IsFlagSetted(Settings.IncludeInactive))
-                                 .Where(x => anyType || x.IsInstanceOfType(type!));
-                }
-            }
+                return CustomParentSearch(target, type);
 
             return CC.Throw.InvalidOperation(findMode, nameof(findMode)).To<IEnumerable<Component>>();
         }
 
-        protected virtual IEnumerable<object> ComponentsInternal(GameObject target, Type? type)
+        protected virtual IEnumerable<Component> ComponentsInternal(GameObject target, Type? type)
         {
             CC.Guard.IsNotNull(target, nameof(target));
             if (type == typeof(GameObject))
@@ -780,11 +812,7 @@ namespace CCEnvs.Unity
             if (tag.IsSome)
                 components = components.Where(cmp => cmp.gameObject.CompareTag(tag.GetValueUnsafe()));
 
-            IEnumerable<object> results = components;
-            var providerObjects = components.OfType<IObjectProvider>().Select(x => x.InternalObject).Where(x => anyType || x.IsInstanceOfType(type));
-            results = results.Concat(providerObjects);
-
-            return results.Where(x => x.IsNotNull());
+            return components;
         }
     }
 
@@ -796,7 +824,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new GameObjectQuery().From(source);
+            return new GameObjectQuery().SetTarget(source);
         }
 
         [DebuggerStepThrough]
@@ -805,7 +833,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new GameObjectQuery().From(source);
+            return new GameObjectQuery().SetTarget(source);
         }
 
         [DebuggerStepThrough]
@@ -814,7 +842,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectQuery.Instance.Reset().From(source);
+            return GameObjectQuery.Instance.Reset().SetTarget(source);
         }
 
         [DebuggerStepThrough]
@@ -823,7 +851,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return GameObjectQuery.Instance.Reset().From(source);
+            return GameObjectQuery.Instance.Reset().SetTarget(source);
         }
 
         [DebuggerStepThrough]

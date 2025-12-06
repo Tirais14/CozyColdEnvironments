@@ -8,7 +8,7 @@ namespace CCEnvs.Unity.UI
     {
         Maybe<Image> image { get; }
 
-        Maybe<IGUITab> GetParentGui();
+        Maybe<IGUITab> GetParentGUI();
 
         bool IsGuiChildOf(IGUITab guiTab);
     }

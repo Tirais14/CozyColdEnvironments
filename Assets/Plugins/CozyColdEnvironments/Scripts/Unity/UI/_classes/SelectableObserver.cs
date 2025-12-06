@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.UI
         protected virtual void CollectSelectables()
         {
             foreach (var cmp in this.QueryTo()
-                                    .ByChildren()
+                                    .FromChildrens()
                                     .ExcludeSelf()
                                     .Models<T>())
             {

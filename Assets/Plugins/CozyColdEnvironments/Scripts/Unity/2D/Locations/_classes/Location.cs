@@ -123,7 +123,7 @@ namespace CCEnvs.Unity
 
         private void InitLayers()
         {
-            foreach (var layer in this.Q().ByChildren().Components<ILocationLayer>())
+            foreach (var layer in this.Q().FromChildrens().Components<ILocationLayer>())
                 layers.Add(layer.Name, layer);
         }
     }

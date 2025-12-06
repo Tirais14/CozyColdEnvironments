@@ -5,38 +5,36 @@ using UnityEngine.UI;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public readonly struct GraphicStateSnaphsot : ISnapshot<Graphic>
+    public class GraphicSnapshot : BehaviourSnapshot
     {
-        public Graphic Target { get; }
         public Color color { get; }
         public bool RaycastTarget { get; }
-        public bool Enabled { get; }
 
-        public GraphicStateSnaphsot(Graphic target)
+        new protected Graphic target => (Graphic)base.target;
+
+        public GraphicSnapshot(Graphic target)
             :
-            this()
+            base(target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
-            Target = target;
             color =  target.color;
             RaycastTarget = target.raycastTarget;
-            Enabled = target.enabled;
         }
 
-        public static implicit operator GraphicStateSnaphsot(Graphic graphic)
+        public static implicit operator GraphicSnapshot(Graphic graphic)
         {
-            return new GraphicStateSnaphsot(graphic);
+            return new GraphicSnapshot(graphic);
         }
 
-        public void Restore()
+        public override void Restore()
         {
+            base.Restore();
             if (Target == null)
                 return;
 
-            Target.color = color;
-            Target.raycastTarget = RaycastTarget;
-            Target.enabled = Enabled;
+            target.color = color;
+            target.raycastTarget = RaycastTarget;
         }
 
         public override string ToString()
@@ -48,7 +46,7 @@ namespace CCEnvs.Unity.UI
     public static class GraphicStateSnaphsotExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GraphicStateSnaphsot CaptureState(this Graphic graphic)
+        public static GraphicSnapshot CaptureState(this Graphic graphic)
         {
             CC.Guard.IsNotNull(graphic, nameof(graphic));
             return graphic;
