@@ -9,6 +9,7 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEngine;
@@ -101,29 +102,24 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        //private static async UniTask RunCommandScheduler(GUITab instance)
-        //{
-        //    while (!instance.destroyCancellationToken.IsCancellationRequested)
-        //    {
-        //        await UniTask.WaitForEndOfFrame(cancellationToken: instance.destroyCancellationToken);
-        //        if (instance.enabled)
-        //            instance.commandScheduler.DoTick();
-
-        //        await UniTask.NextFrame(
-        //            PlayerLoopTiming.LastInitialization, 
-        //            cancellationToken: instance.destroyCancellationToken
-        //            );
-        //    }
-        //}
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<IGUITab> GetParentGUI()
         {
-            return this.QueryTo()
+            return this.Q()
                        .FromParents()
                        .ExcludeSelf()
                        .Component<IGUITab>()
                        .Lax();
+        }
+
+        public Maybe<IGUITab> GetRootGUI()
+        {
+            return this.Q()
+                       .FromParents()
+                       .ExcludeSelf()
+                       .Components<IGUITab>()
+                       .FirstOrDefault()
+                       .Maybe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

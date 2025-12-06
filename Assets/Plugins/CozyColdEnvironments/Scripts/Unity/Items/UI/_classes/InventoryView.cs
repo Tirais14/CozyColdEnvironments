@@ -3,8 +3,10 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
+using SuperLinq;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEditor;
 using UnityEngine;
@@ -29,16 +31,25 @@ namespace CCEnvs.Unity.Storages.UI
 
         protected Dictionary<int, GameObject> instantiatedGameObjects = new();
 
+        private int addCntOperationCount;
+
         public GameObjectList Slots => slots;
         public ISelectableController<IItemContainer> SelectableObserver { get; private set; } = null!;
+        public CanvasGroup canvasGroup { get; private set; }
 
         protected override void Awake()
         {
             base.Awake();
+
             SelectableObserver = this.QueryTo()
                 .Component<ISelectableController<IItemContainer>>()
                 .Lax()
                 .GetValue(() => gameObject.AddComponent<ItemContainerViewSelectableObserver>());
+
+            canvasGroup = this.Q()
+                .Component<CanvasGroup>()
+                .Lax()
+                .GetValue(() => gameObject.AddComponent<CanvasGroup>());
         }
 
         protected override void Start()
@@ -62,30 +73,55 @@ namespace CCEnvs.Unity.Storages.UI
             Slots.Clear();
         }
 
-        private static void OnAddContainer(DictionaryAddEvent<int, IItemContainer> cnt,
-            InventoryView<TViewModel> @this)
+        private static async UniTask OnAddContainer(DictionaryAddEvent<int, IItemContainer> cnt,
+            InventoryView<TViewModel> inst)
         {
-            var go = Instantiate(@this.ContainerPrefab, @this.transform);
+            inst.addCntOperationCount++;
+            inst.canvasGroup.alpha = 0;
+            var go = (await InstantiateAsync(inst.ContainerPrefab, parent: inst.transform))[0];
+            try
+            {
+                var view = go.QueryTo()
+                    .FromChildrens()
+                    .IncludeInactive()
+                    .Views()
+                    .First(view => view.model.Raw is IItemContainer);
 
-            var view = go.QueryTo()
-                .FromChildrens()
-                .IncludeInactive()
-                .Views()
-                .First(view => view.model.Raw is IItemContainer);
+                view.SetViewModelUnsafe(new ItemContainerViewModel<IItemContainer>(cnt.Value));
+                inst.instantiatedGameObjects.Add(cnt.Key, go);
+                inst.slots.Add(go);
+            }
+            catch (System.Exception ex)
+            {
+                Destroy(go);
+                inst.PrintException(ex);
+            }
+            finally
+            {
+                inst.addCntOperationCount--;
 
-            view.SetViewModelUnsafe(new ItemContainerViewModel<IItemContainer>(cnt.Value));
-            @this.instantiatedGameObjects.Add(cnt.Key, go);
-            @this.slots.Add(go);
+                if (inst.addCntOperationCount <= 0)
+                {
+                    inst.canvasGroup.alpha = 1;
+                    inst.GetRootGUI().IfSome(x => x.Redraw());
+                }
+            }
         }
 
         private void BindAddContainer()
         {
-            viewModel.IfSome(viewModel =>
+            if (this.viewModel.TryGetValue(out var viewModel))
             {
                 viewModel.ObserveAdd()
-                     .SubscribeWithState(this, OnAddContainer)
+                     .SubscribeWithState(this,
+                     static (cnt, @this) =>
+                     {
+                         OnAddContainer(cnt, @this)
+                             .AttachExternalCancellation(@this.destroyCancellationToken)
+                             .Forget();
+                     })
                      .AddTo(this);
-            });
+            }
         }
 
         private void BindRemoveContainer()
@@ -121,9 +157,9 @@ namespace CCEnvs.Unity.Storages.UI
         private void SetupOnAddSlotGameObject()
         {
             slots.settings |= IGameObjectBag.Settings.DestroyOnRemove;
-            Slots.ObserveAdd()
-                 .SubscribeWithState(this, static (_, @this) => @this.Redraw())
-                 .AddTo(this);
+            //Slots.ObserveAdd()
+            //     .SubscribeWithState(this, static (_, @this) => @this.Redraw())
+            //     .AddTo(this);
         }
 
         private void InitItemContainers()
@@ -135,10 +171,8 @@ namespace CCEnvs.Unity.Storages.UI
                 .ZLinq()
                 .Select(pair => new DictionaryAddEvent<int, IItemContainer>(pair.Key, pair.Value)))
             {
-                OnAddContainer(ev, this);
+                OnAddContainer(ev, this).AttachExternalCancellation(destroyCancellationToken).Forget();
             }
-
-            Redraw();
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<IInventory>>

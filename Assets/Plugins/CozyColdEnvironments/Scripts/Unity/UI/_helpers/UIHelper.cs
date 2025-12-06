@@ -45,6 +45,17 @@ namespace CCEnvs.Unity.UI
                 );
         }
 
+        public static IDisposable DoTranpsarentRecursive(GameObject gameObject)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+
+            return gameObject.Q()
+                .Component<Graphic>()
+                .Lax()
+                .Map(x => x.DoTranpsarentRecursive())
+                .GetValue(() => Disposable.Empty);
+        }
+
         public static void UndoTransparent(this Graphic graphic)
         {
             if (!transparentGraphicStateSnapshots.Remove(graphic, out float colorAlpha))
@@ -60,6 +71,16 @@ namespace CCEnvs.Unity.UI
 
             foreach (var cmp in graphic.Q().FromChildrens().Components<Graphic>())
                 UndoTransparent(cmp);
+        }
+
+        public static void UndoTransparentRecursive(GameObject gameObject)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+
+            gameObject.Q()
+                .Component<Graphic>()
+                .Lax()
+                .IfSome(x => x.UndoTransparentRecursive());
         }
 
         public static void CaptureGraphicStatesUntilShowable(GameObject gameObject,

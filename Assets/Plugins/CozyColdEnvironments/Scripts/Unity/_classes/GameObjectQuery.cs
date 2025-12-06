@@ -632,7 +632,7 @@ namespace CCEnvs.Unity
             var cmps = new List<Component>();
             while (current != null)
             {
-                if (includeInactive
+                if (!includeInactive
                     &&
                     !current.gameObject.activeSelf
                     )
@@ -714,12 +714,12 @@ namespace CCEnvs.Unity
                 Transform tr,
                 bool includeInactive)
             {
-                foreach (var next in tr.ZLinq().Cast<Transform>())
+                foreach (var current in tr.ZLinq().Cast<Transform>())
                 {
-                    if (!includeInactive && !next.gameObject.activeSelf)
+                    if (!includeInactive && !current.gameObject.activeSelf)
                         continue;
 
-                    yield return next;
+                    yield return current;
                 }
             }
 

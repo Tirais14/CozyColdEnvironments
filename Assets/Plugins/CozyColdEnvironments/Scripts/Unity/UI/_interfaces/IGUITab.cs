@@ -10,6 +10,8 @@ namespace CCEnvs.Unity.UI
 
         Maybe<IGUITab> GetParentGUI();
 
+        Maybe<IGUITab> GetRootGUI();
+
         bool IsGuiChildOf(IGUITab guiTab);
     }
 }

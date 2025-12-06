@@ -96,15 +96,16 @@ namespace CCEnvs.Unity.UI
             if (!IsShown)
                 return;
 
-            var command = Command.Create(this,
-                isReadyToExecute: static @this => @this.HideAllowed,
-                execute: static @this => @this.HideInternal(),
-                name: nameof(Hide),
-                undoCommandsOnAdd: Range.From(new CommandInfo(commandName: nameof(Show))),
-                singleCommand: true
-                );
+            HideInternal();
+            //var command = Command.Create(this,
+            //    isReadyToExecute: static @this => @this.HideAllowed,
+            //    execute: static @this => @this.HideInternal(),
+            //    name: nameof(Hide),
+            //    undoCommandsOnAdd: Range.From(new CommandInfo(commandName: nameof(Show))),
+            //    singleCommand: true
+            //    );
 
-            commandScheduler.AddCommand(command);
+            //commandScheduler.AddCommand(command);
         }
 
         public void Show()
@@ -112,14 +113,15 @@ namespace CCEnvs.Unity.UI
             if (IsShown)
                 return;
 
-            var command = Command.Create(this,
-                isReadyToExecute: static @this => @this.ShowAllowed,
-                execute: static @this => @this.ShowInternal(),
-                name: nameof(Show),
-                singleCommand: true
-                );
+            ShowInternal();
+            //var command = Command.Create(this,
+            //    isReadyToExecute: static @this => @this.ShowAllowed,
+            //    execute: static @this => @this.ShowInternal(),
+            //    name: nameof(Show),
+            //    singleCommand: true
+            //    );
 
-            commandScheduler.AddCommand(command);
+            //commandScheduler.AddCommand(command);
         }
 
         public bool SwitchShownState()
@@ -136,8 +138,16 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
-            //if (!IsShown)
-            //    Hide();
+            RedrawInternal();
+
+            //var command = Command.Create(this,
+            //    isReadyToExecute: @this => @this.IsInited,
+            //    execute: static @this => @this.HideInternal(),
+            //    name: nameof(Redraw),
+            //    singleCommand: true
+            //    );
+
+            //commandScheduler.AddCommand(command);
         }
 
         public IObservable<Unit> ObserveShow()
@@ -202,6 +212,17 @@ namespace CCEnvs.Unity.UI
                 return;
 
             graphic.enabled = false;
+        }
+
+        protected void RedrawInternal()
+        {
+            var isShown = IsShown;
+
+            Show();
+            Hide();
+
+            if (isShown)
+                Show();
         }
     }
 }
