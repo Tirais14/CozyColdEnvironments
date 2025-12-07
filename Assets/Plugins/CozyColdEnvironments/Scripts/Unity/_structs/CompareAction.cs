@@ -23,7 +23,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Invoke(T other)
         {
-            return toCompare.CompareTo(other, compareTypes);
+            return other.CompareTo(toCompare, compareTypes);
         }
     }
 }

@@ -8,6 +8,8 @@ namespace CCEnvs.Unity.Items
         IItemContainerInfoItemless,
         IReactiveDictionaryExtended<int, IItemContainer>
     {
+        bool AutoSize { get; set; }
+
         void ResetItemContainers();
 
         void Add(IItemContainer itemContainer);

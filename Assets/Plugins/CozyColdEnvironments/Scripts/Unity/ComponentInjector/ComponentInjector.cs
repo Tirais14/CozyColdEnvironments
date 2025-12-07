@@ -108,7 +108,7 @@ namespace CCEnvs.Unity.Injections
                     InjectFrom.GameObject => source.QueryTo()
                                                    .FromChildrens()
                                                    .IncludeInactive()
-                                                   .WithName(attribute.UnityName)
+                                                   .WithName(attribute.ObjectName)
                                                    .GameObject()
                                                    .Strict()
                                                    .QueryTo()
@@ -181,7 +181,7 @@ namespace CCEnvs.Unity.Injections
                             InjectFrom.Parent);
                         break;
                     case GetByChildrenAttribute byChild:
-                        byChild.UnityName.Maybe().Do(
+                        byChild.ObjectName.Maybe().Do(
                             _ => SetField(
                             source,
                             field,

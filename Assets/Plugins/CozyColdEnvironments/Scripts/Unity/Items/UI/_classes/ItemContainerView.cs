@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
@@ -26,7 +25,7 @@ namespace CCEnvs.Unity.Storages.UI
         protected Maybe<TextMeshProUGUI> counterMesh;
 
         [SerializeField]
-        protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Bigger);
+        protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Equals | CompareTypes.Bigger);
 
         protected override void Awake()
         {
@@ -34,15 +33,13 @@ namespace CCEnvs.Unity.Storages.UI
             isMutable = true;
         }
 
-        protected override void Start()
-        {
-            base.Start();
-            viewModelUnsafe.ShowCounterTextPredicate = ShowCounterTextPredicate;
-        }
-
         protected override void Init()
         {
             base.Init();
+
+            if (viewModel.TryGetValue(out var vm))
+                vm.ShowCounterTextPredicate = ShowCounterTextPredicate;
+
             BindItemIcon();
             BindItemCount();
         }
@@ -52,12 +49,9 @@ namespace CCEnvs.Unity.Storages.UI
         {
             return base.SelectableDoSelectPredicate()
                    &&
-                   viewModel.Map(vm => vm.model)
-                            .Cast<IItemContainer>()
-                            .Match(Right: cnt => !cnt.IsEmpty,
-                                   Left: _ => false,
-                                   Other: () => false
-                                   );
+                   viewModel.Map(vm => vm.model).Cast<IItemContainer>().TryGetRightValue(out var cnt)
+                   &&
+                   cnt.ContainsItem();
         }
 
         private void BindItemIcon()
@@ -65,7 +59,7 @@ namespace CCEnvs.Unity.Storages.UI
             image.IfSome(img =>
             {
                 viewModelUnsafe.IconView.SubscribeWithState(img,
-                        static (sprite, img) => img.sprite = sprite)
+                     static (sprite, img) => img.sprite = sprite)
                     .AddTo(this);
             });
         }
@@ -75,7 +69,7 @@ namespace CCEnvs.Unity.Storages.UI
             counterMesh.IfSome(mesh =>
             {
                 viewModelUnsafe.CounterView.SubscribeWithState(mesh,
-                        static (text, mesh) => mesh.text = text)
+                    static (text, mesh) => mesh.text = text)
                     .AddTo(this);
             });
         }

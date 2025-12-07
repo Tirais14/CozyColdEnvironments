@@ -41,6 +41,7 @@ namespace CCEnvs.Unity.Items
                 capacity = value;
             }
         }
+        public int FreeSpace => Math.Clamp(Capacity - ItemCount, min: 0, max: int.MaxValue);
         public bool IsEmpty => !ContainsItem();
         public bool IsFull => ItemCount >= Capacity;
         public bool IsActive => isActive.Value;
@@ -48,7 +49,8 @@ namespace CCEnvs.Unity.Items
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
         public bool UnlockCapacity { get; set; }
-        public Maybe<GameObject> gameObject { get; private set; }
+        public bool IsReadOnlyContainer { get; }
+
 #pragma warning disable S2292
         //TODO: Remove and Add to new item container parent
         public Maybe<IInventory> ParentInventory {
@@ -57,37 +59,22 @@ namespace CCEnvs.Unity.Items
         }
 #pragma warning restore S2292
 
-        public ItemContainer(int capacity)
-        {
-            Capacity = capacity;
-        }
-
         public ItemContainer()
             :
-            this(int.MaxValue)
+            this(capacity: int.MaxValue)
         {
         }
 
-        public ItemContainer(IItem? item, int capcacity, int count = 1)
-            :
-            this(capcacity)
+        public ItemContainer(IItem? item = null, int count = 1, int capacity = 0, bool isReadOnlyContainer = false)
         {
             this.item.Value = item.Maybe()!;
+            Capacity = capacity;
+            IsReadOnlyContainer = isReadOnlyContainer;
 
             if (item.IsNull() && count > 0)
-            {
                 count = 0;
-                this.PrintWarning("Trying to add null item with non-zero count.");
-            }
 
             itemCount.Value = count;
-        }
-
-        public ItemContainer(IItem? item, int count = 1)
-            :
-            this(item, int.MaxValue, count: count)
-        {
-
         }
 
         public bool ContainsItem()
@@ -113,10 +100,8 @@ namespace CCEnvs.Unity.Items
         {
             if (item.IsNull() || count <= 0)
                 return Maybe<IItemContainer>.None;
-            if (IsFull
-                ||
-                (!IsEmpty  && !ContainsItem(item))
-                )
+
+            if (IsFull || (!IsEmpty  && !ContainsItem(item)) || IsReadOnlyContainer)
                 return new ItemContainer(item, count);
 
             int addedCount = Math.Clamp(count, 0, Capacity - itemCount.Value);
@@ -137,11 +122,10 @@ namespace CCEnvs.Unity.Items
             if (itemContainer.Equals(this))
                 return null!;
 
-            return itemContainer.TakeItem(count)
-                .Map(cnt => PutItem(
-                    cnt.Item.GetValue(),
-                    cnt.ItemCount).GetValue()
-                    );
+            if (!itemContainer.TakeItem(count).TryGetValue(out var taked))
+                return Maybe<IItemContainer>.None;
+
+            return PutItem(taked.Item.Raw, taked.ItemCount);
         }
 
         public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer)
@@ -155,6 +139,9 @@ namespace CCEnvs.Unity.Items
         {
             if (Item.IsNone || count <= 0)
                 return null!;
+
+            if (IsReadOnlyContainer)
+                return ShallowClone().Maybe();
 
             int taked = Math.Clamp(count, 1, ItemCount);
             itemCount.Value -= taked;
@@ -232,15 +219,21 @@ namespace CCEnvs.Unity.Items
             return isActive.Value;
         }
 
-        public bool BindGameObject(GameObject gameObject)
+        public bool CanPut() => !IsFull;
+
+        public bool CanPut(IItem? item) => ContainsItem(item);
+
+        public bool CanPut(IItem? item, int count)
         {
-            return this.gameObject.BiMap(
-                some: _ => false,
-                none: () =>
-                {
-                    this.gameObject = gameObject;
-                    return true;
-                }).Raw;
+            if (!CanPut(item))
+                return false;
+
+            count = Math.Clamp(count, min: 0, max: int.MaxValue);
+
+            if (FreeSpace < count)
+                return false;
+
+            return true;
         }
 
         public IObservable<Maybe<IItem>> ObserveItem() => item;
@@ -292,5 +285,6 @@ namespace CCEnvs.Unity.Items
 
             disposed = true;
         }
+
     }
 }

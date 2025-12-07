@@ -3,6 +3,7 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
@@ -18,6 +19,9 @@ namespace CCEnvs.Unity.Storages.UI
 
         where TViewModel : IInventoryViewModel
     {
+        [Header("Inventory View")]
+        [Space(8)]
+
         public GameObject ContainerPrefab;
 
         [GetByChildren]
@@ -27,8 +31,12 @@ namespace CCEnvs.Unity.Storages.UI
         [SerializeField]
         protected int itemContainerCount;
 
+        [SerializeField]
+        protected bool inventoryAutoSize;
+
         protected Dictionary<int, GameObject> instantiatedGameObjects = new();
 
+        [NonSerialized]
         private int addCntOperationCount;
 
         public GameObjectList Slots => slots;
@@ -59,6 +67,10 @@ namespace CCEnvs.Unity.Storages.UI
         protected override void Init()
         {
             base.Init();
+
+            if (this.model.Cast<IInventory>().TryGetRightValue(out var model))
+                model.AutoSize = inventoryAutoSize;
+
             InitItemContainers();
             BindAddContainer();
             BindRemoveContainer();

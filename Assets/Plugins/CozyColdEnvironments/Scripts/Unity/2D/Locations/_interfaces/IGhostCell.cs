@@ -10,10 +10,10 @@ namespace CCEnvs.Unity._2D.Locations
     {
         void SetPosition(Vector3Int pos);
 
-        void Materialize(Tilemap? otherTilemap = null);
+        MaterializedCellInfo Materialize(Tilemap? otherTilemap = null);
 
         void ResetPosition();
 
-        IObservable<Unit> ObserveMaterialize();
+        IObservable<MaterializedCellInfo> ObserveMaterialize();
     }
 }

@@ -8,5 +8,6 @@ namespace CCEnvs.Unity.Items
         IItemContainerInfo,
         IShallowCloneable<IItemContainer>
     {
+        bool IsReadOnlyContainer { get; }
     }
 }

@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.Storages.UI
         where T : IItemContainer
     {
         private readonly ReactiveProperty<Sprite> iconView = new(initialValue: UCC.Transparent.Value);
-        private readonly ReactiveProperty<string> counterView = new(initialValue: string.Empty);
+        private readonly ReactiveProperty<string> counterView = new();
 
         public IReadOnlyReactiveProperty<Sprite> IconView => iconView;
         public IReadOnlyReactiveProperty<string> CounterView => counterView;
@@ -24,6 +24,7 @@ namespace CCEnvs.Unity.Storages.UI
             :
             base(model)
         {
+            counterView.AddTo(disposables);
             BindItemView();
             BindCounterText();
         }
@@ -42,22 +43,26 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindCounterText()
         {
             model.ObserveItemCount()
-                .Select(pair => pair.Current)
-                .Select(itemCount => ShowCounterTextPredicate.BiMap(
-                            some: predicate =>
-                            {
-                                if (predicate.Invoke(itemCount))
-                                    return itemCount.ToString();
-                                else
-                                    return string.Empty;
-                            },
-                            none: () => itemCount > 1 ? itemCount.ToString() : string.Empty
-                            ).GetValueUnsafe())
-                .SubscribeWithState(counterView, 
-                    static (countStr, prop) => prop.Value = countStr)
-                .AddTo(disposables);
+                .Select(static pair => pair.Current)
+                .SubscribeWithState(this, 
+                static (itemCount, @this) =>
+                {
+                    if (@this.ShowCounterTextPredicate.TryGetValue(out var predicate))
+                    {
+                        if (predicate.Invoke(itemCount))
+                            @this.counterView.Value = itemCount.ToString();
+                        else
+                            @this.counterView.Value = string.Empty;
 
-            counterView.AddTo(disposables);
+                        return;
+                    }
+                    else if (itemCount > 0)
+                        @this.counterView.Value = itemCount.ToString();
+                    else
+                        @this.counterView.Value = string.Empty;
+
+                })
+                .AddTo(disposables);
         }
     }
 }

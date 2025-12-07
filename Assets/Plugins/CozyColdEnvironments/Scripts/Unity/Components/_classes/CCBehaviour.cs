@@ -1,9 +1,5 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Utils;
-using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using System;
 using UnityEngine;
 
 #nullable enable
@@ -33,51 +29,49 @@ namespace CCEnvs.Unity.Components
 
         protected virtual void Start()
         {
-            MemberValidator.ValidateInstance(this);
-
             this.DoActionAsync(static async @this =>
             {
-                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+                await UniTask.Yield(PlayerLoopTiming.LastInitialization);
 
                 @this.StartPassed = true;
                 @this.PrintLog("Start Passed");
             });
         }
 
-        public void OnAfterStartAction<T>(T state, Action<T> action)
-        {
-            Guard.IsNotNull(action);
+        //public void OnAfterStartAction<T>(T state, Action<T> action)
+        //{
+        //    Guard.IsNotNull(action);
 
-            UniTask.Create((action, state, @this: this), static async input =>
-            {
-                await UniTask.WaitUntil(input.@this,
-                    static @this => @this.StartPassed,
-                    timing: PlayerLoopTiming.PreUpdate
-                    );
+        //    UniTask.Create((action, state, @this: this), static async input =>
+        //    {
+        //        await UniTask.WaitUntil(input.@this,
+        //            static @this => @this.StartPassed,
+        //            timing: PlayerLoopTiming.PreUpdate
+        //            );
 
-                input.action(input.state);
-            })
-            .AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
+        //        input.action(input.state);
+        //    })
+        //    .AttachExternalCancellation(destroyCancellationToken)
+        //    .SuppressCancellationThrow()
+        //    .Forget();
+        //}
 
-        public void OnAfterStartAction(Action action)
-        {
-            Guard.IsNotNull(action);
+        //public void OnAfterStartAction(Action action)
+        //{
+        //    Guard.IsNotNull(action);
 
-            UniTask.Create((action, @this: this), static async input =>
-            {
-                await UniTask.WaitUntil(input.@this,
-                    static @this => @this.StartPassed,
-                    timing: PlayerLoopTiming.PreUpdate
-                    );
+        //    UniTask.Create((action, @this: this), static async input =>
+        //    {
+        //        await UniTask.WaitUntil(input.@this,
+        //            static @this => @this.StartPassed,
+        //            timing: PlayerLoopTiming.PreUpdate
+        //            );
 
-                input.action();
-            })
-            .AttachExternalCancellation(destroyCancellationToken)
-            .SuppressCancellationThrow()
-            .Forget();
-        }
+        //        input.action();
+        //    })
+        //    .AttachExternalCancellation(destroyCancellationToken)
+        //    .SuppressCancellationThrow()
+        //    .Forget();
+        //}
     }
 }

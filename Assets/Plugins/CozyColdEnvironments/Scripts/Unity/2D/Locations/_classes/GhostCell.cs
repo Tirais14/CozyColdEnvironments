@@ -12,7 +12,7 @@ namespace CCEnvs.Unity._2D.Locations
     {
         private readonly Maybe<GameObject> linkedGO;
         private readonly Maybe<Tile> ghostTile;
-        private ReactiveCommand<Unit>? materilaizeCommand;
+        private ReactiveCommand<MaterializedCellInfo>? materilaizeCommand;
 
         public Maybe<TileBase> Tile { get; }
         public Tilemap tilemap { get; }
@@ -101,13 +101,15 @@ namespace CCEnvs.Unity._2D.Locations
             Position = pos;
         }
 
-        public void Materialize(Tilemap? otherTilemap = null)
+        public MaterializedCellInfo Materialize(Tilemap? otherTilemap = null)
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
+            MaterializedCellInfo materializedCellInfo = default;
             if (Position.TryGetValue(out Vector3Int pos))
             {
+                
                 if (otherTilemap != null)
                 {
                     if (tilemap.transform != otherTilemap.transform)
@@ -119,12 +121,19 @@ namespace CCEnvs.Unity._2D.Locations
                     Vector3 worldPos = tilemap.CellToWorld(pos);
                     Vector3Int otherPos = otherTilemap.WorldToCell(worldPos);
                     otherTilemap.SetTile(otherPos, Tile.Raw);
+
+                    materializedCellInfo = new MaterializedCellInfo(otherTilemap, Tile.Raw, otherPos);
                 }
                 else
+                {
                     tilemap.SetTile(pos, Tile.Raw);
+                    materializedCellInfo = new MaterializedCellInfo(tilemap, Tile.Raw, pos);
+                }
+
+                materilaizeCommand?.Execute(materializedCellInfo);
             }
 
-            materilaizeCommand?.Execute(Unit.Default);
+            return materializedCellInfo;
         }
 
         public void ResetPosition()
@@ -136,9 +145,9 @@ namespace CCEnvs.Unity._2D.Locations
             Position = Maybe<Vector3Int>.None;
         }
 
-        public IObservable<Unit> ObserveMaterialize()
+        public IObservable<MaterializedCellInfo> ObserveMaterialize()
         {
-            materilaizeCommand ??= new ReactiveCommand<Unit>();
+            materilaizeCommand ??= new ReactiveCommand<MaterializedCellInfo>();
             return materilaizeCommand;
         }
 

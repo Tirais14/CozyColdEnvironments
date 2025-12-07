@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
@@ -17,8 +18,10 @@ namespace CCEnvs.Unity.Items
 {
     public class Inventory : ReactiveDictionary<int, IItemContainer>, IInventory
     {
-        public bool IsEmpty => Values.Any(cnt => !cnt.IsEmpty);
-        public bool IsFull => Values.All(cnt => cnt.IsFull);
+        public bool IsEmpty => Values.Any(static cnt => !cnt.IsEmpty);
+        public bool IsFull => Values.All(static cnt => cnt.IsFull);
+        public bool AutoSize { get; set; }
+        public int FreeSpace => Values.Count(static x => x.IsEmpty);
 
         int IItemContainerInfoItemless.ItemCount => throw new NotImplementedException();
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
@@ -92,6 +95,17 @@ namespace CCEnvs.Unity.Items
             {
                 this.PrintLog($"Item: {item.Maybe().Map(x => x!.ToString()).GetValue("null")}, count: {count}. Is not added.");
                 return null!;
+            }
+
+            if (AutoSize)
+            {
+                while (!CanPut(item, count))
+                    Add(new ItemContainer(capacity: int.MaxValue));
+            }
+            else
+            {
+                if (!CanPut(item))
+                    return new ItemContainer(item: item, count: count);
             }
 
             int rest = count;
@@ -213,17 +227,53 @@ namespace CCEnvs.Unity.Items
             return removed.ToArray();
         }
 
+        public bool CanPut() => !IsFull;
+
+        public bool CanPut(IItem? item)
+        {
+            if (item.IsNull())
+                return false;
+
+            foreach (var cnt in Values)
+            {
+                if (cnt.IsEmpty || (cnt.CanPut(item) && !cnt.IsFull))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool CanPut(IItem? item, int count)
+        {
+            if (!CanPut(item) || (FreeSpace <= 0 && AutoSize))
+                return false;
+
+            if (count <= 0)
+                return CanPut(item);
+
+            int freeSpace = 0;
+            foreach (var cnt in Values)
+            {
+                if (cnt.IsEmpty || cnt.ContainsItem(item))
+                    freeSpace += cnt.FreeSpace;
+
+                if (freeSpace >= count)
+                    return true;
+            }
+
+            return false;
+        }
+
         protected virtual int ResolveID(IItemContainer itemContainer)
         {
-            if (Do.TryFindHoleInRange(0,
-                Count,
-                Values.Select(x => x.GetContainerID())
-                      .Where(x => x.IsSome)
-                      .Select(x => x.Raw), out int hole)
-                )
-            {
+            IEnumerable<int> ids = Values.ZLinq()
+                .Select(x => x.GetContainerID())
+                .Where(x => x.IsSome)
+                .Select(x => x.Raw)
+                .AsEnumerable();
+
+            if (Do.TryFindHoleInRange(start: 0, Count, ids, out int hole))
                 return hole;
-            }
 
             return Count;
         }
