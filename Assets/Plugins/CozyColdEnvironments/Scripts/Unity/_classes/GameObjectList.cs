@@ -43,19 +43,14 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnTransformChildrenChanged()
         {
-            GameObject child;
-            foreach (var idx in Enumerable.Range(0, cTransform.Value.childCount))
-            {
-                child = cTransform.Value.GetChild(idx).gameObject;
-                if (!collection.Contains(child))
-                    Add(child);
-            }
+            Refresh();
         }
 
         public void Refresh()
         {
-            for (int i = 0; i < Count; i++)
-                collection[i].transform.SetSiblingIndex(i);
+            collection.Clear();
+            foreach (var child in this.Q().ChildrenGameObjects())
+                collection.Add(child);
         }
 
         public void Add(GameObject item)

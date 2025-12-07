@@ -2,7 +2,6 @@
 using CCEnvs.Dependencies;
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Commands;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
@@ -23,8 +22,6 @@ namespace CCEnvs.Unity.UI
         : CCBehaviour,
         IGUITab
     {
-        protected readonly CommandScheduler commandScheduler = new();
-
         [Header("Tab Settings")]
         [Space(8)]
 
@@ -43,10 +40,6 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         [GetBySelf(IsOptional = true)]
         protected DragAndDropTarget? m_DragAndDropTarget;
-
-        [SerializeField]
-        [Tooltip("If false, only do selection on button click")]
-        protected bool switchSelectableOnButtonClick = true;
 
         public Maybe<Image> image => m_Graphic.As<Image>();
         public Maybe<Button> button => m_Button;
@@ -69,14 +62,8 @@ namespace CCEnvs.Unity.UI
                     );
 
             pointerInput = new Lazy<InputActionRx<Vector2>>(
-                () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
+                static () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
                 );
-
-            commandScheduler.Start(
-                PlayerLoopTiming.LastInitialization,
-                cancellationToken: destroyCancellationToken
-                )
-                .AddTo(this);
 
             IShowableAwake();
         }
@@ -150,11 +137,8 @@ namespace CCEnvs.Unity.UI
                                   !@this.SelectableDoSelectPredicate()
                                   )
                                   return;
-                      
-                              if (@this.switchSelectableOnButtonClick)
-                                  cmp.SwitchSelectionState();
-                              else
-                                  cmp.DoSelect();
+
+                              cmp.DoSelect();
                           })
                       .AddTo(this);
             }

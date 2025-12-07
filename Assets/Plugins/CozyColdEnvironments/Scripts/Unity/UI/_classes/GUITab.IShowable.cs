@@ -23,9 +23,6 @@ namespace CCEnvs.Unity.UI
         private readonly ReactiveProperty<bool> isShown = new(true);
 
         [NonSerialized]
-        private bool redrawScheduled;
-
-        [NonSerialized]
         private Vector3 scaleBeforeInit;
 
         [NonSerialized]
@@ -97,15 +94,6 @@ namespace CCEnvs.Unity.UI
                 return;
 
             HideInternal();
-            //var command = Command.Create(this,
-            //    isReadyToExecute: static @this => @this.HideAllowed,
-            //    execute: static @this => @this.HideInternal(),
-            //    name: nameof(Hide),
-            //    undoCommandsOnAdd: Range.From(new CommandInfo(commandName: nameof(Show))),
-            //    singleCommand: true
-            //    );
-
-            //commandScheduler.AddCommand(command);
         }
 
         public void Show()
@@ -114,14 +102,6 @@ namespace CCEnvs.Unity.UI
                 return;
 
             ShowInternal();
-            //var command = Command.Create(this,
-            //    isReadyToExecute: static @this => @this.ShowAllowed,
-            //    execute: static @this => @this.ShowInternal(),
-            //    name: nameof(Show),
-            //    singleCommand: true
-            //    );
-
-            //commandScheduler.AddCommand(command);
         }
 
         public bool SwitchShownState()
@@ -139,15 +119,6 @@ namespace CCEnvs.Unity.UI
         public void Redraw()
         {
             RedrawInternal();
-
-            //var command = Command.Create(this,
-            //    isReadyToExecute: @this => @this.IsInited,
-            //    execute: static @this => @this.HideInternal(),
-            //    name: nameof(Redraw),
-            //    singleCommand: true
-            //    );
-
-            //commandScheduler.AddCommand(command);
         }
 
         public IObservable<Unit> ObserveShow()
