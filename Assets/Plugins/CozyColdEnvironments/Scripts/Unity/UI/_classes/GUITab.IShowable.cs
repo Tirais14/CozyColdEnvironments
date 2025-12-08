@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Injections;
+using CCEnvs.Unity.Snaphots;
 using CCEnvs.Unity.Snaphots.UI;
 using Cysharp.Threading.Tasks;
 using System;
@@ -96,7 +97,7 @@ namespace CCEnvs.Unity.UI
             });
         }
 
-        public void Hide()
+        public virtual void Hide()
         {
             if (!IsShown || stateTransitioning)
                 return;
@@ -106,7 +107,7 @@ namespace CCEnvs.Unity.UI
             OnHiden();
         }
 
-        public void Show()
+        public virtual void Show()
         {
             if (IsShown || stateTransitioning)
                 return;
@@ -156,8 +157,15 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void DoHide()
         {
+            //if (this.graphic.TryGetValue(out var graphic))
+            //{
+            //    snapshots.Add(new MaterialSnapshot(graphic.defaultMaterial));
+            //    graphic.defaultMaterial.color = new Color(0f, 0f, 0f, 0f);
+            //}
+
             snapshots.Add(new CanvasGroupSnapshot(canvasGroup));
             canvasGroup.alpha = 0f;
+            canvasGroup.blocksRaycasts = false;
             canvasGroup.interactable = false;
 
             foreach (var showable in this.Q()

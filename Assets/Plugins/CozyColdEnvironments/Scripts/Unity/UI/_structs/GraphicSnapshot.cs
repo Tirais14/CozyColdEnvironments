@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.Snaphots.UI
             m_RaycastTarget = target.raycastTarget;
         }
 
-        public override void Restore(object taregt)
+        public override void Restore(object target)
         {
             var graphic = ValidateTarget<Graphic>(target);
 
