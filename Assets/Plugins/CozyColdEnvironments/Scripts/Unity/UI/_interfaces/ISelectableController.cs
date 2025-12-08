@@ -4,7 +4,10 @@ using System;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface ISelectableController<T>
+    public interface ISelectableController 
+    { 
+    }
+    public interface ISelectableController<T> : ISelectableController
     {
         Maybe<T> Selection { get; }
 

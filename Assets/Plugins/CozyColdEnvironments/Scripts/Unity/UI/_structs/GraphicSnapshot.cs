@@ -1,55 +1,45 @@
-using System.Runtime.CompilerServices;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.Unity.Snaphots.UI
 {
+    [Serializable]
     public class GraphicSnapshot : BehaviourSnapshot
     {
-        public Color color { get; }
-        public bool RaycastTarget { get; }
+        [SerializeField]
+        protected Color m_Color;
 
-        new protected Graphic target => (Graphic)base.target;
+        [SerializeField]
+        protected bool m_RaycastTarget;
+
+        public Color color => m_Color;
+        public bool RaycastTarget => m_RaycastTarget;
+
+        public GraphicSnapshot()
+        {
+        }
 
         public GraphicSnapshot(Graphic target)
             :
             base(target)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
-
-            color =  target.color;
-            RaycastTarget = target.raycastTarget;
+            m_Color =  target.color;
+            m_RaycastTarget = target.raycastTarget;
         }
 
-        public static implicit operator GraphicSnapshot(Graphic graphic)
+        public override void Restore(object taregt)
         {
-            return new GraphicSnapshot(graphic);
-        }
+            var graphic = ValidateTarget<Graphic>(target);
 
-        public override void Restore()
-        {
-            base.Restore();
-            if (Target == null)
-                return;
-
-            target.color = color;
-            target.raycastTarget = RaycastTarget;
+            graphic.color = color;
+            graphic.raycastTarget = RaycastTarget;
         }
 
         public override string ToString()
         {
             return $"{nameof(Target)}: {Target}; {nameof(Enabled)}: {Enabled}.";
-        }
-    }
-
-    public static class GraphicStateSnaphsotExtensions
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GraphicSnapshot CaptureState(this Graphic graphic)
-        {
-            CC.Guard.IsNotNull(graphic, nameof(graphic));
-            return graphic;
         }
     }
 }

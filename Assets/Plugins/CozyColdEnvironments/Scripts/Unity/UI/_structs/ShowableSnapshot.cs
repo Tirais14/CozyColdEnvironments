@@ -1,30 +1,31 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
+using CCEnvs.Snapshots;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
 {
-    public class ShowableSnapshot : ISnapshot<IShowable>
+    public class ShowableSnapshot : Snapshot<IShowable>
     {
-        public IShowable Target { get; }
         public bool IsShown { get; }
         public Maybe<GameObject> gameObject { get; }
 
         public ShowableSnapshot(IShowable target)
+            :
+            base(target)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
-
-            Target = target;
             IsShown = target.IsShown;
 
             if (target.As<Component>().TryGetValue(out var cmp))
                 gameObject = cmp.gameObject;
         }
 
-        public void Restore()
+        public override void Restore(object target)
         {
+            var showable = ValidateTarget<IShowable>(target);
+
             if (IsShown)
-                Target.Show();
+                showable.Show();
         }
 
         public override string ToString()

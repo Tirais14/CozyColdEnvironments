@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.Dependencies;
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
@@ -41,11 +41,15 @@ namespace CCEnvs.Unity.UI
         [GetBySelf(IsOptional = true)]
         protected DragAndDropTarget? m_DragAndDropTarget;
 
+        [SerializeField]
+        protected bool switchSelectable = true;
+
         public Maybe<Image> image => m_Graphic.As<Image>();
         public Maybe<Button> button => m_Button;
         public Maybe<Selectable> selectable => m_Selectable;
         public Maybe<DragAndDropTarget> dragAndDropTarget => m_DragAndDropTarget;
         public Maybe<Material> material => m_Graphic.Maybe().Map(x => x.material);
+        public Maybe<Graphic> graphic => m_Graphic;
 
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
@@ -78,7 +82,6 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnTransformChildrenChanged()
         {
-            IShowableOnTransformChildrenChanged();
         }
 
         protected virtual void OnTransformParentChanged()
@@ -106,17 +109,8 @@ namespace CCEnvs.Unity.UI
                        .FromParents()
                        .ExcludeSelf()
                        .Components<IGUITab>()
-                       .FirstOrDefault()
+                       .LastOrDefault()
                        .Maybe();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsGuiChildOf(IGUITab guiTab)
-        {
-            CC.Guard.IsNotNull(guiTab, nameof(guiTab));
-
-            return GetParentGUI().Map(parent => parent.Is<MonoBehaviour>(out var mono) && transform.IsChildOf(mono.transform))
-                                 .GetValue(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -139,7 +133,11 @@ namespace CCEnvs.Unity.UI
                                   )
                                   return;
 
-                              cmp.DoSelect();
+                              if (@this.switchSelectable)
+                                  cmp.SwitchSelectionState();
+                              else
+                                  cmp.DoSelect();
+
                           })
                       .AddTo(this);
             }

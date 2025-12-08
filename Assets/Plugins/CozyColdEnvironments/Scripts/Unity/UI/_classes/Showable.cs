@@ -1,5 +1,5 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Snaphots.UI;
 using Cysharp.Threading.Tasks;
@@ -13,18 +13,14 @@ using UnityEngine.UI;
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public partial class GUITab : IShowable
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(Graphic))]
+    public class Showable : CCBehaviour, IShowable
     {
         protected static Vector3 PosOnInit { get; } = new(10000f, 10000f);
 
         private readonly List<ISnapshot> snapshots = new();
         private readonly ReactiveProperty<bool> isShown = new(true);
-
-        [Header("Showable settings")]
-        [Space(8)]
-
-        [SerializeField]
-        protected bool m_ShowOnInited;
 
         [NonSerialized]
         private Vector3 scaleBeforeInit;
@@ -34,6 +30,12 @@ namespace CCEnvs.Unity.UI
 
         [NonSerialized]
         private bool stateTransitioning;
+
+        [Header("Showable settings")]
+        [Space(8)]
+
+        [SerializeField]
+        protected bool m_ShowOnInited;
 
         public bool ShowOnInited {
             get => m_ShowOnInited;
@@ -45,10 +47,13 @@ namespace CCEnvs.Unity.UI
         public virtual bool HideAllowed => IsInited;
         public bool IsInited { get; private set; }
 
+        [field: GetBySelf]
+        public Graphic graphic { get; private set; } = null!;
+
         [field: GetBySelf(IsOptional = true)]
         public CanvasGroup canvasGroup { get; private set; } = null!;
 
-        private void IShowableAwake()
+        protected override void Awake()
         {
             base.Awake();
 
@@ -64,7 +69,7 @@ namespace CCEnvs.Unity.UI
             transform.localPosition = PosOnInit;
         }
 
-        private void IShowableStart()
+        protected override void Start()
         {
             base.Start();
 
@@ -141,14 +146,6 @@ namespace CCEnvs.Unity.UI
             return isShown.Where(static x => !x).AsUnitObservable();
         }
 
-        protected virtual void DisableTarget(Transform target)
-        {
-            var group = target.GetComponent<CanvasGroup>();
-
-            group.alpha = 0;
-            group.interactable = false;
-        }
-
         protected virtual void OnHide()
         {
             stateTransitioning = true;
@@ -161,15 +158,10 @@ namespace CCEnvs.Unity.UI
             isShown.Value = false;
         }
 
-        protected virtual void DoHide()
+        protected virtual void DoHide(Transform? target = null)
         {
-            foreach (var child in this.Q()
-                .FromChildrens()
-                .DepthLimiter<IShowable>()
-                .Transforms())
-            {
-                DisableTarget(child);
-            }
+            canvasGroup.alpha = 0;
+            canvasGroup.interactable = false;
         }
 
 
