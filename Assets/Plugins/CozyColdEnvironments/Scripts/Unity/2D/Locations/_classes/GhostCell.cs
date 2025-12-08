@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -62,6 +63,9 @@ namespace CCEnvs.Unity._2D.Locations
                     Quaternion.identity,
                     tilemap.transform
                     );
+
+                foreach (var child in linkedGO.GetValueUnsafe().GetComponentsInChildren<Transform>().Select(x => x.gameObject))
+                    child.layer = Physics.IgnoreRaycastLayer;
             }
 
             this.ghostTile = ghostTile;

@@ -1,7 +1,5 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Snaphots;
 using CCEnvs.Unity.Snaphots.UI;
 using Cysharp.Threading.Tasks;
 using System;
@@ -9,8 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
-using UnityEngine.UI;
 using ZLinq;
 
 #nullable enable
@@ -18,8 +14,6 @@ namespace CCEnvs.Unity.UI
 {
     public partial class GUITab : IShowable
     {
-        protected static Vector3 PosOnInit { get; } = new(10000f, 10000f);
-
         private readonly List<ISnapshot> snapshots = new();
         private readonly ReactiveProperty<bool> isShown = new(true);
 
@@ -28,12 +22,6 @@ namespace CCEnvs.Unity.UI
 
         [SerializeField]
         protected bool m_ShowOnInited;
-
-        [NonSerialized]
-        private Vector3 scaleBeforeInit;
-
-        [NonSerialized]
-        private Vector3 posBeforeInit;
 
         [NonSerialized]
         private bool stateTransitioning;
@@ -53,24 +41,14 @@ namespace CCEnvs.Unity.UI
 
         private void IShowableAwake()
         {
-            base.Awake();
-
             if (canvasGroup == null)
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
             isShown.AddTo(this);
-
-            scaleBeforeInit = transform.localScale;
-            posBeforeInit = transform.localPosition;
-
-            transform.localScale = Vector3.zero;
-            transform.localPosition = PosOnInit;
         }
 
         private void IShowableStart()
         {
-            base.Start();
-
             this.DoActionAsync(static async (@this) =>
             {
                 var childs = @this.Q()
@@ -82,9 +60,6 @@ namespace CCEnvs.Unity.UI
 
                 if (childs.IsNotEmpty())
                     await UniTask.WaitUntil(childs, static childs => childs.All(x => x.IsInited));
-
-                @this.transform.localScale = @this.scaleBeforeInit;
-                @this.transform.localPosition = @this.posBeforeInit;
 
                 if (!@this.ShowOnInited
                     &&
@@ -157,12 +132,6 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void DoHide()
         {
-            //if (this.graphic.TryGetValue(out var graphic))
-            //{
-            //    snapshots.Add(new MaterialSnapshot(graphic.defaultMaterial));
-            //    graphic.defaultMaterial.color = new Color(0f, 0f, 0f, 0f);
-            //}
-
             snapshots.Add(new CanvasGroupSnapshot(canvasGroup));
             canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = false;
