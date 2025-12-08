@@ -15,5 +15,6 @@ namespace CCEnvs.Unity
         public static Lazy<Sprite> Transparent { get; } = new(() => Resources.Load<Sprite>("Textures/DummySprite"));
         public static Lazy<Sprite> RedCrossSprite { get; } = new(() => Resources.Load<Sprite>("Textures/RedCross"));
         public static Lazy<IInventory> WorldInventory { get; } = new(() => new Inventory());
+        public static Lazy<Material> MockMaterial { get; } = new(() => Resources.Load<Material>("CC/Mock_Material"));
     }
 }

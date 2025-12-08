@@ -53,7 +53,6 @@ namespace CCEnvs.Unity.UI
 
             transform.localScale = Vector3.zero;
             transform.localPosition = PosOnInit;
-
         }
 
         private void IShowableStart()

@@ -45,6 +45,7 @@ namespace CCEnvs.Unity.UI
         public Maybe<Button> button => m_Button;
         public Maybe<Selectable> selectable => m_Selectable;
         public Maybe<DragAndDropTarget> dragAndDropTarget => m_DragAndDropTarget;
+        public Maybe<Material> material => m_Graphic.Maybe().Map(x => x.material);
 
         protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
