@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using UnityEngine.InputSystem.HID;
 using UnityEngine.UI;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -141,18 +143,9 @@ namespace CCEnvs.Unity.UI
             return isShown.Where(static x => !x).AsUnitObservable();
         }
 
-        protected virtual void DisableTarget(Transform target)
-        {
-            var group = target.GetComponent<CanvasGroup>();
-
-            group.alpha = 0;
-            group.interactable = false;
-        }
-
         protected virtual void OnHide()
         {
             stateTransitioning = true;
-            CaptureSnapshots();
         }
 
         protected virtual void OnHiden()
@@ -163,12 +156,17 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void DoHide()
         {
-            foreach (var child in this.Q()
+            snapshots.Add(new CanvasGroupSnapshot(canvasGroup));
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+
+            foreach (var showable in this.Q()
                 .FromChildrens()
-                .DepthLimiter<IShowable>()
-                .Transforms())
+                .FirstComponentsOnBranch()
+                .Components<IShowable>())
             {
-                DisableTarget(child);
+                snapshots.Add(new ShowableSnapshot(showable));
+                showable.Hide();
             }
         }
 
@@ -202,11 +200,6 @@ namespace CCEnvs.Unity.UI
 
             if (isShown)
                 Show();
-        }
-
-        protected virtual void CaptureSnapshots()
-        {
-            snapshots.Add(new CanvasGroupSnapshot(canvasGroup));
         }
     }
 }
