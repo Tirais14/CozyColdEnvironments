@@ -9,9 +9,6 @@ namespace CCEnvs.Unity.UI
     {
         Maybe<IViewModel> viewModel { get; }
         Maybe<object> model { get; }
-        IViewModel viewModelUnsafe { get; }
-        object modelUnsafe { get; }
-        bool IsMutable { get; }
 
         void SetViewModelUnsafe(object viewModel);
 
@@ -23,23 +20,21 @@ namespace CCEnvs.Unity.UI
         where TViewModel : IViewModel
     {
         new Maybe<TViewModel> viewModel { get; }
-        new TViewModel viewModelUnsafe { get; }
 
         Maybe<IViewModel> IView.viewModel => viewModel.Raw;
-        IViewModel IView.viewModelUnsafe => viewModelUnsafe;
 
-        void SetViewModelUnsafe(TViewModel viewModel);
+        void SetViewModel(TViewModel viewModel);
 
-        void SetViewModelFactoryUnsafe(Func<TViewModel> factory);
+        void SetViewModelFactory(Func<TViewModel> factory);
 
         void IView.SetViewModelUnsafe(object viewModel)
         {
-            SetViewModelUnsafe(viewModel.To<TViewModel>());
+            SetViewModel(viewModel.To<TViewModel>());
         }
 
         void IView.SetViewModelFactoryUnsafe(Func<object> factory)
         {
-            SetViewModelFactoryUnsafe(() => factory().To<TViewModel>());
+            SetViewModelFactory(() => factory().To<TViewModel>());
         }
     }
 }

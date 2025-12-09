@@ -11,76 +11,26 @@ namespace CCEnvs.Unity._2D.Locations
 {
     public class GhostCell : IGhostCell
     {
-        private readonly Maybe<GameObject> linkedGO;
-        private readonly Maybe<Tile> ghostTile;
+        private Maybe<Tile> ghostTile;
+        private Maybe<GameObject> ghostGameObject;
         private ReactiveCommand<MaterializedCellInfo>? materilaizeCommand;
+        private ReactiveCommand<GameObject>? ghostGameObjectInstantiated;
 
         public Maybe<TileBase> Tile { get; }
         public Tilemap tilemap { get; }
         public Maybe<Vector3Int> Position { get; private set; }
 
-        public GhostCell(
-            TileBase? tile,
-            Tilemap tilemap,
-            Sprite? overrideTileSprite = null,
-            GameObject? overrideTilePrefab = null)
+        public GhostCell(TileBase? tile, Tilemap tilemap)
         {
             CC.Guard.IsNotNull(tilemap, nameof(tilemap));  
 
             Tile = tile;
             this.tilemap = tilemap;
-
-            if (tile == null)
-                return;
-
-            Sprite? tileSprite;
-
-            if (overrideTileSprite == null)
-                tileSprite = tile.GetTileSprite().Raw;
-            else
-                tileSprite = overrideTileSprite;
-
-            if (tileSprite == null)
-                tileSprite = tile.GetTileSprite().Raw;
-
-            var ghostTile = ScriptableObject.CreateInstance<Tile>();
-            ghostTile.name = $"GhostTile({tile.name})";
-            ghostTile.sprite = tileSprite;
-            ghostTile.hideFlags = tile.hideFlags;
-
-            GameObject? tilePrefab;
-
-            if (overrideTilePrefab == null)
-                tilePrefab = tile.GetTileGameObject().Raw;
-            else
-                tilePrefab = overrideTilePrefab;
-
-            if (tilePrefab != null)
-            {
-                linkedGO = Object.Instantiate(
-                    tilePrefab,
-                    ghostTile.transform.GetPosition(),
-                    Quaternion.identity,
-                    tilemap.transform
-                    );
-
-                foreach (var child in linkedGO.GetValueUnsafe().GetComponentsInChildren<Transform>().Select(x => x.gameObject))
-                    child.layer = Physics.IgnoreRaycastLayer;
-            }
-
-            this.ghostTile = ghostTile;
         }
 
-        public GhostCell(
-            ICell cell,
-            Tilemap tilemap,
-            Sprite? overrideTileSprite = null,
-            GameObject? overrideTilePrefab = null)
+        public GhostCell(ICell cell, Tilemap tilemap)
             :
-            this(cell.GetTile().Raw,
-                tilemap,
-                overrideTileSprite: overrideTileSprite,
-                overrideTilePrefab: overrideTilePrefab)
+            this(cell.GetTile().Raw, tilemap)
         {
         }
 
@@ -89,16 +39,22 @@ namespace CCEnvs.Unity._2D.Locations
             if (disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            if (!this.ghostTile.TryGetValue(out Tile? ghostTile))
+            if (Position.Has(pos))
                 return;
 
-            if (Position.Has(pos))
+            if (this.ghostTile.IsNone && Tile.IsSome)
+                InstantiateGhostTile();
+
+            if (ghostGameObject.IsNone)
+                InstantiatedGhostGameObject();
+
+            if (!this.ghostTile.TryGetValue(out Tile? ghostTile))
                 return;
 
             if (Position.TryGetValue(out Vector3Int previousPos))
                 tilemap.SetTile(previousPos, tile: null);
 
-            if (linkedGO.TryGetValue(out GameObject? go))
+            if (ghostGameObject.TryGetValue(out GameObject? go))
                 go.transform.position = tilemap.GetCellCenterWorld(pos);
 
             tilemap.SetTile(pos, ghostTile);
@@ -109,6 +65,9 @@ namespace CCEnvs.Unity._2D.Locations
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().FullName);
+
+            if (Position.IsNone)
+                return default;
 
             MaterializedCellInfo materializedCellInfo = default;
             if (Position.TryGetValue(out Vector3Int pos))
@@ -155,6 +114,13 @@ namespace CCEnvs.Unity._2D.Locations
             return materilaizeCommand;
         }
 
+        ///<summary>Called before first <see cref="SetPosition(Vector3Int)"/></summary>
+        public IObservable<GameObject> ObserveGhostGameObjectInstantiated()
+        {
+            ghostGameObjectInstantiated ??= new ReactiveCommand<GameObject>();
+            return ghostGameObjectInstantiated;
+        }
+
         private bool disposed;
         public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)
@@ -165,12 +131,84 @@ namespace CCEnvs.Unity._2D.Locations
             if (disposing)
             {
                 ResetPosition();
-                linkedGO.IfSome(go => Object.Destroy(go));
+                ghostGameObject.IfSome(go => Object.Destroy(go));
                 ghostTile.IfSome(tile => Object.Destroy(tile));
                 materilaizeCommand?.Dispose();
+                ghostGameObjectInstantiated?.Dispose();
             }
 
             disposed = true;
+        }
+
+        private static void DisableGameObjectLogic(GameObject go)
+        {
+            GameObject[] childs = go.Q().FromChildrens().GameObjects().ToArray();
+
+            foreach (var child in childs)
+                child.layer = Physics.IgnoreRaycastLayer;
+
+            foreach (var cmp in childs.SelectMany(x => x.GetComponents<Component>()))
+            {
+                switch (cmp)
+                {
+                    case MonoBehaviour mono:
+                        mono.enabled =false;
+                        break;
+                    case Collider col:
+                        col.enabled = false;
+                        break;
+                    case Collider2D col2:
+                        col2.enabled = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void InstantiatedGhostGameObject()
+        {
+            if (Tile.TryGetValue(out var tile)
+                &&
+                this.ghostTile.TryGetValue(out var ghostTile)
+                &&
+                tile.GetTileGameObject().TryGetValue(out var prefab))
+            {
+                var ghostGameObject = Object.Instantiate(
+                    prefab,
+                    ghostTile.transform.GetPosition(),
+                    Quaternion.identity,
+                    tilemap.transform
+                    );
+
+                this.ghostGameObject = ghostGameObject;
+                DisableGameObjectLogic(ghostGameObject);
+
+                if (ghostGameObjectInstantiated is not null)
+                {
+                    try
+                    {
+                        ghostGameObjectInstantiated?.Execute(ghostGameObject);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.PrintException(ex);
+                    }
+                }
+            }
+        }
+
+        private void InstantiateGhostTile()
+        {
+            if (Tile.TryGetValue(out var tile))
+            {
+                var ghostTile = ScriptableObject.CreateInstance<Tile>();
+                ghostTile.name = $"GhostTile({tile.name})";
+                ghostTile.sprite = tile.GetTileSprite().Raw;
+                ghostTile.hideFlags = tile.hideFlags;
+
+                this.ghostTile = ghostTile;
+            }
         }
     }
 }

@@ -30,15 +30,14 @@ namespace CCEnvs.Unity.UI
 
         public Maybe<TViewModel> viewModel => _viewModel.Value;
         public Maybe<object> model => viewModel.Map(x => x.model).GetValue();
-        public TViewModel viewModelUnsafe => viewModel.IfNone(() => throw new InvalidOperationException("View model is not setted.")).GetValueUnsafe();
-        public object modelUnsafe => viewModelUnsafe.model;
-        public bool IsMutable => isMutable;
+        protected TViewModel viewModelUnsafe => viewModel.IfNone(() => throw new InvalidOperationException("View model is not setted.")).GetValueUnsafe();
+        protected object modelUnsafe => viewModelUnsafe.model;
 
         protected override void Awake()
         {
             base.Awake();
             ObserveViewModel();
-            ViewModelFactory().IfSome(viewModel => SetViewModelUnsafe(viewModel));
+            ViewModelFactory().IfSome(viewModel => SetViewModel(viewModel));
         }
 
         protected override void OnDestroy()
@@ -59,17 +58,14 @@ namespace CCEnvs.Unity.UI
             }
         }
 
-        public void SetViewModelUnsafe(TViewModel viewModel)
+        public void SetViewModel(TViewModel? viewModel)
         {
-            SetViewModelFactoryUnsafe(() => viewModel);
+            _viewModel = new Lazy<Maybe<TViewModel>>(viewModel.Maybe()); 
         }
 
-        public void SetViewModelFactoryUnsafe(Func<TViewModel> factory)
+        public void SetViewModelFactory(Func<TViewModel> factory)
         {
             Guard.IsNotNull(factory);
-
-            if (_viewModel.Value.IsSome && !IsMutable)
-                throw new InvalidOperationException("Cannot set view model.");
 
             _viewModel = new Lazy<Maybe<TViewModel>>(() => factory());
         }
@@ -87,7 +83,7 @@ namespace CCEnvs.Unity.UI
         }
 
         /// <summary>
-        /// Invokes in <see cref="Start"/>, <see cref="SetViewModelUnsafe(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
+        /// Invokes in <see cref="Start"/>, <see cref="SetViewModel(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
         protected virtual void Init()
         {

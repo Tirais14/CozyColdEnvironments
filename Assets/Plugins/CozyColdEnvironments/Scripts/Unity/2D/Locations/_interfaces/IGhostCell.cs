@@ -15,5 +15,7 @@ namespace CCEnvs.Unity._2D.Locations
         void ResetPosition();
 
         IObservable<MaterializedCellInfo> ObserveMaterialize();
+
+        IObservable<GameObject> ObserveGhostGameObjectInstantiated();
     }
 }
