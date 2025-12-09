@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using System;
 using UniRx;
@@ -13,21 +12,23 @@ namespace CCEnvs.Unity.UI
         protected readonly ReactiveProperty<bool> isSelected = new();
 
         [SerializeField]
-        protected Maybe<Image> m_SelectionOverlayPrefab;
+        protected Image m_SelectionOverlay;
 
-        public Image selectionOverlay { get; private set; } = null!;
+        public Image SelectionOverlay => m_SelectionOverlay;
+
         public bool IsSelected => isSelected.Value;
         public bool IsEnabled => enabled;
 
         protected override void Start()
         {
             base.Start();
+            InitSelectionOverlay();
         }
 
-        private void OnTransformChildrenChanged()
+        protected virtual void OnTransformChildrenChanged()
         {
-            if (selectionOverlay != null)
-                selectionOverlay.transform.SetAsLastSibling();
+            if (SelectionOverlay != null)
+                SelectionOverlay.transform.SetAsLastSibling();
         }
 
         public virtual bool SelectAllowedPredicate() => enabled;
@@ -37,10 +38,7 @@ namespace CCEnvs.Unity.UI
             if (!SelectAllowedPredicate())
                 return;
 
-            if (selectionOverlay == null)
-                CreateSelectionOverlay();
-
-            selectionOverlay!.gameObject.SetActive(true);
+            SelectionOverlay!.gameObject.SetActive(true);
             isSelected.Value = true;
         }
 
@@ -51,7 +49,7 @@ namespace CCEnvs.Unity.UI
             if (!force && !IsSelected)
                 return;
 
-            selectionOverlay.gameObject.SetActive(false);
+            SelectionOverlay.gameObject.SetActive(false);
             isSelected.Value = false;
         }
 
@@ -66,19 +64,26 @@ namespace CCEnvs.Unity.UI
         public void Enable()
         {
             enabled = true;
-            selectionOverlay.enabled = true;
+            SelectionOverlay.enabled = true;
         }
 
         public void Disable()
         {
             enabled = false;
-            selectionOverlay.enabled = false;
+            SelectionOverlay.enabled = false;
         }
 
-        public IObservable<bool> ObserveIsSelected()
+        public void SetSelectionOverlay(Image image)
         {
-            return isSelected.Where(x => x);
+            CC.Guard.IsNotNull(image, nameof(image));
+
+            image.gameObject.SetActive(isSelected.Value);
+            image.transform.SetParent(transform);
+
+            m_SelectionOverlay = image;
         }
+
+        public IObservable<bool> ObserveIsSelected() => isSelected;
 
         public IObservable<ISelectable> ObserveDoSelect()
         {
@@ -90,37 +95,25 @@ namespace CCEnvs.Unity.UI
             return isSelected.Where(x => !x).Select(_ => this);
         }
 
-        private void CreateSelectionOverlay()
+        private void InitSelectionOverlay()
         {
-            RectTransform overlayTransform;
-            RectTransform thisTransfrom = transform.To<RectTransform>();
+            if (SelectionOverlay == null)
+            {
+                var overlay = new GameObject(nameof(SelectionOverlay), typeof(Image)).QueryTo()
+                    .Component<Image>()
+                    .Strict();
 
-            m_SelectionOverlayPrefab.Do(
-                some: prefab =>
-                {
-                    selectionOverlay = Instantiate(prefab, transform);
-                    overlayTransform = selectionOverlay.transform.To<RectTransform>();
+                overlay.gameObject.SetActive(isSelected.Value);
+                overlay.color = Color.lightYellow.WithAlpha(0.45f);
 
-                    overlayTransform.position = thisTransfrom.position;
-                    overlayTransform.sizeDelta = thisTransfrom.sizeDelta;
-                },
-                none: () =>
-                {
-                    var overlay = new GameObject(nameof(selectionOverlay), typeof(Image)).QueryTo()
-                        .Component<Image>()
-                        .Strict();
+                RectTransform overlayTransform = overlay.RectTransform();
+                overlayTransform.position = transform.position;
+                overlayTransform.sizeDelta = this.RectTransform().sizeDelta;
 
-                    overlayTransform = overlay.transform.To<RectTransform>();
-
-                    overlayTransform.SetParent(transform);
-                    overlayTransform.position = transform.position;
-                    overlay.gameObject.SetActive(isSelected.Value);
-                    overlay.sprite = UCC.ColorSprite.Value;
-                    overlay.color = Color.lightYellow.WithAlpha(0.45f);
-                    overlayTransform.sizeDelta = thisTransfrom.sizeDelta;
-
-                    selectionOverlay = overlay;
-                });
+                SetSelectionOverlay(overlay);
+            }
+            else
+                SelectionOverlay.gameObject.SetActive(isSelected.Value);
         }
     }
 }

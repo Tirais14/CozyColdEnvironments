@@ -16,16 +16,15 @@ namespace CCEnvs.Unity.UI
     {
         public DragAndDropSettings dragSettings;
 
-        [SerializeReference]
         [GetBySelf(IsOptional = true)]
-        private Maybe<IShowable> m_Showable;
+        private IShowable m_Showable = null!;
 
         private Vector2 startPos;
         private int startSiblingIndex;
         private Maybe<DragAndDropTarget> thisClone;
         private Maybe<Transform> startDraggingParent;
 
-        public Maybe<IShowable> showable => m_Showable;
+        public Maybe<IShowable> showable => m_Showable.Maybe();
 
         public bool DragAllowed => DragPredicate();
         protected Lazy<AnonymousDragAndDropTarget> dragAndDrop { get; private set; } = null!;
