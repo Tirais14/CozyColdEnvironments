@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
@@ -43,31 +44,41 @@ namespace CCEnvs.Unity.UI
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            DisposeViewModel(_viewModel);
+            TryDisposeViewModel(_viewModel);
         }
 
-        protected static void DisposeViewModel(Lazy<Maybe<TViewModel>> viewModel)
+        protected static void TryDisposeViewModel(Lazy<Maybe<TViewModel>> viewModel)
         {
-            if (viewModel.IsValueCreated
+            if (viewModel.Value.TryGetValue(out var vm)
                 &&
-                viewModel.Value.TryGetValue(out TViewModel? value)
-                &&
-                value is IDisposable disp)
+                vm.Is<IDisposable>(out var disp))
             {
                 disp.Dispose();
             }
         }
 
+        /// <summary>
+        /// Don't use previous <see cref="viewModel"/>, it has been disposed and don't use cached <see cref="viewModel"/> by the same reason.
+        /// </summary>
+        /// <param name="viewModel"></param>
         public void SetViewModel(TViewModel? viewModel)
         {
-            _viewModel = new Lazy<Maybe<TViewModel>>(viewModel.Maybe()); 
+            OnViewModelChanging();
+            TryDisposeViewModel(_viewModel);
+            _viewModel = new Lazy<Maybe<TViewModel>>(viewModel.Maybe());
+            OnViewModelChanged();
         }
 
+        /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
+        /// <param name="factory"></param>
         public void SetViewModelFactory(Func<TViewModel> factory)
         {
             Guard.IsNotNull(factory);
 
+            OnViewModelChanging();
+            TryDisposeViewModel(_viewModel);
             _viewModel = new Lazy<Maybe<TViewModel>>(() => factory());
+            OnViewModelChanged();
         }
 
         public Result<T> GetModel<T>()
@@ -97,13 +108,22 @@ namespace CCEnvs.Unity.UI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool SelectableDoSelectPredicate() => viewModel.IsSome;
 
+        protected virtual void OnViewModelChanging()
+        {
+
+        }
+
+        protected virtual void OnViewModelChanged()
+        {
+        }
+
         private void ObserveViewModel()
         {
             this.ObserveEveryValueChanged(static (@this) => @this._viewModel)
                 .Pairwise()
                 .SubscribeWithState(this, (pair, @this) =>
                 {
-                    DisposeViewModel(pair.Previous);
+                    TryDisposeViewModel(pair.Previous);
 
                     if (pair.Current.Value.IsSome)
                     {
