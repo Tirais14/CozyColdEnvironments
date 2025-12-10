@@ -49,7 +49,7 @@ namespace CCEnvs.Unity.UI
 
         protected static void TryDisposeViewModel(Lazy<Maybe<TViewModel>> viewModel)
         {
-            if (viewModel.Value.TryGetValue(out var vm)
+            if (viewModel.IsValueCreated && viewModel.Value.TryGetValue(out var vm)
                 &&
                 vm.Is<IDisposable>(out var disp))
             {
