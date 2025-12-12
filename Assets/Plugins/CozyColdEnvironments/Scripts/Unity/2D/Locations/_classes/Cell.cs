@@ -1,11 +1,12 @@
 using CCEnvs.FuncLanguage;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using UniRx;
+using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.WSA;
 
 #nullable enable
 namespace CCEnvs.Unity._2D.Locations
@@ -14,13 +15,18 @@ namespace CCEnvs.Unity._2D.Locations
     {
         private readonly ReactiveProperty<Vector3Int> position = new();
 
+        private ReactiveCommand<TileBase>? setTileCmd;
+        private ReactiveCommand<Unit>? removeTileCmd;
+        private Maybe<IDisposable> tileSubscription;
+        private bool tileSubbed;
+
         public ILocationLayer LocationLayer { get; }
         public Vector3Int Position {
             get => position.Value;
             set => position.Value = value;  
         }
         public Maybe<object> Owner { get; private set; }
-        public Tilemap tilemap => LocationLayer.tilemap;
+        public Tilemap tilemap { get; }
 
         public Cell(
             ILocationLayer locationLayer,
@@ -30,6 +36,7 @@ namespace CCEnvs.Unity._2D.Locations
             CC.Guard.IsNotNull(locationLayer, nameof(locationLayer));
 
             LocationLayer = locationLayer;
+            tilemap = locationLayer.tilemap;
             Position = position;
             Owner = owner;
 
@@ -77,7 +84,9 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void SetTile(TileBase? tile)
         {
-            LocationLayer.tilemap.SetTile(Position, tile);
+            tileSubscription.IfSome(x => x.Dispose());
+            tilemap.SetTile(Position, tile);
+            SubscribeTile(tile);
         }
 
         public bool RemoveTile([NotNullWhen(true)] out TileBase? tile)
@@ -107,7 +116,14 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void Refresh()
         {
-            //TODO:
+            if (GetInstantiatedGameObject().TryGetValue(out var goInstance)
+                &&
+                GetTile().TryGetValue(out var tile)
+                &&
+                !tileSubbed)
+            {
+                SubscribeTile(tile);
+            }
         }
 
         public void SetPosition(Vector3Int pos)
@@ -118,21 +134,6 @@ namespace CCEnvs.Unity._2D.Locations
         public override string ToString()
         {
             return $"Tile: {GetTile().Raw}; {nameof(Position)}: {Position}; {nameof(Owner)}: {Owner}";
-        }
-
-        [NonSerialized]
-        private bool disposed;
-        public void Dispose() => Dispose(true);
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-                return;
-
-            if (disposing)
-                position.Dispose();
-
-            disposed = true;
         }
 
         public Maybe<GhostCell> ToGhost(Tilemap? tilemap = null)
@@ -164,5 +165,66 @@ namespace CCEnvs.Unity._2D.Locations
         }
 
         public IObservable<Vector3Int> ObservePosition() => position;
+
+        public IObservable<TileBase> ObserveSetTile()
+        {
+            setTileCmd ??= new ReactiveCommand<TileBase>();
+            return setTileCmd;
+        }
+
+        public IObservable<Unit> ObserveRemoveTile()
+        {
+            removeTileCmd ??= new ReactiveCommand<Unit>();
+            return removeTileCmd;
+        }
+
+        [NonSerialized]
+        private bool disposed;
+        public void Dispose() => Dispose(true);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                position.Dispose();
+                tileSubscription.IfSome(x => x.Dispose());
+                setTileCmd?.Dispose();
+                removeTileCmd?.Dispose();
+            }
+
+            disposed = true;
+        }
+
+        protected void SubscribeTile(TileBase? tile)
+        {
+            if (tile == null
+                ||
+                !GetInstantiatedGameObject().TryGetValue(out var goInstance))
+            {
+                tileSubbed = false;
+                return;
+            }
+
+            tileSubscription = goInstance.OnDestroyAsObservable()
+                .SubscribeWithState(this,
+                static (_, @this) =>
+                {
+                    @this.tileSubscription.IfSome(x => x.Dispose());
+
+                    UniTask.Create(@this,
+                        static async @this =>
+                        {
+                            await UniTask.NextFrame(PlayerLoopTiming.Initialization);
+                            @this.RemoveTile();
+                        })
+                        .Forget();
+                })
+                .Maybe();
+
+            tileSubbed = true;
+        }
     }
 }

@@ -2,6 +2,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using Humanizer;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -10,7 +11,7 @@ using UnityEngine.Tilemaps;
 #pragma warning disable IDE1006
 namespace CCEnvs.Unity._2D.Locations
 {
-    public interface ILocationLayer
+    public interface ILocationLayer : IEnumerable
     {
         Result<ICell> this[Vector3Int pos] { get; }
         Result<ICell> this[Vector2Int pos] { get; }
@@ -24,6 +25,7 @@ namespace CCEnvs.Unity._2D.Locations
         BoundsInt CellBounds { get; }
         string Name { get; }
         Maybe<object> Owner { get; }
+        int CellCount { get; }
 
         bool Contains();
         bool Contains(ICell? cell);
@@ -58,7 +60,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         Vector3Int ConvertPosition(Vector3 position);
     }
-    public interface ILocationLayer<T> : ILocationLayer
+    public interface ILocationLayer<T> : ILocationLayer, IEnumerable<T>
         where T : ICell
     {
         new Result<T> this[Vector3Int pos] { get; }

@@ -3,6 +3,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -83,12 +84,12 @@ namespace CCEnvs.Unity._2D.Locations
 
         public string Name => name;
         public Maybe<object> Owner { get; private set; }
+        public int CellCount => cells.Count;
 
         protected override void Start()
         {
             base.Start();
             SetupCellCollection();
-            InitCells();
         }
 
         protected static void ReplaceTile(LocationLayer<T> instance,
@@ -123,7 +124,7 @@ namespace CCEnvs.Unity._2D.Locations
         /// </summary>
         public bool Contains(Vector3Int pos)
         {
-            var boundExt = new BoundsInt(CellBounds.position, CellBounds.size.AddZ(1));
+            var boundExt = new BoundsInt(CellBounds.position, CellBounds.size.SetZ(1));
             var t = boundExt.Contains(pos);
             return t;
         }
@@ -278,6 +279,13 @@ namespace CCEnvs.Unity._2D.Locations
             return $"{nameof(tilemap)}: {tilemap}; {nameof(Name)}: {Name}; {nameof(Location)}: {Location}; {nameof(CellBounds)}; {CellBounds}";
         }
 
+        public IEnumerator<T> GetEnumerator() => cells.Values.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         protected abstract T CreateCell(Vector3Int pos);
 
         private void SetupCellCollection()
@@ -286,20 +294,20 @@ namespace CCEnvs.Unity._2D.Locations
             cells = new Dictionary<Vector3Int, T>(capacity);
         }
 
-        private void InitCells()
-        {
-            T cell;
-            foreach (var pos in CellBounds.allPositionsWithin)
-            {
-                if (tilemap.GetTile(pos) == null)
-                    continue;
+        //private void InitCells()
+        //{
+        //    T cell;
+        //    foreach (var pos in CellBounds.allPositionsWithin)
+        //    {
+        //        if (tilemap.GetTile(pos) == null)
+        //            continue;
 
-                cell = CreateCell(pos);
-                cells[pos] = cell;
+        //        cell = CreateCell(pos);
+        //        cells[pos] = cell;
 
-                this.PrintLog($"{cell} inited.");
-            }
-        }
+        //        this.PrintLog($"{cell} inited.");
+        //    }
+        //}
     }
 
     public class LocationLayer : LocationLayer<Cell>

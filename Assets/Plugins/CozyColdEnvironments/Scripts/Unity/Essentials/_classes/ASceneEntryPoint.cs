@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Initables;
 using Cysharp.Threading.Tasks;
@@ -13,7 +12,6 @@ namespace CCEnvs.Unity.Essentials
         {
             base.Awake();
             Install.Static();
-
             SceneInitializer.InitAllObjectsAsync(FindObjectsInactive.Exclude)
                 .Forget(ex => this.PrintException(ex));
         }

@@ -4,10 +4,12 @@ using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Serialization;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace CCEnvs.Unity
 {
@@ -41,8 +43,8 @@ namespace CCEnvs.Unity
 
             m_CellBounds = new SerializedBoundsInt(
                 new BoundsInt(
-                    m_CellBounds.Value.position,
-                    m_CellBounds.Value.size.AddZ(1))
+                    m_CellBounds.Value.position - m_CellBounds.Value.size / 2,
+                    m_CellBounds.Value.size.SetZ(1))
                     );
         }
 
@@ -61,7 +63,7 @@ namespace CCEnvs.Unity
         [Header("Editor")]
         [Space(8f)]
         [SerializeField]
-        private bool drawDebugBounds = true;
+        protected bool drawDebugBounds = true;
 
         private void OnValidate()
         {
@@ -87,7 +89,21 @@ namespace CCEnvs.Unity
         }
 #endif //UNITY_EDITOR
 
-        public BoundsInt GetCellBounds() => m_CellBounds.Value;
+        public BoundsInt GetCellBounds()
+        {
+            BoundsInt bounds = m_CellBounds.Value;
+
+            if (!bounds.IsDefault())
+                return bounds;
+
+            foreach (var tilemap in GetComponentsInChildren<Tilemap>())
+            {
+                if (bounds.size.sqrMagnitude < tilemap.cellBounds.size.sqrMagnitude)
+                    bounds = tilemap.cellBounds;
+            }
+
+            return bounds;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<ILocationLayer> GetLocationLayer<T>(T key) where T : unmanaged, Enum
@@ -95,6 +111,14 @@ namespace CCEnvs.Unity
             return this[key.ToString()];
         }
 
+        public IEnumerator<ILocationLayer> GetEnumerator()
+        {
+            return layers.Values.GetEnumerator(); ;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        [NonSerialized]
         private bool refreshScheduled;
         public virtual void Refresh()
         {

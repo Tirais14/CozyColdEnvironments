@@ -10,13 +10,18 @@ namespace CCEnvs.Unity.Items
         where TDamageable : Component, IDamageable
     {
         [GetBySelf]
-        private TDamageable damageable = null!;
+        [SerializeField]
+        protected TDamageable damageable = null!;
 
         protected override void Start()
         {
             base.Start();
             damageable.ObserveOnMinDurability()
-                .SubscribeWithState(this, static (_, @this) => @this.OnDurablityOut())
+                .SubscribeWithState(this, 
+                static (_, @this) =>
+                {
+                    @this.OnDurablityOut();
+                })
                 .AddTo(damageable);
         }
 

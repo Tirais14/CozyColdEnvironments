@@ -1,5 +1,4 @@
 using CCEnvs.Attributes;
-using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using System;
 using UniRx;
@@ -37,9 +36,7 @@ namespace CCEnvs.Unity.Items
         public float DecreaseDurability(float value)
         {
             value = Mathf.Abs(value);
-
             var previous = Durability;
-
             Durability = Mathf.Clamp(Durability - value, MinDurability, MaxDurability);
 
             return previous - Durability;
@@ -54,9 +51,7 @@ namespace CCEnvs.Unity.Items
         public float IncreaseDurability(float value)
         {
             value = Mathf.Abs(value);
-
             var previous = Durability;
-
             Durability = Mathf.Clamp(Durability + value, MinDurability, MaxDurability);
 
             return Durability - previous;
