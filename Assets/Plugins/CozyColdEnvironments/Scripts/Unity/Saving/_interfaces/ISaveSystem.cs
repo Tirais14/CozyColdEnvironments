@@ -1,18 +1,24 @@
 using CCEnvs.Snapshots;
+using Cysharp.Threading.Tasks;
 using System;
+using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
 {
     public interface ISaveSystem
     {
-        void Save(string path);
+        UniTask SaveAsync(string path);
 
-        void Load(string path);
+        UniTask LoadAsync(string path);
 
-        IDisposable Register(object obj);
+        /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?, , Scene)"/></returns>
+        IDisposable BindObject(object obj, SceneInfo sceneInfo);
+        /// <inheritdoc cref="BindObject(object, SceneInfo)"/>
+        IDisposable BindObject(object obj, Scene scene);
 
-        bool Unregister(object? obj);
+        bool UnbindObject(object? obj, SceneInfo scene);
+        bool UnbindObject(object? obj, Scene scene);
 
         void RegisterType(Type type, Func<object, ISnapshot> serializableConverter);
 

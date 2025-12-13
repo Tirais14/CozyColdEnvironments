@@ -1,4 +1,3 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
@@ -7,9 +6,11 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using UniRx;
+using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -17,9 +18,9 @@ namespace CCEnvs.Unity.Saving
 {
     public sealed class SaveSystem : CCBehaviourStaticPublic<SaveSystem>, ISaveSystem
     {
-        private readonly Dictionary<Type, ConcurrentHashSet<object>> collections = new();
+        private readonly Dictionary<(Type type, SceneInfo sceneInfo), ConcurrentHashSet<object>> collections = new();
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
-        private readonly List<SerializedSnapshotInfo> toSerilizeInfos = new();
+        private readonly HashSet<Type> registeredTypes = new();
 
         protected override void Awake()
         {
@@ -36,38 +37,53 @@ namespace CCEnvs.Unity.Saving
             collections.Clear();
         }
 
-        public IDisposable Register(object obj)
+        public IDisposable BindObject(object obj, SceneInfo sceneInfo)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
-            if (!collections.TryGetValue(obj.GetType(), out var collection))
+            Type objType = obj.GetType();
+
+            if (!IsTypeRegistered(objType))
+                throw new InvalidOperationException($"Type: {objType.GetType()} is not registered");
+
+            if (!collections.TryGetValue((objType, sceneInfo), out var collection))
             {
                 collection = new ConcurrentHashSet<object>();
-                collections.TryAdd(obj.GetType(), collection);
+                collections.TryAdd((objType, sceneInfo), collection);
             }
 
             collection.Add(obj);
 
-            return Disposable.CreateWithState((@this: this, obj),
+            return Disposable.CreateWithState((@this: this, obj, sceneInfo),
                 static input =>
                 {
-                    input.@this.Unregister(input.obj);
+                    input.@this.UnbindObject(input.obj, input.sceneInfo);
                 })
                 .AddTo(this);
         }
 
-        public bool Unregister(object? obj)
+        public IDisposable BindObject(object obj, Scene scene)
+        {
+            return BindObject(obj, new SceneInfo(scene));
+        }
+
+        public bool UnbindObject(object? obj, SceneInfo sceneInfo)
         {
             if (obj is null)
                 return false;
 
-            if (!collections.TryGetValue(obj.GetType(), out var collection))
+            if (!collections.TryGetValue((obj.GetType(), sceneInfo), out var collection))
                 return false;
 
             return collection.TryRemove(obj);
         }
 
-        public void Load(string path)
+        public bool UnbindObject(object? obj, Scene scene)
+        {
+            return UnbindObject(obj, new SceneInfo(scene));
+        }
+
+        public async UniTask LoadAsync(string path)
         {
             var t = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "alcoSave.json");
             string serailized = File.ReadAllText(t);
@@ -76,10 +92,10 @@ namespace CCEnvs.Unity.Saving
             snapshots.RestoreStates();
         }
 
-        public void Save(string path)
+        public async UniTask SaveAsync(string path)
         {
-            SerializeObjects();
-            string serialized = JsonConvert.SerializeObject(toSerilizeInfos, Formatting.Indented);
+            SaveContext[] saveContexts = SerializeObjects();
+            string serialized = JsonConvert.SerializeObject(saveContexts, Formatting.Indented);
 
             var t = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "alcoSave.json");
             File.WriteAllText(t, serialized);
@@ -93,7 +109,7 @@ namespace CCEnvs.Unity.Saving
             if (IsTypeRegistered(type))
                 throw new InvalidOperationException($"Type: {type} already registered.");
 
-            collections.Add(type, new ConcurrentHashSet<object>());
+            registeredTypes.Add(type);
 
             if (converter is not null)
                 converters.Add(type, converter);
@@ -105,7 +121,11 @@ namespace CCEnvs.Unity.Saving
                 return false;
 
             converters.Remove(type);
-            return collections.Remove(type);
+
+            foreach (var key in collections.Keys.Where(x => x.type == type))
+                collections.Remove(key);
+
+            return registeredTypes.Remove(type);
         }
 
         public bool IsTypeRegistered(Type? type)
@@ -113,53 +133,27 @@ namespace CCEnvs.Unity.Saving
             if (type is null)
                 return false;
 
-            return collections.ContainsKey(type);
+            return registeredTypes.Contains(type);
         }
 
-        //private async UniTask Execute()
-        //{
-        //    await UniTask.SwitchToThreadPool();
-
-        //    var toRemoveList = new List<(Type, object)>();
-        //    while (!destroyCancellationToken.IsCancellationRequested)
-        //    {
-        //        toRemoveList.Clear();
-        //        await UniTask.WaitForEndOfFrame();
-
-        //        foreach (var pair in collections)
-        //        {
-        //            foreach (var obj in pair.Value)
-        //            {
-        //                if (obj.IsNull())
-        //                    toRemoveList.Add((pair.Key, obj));
-        //            }
-        //        }
-
-        //        (Type, object) toRemovePair;
-        //        for (int i = 0; i < toRemoveList.Count; i++)
-        //        {
-        //            toRemovePair = toRemoveList[i];
-
-        //            if (collections.TryGetValue(toRemovePair.Item1, out var collection))
-        //                collection.TryRemove(toRemovePair.Item2);
-        //        }
-        //    }
-        //}
-
-        private void SerializeObjects()
+        private SaveContext[] SerializeObjects()
         {
-            toSerilizeInfos.Clear();
+            Dictionary<SceneInfo, List<SerializedSnapshotInfo>> rawData = new();
             ISnapshot converted;
             foreach (var pair in collections)
             {
                 foreach (var obj in pair.Value)
                 {
-                    Func<object, ISnapshot> converter = converters[pair.Key];
-                    converted = converter(obj);
+                    if (!rawData.TryGetValue(pair.Key.sceneInfo, out var serializedSnapshots))
+                        serializedSnapshots = new List<SerializedSnapshotInfo>();
+
                     try
                     {
+                        Func<object, ISnapshot> converter = converters[pair.Key.type];
+                        converted = converter(obj);
+
                         SerializedSnapshotInfo serialized = SerilializeSnapshot(converted);
-                        toSerilizeInfos.Add(serialized);
+                        serializedSnapshots.Add(serialized);
                     }
                     catch (Exception ex)
                     {
@@ -167,6 +161,13 @@ namespace CCEnvs.Unity.Saving
                     }
                 }
             }
+
+            using var _ = ListPool<SaveContext>.Get(out var contexts);
+
+            foreach (var item in rawData)
+                contexts.Add(new SaveContext(item.Key, item.Value.ToImmutableArray()));
+
+            return contexts.ToArray();
         }
 
         private SerializedSnapshotInfo SerilializeSnapshot(ISnapshot converted)
@@ -174,19 +175,38 @@ namespace CCEnvs.Unity.Saving
             return new SerializedSnapshotInfo(converted);
         }
 
-        private ISnapshot[] Deserialize(string serialized)
+        private ? Deserialize(string serialized)
         {
-            var pairs = JsonConvert.DeserializeObject<List<SerializedSnapshotInfo>>(serialized);
-            return pairs.Select(pair => pair.Deserialize()).ToArray();
+            //var pairs = JsonConvert.DeserializeObject<List<SerializedSnapshotInfo>>(serialized);
+            //return pairs.Select(pair => pair.Deserialize()).ToArray();
         }
     }
 
     public static class SaveSystemExtensions
     {
-        public static IDisposable RegisterForSaving(this object source)
+        /// <summary>
+        /// Use <see cref="SceneManager.GetActiveScene()"/> for scene info argument
+        /// </summary>
+        public static IDisposable BindToSaveSystem(this object source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return SaveSystem.Self.Register(source);
+            return SaveSystem.Self.BindObject(source, SceneManager.GetActiveScene());
+        }
+
+        public static IDisposable BindToSaveSystem(this object source, SceneInfo scene)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+            return SaveSystem.Self.BindObject(source, scene);
+        }
+
+        public static IDisposable BindToSaveSystem(this object source, Scene scene)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            if (!scene.IsValid())
+                throw new ArgumentException($"{nameof(scene)} is not valid");
+
+            return SaveSystem.Self.BindObject(source, scene);
         }
     }
 }
