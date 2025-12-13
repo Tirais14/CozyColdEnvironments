@@ -9,5 +9,6 @@ namespace CCEnvs.Unity.Items
         IShallowCloneable<IItemContainer>
     {
         bool IsReadOnlyContainer { get; }
+        bool UnlockCapacity { get; set; }
     }
 }

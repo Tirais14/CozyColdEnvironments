@@ -11,9 +11,9 @@ namespace CCEnvs.Unity._2D
         Result<ILocationLayer> this[string name] { get; }
         Result<ILocationLayer> this[Enum key] { get; }
 
-        Result<ILocationLayer> GetLocationLayer<T>(T key) where T : unmanaged, Enum;
+        BoundsInt CellBounds { get; }
 
-        BoundsInt GetCellBounds();
+        Result<ILocationLayer> GetLocationLayer<T>(T key) where T : unmanaged, Enum;
 
     }
 }

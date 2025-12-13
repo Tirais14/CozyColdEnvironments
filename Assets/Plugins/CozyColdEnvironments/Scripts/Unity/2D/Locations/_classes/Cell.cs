@@ -13,20 +13,49 @@ namespace CCEnvs.Unity._2D.Locations
 {
     public class Cell : ICell, IDisposable
     {
+        private readonly ILocationLayer locationLayer;
         private readonly ReactiveProperty<Vector3Int> position = new();
+        private readonly Tilemap _tilemap;
 
+        private Maybe<object> owner;
         private ReactiveCommand<TileBase>? setTileCmd;
         private ReactiveCommand<Unit>? removeTileCmd;
         private Maybe<IDisposable> tileSubscription;
         private bool tileSubbed;
 
-        public ILocationLayer LocationLayer { get; }
-        public Vector3Int Position {
-            get => position.Value;
-            set => position.Value = value;  
+        public ILocationLayer LocationLayer {
+            get
+            {
+                Validate();
+                return locationLayer;
+            }
         }
-        public Maybe<object> Owner { get; private set; }
-        public Tilemap tilemap { get; }
+        public Vector3Int Position {
+            get
+            {
+                Validate();
+                return position.Value;
+            }
+            set
+            {
+                Validate();
+                position.Value = value;
+            } 
+        }
+        public Maybe<object> Owner {
+            get
+            {
+                Validate();
+                return owner;
+            }
+        }
+        public Tilemap tilemap {
+            get
+            {
+                Validate();
+                return _tilemap;
+            }
+        }
 
         public Cell(
             ILocationLayer locationLayer,
@@ -35,10 +64,10 @@ namespace CCEnvs.Unity._2D.Locations
         {
             CC.Guard.IsNotNull(locationLayer, nameof(locationLayer));
 
-            LocationLayer = locationLayer;
-            tilemap = locationLayer.tilemap;
+            this.locationLayer = locationLayer;
+            _tilemap = locationLayer.tilemap;
             Position = position;
-            Owner = owner;
+            this.owner = owner;
 
             Refresh();
         }
@@ -70,27 +99,42 @@ namespace CCEnvs.Unity._2D.Locations
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<TileBase> GetTile() => tilemap.GetTile(Position);
+        public Maybe<TileBase> GetTile()
+        {
+            Validate();
+
+            if (tilemap == null)
+                return Maybe<TileBase>.None;
+
+            return tilemap.GetTile(Position);
+        }
 
         public Maybe<T> GetTile<T>() where T : TileBase
         {
+            Validate();
             return GetTile().Raw.As<T>();
         }
 
         public Maybe<GameObject> GetInstantiatedGameObject()
         {
+            Validate();
             return LocationLayer.tilemap.GetInstantiatedObject(Position);
         }
 
         public void SetTile(TileBase? tile)
         {
+            Validate();
+
             tileSubscription.IfSome(x => x.Dispose());
             tilemap.SetTile(Position, tile);
+
             SubscribeTile(tile);
         }
 
         public bool RemoveTile([NotNullWhen(true)] out TileBase? tile)
         {
+            Validate();
+
             if (GetTile().TryGetValue(out tile))
             {
                 SetTile(null);
@@ -99,23 +143,46 @@ namespace CCEnvs.Unity._2D.Locations
 
             return false;
         }
-        public bool RemoveTile() => RemoveTile(out _);
+        public bool RemoveTile()
+        {
+            Validate();
+            return RemoveTile(out _);
+        }
 
-        public Bounds GetBounds() => LocationLayer.tilemap.GetBoundsLocal(Position);
+        public Bounds GetBounds()
+        {
+            Validate();
+            return LocationLayer.tilemap.GetBoundsLocal(Position);
+        }
 
-        public bool HasTile() => GetTile().IsSome;
+        public bool HasTile()
+        {
+            Validate();
+            return GetTile().IsSome;
+        }
 
-        public bool HasOwner() => Owner.IsSome;
-        public bool HasOwner(object owner) => Owner.Has(owner);
+        public bool HasOwner()
+        {
+            Validate();
+            return Owner.IsSome;
+        }
+        public bool HasOwner(object owner)
+        {
+            Validate();
+            return Owner.Has(owner);
+        }
 
         public bool SetOwner(object owner)
         {
-            Owner = owner;
+            Validate();
+            this.owner = owner;
             return true;
         }
 
         public void Refresh()
         {
+            Validate();
+
             if (GetInstantiatedGameObject().TryGetValue(out var goInstance)
                 &&
                 GetTile().TryGetValue(out var tile)
@@ -128,6 +195,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public void SetPosition(Vector3Int pos)
         {
+            Validate();
             Position = pos;
         }
 
@@ -138,6 +206,8 @@ namespace CCEnvs.Unity._2D.Locations
 
         public Maybe<GhostCell> ToGhost(Tilemap? tilemap = null)
         {
+            Validate();
+
             if (GetTile().IsNone)
                 return Maybe<GhostCell>.None;
 
@@ -146,6 +216,8 @@ namespace CCEnvs.Unity._2D.Locations
 
         public Maybe<TileData> GetTileData()
         {
+            Validate();
+
             if (!GetTile().TryGetValue(out TileBase? tile))
                 return Maybe<TileData>.None;
 
@@ -156,24 +228,32 @@ namespace CCEnvs.Unity._2D.Locations
 
         public Maybe<Sprite> GetTileSprite()
         {
+            Validate();
             return GetTileData().Map(x => x.sprite);
         }
 
         public Maybe<GameObject> GetTilePrefab()
         {
+            Validate();
             return GetTileData().Map(x => x.gameObject);
         }
 
-        public IObservable<Vector3Int> ObservePosition() => position;
+        public IObservable<Vector3Int> ObservePosition()
+        {
+            Validate();
+            return position;
+        }
 
         public IObservable<TileBase> ObserveSetTile()
         {
+            Validate();
             setTileCmd ??= new ReactiveCommand<TileBase>();
             return setTileCmd;
         }
 
         public IObservable<Unit> ObserveRemoveTile()
         {
+            Validate();
             removeTileCmd ??= new ReactiveCommand<Unit>();
             return removeTileCmd;
         }
@@ -225,6 +305,12 @@ namespace CCEnvs.Unity._2D.Locations
                 .Maybe();
 
             tileSubbed = true;
+        }
+
+        protected void Validate()
+        {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().FullName);
         }
     }
 }

@@ -42,7 +42,9 @@
         "Microsoft.Extensions.Caching.Memory.dll",
         "Microsoft.Extensions.Options.dll",
         "Microsoft.Extensions.Logging.Abstractions.dll",
-        "Microsoft.Extensions.Caching.Abstractions.dll"
+        "Microsoft.Extensions.Caching.Abstractions.dll",
+        "Newtonsoft.Json.dll",
+        "ConcurrentCollections.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

@@ -30,7 +30,7 @@ namespace CCEnvs.Unity.UI
             if (disposed)
                 return;
 
-            disposables.DisposeAll();
+            disposables.DisposeEach();
             disposables.Clear();
 
             disposed = true;

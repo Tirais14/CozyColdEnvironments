@@ -97,7 +97,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
             if (disposing)
             {
-                collection.Values.DisposeAll();
+                collection.Values.DisposeEach();
                 collection.Clear();
             }
 

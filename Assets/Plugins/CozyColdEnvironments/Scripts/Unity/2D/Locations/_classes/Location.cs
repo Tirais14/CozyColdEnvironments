@@ -37,15 +37,12 @@ namespace CCEnvs.Unity
             get => this[key.ToString()];
         }
 
+        public BoundsInt CellBounds { get; private set; }
+
         protected override void Awake()
         {
             base.Awake();
-
-            m_CellBounds = new SerializedBoundsInt(
-                new BoundsInt(
-                    m_CellBounds.Value.position - m_CellBounds.Value.size / 2,
-                    m_CellBounds.Value.size.SetZ(1))
-                    );
+            InitCellBounds();
         }
 
         protected override void Start()
@@ -69,11 +66,10 @@ namespace CCEnvs.Unity
         {
             if (drawDebugBounds)
             {
-                int xMin = GetCellBounds().xMin;
-                int xMax = GetCellBounds().xMax;
-                int yMin = GetCellBounds().yMin;
-                int yMax = GetCellBounds().yMax;
-                Vector3 center = GetCellBounds().center;
+                int xMin = CellBounds.xMin;
+                int xMax = CellBounds.xMax;
+                int yMin = CellBounds.yMin;
+                int yMax = CellBounds.yMax;
                 var bottomLeft = new Vector3(xMin, yMin);
                 var bottomRight = new Vector3(xMax, yMin);
                 var upperLeft = new Vector3(xMin, yMax);
@@ -89,20 +85,12 @@ namespace CCEnvs.Unity
         }
 #endif //UNITY_EDITOR
 
-        public BoundsInt GetCellBounds()
+        private static BoundsInt NormalizeBoundsInt(BoundsInt bounds)
         {
-            BoundsInt bounds = m_CellBounds.Value;
-
-            if (!bounds.IsDefault())
-                return bounds;
-
-            foreach (var tilemap in GetComponentsInChildren<Tilemap>())
-            {
-                if (bounds.size.sqrMagnitude < tilemap.cellBounds.size.sqrMagnitude)
-                    bounds = tilemap.cellBounds;
-            }
-
-            return bounds;
+            return new BoundsInt(
+                bounds.position - bounds.size / 2,
+                bounds.size.SetZ(1)
+                );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -128,15 +116,11 @@ namespace CCEnvs.Unity
             refreshScheduled = true;
             this.DoActionAsync(static async @this =>
             {
-                await UniTask.NextFrame(timing: PlayerLoopTiming.PreUpdate);
+                await UniTask.NextFrame(timing: PlayerLoopTiming.Initialization);
 
                 try
                 {
                     @this.InitLayers();
-                }
-                catch (Exception ex)
-                {
-                    @this.PrintException(ex);
                 }
                 finally
                 {
@@ -149,6 +133,25 @@ namespace CCEnvs.Unity
         {
             foreach (var layer in this.Q().FromChildrens().Components<ILocationLayer>())
                 layers.Add(layer.Name, layer);
+        }
+
+        private void InitCellBounds()
+        {
+            BoundsInt bounds = m_CellBounds.Value;
+
+            if (bounds.size.x > 0 || bounds.size.y > 0)
+            {
+                CellBounds = NormalizeBoundsInt(bounds);
+                return;
+            }
+
+            foreach (var tilemap in GetComponentsInChildren<Tilemap>())
+            {
+                if (bounds.size.sqrMagnitude < tilemap.cellBounds.size.sqrMagnitude)
+                    bounds = tilemap.cellBounds;
+            }
+
+            CellBounds = NormalizeBoundsInt(bounds);
         }
     }
 }

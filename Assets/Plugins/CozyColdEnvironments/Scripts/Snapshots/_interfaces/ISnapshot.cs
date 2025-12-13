@@ -8,8 +8,21 @@ namespace CCEnvs.Snapshots
     {
         Maybe<object> Target { get; }
 
-        void Restore();
-        void Restore(object target);
+        object Restore();
+        object Restore(object target);
+    }
+
+    public interface ISnapshot<T> : ISnapshot
+    {
+        new Maybe<T> Target { get; }
+
+        Maybe<object> ISnapshot.Target => Target;
+
+        new T Restore();
+        T Restore(T target);
+
+        object ISnapshot.Restore() => Restore()!;
+        object ISnapshot.Restore(object target) => Restore(target.To<T>())!;
     }
 
     public static class ISnapshotExtensions

@@ -3,9 +3,11 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -80,7 +82,7 @@ namespace CCEnvs.Unity._2D.Locations
         [field: GetByParent]
         public ILocation Location { get; private set; } = null!;
 
-        public BoundsInt CellBounds => Location.GetCellBounds();
+        public BoundsInt CellBounds => Location.CellBounds;
 
         public string Name => name;
         public Maybe<object> Owner { get; private set; }
@@ -90,6 +92,12 @@ namespace CCEnvs.Unity._2D.Locations
         {
             base.Start();
             SetupCellCollection();
+        }
+
+        protected virtual void OnDestroy()
+        {
+            cells.OfType<IDisposable>().DisposeEach();
+            cells.Clear();
         }
 
         protected static void ReplaceTile(LocationLayer<T> instance,
@@ -281,10 +289,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public IEnumerator<T> GetEnumerator() => cells.Values.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         protected abstract T CreateCell(Vector3Int pos);
 
@@ -293,21 +298,6 @@ namespace CCEnvs.Unity._2D.Locations
             int capacity = CellBounds.size.x * CellBounds.size.y * (CellBounds.z + 1);
             cells = new Dictionary<Vector3Int, T>(capacity);
         }
-
-        //private void InitCells()
-        //{
-        //    T cell;
-        //    foreach (var pos in CellBounds.allPositionsWithin)
-        //    {
-        //        if (tilemap.GetTile(pos) == null)
-        //            continue;
-
-        //        cell = CreateCell(pos);
-        //        cells[pos] = cell;
-
-        //        this.PrintLog($"{cell} inited.");
-        //    }
-        //}
     }
 
     public class LocationLayer : LocationLayer<Cell>

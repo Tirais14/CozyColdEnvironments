@@ -1,4 +1,5 @@
 using CCEnvs.Reflection;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -6,13 +7,18 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs
 {
+    [Serializable]
     public readonly struct TypeValuePair : IEquatable<TypeValuePair>
     {
         public static TypeValuePair Empty => T<object>();
 
+        [JsonProperty("type")]
         public readonly Type Type { get; }
+
+        [JsonProperty("value")]
         public readonly object? Value { get; }
 
+        [JsonConstructor]
         public TypeValuePair(Type type, object? value)
         {
             Type = type;

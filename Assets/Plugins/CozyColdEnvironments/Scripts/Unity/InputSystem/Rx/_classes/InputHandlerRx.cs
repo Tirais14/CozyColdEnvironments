@@ -85,7 +85,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             if (disposed)
                 return;
 
-            disposables.DisposeAll();
+            disposables.DisposeEach();
 
             disposed = true;
         }

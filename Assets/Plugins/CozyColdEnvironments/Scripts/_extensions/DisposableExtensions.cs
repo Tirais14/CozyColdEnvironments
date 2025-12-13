@@ -6,7 +6,7 @@ namespace CCEnvs
 {
     public static class DisposableExtensions
     {
-        public static void DisposeAll(this IEnumerable<IDisposable> source)
+        public static void DisposeEach(this IEnumerable<IDisposable> source)
         {
             Guard.IsNotNull(source, nameof(source));
 

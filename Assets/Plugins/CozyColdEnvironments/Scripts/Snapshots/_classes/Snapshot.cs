@@ -5,7 +5,7 @@ using System;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public abstract class Snapshot<T> : ISnapshot
+    public abstract class Snapshot<T> : ISnapshot<T>
     {
 #if UNITY_2017_1_OR_NEWER
         protected Maybe<T> target;
@@ -13,7 +13,7 @@ namespace CCEnvs.Snapshots
         protected readonly Maybe<T> target;
 #endif
 
-        public Maybe<object> Target => target.Raw;
+        public Maybe<T> Target => target.Raw;
 
         public Snapshot()
         {
@@ -26,11 +26,11 @@ namespace CCEnvs.Snapshots
             this.target = target;
         }
 
-        public void Restore() => Restore(target.Raw!);
+        public T Restore() => Restore(target.Raw!);
 
-        public abstract void Restore(object target);
+        public abstract T Restore(T target);
 
-        protected TTarget ValidateTarget<TTarget>(object target)
+        protected TTarget ValidateTarget<TTarget>(T target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
             return target.To<TTarget>();
