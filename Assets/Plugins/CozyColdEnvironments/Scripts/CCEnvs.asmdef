@@ -12,7 +12,6 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "System.Linq.Async.dll",
-        "System.Reactive.dll",
         "System.Collections.Immutable.dll",
         "Microsoft.Bcl.AsyncInterfaces.dll",
         "Microsoft.Bcl.HashCode.dll",
@@ -35,7 +34,10 @@
         "Microsoft.Extensions.Logging.Abstractions.dll",
         "Microsoft.Extensions.Options.dll",
         "Microsoft.Extensions.Caching.Abstractions.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "R3.dll",
+        "ObservableCollections.dll",
+        "ObservableCollections.R3.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

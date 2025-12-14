@@ -1,13 +1,10 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
-using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
+using R3;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 
 namespace CCEnvs
@@ -28,7 +25,7 @@ namespace CCEnvs
             }
             catch (Exception ex)
             {
-                subj.OnError(ex);
+                subj.OnErrorResume(ex);
             }
 
             subj.Dispose();

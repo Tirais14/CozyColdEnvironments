@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using UniRx;
+using R3;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 
@@ -14,23 +14,23 @@ namespace CCEnvs.Unity.InputSystem.Rx
     {
         protected readonly List<IDisposable> disposables = new();
 
-        private readonly ReactiveProperty<CallbackContext> raw = new();
-        private readonly ReactiveProperty<CallbackContext> started = new();
-        private readonly ReactiveProperty<CallbackContext> performed = new();
-        private readonly ReactiveProperty<CallbackContext> canceled = new();
+        private readonly ReactiveCommand<CallbackContext> raw = new();
+        private readonly ReactiveCommand<CallbackContext> started = new();
+        private readonly ReactiveCommand<CallbackContext> performed = new();
+        private readonly ReactiveCommand<CallbackContext> canceled = new();
 
         private bool disposed;
 
         public bool ButtonInputValue { get; private set; }
         public InputAction Action { get; }
-        public IObservable<CallbackContext> Raw => raw;
-        public IObservable<CallbackContext> Started {
+        public Observable<CallbackContext> Raw => raw;
+        public Observable<CallbackContext> Started {
             get => started.Skip(1);
         }
-        public IObservable<CallbackContext> Performed {
+        public Observable<CallbackContext> Performed {
             get => performed.Skip(1);
         }
-        public IObservable<CallbackContext> Canceled {
+        public Observable<CallbackContext> Canceled {
             get => canceled.Skip(1);
         }
         public string ActionName => Action.name;
@@ -89,22 +89,22 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private void OnRaw(CallbackContext context)
         {
-            raw.SetValueAndForceNotify(context);
+            raw.Execute(context);
         }
 
         private void OnStarted(CallbackContext context)
         {
-            started.SetValueAndForceNotify(context);
+            started.Execute(context);
         }
 
         private void OnPerformed(CallbackContext context)
         {
-            performed.SetValueAndForceNotify(context);
+            performed.Execute(context);
         }
 
         private void OnCanceled(CallbackContext context)
         {
-            canceled.SetValueAndForceNotify(context);
+            canceled.Execute(context);
         }
     }
     public class InputActionRx<T> 
@@ -115,10 +115,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
         where T : struct
     {
         public T InputValue { get; private set; }
-        public virtual IObservable<T> TRaw => Raw.Select(x => x.ReadValue<T>());
-        public virtual IObservable<T> TStarted => Started.Select(x => x.ReadValue<T>());
-        public virtual IObservable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
-        public virtual IObservable<T> TCanceled => Canceled.Select(x => x.ReadValue<T>());
+        public virtual Observable<T> TRaw => Raw.Select(x => x.ReadValue<T>());
+        public virtual Observable<T> TStarted => Started.Select(x => x.ReadValue<T>());
+        public virtual Observable<T> TPerformed => Performed.Select(x => x.ReadValue<T>());
+        public virtual Observable<T> TCanceled => Canceled.Select(x => x.ReadValue<T>());
 
         public InputActionRx(InputAction inputAction) 
             :

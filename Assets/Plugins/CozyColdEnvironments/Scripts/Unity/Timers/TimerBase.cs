@@ -2,7 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Returnables;
 using System;
 using System.Diagnostics;
-using UniRx;
+using R3;
 
 #nullable enable
 #pragma warning disable S2328
@@ -16,8 +16,8 @@ namespace CCEnvs.Unity.Timers
         private bool isOnTargetReachedInvoked;
         private TimeSpan? interval;
 
-        public IObservable<TimeSpan> OnTargetReached => onTargetReached.AsObservable();
-        public IObservable<TimeSpan> OnTick => onTick.AsObservable();
+        public Observable<TimeSpan> OnTargetReached => onTargetReached.AsObservable();
+        public Observable<TimeSpan> OnTick => onTick.AsObservable();
 
         public TimerOptions Options { get; set; }
         public TimeSpan Elapsed { get; private set; } = TimeSpan.Zero;

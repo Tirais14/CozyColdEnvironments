@@ -1,11 +1,10 @@
-using CCEnvs.Unity.Items;
+using ObservableCollections;
 using System.Collections.Generic;
-using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.Collections
 {
-    public interface IReactiveDictionaryExtended<TKey, TValue> : IReactiveDictionary<TKey, TValue>
+    public interface IReactiveDictionaryExtended<TKey, TValue> : IReadOnlyObservableDictionary<TKey, TValue>, IDictionary<TKey, TValue>
     {
         T[] AddCount<T>(int count) where T : TValue, new();
 

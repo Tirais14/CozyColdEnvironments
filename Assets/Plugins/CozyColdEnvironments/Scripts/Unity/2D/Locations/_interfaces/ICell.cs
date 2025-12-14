@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -45,16 +45,16 @@ namespace CCEnvs.Unity._2D.Locations
 
         public Maybe<TileData> GetTileData();
 
-        IObservable<Vector3Int> ObservePosition();
+        Observable<Vector3Int> ObservePosition();
 
         /// <summary>
         /// Doesn't trigger when tile setted outside of <see cref="ICell"/>
         /// </summary>
-        IObservable<TileBase> ObserveSetTile();
+        Observable<TileBase> ObserveSetTile();
 
         /// <summary>
         /// Doesn't trigger when tile setted outside of <see cref="ICell"/>
         /// </summary>
-        IObservable<Unit> ObserveRemoveTile();
+        Observable<Unit> ObserveRemoveTile();
     }
 }

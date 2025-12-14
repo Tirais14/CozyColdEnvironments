@@ -1,6 +1,10 @@
 using CCEnvs.Unity.Injections;
 using Cysharp.Threading.Tasks;
+using System;
+using R3;
 using UnityEngine;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 
@@ -9,6 +13,8 @@ namespace CCEnvs.Unity.Components
 {
     public class CCBehaviour : MonoBehaviour
     {
+        private readonly CompositeDisposable disposables = new();
+
         /// <summary>Cached</summary>
         public LazyCC<Transform> cTransform { get; private set; } = null!;
         /// <summary>Cached</summary>
@@ -17,6 +23,7 @@ namespace CCEnvs.Unity.Components
         /// Is true before update and after start
         /// </summary>
         public bool StartPassed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         protected virtual void Awake()
         {
@@ -31,47 +38,65 @@ namespace CCEnvs.Unity.Components
         {
             this.DoActionAsync(static async @this =>
             {
-                await UniTask.Yield(PlayerLoopTiming.LastInitialization);
+                await UniTask.Yield(PlayerLoopTiming.PreUpdate, @this.destroyCancellationToken);
 
                 @this.StartPassed = true;
-                @this.PrintLog("Start Passed");
             });
         }
 
-        //public void OnAfterStartAction<T>(T state, Action<T> action)
-        //{
-        //    Guard.IsNotNull(action);
+        protected virtual void OnEnable()
+        {
+        }
 
-        //    UniTask.Create((action, state, @this: this), static async input =>
-        //    {
-        //        await UniTask.WaitUntil(input.@this,
-        //            static @this => @this.StartPassed,
-        //            timing: PlayerLoopTiming.PreUpdate
-        //            );
+        protected virtual void OnDisable()
+        {
+        }
 
-        //        input.action(input.state);
-        //    })
-        //    .AttachExternalCancellation(destroyCancellationToken)
-        //    .SuppressCancellationThrow()
-        //    .Forget();
-        //}
+        protected virtual void OnDestroy()
+        {
+            disposables.Dispose();
+            IsDestroyed = true;
+        }
 
-        //public void OnAfterStartAction(Action action)
-        //{
-        //    Guard.IsNotNull(action);
+        public IDisposable BindDisposable(IDisposable disposable)
+        {
+            CC.Guard.IsNotNull(disposable, nameof(disposable));
 
-        //    UniTask.Create((action, @this: this), static async input =>
-        //    {
-        //        await UniTask.WaitUntil(input.@this,
-        //            static @this => @this.StartPassed,
-        //            timing: PlayerLoopTiming.PreUpdate
-        //            );
+            disposables.Add(disposable);
+            return disposable;
+        }
+    }
 
-        //        input.action();
-        //    })
-        //    .AttachExternalCancellation(destroyCancellationToken)
-        //    .SuppressCancellationThrow()
-        //    .Forget();
-        //}
+    public static class CCBehaviourExtensions
+    {
+        /// <summary>
+        /// Disposes when <see cref="MonoBehaviour"/> destroyed
+        /// </summary>
+        /// <returns>self</returns>
+        public static IDisposable BindTo(this IDisposable? source, MonoBehaviour beh)
+        {
+            if (source.IsNull())
+                return Disposable.Empty;
+
+            CC.Guard.IsNotNull(beh, nameof(beh));
+
+            source.AddTo(beh.destroyCancellationToken);
+
+            return source;
+        }
+
+        /// <summary>
+        /// Disposes when <see cref="CCBehaviour"/> destroyed
+        /// </summary>
+        /// <returns>self</returns>
+        public static IDisposable BindTo(this IDisposable? source, CCBehaviour beh)
+        {
+            if (source.IsNull())
+                return Disposable.Empty;
+
+            CC.Guard.IsNotNull(beh, nameof(beh));
+
+            return beh.BindDisposable(source);
+        }
     }
 }

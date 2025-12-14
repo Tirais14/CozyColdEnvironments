@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.Items.Snapshots
             };
 
             foreach (var cnt in itemContainers.Select(x => x.Restore()))
-                inv.Add(cnt);
+                inv.AddContainer(cnt);
 
             return inv;
         }
@@ -51,7 +51,7 @@ namespace CCEnvs.Unity.Items.Snapshots
 
         private static ItemContainerSnapshot[] CaptureItemContainerStates(Inventory target)
         {
-            return target.Values.Select(cnt => new ItemContainerSnapshot(cnt)).ToArray();
+            return target.Containers.Select(cnt => new ItemContainerSnapshot(cnt)).ToArray();
         }
     }
 

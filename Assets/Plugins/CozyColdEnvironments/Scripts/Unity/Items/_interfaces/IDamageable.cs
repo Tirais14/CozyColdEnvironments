@@ -1,4 +1,5 @@
 #nullable enable
+using R3;
 using System;
 
 namespace CCEnvs.Unity.Items
@@ -15,12 +16,12 @@ namespace CCEnvs.Unity.Items
 
         float IncreaseDurability(float value);
 
-        IObservable<ChangedDurabilityEvent> ObserveDecreaseDurability();
+        Observable<ChangedDurabilityEvent> ObserveDecreaseDurability();
 
-        IObservable<ChangedDurabilityEvent> ObserveIncreaseDurability();
+        Observable<ChangedDurabilityEvent> ObserveIncreaseDurability();
 
-        IObservable<float> ObserveOnMinDurability();
+        Observable<float> ObserveOnMinDurability();
 
-        IObservable<float> ObserveOnMaxDurability();
+        Observable<float> ObserveOnMaxDurability();
     }
 }

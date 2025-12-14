@@ -1,10 +1,9 @@
 using CCEnvs.FuncLanguage;
 using Cysharp.Threading.Tasks;
+using R3;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using UniRx;
-using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -238,20 +237,20 @@ namespace CCEnvs.Unity._2D.Locations
             return GetTileData().Map(x => x.gameObject);
         }
 
-        public IObservable<Vector3Int> ObservePosition()
+        public Observable<Vector3Int> ObservePosition()
         {
             Validate();
             return position;
         }
 
-        public IObservable<TileBase> ObserveSetTile()
+        public Observable<TileBase> ObserveSetTile()
         {
             Validate();
             setTileCmd ??= new ReactiveCommand<TileBase>();
             return setTileCmd;
         }
 
-        public IObservable<Unit> ObserveRemoveTile()
+        public Observable<Unit> ObserveRemoveTile()
         {
             Validate();
             removeTileCmd ??= new ReactiveCommand<Unit>();
@@ -288,8 +287,8 @@ namespace CCEnvs.Unity._2D.Locations
                 return;
             }
 
-            tileSubscription = goInstance.OnDestroyAsObservable()
-                .SubscribeWithState(this,
+            goInstance.OnDestroyAsObservable()
+                .Subscribe(this,
                 static (_, @this) =>
                 {
                     @this.tileSubscription.IfSome(x => x.Dispose());
@@ -301,8 +300,7 @@ namespace CCEnvs.Unity._2D.Locations
                             @this.RemoveTile();
                         })
                         .Forget();
-                })
-                .Maybe();
+                });
 
             tileSubbed = true;
         }

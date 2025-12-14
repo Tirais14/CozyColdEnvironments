@@ -1,6 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
-using UniRx;
+using R3;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -25,10 +25,10 @@ namespace CCEnvs.Unity.Items
 
         Maybe<int> GetContainerID();
 
-        IObservable<Pair<int>> ObserveItemCount();
+        Observable<int> ObserveItemCount();
 
-        IObservable<Pair<int>> ObserveDecreasedItemCount();
+        Observable<(int Previous, int Current)> ObserveDecreasedItemCount();
 
-        IObservable<Pair<int>> ObserveIncreaseItemCount();
+        Observable<(int Previous, int Current)> ObserveIncreaseItemCount();
     }
 }

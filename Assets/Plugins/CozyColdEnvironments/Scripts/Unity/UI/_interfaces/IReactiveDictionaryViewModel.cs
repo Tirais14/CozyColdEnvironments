@@ -1,24 +1,24 @@
-using System;
+using ObservableCollections;
+using R3;
 using System.Collections.Generic;
-using UniRx;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
     public interface IReactiveDictionaryViewModel<TKey, TValue> : IViewModel
     {
-        IReactiveCommand<KeyValuePair<TKey, TValue>> Add { get; }
+        ReactiveCommand<KeyValuePair<TKey, TValue>> Add { get; }
 
-        IReactiveCommand<TKey> Remove { get; }
+        ReactiveCommand<TKey> Remove { get; }
 
-        IReactiveCommand<KeyValuePair<TKey, TValue>> Replace { get; }
+        ReactiveCommand<KeyValuePair<TKey, TValue>> Replace { get; }
 
-        IObservable<DictionaryAddEvent<TKey, TValue>> ObserveAdd();
+        Observable<DictionaryAddEvent<TKey, TValue>> ObserveAddContainer();
 
-        IObservable<DictionaryRemoveEvent<TKey, TValue>> ObserveRemove();
+        Observable<DictionaryRemoveEvent<TKey, TValue>> ObserveRemoveContainer();
 
-        IObservable<DictionaryReplaceEvent<TKey, TValue>> ObserveReplace();
+        Observable<DictionaryReplaceEvent<TKey, TValue>> ObserveReplaceContainer();
 
-        IObservable<Unit> ObserveReset();
+        Observable<CollectionResetEvent<KeyValuePair<TKey, TValue>>> ObserveResetContainer();
     }
 }

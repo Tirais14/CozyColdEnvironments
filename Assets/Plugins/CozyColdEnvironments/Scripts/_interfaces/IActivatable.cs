@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using R3;
 
 namespace CCEnvs
 {
@@ -13,10 +14,10 @@ namespace CCEnvs
 
         bool SwitchActiveState();
 
-        IObservable<bool> ObserveActivate();
+        Observable<bool> ObserveActivate();
 
-        IObservable<bool> ObserveDeactivate();
+        Observable<bool> ObserveDeactivate();
 
-        IObservable<bool> ObserveActiveState();
+        Observable<bool> ObserveActiveState();
     }
 }

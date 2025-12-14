@@ -1,7 +1,6 @@
 #nullable enable
 using CCEnvs.Returnables;
-using System;
-using System.Threading;
+using R3;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -15,8 +14,8 @@ namespace CCEnvs.Patterns.Commands
 
         void DoTick();
 
-        IObservable<ICommand> ObserveAddCommand();
+        Observable<ICommand> ObserveAddCommand();
 
-        IObservable<Mock> ObserveCommandsExecuted();
+        Observable<Mock> ObserveCommandsExecuted();
     }
 }

@@ -1,6 +1,6 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using System;
+using R3;
 
 namespace CCEnvs.Unity.UI
 {
@@ -13,10 +13,10 @@ namespace CCEnvs.Unity.UI
 
         void ResetSelection();
 
-        IObservable<T> ObserveSelected();
+        Observable<T> ObserveSelected();
 
-        IObservable<T> ObserveDeselected();
+        Observable<T> ObserveDeselected();
 
-        IObservable<PreviousCurrentPair<Maybe<T>>> ObserveSelection();
+        Observable<Maybe<T>> ObserveSelection();
     }
 }

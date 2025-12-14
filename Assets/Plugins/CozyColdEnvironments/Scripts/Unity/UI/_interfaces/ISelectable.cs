@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using UniRx;
+using R3;
 
 namespace CCEnvs.Unity.UI
 {
@@ -14,10 +14,10 @@ namespace CCEnvs.Unity.UI
 
         void SwitchSelectionState();
 
-        IObservable<bool> ObserveIsSelected();
+        Observable<bool> ObserveIsSelected();
 
-        IObservable<ISelectable> ObserveDoSelect();
+        Observable<ISelectable> ObserveDoSelect();
 
-        IObservable<ISelectable> ObserveDoDeselect();
+        Observable<ISelectable> ObserveDoDeselect();
     }
 }

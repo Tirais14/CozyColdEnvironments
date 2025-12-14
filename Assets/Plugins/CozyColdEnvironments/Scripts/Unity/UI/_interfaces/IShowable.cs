@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using UniRx;
+using R3;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
@@ -23,8 +23,8 @@ namespace CCEnvs.Unity.UI
 
         void SwitchShownStateVoid();
 
-        IObservable<Unit> ObserveShow();
+        Observable<Unit> ObserveShow();
 
-        IObservable<Unit> ObserveHide();
+        Observable<Unit> ObserveHide();
     }
 }

@@ -1,7 +1,6 @@
+using R3;
 using System;
 using System.Collections.Generic;
-using System.Reactive;
-using System.Reactive.Disposables;
 
 #nullable enable
 namespace CCEnvs.Events
@@ -17,14 +16,18 @@ namespace CCEnvs.Events
             var gType = typeof(T);
             if (!messages.ContainsKey(gType))
             {
-                var observable = new AnonymousObservable<T>((obs) => Disposable.Create(message, static (msg) => messages.Remove(msg!.GetType())));
+                var observable = Observable.Create<T>((obs) =>
+                {
+                    return Disposable.Create(message, static (msg) => messages.Remove(msg!.GetType()));
+                });
+
                 messages.Add(gType, observable);
             }
         }
 
-        public static IObservable<T> Recieve<T>()
+        public static Observable<T> Recieve<T>()
         {
-            return messages[typeof(T)].To<IObservable<T>>();
+            return messages[typeof(T)].To<Observable<T>>();
         }
     }
 }

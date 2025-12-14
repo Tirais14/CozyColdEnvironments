@@ -1,25 +1,18 @@
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
-using System;
-using UniRx;
-using UnityEngine;
+using R3;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
 {
     public sealed class SaveComponentsMarker : CCBehaviour
     {
-        public Component[] components = Array.Empty<Component>();
-
         protected override void Start()
         {
             base.Start();
 
-            foreach (var cmp in components)
-            {
-                if (cmp.IsTypeRegisteredInSaveSystem())
-                    cmp.BindToSaveSystem().AddTo(gameObject);
-            }
+            foreach (var sub in gameObject.BindComponentsToSaveSystem())
+                sub.AddTo(gameObject.GetCancellationTokenOnDestroy());
 
             Destroy(this);
         }

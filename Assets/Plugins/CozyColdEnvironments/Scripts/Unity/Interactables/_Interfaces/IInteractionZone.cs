@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
-using UniRx;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -17,11 +17,11 @@ namespace CCEnvs.Unity.Interactables
         bool Contains(GameObject? gameObject);
         bool ContainsComponent(object? component);
 
-        IObservable<GameObject> ObserveOnEnter();
+        Observable<GameObject> ObserveOnEnter();
 
-        IObservable<GameObject> ObesrveOnStay();
+        Observable<GameObject> ObesrveOnStay();
 
-        IObservable<GameObject> ObserveOnExit();
+        Observable<GameObject> ObserveOnExit();
     }
 
     public interface IInteractionZone<out TAgent> : IInteractionZone

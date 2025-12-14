@@ -2,11 +2,9 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using Cysharp.Threading.Tasks;
-using System;
+using R3;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using UniRx;
 using UnityEngine;
 
 #nullable enable
@@ -16,10 +14,10 @@ namespace CCEnvs.Unity.Interactables
         where TAgent : Component
     {
         protected readonly C5.HashedArrayList<GameObject> gameObjects = new();
-        protected Subject<GameObject>? goEnterSubj;
-        protected Subject<GameObject>? goStaySubj;
-        protected Subject<GameObject>? goExitSubj;
-        protected Subject<Unit>? goDestroySubj;
+        protected ReactiveCommand<GameObject>? goEnterSubj;
+        protected ReactiveCommand<GameObject>? goStaySubj;
+        protected ReactiveCommand<GameObject>? goExitSubj;
+        protected ReactiveCommand<Unit>? goDestroySubj;
 
         [field: SerializeField, GetBySelf]
         public TAgent InteractionAgent { get; private set; } = null!;
@@ -48,6 +46,16 @@ namespace CCEnvs.Unity.Interactables
             .Forget();
         }
 
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+
+            goEnterSubj?.Dispose();
+            goStaySubj?.Dispose();
+            goExitSubj?.Dispose();
+            goDestroySubj?.Dispose();
+        }
+
         public bool Contains(GameObject? gameObject)
         {
             if (gameObject == null)
@@ -65,23 +73,23 @@ namespace CCEnvs.Unity.Interactables
                 .Any(cmp => cmp.Equals(component));
         }
 
-        public IObservable<GameObject> ObserveOnEnter()
+        public Observable<GameObject> ObserveOnEnter()
         {
             if (goEnterSubj is null)
             {
-                goEnterSubj = new Subject<GameObject>();
-                goEnterSubj.AddTo(this);
+                goEnterSubj = new ReactiveCommand<GameObject>();
+                goEnterSubj.AddTo(destroyCancellationToken);
             }
             
             return goEnterSubj;
         }
 
-        public IObservable<GameObject> ObesrveOnStay()
+        public Observable<GameObject> ObesrveOnStay()
         {
             if (goStaySubj is null)
             {
-                goStaySubj = new Subject<GameObject>();
-                goStaySubj.AddTo(this);
+                goStaySubj = new ReactiveCommand<GameObject>();
+                goStaySubj.AddTo(destroyCancellationToken);
             }
 
             return goStaySubj;
@@ -91,12 +99,12 @@ namespace CCEnvs.Unity.Interactables
         /// Also triggered when object in zone will be destroyed.
         /// </summary>
         /// <returns></returns>
-        public IObservable<GameObject> ObserveOnExit()
+        public Observable<GameObject> ObserveOnExit()
         {
             if (goExitSubj is null)
             {
-                goExitSubj = new Subject<GameObject>();
-                goExitSubj.AddTo(this);
+                goExitSubj = new ReactiveCommand<GameObject>();
+                goExitSubj.AddTo(destroyCancellationToken);
             }
 
             return goExitSubj;
@@ -108,7 +116,7 @@ namespace CCEnvs.Unity.Interactables
                 return;
 
             if (gameObjects.Add(gameObject))
-                goEnterSubj?.OnNext(gameObject);
+                goEnterSubj?.Execute(gameObject);
         }
 
         protected void OnStay(GameObject gameObject)
@@ -116,7 +124,7 @@ namespace CCEnvs.Unity.Interactables
             if (gameObject == null)
                 return;
 
-            goStaySubj?.OnNext(gameObject);
+            goStaySubj?.Execute(gameObject);
         }
 
         protected void OnExit(GameObject gameObject)
@@ -125,7 +133,7 @@ namespace CCEnvs.Unity.Interactables
                 return;
 
             if (gameObjects.Remove(gameObject))
-                goExitSubj?.OnNext(gameObject);
+                goExitSubj?.Execute(gameObject);
         }
     }
     public class InteractionZone : InteractionZone<Collider>

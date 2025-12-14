@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using Object = UnityEngine.Object;
 

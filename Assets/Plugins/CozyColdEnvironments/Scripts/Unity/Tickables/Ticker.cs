@@ -27,7 +27,11 @@ namespace CCEnvs.Unity.Tickables
         public bool IsEnabled => enabled;
         public virtual int FramesProcessed => 1;
 
-        private void OnDestroy() => ((IDisposable)this).Dispose();
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            ((IDisposable)this).Dispose();
+        }
 
         public void Enable() => enabled = true;
 

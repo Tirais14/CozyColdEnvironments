@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
-using UniRx;
+using R3;
 using UnityEngine;
 
 #nullable enable

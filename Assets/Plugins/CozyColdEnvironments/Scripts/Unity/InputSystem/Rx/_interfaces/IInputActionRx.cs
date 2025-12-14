@@ -1,3 +1,4 @@
+using R3;
 using System;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
@@ -12,21 +13,21 @@ namespace CCEnvs.Unity.InputSystem.Rx
     {
         InputAction Action { get; }
         string ActionName { get; }
-        IObservable<CallbackContext> Raw { get; }
-        IObservable<CallbackContext> Started { get; }
-        IObservable<CallbackContext> Performed { get; }
-        IObservable<CallbackContext> Canceled { get; }
+        Observable<CallbackContext> Raw { get; }
+        Observable<CallbackContext> Started { get; }
+        Observable<CallbackContext> Performed { get; }
+        Observable<CallbackContext> Canceled { get; }
 
         bool IsButtonPressed();
     }
-    public interface IInputActionRx<out T> : IInputActionRx
+    public interface IInputActionRx<T> : IInputActionRx
         where T : struct
     {
         T InputValue { get; }
 
-        IObservable<T> TRaw { get; }
-        IObservable<T> TStarted { get; }
-        IObservable<T> TPerformed { get; }
-        IObservable<T> TCanceled { get; }
+        Observable<T> TRaw { get; }
+        Observable<T> TStarted { get; }
+        Observable<T> TPerformed { get; }
+        Observable<T> TCanceled { get; }
     }
 }

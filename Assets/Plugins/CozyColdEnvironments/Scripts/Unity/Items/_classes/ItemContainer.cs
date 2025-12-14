@@ -2,7 +2,7 @@ using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using System;
-using UniRx;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -236,34 +236,34 @@ namespace CCEnvs.Unity.Items
             return true;
         }
 
-        public IObservable<Maybe<IItem>> ObserveItem() => item;
+        public Observable<Maybe<IItem>> ObserveItem() => item;
 
-        public IObservable<bool> ObserveActiveState()
+        public Observable<bool> ObserveActiveState()
         {
             return isActive;
         }
 
-        public IObservable<bool> ObserveDeactivate()
+        public Observable<bool> ObserveDeactivate()
         {
             return isActive.Where(x => !x);
         }
 
-        public IObservable<bool> ObserveActivate()
+        public Observable<bool> ObserveActivate()
         {
             return isActive.Where(x => x);
         }
 
-        public IObservable<Pair<int>> ObserveItemCount()
+        public Observable<int> ObserveItemCount()
         {
-            return itemCount.Pairwise();
+            return itemCount;
         }
 
-        public IObservable<Pair<int>> ObserveDecreasedItemCount()
+        public Observable<(int Previous, int Current)> ObserveDecreasedItemCount()
         {
             return itemCount.Pairwise().Where(pair => pair.Current < pair.Previous);
         }
 
-        public IObservable<Pair<int>> ObserveIncreaseItemCount()
+        public Observable<(int Previous, int Current)> ObserveIncreaseItemCount()
         {
             return itemCount.Pairwise().Where(pair => pair.Current > pair.Previous);
         }

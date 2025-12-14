@@ -1,6 +1,6 @@
 using CCEnvs.Unity.Components;
 using System;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -83,16 +83,16 @@ namespace CCEnvs.Unity.UI
             m_SelectionOverlay = image;
         }
 
-        public IObservable<bool> ObserveIsSelected() => isSelected;
+        public Observable<bool> ObserveIsSelected() => isSelected;
 
-        public IObservable<ISelectable> ObserveDoSelect()
+        public Observable<ISelectable> ObserveDoSelect()
         {
-            return isSelected.Where(x => x).Select(_ => this);
+            return isSelected.Where(x => x).Select(_ => (ISelectable)this);
         }
 
-        public IObservable<ISelectable> ObserveDoDeselect()
+        public Observable<ISelectable> ObserveDoDeselect()
         {
-            return isSelected.Where(x => !x).Select(_ => this);
+            return isSelected.Where(x => !x).Select(_ => (ISelectable)this);
         }
 
         private void InitSelectionOverlay()

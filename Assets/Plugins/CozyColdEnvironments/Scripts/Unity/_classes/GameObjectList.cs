@@ -1,10 +1,11 @@
 using CCEnvs.Unity.Components;
-using System;
+using Cysharp.Threading.Tasks;
+using ObservableCollections;
+using R3;
+using R3.Collections;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UniRx;
-using UniRx.Triggers;
 using UnityEngine;
 using static CCEnvs.Unity.UI.IGameObjectBag;
 
@@ -14,10 +15,13 @@ namespace CCEnvs.Unity.UI
     [DisallowMultipleComponent]
     public class GameObjectList : CCBehaviour, IGameObjectBag
     {
-        protected readonly ReactiveCollection<GameObject> collection = new();
+        protected readonly ObservableList<GameObject> collection = new();
+
+        public event NotifyCollectionChangedEventHandler<GameObject>? CollectionChanged;
 
         public Settings settings { get; set; } = Settings.Default;
         public int Count => collection.Count;
+        public object SyncRoot => collection.SyncRoot;
 
         public GameObject this[int index] {
             get => collection[index];
@@ -34,11 +38,6 @@ namespace CCEnvs.Unity.UI
         {
             base.Start();
             Refresh();
-        }
-
-        protected virtual void OnDestroy()
-        {
-            collection.Dispose();
         }
 
         protected virtual void OnTransformChildrenChanged()
@@ -115,32 +114,37 @@ namespace CCEnvs.Unity.UI
             collection.RemoveAt(index);
         }
 
-        public IObservable<CollectionAddEvent<GameObject>> ObserveAdd()
+        public ISynchronizedView<GameObject, TView> CreateView<TView>(System.Func<GameObject, TView> transform)
+        {
+            return collection.CreateView(transform);
+        }
+
+        public Observable<CollectionAddEvent<GameObject>> ObserveAdd()
         {
             return collection.ObserveAdd();
         }
 
-        public IObservable<int> ObserveCountChanged(bool notifyCurrentCount = false)
+        public Observable<int> ObserveCountChanged(bool notifyCurrentCount = false)
         {
             return collection.ObserveCountChanged(notifyCurrentCount);
         }
 
-        public IObservable<CollectionMoveEvent<GameObject>> ObserveMove()
+        public Observable<CollectionMoveEvent<GameObject>> ObserveMove()
         {
             return collection.ObserveMove();
         }
 
-        public IObservable<CollectionRemoveEvent<GameObject>> ObserveRemove()
+        public Observable<CollectionRemoveEvent<GameObject>> ObserveRemove()
         {
             return collection.ObserveRemove();
         }
 
-        public IObservable<CollectionReplaceEvent<GameObject>> ObserveReplace()
+        public Observable<CollectionReplaceEvent<GameObject>> ObserveReplace()
         {
             return collection.ObserveReplace();
         }
 
-        public IObservable<Unit> ObserveReset()
+        public Observable<CollectionResetEvent<GameObject>> ObserveReset()
         {
             return collection.ObserveReset();
         }
@@ -164,7 +168,7 @@ namespace CCEnvs.Unity.UI
 
             go.OnDestroyAsObservable()
               .Subscribe(_ => collection.Remove(go))
-              .AddTo(go);
+              .AddTo(destroyCancellationToken);
         }
 
         protected virtual void OnRemove(GameObject go)
@@ -206,13 +210,13 @@ namespace CCEnvs.Unity.UI
         private void Setup()
         {
             collection.ObserveReplace()
-                .SubscribeWithState(this,
+                .Subscribe(this,
                 static (ev, @this) =>
                 {
                     @this.OnRemove(ev.OldValue);
                     @this.OnAdd(ev.NewValue);
                 })
-                .AddTo(this);
+                .BindTo(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

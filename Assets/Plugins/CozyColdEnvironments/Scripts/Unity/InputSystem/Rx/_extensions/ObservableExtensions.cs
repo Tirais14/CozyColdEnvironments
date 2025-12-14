@@ -1,5 +1,5 @@
 using System;
-using UniRx;
+using R3;
 using CCEnvs.Diagnostics;
 using static UnityEngine.InputSystem.InputAction;
 
@@ -11,8 +11,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static IObservable<CallbackContext> WhenStarted(
-            this IObservable<CallbackContext> value)
+        public static Observable<CallbackContext> WhenStarted(
+            this Observable<CallbackContext> value)
         {
             if (value.IsNull())
                 throw new ArgumentNullException("value");
@@ -21,8 +21,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static IObservable<CallbackContext> WhenPerformed(
-            this IObservable<CallbackContext> value)
+        public static Observable<CallbackContext> WhenPerformed(
+            this Observable<CallbackContext> value)
         {
             if (value.IsNull())
                 throw new ArgumentNullException("value");
@@ -31,8 +31,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
         }
 
         /// <exception cref="ArgumentNullException"></exception>
-        public static IObservable<CallbackContext> WhenCanceled(
-            this IObservable<CallbackContext> value)
+        public static Observable<CallbackContext> WhenCanceled(
+            this Observable<CallbackContext> value)
         {
             if (value.IsNull())
                 throw new ArgumentNullException("value");

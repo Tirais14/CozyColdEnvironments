@@ -3,30 +3,49 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using Cysharp.Threading.Tasks;
+using ObservableCollections;
+using R3;
 using SuperLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using UniRx;
 using ZLinq;
 
 #pragma warning disable S3236
 #nullable enable
 namespace CCEnvs.Unity.Items
 {
-    public class Inventory : ReactiveDictionary<int, IItemContainer>, IInventory
+    public class Inventory : IInventory
     {
-        public bool IsEmpty => Values.Any(static cnt => !cnt.IsEmpty);
-        public bool IsFull => Values.All(static cnt => cnt.IsFull);
+        private readonly ObservableDictionary<int, IItemContainer> collection = new();
+
+        protected IDictionary<int, IItemContainer> collectionBase => collection;
+
+        public Result<IItemContainer> this[int id] {
+            get
+            {
+                if (!collection.TryGetValue(id, out var cnt))
+                    return (null, new InvalidOperationException($"Not found id: {id}"));
+
+                return (cnt, null);
+            }
+        }
+
+        public bool IsEmpty => Containers.Any(static cnt => !cnt.IsEmpty);
+        public bool IsFull => this.To<IDictionary<int, ItemContainer>>().Values.All(static cnt => cnt.IsFull);
         public bool AutoSize { get; set; }
-        public int FreeSpace => Values.Count(static x => x.IsEmpty);
+        public int FreeSpace => this.To<IDictionary<int, ItemContainer>>().Values.Count(static x => x.IsEmpty);
+        public int ContainerCount => collection.Count;
+
+        public IEnumerable<int> IDs => collectionBase.Keys;
+        public IEnumerable<IItemContainer> Containers => collectionBase.Values;
 
         int IItemContainerInfoItemless.ItemCount => throw new NotImplementedException();
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
         int IItemContainerInfoItemless.Capacity {
-            get => Count;
+            get => ContainerCount;
             set => SetCount<ItemContainer>(value);
         }
 
@@ -34,12 +53,14 @@ namespace CCEnvs.Unity.Items
         {
         }
 
-        public Inventory(IEqualityComparer<int> comparer) : base(comparer)
+        public Inventory(IEqualityComparer<int> comparer)
         {
+            collection = new ObservableDictionary<int, IItemContainer>(comparer);
         }
 
-        public Inventory(Dictionary<int, IItemContainer> innerDictionary) : base(innerDictionary)
+        public Inventory(Dictionary<int, IItemContainer> innerDictionary)
         {
+            collection = new ObservableDictionary<int, IItemContainer>(innerDictionary);
         }
 
         public Inventory(IEnumerable<KeyValuePair<int, IItemContainer>> values)
@@ -66,26 +87,26 @@ namespace CCEnvs.Unity.Items
 
         public bool ContainsItem()
         {
-            return Values.ZLinq().Any(x => x.ContainsItem());
+            return this.To<IDictionary<int, ItemContainer>>().Values.ZLinq().Any(x => x.ContainsItem());
         }
 
         public bool ContainsItem(IItem? item)
         {
-            return Values.ZLinq().Any(x => x.ContainsItem(item));
+            return this.To<IDictionary<int, ItemContainer>>().Values.ZLinq().Any(x => x.ContainsItem(item));
         }
 
         public bool ContainsItem(IItem? item, int count)
         {
-            int containedCount = Values.ZLinq()
+            int containedCount = this.To<IDictionary<int, ItemContainer>>().Values.ZLinq()
                 .Where(x => x.ContainsItem(item))
                 .Sum(x => x.ItemCount);
 
             return containedCount >= count;
         }
 
-        public void ResetItemContainers()
+        public void ResetContainers()
         {
-            foreach (var cnt in Values)
+            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values)
                 cnt.Reset();
         }
 
@@ -100,7 +121,7 @@ namespace CCEnvs.Unity.Items
             if (AutoSize)
             {
                 while (!CanPut(item, count))
-                    Add(new ItemContainer(capacity: int.MaxValue));
+                    AddContainer(new ItemContainer(capacity: int.MaxValue));
             }
             else
             {
@@ -110,7 +131,7 @@ namespace CCEnvs.Unity.Items
 
             int rest = count;
             Maybe<IItemContainer> restItems;
-            foreach (var cnt in from cnt in this.ZLinq() //Searching for the container with same item or first empty container
+            foreach (var cnt in from cnt in collection.ZLinq() //Searching for the container with same item or first empty container
                                 where cnt.Value.IsEmpty || (cnt.Value.ContainsItem(item) && !cnt.Value.IsFull)
                                 select (cnt, priority: cnt.Value.ContainsItem(item) ? cnt.Key - 1 : cnt.Key) into pair
                                 orderby pair.priority
@@ -162,7 +183,7 @@ namespace CCEnvs.Unity.Items
                 return null!;
 
             Maybe<IItemContainer> taked;
-            foreach (var cnt in Values.ZLinq().Where(x => x.ContainsItem(item)))
+            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values.ZLinq().Where(x => x.ContainsItem(item)))
             {
                 taked = cnt.TakeItem(count);
                 count -= taked.GetValueUnsafe().ItemCount;
@@ -174,11 +195,21 @@ namespace CCEnvs.Unity.Items
             return default!;
         }
 
-        public void Add(IItemContainer itemContainer)
+        public void AddContainer(int id, IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
+            collection.Add(id, itemContainer);
+        }
 
-            Add(ResolveID(itemContainer), itemContainer);
+        public void AddContainer(IItemContainer itemContainer)
+        {
+            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
+            AddContainer(ResolveID(itemContainer), itemContainer);
+        }
+
+        public bool RemoveContainer(int id)
+        {
+            return collection.Remove(id);
         }
 
         public T[] AddCount<T>(int count) where T : IItemContainer, new()
@@ -189,7 +220,7 @@ namespace CCEnvs.Unity.Items
             foreach (var _ in Enumerable.Range(0, count))
             {
                 cnt = new T();
-                Add(cnt);
+                AddContainer(cnt);
                 results.Add(cnt);
             }
 
@@ -199,7 +230,7 @@ namespace CCEnvs.Unity.Items
         public IItemContainer[] SetCount<T>(int count) where T : IItemContainer, new()
         {
             count = Math.Abs(count);
-            int delta = count - Count;
+            int delta = count - ContainerCount;
 
             if (delta < 0)
                 return RemoveCount(delta);
@@ -216,12 +247,12 @@ namespace CCEnvs.Unity.Items
             int id;
             foreach (var _ in Enumerable.Range(0, count))
             {
-                if (Count == 0)
+                if (ContainerCount == 0)
                     break;
 
-                id = Keys.Last();
-                cnt = this[id];
-                Remove(id);
+                id = this.To<IDictionary<int, ItemContainer>>().Keys.Last();
+                cnt = this[id].Strict();
+                RemoveContainer(id);
             }
 
             return removed.ToArray();
@@ -234,7 +265,7 @@ namespace CCEnvs.Unity.Items
             if (item.IsNull())
                 return false;
 
-            foreach (var cnt in Values)
+            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values)
             {
                 if (cnt.IsEmpty || (cnt.CanPut(item) && !cnt.IsFull))
                     return true;
@@ -252,7 +283,7 @@ namespace CCEnvs.Unity.Items
                 return CanPut(item);
 
             int freeSpace = 0;
-            foreach (var cnt in Values)
+            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values)
             {
                 if (cnt.IsEmpty || cnt.ContainsItem(item))
                     freeSpace += cnt.FreeSpace;
@@ -264,27 +295,52 @@ namespace CCEnvs.Unity.Items
             return false;
         }
 
+        public void Reset() => collection.Clear();
+
+        public IEnumerator<KeyValuePair<int, IItemContainer>> GetEnumerator()
+        {
+            return collection.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAddContainer()
+        {
+            return collection.ObserveDictionaryAdd();
+        }
+
+        public Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemoveContainer()
+        {
+            return collection.ObserveDictionaryRemove();
+        }
+
+        public Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplaceContainer()
+        {
+            return collection.ObserveDictionaryReplace();
+        }
+
+        public Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveReset()
+        {
+            return collection.ObserveReset();
+        }
+
         protected virtual int ResolveID(IItemContainer itemContainer)
         {
-            IEnumerable<int> ids = Values.ZLinq()
+            IEnumerable<int> ids = this.To<IDictionary<int, ItemContainer>>().Values.ZLinq()
                 .Select(x => x.GetContainerID())
                 .Where(x => x.IsSome)
                 .Select(x => x.Raw)
                 .AsEnumerable();
 
-            if (Do.TryFindHoleInRange(start: 0, Count, ids, out int hole))
+            if (Do.TryFindHoleInRange(start: 0, ContainerCount, ids, out int hole))
                 return hole;
 
-            return Count;
+            return ContainerCount;
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         Maybe<IItemContainer> IItemAccessor.TakeItem(int count) => null!;
 
         Maybe<IItemContainer> IItemAccessor.TakeItem() => null!;
-
-        void IItemAccessor.Reset() => Clear();
 
         Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 
@@ -293,17 +349,17 @@ namespace CCEnvs.Unity.Items
             throw new NotImplementedException();
         }
 
-        IObservable<Pair<int>> IItemContainerInfoItemless.ObserveDecreasedItemCount()
+        Observable<(int Previous, int Current)> IItemContainerInfoItemless.ObserveDecreasedItemCount()
         {
             throw new NotImplementedException();
         }
 
-        IObservable<Pair<int>> IItemContainerInfoItemless.ObserveIncreaseItemCount()
+        Observable<(int Previous, int Current)> IItemContainerInfoItemless.ObserveIncreaseItemCount()
         {
             throw new NotImplementedException();
         }
 
-        IObservable<Pair<int>> IItemContainerInfoItemless.ObserveItemCount()
+        Observable<int> IItemContainerInfoItemless.ObserveItemCount()
         {
             throw new NotImplementedException();
         }

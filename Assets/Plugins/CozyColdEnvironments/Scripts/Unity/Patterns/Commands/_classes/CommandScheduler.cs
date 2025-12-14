@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using UniRx;
+using R3;
 
 namespace CCEnvs.Unity.Commands
 {
@@ -82,13 +82,13 @@ namespace CCEnvs.Unity.Commands
                 commandsExecuted?.Execute(Mock.Default);
         }
 
-        public IObservable<ICommand> ObserveAddCommand()
+        public Observable<ICommand> ObserveAddCommand()
         {
             addCommand ??= new ReactiveCommand<ICommand>();
             return addCommand;
         }
 
-        public IObservable<Mock> ObserveCommandsExecuted()
+        public Observable<Mock> ObserveCommandsExecuted()
         {
             commandsExecuted ??= new ReactiveCommand<Mock>();
             return commandsExecuted;
@@ -128,7 +128,7 @@ namespace CCEnvs.Unity.Commands
                 task.AttachExternalCancellation(cancellationToken);
 
             IsRunning = true;
-            return Disposable.CreateWithState(this, @this => @this.Stop());
+            return Disposable.Create(this, @this => @this.Stop());
         } 
 
         public void Stop()

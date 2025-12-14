@@ -2,7 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using System;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -30,8 +30,10 @@ namespace CCEnvs.Unity.UI
             Init().Forget(ex => this.PrintException(ex));
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             foreach (var toggle in this.QueryTo().Components<IDragAndDropTarget>())
                 toggle.DeactivateDragAndDropAbility();
         }
@@ -49,21 +51,21 @@ namespace CCEnvs.Unity.UI
             return HasOn(component.gameObject);
         }
 
-        public IObservable<PointerEventData> ObserveOnBeginDrag()
+        public Observable<PointerEventData> ObserveOnBeginDrag()
         {
             onBeginDragSubj ??= new Subject<PointerEventData>();
 
             return onBeginDragSubj;
         }
 
-        public IObservable<PointerEventData> ObserveOnDrag()
+        public Observable<PointerEventData> ObserveOnDrag()
         {
             onDragSubj ??= new Subject<PointerEventData>();
 
             return onDragSubj;
         }
 
-        public IObservable<PointerEventData> ObserveOnEndDrag()
+        public Observable<PointerEventData> ObserveOnEndDrag()
         {
             onEndDragSubj ??= new Subject<PointerEventData>();
 

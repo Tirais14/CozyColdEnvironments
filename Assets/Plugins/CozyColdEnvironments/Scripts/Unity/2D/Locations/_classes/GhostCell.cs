@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
@@ -108,14 +108,14 @@ namespace CCEnvs.Unity._2D.Locations
             Position = Maybe<Vector3Int>.None;
         }
 
-        public IObservable<MaterializedCellInfo> ObserveMaterialize()
+        public Observable<MaterializedCellInfo> ObserveMaterialize()
         {
             materilaizeCommand ??= new ReactiveCommand<MaterializedCellInfo>();
             return materilaizeCommand;
         }
 
         ///<summary>Called before first <see cref="SetPosition(Vector3Int)"/></summary>
-        public IObservable<GameObject> ObserveGhostGameObjectInstantiated()
+        public Observable<GameObject> ObserveGhostGameObjectInstantiated()
         {
             ghostGameObjectInstantiated ??= new ReactiveCommand<GameObject>();
             return ghostGameObjectInstantiated;

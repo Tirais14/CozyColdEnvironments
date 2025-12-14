@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
+using R3;
 using System;
 using UnityEngine;
 
@@ -20,8 +21,8 @@ namespace CCEnvs.Unity.Timers
             get => timer.Options;
             set => timer.Options = value;
         }
-        public IObservable<TimeSpan> OnTargetReached => timer.OnTargetReached;
-        public IObservable<TimeSpan> OnTick => timer.OnTick;
+        public Observable<TimeSpan> OnTargetReached => timer.OnTargetReached;
+        public Observable<TimeSpan> OnTick => timer.OnTick;
 
         public bool TargetReached => timer.TargetReached;
         public bool IsEnabled => timer.IsEnabled;

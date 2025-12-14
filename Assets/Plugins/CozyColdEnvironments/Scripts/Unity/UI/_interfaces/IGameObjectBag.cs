@@ -1,15 +1,16 @@
 using CCEnvs.FuncLanguage;
-using UniRx;
+using R3;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using ObservableCollections;
 
 #nullable enable
 #pragma warning disable S3444
 namespace CCEnvs.Unity.UI
 {
     public interface IGameObjectBag
-        : IReactiveCollection<GameObject>
+        : IObservableCollection<GameObject>
     {
         [Flags]
         public enum Settings
@@ -42,7 +43,5 @@ namespace CCEnvs.Unity.UI
         }
 
         Settings settings { get; set; }
-
-        bool ICollection<GameObject>.IsReadOnly => false;
     }
 }

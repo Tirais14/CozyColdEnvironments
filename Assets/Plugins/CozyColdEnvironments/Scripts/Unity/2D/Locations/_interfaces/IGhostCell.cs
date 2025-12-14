@@ -1,5 +1,5 @@
 using System;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -14,8 +14,8 @@ namespace CCEnvs.Unity._2D.Locations
 
         void ResetPosition();
 
-        IObservable<MaterializedCellInfo> ObserveMaterialize();
+        Observable<MaterializedCellInfo> ObserveMaterialize();
 
-        IObservable<GameObject> ObserveGhostGameObjectInstantiated();
+        Observable<GameObject> ObserveGhostGameObjectInstantiated();
     }
 }

@@ -1,17 +1,40 @@
-using CCEnvs.Unity.Collections;
-
 #nullable enable
+using ObservableCollections;
+using R3;
+using System.Collections.Generic;
+
 namespace CCEnvs.Unity.Items
 {
     public interface IInventory
         : IItemAccessor,
-        IItemContainerInfoItemless,
-        IReactiveDictionaryExtended<int, IItemContainer>
+        IItemContainerInfoItemless, 
+        IEnumerable<KeyValuePair<int, IItemContainer>>
     {
         bool AutoSize { get; set; }
+        IEnumerable<int> IDs { get; }
+        IEnumerable<IItemContainer> Containers { get; }
+        int ContainerCount { get; }
+        Result<IItemContainer> this[int id] { get; }
 
-        void ResetItemContainers();
+        void ResetContainers();
 
-        void Add(IItemContainer itemContainer);
+        void AddContainer(int id, IItemContainer itemContainer);
+        void AddContainer(IItemContainer itemContainer);
+
+        bool RemoveContainer(int id);
+
+        T[] AddCount<T>(int count) where T : IItemContainer, new();
+
+        IItemContainer[] SetCount<T>(int count) where T : IItemContainer, new();
+
+        IItemContainer[] RemoveCount(int count);
+
+        Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAddContainer();
+
+        Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemoveContainer();
+
+        Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplaceContainer();
+
+        Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveReset();
     }
 }

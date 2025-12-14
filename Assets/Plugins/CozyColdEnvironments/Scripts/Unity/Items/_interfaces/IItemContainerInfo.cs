@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using R3;
 using System;
 
 #nullable enable
@@ -8,6 +9,6 @@ namespace CCEnvs.Unity.Items
     {
         Maybe<IItem> Item { get; }
 
-        IObservable<Maybe<IItem>> ObserveItem();
+        Observable<Maybe<IItem>> ObserveItem();
     }
 }

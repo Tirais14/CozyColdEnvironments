@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
-using UniRx;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -35,21 +35,21 @@ namespace CCEnvs.Unity._3D
             protected set => isMovingReactive.Value = value;
         }
 
-        public IReadOnlyReactiveProperty<bool> IsMovingReactive => isMovingReactive;
+        public ReadOnlyReactiveProperty<bool> IsMovingReactive => isMovingReactive;
 
         public bool IsOnSurface {
             get => isOnSurfaceReactive.Value;
             protected set => isOnSurfaceReactive.Value = value;
         }
 
-        public IReadOnlyReactiveProperty<bool> IsOnSurfaceReactive => isOnSurfaceReactive;
+        public ReadOnlyReactiveProperty<bool> IsOnSurfaceReactive => isOnSurfaceReactive;
 
         public bool IsJumping {
             get => isJumpingReactive.Value;
             protected set => isJumpingReactive.Value = value;
         }
 
-        public IReadOnlyReactiveProperty<bool> IsJumpingReactive => isJumpingReactive;
+        public ReadOnlyReactiveProperty<bool> IsJumpingReactive => isJumpingReactive;
 
         public float MoveSpeed {
             get => moveSpeed;
@@ -146,7 +146,8 @@ namespace CCEnvs.Unity._3D
 
                 IsJumping = false;
 
-            }).AddTo(this);
+            })
+                .BindTo(this);
         }
 
         private Vector3 GetMoveDirection(Direction2D direction2D)

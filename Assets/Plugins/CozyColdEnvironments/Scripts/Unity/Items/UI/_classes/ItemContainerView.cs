@@ -5,9 +5,10 @@ using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using TMPro;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
+using CCEnvs.Unity.Components;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -58,9 +59,9 @@ namespace CCEnvs.Unity.Storages.UI
         {
             image.IfSome(img =>
             {
-                viewModelUnsafe.IconView.SubscribeWithState(img,
+                viewModelUnsafe.IconView.Subscribe(img,
                      static (sprite, img) => img.sprite = sprite)
-                    .AddTo(this);
+                    .BindTo(this);
             });
         }
 
@@ -68,9 +69,9 @@ namespace CCEnvs.Unity.Storages.UI
         {
             counterMesh.IfSome(mesh =>
             {
-                viewModelUnsafe.CounterView.SubscribeWithState(mesh,
+                viewModelUnsafe.CounterView.Subscribe(mesh,
                     static (text, mesh) => mesh.text = text)
-                    .AddTo(this);
+                    .BindTo(this);
             });
         }
     }

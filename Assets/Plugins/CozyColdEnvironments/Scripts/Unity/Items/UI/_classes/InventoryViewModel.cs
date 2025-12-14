@@ -2,7 +2,8 @@ using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using System;
 using System.Collections.Generic;
-using UniRx;
+using R3;
+using ObservableCollections;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -15,9 +16,9 @@ namespace CCEnvs.Unity.Storages.UI
         private readonly ReactiveCommand<int> remove = new();
         private readonly ReactiveCommand<KeyValuePair<int, IItemContainer>> replace = new();
 
-        public IReactiveCommand<KeyValuePair<int, IItemContainer>> Add => add;
-        public IReactiveCommand<int> Remove => remove;
-        public IReactiveCommand<KeyValuePair<int, IItemContainer>> Replace => replace;
+        public ReactiveCommand<KeyValuePair<int, IItemContainer>> Add => add;
+        public ReactiveCommand<int> Remove => remove;
+        public ReactiveCommand<KeyValuePair<int, IItemContainer>> Replace => replace;
 
         public InventoryViewModel(TModel model) 
             :
@@ -26,37 +27,37 @@ namespace CCEnvs.Unity.Storages.UI
             InstallBindings();
         }
 
-        public IObservable<DictionaryAddEvent<int, IItemContainer>> ObserveAdd()
+        public Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAddContainer()
         {
-            return model.ObserveAdd();
+            return model.ObserveAddContainer();
         }
 
-        public IObservable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemove()
+        public Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemoveContainer()
         {
-            return model.ObserveRemove();
+            return model.ObserveRemoveContainer();
         }
 
-        public IObservable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplace()
+        public Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplaceContainer()
         {
-            return model.ObserveReplace();
+            return model.ObserveReplaceContainer();
         }
 
-        public IObservable<Unit> ObserveReset()
+        public Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveResetContainer()
         {
             return model.ObserveReset();
         }
 
         private void InstallBindings()
         {
-            add.SubscribeWithState(this,
-                    static (cnt, @this) => @this.model.Add(cnt.Key, cnt.Value))
+            add.Subscribe(this,
+                    static (cnt, @this) => @this.model.AddContainer(cnt.Key, cnt.Value))
                 .AddTo(disposables);
 
-            remove.SubscribeWithState(this,
-                    static (id, @this) => @this.model.Remove(id))
+            remove.Subscribe(this,
+                    static (id, @this) => @this.model.RemoveContainer(id))
                 .AddTo(disposables);
 
-            replace.SubscribeWithState(this,
+            replace.Subscribe(this,
                     static (cnt, @this) => @this.model.To<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value)
                 .AddTo(disposables);
         }

@@ -5,9 +5,10 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using ZLinq;
+using CCEnvs.Unity.Components;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -44,7 +45,7 @@ namespace CCEnvs.Unity.UI
             if (canvasGroup == null)
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-            isShown.AddTo(this);
+            isShown.BindTo(this);
         }
 
         private void IShowableStart()
@@ -109,12 +110,12 @@ namespace CCEnvs.Unity.UI
             DoRedraw();
         }
 
-        public IObservable<Unit> ObserveShow()
+        public Observable<Unit> ObserveShow()
         {
             return isShown.Where(static x => x).AsUnitObservable();
         }
 
-        public IObservable<Unit> ObserveHide()
+        public Observable<Unit> ObserveHide()
         {
             return isShown.Where(static x => !x).AsUnitObservable();
         }

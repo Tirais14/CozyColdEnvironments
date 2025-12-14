@@ -1,10 +1,10 @@
 #nullable enable
-using UniRx;
+using R3;
 
 namespace CCEnvs.Unity.UI
 {
     public interface ITextViewModel : IViewModel
     {
-        IReadOnlyReactiveProperty<string> TextView { get; }
+        ReadOnlyReactiveProperty<string> TextView { get; }
     }
 }

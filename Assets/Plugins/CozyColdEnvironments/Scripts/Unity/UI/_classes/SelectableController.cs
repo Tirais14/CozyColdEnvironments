@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using SuperLinq;
 using System;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using ZLinq;
 
@@ -40,8 +40,9 @@ namespace CCEnvs.Unity.UI
             InitSelectables();
         }
 
-        protected virtual void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             selectables.CollectionCleared -= OnSelectablesClear;
             disposables.Dispose();
         }
@@ -49,7 +50,7 @@ namespace CCEnvs.Unity.UI
         protected static void OnSeleactableAdd<TValue>(SelectableController<T> inst, T cmp)
         {
             cmp.ObserveDoSelect()
-               .SubscribeWithState(inst,
+               .Subscribe(inst,
                static (slct, inst) =>
                {
                    inst.selection.Value.IfSome(x => x.DoDeselect());
@@ -58,7 +59,7 @@ namespace CCEnvs.Unity.UI
                .AddTo(inst.disposables);
 
             cmp.ObserveDoDeselect()
-               .SubscribeWithState(inst,
+               .Subscribe(inst,
                static (_, inst) =>
                {
                    inst.selection.Value.IfSome(x => x.DoDeselect());
@@ -72,21 +73,21 @@ namespace CCEnvs.Unity.UI
             selection.Value.IfSome(x => x.DoDeselect());
         }
 
-        public IObservable<T> ObserveDeselected()
+        public Observable<T> ObserveDeselected()
         {
             return selection.Pairwise()
                             .Where(pair => pair.Current.IsNone)
                             .Select(pair => pair.Previous.GetValueUnsafe());
         }
 
-        public IObservable<T> ObserveSelected()
+        public Observable<T> ObserveSelected()
         {
             return selection.Where(x => x.IsSome).Select(x => x.GetValueUnsafe());
         }
 
-        public IObservable<PreviousCurrentPair<Maybe<T>>> ObserveSelection()
+        public Observable<Maybe<T>> ObserveSelection()
         {
-            return selection.Pairwise().Select(pair => PreviousCurrentPair.Create(pair.Previous, pair.Current));
+            return selection;
         }
 
         protected virtual void CollectSelectables()

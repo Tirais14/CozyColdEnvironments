@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -60,7 +60,7 @@ namespace CCEnvs.Unity.UI
             if (canvasGroup == null)
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-            isShown.AddTo(this);
+            isShown.BindTo(this);
 
             scaleBeforeInit = transform.localScale;
             posBeforeInit = transform.localPosition;
@@ -136,12 +136,12 @@ namespace CCEnvs.Unity.UI
             DoRedraw();
         }
 
-        public IObservable<Unit> ObserveShow()
+        public Observable<Unit> ObserveShow()
         {
             return isShown.Where(static x => x).AsUnitObservable();
         }
 
-        public IObservable<Unit> ObserveHide()
+        public Observable<Unit> ObserveHide()
         {
             return isShown.Where(static x => !x).AsUnitObservable();
         }

@@ -1,13 +1,14 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
+using ObservableCollections;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniRx;
-using Unity.IO.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
 using ZLinq;
@@ -114,15 +115,15 @@ namespace CCEnvs.Unity.Storages.UI
         {
             if (this.viewModel.TryGetValue(out var viewModel))
             {
-                viewModel.ObserveAdd()
-                     .SubscribeWithState(this,
+                viewModel.ObserveAddContainer()
+                     .Subscribe(this,
                      static (cnt, @this) =>
                      {
                          @this.OnAddContainer(cnt)
                              .AttachExternalCancellation(@this.destroyCancellationToken)
                              .Forget();
                      })
-                     .AddTo(this);
+                     .BindTo(this);
             }
         }
 
@@ -130,14 +131,14 @@ namespace CCEnvs.Unity.Storages.UI
         {
             viewModel.IfSome(viewModel =>
             {
-                viewModel.ObserveRemove()
-                     .SubscribeWithState(this,
+                viewModel.ObserveRemoveContainer()
+                     .Subscribe(this,
                      static (cnt, @this) =>
                      {
                          if (@this.instantiatedGameObjects.Remove(cnt.Key, out GameObject go))
                              @this.slots.Remove(go);
                      })
-                     .AddTo(this);
+                     .BindTo(this);
             });
         }
 
@@ -145,14 +146,14 @@ namespace CCEnvs.Unity.Storages.UI
         {
             viewModel.IfSome(viewModel =>
             {
-                viewModel.ObserveReset()
-                .SubscribeWithState(this,
+                viewModel.ObserveResetContainer()
+                .Subscribe(this,
                     static (_, @this) =>
                     {
                         @this.instantiatedGameObjects.Clear();
                         @this.slots.Clear();
                     })
-                    .AddTo(this);
+                    .BindTo(this);
             });
         }
 

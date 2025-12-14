@@ -1,7 +1,7 @@
 using CCEnvs.Attributes;
 using CCEnvs.Unity.Components;
 using System;
-using UniRx;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -57,7 +57,7 @@ namespace CCEnvs.Unity.Items
             return Durability - previous;
         }
 
-        public IObservable<ChangedDurabilityEvent> ObserveDecreaseDurability()
+        public Observable<ChangedDurabilityEvent> ObserveDecreaseDurability()
         {
             return durability.Where(_ => StartPassed)
                 .Pairwise()
@@ -65,7 +65,7 @@ namespace CCEnvs.Unity.Items
                 .Select(pair => new ChangedDurabilityEvent(pair.Previous, pair.Current));
         }
 
-        public IObservable<ChangedDurabilityEvent> ObserveIncreaseDurability()
+        public Observable<ChangedDurabilityEvent> ObserveIncreaseDurability()
         {
             return durability.Where(_ => StartPassed)
                 .Pairwise()
@@ -74,13 +74,13 @@ namespace CCEnvs.Unity.Items
                 );
         }
 
-        public IObservable<float> ObserveOnMaxDurability()
+        public Observable<float> ObserveOnMaxDurability()
         {
             return durability.Where(_ => StartPassed)
                 .Where(x => x.NearlyEquals(MaxDurability));
         }
 
-        public IObservable<float> ObserveOnMinDurability()
+        public Observable<float> ObserveOnMinDurability()
         {
             return durability.Where(_ => StartPassed)
                 .Where(x => x.NearlyEquals(MinDurability));

@@ -1,17 +1,20 @@
 #nullable enable
 using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using Cysharp.Threading.Tasks;
+using R3;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UniRx;
+using UnityEditor.Graphs;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 #pragma warning disable S4144
@@ -89,8 +92,12 @@ namespace CCEnvs.Unity.UI
 
         }
 
-        protected virtual void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
+            if (button.TryGetValue(out var btn))
+                btn.onClick.RemoveAllListeners();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -123,23 +130,30 @@ namespace CCEnvs.Unity.UI
 
             if (selectable.TryGetValue(out var slct))
             {
-                button.OnClickAsObservable()
-                      .SubscribeWithState2(slct, this,
-                          static (_, cmp, @this) =>
-                          {
-                              if (!cmp.IsSelected
-                                  &&
-                                  !@this.SelectableDoSelectPredicate()
-                                  )
-                                  return;
+                void onClick()
+                {
+                    if (!slct.IsSelected
+                        &&
+                        !SelectableDoSelectPredicate()
+                        )
+                    {
+                        return;
+                    }
 
-                              if (@this.switchSelectable)
-                                  cmp.SwitchSelectionState();
-                              else
-                                  cmp.DoSelect();
+                    if (switchSelectable)
+                        slct.SwitchSelectionState();
+                    else
+                        slct.DoSelect();
+                }
 
-                          })
-                      .AddTo(this);
+                Disposable.Create((button, onClick: (UnityAction)onClick),
+                    static input =>
+                    {
+                        input.button.onClick.RemoveListener(input.onClick);
+                    })
+                    .BindTo(this);
+
+                button.onClick.AddListener(onClick);
             }
         }
     }

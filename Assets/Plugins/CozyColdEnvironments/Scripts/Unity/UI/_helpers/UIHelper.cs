@@ -4,7 +4,7 @@ using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.UI;
@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.UI
             transparentGraphicStateSnapshots.Add(graphic, graphic.color.a);
             graphic.color = graphic.color.WithAlpha(0f);
 
-            return Disposable.CreateWithState(
+            return Disposable.Create(
                 graphic,
                 graphic => UndoTransparent(graphic)
                 );
@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.UI
             foreach (var child in graphic.Q().FromChildrens().Components<Graphic>())
                 cmps.Add(DoTransparent(child));
 
-            return Disposable.CreateWithState(
+            return Disposable.Create(
                 cmps.ToArray(),
                 static cmps => cmps.ForEach(x => x.Dispose())
                 );

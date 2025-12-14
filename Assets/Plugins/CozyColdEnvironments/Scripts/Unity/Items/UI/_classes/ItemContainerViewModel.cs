@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
-using UniRx;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -13,11 +13,11 @@ namespace CCEnvs.Unity.Storages.UI
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite> iconView = new(initialValue: UCC.Transparent.Value);
+        private readonly ReactiveProperty<Sprite> iconView = new(UCC.Transparent.Value);
         private readonly ReactiveProperty<string> counterView = new();
 
-        public IReadOnlyReactiveProperty<Sprite> IconView => iconView;
-        public IReadOnlyReactiveProperty<string> CounterView => counterView;
+        public ReadOnlyReactiveProperty<Sprite> IconView { get; private set; }
+        public ReadOnlyReactiveProperty<string> CounterView { get; private set; }
         public Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
 
         public ItemContainerViewModel(T model)
@@ -25,6 +25,10 @@ namespace CCEnvs.Unity.Storages.UI
             base(model)
         {
             counterView.AddTo(disposables);
+
+            IconView = iconView.ToReadOnlyReactiveProperty();
+            CounterView = counterView.ToReadOnlyReactiveProperty();
+
             BindItemView();
             BindCounterText();
         }
@@ -32,7 +36,7 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindItemView()
         {
             model.ObserveItem()
-                .SubscribeWithState(iconView,
+                .Subscribe(iconView,
                     static (x, prop) => prop.Value = x.Map(item => item.Icon)
                         .GetValue(UCC.Transparent.Value))
                 .AddTo(disposables);
@@ -43,8 +47,7 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindCounterText()
         {
             model.ObserveItemCount()
-                .Select(static pair => pair.Current)
-                .SubscribeWithState(this, 
+                .Subscribe(this, 
                 static (itemCount, @this) =>
                 {
                     if (@this.ShowCounterTextPredicate.TryGetValue(out var predicate))

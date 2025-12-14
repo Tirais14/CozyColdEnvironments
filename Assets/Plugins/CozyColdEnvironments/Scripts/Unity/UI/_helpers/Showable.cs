@@ -4,7 +4,7 @@ using SuperLinq;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
 using ZLinq;

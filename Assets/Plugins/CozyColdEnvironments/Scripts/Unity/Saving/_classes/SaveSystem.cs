@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using UniRx;
+using R3;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
@@ -30,8 +30,10 @@ namespace CCEnvs.Unity.Saving
             DontDestroyOnLoad(gameObject);
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             foreach (var collection in collections.Values)
                 collection.Clear();
 
@@ -55,12 +57,12 @@ namespace CCEnvs.Unity.Saving
 
             collection.Add(obj);
 
-            return Disposable.CreateWithState((@this: this, obj, sceneInfo),
+            return Disposable.Create((@this: this, obj, sceneInfo),
                 static input =>
                 {
                     input.@this.UnbindObject(input.obj, input.sceneInfo);
                 })
-                .AddTo(this);
+                .BindTo(this);
         }
 
         public IDisposable BindObject(object obj, Scene scene)

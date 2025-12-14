@@ -26,8 +26,10 @@ namespace CCEnvs.Unity.UI
             button.onClick.AddListener(target.Hide);
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             if (!Application.isPlaying)
                 return;
 

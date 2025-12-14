@@ -1,13 +1,13 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.UI;
-using UniRx;
+using R3;
 
 namespace CCEnvs.Unity.Items
 {
     public interface IItemContainerViewModel : IViewModel, IIconViewModel
     {
-        IReadOnlyReactiveProperty<string> CounterView { get; }
+        ReadOnlyReactiveProperty<string> CounterView { get; }
         Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
     }
 }

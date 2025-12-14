@@ -1,8 +1,11 @@
 using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
-using UniRx;
+using R3;
 using UnityEngine;
+using CCEnvs.Unity.Components;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -46,27 +49,29 @@ namespace CCEnvs.Unity.UI
                 return;
             }
 
+            CancellationToken targetDestroyToken = target.GetCancellationTokenOnDestroy();
+
             if (target.TryGetComponent<DragHandler>(out var dragHandler))
             {
                 if (onBeginDrag is not null)
                 {
                     disposables.Add(dragHandler.ObserveOnBeginDrag()
                                                .Subscribe(x => onBeginDrag(x))
-                                               .AddTo(target));
+                                               .AddTo(targetDestroyToken));
                 }
 
                 if (onDrag is not null)
                 {
                     disposables.Add(dragHandler.ObserveOnDrag()
                                                .Subscribe(x => onDrag(x))
-                                               .AddTo(target));
+                                               .AddTo(targetDestroyToken));
                 }
 
                 if (onEndDrag is not null)
                 {
                     disposables.Add(dragHandler.ObserveOnEndDrag()
                                                .Subscribe(x => onEndDrag(x))
-                                               .AddTo(target));
+                                               .AddTo(targetDestroyToken));
                 }
             }
             else
@@ -78,7 +83,7 @@ namespace CCEnvs.Unity.UI
                 {
                     disposables.Add(dropHandler.ObserveOnDrop()
                                                .Subscribe(x => onDrop(x))
-                                               .AddTo(target));
+                                               .AddTo(targetDestroyToken));
                 }
             }
             else

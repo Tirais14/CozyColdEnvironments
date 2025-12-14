@@ -1,5 +1,6 @@
 using CCEnvs.Unity.Injections;
-using UniRx;
+using Cysharp.Threading.Tasks;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -17,12 +18,12 @@ namespace CCEnvs.Unity.Items
         {
             base.Start();
             damageable.ObserveOnMinDurability()
-                .SubscribeWithState(this, 
+                .Subscribe(this, 
                 static (_, @this) =>
                 {
                     @this.OnDurablityOut();
                 })
-                .AddTo(damageable);
+                .AddTo(damageable.GetCancellationTokenOnDestroy());
         }
 
         protected override bool HarvestPredicate(IItem? item) => false;

@@ -3,8 +3,9 @@ using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
-using UniRx;
+using R3;
 using UnityEngine;
+using CCEnvs.Unity.Components;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -119,21 +120,22 @@ namespace CCEnvs.Unity.UI
 
         private void ObserveViewModel()
         {
-            this.ObserveEveryValueChanged(static (@this) => @this._viewModel)
+            Observable.EveryValueChanged(this,
+                static (@this) => @this._viewModel)
                 .Pairwise()
-                .SubscribeWithState(this, (pair, @this) =>
+                .Subscribe(this, static (pair, @this) =>
                 {
                     TryDisposeViewModel(pair.Previous);
 
                     if (pair.Current.Value.IsSome)
                     {
                         if (pair.Current.Value.Raw is IDisposable disp)
-                            disp.AddTo(this);
+                            disp.BindTo(@this);
 
-                        Init();
+                        @this.Init();
                     }
                 })
-                .AddTo(this);
+                .BindTo(this);
         }
     }
 }

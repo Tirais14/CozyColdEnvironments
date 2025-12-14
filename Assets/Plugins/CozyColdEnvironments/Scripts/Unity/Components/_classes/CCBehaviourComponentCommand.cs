@@ -72,9 +72,9 @@ namespace CCEnvs.Unity.Components
             lateUpdateFrameCount++;
         }
 
-        protected virtual void OnDestroy()
+        protected override void OnDestroy()
         {
-
+            base.OnDestroy();
         }
 
         /// <summary>
