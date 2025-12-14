@@ -34,9 +34,9 @@ namespace CCEnvs.Unity.Items
         }
 
         public bool IsEmpty => Containers.Any(static cnt => !cnt.IsEmpty);
-        public bool IsFull => this.To<IDictionary<int, ItemContainer>>().Values.All(static cnt => cnt.IsFull);
+        public bool IsFull => collectionBase.Values.All(static cnt => cnt.IsFull);
         public bool AutoSize { get; set; }
-        public int FreeSpace => this.To<IDictionary<int, ItemContainer>>().Values.Count(static x => x.IsEmpty);
+        public int FreeSpace => collectionBase.Values.Count(static x => x.IsEmpty);
         public int ContainerCount => collection.Count;
 
         public IEnumerable<int> IDs => collectionBase.Keys;
@@ -87,17 +87,17 @@ namespace CCEnvs.Unity.Items
 
         public bool ContainsItem()
         {
-            return this.To<IDictionary<int, ItemContainer>>().Values.ZLinq().Any(x => x.ContainsItem());
+            return collectionBase.Values.ZLinq().Any(x => x.ContainsItem());
         }
 
         public bool ContainsItem(IItem? item)
         {
-            return this.To<IDictionary<int, ItemContainer>>().Values.ZLinq().Any(x => x.ContainsItem(item));
+            return collectionBase.Values.ZLinq().Any(x => x.ContainsItem(item));
         }
 
         public bool ContainsItem(IItem? item, int count)
         {
-            int containedCount = this.To<IDictionary<int, ItemContainer>>().Values.ZLinq()
+            int containedCount = collectionBase.Values.ZLinq()
                 .Where(x => x.ContainsItem(item))
                 .Sum(x => x.ItemCount);
 
@@ -106,7 +106,7 @@ namespace CCEnvs.Unity.Items
 
         public void ResetContainers()
         {
-            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values)
+            foreach (var cnt in collectionBase.Values)
                 cnt.Reset();
         }
 
@@ -183,7 +183,7 @@ namespace CCEnvs.Unity.Items
                 return null!;
 
             Maybe<IItemContainer> taked;
-            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values.ZLinq().Where(x => x.ContainsItem(item)))
+            foreach (var cnt in collectionBase.Values.ZLinq().Where(x => x.ContainsItem(item)))
             {
                 taked = cnt.TakeItem(count);
                 count -= taked.GetValueUnsafe().ItemCount;
@@ -250,7 +250,7 @@ namespace CCEnvs.Unity.Items
                 if (ContainerCount == 0)
                     break;
 
-                id = this.To<IDictionary<int, ItemContainer>>().Keys.Last();
+                id = collectionBase.Keys.Last();
                 cnt = this[id].Strict();
                 RemoveContainer(id);
             }
@@ -265,7 +265,7 @@ namespace CCEnvs.Unity.Items
             if (item.IsNull())
                 return false;
 
-            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values)
+            foreach (var cnt in collectionBase.Values)
             {
                 if (cnt.IsEmpty || (cnt.CanPut(item) && !cnt.IsFull))
                     return true;
@@ -283,7 +283,7 @@ namespace CCEnvs.Unity.Items
                 return CanPut(item);
 
             int freeSpace = 0;
-            foreach (var cnt in this.To<IDictionary<int, ItemContainer>>().Values)
+            foreach (var cnt in collectionBase.Values)
             {
                 if (cnt.IsEmpty || cnt.ContainsItem(item))
                     freeSpace += cnt.FreeSpace;
@@ -326,7 +326,7 @@ namespace CCEnvs.Unity.Items
 
         protected virtual int ResolveID(IItemContainer itemContainer)
         {
-            IEnumerable<int> ids = this.To<IDictionary<int, ItemContainer>>().Values.ZLinq()
+            IEnumerable<int> ids = collectionBase.Values.ZLinq()
                 .Select(x => x.GetContainerID())
                 .Where(x => x.IsSome)
                 .Select(x => x.Raw)

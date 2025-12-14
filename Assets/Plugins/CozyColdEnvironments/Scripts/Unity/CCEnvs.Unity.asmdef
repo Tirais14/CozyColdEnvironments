@@ -12,7 +12,10 @@
         "GUID:a6aa2a5c9160eda409f7bef9bc1134e8",
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:029c1c1b674aaae47a6841a0b89ad80e"
+        "GUID:029c1c1b674aaae47a6841a0b89ad80e",
+        "GUID:77221876cc6b8244180b96e320b1bcd4",
+        "GUID:f8c68d614fe30d647996098360b5e0d5",
+        "GUID:f02da9ca564ed54499f6f43d8249d415"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -46,8 +49,7 @@
         "ConcurrentCollections.dll",
         "R3.dll",
         "ObservableCollections.dll",
-        "ObservableCollections.R3.dll",
-        "MessagePipe.dll"
+        "ObservableCollections.R3.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

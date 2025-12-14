@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.UI
                     );
 
             pointerInput = new Lazy<InputActionRx<Vector2>>(
-                static () => DependencyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
+                static () => BuiltInDependecyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
                 );
 
             IShowableAwake();

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Dependencies
 {
-    public static class DependencyContainer
+    public static class BuiltInDependecyContainer
     {
         private static readonly Dictionary<(Type type, object? id), object> bindings = new();
 

@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.UI
         {
             base.Start();
 
-            DependencyContainer.Resolve<PointerInputActionRx>(UnityDependecyID.PointerInput);
+            BuiltInDependecyContainer.Resolve<PointerInputActionRx>(UnityDependecyID.PointerInput);
         }
     }
 }
