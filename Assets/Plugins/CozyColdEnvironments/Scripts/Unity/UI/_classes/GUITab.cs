@@ -151,7 +151,7 @@ namespace CCEnvs.Unity.UI
                     {
                         input.button.onClick.RemoveListener(input.onClick);
                     })
-                    .BindTo(this);
+                    .BindDisposableTo(this);
 
                 button.onClick.AddListener(onClick);
             }

@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.UI
             if (canvasGroup == null)
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-            isShown.BindTo(this);
+            isShown.BindDisposableTo(this);
         }
 
         private void IShowableStart()

@@ -62,7 +62,7 @@ namespace CCEnvs.Unity.Saving
                 {
                     input.@this.UnbindObject(input.obj, input.sceneInfo);
                 })
-                .BindTo(this);
+                .BindDisposableTo(this);
         }
 
         public IDisposable BindObject(object obj, Scene scene)

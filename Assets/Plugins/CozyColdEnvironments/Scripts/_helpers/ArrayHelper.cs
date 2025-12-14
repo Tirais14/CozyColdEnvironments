@@ -1,5 +1,7 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
+using UnityEditor;
 
 namespace CCEnvs
 {
@@ -46,6 +48,16 @@ namespace CCEnvs
             }
 
             throw new ArgumentException("Array must be contain any not null element.");
+        }
+
+        public static T[] Append<T>(this T[] source, T item)
+        {
+            Guard.IsNotNull(source);
+
+            var dest = new T[source.Length + 1];
+            source.CopyTo(dest, 0);
+            dest[^1] = item;
+            return dest;
         }
     }
 }

@@ -216,7 +216,7 @@ namespace CCEnvs.Unity.UI
                     @this.OnRemove(ev.OldValue);
                     @this.OnAdd(ev.NewValue);
                 })
-                .BindTo(this);
+                .BindDisposableTo(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

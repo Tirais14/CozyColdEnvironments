@@ -61,7 +61,7 @@ namespace CCEnvs.Unity.Storages.UI
             {
                 viewModelUnsafe.IconView.Subscribe(img,
                      static (sprite, img) => img.sprite = sprite)
-                    .BindTo(this);
+                    .BindDisposableTo(this);
             });
         }
 
@@ -71,7 +71,7 @@ namespace CCEnvs.Unity.Storages.UI
             {
                 viewModelUnsafe.CounterView.Subscribe(mesh,
                     static (text, mesh) => mesh.text = text)
-                    .BindTo(this);
+                    .BindDisposableTo(this);
             });
         }
     }

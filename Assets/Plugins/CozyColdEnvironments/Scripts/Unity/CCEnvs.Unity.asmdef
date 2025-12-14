@@ -46,7 +46,8 @@
         "ConcurrentCollections.dll",
         "R3.dll",
         "ObservableCollections.dll",
-        "ObservableCollections.R3.dll"
+        "ObservableCollections.R3.dll",
+        "MessagePipe.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
