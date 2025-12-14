@@ -1,4 +1,5 @@
 using CCEnvs.Snapshots;
+using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
 using UnityEngine;
@@ -32,6 +33,7 @@ namespace CCEnvs.Unity.Snaphots
         public override Behaviour Restore(Behaviour target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
+            Guard.IsNotNull(cmpSnapshot);
 
             target = cmpSnapshot.Restore(target).To<Behaviour>();
             target.enabled = enabled;

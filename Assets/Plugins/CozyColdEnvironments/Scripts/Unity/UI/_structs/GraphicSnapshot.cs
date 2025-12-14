@@ -1,4 +1,5 @@
 using CCEnvs.Snapshots;
+using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace CCEnvs.Unity.Snaphots.UI
     {
         [SerializeField]
         [JsonProperty("behaviourSnapshot")]
-        protected BehaviourSnapshot behaviourSnapshot = new();
+        protected BehaviourSnapshot? behSnapshot;
 
         [SerializeField]
         [JsonProperty("behaviourSnapshot")]
@@ -30,6 +31,7 @@ namespace CCEnvs.Unity.Snaphots.UI
             :
             base(target)
         {
+            behSnapshot = new BehaviourSnapshot(target);
             color =  target.color;
             raycastTarget = target.raycastTarget;
         }
@@ -37,12 +39,22 @@ namespace CCEnvs.Unity.Snaphots.UI
         public override Graphic Restore(Graphic target)
         {
             CC.Guard.IsNotNullTarget(target);
+            Guard.IsNotNull(behSnapshot);
 
-            target = behaviourSnapshot.Restore(target).To<Graphic>();
+            behSnapshot.Restore(target);
             target.color = color;
             target.raycastTarget = raycastTarget;
 
             return target;
+        }
+    }
+
+    public static class GraphicSnapshotExtensions
+    {
+        public static GraphicSnapshot CaptureState(this Graphic source)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return new GraphicSnapshot(source);
         }
     }
 }
