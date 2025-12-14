@@ -1,4 +1,5 @@
 using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -9,9 +10,8 @@ namespace CCEnvs.Unity.Snaphots
     public class MaterialSnapshot : Snapshot<Material>
     {
         [SerializeField]
-        protected Color m_Color;
-
-        public Color color => m_Color;
+        [JsonProperty("color")]
+        protected Color color;
 
         public MaterialSnapshot()
         {
@@ -21,14 +21,16 @@ namespace CCEnvs.Unity.Snaphots
             :
             base(target)
         {
-            m_Color = target.color;
+            color = target.color;
         }
 
-        public override void Restore(object target)
+        public override Material Restore(Material target)
         {
-            var mat = ValidateTarget<Material>(target);
+            CC.Guard.IsNotNullTarget(target);
 
-            mat.color = color;
+            target.color = color;
+
+            return target;
         }
     }
 }

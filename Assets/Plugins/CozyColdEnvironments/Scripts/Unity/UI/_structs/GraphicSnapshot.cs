@@ -1,3 +1,5 @@
+using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,16 +8,19 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.Snaphots.UI
 {
     [Serializable]
-    public class GraphicSnapshot : BehaviourSnapshot
+    public class GraphicSnapshot : Snapshot<Graphic>
     {
         [SerializeField]
-        protected Color m_Color;
+        [JsonProperty("behaviourSnapshot")]
+        protected BehaviourSnapshot behaviourSnapshot = new();
 
         [SerializeField]
-        protected bool m_RaycastTarget;
+        [JsonProperty("behaviourSnapshot")]
+        protected Color color;
 
-        public Color color => m_Color;
-        public bool RaycastTarget => m_RaycastTarget;
+        [SerializeField]
+        [JsonProperty("behaviourSnapshot")]
+        protected bool raycastTarget;
 
         public GraphicSnapshot()
         {
@@ -25,21 +30,19 @@ namespace CCEnvs.Unity.Snaphots.UI
             :
             base(target)
         {
-            m_Color =  target.color;
-            m_RaycastTarget = target.raycastTarget;
+            color =  target.color;
+            raycastTarget = target.raycastTarget;
         }
 
-        public override void Restore(object target)
+        public override Graphic Restore(Graphic target)
         {
-            var graphic = ValidateTarget<Graphic>(target);
+            CC.Guard.IsNotNullTarget(target);
 
-            graphic.color = color;
-            graphic.raycastTarget = RaycastTarget;
-        }
+            target = behaviourSnapshot.Restore(target).To<Graphic>();
+            target.color = color;
+            target.raycastTarget = raycastTarget;
 
-        public override string ToString()
-        {
-            return $"{nameof(Target)}: {Target}; {nameof(Enabled)}: {Enabled}.";
+            return target;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Saving
 
         UniTask LoadAsync(string path);
 
-        /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?, , Scene)"/></returns>
+        /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?, Scene)"/></returns>
         IDisposable BindObject(object obj, SceneInfo sceneInfo);
         /// <inheritdoc cref="BindObject(object, SceneInfo)"/>
         IDisposable BindObject(object obj, Scene scene);

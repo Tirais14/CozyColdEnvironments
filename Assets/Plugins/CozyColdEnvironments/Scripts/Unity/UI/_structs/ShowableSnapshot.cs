@@ -1,14 +1,20 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
+using Newtonsoft.Json;
+using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
 {
     public class ShowableSnapshot : Snapshot<IShowable>
     {
-        public bool IsShown { get; }
-        public Maybe<GameObject> gameObject { get; }
+        [SerializeField]
+        [JsonProperty("isShown")]
+        protected bool IsShown;
+
+        [NonSerialized]
+        protected Maybe<GameObject> gameObject;
 
         public ShowableSnapshot(IShowable target)
             :
@@ -20,12 +26,14 @@ namespace CCEnvs.Unity.UI
                 gameObject = cmp.gameObject;
         }
 
-        public override void Restore(object target)
+        public override IShowable Restore(IShowable target)
         {
-            var showable = ValidateTarget<IShowable>(target);
+            CC.Guard.IsNotNull(target, nameof(target));
 
             if (IsShown)
-                showable.Show();
+                target.Show();
+
+            return target;
         }
 
         public override string ToString()

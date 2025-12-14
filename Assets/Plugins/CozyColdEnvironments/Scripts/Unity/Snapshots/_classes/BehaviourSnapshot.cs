@@ -1,3 +1,5 @@
+using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -5,12 +7,15 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snaphots
 {
     [Serializable]
-    public class BehaviourSnapshot : ComponentSnapshot
+    public class BehaviourSnapshot : Snapshot<Behaviour>
     {
         [SerializeField]
-        protected bool m_Enabled;
+        [JsonProperty("componentSnapshot")]
+        protected ComponentSnapshot cmpSnapshot = new(); 
 
-        public bool Enabled => m_Enabled;
+        [SerializeField]
+        [JsonProperty("enabled")]
+        protected bool enabled;
 
         public BehaviourSnapshot()
         {
@@ -20,14 +25,18 @@ namespace CCEnvs.Unity.Snaphots
             :
             base(target)
         {
-            m_Enabled = target.enabled;
+            cmpSnapshot = new ComponentSnapshot(target);
+            enabled = target.enabled;
         }
 
-        public override void Restore(object target)
+        public override Behaviour Restore(Behaviour target)
         {
-            var beh = ValidateTarget<Behaviour>(target);
+            CC.Guard.IsNotNull(target, nameof(target));
 
-            beh.enabled = Enabled;
+            target = cmpSnapshot.Restore(target).To<Behaviour>();
+            target.enabled = enabled;
+
+            return target;
         }
     }
 }

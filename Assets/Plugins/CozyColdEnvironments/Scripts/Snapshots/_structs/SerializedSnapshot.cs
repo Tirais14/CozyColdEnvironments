@@ -6,7 +6,7 @@ using System;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public readonly struct SerializedSnapshotInfo
+    public readonly struct SerializedSnapshot
     {
         [JsonProperty("type")]
         private readonly Type snapshotType;
@@ -14,7 +14,7 @@ namespace CCEnvs.Snapshots
         [JsonProperty("content")]
         private readonly string snapshotContent;
 
-        public SerializedSnapshotInfo(ISnapshot snapshot)
+        public SerializedSnapshot(ISnapshot snapshot)
         {
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 
@@ -23,7 +23,7 @@ namespace CCEnvs.Snapshots
         }
 
         [JsonConstructor]
-        public SerializedSnapshotInfo(Type snapshotType, string snapshotContent)
+        public SerializedSnapshot(Type snapshotType, string snapshotContent)
         {
             Guard.IsNotNull(snapshotType);
             Guard.IsNotNull(snapshotContent);

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -39,6 +40,15 @@ namespace CCEnvs.Unity
             int count = source.GetComponentCount();
             for (int i = 0; i < count; i++)
                 yield return source.GetComponentAtIndex(i);
+        }
+
+        public static async UniTaskVoid DestroyAfterFrameCount(this GameObject? source, int count)
+        {
+            if (source == null)
+                return;
+
+            await UniTask.DelayFrame(count);
+            Object.Destroy(source);
         }
     }
 }

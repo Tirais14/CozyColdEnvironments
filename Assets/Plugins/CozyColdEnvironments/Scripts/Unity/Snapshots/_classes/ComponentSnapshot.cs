@@ -18,8 +18,9 @@ namespace CCEnvs.Unity
         {
         }
 
-        public override void Restore(object target)
+        public override Component Restore(Component target)
         {
+            return target;
         }
     }
 }

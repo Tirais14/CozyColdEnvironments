@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 
@@ -138,21 +139,21 @@ namespace CCEnvs.Unity.Saving
 
         private SaveContext[] SerializeObjects()
         {
-            Dictionary<SceneInfo, List<SerializedSnapshotInfo>> rawData = new();
+            Dictionary<SceneInfo, List<SerializedSnapshot>> rawData = new();
             ISnapshot converted;
             foreach (var pair in collections)
             {
                 foreach (var obj in pair.Value)
                 {
                     if (!rawData.TryGetValue(pair.Key.sceneInfo, out var serializedSnapshots))
-                        serializedSnapshots = new List<SerializedSnapshotInfo>();
+                        serializedSnapshots = new List<SerializedSnapshot>();
 
                     try
                     {
                         Func<object, ISnapshot> converter = converters[pair.Key.type];
                         converted = converter(obj);
 
-                        SerializedSnapshotInfo serialized = SerilializeSnapshot(converted);
+                        var serialized = new SerializedSnapshot(converted);
                         serializedSnapshots.Add(serialized);
                     }
                     catch (Exception ex)
@@ -170,15 +171,15 @@ namespace CCEnvs.Unity.Saving
             return contexts.ToArray();
         }
 
-        private SerializedSnapshotInfo SerilializeSnapshot(ISnapshot converted)
+        private SerializedSnapshot SerilializeSnapshot(ISnapshot converted)
         {
-            return new SerializedSnapshotInfo(converted);
+            return new SerializedSnapshot(converted);
         }
 
-        private ? Deserialize(string serialized)
+        private ISnapshot[] Deserialize(string serialized)
         {
-            //var pairs = JsonConvert.DeserializeObject<List<SerializedSnapshotInfo>>(serialized);
-            //return pairs.Select(pair => pair.Deserialize()).ToArray();
+            var contexts = JsonConvert.DeserializeObject<SaveContext[]>(serialized);
+            return contexts.SelectMany(ctx => ctx.Data).Select(x => x.Deserialize()).ToArray();
         }
     }
 
@@ -207,6 +208,33 @@ namespace CCEnvs.Unity.Saving
                 throw new ArgumentException($"{nameof(scene)} is not valid");
 
             return SaveSystem.Self.BindObject(source, scene);
+        }
+
+        /// <summary>
+        /// Binds only registered types
+        /// </summary>
+        public static IDisposable[] BindComponentsToSaveSystem(this GameObject source)
+        {
+            CC.Guard.IsNotNull(source, nameof(source));
+            using var _ = ListPool<IDisposable>.Get(out var list);
+            foreach (var cmp in source.GetComponents<Component>())
+            {
+                if (cmp.IsTypeRegisteredInSaveSystem())
+                    list.Add(cmp.BindToSaveSystem());
+            }
+
+            return list.ToArray();
+        }
+
+        public static bool IsTypeRegisteredInSaveSystem(this Type? source)
+        {
+            return SaveSystem.Self.IsTypeRegistered(source);
+        }
+
+        public static bool IsTypeRegisteredInSaveSystem(this object source)
+        {
+            Guard.IsNotNull(source);
+            return SaveSystem.Self.IsTypeRegistered(source.GetType());
         }
     }
 }

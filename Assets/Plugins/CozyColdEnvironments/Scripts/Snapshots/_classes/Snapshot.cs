@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Snapshots
@@ -8,6 +9,7 @@ namespace CCEnvs.Snapshots
     public abstract class Snapshot<T> : ISnapshot<T>
     {
 #if UNITY_2017_1_OR_NEWER
+        [SerializeField]
         protected Maybe<T> target;
 #else
         protected readonly Maybe<T> target;

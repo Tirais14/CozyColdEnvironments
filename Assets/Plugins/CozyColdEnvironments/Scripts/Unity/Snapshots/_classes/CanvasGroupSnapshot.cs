@@ -1,3 +1,5 @@
+using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -5,24 +7,27 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snaphots.UI
 {
     [Serializable]
-    public class CanvasGroupSnapshot : BehaviourSnapshot
+    public class CanvasGroupSnapshot : Snapshot<CanvasGroup>
     {
         [SerializeField]
-        protected float m_Alpha = 1f;
+        [JsonProperty("behaviourSnapshot")]
+        protected BehaviourSnapshot behSnapshot = new();
 
         [SerializeField]
-        protected bool m_Interactable = true;
+        [JsonProperty("alpha")]
+        protected float alpha = 1f;
 
         [SerializeField]
-        protected bool m_BlockRaycasts = true;
+        [JsonProperty("interactable")]
+        protected bool interactable = true;
 
         [SerializeField]
-        protected bool m_IgnoreParentGroups;
+        [JsonProperty("blockRaycasts")]
+        protected bool blockRaycasts = true;
 
-        public float Alpha => m_Alpha;
-        public bool Interactable => m_Interactable;
-        public bool BlockRaycasts => m_BlockRaycasts;
-        public bool IgnoreParentGroups => m_IgnoreParentGroups; 
+        [SerializeField]
+        [JsonProperty("ignoreParentGroups")]
+        protected bool ignoreParentGroups;
 
         public CanvasGroupSnapshot()
         {
@@ -30,20 +35,23 @@ namespace CCEnvs.Unity.Snaphots.UI
 
         public CanvasGroupSnapshot(CanvasGroup target) : base(target)
         {
-            m_Alpha = target.alpha;
-            m_Interactable = target.interactable;
-            m_BlockRaycasts = target.blocksRaycasts;
-            m_IgnoreParentGroups = target.ignoreParentGroups;
+            alpha = target.alpha;
+            interactable = target.interactable;
+            blockRaycasts = target.blocksRaycasts;
+            ignoreParentGroups = target.ignoreParentGroups;
         }
 
-        public override void Restore(object target)
+        public override CanvasGroup Restore(CanvasGroup target)
         {
-            var group = ValidateTarget<CanvasGroup>(target);
+            CC.Guard.IsNotNull(target, nameof(target));
 
-            group.alpha = Alpha;
-            group.interactable = Interactable;
-            group.blocksRaycasts = BlockRaycasts;
-            group.ignoreParentGroups = IgnoreParentGroups;
+            target = behSnapshot.Restore(target).To<CanvasGroup>();
+            target.alpha = alpha;
+            target.interactable = interactable;
+            target.blocksRaycasts = blockRaycasts;
+            target.ignoreParentGroups = ignoreParentGroups;
+
+            return target;
         }
     }
 }

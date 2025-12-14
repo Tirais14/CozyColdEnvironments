@@ -86,11 +86,22 @@ namespace CCEnvs
             }
 
             /// <exception cref="ArgumentNullException"></exception>
-            public static void IsNotNull<T>([NotNull] T? obj,
-                                               string paramName)
+            public static void IsNotNull<T>([NotNull] T? obj, string? paramName)
             {
                 if (obj.IsNull())
-                    throw new ArgumentNullException(paramName);
+                    throw new ArgumentNullException(paramName ?? "value");
+            }
+
+            public static void IsNotNullTarget<T>([NotNull] T? obj)
+            {
+                if (obj.IsNull())
+                    throw new ArgumentNullException("target");
+            }
+
+            public static void IsNotNullSource<T>([NotNull] T? obj)
+            {
+                if (obj.IsNull())
+                    throw new ArgumentNullException("source");
             }
 
             /// <exception cref="ArgumentException"></exception>
