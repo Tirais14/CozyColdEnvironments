@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
 using R3.Collections;
+using R3.Triggers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -167,8 +168,12 @@ namespace CCEnvs.Unity.UI
                 goTransform.gameObject.SetActive(true);
 
             go.OnDestroyAsObservable()
-              .Subscribe(_ => collection.Remove(go))
-              .AddTo(destroyCancellationToken);
+              .Subscribe((@this: this, go),
+              static (_, input) =>
+              {
+                  input.@this.collection.Remove(input.go);
+              })
+              .BindDisposableTo(this);
         }
 
         protected virtual void OnRemove(GameObject go)

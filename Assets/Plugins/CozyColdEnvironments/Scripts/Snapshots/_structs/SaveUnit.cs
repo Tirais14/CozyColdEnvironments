@@ -1,12 +1,13 @@
 #nullable enable
+using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
 
-namespace CCEnvs.Snapshots
+namespace CCEnvs
 {
     [Serializable]
-    public readonly struct SerializedSnapshot
+    public readonly struct SaveUnit
     {
         [JsonProperty("type")]
         private readonly Type snapshotType;
@@ -14,7 +15,7 @@ namespace CCEnvs.Snapshots
         [JsonProperty("content")]
         private readonly string snapshotContent;
 
-        public SerializedSnapshot(ISnapshot snapshot)
+        public SaveUnit(ISnapshot snapshot)
         {
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 
@@ -23,7 +24,7 @@ namespace CCEnvs.Snapshots
         }
 
         [JsonConstructor]
-        public SerializedSnapshot(Type snapshotType, string snapshotContent)
+        public SaveUnit(Type snapshotType, string snapshotContent)
         {
             Guard.IsNotNull(snapshotType);
             Guard.IsNotNull(snapshotContent);
@@ -32,9 +33,9 @@ namespace CCEnvs.Snapshots
             this.snapshotContent = snapshotContent;
         }
 
-        public readonly ISnapshot Deserialize()
+        public readonly ISnapshot? Deserialize()
         {
-            return JsonConvert.DeserializeObject(snapshotContent, snapshotType).To<ISnapshot>();
+            return (ISnapshot?)JsonConvert.DeserializeObject(snapshotContent, snapshotType);
         }
     }
 }

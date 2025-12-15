@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using Cysharp.Threading.Tasks;
 using R3;
+using R3.Triggers;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -300,7 +301,8 @@ namespace CCEnvs.Unity._2D.Locations
                             @this.RemoveTile();
                         })
                         .Forget();
-                });
+                })
+                .AddTo(goInstance.GetCancellationTokenOnDestroy());
 
             tileSubbed = true;
         }

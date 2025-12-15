@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -9,9 +10,11 @@ namespace CCEnvs.Snapshots
     public abstract class Snapshot<T> : ISnapshot<T>
     {
 #if UNITY_2017_1_OR_NEWER
+        [JsonIgnore]
         [SerializeField]
         protected Maybe<T> target;
 #else
+        [JsonIgnore]
         protected readonly Maybe<T> target;
 #endif
 

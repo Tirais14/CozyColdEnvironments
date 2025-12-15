@@ -94,8 +94,9 @@ namespace CCEnvs.Unity._2D.Locations
             SetupCellCollection();
         }
 
-        protected virtual void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             cells.OfType<IDisposable>().DisposeEach();
             cells.Clear();
         }

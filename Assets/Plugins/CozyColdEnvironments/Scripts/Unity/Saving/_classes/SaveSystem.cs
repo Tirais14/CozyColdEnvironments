@@ -13,6 +13,7 @@ using R3;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
@@ -88,9 +89,7 @@ namespace CCEnvs.Unity.Saving
 
         public async UniTask LoadAsync(string path)
         {
-            var t = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "alcoSave.json");
-            string serailized = File.ReadAllText(t);
-
+            string serailized = File.ReadAllText(path);
             ISnapshot[] snapshots = Deserialize(serailized);
             snapshots.RestoreStates();
         }
@@ -99,9 +98,7 @@ namespace CCEnvs.Unity.Saving
         {
             SaveContext[] saveContexts = SerializeObjects();
             string serialized = JsonConvert.SerializeObject(saveContexts, Formatting.Indented);
-
-            var t = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "alcoSave.json");
-            File.WriteAllText(t, serialized);
+            File.WriteAllText(path, serialized);
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -117,6 +114,10 @@ namespace CCEnvs.Unity.Saving
             if (converter is not null)
                 converters.Add(type, converter);
         }
+        public void RegisterType<T>(Func<object, ISnapshot> converter)
+        {
+            RegisterType(typeof(T), converter);
+        }
 
         public bool UnregisterType(Type? type)
         {
@@ -130,6 +131,10 @@ namespace CCEnvs.Unity.Saving
 
             return registeredTypes.Remove(type);
         }
+        public bool UnregisterType<T>()
+        {
+            return UnregisterType(typeof(T));
+        }
 
         public bool IsTypeRegistered(Type? type)
         {
@@ -138,24 +143,28 @@ namespace CCEnvs.Unity.Saving
 
             return registeredTypes.Contains(type);
         }
+        public bool IsTypeRegistered<T>()
+        {
+            return IsTypeRegistered(typeof(T));
+        }
 
         private SaveContext[] SerializeObjects()
         {
-            Dictionary<SceneInfo, List<SerializedSnapshot>> rawData = new();
+            Dictionary<SceneInfo, List<SaveUnit>> rawData = new();
             ISnapshot converted;
             foreach (var pair in collections)
             {
                 foreach (var obj in pair.Value)
                 {
                     if (!rawData.TryGetValue(pair.Key.sceneInfo, out var serializedSnapshots))
-                        serializedSnapshots = new List<SerializedSnapshot>();
+                        serializedSnapshots = new List<SaveUnit>();
 
                     try
                     {
                         Func<object, ISnapshot> converter = converters[pair.Key.type];
                         converted = converter(obj);
 
-                        var serialized = new SerializedSnapshot(converted);
+                        var serialized = new SaveUnit(converted);
                         serializedSnapshots.Add(serialized);
                     }
                     catch (Exception ex)
@@ -167,21 +176,29 @@ namespace CCEnvs.Unity.Saving
 
             using var _ = ListPool<SaveContext>.Get(out var contexts);
 
+            SaveContext saveContext;
             foreach (var item in rawData)
-                contexts.Add(new SaveContext(item.Key, item.Value.ToImmutableArray()));
+            {
+                saveContext = new SaveContext(item.Key, item.Value.ToImmutableArray());
+                contexts.Add(saveContext);
+            }
 
             return contexts.ToArray();
         }
 
-        private SerializedSnapshot SerilializeSnapshot(ISnapshot converted)
+        private SaveUnit SerilializeSnapshot(ISnapshot converted)
         {
-            return new SerializedSnapshot(converted);
+            return new SaveUnit(converted);
         }
 
         private ISnapshot[] Deserialize(string serialized)
         {
             var contexts = JsonConvert.DeserializeObject<SaveContext[]>(serialized);
-            return contexts.SelectMany(ctx => ctx.Data).Select(x => x.Deserialize()).ToArray();
+
+            return contexts.SelectMany(ctx => ctx.Data)
+                           .Select(x => x.Deserialize()!)
+                           .Where(x => x.IsNotNull())
+                           .ToArray();
         }
     }
 

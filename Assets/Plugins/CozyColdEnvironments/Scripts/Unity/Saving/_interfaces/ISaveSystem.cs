@@ -21,9 +21,12 @@ namespace CCEnvs.Unity.Saving
         bool UnbindObject(object? obj, Scene scene);
 
         void RegisterType(Type type, Func<object, ISnapshot> serializableConverter);
+        void RegisterType<T>(Func<object, ISnapshot> serializableConverter);
 
         bool UnregisterType(Type type);
+        bool UnregisterType<T>();
 
         bool IsTypeRegistered(Type? type);
+        bool IsTypeRegistered<T>();
     }
 }
