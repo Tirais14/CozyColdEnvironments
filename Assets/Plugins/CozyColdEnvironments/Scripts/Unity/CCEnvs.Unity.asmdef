@@ -45,11 +45,11 @@
         "Microsoft.Extensions.Options.dll",
         "Microsoft.Extensions.Logging.Abstractions.dll",
         "Microsoft.Extensions.Caching.Abstractions.dll",
-        "Newtonsoft.Json.dll",
         "ConcurrentCollections.dll",
         "R3.dll",
         "ObservableCollections.dll",
-        "ObservableCollections.R3.dll"
+        "ObservableCollections.R3.dll",
+        "System.Text.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

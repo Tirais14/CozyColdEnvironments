@@ -1,54 +1,51 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
 {
-    public class SnapshotConverter : JsonConverter<ISnapshot>
+    public class SnapshotConverter : JsonConverter<Snapshot>
     {
-        public override ISnapshot? ReadJson(
-            JsonReader reader,
-            Type objectType,
-            ISnapshot? existingValue,
-            bool hasExistingValue,
-            JsonSerializer serializer)
+        public override Snapshot? Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
         {
-            if (hasExistingValue && existingValue is not null)
-            {
-                serializer.Populate(reader, existingValue);
-                return existingValue;
-            }
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException();
 
-            var jObject = JObject.Load(reader);
+            var doc = JsonDocument.ParseValue(ref reader);
+            var selfTypeProperty = doc.RootElement.GetProperty("selfType");
+            var selfTypeContent = selfTypeProperty.GetString() ?? throw new JsonException("Missing 'selfTypeContent'");
+            var configuredOptions = GetConfiguredOptions(options);
+            var actualTypeSnapshot = JsonSerializer.Deserialize<TypeSnapshot>(selfTypeContent, configuredOptions);
+            Type actualType = actualTypeSnapshot.Restore();
 
-            if (!jObject.TryGetValue("selfType", StringComparison.OrdinalIgnoreCase, out var typeToken))
-                throw new JsonSerializationException("Missing 'selfType' property");
+            if (actualType is null)
+                throw new JsonException($"Missing '{nameof(actualType)}'");
 
-            var typeSnapshot = typeToken.ToObject<TypeSnapshot>().Maybe().GetValue(() => throw new JsonSerializationException($"Cannot deserialize: selfType"));
-
-            Type actualType = typeSnapshot.Restore();
-
-            if (!actualType.IsNotType<ISnapshot>())
-                throw new JsonSerializationException($"Type '{actualType}' does not implement {nameof(ISnapshot)}");
-
-            using var newReader = jObject.CreateReader();
-            return (ISnapshot?)serializer.Deserialize(newReader, actualType);
+            return (Snapshot?)JsonSerializer.Deserialize(doc, actualType, configuredOptions);
         }
 
-        public override void WriteJson(
-            JsonWriter writer,
-            ISnapshot? value,
-            JsonSerializer serializer)
+        public override void Write(
+            Utf8JsonWriter writer,
+            Snapshot value,
+            JsonSerializerOptions options)
         {
-            if (value.IsNull())
-                writer.WriteNull();
+            JsonSerializer.Serialize(value, GetConfiguredOptions(options));
+        }
 
-            serializer.Serialize(writer, value);
+        private static JsonSerializerOptions GetConfiguredOptions(JsonSerializerOptions options)
+        {
+            options = new JsonSerializerOptions(options);
+
+            foreach (var conv in options.Converters.Where(conv => conv is JsonConverter<Snapshot> || conv.CanConvert(typeof(TypeSnapshot))))
+                options.Converters.Remove(conv);
+
+            return options;
         }
     }
 }
