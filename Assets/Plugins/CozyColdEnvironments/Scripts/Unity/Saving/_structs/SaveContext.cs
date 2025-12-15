@@ -1,8 +1,9 @@
 using CCEnvs.Snapshots;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
+using UnityEditor.Search;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
@@ -11,20 +12,21 @@ namespace CCEnvs.Unity.Saving
     public struct SaveContext
     {
         [JsonInclude]
+        [JsonPropertyName("data")]
+        private ISnapshot[] data;
+
+        [JsonInclude]
 		[JsonPropertyName("scene")]
         public SceneInfo SceneInfo { get; }
 
-        [JsonInclude]
-		[JsonPropertyName("data")]
-        public ImmutableArray<string> Data { get; }
+        [JsonIgnore]
+        public readonly IEnumerable<ISnapshot> Data => data;
 
         [JsonConstructor]
-        public SaveContext(
-            SceneInfo sceneInfo,
-            ImmutableArray<string> serialized)
+        public SaveContext(SceneInfo sceneInfo, IEnumerable<ISnapshot> data)
         {
             SceneInfo = sceneInfo;
-            Data = serialized;
+            this.data = data.ToArray();
         }
     }
 }

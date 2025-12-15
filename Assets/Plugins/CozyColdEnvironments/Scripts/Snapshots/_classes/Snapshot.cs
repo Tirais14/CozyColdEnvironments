@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
+using CCEnvs.Reflection;
 using System;
 using System.Text.Json.Serialization;
 
@@ -7,15 +8,16 @@ using System.Text.Json.Serialization;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
+    [JsonConverter(typeof(SnapshotConverter))]
     public abstract class Snapshot
     {
-        [JsonInclude]
-		[JsonPropertyName("selfType")]
-        private TypeSnapshot selfType;
+  //      [JsonInclude]
+		//[JsonPropertyName("$type")]
+  //      public string SelfTypeReference { get; private set; }
 
         public Snapshot()
         {
-            selfType = new TypeSnapshot(GetType());
+            //SelfTypeReference = GetType().GetTypeReference();
         }
     }
 
@@ -23,6 +25,9 @@ namespace CCEnvs.Snapshots
     [JsonConverter(typeof(SnapshotConverter))]
     public abstract class Snapshot<T> : Snapshot, ISnapshot<T>
     {
+#if UNITY_2017_1_OR_NEWER
+        [UnityEngine.SerializeField]
+#endif
         [JsonIgnore]
         public Maybe<T> Target { get; private set; }
 

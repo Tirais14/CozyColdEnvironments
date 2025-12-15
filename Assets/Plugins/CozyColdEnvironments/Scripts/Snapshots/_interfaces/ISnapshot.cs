@@ -1,11 +1,13 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CCEnvs.Snapshots
 {
     public interface ISnapshot
     {
+        [JsonIgnore]
         Maybe<object> Target { get; }
 
         object Restore();
@@ -14,8 +16,10 @@ namespace CCEnvs.Snapshots
 
     public interface ISnapshot<T> : ISnapshot
     {
+        [JsonIgnore]
         new Maybe<T> Target { get; }
 
+        [JsonIgnore]
         Maybe<object> ISnapshot.Target => Target;
 
         new T Restore();

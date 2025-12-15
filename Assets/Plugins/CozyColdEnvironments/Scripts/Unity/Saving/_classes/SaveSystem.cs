@@ -1,20 +1,20 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Json;
+using CCEnvs.Json.Converters;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using ConcurrentCollections;
 using Cysharp.Threading.Tasks;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using R3;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using R3;
+using System.Text.Json;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
@@ -98,7 +98,7 @@ namespace CCEnvs.Unity.Saving
         public async UniTask SaveAsync(string path)
         {
             SaveContext[] saveContexts = SerializeObjects();
-            string serialized = JsonSerializer.Serialize(saveContexts);
+            string serialized = JsonSerializer.Serialize(saveContexts, JsonSerilizerOptionsProvider.Get(new SnapshotConverter()));
             File.WriteAllText(path, serialized);
         }
 
@@ -151,22 +151,25 @@ namespace CCEnvs.Unity.Saving
 
         private SaveContext[] SerializeObjects()
         {
-            Dictionary<SceneInfo, List<string>> rawData = new();
+            Dictionary<SceneInfo, List<ISnapshot>> rawData = new();
             ISnapshot snapshot;
             foreach (var pair in collections)
             {
                 foreach (var obj in pair.Value)
                 {
                     if (!rawData.TryGetValue(pair.Key.sceneInfo, out var serializedSnapshots))
-                        serializedSnapshots = new List<string>();
+                    {
+                        serializedSnapshots = new List<ISnapshot>();
+                        rawData.Add(pair.Key.sceneInfo, serializedSnapshots);
+                    }
 
                     try
                     {
                         Func<object, ISnapshot> converter = converters[pair.Key.type];
                         snapshot = converter(obj);
 
-                        var serialized = JsonSerializer.Serialize(snapshot);
-                        serializedSnapshots.Add(serialized);
+                        CC.Guard.IsNotNull(snapshot, nameof(snapshot));
+                        serializedSnapshots.Add(snapshot);
                     }
                     catch (Exception ex)
                     {
@@ -180,7 +183,7 @@ namespace CCEnvs.Unity.Saving
             SaveContext saveContext;
             foreach (var item in rawData)
             {
-                saveContext = new SaveContext(item.Key, item.Value.ToImmutableArray());
+                saveContext = new SaveContext(item.Key, item.Value);
                 contexts.Add(saveContext);
             }
 
@@ -191,10 +194,7 @@ namespace CCEnvs.Unity.Saving
         {
             var contexts = JsonSerializer.Deserialize<SaveContext[]>(serialized);
 
-            return contexts.SelectMany(ctx => ctx.Data)
-                           .Select(content => JsonSerializer.Deserialize<ISnapshot>(content)!)
-                           .Where(x => x.IsNotNull())
-                           .ToArray();
+            return contexts.SelectMany(ctx => ctx.Data).ToArray();
         }
     }
 

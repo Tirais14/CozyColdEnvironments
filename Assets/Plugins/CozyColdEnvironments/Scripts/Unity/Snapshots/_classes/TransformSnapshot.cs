@@ -1,22 +1,26 @@
+using CCEnvs.Json.Converters;
 using CCEnvs.Snapshots;
-using System.Text.Json;
+using CommunityToolkit.Diagnostics;
+using System;
 using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snaphots
 {
+    [Serializable]
+    [JsonConverter(typeof(SnapshotConverter))]
     public class TransformSnapshot : Snapshot<Transform>
     {
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("position")]
-        private Vector3 position;
+        [SerializeField]
+        [JsonPropertyName("position")]
+        public Vector3Snapshot? Position { get; private set; }
 
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("rotation")]
-        private Quaternion rotation;
+        [SerializeField]
+        [JsonPropertyName("rotation")]
+        public QuaternionSnapshot? Rotation { get; private set; }
 
         public TransformSnapshot()
         {
@@ -24,15 +28,17 @@ namespace CCEnvs.Unity.Snaphots
 
         public TransformSnapshot(Transform target) : base(target)
         {
-            position = target.position;
-            rotation = target.rotation;
+            Position = new Vector3Snapshot(target.position);
+            Rotation = new QuaternionSnapshot(target.rotation);
         }
 
-        public override Transform Restore(Transform target)
+        public override Transform Restore(Transform? target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
+            Guard.IsNotNull(Position);
+            Guard.IsNotNull(Rotation);
 
-            target.SetPositionAndRotation(position, rotation);
+            target.SetPositionAndRotation(Position.Restore(), Rotation.Restore());
             return target;
         }
     }

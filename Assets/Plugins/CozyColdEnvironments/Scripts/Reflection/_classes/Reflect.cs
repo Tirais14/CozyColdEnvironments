@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -616,7 +617,7 @@ namespace CCEnvs.Reflection
         public Either<Reflect, Reflect> Fork() => (this, ShallowClone());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IEnumerable<MemberInfo> FindMembers(MemberTypes memberType)
+        private IEnumerable<MemberInfo> FindMembers(MemberTypes? memberType)
         {
             Type[] types;
 

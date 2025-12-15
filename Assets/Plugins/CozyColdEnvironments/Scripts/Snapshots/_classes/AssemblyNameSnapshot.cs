@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Reflection;
@@ -17,13 +18,21 @@ namespace CCEnvs.Snapshots
 		[JsonPropertyName("name")]
         private string name;
 
+        [JsonIgnore]
         public Maybe<AssemblyName> Target { get; private set; }
 
+        [JsonInclude]
+        [JsonPropertyName("$type")]
+        public string SelfTypeReference { get; private set; }
+
         public AssemblyNameSnapshot(AssemblyName target)
+            :
+            this()
         {
             Guard.IsNotNull(target);
 
             Target = target;
+            SelfTypeReference = GetType().GetTypeReference();
             name = target.Name;
         }
 

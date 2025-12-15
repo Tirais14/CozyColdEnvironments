@@ -1,25 +1,28 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public readonly struct SceneInfo : IEquatable<SceneInfo>
+    public struct SceneInfo : IEquatable<SceneInfo>
     {
         [JsonInclude]
-		[JsonPropertyName("buildIndex")]
-        public int BuildIndex { get; }
+        [field: SerializeField]
+        [JsonPropertyName("buildIndex")]
+        public int BuildIndex { get; private set; }
 
         [JsonInclude]
-		[JsonPropertyName("path")]
-        public string Path { get; }
+        [field: SerializeField]
+        [JsonPropertyName("path")]
+        public string Path { get; private set; }
 
         [JsonInclude]
+        [field: SerializeField]
 		[JsonPropertyName("name")]
-        public string Name { get; }
+        public string Name { get; private set; }
 
         [JsonConstructor]
         public SceneInfo(int buildIndex, string path, string name)
@@ -47,7 +50,7 @@ namespace CCEnvs.Unity
             return !(left == right);
         }
 
-        public bool Equals(SceneInfo other)
+        public readonly bool Equals(SceneInfo other)
         {
             return BuildIndex == other.BuildIndex
                    &&
@@ -56,12 +59,12 @@ namespace CCEnvs.Unity
                    Name == other.Name;
         }
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is SceneInfo typed && Equals(typed);
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(BuildIndex, Path, Name);
         }
