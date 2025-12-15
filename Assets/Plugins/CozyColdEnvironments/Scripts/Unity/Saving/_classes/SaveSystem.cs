@@ -150,21 +150,21 @@ namespace CCEnvs.Unity.Saving
 
         private SaveContext[] SerializeObjects()
         {
-            Dictionary<SceneInfo, List<SaveUnit>> rawData = new();
-            ISnapshot converted;
+            Dictionary<SceneInfo, List<string>> rawData = new();
+            ISnapshot snapshot;
             foreach (var pair in collections)
             {
                 foreach (var obj in pair.Value)
                 {
                     if (!rawData.TryGetValue(pair.Key.sceneInfo, out var serializedSnapshots))
-                        serializedSnapshots = new List<SaveUnit>();
+                        serializedSnapshots = new List<string>();
 
                     try
                     {
                         Func<object, ISnapshot> converter = converters[pair.Key.type];
-                        converted = converter(obj);
+                        snapshot = converter(obj);
 
-                        var serialized = new SaveUnit(converted);
+                        var serialized = JsonConvert.SerializeObject(snapshot);
                         serializedSnapshots.Add(serialized);
                     }
                     catch (Exception ex)
@@ -196,7 +196,7 @@ namespace CCEnvs.Unity.Saving
             var contexts = JsonConvert.DeserializeObject<SaveContext[]>(serialized);
 
             return contexts.SelectMany(ctx => ctx.Data)
-                           .Select(x => x.Deserialize()!)
+                           .Select(content => JsonConvert.DeserializeObject<ISnapshot>(content)!)
                            .Where(x => x.IsNotNull())
                            .ToArray();
         }

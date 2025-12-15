@@ -9,7 +9,7 @@ namespace CCEnvs.Snapshots
         Maybe<object> Target { get; }
 
         object Restore();
-        object Restore(object target);
+        object Restore(object? target);
     }
 
     public interface ISnapshot<T> : ISnapshot
@@ -19,10 +19,10 @@ namespace CCEnvs.Snapshots
         Maybe<object> ISnapshot.Target => Target;
 
         new T Restore();
-        T Restore(T target);
+        T Restore(T? target);
 
         object ISnapshot.Restore() => Restore()!;
-        object ISnapshot.Restore(object target) => Restore(target.To<T>())!;
+        object ISnapshot.Restore(object? target) => Restore(target.To<T>())!;
     }
 
     public static class ISnapshotExtensions

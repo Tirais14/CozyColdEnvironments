@@ -13,12 +13,12 @@ namespace CCEnvs.Unity.Saving
         public SceneInfo SceneInfo { get; }
 
         [JsonProperty("data")]
-        public ImmutableArray<SaveUnit> Data { get; }
+        public ImmutableArray<string> Data { get; }
 
         [JsonConstructor]
         public SaveContext(
             SceneInfo sceneInfo,
-            ImmutableArray<SaveUnit> serialized)
+            ImmutableArray<string> serialized)
         {
             SceneInfo = sceneInfo;
             Data = serialized;

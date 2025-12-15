@@ -1,44 +1,37 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Json.Converters;
 using Newtonsoft.Json;
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Snapshots
 {
     [Serializable]
+    [JsonConverter(typeof(SnapshotConverter))]
     public abstract class Snapshot<T> : ISnapshot<T>
     {
-#if UNITY_2017_1_OR_NEWER
-        [JsonIgnore]
-        [SerializeField]
-        protected Maybe<T> target;
-#else
-        [JsonIgnore]
-        protected readonly Maybe<T> target;
-#endif
+        [JsonProperty("selfType")]
+        private TypeSnapshot selfType;
 
-        public Maybe<T> Target => target.Raw;
+        [JsonIgnore]
+        public Maybe<T> Target { get; private set; }
 
         public Snapshot()
         {
+            selfType = new TypeSnapshot(GetType());
         }
 
         public Snapshot(T target)
+            :
+            this()
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
-            this.target = target;
+            Target = target;
         }
 
-        public T Restore() => Restore(target.Raw!);
+        public T Restore() => Restore(Target.Raw);
 
-        public abstract T Restore(T target);
-
-        protected TTarget ValidateTarget<TTarget>(T target)
-        {
-            CC.Guard.IsNotNull(target, nameof(target));
-            return target.To<TTarget>();
-        }
+        public abstract T Restore(T? target);
     }
 }
