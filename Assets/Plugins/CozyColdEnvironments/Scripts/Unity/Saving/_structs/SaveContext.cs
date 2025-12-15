@@ -1,5 +1,6 @@
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Immutable;
 
@@ -9,10 +10,12 @@ namespace CCEnvs.Unity.Saving
     [Serializable]
     public struct SaveContext
     {
-        [JsonProperty("scene")]
+        [JsonInclude]
+		[JsonPropertyName("scene")]
         public SceneInfo SceneInfo { get; }
 
-        [JsonProperty("data")]
+        [JsonInclude]
+		[JsonPropertyName("data")]
         public ImmutableArray<string> Data { get; }
 
         [JsonConstructor]

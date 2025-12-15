@@ -1,6 +1,7 @@
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 
@@ -11,23 +12,28 @@ namespace CCEnvs.Unity.Snaphots.UI
     public class CanvasGroupSnapshot : Snapshot<CanvasGroup>
     {
         [SerializeField]
-        [JsonProperty("behaviourSnapshot")]
+        [JsonInclude]
+		[JsonPropertyName("behaviourSnapshot")]
         protected BehaviourSnapshot? behSnapshot;
 
         [SerializeField]
-        [JsonProperty("alpha")]
+        [JsonInclude]
+		[JsonPropertyName("alpha")]
         protected float alpha = 1f;
 
         [SerializeField]
-        [JsonProperty("interactable")]
+        [JsonInclude]
+		[JsonPropertyName("interactable")]
         protected bool interactable = true;
 
         [SerializeField]
-        [JsonProperty("blockRaycasts")]
+        [JsonInclude]
+		[JsonPropertyName("blockRaycasts")]
         protected bool blockRaycasts = true;
 
         [SerializeField]
-        [JsonProperty("ignoreParentGroups")]
+        [JsonInclude]
+		[JsonPropertyName("ignoreParentGroups")]
         protected bool ignoreParentGroups;
 
         public CanvasGroupSnapshot()

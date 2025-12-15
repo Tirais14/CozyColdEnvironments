@@ -1,5 +1,6 @@
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
@@ -8,11 +9,13 @@ namespace CCEnvs.Unity.Snaphots
     public class TransformSnapshot : Snapshot<Transform>
     {
         [SerializeField]
-        [JsonProperty("position")]
+        [JsonInclude]
+		[JsonPropertyName("position")]
         private Vector3 position;
 
         [SerializeField]
-        [JsonProperty("rotation")]
+        [JsonInclude]
+		[JsonPropertyName("rotation")]
         private Quaternion rotation;
 
         public TransformSnapshot()

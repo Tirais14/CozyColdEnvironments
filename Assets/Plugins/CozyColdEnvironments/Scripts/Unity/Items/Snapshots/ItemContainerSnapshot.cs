@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using static UnityEditor.Experimental.GraphView.Port;
 
@@ -10,19 +11,24 @@ namespace CCEnvs.Unity.Items.Snapshots
     [Serializable]
     public class ItemContainerSnapshot : Snapshot<ItemContainer>
     {
-        [JsonProperty("item")]
+        [JsonInclude]
+		[JsonPropertyName("item")]
         public Maybe<IItem> Item { get; private set; }
 
-        [JsonProperty("itemCount")]
+        [JsonInclude]
+		[JsonPropertyName("itemCount")]
         public int ItemCount { get; private set; }
 
-        [JsonProperty("capacity")]
+        [JsonInclude]
+		[JsonPropertyName("capacity")]
         public int Capacity { get; private set; }
 
-        [JsonProperty("isReadOnlyContainer")]
+        [JsonInclude]
+		[JsonPropertyName("isReadOnlyContainer")]
         public bool IsReadOnlyContainer { get; private set; }
 
-        [JsonProperty("unlockCapacity")]
+        [JsonInclude]
+		[JsonPropertyName("unlockCapacity")]
         public bool UnlockCapacity { get; private set; }
 
         public ItemContainerSnapshot()

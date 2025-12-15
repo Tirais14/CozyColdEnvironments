@@ -1,7 +1,8 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ namespace CCEnvs.Unity.UI
     public class ShowableSnapshot : Snapshot<IShowable>
     {
         [SerializeField]
-        [JsonProperty("isShown")]
+        [JsonInclude]
+		[JsonPropertyName("isShown")]
         protected bool IsShown;
 
         [NonSerialized]

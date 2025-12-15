@@ -1,5 +1,6 @@
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 
@@ -9,11 +10,13 @@ namespace CCEnvs.Unity
     public class Vector2Snapshot : Snapshot<Vector2>
     {
         [SerializeField]
-        [JsonProperty("x")]
+        [JsonInclude]
+		[JsonPropertyName("x")]
         private float x;
 
         [SerializeField]
-        [JsonProperty("y")]
+        [JsonInclude]
+		[JsonPropertyName("y")]
         private float y;
 
         public Vector2Snapshot()

@@ -1,5 +1,6 @@
 using CCEnvs.Snapshots;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ namespace CCEnvs.Unity.Snaphots
     public class MaterialSnapshot : Snapshot<Material>
     {
         [SerializeField]
-        [JsonProperty("color")]
+        [JsonInclude]
+		[JsonPropertyName("color")]
         protected Color color;
 
         public MaterialSnapshot()

@@ -1,22 +1,24 @@
 using CCEnvs.Reflection;
-using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs
 {
     [Serializable]
-    public readonly struct TypeValuePair : IEquatable<TypeValuePair>
+    public struct TypeValuePair : IEquatable<TypeValuePair>
     {
         public static TypeValuePair Empty => T<object>();
 
-        [JsonProperty("type")]
-        public readonly Type Type { get; }
+        [JsonInclude]
+		[JsonPropertyName("type")]
+        public Type Type { get; private set; }
 
-        [JsonProperty("value")]
-        public readonly object? Value { get; }
+        [JsonInclude]
+		[JsonPropertyName("value")]
+        public object? Value { get; private set; }
 
         [JsonConstructor]
         public TypeValuePair(Type type, object? value)
@@ -62,22 +64,22 @@ namespace CCEnvs
             return !left.Equals(right);
         }
 
-        public bool Equals(TypeValuePair other)
+        public readonly bool Equals(TypeValuePair other)
         {
             return Type == other.Type && Value == other.Value;
         }
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is TypeValuePair typed && Equals(typed);
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(Type, Value);
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             return Type.GetName();
         }

@@ -1,6 +1,7 @@
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,15 +13,18 @@ namespace CCEnvs.Unity.Snaphots.UI
     public class GraphicSnapshot : Snapshot<Graphic>
     {
         [SerializeField]
-        [JsonProperty("behaviourSnapshot")]
+        [JsonInclude]
+		[JsonPropertyName("behaviourSnapshot")]
         protected BehaviourSnapshot? behSnapshot;
 
         [SerializeField]
-        [JsonProperty("behaviourSnapshot")]
+        [JsonInclude]
+		[JsonPropertyName("behaviourSnapshot")]
         protected Color color;
 
         [SerializeField]
-        [JsonProperty("behaviourSnapshot")]
+        [JsonInclude]
+		[JsonPropertyName("behaviourSnapshot")]
         protected bool raycastTarget;
 
         public GraphicSnapshot()

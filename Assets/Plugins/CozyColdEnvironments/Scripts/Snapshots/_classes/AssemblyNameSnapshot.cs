@@ -1,8 +1,8 @@
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
 using System;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Snapshots
@@ -13,7 +13,8 @@ namespace CCEnvs.Snapshots
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
 #endif
-        [JsonProperty("name")]
+        [JsonInclude]
+		[JsonPropertyName("name")]
         private string name;
 
         public Maybe<AssemblyName> Target { get; private set; }

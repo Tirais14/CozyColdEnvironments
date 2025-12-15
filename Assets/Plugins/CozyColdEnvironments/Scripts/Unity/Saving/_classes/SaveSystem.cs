@@ -3,7 +3,8 @@ using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using ConcurrentCollections;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -97,7 +98,7 @@ namespace CCEnvs.Unity.Saving
         public async UniTask SaveAsync(string path)
         {
             SaveContext[] saveContexts = SerializeObjects();
-            string serialized = JsonConvert.SerializeObject(saveContexts, Formatting.Indented);
+            string serialized = JsonSerializer.Serialize(saveContexts);
             File.WriteAllText(path, serialized);
         }
 
@@ -164,7 +165,7 @@ namespace CCEnvs.Unity.Saving
                         Func<object, ISnapshot> converter = converters[pair.Key.type];
                         snapshot = converter(obj);
 
-                        var serialized = JsonConvert.SerializeObject(snapshot);
+                        var serialized = JsonSerializer.Serialize(snapshot);
                         serializedSnapshots.Add(serialized);
                     }
                     catch (Exception ex)
@@ -186,17 +187,12 @@ namespace CCEnvs.Unity.Saving
             return contexts.ToArray();
         }
 
-        private SaveUnit SerilializeSnapshot(ISnapshot converted)
-        {
-            return new SaveUnit(converted);
-        }
-
         private ISnapshot[] Deserialize(string serialized)
         {
-            var contexts = JsonConvert.DeserializeObject<SaveContext[]>(serialized);
+            var contexts = JsonSerializer.Deserialize<SaveContext[]>(serialized);
 
             return contexts.SelectMany(ctx => ctx.Data)
-                           .Select(content => JsonConvert.DeserializeObject<ISnapshot>(content)!)
+                           .Select(content => JsonSerializer.Deserialize<ISnapshot>(content)!)
                            .Where(x => x.IsNotNull())
                            .ToArray();
         }

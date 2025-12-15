@@ -9,7 +9,8 @@ namespace CCEnvs.Snapshots
     [Serializable]
     public abstract class Snapshot
     {
-        [JsonPropertyName("selfType")]
+        [JsonInclude]
+		[JsonPropertyName("selfType")]
         private TypeSnapshot selfType;
 
         public Snapshot()

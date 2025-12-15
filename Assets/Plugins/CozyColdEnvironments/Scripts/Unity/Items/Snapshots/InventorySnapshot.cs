@@ -1,6 +1,7 @@
 using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.Linq;
 
@@ -9,10 +10,12 @@ namespace CCEnvs.Unity.Items.Snapshots
 {
     public class InventorySnapshot : Snapshot<Inventory>
     {
-        [JsonProperty("itemContainers")]
+        [JsonInclude]
+		[JsonPropertyName("itemContainers")]
         private ItemContainerSnapshot[] itemContainers = Array.Empty<ItemContainerSnapshot>();
 
-        [JsonProperty("autoSize")]
+        [JsonInclude]
+		[JsonPropertyName("autoSize")]
         private bool autoSize;
 
         public InventorySnapshot()

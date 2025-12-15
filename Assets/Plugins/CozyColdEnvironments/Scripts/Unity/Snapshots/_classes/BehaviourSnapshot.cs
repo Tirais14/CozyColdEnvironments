@@ -1,6 +1,7 @@
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 
@@ -11,11 +12,13 @@ namespace CCEnvs.Unity.Snaphots
     public class BehaviourSnapshot : Snapshot<Behaviour>
     {
         [SerializeField]
-        [JsonProperty("componentSnapshot")]
+        [JsonInclude]
+		[JsonPropertyName("componentSnapshot")]
         protected ComponentSnapshot cmpSnapshot = new(); 
 
         [SerializeField]
-        [JsonProperty("enabled")]
+        [JsonInclude]
+		[JsonPropertyName("enabled")]
         protected bool enabled;
 
         public BehaviourSnapshot()
