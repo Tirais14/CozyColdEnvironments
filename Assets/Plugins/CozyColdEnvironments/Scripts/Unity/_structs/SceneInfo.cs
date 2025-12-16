@@ -50,6 +50,14 @@ namespace CCEnvs.Unity
             return !(left == right);
         }
 
+        public readonly bool IsMatch(SceneInfo other)
+        {
+            if (BuildIndex > -1 && BuildIndex == other.BuildIndex)
+                return true;
+
+            return Name == other.Name && Path == other.Path;
+        }
+
         public readonly bool Equals(SceneInfo other)
         {
             return BuildIndex == other.BuildIndex
@@ -67,6 +75,14 @@ namespace CCEnvs.Unity
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(BuildIndex, Path, Name);
+        }
+    }
+
+    public static class SceneInfoExtensions
+    {
+        public static SceneInfo GetSceneInfo(this Scene source)
+        {
+            return new SceneInfo(source);
         }
     }
 }

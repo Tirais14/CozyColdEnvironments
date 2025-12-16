@@ -2,6 +2,7 @@
 using CCEnvs.Async;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Json;
 using CCEnvs.Reflection;
 using CCEnvs.Returnables;
 using Humanizer;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CCEnvs
@@ -37,6 +39,12 @@ namespace CCEnvs
         public static string WordSeparator { get; set; } = "_";
         public static Func<bool> TruePredicate { get; } = static () => true;
         public static Func<bool> FalsePredicate { get; } = static () => false;
+        public static JsonSerializerOptions JsonOptions { get; } = JsonSerilizerOptionsProvider.GetDefault();
+        //public static JsonSerializerOptions JsonOptionsPolymorph { get; } = JsonSerilizerOptionsProvider.GetDefaultPolymorph();
+
+        public static void Install()
+        {
+        }
 
 #pragma warning disable S112
         public static class Throw

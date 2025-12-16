@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
@@ -12,13 +13,10 @@ namespace CCEnvs.Unity.Saving
 
         UniTask LoadAsync(string path);
 
-        /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?, Scene)"/></returns>
-        IDisposable BindObject(object obj, SceneInfo sceneInfo);
-        /// <inheritdoc cref="BindObject(object, SceneInfo)"/>
-        IDisposable BindObject(object obj, Scene scene);
+        /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?)"/></returns>
+        IDisposable BindObject(object obj, SceneInfo? sceneInfo = null);
 
-        bool UnbindObject(object? obj, SceneInfo scene);
-        bool UnbindObject(object? obj, Scene scene);
+        bool UnbindObject(object? obj);
 
         void RegisterType(Type type, Func<object, ISnapshot> serializableConverter);
         void RegisterType<T>(Func<object, ISnapshot> serializableConverter);

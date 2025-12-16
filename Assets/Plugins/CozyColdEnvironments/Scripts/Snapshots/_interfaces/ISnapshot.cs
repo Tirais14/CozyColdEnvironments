@@ -1,10 +1,12 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
+using CCEnvs.Json.Converters;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace CCEnvs.Snapshots
 {
+    [JsonConverter(typeof(PolymorphJsonConverter<ISnapshot>))]
     public interface ISnapshot
     {
         [JsonIgnore]

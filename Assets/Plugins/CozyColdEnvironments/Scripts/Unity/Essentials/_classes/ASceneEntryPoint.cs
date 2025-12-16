@@ -12,6 +12,7 @@ namespace CCEnvs.Unity.Essentials
         {
             base.Awake();
             Install.Static();
+            CC.Install();
             SceneInitializer.InitAllObjectsAsync(FindObjectsInactive.Exclude)
                 .Forget(ex => this.PrintException(ex));
         }

@@ -1,5 +1,4 @@
-using CCEnvs.Diagnostics;
-using Microsoft.Extensions.ObjectPool;
+using CommunityToolkit.Diagnostics;
 using System;
 
 #nullable enable
@@ -8,39 +7,43 @@ namespace CCEnvs.Pools
     public struct Pooled<T> : IDisposable
         where T : class
     {
-        public static Pooled<T> Default => new();
+        public static Pooled<T> Default { get; } = new();
 
-        private bool disposedValue;
+        private readonly object state;
+        private readonly Action<object, T> disposeAction;
 
-        public readonly ObjectPool<T> Pool;
+        public readonly T Value { get; }
+        public readonly bool IsValid { get; }
 
-        public T Value { get; private set; }
-        public readonly bool IsValid => !disposedValue && Pool is not null;
-
-        public Pooled(ObjectPool<T> pool, T value)
+        public Pooled(T value, object state, Action<object, T> disposeAction)
             :
             this()
         {
-            Pool = pool;
+            Guard.IsNotNull(disposeAction, nameof(disposeAction));
+
+            this.state = state;
             Value = value;
+            this.disposeAction = disposeAction;
+
+            IsValid = true;
         }
 
-        public static implicit operator bool(Pooled<T> source)
-        {
-            return source.IsValid;
-        }
-
+        private bool disposed;
         public void Dispose()
         {
+            if (disposed)
+                return;
+
             try
             {
-                Pool.Return(Value);
-                disposedValue = true;
+                disposeAction(state, Value);
             }
-            catch (Exception ex)
+            finally
             {
-                this.PrintException(ex);
+                disposed = true;
             }
+
+            disposed = true;
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 #nullable enable
 namespace CCEnvs.Json.Converters
 {
-    public class SnapshotConverter : PolymorphicJsonConverter<ISnapshot>
+    public class SnapshotConverter : PolymorphJsonConverter<ISnapshot>
     {
     }
 }

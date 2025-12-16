@@ -1,5 +1,4 @@
 using CCEnvs.Reflection;
-using CCEnvs.Snapshots;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -10,18 +9,21 @@ using System.Text.Json.Serialization;
 #nullable enable
 namespace CCEnvs.Json.Converters
 {
-    public static class PolymorphicJsonConverter
+    public static class PolymorphJsonConverter
     {
-        public static MemoryCache Cache { get; } = new(
+        internal static MemoryCache Cache { get; } = new(
             new MemoryCacheOptions
             {
                 ExpirationScanFrequency = 1.Minutes(),
             });
     }
 
-    public class PolymorphicJsonConverter<T> : JsonConverter<T>
+    public class PolymorphJsonConverter<T> : JsonConverter<T>
     {
-        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
@@ -46,27 +48,21 @@ namespace CCEnvs.Json.Converters
                 return;
             }
 
-            //JsonSerializerOptions configuredOptions = GetConfiguredOptions(options);
-            //using var doc = JsonDocument.Parse(JsonSerializer.Serialize(value, configuredOptions));
-
-            //writer.WriteStartObject();
-            //writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
-
-            //foreach (var prop in doc.RootElement.EnumerateObject())
-            //    prop.WriteTo(writer);
-
-            //writer.WriteEndObject();
-
             var toSerilize = JsonConverterHelper.PrepareToSerilize(value, options);
 
             writer.WriteStartObject();
             writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
-
-            string propValueSerialized;
+;
             foreach (var (propName, propValue) in toSerilize)
             {
-                propValueSerialized = JsonSerializer.Serialize(propValue, options);
-                writer.WriteString(propName, propValueSerialized);
+                if (propValue is null)
+                {
+                    writer.WriteNull(propName);
+                    continue;
+                }
+
+                writer.WritePropertyName(propName);
+                JsonSerializer.Serialize(writer, propValue, propValue.GetType(), options);
             }
 
             writer.WriteEndObject();
@@ -79,7 +75,7 @@ namespace CCEnvs.Json.Converters
 
         private JsonSerializerOptions GetConfiguredOptions(JsonSerializerOptions options)
         {
-            return PolymorphicJsonConverter.Cache.GetOrCreate((GetType(), GetType().GetGenericArguments()),
+            return PolymorphJsonConverter.Cache.GetOrCreate((GetType(), GetType().GetGenericArguments()),
                 (entry) =>
                 {
                     entry.AbsoluteExpirationRelativeToNow = 5.Minutes();

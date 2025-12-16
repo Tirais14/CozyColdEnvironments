@@ -6,7 +6,7 @@ namespace CCEnvs.Json
 {
     public static class JsonSerilizerOptionsProvider
     {
-        public static JsonSerializerOptions Get(params JsonConverter[] converters)
+        public static JsonSerializerOptions GetDefault(params JsonConverter[] converters)
         {
             var options = new JsonSerializerOptions()
             {
@@ -19,5 +19,10 @@ namespace CCEnvs.Json
 
             return options;
         }
+
+        //public static JsonSerializerOptions GetDefaultPolymorph(params JsonConverter[] converters)
+        //{
+        //    return GetDefault(converters.Append(new PolymorphJsonConverter<object>()));
+        //}
     }
 }

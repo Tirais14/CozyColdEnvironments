@@ -16,12 +16,12 @@ namespace CCEnvs.Unity.Snaphots
 
         [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("x")]
+		[JsonPropertyName("y")]
         private float y;
 
         [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("x")]
+		[JsonPropertyName("z")]
         private float z;
 
         public Vector3Snapshot()

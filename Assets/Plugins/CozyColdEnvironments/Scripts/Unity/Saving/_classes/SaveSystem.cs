@@ -1,6 +1,9 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
+using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
@@ -8,6 +11,7 @@ using ConcurrentCollections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,8 +25,9 @@ namespace CCEnvs.Unity.Saving
 {
     public sealed class SaveSystem : CCBehaviourStaticPublic<SaveSystem>, ISaveSystem
     {
-        private readonly Dictionary<(Type type, SceneInfo sceneInfo), ConcurrentHashSet<object>> collections = new();
+        private readonly Dictionary<Type, HashSet<(object obj, SceneInfo sceneInfo)>> objSets = new();
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
+        private readonly Dictionary<(object obj, Type objType), SceneInfo> objScenes = new();
         private readonly HashSet<Type> registeredTypes = new();
 
         protected override void Awake()
@@ -36,69 +41,62 @@ namespace CCEnvs.Unity.Saving
         {
             base.OnDestroy();
 
-            foreach (var collection in collections.Values)
+            foreach (var collection in objSets.Values)
                 collection.Clear();
 
-            collections.Clear();
+            objSets.Clear();
         }
 
-        public IDisposable BindObject(object obj, SceneInfo sceneInfo)
+        public IDisposable BindObject(object obj, SceneInfo? sceneInfo = null)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
             Type objType = obj.GetType();
+            sceneInfo ??= ResolveSceneInfo(obj);
 
             if (!IsTypeRegistered(objType))
                 throw new InvalidOperationException($"Type: {objType.GetType()} is not registered");
 
-            if (!collections.TryGetValue((objType, sceneInfo), out var collection))
+            if (!objSets.TryGetValue(objType, out var objs))
             {
-                collection = new ConcurrentHashSet<object>();
-                collections.TryAdd((objType, sceneInfo), collection);
+                objs = new HashSet<(object obj, SceneInfo sceneInfo)>();
+                objSets.Add(objType, objs);
             }
 
-            collection.Add(obj);
+            objs.Add((obj, sceneInfo.Value));
+            objScenes.Add((obj, obj.GetType()), sceneInfo.Value);
 
-            return Disposable.Create((@this: this, obj, sceneInfo),
+            return Disposable.Create((@this: this, obj),
                 static input =>
                 {
-                    input.@this.UnbindObject(input.obj, input.sceneInfo);
+                    input.@this.UnbindObject(input.obj);
                 })
                 .BindDisposableTo(this);
         }
 
-        public IDisposable BindObject(object obj, Scene scene)
-        {
-            return BindObject(obj, new SceneInfo(scene));
-        }
-
-        public bool UnbindObject(object? obj, SceneInfo sceneInfo)
+        public bool UnbindObject(object? obj)
         {
             if (obj is null)
                 return false;
 
-            if (!collections.TryGetValue((obj.GetType(), sceneInfo), out var collection))
+            if (!objSets.TryGetValue(obj.GetType(), out var collection))
                 return false;
 
-            return collection.TryRemove(obj);
-        }
-
-        public bool UnbindObject(object? obj, Scene scene)
-        {
-            return UnbindObject(obj, new SceneInfo(scene));
+            objScenes.Remove((obj, obj.GetType()), out SceneInfo sceneInfo);
+            return collection.Remove((obj, sceneInfo));
         }
 
         public async UniTask LoadAsync(string path)
         {
             string serailized = File.ReadAllText(path);
-            ISnapshot[] snapshots = Deserialize(serailized);
-            snapshots.RestoreStates();
+            var ctx = JsonSerializer.Deserialize<SaveFileData>(serailized, CC.JsonOptions);
+            ctx.ApplyToLoadedScenes();
         }
 
         public async UniTask SaveAsync(string path)
         {
-            SaveContext[] saveContexts = SerializeObjects();
-            string serialized = JsonSerializer.Serialize(saveContexts, JsonSerilizerOptionsProvider.Get(new SnapshotConverter()));
+            SaveFileData saveFileData = BuildSaveFileData();
+            string serialized = JsonSerializer.Serialize(saveFileData, CC.JsonOptions);
             File.WriteAllText(path, serialized);
         }
 
@@ -127,8 +125,8 @@ namespace CCEnvs.Unity.Saving
 
             converters.Remove(type);
 
-            foreach (var key in collections.Keys.Where(x => x.type == type))
-                collections.Remove(key);
+            foreach (var key in objSets.Keys)
+                objSets.Remove(key);
 
             return registeredTypes.Remove(type);
         }
@@ -149,52 +147,64 @@ namespace CCEnvs.Unity.Saving
             return IsTypeRegistered(typeof(T));
         }
 
-        private SaveContext[] SerializeObjects()
+        private SceneInfo ResolveSceneInfo(object obj)
         {
-            Dictionary<SceneInfo, List<ISnapshot>> rawData = new();
-            ISnapshot snapshot;
-            foreach (var pair in collections)
+            if (obj is UnityEngine.Object uObject)
             {
-                foreach (var obj in pair.Value)
-                {
-                    if (!rawData.TryGetValue(pair.Key.sceneInfo, out var serializedSnapshots))
-                    {
-                        serializedSnapshots = new List<ISnapshot>();
-                        rawData.Add(pair.Key.sceneInfo, serializedSnapshots);
-                    }
+                Scene objScene = GameObject.GetScene(uObject.GetInstanceID());
 
-                    try
-                    {
-                        Func<object, ISnapshot> converter = converters[pair.Key.type];
-                        snapshot = converter(obj);
-
-                        CC.Guard.IsNotNull(snapshot, nameof(snapshot));
-                        serializedSnapshots.Add(snapshot);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.PrintException(ex);
-                    }
-                }
+                if (objScene.IsValid())
+                    return objScene.GetSceneInfo();
             }
 
-            using var _ = ListPool<SaveContext>.Get(out var contexts);
-
-            SaveContext saveContext;
-            foreach (var item in rawData)
-            {
-                saveContext = new SaveContext(item.Key, item.Value);
-                contexts.Add(saveContext);
-            }
-
-            return contexts.ToArray();
+            return SceneManager.GetActiveScene().GetSceneInfo();
         }
 
-        private ISnapshot[] Deserialize(string serialized)
+        private PooledArray<(object obj, Func<object, ISnapshot> converter)> GetSceneObjects(SceneInfo sceneInfo)
         {
-            var contexts = JsonSerializer.Deserialize<SaveContext[]>(serialized);
+            using var _ = ListPool<(object obj, Func<object, ISnapshot> converter)>.Get(out var results);
 
-            return contexts.SelectMany(ctx => ctx.Data).ToArray();
+            (object obj, Func<object, ISnapshot> converter) sceneObj;
+            foreach (var (obj, objSceneInfo) in objSets.Values.SelectMany(x => x))
+            {
+                if (objSceneInfo != sceneInfo)
+                    continue;
+
+                sceneObj = (obj, converters[obj.GetType()]);
+                results.Add(sceneObj);
+            }
+
+            return results.ToArrayPooled();
+        }
+
+        private PooledArray<SaveSceneData> BuildSceneDatas()
+        {
+            using var _ = ListPool<SaveSceneData>.Get(out var sceneDatas);
+            using var __ = ListPool<ISnapshot>.Get(out var snapshots);
+
+            ISnapshot snapshot;
+            SaveSceneData sceneData;
+            foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes().Select(x => x.GetSceneInfo()))
+            {
+                using var sceneObjects = GetSceneObjects(sceneInfo);
+                foreach (var (obj, converter) in sceneObjects.Value)
+                {
+                    snapshot = converter(obj);
+                    snapshots.Add(snapshot);
+                }
+
+                sceneData = new SaveSceneData(sceneInfo, snapshots);
+                sceneDatas.Add(sceneData);
+                snapshots.Clear();
+            }
+
+            return sceneDatas.ToArrayPooled();
+        }
+
+        private SaveFileData BuildSaveFileData()
+        {
+            using PooledArray<SaveSceneData> sceneDatas = BuildSceneDatas();
+            return new SaveFileData(sceneDatas.Value, "0.0.0.0"); //TODO: Versioning
         }
     }
 
@@ -206,23 +216,7 @@ namespace CCEnvs.Unity.Saving
         public static IDisposable BindToSaveSystem(this object source)
         {
             CC.Guard.IsNotNull(source, nameof(source));
-            return SaveSystem.Self.BindObject(source, SceneManager.GetActiveScene());
-        }
-
-        public static IDisposable BindToSaveSystem(this object source, SceneInfo scene)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            return SaveSystem.Self.BindObject(source, scene);
-        }
-
-        public static IDisposable BindToSaveSystem(this object source, Scene scene)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-
-            if (!scene.IsValid())
-                throw new ArgumentException($"{nameof(scene)} is not valid");
-
-            return SaveSystem.Self.BindObject(source, scene);
+            return SaveSystem.Self.BindObject(source);
         }
 
         /// <summary>
