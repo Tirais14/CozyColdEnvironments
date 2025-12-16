@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using System;
+using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Pools

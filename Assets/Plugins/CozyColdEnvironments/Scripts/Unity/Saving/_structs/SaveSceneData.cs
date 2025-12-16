@@ -1,7 +1,7 @@
 using CCEnvs.Snapshots;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
 #nullable enable
@@ -10,22 +10,19 @@ namespace CCEnvs.Unity.Saving
     [Serializable]
     public struct SaveSceneData : IEquatable<SaveSceneData>
     {
-        [JsonInclude]
-        [JsonPropertyName("snapshots")]
-        private ISnapshot[] snapshots;
-
-        [JsonInclude]
 		[JsonPropertyName("scene")]
-        public SceneInfo SceneInfo { get; }
+        public SceneInfo SceneInfo { get; private set; }
 
-        [JsonIgnore]
-        public readonly IEnumerable<ISnapshot> Snapshots => snapshots;
+        [JsonPropertyName("snapshots")]
+        public ImmutableArray<ISnapshot> Snapshots { get; private set; }
 
         [JsonConstructor]
         public SaveSceneData(SceneInfo sceneInfo, IEnumerable<ISnapshot> snapshots)
         {
+            CC.Guard.IsNotNull(snapshots, nameof(snapshots));
+
             SceneInfo = sceneInfo;
-            this.snapshots = snapshots.ToArray();
+            Snapshots = snapshots.ToImmutableArray();
         }
 
         public static bool operator ==(SaveSceneData left, SaveSceneData right)
@@ -40,14 +37,14 @@ namespace CCEnvs.Unity.Saving
 
         public readonly void Apply()
         {
-            int length = snapshots.Length;
+            int length = Snapshots.Length;
             for (int i = 0; i < length; i++)
-                snapshots[i].Restore();
+                Snapshots[i].Restore();
         }
 
         public readonly bool Equals(SaveSceneData other)
         {
-            return snapshots == other.snapshots
+            return Snapshots == other.Snapshots
                    &&
                    SceneInfo == other.SceneInfo;
         }
@@ -59,7 +56,7 @@ namespace CCEnvs.Unity.Saving
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(snapshots, SceneInfo);
+            return HashCode.Combine(Snapshots, SceneInfo);
         }
     }
 }

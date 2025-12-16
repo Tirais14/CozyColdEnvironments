@@ -1,7 +1,6 @@
-using CCEnvs.Collections;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -9,20 +8,18 @@ using System.Text.Json.Serialization;
 namespace CCEnvs.Unity.Saving
 {
     [Serializable]
-    public struct SaveFileData : IEquatable<SaveFileData>, IEnumerable<SaveSceneData>
+    public struct SaveFileData : IEquatable<SaveFileData>
     {
-        [JsonInclude]
-        [JsonPropertyName("contexts")]
-        private SaveSceneData[] contexts;
-
-        [JsonInclude]
         [JsonPropertyName("version")]
         public string Version { get; private set; }
 
-        public SaveFileData(IEnumerable<SaveSceneData> contexts, string version)
+        [JsonPropertyName("contexts")]
+        public ImmutableArray<SaveSceneData> SceneDatas { get; private set; }
+
+        public SaveFileData(string version, IEnumerable<SaveSceneData> sceneDatas)
         {
-            this.contexts = contexts.ToArray();
             Version = version;
+            this.SceneDatas = sceneDatas.ToImmutableArray();
         }
 
         public static bool operator ==(SaveFileData left, SaveFileData right)
@@ -35,26 +32,29 @@ namespace CCEnvs.Unity.Saving
             return !(left == right);
         }
 
-        public readonly bool Equals(SaveFileData other)
-        {
-            return contexts == other.contexts
-                   &&
-                   Version == other.Version;
-        }
-
         public readonly void ApplyToLoadedScenes()
         {
-            HashSet<SceneInfo> loadedSceneInfos = SceneManagerHelper.GetLoadedScenes()
-                                                                    .Select(x => x.GetSceneInfo())
-                                                                    .ToHashSet();
+            if (SceneDatas.IsDefaultOrEmpty)
+                return;
 
-            foreach (var ctx in contexts)
+            HashSet<SceneInfo> loadedSceneInfos = SceneManagerHelper.GetLoadedScenes()
+                .Select(x => x.GetSceneInfo())
+                .ToHashSet();
+
+            foreach (var ctx in SceneDatas)
             {
                 if (!loadedSceneInfos.Contains(ctx.SceneInfo))
                     continue;
 
                 ctx.Apply();
             }
+        }
+
+        public readonly bool Equals(SaveFileData other)
+        {
+            return SceneDatas == other.SceneDatas
+                   &&
+                   Version == other.Version;
         }
 
         public readonly override bool Equals(object obj)
@@ -64,14 +64,7 @@ namespace CCEnvs.Unity.Saving
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(contexts, Version);
+            return HashCode.Combine(SceneDatas, Version);
         }
-
-        public readonly IEnumerator<SaveSceneData> GetEnumerator()
-        {
-            return contexts.GetEnumeratorT();
-        }
-
-        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

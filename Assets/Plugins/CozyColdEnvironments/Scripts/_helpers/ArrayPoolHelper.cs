@@ -12,7 +12,7 @@ namespace CCEnvs
             Guard.IsNotNull(source, nameof(source));
 
             T[] rented = source.Rent(minLength);
-            var handle = new Pooled<T[]>(rented, (source, rented),
+            var handle = new Pooled<T[]>(rented, source,
                 static (input, arr) =>
                 {
                     input.To<ArrayPool<T>>().Return(arr);

@@ -3,6 +3,7 @@ using CCEnvs.Async;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Json;
+using CCEnvs.Json.Converters;
 using CCEnvs.Reflection;
 using CCEnvs.Returnables;
 using Humanizer;
@@ -40,6 +41,7 @@ namespace CCEnvs
         public static Func<bool> TruePredicate { get; } = static () => true;
         public static Func<bool> FalsePredicate { get; } = static () => false;
         public static JsonSerializerOptions JsonOptions { get; } = JsonSerilizerOptionsProvider.GetDefault();
+        public static JsonSerializerOptions DebugJsonOptions { get; } = JsonSerilizerOptionsProvider.GetDefault().AddConverters(new DebugJsonConverter());
         //public static JsonSerializerOptions JsonOptionsPolymorph { get; } = JsonSerilizerOptionsProvider.GetDefaultPolymorph();
 
         public static void Install()

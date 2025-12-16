@@ -1,23 +1,20 @@
 using CCEnvs.Snapshots;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
 using UnityEngine;
 
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public class Vector2Snapshot : Snapshot<Vector2>
+    public sealed class Vector2Snapshot : Snapshot<Vector2>
     {
         [SerializeField]
-        [JsonInclude]
 		[JsonPropertyName("x")]
-        private float x;
+        public float X { get; private set; }
 
         [SerializeField]
-        [JsonInclude]
 		[JsonPropertyName("y")]
-        private float y;
+        public float Y { get; private set; }
 
         public Vector2Snapshot()
         {
@@ -25,11 +22,13 @@ namespace CCEnvs.Unity
 
         public Vector2Snapshot(Vector2 target) : base(target)
         {
+            X = target.x;
+            Y = target.y;
         }
 
         public override Vector2 Restore(Vector2 target)
         {
-            throw new System.NotImplementedException();
+            return new Vector2(X, Y);
         }
     }
 }

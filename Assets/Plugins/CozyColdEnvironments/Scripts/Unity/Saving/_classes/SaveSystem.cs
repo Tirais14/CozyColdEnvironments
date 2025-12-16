@@ -1,17 +1,10 @@
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Json;
-using CCEnvs.Json.Converters;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
-using ConcurrentCollections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -88,16 +81,22 @@ namespace CCEnvs.Unity.Saving
 
         public async UniTask LoadAsync(string path)
         {
-            string serailized = File.ReadAllText(path);
-            var ctx = JsonSerializer.Deserialize<SaveFileData>(serailized, CC.JsonOptions);
-            ctx.ApplyToLoadedScenes();
+            await UniTask.SwitchToThreadPool();
+            string serialized = await File.ReadAllTextAsync(path);
+            await UniTask.SwitchToMainThread();
+
+            var saveFileData = JsonSerializer.Deserialize<SaveFileData>(serialized, CC.DebugJsonOptions);
+            saveFileData.ApplyToLoadedScenes();
         }
 
         public async UniTask SaveAsync(string path)
         {
-            SaveFileData saveFileData = BuildSaveFileData();
+            SaveFileData saveFileData = await BuildSaveFileDataAsync();
             string serialized = JsonSerializer.Serialize(saveFileData, CC.JsonOptions);
-            File.WriteAllText(path, serialized);
+
+            await UniTask.SwitchToThreadPool();
+            await File.WriteAllTextAsync(path, serialized);
+            await UniTask.SwitchToMainThread();
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -160,8 +159,10 @@ namespace CCEnvs.Unity.Saving
             return SceneManager.GetActiveScene().GetSceneInfo();
         }
 
-        private PooledArray<(object obj, Func<object, ISnapshot> converter)> GetSceneObjects(SceneInfo sceneInfo)
+        private async UniTask<PooledArray<(object obj, Func<object, ISnapshot> converter)>> GetSceneObjectsAsync(SceneInfo sceneInfo)
         {
+            await UniTask.SwitchToThreadPool();
+
             using var _ = ListPool<(object obj, Func<object, ISnapshot> converter)>.Get(out var results);
 
             (object obj, Func<object, ISnapshot> converter) sceneObj;
@@ -174,10 +175,11 @@ namespace CCEnvs.Unity.Saving
                 results.Add(sceneObj);
             }
 
+            await UniTask.SwitchToMainThread();
             return results.ToArrayPooled();
         }
 
-        private PooledArray<SaveSceneData> BuildSceneDatas()
+        private async UniTask<PooledArray<SaveSceneData>> BuildSceneDatasAsync()
         {
             using var _ = ListPool<SaveSceneData>.Get(out var sceneDatas);
             using var __ = ListPool<ISnapshot>.Get(out var snapshots);
@@ -186,11 +188,18 @@ namespace CCEnvs.Unity.Saving
             SaveSceneData sceneData;
             foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes().Select(x => x.GetSceneInfo()))
             {
-                using var sceneObjects = GetSceneObjects(sceneInfo);
+                using var sceneObjects = await GetSceneObjectsAsync(sceneInfo);
                 foreach (var (obj, converter) in sceneObjects.Value)
                 {
-                    snapshot = converter(obj);
-                    snapshots.Add(snapshot);
+                    try
+                    {
+                        snapshot = converter(obj);
+                        snapshots.Add(snapshot);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.PrintException(ex);
+                    }
                 }
 
                 sceneData = new SaveSceneData(sceneInfo, snapshots);
@@ -201,10 +210,10 @@ namespace CCEnvs.Unity.Saving
             return sceneDatas.ToArrayPooled();
         }
 
-        private SaveFileData BuildSaveFileData()
+        private async UniTask<SaveFileData> BuildSaveFileDataAsync()
         {
-            using PooledArray<SaveSceneData> sceneDatas = BuildSceneDatas();
-            return new SaveFileData(sceneDatas.Value, "0.0.0.0"); //TODO: Versioning
+            using PooledArray<SaveSceneData> sceneDatas = await BuildSceneDatasAsync();
+            return new SaveFileData("0.0.0.0", sceneDatas.Value); //TODO: Versioning
         }
     }
 
