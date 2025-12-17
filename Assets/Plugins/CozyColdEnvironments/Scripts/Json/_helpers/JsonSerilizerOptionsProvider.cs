@@ -11,7 +11,10 @@ namespace CCEnvs.Json
             var options = new JsonSerializerOptions()
             {
                 WriteIndented = true,
-                IncludeFields = true
+                IncludeFields = true,
+                IgnoreReadOnlyFields = true,
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
 
             foreach (var conv in converters)

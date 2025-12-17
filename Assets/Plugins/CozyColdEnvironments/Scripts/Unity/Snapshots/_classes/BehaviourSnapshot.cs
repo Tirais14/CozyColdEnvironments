@@ -9,36 +9,37 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snaphots
 {
     [Serializable]
-    public class BehaviourSnapshot : Snapshot<Behaviour>
+    public class BehaviourSnapshot<T> : ComponentSnapshot<T>
+        where T : Behaviour
     {
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("componentSnapshot")]
-        protected ComponentSnapshot cmpSnapshot = new(); 
-
         [SerializeField]
-        [JsonInclude]
-		[JsonPropertyName("enabled")]
         protected bool enabled;
 
         public BehaviourSnapshot()
         {
         }
 
-        public BehaviourSnapshot(Behaviour target)
+        public BehaviourSnapshot(T target)
             :
             base(target)
         {
-            cmpSnapshot = new ComponentSnapshot(target);
             enabled = target.enabled;
         }
 
-        public override Behaviour Restore(Behaviour target)
+        [JsonConstructor]
+        public BehaviourSnapshot(bool enabled)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
-            Guard.IsNotNull(cmpSnapshot);
+            this.enabled = enabled;
+        }
 
-            target = cmpSnapshot.Restore(target).To<Behaviour>();
+        public override T Restore(T? target)
+        {
+            base.Restore(target);
+            target = base.Restore(target);
+
+            CC.Guard.IsNotNull(target, nameof(target));
+
             target.enabled = enabled;
 
             return target;

@@ -9,13 +9,13 @@ namespace CCEnvs.Unity.Snaphots
     [Serializable]
     public sealed class Vector2IntSnapshot : Snapshot<Vector2Int>
     {
+        [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("x")]
-        public int X { get; private set; }
+        private int x;
 
+        [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("y")]
-        public int Y { get; private set; }
+        private int y;
 
         public Vector2IntSnapshot()
         {
@@ -23,13 +23,20 @@ namespace CCEnvs.Unity.Snaphots
 
         public Vector2IntSnapshot(Vector2Int target) : base(target)
         {
-            X = target.x;
-            Y = target.y;
+            x = target.x;
+            y = target.y;
+        }
+
+        [JsonConstructor]
+        public Vector2IntSnapshot(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
         }
 
         public override Vector2Int Restore(Vector2Int target)
         {
-            return new Vector2Int(X, Y);
+            return new Vector2Int(x, y);
         }
     }
 }

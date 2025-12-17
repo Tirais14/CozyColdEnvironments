@@ -9,17 +9,17 @@ namespace CCEnvs.Unity.Snaphots
     [Serializable]
     public sealed class Vector3IntSnapshot : Snapshot<Vector3Int>
     {
+        [JsonInclude]
         [SerializeField]
-		[JsonPropertyName("x")]
-        public int X { get; private set; }
+        private int x;
 
+        [JsonInclude]
         [SerializeField]
-		[JsonPropertyName("y")]
-        public int Y { get; private set; }
+        private int y;
 
+        [JsonInclude]
         [SerializeField]
-		[JsonPropertyName("z")]
-        public int Z { get; private set; }
+        private int z;
 
         public Vector3IntSnapshot()
         {
@@ -27,14 +27,22 @@ namespace CCEnvs.Unity.Snaphots
 
         public Vector3IntSnapshot(Vector3Int target) : base(target)
         {
-            X = target.x;
-            Y = target.y;
-            Z = target.z;
+            x = target.x;
+            y = target.y;
+            z = target.z;
+        }
+
+        [JsonConstructor]
+        public Vector3IntSnapshot(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
 
         public override Vector3Int Restore(Vector3Int target)
         {
-            return new Vector3Int(X, Y, Z);
+            return new Vector3Int(x, y, z);
         }
     }
 }

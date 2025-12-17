@@ -19,7 +19,7 @@ namespace CCEnvs.Json.Converters
             foreach (var prop in doc.RootElement.EnumerateObject())
                 this.PrintLog($"Readed '{prop}'");
 
-            return null;
+            return !typeToConvert.IsClass ? Activator.CreateInstance(typeToConvert) : null;
         }
 
         public override void Write(

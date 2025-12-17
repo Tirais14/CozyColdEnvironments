@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System;
 using System.Linq;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Items.Snapshots
@@ -11,12 +12,12 @@ namespace CCEnvs.Unity.Items.Snapshots
     public class InventorySnapshot : Snapshot<Inventory>
     {
         [JsonInclude]
-		[JsonPropertyName("itemContainers")]
-        private ItemContainerSnapshot[] itemContainers = Array.Empty<ItemContainerSnapshot>();
+        [SerializeField]
+        protected ItemContainerSnapshot[] itemContainers = Array.Empty<ItemContainerSnapshot>();
 
         [JsonInclude]
-		[JsonPropertyName("autoSize")]
-        private bool autoSize;
+        [SerializeField]
+        protected bool autoSize;
 
         public InventorySnapshot()
         {
@@ -28,7 +29,14 @@ namespace CCEnvs.Unity.Items.Snapshots
             itemContainers = CaptureItemContainerStates(target);
         }
 
-        public override Inventory Restore(Inventory target)
+        [JsonConstructor]
+        public InventorySnapshot(ItemContainerSnapshot[] itemContainers, bool autoSize)
+        {
+            this.itemContainers = itemContainers;
+            this.autoSize = autoSize;
+        }
+
+        public override Inventory Restore(Inventory? target)
         {
             var inv = new Inventory
             {

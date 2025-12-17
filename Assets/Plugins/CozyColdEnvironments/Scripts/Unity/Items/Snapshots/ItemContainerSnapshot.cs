@@ -1,9 +1,8 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
-using static UnityEditor.Experimental.GraphView.Port;
+using System.Text.Json.Serialization;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Items.Snapshots
@@ -12,24 +11,24 @@ namespace CCEnvs.Unity.Items.Snapshots
     public class ItemContainerSnapshot : Snapshot<ItemContainer>
     {
         [JsonInclude]
-		[JsonPropertyName("item")]
-        public Maybe<IItem> Item { get; private set; }
+        [SerializeField]
+        protected Maybe<IItem> item;
 
         [JsonInclude]
-		[JsonPropertyName("itemCount")]
-        public int ItemCount { get; private set; }
+        [SerializeField]
+        protected int itemCount;
 
         [JsonInclude]
-		[JsonPropertyName("capacity")]
-        public int Capacity { get; private set; }
+        [SerializeField]
+        protected int capacity;
 
         [JsonInclude]
-		[JsonPropertyName("isReadOnlyContainer")]
-        public bool IsReadOnlyContainer { get; private set; }
+        [SerializeField]
+        protected bool isReadOnlyContainer;
 
         [JsonInclude]
-		[JsonPropertyName("unlockCapacity")]
-        public bool UnlockCapacity { get; private set; }
+        [SerializeField]
+        protected bool unlockCapacity;
 
         public ItemContainerSnapshot()
         {
@@ -37,11 +36,11 @@ namespace CCEnvs.Unity.Items.Snapshots
 
         public ItemContainerSnapshot(ItemContainer target) : base(target)
         {
-            Item = target.Item;
-            ItemCount = target.ItemCount;
-            Capacity = target.Capacity;
-            IsReadOnlyContainer = target.IsReadOnlyContainer;
-            UnlockCapacity = target.UnlockCapacity;
+            item = target.Item;
+            itemCount = target.ItemCount;
+            capacity = target.Capacity;
+            isReadOnlyContainer = target.IsReadOnlyContainer;
+            unlockCapacity = target.UnlockCapacity;
         }
 
         public ItemContainerSnapshot(IItemContainer target)
@@ -58,17 +57,27 @@ namespace CCEnvs.Unity.Items.Snapshots
         {
         }
 
-        public override ItemContainer Restore(ItemContainer target)
+        [JsonConstructor]
+        public ItemContainerSnapshot(Maybe<IItem> item, int itemCount, int capacity, bool isReadOnlyContainer, bool unlockCapacity)
+        {
+            this.item = item;
+            this.itemCount = itemCount;
+            this.capacity = capacity;
+            this.isReadOnlyContainer = isReadOnlyContainer;
+            this.unlockCapacity = unlockCapacity;
+        }
+
+        public override ItemContainer Restore(ItemContainer? target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
             return new ItemContainer(
-                item: Item.Raw,
-                count: ItemCount,
-                isReadOnlyContainer: IsReadOnlyContainer)
+                item: item.Raw,
+                count: itemCount,
+                isReadOnlyContainer: isReadOnlyContainer)
             {
-                UnlockCapacity = UnlockCapacity,
-                Capacity = Capacity,
+                UnlockCapacity = unlockCapacity,
+                Capacity = capacity,
             };
         }
     }

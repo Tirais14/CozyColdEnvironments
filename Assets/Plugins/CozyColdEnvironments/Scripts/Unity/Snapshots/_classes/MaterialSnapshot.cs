@@ -1,7 +1,6 @@
 using CCEnvs.Snapshots;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
@@ -10,9 +9,8 @@ namespace CCEnvs.Unity.Snaphots
     [Serializable]
     public class MaterialSnapshot : Snapshot<Material>
     {
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("color")]
+        [SerializeField]
         protected Color color;
 
         public MaterialSnapshot()
@@ -26,7 +24,13 @@ namespace CCEnvs.Unity.Snaphots
             color = target.color;
         }
 
-        public override Material Restore(Material target)
+        [JsonConstructor]
+        public MaterialSnapshot(Color color)
+        {
+            this.color = color;
+        }
+
+        public override Material Restore(Material? target)
         {
             CC.Guard.IsNotNullTarget(target);
 

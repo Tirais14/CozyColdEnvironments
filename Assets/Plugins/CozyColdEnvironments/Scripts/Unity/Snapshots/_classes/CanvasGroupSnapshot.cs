@@ -1,40 +1,28 @@
-using CCEnvs.Snapshots;
-using CommunityToolkit.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snaphots.UI
 {
     [Serializable]
-    public class CanvasGroupSnapshot : Snapshot<CanvasGroup>
+    public sealed class CanvasGroupSnapshot : BehaviourSnapshot<CanvasGroup>
     {
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("behaviourSnapshot")]
-        protected BehaviourSnapshot? behSnapshot;
+        [SerializeField]
+        private float alpha = 1f;
 
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("alpha")]
-        protected float alpha = 1f;
+        [SerializeField]
+        private bool interactable = true;
 
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("interactable")]
-        protected bool interactable = true;
+        [SerializeField]
+        private bool blockRaycasts = true;
 
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("blockRaycasts")]
-        protected bool blockRaycasts = true;
-
         [SerializeField]
-        [JsonInclude]
-		[JsonPropertyName("ignoreParentGroups")]
-        protected bool ignoreParentGroups;
+        private bool ignoreParentGroups;
 
         public CanvasGroupSnapshot()
         {
@@ -42,19 +30,26 @@ namespace CCEnvs.Unity.Snaphots.UI
 
         public CanvasGroupSnapshot(CanvasGroup target) : base(target)
         {
-            behSnapshot = new BehaviourSnapshot(target);
             alpha = target.alpha;
             interactable = target.interactable;
             blockRaycasts = target.blocksRaycasts;
             ignoreParentGroups = target.ignoreParentGroups;
         }
 
-        public override CanvasGroup Restore(CanvasGroup target)
+        [JsonConstructor]
+        public CanvasGroupSnapshot(float alpha, bool interactable, bool blockRaycasts, bool ignoreParentGroups)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
-            Guard.IsNotNull(behSnapshot);
+            this.alpha = alpha;
+            this.interactable = interactable;
+            this.blockRaycasts = blockRaycasts;
+            this.ignoreParentGroups = ignoreParentGroups;
+        }
 
-            behSnapshot.Restore(target);
+        public override CanvasGroup Restore(CanvasGroup? target)
+        {
+            base.Restore(target);
+            CC.Guard.IsNotNull(target, nameof(target));
+
             target.alpha = alpha;
             target.interactable = interactable;
             target.blocksRaycasts = blockRaycasts;

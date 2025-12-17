@@ -1,8 +1,5 @@
-using CCEnvs.Snapshots;
-using CommunityToolkit.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,21 +7,14 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.Snaphots.UI
 {
     [Serializable]
-    public class GraphicSnapshot : Snapshot<Graphic>
+    public class GraphicSnapshot : BehaviourSnapshot<Graphic>
     {
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("behaviourSnapshot")]
-        protected BehaviourSnapshot? behSnapshot;
-
         [SerializeField]
-        [JsonInclude]
-		[JsonPropertyName("behaviourSnapshot")]
         protected Color color;
 
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("behaviourSnapshot")]
+        [SerializeField]
         protected bool raycastTarget;
 
         public GraphicSnapshot()
@@ -35,17 +25,23 @@ namespace CCEnvs.Unity.Snaphots.UI
             :
             base(target)
         {
-            behSnapshot = new BehaviourSnapshot(target);
             color =  target.color;
             raycastTarget = target.raycastTarget;
         }
 
-        public override Graphic Restore(Graphic target)
+        [JsonConstructor]
+        public GraphicSnapshot(Color color, bool raycastTarget)
         {
-            CC.Guard.IsNotNullTarget(target);
-            Guard.IsNotNull(behSnapshot);
+            this.color = color;
+            this.raycastTarget = raycastTarget;
+        }
 
-            behSnapshot.Restore(target);
+        public override Graphic Restore(Graphic? target)
+        {
+            base.Restore(target);
+
+            CC.Guard.IsNotNullTarget(target);
+
             target.color = color;
             target.raycastTarget = raycastTarget;
 

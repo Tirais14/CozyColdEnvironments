@@ -10,17 +10,15 @@ namespace CCEnvs.Unity.Snaphots
 {
     [Serializable]
     [JsonConverter(typeof(SnapshotConverter))]
-    public class TransformSnapshot : Snapshot<Transform>
+    public class TransformSnapshot : ComponentSnapshot<Transform>
     {
         [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("position")]
-        public Vector3Snapshot? Position { get; private set; }
+        protected Vector3Snapshot? position;
 
         [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("rotation")]
-        public QuaternionSnapshot? Rotation { get; private set; }
+        protected QuaternionSnapshot? rotation;
 
         public TransformSnapshot()
         {
@@ -28,17 +26,26 @@ namespace CCEnvs.Unity.Snaphots
 
         public TransformSnapshot(Transform target) : base(target)
         {
-            Position = new Vector3Snapshot(target.position);
-            Rotation = new QuaternionSnapshot(target.rotation);
+            position = new Vector3Snapshot(target.position);
+            rotation = new QuaternionSnapshot(target.rotation);
+        }
+
+        [JsonConstructor]
+        public TransformSnapshot(Vector3Snapshot? position, QuaternionSnapshot? rotation)
+        {
+            this.position = position;
+            this.rotation = rotation;
         }
 
         public override Transform Restore(Transform? target)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
-            Guard.IsNotNull(Position);
-            Guard.IsNotNull(Rotation);
+            base.Restore(target);
 
-            target.SetPositionAndRotation(Position.Restore(), Rotation.Restore());
+            CC.Guard.IsNotNull(target, nameof(target));
+            Guard.IsNotNull(position);
+            Guard.IsNotNull(rotation);
+
+            target.SetPositionAndRotation(position.Restore(), rotation.Restore());
             return target;
         }
     }

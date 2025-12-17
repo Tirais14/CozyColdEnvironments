@@ -6,21 +6,29 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public class ComponentSnapshot : Snapshot<Component>
+    public class ComponentSnapshot<T> : Snapshot<T>
+        where T : Component
     {
         public ComponentSnapshot()
         {
         }
 
-        public ComponentSnapshot(Component target)
+        public ComponentSnapshot(T target)
             :
             base(target)
         {
         }
 
-        public override Component Restore(Component target)
+        public override T Restore(T? target)
         {
+            CC.Guard.IsNotNullTarget(target);
+
             return target;
         }
+    }
+
+    [Serializable]
+    public class ComponentSnapshot : ComponentSnapshot<Component>
+    {
     }
 }

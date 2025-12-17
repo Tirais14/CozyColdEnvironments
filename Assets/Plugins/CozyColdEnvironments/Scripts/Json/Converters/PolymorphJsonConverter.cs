@@ -1,23 +1,11 @@
 using CCEnvs.Reflection;
-using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
 {
-    public static class PolymorphJsonConverter
-    {
-        internal static MemoryCache Cache { get; } = new(
-            new MemoryCacheOptions
-            {
-                ExpirationScanFrequency = 1.Minutes(),
-            });
-    }
-
     public class PolymorphJsonConverter<T> : JsonConverter<T>
     {
         public override T? Read(
@@ -28,13 +16,24 @@ namespace CCEnvs.Json.Converters
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
 
-            var doc = JsonDocument.ParseValue(ref reader);
+            using var doc = JsonDocument.ParseValue(ref reader);
             JsonElement typeProp = doc.RootElement.GetProperty("$type");
             string typeReference = typeProp.GetString() ?? throw new JsonException("Missing '$type'");
             var actualType = Type.GetType(typeReference, throwOnError: true);
 
-            JsonSerializerOptions configuredOptions = GetConfiguredOptions(options);
-            return (T?)JsonSerializer.Deserialize(doc, actualType, configuredOptions);
+            T inst;
+            try
+            {
+                inst = (T)Activator.CreateInstance(actualType);
+            }
+            catch (Exception ex)
+            {
+                throw new NotSupportedException($"Type '{actualType}' not supports constructor with parameters for now", ex);
+            }
+
+            JsonConverterHelper.Populate(inst, doc, options);
+
+            return inst;
         }
 
         public override void Write(
@@ -48,21 +47,23 @@ namespace CCEnvs.Json.Converters
                 return;
             }
 
-            var toSerilize = JsonConverterHelper.PrepareToSerilize(value, options);
+            Type valueType = value.GetType();
+            var jsonPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, options);
 
             writer.WriteStartObject();
             writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
-;
-            foreach (var (propName, propValue) in toSerilize)
+
+            foreach (var jsonPropInfo in jsonPropInfos)
             {
-                if (propValue is null)
+                if (jsonPropInfo.Get is null || !jsonPropInfo.Get(value).Let(out object? propValue))
                 {
-                    writer.WriteNull(propName);
+                    writer.WriteNull(jsonPropInfo.Name);
                     continue;
                 }
 
-                writer.WritePropertyName(propName);
-                JsonSerializer.Serialize(writer, propValue, propValue.GetType(), options);
+                writer.WritePropertyName(jsonPropInfo.Name);
+
+                JsonSerializer.Serialize(writer, propValue, options);
             }
 
             writer.WriteEndObject();
@@ -71,25 +72,6 @@ namespace CCEnvs.Json.Converters
         public override bool CanConvert(Type typeToConvert)
         {
             return typeToConvert.IsType<T>();
-        }
-
-        private JsonSerializerOptions GetConfiguredOptions(JsonSerializerOptions options)
-        {
-            return PolymorphJsonConverter.Cache.GetOrCreate((GetType(), GetType().GetGenericArguments()),
-                (entry) =>
-                {
-                    entry.AbsoluteExpirationRelativeToNow = 5.Minutes();
-
-                    options = new JsonSerializerOptions(options);
-
-                    Type thisType = GetType();
-                    foreach (var conv in options.Converters.ToArray().Where(conv => conv.GetType() == thisType))
-                        options.Converters.Remove(conv);
-
-                    return options;
-                }) 
-                ??
-                throw new InvalidOperationException($"Missing '{nameof(JsonSerializerOptions)}'");
         }
     }
 }

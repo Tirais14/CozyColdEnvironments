@@ -8,18 +8,16 @@ using System.Text.Json.Serialization;
 namespace CCEnvs.Unity.Saving
 {
     [Serializable]
-    public struct SaveFileData : IEquatable<SaveFileData>
+    public readonly struct SaveFileData : IEquatable<SaveFileData>
     {
-        [JsonPropertyName("version")]
-        public string Version { get; private set; }
+        public string Version { get; }
+        public IReadOnlyList<SaveSceneData> SceneDatas { get;}
 
-        [JsonPropertyName("contexts")]
-        public ImmutableArray<SaveSceneData> SceneDatas { get; private set; }
-
-        public SaveFileData(string version, IEnumerable<SaveSceneData> sceneDatas)
+        [JsonConstructor]
+        public SaveFileData(string version, IReadOnlyList<SaveSceneData> sceneDatas)
         {
             Version = version;
-            this.SceneDatas = sceneDatas.ToImmutableArray();
+            SceneDatas = sceneDatas.ToImmutableArray();
         }
 
         public static bool operator ==(SaveFileData left, SaveFileData right)
@@ -34,7 +32,7 @@ namespace CCEnvs.Unity.Saving
 
         public readonly void ApplyToLoadedScenes()
         {
-            if (SceneDatas.IsDefaultOrEmpty)
+            if (SceneDatas.IsNullOrEmpty())
                 return;
 
             HashSet<SceneInfo> loadedSceneInfos = SceneManagerHelper.GetLoadedScenes()

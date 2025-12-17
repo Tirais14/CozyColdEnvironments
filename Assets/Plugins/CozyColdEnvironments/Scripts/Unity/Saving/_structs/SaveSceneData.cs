@@ -8,16 +8,14 @@ using System.Text.Json.Serialization;
 namespace CCEnvs.Unity.Saving
 {
     [Serializable]
-    public struct SaveSceneData : IEquatable<SaveSceneData>
+    public readonly struct SaveSceneData : IEquatable<SaveSceneData>
     {
-		[JsonPropertyName("scene")]
-        public SceneInfo SceneInfo { get; private set; }
+        public SceneInfo SceneInfo { get; }
 
-        [JsonPropertyName("snapshots")]
-        public ImmutableArray<ISnapshot> Snapshots { get; private set; }
+        public IReadOnlyList<ISnapshot> Snapshots { get; }
 
         [JsonConstructor]
-        public SaveSceneData(SceneInfo sceneInfo, IEnumerable<ISnapshot> snapshots)
+        public SaveSceneData(SceneInfo sceneInfo, IReadOnlyList<ISnapshot> snapshots)
         {
             CC.Guard.IsNotNull(snapshots, nameof(snapshots));
 
@@ -37,7 +35,7 @@ namespace CCEnvs.Unity.Saving
 
         public readonly void Apply()
         {
-            int length = Snapshots.Length;
+            int length = Snapshots.Count;
             for (int i = 0; i < length; i++)
                 Snapshots[i].Restore();
         }

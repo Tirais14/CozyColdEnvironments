@@ -8,21 +8,21 @@ namespace CCEnvs.Unity
     [Serializable]
     public sealed class QuaternionSnapshot : Snapshot<Quaternion>
     {
+        [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("x")]
-        public float X { get; private set; }
+        private float x;
 
+        [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("y")]
-        public float Y { get; private set; }
+        private float y;
 
+        [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("z")]
-        public float Z { get; private set; }
+        private float z;
 
+        [JsonInclude]
         [SerializeField]
-        [JsonPropertyName("w")]
-        public float W { get; private set; }
+        private float w;
 
         public QuaternionSnapshot()
         {
@@ -30,15 +30,24 @@ namespace CCEnvs.Unity
 
         public QuaternionSnapshot(Quaternion target) : base(target)
         {
-            X = target.x;
-            Y = target.y;
-            Z = target.z;
-            W = target.w;
+            x = target.x;
+            y = target.y;
+            z = target.z;
+            w = target.w;
+        }
+
+        [JsonConstructor]
+        public QuaternionSnapshot(float x, float y, float z, float w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         }
 
         public override Quaternion Restore(Quaternion target)
         {
-            return new Quaternion(X, Y, Z, W);
+            return new Quaternion(x, y, z, w);
         }
     }
 }

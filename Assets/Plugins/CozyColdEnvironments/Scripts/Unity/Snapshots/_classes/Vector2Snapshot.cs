@@ -8,13 +8,13 @@ namespace CCEnvs.Unity
     [Serializable]
     public sealed class Vector2Snapshot : Snapshot<Vector2>
     {
+        [JsonInclude]
         [SerializeField]
-		[JsonPropertyName("x")]
-        public float X { get; private set; }
+        private float x;
 
+        [JsonInclude]
         [SerializeField]
-		[JsonPropertyName("y")]
-        public float Y { get; private set; }
+        private float y;
 
         public Vector2Snapshot()
         {
@@ -22,13 +22,20 @@ namespace CCEnvs.Unity
 
         public Vector2Snapshot(Vector2 target) : base(target)
         {
-            X = target.x;
-            Y = target.y;
+            x = target.x;
+            y = target.y;
+        }
+
+        [JsonConstructor]
+        public Vector2Snapshot(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
         }
 
         public override Vector2 Restore(Vector2 target)
         {
-            return new Vector2(X, Y);
+            return new Vector2(x, y);
         }
     }
 }

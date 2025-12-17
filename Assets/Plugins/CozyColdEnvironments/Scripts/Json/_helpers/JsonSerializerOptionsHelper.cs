@@ -85,5 +85,11 @@ namespace CCEnvs.Json
 
             return source;
         }
+
+        public static JsonSerializerOptions Clone(this JsonSerializerOptions source)
+        {
+            Guard.IsNotNull(source, nameof(source));
+            return new JsonSerializerOptions(source);
+        }
     }
 }

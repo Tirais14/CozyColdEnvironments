@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -85,7 +86,7 @@ namespace CCEnvs.Unity.Saving
             string serialized = await File.ReadAllTextAsync(path);
             await UniTask.SwitchToMainThread();
 
-            var saveFileData = JsonSerializer.Deserialize<SaveFileData>(serialized, CC.DebugJsonOptions);
+            var saveFileData = JsonSerializer.Deserialize<SaveFileData>(serialized, CC.JsonOptions);
             saveFileData.ApplyToLoadedScenes();
         }
 
@@ -213,7 +214,7 @@ namespace CCEnvs.Unity.Saving
         private async UniTask<SaveFileData> BuildSaveFileDataAsync()
         {
             using PooledArray<SaveSceneData> sceneDatas = await BuildSceneDatasAsync();
-            return new SaveFileData("0.0.0.0", sceneDatas.Value); //TODO: Versioning
+            return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray()); //TODO: Versioning
         }
     }
 

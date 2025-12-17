@@ -1,19 +1,18 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
 {
+    [Serializable]
     public class ShowableSnapshot : Snapshot<IShowable>
     {
-        [SerializeField]
         [JsonInclude]
-		[JsonPropertyName("isShown")]
-        protected bool IsShown;
+        [SerializeField]
+        protected bool isShown;
 
         [NonSerialized]
         protected Maybe<GameObject> gameObject;
@@ -22,17 +21,22 @@ namespace CCEnvs.Unity.UI
             :
             base(target)
         {
-            IsShown = target.IsShown;
+            isShown = target.IsShown;
 
             if (target.As<Component>().TryGetValue(out var cmp))
                 gameObject = cmp.gameObject;
         }
 
-        public override IShowable Restore(IShowable target)
+        public ShowableSnapshot(bool isShown)
+        {
+            this.isShown = isShown;
+        }
+
+        public override IShowable Restore(IShowable? target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
-            if (IsShown)
+            if (isShown)
                 target.Show();
 
             return target;
@@ -40,7 +44,7 @@ namespace CCEnvs.Unity.UI
 
         public override string ToString()
         {
-            return $"{nameof(Target)}: {Target}; {nameof(IsShown)}: {IsShown}; {nameof(gameObject)}: {gameObject}.";
+            return $"{nameof(Target)}: {Target}; {nameof(isShown)}: {isShown}; {nameof(gameObject)}: {gameObject}.";
         }
     }
 }
