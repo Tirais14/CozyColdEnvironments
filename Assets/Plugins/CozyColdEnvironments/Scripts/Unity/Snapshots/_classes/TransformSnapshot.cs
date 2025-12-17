@@ -6,19 +6,14 @@ using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snaphots
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     [JsonConverter(typeof(SnapshotConverter))]
     public class TransformSnapshot : ComponentSnapshot<Transform>
     {
-        [JsonInclude]
-        [SerializeField]
-        protected Vector3Snapshot? position;
-
-        [JsonInclude]
-        [SerializeField]
-        protected QuaternionSnapshot? rotation;
+        public Vector3Snapshot? Position { get; set; }
+        public QuaternionSnapshot? Rotation { get; set; }
 
         public TransformSnapshot()
         {
@@ -26,15 +21,8 @@ namespace CCEnvs.Unity.Snaphots
 
         public TransformSnapshot(Transform target) : base(target)
         {
-            position = new Vector3Snapshot(target.position);
-            rotation = new QuaternionSnapshot(target.rotation);
-        }
-
-        [JsonConstructor]
-        public TransformSnapshot(Vector3Snapshot? position, QuaternionSnapshot? rotation)
-        {
-            this.position = position;
-            this.rotation = rotation;
+            Position = new Vector3Snapshot(target.position);
+            Rotation = new QuaternionSnapshot(target.rotation);
         }
 
         public override Transform Restore(Transform? target)
@@ -42,10 +30,10 @@ namespace CCEnvs.Unity.Snaphots
             base.Restore(target);
 
             CC.Guard.IsNotNull(target, nameof(target));
-            Guard.IsNotNull(position);
-            Guard.IsNotNull(rotation);
+            Guard.IsNotNull(Position);
+            Guard.IsNotNull(Rotation);
 
-            target.SetPositionAndRotation(position.Restore(), rotation.Restore());
+            target.SetPositionAndRotation(Position.Restore(), Rotation.Restore());
             return target;
         }
     }

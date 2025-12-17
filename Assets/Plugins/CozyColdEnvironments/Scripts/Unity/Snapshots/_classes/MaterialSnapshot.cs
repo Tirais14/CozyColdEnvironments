@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snaphots
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     public class MaterialSnapshot : Snapshot<Material>

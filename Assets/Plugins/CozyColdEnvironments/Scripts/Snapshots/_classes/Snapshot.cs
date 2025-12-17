@@ -6,9 +6,14 @@ using System.Text.Json.Serialization;
 #nullable enable
 namespace CCEnvs.Snapshots
 {
+    public abstract class Snapshot
+    {
+
+    }
+
     [Serializable]
     [JsonConverter(typeof(SnapshotConverter))]
-    public abstract class Snapshot<T> : ISnapshot<T>
+    public abstract class Snapshot<T> : Snapshot, ISnapshot<T>
     {
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
@@ -31,6 +36,10 @@ namespace CCEnvs.Snapshots
 
         public T Restore() => Restore(Target.Raw);
 
-        public abstract T Restore(T? target);
+        public abstract T Restore(T target);
+
+        protected virtual void OnCreated()
+        {
+        }
     }
 }

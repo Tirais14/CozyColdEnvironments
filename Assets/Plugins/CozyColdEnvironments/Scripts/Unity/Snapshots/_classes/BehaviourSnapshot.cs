@@ -6,7 +6,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snaphots
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     public class BehaviourSnapshot<T> : ComponentSnapshot<T>

@@ -1,5 +1,5 @@
 using CCEnvs.Snapshots;
-using CCEnvs.Unity.Snaphots.UI;
+using CCEnvs.Unity.Snapshots.UI;
 using SuperLinq;
 using System;
 using System.Collections.Generic;

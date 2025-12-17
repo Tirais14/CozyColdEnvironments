@@ -165,16 +165,16 @@ namespace CCEnvs.Json
                     continue;
 
                 if (!MatchMember(members, jsonProp.Name, options).TryGetValue(out MemberInfo? member))
-                    throw new InvalidOperationException($"Serializable member of json property '{jsonProp}' not found in type '{instType}'");
+                    throw new InvalidOperationException($"Serializable member of json property not found in type '{instType}'");
 
                 if (member is PropertyInfo prop)
                 {
-                    deserializedProp = jsonProp.Value.Deserialize(prop.PropertyType);
+                    deserializedProp = jsonProp.Value.Deserialize(prop.PropertyType, options);
                     propSetter = (inst, value) => prop.GetSetMethod().Invoke(inst, Range.From(value));
                 }
                 else if (member is FieldInfo field)
                 {
-                    deserializedProp = jsonProp.Value.Deserialize(field.FieldType);
+                    deserializedProp = jsonProp.Value.Deserialize(field.FieldType, options);
                     propSetter = (inst, value) => field.SetValue(inst, value);
                 }
 
@@ -194,10 +194,10 @@ namespace CCEnvs.Json
             if (member is PropertyInfo prop)
             {
                 if (prop.CanRead)
-                    getter = (Func<object, object?>?)prop.GetMethod.CreateDelegate(typeof(Func<object, object?>));
+                    getter = (inst) => prop.GetValue(inst);
 
                 if (prop.CanWrite && prop.SetMethod.IsPublic)
-                    setter = (Action<object, object?>)prop.SetMethod.CreateDelegate(typeof(Action<object, object?>));
+                    setter = (inst, value) => prop.SetValue(inst, value);
 
                 return (getter, setter);
             }

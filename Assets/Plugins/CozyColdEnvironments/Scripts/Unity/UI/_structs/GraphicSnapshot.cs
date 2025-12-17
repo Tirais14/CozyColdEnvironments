@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.Snaphots.UI
+namespace CCEnvs.Unity.Snapshots.UI
 {
     [Serializable]
     public class GraphicSnapshot : BehaviourSnapshot<Graphic>

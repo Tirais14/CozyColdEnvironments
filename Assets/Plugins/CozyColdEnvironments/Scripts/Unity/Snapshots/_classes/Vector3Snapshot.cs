@@ -3,7 +3,7 @@ using System;
 using System.Text.Json.Serialization;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Snaphots
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     public sealed class Vector3Snapshot : Snapshot<Vector3>

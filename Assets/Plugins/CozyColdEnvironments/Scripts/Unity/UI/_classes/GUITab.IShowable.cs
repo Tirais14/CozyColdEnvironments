@@ -1,6 +1,6 @@
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Snaphots.UI;
+using CCEnvs.Unity.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;

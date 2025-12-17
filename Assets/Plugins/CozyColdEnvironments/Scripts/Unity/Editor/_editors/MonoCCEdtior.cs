@@ -39,9 +39,15 @@ namespace CCEnvs.UnityEditor
                 if (IsNotVisibleField(targetField))
                     continue;
 
-                PropertyField propertyField = new(prop){
+                PropertyField propertyField = new(prop.Copy()){
                     label = prop.displayName
                 };
+
+                //propertyField.RegisterValueChangeCallback(_ =>
+                //{
+                //    root.Clear();
+                //    root.Add(CreateInspectorGUI());
+                //});
 
                 ProccessOptionalAttribute(targetField, propertyField);
                 ProccessGetComponentAttribute(targetField, propertyField);

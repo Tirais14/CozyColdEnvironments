@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snaphots
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     public sealed class Vector3IntSnapshot : Snapshot<Vector3Int>

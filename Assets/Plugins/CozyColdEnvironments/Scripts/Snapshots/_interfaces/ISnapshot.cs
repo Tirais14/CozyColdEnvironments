@@ -13,7 +13,7 @@ namespace CCEnvs.Snapshots
         Maybe<object> Target { get; }
 
         object Restore();
-        object Restore(object? target);
+        object Restore(object target);
     }
 
     public interface ISnapshot<T> : ISnapshot
@@ -25,15 +25,15 @@ namespace CCEnvs.Snapshots
         Maybe<object> ISnapshot.Target => Target;
 
         new T Restore();
-        T Restore(T? target);
+        T Restore(T target);
 
         object ISnapshot.Restore() => Restore()!;
-        object ISnapshot.Restore(object? target) => Restore(target.To<T>())!;
+        object ISnapshot.Restore(object target) => Restore(target.To<T>())!;
     }
 
     public static class ISnapshotExtensions
     {
-        public static void RestoreStates<T>(this IEnumerable<T> states)
+        public static void RestoreSnapshotStates<T>(this IEnumerable<T> states)
             where T : struct, ISnapshot
         {
             CC.Guard.IsNotNull(states, nameof(states));
@@ -42,7 +42,7 @@ namespace CCEnvs.Snapshots
                 state.Restore();
         }
 
-        public static void RestoreStates(this IEnumerable<ISnapshot> states)
+        public static void RestoreSnapshotStates(this IEnumerable<ISnapshot> states)
         {
             CC.Guard.IsNotNull(states, nameof(states));
 

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snaphots.UI
+namespace CCEnvs.Unity.Snapshots.UI
 {
     [Serializable]
     public sealed class CanvasGroupSnapshot : BehaviourSnapshot<CanvasGroup>
