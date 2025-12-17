@@ -3,12 +3,14 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     public class ComponentSnapshot<T> : Snapshot<T>
         where T : Component
     {
+        public string? Guid { get; set; }
+
         public ComponentSnapshot()
         {
         }
@@ -17,18 +19,13 @@ namespace CCEnvs.Unity
             :
             base(target)
         {
+            Guid = target.GetGuid().Raw;
         }
 
-        public override T Restore(T? target)
+        public override T Restore(T target)
         {
             CC.Guard.IsNotNullTarget(target);
-
             return target;
         }
-    }
-
-    [Serializable]
-    public class ComponentSnapshot : ComponentSnapshot<Component>
-    {
     }
 }

@@ -1,7 +1,6 @@
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
@@ -10,25 +9,12 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class GameObjectSnapshot : Snapshot<GameObject>
     {
-        [JsonInclude]
-        [SerializeField]
-        public string? name { get; set; }
-
-        [JsonInclude]
-        [SerializeField]
-        public string? tag { get; set; }
-
-        [JsonInclude]
-        [SerializeField]
-        public int layer { get; set; }
-
-        [JsonInclude]
-        [SerializeField]
-        public bool activeSelf { get; set; } = true;
-
-        [JsonInclude]
-        [SerializeField]
-        public TransformSnapshot? transform { get; set; }
+        public string? Name { get; set; }
+        public string? Tag { get; set; }
+        public int Layer { get; set; }
+        public bool ActiveSelf { get; set; } = true;
+        public TransformSnapshot? Transform { get; set; }
+        public string? Guid { get; set; }
 
         public GameObjectSnapshot()
         {
@@ -36,35 +22,42 @@ namespace CCEnvs.Unity.Snapshots
 
         public GameObjectSnapshot(GameObject target) : base(target)
         {
-            name = target.name;
-            tag = target.tag;
-            layer = target.layer;
-            activeSelf = target.activeSelf;
-            transform = target.transform.CaptureState();
+            Name = target.name;
+            Tag = target.tag;
+            Layer = target.layer;
+            ActiveSelf = target.activeSelf;
+            Transform = new TransformSnapshot(target.transform);
+            Guid = target.GetGuid().Raw;
+        }
+
+        public override GameObject Restore()
+        {
+
+            if (!Target.TryGetValue(out GameObject? target)
+                && 
+                Guid.IsNotNullOrWhiteSpace()
+                &&
+                GameObjectHelper.FindByGuid(Guid).TryGetValue(out GameObject? targetByGuid))
+            {
+                return Restore(targetByGuid);
+            }
+
+            return Restore(target!);
         }
 
         public override GameObject Restore(GameObject target)
         {
             CC.Guard.IsNotNullTarget(target);
-            CC.Guard.IsNotNull(transform, nameof(target));
-            Guard.IsNotNullOrWhiteSpace(name);
+            CC.Guard.IsNotNull(Transform, nameof(Transform));
+            Guard.IsNotNullOrWhiteSpace(Name);
 
-            target.name = name;
-            target.tag = tag;
-            target.layer = layer;
-            target.SetActive(activeSelf);
-            transform.Restore(target.transform);
+            target.name = Name;
+            target.tag = Tag;
+            target.layer = Layer;
+            target.SetActive(ActiveSelf);
+            Transform.Restore(target.transform);
 
             return target;
-        }
-    }
-
-    public static class GameObjectSnapshotExtensions
-    {
-        public static GameObjectSnapshot CaptureState(this GameObject soucre)
-        {
-            CC.Guard.IsNotNullSource(soucre);
-            return new GameObjectSnapshot(soucre);
         }
     }
 }

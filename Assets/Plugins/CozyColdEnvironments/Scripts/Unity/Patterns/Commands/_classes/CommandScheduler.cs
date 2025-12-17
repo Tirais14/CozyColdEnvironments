@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Commands
                 ));
         
         private ReactiveCommand<ICommand>? addCommand;
-        private ReactiveCommand<Mock>? commandsExecuted;
+        private ReactiveCommand<Returnables.Unit>? commandsExecuted;
         private CancellationTokenSource? onDisableCancellationTokenSource;
 
         public bool HasCommands => commands.IsNotEmpty();
@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.Commands
             }
 
             if (commands.IsEmpty())
-                commandsExecuted?.Execute(Mock.Default);
+                commandsExecuted?.Execute(Returnables.Unit.Default);
         }
 
         public Observable<ICommand> ObserveAddCommand()
@@ -88,9 +88,9 @@ namespace CCEnvs.Unity.Commands
             return addCommand;
         }
 
-        public Observable<Mock> ObserveCommandsExecuted()
+        public Observable<Returnables.Unit> ObserveCommandsExecuted()
         {
-            commandsExecuted ??= new ReactiveCommand<Mock>();
+            commandsExecuted ??= new ReactiveCommand<Returnables.Unit>();
             return commandsExecuted;
         }
 

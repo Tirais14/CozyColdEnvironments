@@ -3,18 +3,13 @@ using System;
 using System.Text.Json.Serialization;
 using UnityEngine;
 
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
     public sealed class Vector2Snapshot : Snapshot<Vector2>
     {
-        [JsonInclude]
-        [SerializeField]
-        private float x;
-
-        [JsonInclude]
-        [SerializeField]
-        private float y;
+        public float X { get; set; }
+        public float Y { get; set; }
 
         public Vector2Snapshot()
         {
@@ -22,20 +17,13 @@ namespace CCEnvs.Unity
 
         public Vector2Snapshot(Vector2 target) : base(target)
         {
-            x = target.x;
-            y = target.y;
-        }
-
-        [JsonConstructor]
-        public Vector2Snapshot(float x, float y)
-        {
-            this.x = x;
-            this.y = y;
+            X = target.x;
+            Y = target.y;
         }
 
         public override Vector2 Restore(Vector2 target)
         {
-            return new Vector2(x, y);
+            return new Vector2(X, Y);
         }
     }
 }

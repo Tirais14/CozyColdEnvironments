@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UnityEngine;
 using System.Linq;
+using CCEnvs.FuncLanguage;
+using UnityEditor;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -104,6 +106,12 @@ namespace CCEnvs.Unity
                     from t in types
                     where t is not null
                     select t).ToArray();
+        }
+
+        public static Maybe<string> GetGuid(this Component source)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetGuid();
         }
     }
 }

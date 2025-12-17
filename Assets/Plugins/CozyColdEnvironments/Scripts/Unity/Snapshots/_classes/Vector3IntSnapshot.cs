@@ -1,6 +1,5 @@
 using CCEnvs.Snapshots;
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable
@@ -9,17 +8,9 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class Vector3IntSnapshot : Snapshot<Vector3Int>
     {
-        [JsonInclude]
-        [SerializeField]
-        private int x;
-
-        [JsonInclude]
-        [SerializeField]
-        private int y;
-
-        [JsonInclude]
-        [SerializeField]
-        private int z;
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Z { get; set; }
 
         public Vector3IntSnapshot()
         {
@@ -27,22 +18,14 @@ namespace CCEnvs.Unity.Snapshots
 
         public Vector3IntSnapshot(Vector3Int target) : base(target)
         {
-            x = target.x;
-            y = target.y;
-            z = target.z;
-        }
-
-        [JsonConstructor]
-        public Vector3IntSnapshot(int x, int y, int z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            X = target.x;
+            Y = target.y;
+            Z = target.z;
         }
 
         public override Vector3Int Restore(Vector3Int target)
         {
-            return new Vector3Int(x, y, z);
+            return new Vector3Int(X, Y, Z);
         }
     }
 }

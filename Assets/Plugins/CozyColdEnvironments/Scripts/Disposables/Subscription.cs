@@ -15,13 +15,13 @@ namespace CCEnvs.Disposables
 
         public static ISubscription Create(Disposer disposer)
         {
-            return Create(observable: default(Mock), (_) => disposer());
+            return Create(observable: default(Unit), (_) => disposer());
         }
         public static ISubscription<TObservable> Create<TObservable>(
             TObservable observable,
             Disposer<TObservable> disposer)
         {
-            return new Subscription<Mock, TObservable>((_, x) => disposer(x),
+            return new Subscription<Unit, TObservable>((_, x) => disposer(x),
                                                        observer: default,
                                                        observable);
         }

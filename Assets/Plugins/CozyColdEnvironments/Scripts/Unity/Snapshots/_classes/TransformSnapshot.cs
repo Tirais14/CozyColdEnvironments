@@ -1,5 +1,4 @@
 using CCEnvs.Json.Converters;
-using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Text.Json.Serialization;
@@ -35,15 +34,6 @@ namespace CCEnvs.Unity.Snapshots
 
             target.SetPositionAndRotation(Position.Restore(), Rotation.Restore());
             return target;
-        }
-    }
-
-    public static class TransformSnapshotExtensions
-    {
-        public static TransformSnapshot CaptureState(this Transform source)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            return new TransformSnapshot(source);
         }
     }
 }

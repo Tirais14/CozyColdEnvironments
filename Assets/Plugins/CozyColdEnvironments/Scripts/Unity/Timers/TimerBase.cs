@@ -8,7 +8,7 @@ using R3;
 #pragma warning disable S2328
 namespace CCEnvs.Unity.Timers
 {
-    public sealed class TimerBase : IObserver<Mock>, ITimer, IEquatable<TimerBase>
+    public sealed class TimerBase : IObserver<Returnables.Unit>, ITimer, IEquatable<TimerBase>
     {
         private readonly Subject<TimeSpan> onTargetReached = new();
         private readonly Subject<TimeSpan> onTick = new();
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Timers
             return !left.Equals(right);
         }
 
-        public void DoTick() => this.To<IObserver<Mock>>().OnNext(default);
+        public void DoTick() => this.To<IObserver<Returnables.Unit>>().OnNext(default);
 
         public ITimer StartTimer()
         {
@@ -114,7 +114,7 @@ namespace CCEnvs.Unity.Timers
             return HashCode.Combine(Elapsed, Target);
         }
 
-        void IObserver<Mock>.OnNext(Mock _)
+        void IObserver<Returnables.Unit>.OnNext(Returnables.Unit _)
         {
             if (!IsEnabled)
                 return;
@@ -144,12 +144,12 @@ namespace CCEnvs.Unity.Timers
             }
         }
 
-        void IObserver<Mock>.OnError(Exception error)
+        void IObserver<Returnables.Unit>.OnError(Exception error)
         {
             CCDebug.Instance.PrintException(error);
         }
 
-        void IObserver<Mock>.OnCompleted()
+        void IObserver<Returnables.Unit>.OnCompleted()
         {
         }
     }

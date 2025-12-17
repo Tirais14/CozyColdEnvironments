@@ -10,25 +10,11 @@ namespace CCEnvs.Unity.Items.Snapshots
     [Serializable]
     public class ItemContainerSnapshot : Snapshot<ItemContainer>
     {
-        [JsonInclude]
-        [SerializeField]
-        protected Maybe<IItem> item;
-
-        [JsonInclude]
-        [SerializeField]
-        protected int itemCount;
-
-        [JsonInclude]
-        [SerializeField]
-        protected int capacity;
-
-        [JsonInclude]
-        [SerializeField]
-        protected bool isReadOnlyContainer;
-
-        [JsonInclude]
-        [SerializeField]
-        protected bool unlockCapacity;
+        public Maybe<IItem> item { get; set; }
+        public int itemCount { get; set; }
+        public int capacity { get; set; }
+        public bool isReadOnlyContainer { get; set; }
+        public bool unlockCapacity { get; set; }
 
         public ItemContainerSnapshot()
         {
@@ -57,16 +43,6 @@ namespace CCEnvs.Unity.Items.Snapshots
         {
         }
 
-        [JsonConstructor]
-        public ItemContainerSnapshot(Maybe<IItem> item, int itemCount, int capacity, bool isReadOnlyContainer, bool unlockCapacity)
-        {
-            this.item = item;
-            this.itemCount = itemCount;
-            this.capacity = capacity;
-            this.isReadOnlyContainer = isReadOnlyContainer;
-            this.unlockCapacity = unlockCapacity;
-        }
-
         public override ItemContainer Restore(ItemContainer? target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
@@ -79,14 +55,6 @@ namespace CCEnvs.Unity.Items.Snapshots
                 UnlockCapacity = unlockCapacity,
                 Capacity = capacity,
             };
-        }
-    }
-
-    public static class ItemContainerSnapshotExtensions
-    {
-        public static ItemContainerSnapshot CaptureState(this ItemContainer source)
-        {
-            return new ItemContainerSnapshot(source); 
         }
     }
 }

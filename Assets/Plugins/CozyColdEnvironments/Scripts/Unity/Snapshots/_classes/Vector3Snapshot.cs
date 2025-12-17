@@ -8,17 +8,9 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class Vector3Snapshot : Snapshot<Vector3>
     {
-        [JsonInclude]
-        [SerializeField]
-        private float x;
-
-        [JsonInclude]
-        [SerializeField]
-        private float y;
-
-        [JsonInclude]
-        [SerializeField]
-        private float z;
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
 
         public Vector3Snapshot()
         {
@@ -26,22 +18,14 @@ namespace CCEnvs.Unity.Snapshots
 
         public Vector3Snapshot(Vector3 target) : base(target)
         {
-            x = target.x;
-            y = target.y;
-            z = target.z;
-        }
-
-        [JsonConstructor]
-        public Vector3Snapshot(float x, float y, float z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            X = target.x;
+            Y = target.y;
+            Z = target.z;
         }
 
         public override Vector3 Restore(Vector3 target)
         {
-            return new Vector3(x, y, z);
+            return new Vector3(X, Y, Z);
         }
     }
 }

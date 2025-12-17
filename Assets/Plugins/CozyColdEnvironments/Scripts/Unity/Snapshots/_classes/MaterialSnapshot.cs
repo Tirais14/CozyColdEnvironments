@@ -9,9 +9,7 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public class MaterialSnapshot : Snapshot<Material>
     {
-        [JsonInclude]
-        [SerializeField]
-        protected Color color;
+        public Color Color { get; set; }
 
         public MaterialSnapshot()
         {
@@ -21,21 +19,20 @@ namespace CCEnvs.Unity.Snapshots
             :
             base(target)
         {
-            color = target.color;
+            Color = target.color;
         }
 
         [JsonConstructor]
         public MaterialSnapshot(Color color)
         {
-            this.color = color;
+            Color = color;
         }
 
         public override Material Restore(Material? target)
         {
             CC.Guard.IsNotNullTarget(target);
 
-            target.color = color;
-
+            target.color = Color;
             return target;
         }
     }

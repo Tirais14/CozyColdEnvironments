@@ -2,7 +2,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 
 namespace CCEnvs.Unity.UI
@@ -10,9 +9,7 @@ namespace CCEnvs.Unity.UI
     [Serializable]
     public class ShowableSnapshot : Snapshot<IShowable>
     {
-        [JsonInclude]
-        [SerializeField]
-        protected bool isShown;
+        public bool isShown { get; set; }
 
         [NonSerialized]
         protected Maybe<GameObject> gameObject;
@@ -25,11 +22,6 @@ namespace CCEnvs.Unity.UI
 
             if (target.As<Component>().TryGetValue(out var cmp))
                 gameObject = cmp.gameObject;
-        }
-
-        public ShowableSnapshot(bool isShown)
-        {
-            this.isShown = isShown;
         }
 
         public override IShowable Restore(IShowable? target)

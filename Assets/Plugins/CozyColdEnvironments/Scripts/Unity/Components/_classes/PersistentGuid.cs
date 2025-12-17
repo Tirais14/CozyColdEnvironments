@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public sealed class GameObjectPersistentGuid : CCBehaviour
+    [DisallowMultipleComponent]
+    public sealed class PersistentGuid : CCBehaviour
     {
         [JsonInclude]
         [field: SerializeField]
@@ -63,7 +63,7 @@ namespace CCEnvs.Unity
 
         private async UniTask<HashSet<string>> GetSceneGuidsAsync()
         {
-            var cmps = GameObjectQuery.Scene.Components<GameObjectPersistentGuid>().ToArray();
+            var cmps = GameObjectQuery.Scene.Components<PersistentGuid>().ToArray();
             var results = new HashSet<string>(cmps.Length);
 
             if (Application.isPlaying)

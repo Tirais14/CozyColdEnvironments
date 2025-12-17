@@ -16,6 +16,6 @@ namespace CCEnvs.Patterns.Commands
 
         Observable<ICommand> ObserveAddCommand();
 
-        Observable<Mock> ObserveCommandsExecuted();
+        Observable<Returnables.Unit> ObserveCommandsExecuted();
     }
 }

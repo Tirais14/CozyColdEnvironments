@@ -78,8 +78,7 @@ namespace CCEnvs.Unity.Initables
             var allInitables = new ConcurrentDictionary<Type, IInitableBase>();
 
             IInitable[] inits =
-                GameObjectQuery.Instance.Reset()
-                .IncludeInactive()
+                GameObjectQuery.Scene.IncludeInactive()
                 .Components<IInitable>()
                 .Where(x => x.GetType().IsDefinedAny(inherit: true,
                                                      typeof(InitAttribute),
@@ -88,8 +87,7 @@ namespace CCEnvs.Unity.Initables
                                                      ).ToArray();
 
             IInitableAsync[] initsAsync =
-                 GameObjectQuery.Instance.Reset()
-                 .IncludeInactive()
+                 GameObjectQuery.Scene.IncludeInactive()
                  .Components<IInitableAsync>()
                  .Where(x => x.GetType().IsDefinedAny(inherit: true,
                                                       typeof(InitAsyncAttribute),

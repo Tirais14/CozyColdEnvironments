@@ -1,5 +1,7 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -197,6 +199,25 @@ namespace CCEnvs.Unity
                     results.Push(item);
                 }
             }
+        }
+
+        public static Maybe<string> GetGuid(this GameObject source)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.Q().Component<PersistentGuid>().Lax().Map(x => x.Guid);
+        }
+
+        public static Maybe<GameObject> FindByGuid(string guid)
+        {
+            Guard.IsNotNullOrWhiteSpace(guid);
+
+            foreach (var cmp in GameObjectQuery.Scene.Components<PersistentGuid>())
+            {
+                if (cmp.Guid == guid)
+                    return cmp.gameObject;
+            }
+
+            return Maybe<GameObject>.None;
         }
 #pragma warning restore S1854
     }

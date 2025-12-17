@@ -22,19 +22,16 @@ namespace CCEnvs.Unity
         public enum Settings
         {
             None,
-            Reusable,
-            IncludeInactive = 2,
-            ExcludeSelf = 4,
+            IncludeInactive = 1,
+            ExcludeSelf = 2,
             /// <summary>
             /// Except in depth childrens from results
             /// </summary>
-            NotRecursive = 8,
-            CacheResult = 16,
-            FirstComponentsOnBranch = 32,
+            NotRecursive = 4,
+            CacheResult = 8,
+            FirstComponentsOnBranch = 16,
             Default = None
         }
-
-        public readonly static GameObjectQuery Instance = new();
 
         public static GameObjectQuery Scene => new();
 
@@ -54,6 +51,7 @@ namespace CCEnvs.Unity
         public Maybe<IntBitMask> layerMask { get; set; }
         public Maybe<Type> hasType { get; set; }
         public Maybe<Type> depthLimiter { get; set; }
+        public Maybe<string> guid { get; set; }
 
         public GameObjectQuery()
         {
@@ -120,20 +118,6 @@ namespace CCEnvs.Unity
             return this;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery Reusable(bool state = true)
-        {
-            if (this == Instance)
-                return this;
-
-            if (state)
-                settings |= Settings.Reusable;
-            else
-                settings &= ~Settings.Reusable;
-
-            return this;
-        }
-
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public GameObjectQuery CacheResult(TimeSpan lifeTime, bool state = true)
         //{
@@ -176,12 +160,23 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ByLayerMask(int? layerMask = null)
+        public GameObjectQuery WithLayerMask(int? layerMask = null)
         {
             if (layerMask is null)
                 this.layerMask = Maybe<IntBitMask>.None;
             else
                 this.layerMask = layerMask.Value.ToBitMask();
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery WithGuid(string? guid = null)
+        {
+            if (guid.IsNullOrWhiteSpace())
+                this.guid = Maybe<string>.None;
+            else
+                this.guid = guid;
 
             return this;
         }
@@ -806,11 +801,14 @@ namespace CCEnvs.Unity
             if (this.layerMask.TryGetValue(out var layerMask))
                 components = components.Where(cmp => layerMask.ContainsFlag(cmp.gameObject.layer));
 
-            if (name.IsSome)
-                components = components.Where(cmp => cmp.gameObject.name.Match(name.GetValueUnsafe(), stringMatchSettings));
+            if (this.name.TryGetValue(out var name))
+                components = components.Where(cmp => cmp.gameObject.name.Match(name, stringMatchSettings));
 
-            if (tag.IsSome)
-                components = components.Where(cmp => cmp.gameObject.CompareTag(tag.GetValueUnsafe()));
+            if (this.tag.TryGetValue(out var tag))
+                components = components.Where(cmp => cmp.gameObject.CompareTag(tag));
+
+            if (this.guid.TryGetValue(out var guid))
+                components = components.Where(cmp => cmp.GetGuid().Has(guid));
 
             return components;
         }
@@ -834,24 +832,6 @@ namespace CCEnvs.Unity
             CC.Guard.IsNotNull(source, nameof(source));
 
             return new GameObjectQuery().SetTarget(source);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectQuery QueryToBySingleton(this GameObject source)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-
-            return GameObjectQuery.Instance.Reset().SetTarget(source);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameObjectQuery QueryToBySingleton(this Component source)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-
-            return GameObjectQuery.Instance.Reset().SetTarget(source);
         }
 
         [DebuggerStepThrough]

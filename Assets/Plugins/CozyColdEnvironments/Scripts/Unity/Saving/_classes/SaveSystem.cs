@@ -49,7 +49,7 @@ namespace CCEnvs.Unity.Saving
             sceneInfo ??= ResolveSceneInfo(obj);
 
             if (!IsTypeRegistered(objType))
-                throw new InvalidOperationException($"Type: {objType.GetType()} is not registered");
+                throw new InvalidOperationException($"Type: {objType} is not registered");
 
             if (!objSets.TryGetValue(objType, out var objs))
             {
@@ -227,22 +227,6 @@ namespace CCEnvs.Unity.Saving
         {
             CC.Guard.IsNotNull(source, nameof(source));
             return SaveSystem.Self.BindObject(source);
-        }
-
-        /// <summary>
-        /// Binds only registered types
-        /// </summary>
-        public static IDisposable[] BindComponentsToSaveSystem(this GameObject source)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            using var _ = ListPool<IDisposable>.Get(out var list);
-            foreach (var cmp in source.GetComponents<Component>())
-            {
-                if (cmp.IsTypeRegisteredInSaveSystem())
-                    list.Add(cmp.BindToSaveSystem());
-            }
-
-            return list.ToArray();
         }
 
         public static bool IsTypeRegisteredInSaveSystem(this Type? source)

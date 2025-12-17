@@ -19,7 +19,7 @@ namespace CCEnvs.Snapshots
         [UnityEngine.SerializeField]
 #endif
         [JsonIgnore]
-        public Maybe<T> Target { get; private set; }
+        public Maybe<T> Target { get; set; }
 
         public Snapshot()
         {
@@ -34,7 +34,7 @@ namespace CCEnvs.Snapshots
             Target = target;
         }
 
-        public T Restore() => Restore(Target.Raw);
+        public virtual T Restore() => Restore(Target.Raw!);
 
         public abstract T Restore(T target);
 

@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,13 +8,8 @@ namespace CCEnvs.Unity.Snapshots.UI
     [Serializable]
     public class GraphicSnapshot : BehaviourSnapshot<Graphic>
     {
-        [JsonInclude]
-        [SerializeField]
-        protected Color color;
-
-        [JsonInclude]
-        [SerializeField]
-        protected bool raycastTarget;
+        public Color Color { get; set; }
+        public bool RaycastTarget { get; set; }
 
         public GraphicSnapshot()
         {
@@ -25,36 +19,19 @@ namespace CCEnvs.Unity.Snapshots.UI
             :
             base(target)
         {
-            color =  target.color;
-            raycastTarget = target.raycastTarget;
+            Color =  target.color;
+            RaycastTarget = target.raycastTarget;
         }
 
-        [JsonConstructor]
-        public GraphicSnapshot(Color color, bool raycastTarget)
-        {
-            this.color = color;
-            this.raycastTarget = raycastTarget;
-        }
-
-        public override Graphic Restore(Graphic? target)
+        public override Graphic Restore(Graphic target)
         {
             base.Restore(target);
-
             CC.Guard.IsNotNullTarget(target);
 
-            target.color = color;
-            target.raycastTarget = raycastTarget;
+            target.color = Color;
+            target.raycastTarget = RaycastTarget;
 
             return target;
-        }
-    }
-
-    public static class GraphicSnapshotExtensions
-    {
-        public static GraphicSnapshot CaptureState(this Graphic source)
-        {
-            CC.Guard.IsNotNullSource(source);
-            return new GraphicSnapshot(source);
         }
     }
 }

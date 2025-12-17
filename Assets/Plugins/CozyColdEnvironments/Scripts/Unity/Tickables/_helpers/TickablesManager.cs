@@ -2,13 +2,11 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
-using CCEnvs.Utils;
-using ZLinq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Tickables
@@ -131,7 +129,7 @@ namespace CCEnvs.Unity.Tickables
             CCDebug.Instance.PrintLog("Registering tickers started.", self);
             var stopwatch = new Stopwatch();
 
-            var tickersFiltered = GameObjectQuery.Instance.Reset().IncludeInactive().Components<ITicker>()
+            var tickersFiltered = GameObjectQuery.Scene.IncludeInactive().Components<ITicker>()
                 .AsValueEnumerable()
                 .Where(ticker => !IsTickerRegistered(ticker));
 
@@ -152,7 +150,7 @@ namespace CCEnvs.Unity.Tickables
             var stopwatch = new Stopwatch();
 
             var toRegister =
-               from tickable in GameObjectQuery.Instance.Reset().IncludeInactive().Components<ITickableBase>().ZLinq()
+               from tickable in GameObjectQuery.Scene.IncludeInactive().Components<ITickableBase>().ZLinq()
                select (tickable, state: Tickable.TryGetTickerType(tickable, out Type? tickerType), tickerType) into item
                where item.state && !IsTickableRegistered(item.tickable)
                select item;

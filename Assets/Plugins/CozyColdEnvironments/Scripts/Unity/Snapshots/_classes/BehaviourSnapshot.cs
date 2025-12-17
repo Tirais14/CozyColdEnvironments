@@ -1,7 +1,3 @@
-using CCEnvs.Snapshots;
-using CommunityToolkit.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
 using UnityEngine;
 
@@ -12,9 +8,7 @@ namespace CCEnvs.Unity.Snapshots
     public class BehaviourSnapshot<T> : ComponentSnapshot<T>
         where T : Behaviour
     {
-        [JsonInclude]
-        [SerializeField]
-        protected bool enabled;
+        public bool Enabled { get; set; }
 
         public BehaviourSnapshot()
         {
@@ -24,24 +18,15 @@ namespace CCEnvs.Unity.Snapshots
             :
             base(target)
         {
-            enabled = target.enabled;
+            Enabled = target.enabled;
         }
 
-        [JsonConstructor]
-        public BehaviourSnapshot(bool enabled)
-        {
-            this.enabled = enabled;
-        }
-
-        public override T Restore(T? target)
+        public override T Restore(T target)
         {
             base.Restore(target);
-            target = base.Restore(target);
+            CC.Guard.IsNotNullTarget(target);
 
-            CC.Guard.IsNotNull(target, nameof(target));
-
-            target.enabled = enabled;
-
+            target.enabled = Enabled;
             return target;
         }
     }

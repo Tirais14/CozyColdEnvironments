@@ -5,13 +5,13 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.Unity.EditorC
 {
-    [CustomEditor(typeof(GameObjectPersistentGuid))]
+    [CustomEditor(typeof(PersistentGuid))]
     public class GameObjectPersistentGuidEditor : global::UnityEditor.Editor
     {
         public override VisualElement CreateInspectorGUI()
         {
             var root = new VisualElement();
-            var targetTyped = (GameObjectPersistentGuid)target;
+            var targetTyped = (PersistentGuid)target;
             var serailizedObj = new SerializedObject(target);
             var prop = serailizedObj.GetIterator();
 
@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.EditorC
             var tooltip = new HelpBox($"To regenerate GUID button must be pressed {targetTyped.PressCountToRegenerate} times", HelpBoxMessageType.Info);
             root.Add(tooltip);
 
-            var generateBtn = new Button(() => target.To<GameObjectPersistentGuid>().GenerateGuidAsync())
+            var generateBtn = new Button(() => target.To<PersistentGuid>().GenerateGuidAsync())
             {
                 text = "Generate GUID"
             };
