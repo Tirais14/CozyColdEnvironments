@@ -1,12 +1,11 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
-using System.Runtime.Serialization;
 
 #nullable enable
 namespace CCEnvs.Json
 {
-    public static class JsonSerilizerSettingsProvider
+    public static class JsonSerializerSettingsProvider
     {
         public static JsonSerializerSettings GetDefault(params JsonConverter[] converters)
         {
@@ -31,13 +30,12 @@ namespace CCEnvs.Json
             settings.Formatting = Formatting.Indented;
             settings.MaxDepth = 64;
             settings.ObjectCreationHandling = ObjectCreationHandling.Auto;
+            settings.ContractResolver = new DefaultContractResolver()
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            };
 
             return settings;
         }
-
-        //public static JsonSerializerOptions GetDefaultPolymorph(params JsonConverter[] converters)
-        //{
-        //    return GetDefault(converters.Append(new PolymorphJsonConverter<object>()));
-        //}
     }
 }

@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace CCEnvs.Json
 {
-    public readonly struct JsonPropertyInfoCustom
+    public readonly struct JsonPropertyInfo
     {
         public string Name { readonly get; init; }
         public Func<object, object?>? Get { readonly get; init; } 

@@ -229,7 +229,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<L>
         {
             L? left = input.GetValue();
-            R? right = (R?)left.As<R>();
+            R? right = left.As<R>().Raw;
 
             return (left, right);
         }

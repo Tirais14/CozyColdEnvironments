@@ -14,25 +14,25 @@ namespace CCEnvs.Json
 {
     public static class JsonConverterHelper
     {
-        public static IList<JsonPropertyInfoCustom> ResolveJsonPropertyInfos(
+        public static IList<JsonPropertyInfo> ResolveJsonPropertyInfos(
             Type instanceType, 
             JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(instanceType);
-            settings ??= JsonSerilizerSettingsProvider.GetDefault();
+            settings ??= JsonSerializerSettingsProvider.GetDefault();
 
-            var results = new List<JsonPropertyInfoCustom>();
+            var results = new List<JsonPropertyInfo>();
 
             string jsonPropName;
             Func<object, object?>? getter;
             Action<object, object?>? setter;
-            JsonPropertyInfoCustom propInfo;
+            JsonPropertyInfo propInfo;
             foreach (var member in ResolveSerializableMembers(instanceType, settings))
             {
                 jsonPropName = ResolveJsonPropertyName(member, settings);
                 (getter, setter) = ResolveGetterAndSetter(member);
 
-                propInfo = new JsonPropertyInfoCustom
+                propInfo = new JsonPropertyInfo
                 {
                     Name = jsonPropName,
                     Get = getter,
@@ -51,15 +51,16 @@ namespace CCEnvs.Json
             JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(member);
-            settings ??= JsonSerilizerSettingsProvider.GetDefault();
+            settings ??= JsonSerializerSettingsProvider.GetDefault();
 
             var jProperty = member.GetCustomAttribute<JsonPropertyAttribute>();
 
             var namingStrategy = settings.ContractResolver?.Reflect()
                 .NonPublic()
+                .TypeFilter<NamingStrategy>()
                 .Property()
                 .Lax()
-                .Map(x => x.GetValue(settings))
+                .Map(x => x.GetValue(settings.ContractResolver))
                 .Cast<NamingStrategy>()
                 .RightTarget;
 
@@ -79,7 +80,7 @@ namespace CCEnvs.Json
             JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(member);
-            settings ??= JsonSerilizerSettingsProvider.GetDefault();
+            settings ??= JsonSerializerSettingsProvider.GetDefault();
 
             if (member.IsDefined<JsonIgnoreAttribute>())
                 return false;
@@ -114,7 +115,7 @@ namespace CCEnvs.Json
             JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(type);
-            settings ??= JsonSerilizerSettingsProvider.GetDefault();
+            settings ??= JsonSerializerSettingsProvider.GetDefault();
 
             var results = new List<MemberInfo>();
 
@@ -144,7 +145,7 @@ namespace CCEnvs.Json
                 return null;
 
             Guard.IsNotNullOrWhiteSpace(jsonPropName);
-            settings ??= JsonSerilizerSettingsProvider.GetDefault();
+            settings ??= JsonSerializerSettingsProvider.GetDefault();
 
             string memberJsonPropName;
             foreach (var member in members)
@@ -165,7 +166,7 @@ namespace CCEnvs.Json
         {
             Guard.IsNotNull(instance);
             Guard.IsNotNull(jObject);
-            settings ??= JsonSerilizerSettingsProvider.GetDefault();
+            settings ??= JsonSerializerSettingsProvider.GetDefault();
 
             Type instType = instance.GetType();
             var members = ResolveSerializableMembers(instType, settings);

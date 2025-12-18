@@ -1,5 +1,7 @@
+using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 
 #nullable enable
@@ -7,8 +9,6 @@ namespace CCEnvs.Json.Converters
 {
     public class PolymorphJsonConverter<T> : JsonConverter<T>
     {
-        public override bool CanWrite => false;
-
         public override T? ReadJson(
             JsonReader reader,
             Type objectType,
@@ -44,32 +44,36 @@ namespace CCEnvs.Json.Converters
             T? value,
             JsonSerializer serializer)
         {
-            //if (value is null)
-            //{
-            //    writer.WriteNull();
-            //    return;
-            //}
+            if (value is null)
+            {
+                writer.WriteNull();
+                return;
+            }
 
-            //Type valueType = value.GetType();
-            //var jsonPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, options);
+            Type valueType = value.GetType();
+            var jsonPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, serializer.GetSerializerSettings());
 
-            //writer.WriteStartObject();
-            //writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
+            writer.WriteStartObject();
+            writer.WritePropertyName("$type");
+            writer.WriteValue(value.GetType().GetTypeReference());
 
-            //foreach (var jsonPropInfo in jsonPropInfos)
-            //{
-            //    if (jsonPropInfo.Get is null || !jsonPropInfo.Get(value).Let(out object? propValue))
-            //    {
-            //        writer.WriteNull(jsonPropInfo.Name);
-            //        continue;
-            //    }
+            foreach (var jsonPropInfo in jsonPropInfos)
+            {
+                if (jsonPropInfo.Get is null || !jsonPropInfo.Get(value).Let(out object? propValue))
+                {
+                    if (serializer.NullValueHandling == NullValueHandling.Ignore)
+                        continue;
 
-            //    writer.WritePropertyName(jsonPropInfo.Name);
+                    writer.WritePropertyName(jsonPropInfo.Name);
+                    writer.WriteValue("null");
+                    continue;
+                }
 
-            //    JsonConvert.SerializeObject(writer, propValue, options);
-            //}
+                writer.WritePropertyName(jsonPropInfo.Name);
+                serializer.Serialize(writer, propValue);
+            }
 
-            //writer.WriteEndObject();
+            writer.WriteEndObject();
         }
     }
 }

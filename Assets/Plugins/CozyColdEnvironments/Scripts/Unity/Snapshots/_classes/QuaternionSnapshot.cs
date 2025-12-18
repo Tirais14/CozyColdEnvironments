@@ -7,10 +7,10 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class QuaternionSnapshot : Snapshot<Quaternion>
     {
-        private float x { get; set; }
-        public float y { get; set; }
-        private float z { get; set; }
-        private float w { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public float W { get; set; }
 
         public QuaternionSnapshot()
         {
@@ -18,15 +18,15 @@ namespace CCEnvs.Unity.Snapshots
 
         public QuaternionSnapshot(Quaternion target) : base(target)
         {
-            x = target.x;
-            y = target.y;
-            z = target.z;
-            w = target.w;
+            X = target.x;
+            Y = target.y;
+            Z = target.z;
+            W = target.w;
         }
 
         public override Quaternion Restore(Quaternion target)
         {
-            return new Quaternion(x, y, z, w);
+            return new Quaternion(X, Y, Z, W);
         }
     }
 }
