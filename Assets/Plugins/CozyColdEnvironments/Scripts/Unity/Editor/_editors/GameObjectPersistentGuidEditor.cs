@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.EditorC
             var tooltip = new HelpBox($"To regenerate GUID button must be pressed {targetTyped.PressCountToRegenerate} times", HelpBoxMessageType.Info);
             root.Add(tooltip);
 
-            var generateBtn = new Button(() => target.To<PersistentGuid>().GenerateGuidAsync())
+            var generateBtn = new Button(() => target.To<PersistentGuid>().GenerateGuid())
             {
                 text = "Generate GUID"
             };

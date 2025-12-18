@@ -1,11 +1,15 @@
+using CCEnvs.Collections;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -15,6 +19,8 @@ namespace CCEnvs.Unity
     public sealed class PersistentGuid : CCBehaviour
     {
         public static bool IgnoreWarnings { get; set; }
+        private readonly static HashSet<string> guids = new();
+        private static bool sceneSubscribed;
 
         [JsonProperty]
         [field: SerializeField]
@@ -30,21 +36,56 @@ namespace CCEnvs.Unity
         private void Reset()
         {
             if (Guid.IsNullOrWhiteSpace())
-                GenerateGuidAsync().AttachExternalCancellation(destroyCancellationToken).Forget();
+                GenerateGuid();
         }
 
         protected override void Awake()
         {
             base.Awake();
 
-            if (!Application.isEditor && !IgnoreWarnings)
-                this.PrintWarning($"Using in runtime does not make sense. Use '{typeof(RuntimeId)}' instead");
+            SubscribeOnSceneChanged();
+
+            if ((!Application.isEditor || Application.isPlaying) && !IgnoreWarnings)
+                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use '{typeof(RuntimeId)}' instead");
         }
 
-        public async UniTask GenerateGuidAsync()
+        [InitializeOnLoadMethod]
+        public static void SubscribeOnSceneChanged()
         {
-            if (Application.isPlaying && Guid.IsNotNullOrWhiteSpace())
-                throw new System.InvalidOperationException("Cannot regenerate GameObject GUID in play mode");
+            if (sceneSubscribed)
+                return;
+
+            SceneManager.activeSceneChanged += OnSceneChanged;
+            sceneSubscribed = true;
+        }
+
+        private static void OnSceneChanged(Scene _, Scene __)
+        {
+            guids.Clear();
+            guids.AddRange(GetSceneGuids());
+        }
+
+        private static HashSet<string> GetSceneGuids()
+        {
+            var cmps = GameObjectQuery.Scene.Components<PersistentGuid>().ToArray();
+            var results = new HashSet<string>(cmps.Length);
+
+            foreach (var cmp in cmps)
+            {
+                if (cmp.Guid.IsNullOrWhiteSpace())
+                    continue;
+
+                if (!results.Add(cmp.Guid))
+                    throw new InvalidOperationException($"Found dublicate id '{cmp.Guid}'");
+            }
+
+            return results;
+        }
+
+        public async void GenerateGuid()
+        {
+            if ((!Application.isEditor || Application.isPlaying) && Guid.IsNotNullOrWhiteSpace())
+                throw new InvalidOperationException("Cannot regenerate GameObject GUID in runtime and build");
 
             pressCount++;
             if (Guid.IsNotNullOrWhiteSpace()
@@ -54,51 +95,12 @@ namespace CCEnvs.Unity
                 return;
             }
 
-            HashSet<string> sceneGuids;
-            try
-            {
-                sceneGuids = await GetSceneGuidsAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
-            var guid = System.Guid.NewGuid();
-            while (sceneGuids.Contains(guid.ToString()))
-                guid = System.Guid.NewGuid();
+            Guid = System.Guid.NewGuid().ToString();
+            while (guids.Contains(Guid))
+                Guid = System.Guid.NewGuid().ToString();
 
             pressCount = 0;
-            Guid = guid.ToString();
-        }
-
-        private async UniTask<HashSet<string>> GetSceneGuidsAsync()
-        {
-            var cmps = GameObjectQuery.Scene.Components<PersistentGuid>().ToArray();
-            var results = new HashSet<string>(cmps.Length);
-
-            if (Application.isPlaying)
-                await UniTask.SwitchToThreadPool();
-
-            foreach (var cmp in cmps)
-            {
-                if (cmp == this)
-                    continue;
-
-                if (cmp.Guid.IsNullOrWhiteSpace())
-                {
-                    cmp.PrintError("Missing guid");
-                    continue;
-                }
-
-                if (!results.Add(cmp.Guid))
-                    throw new InvalidOperationException($"Found dublicate id '{cmp.Guid}'");
-            }
-
-            if (Application.isPlaying)
-                await UniTask.SwitchToMainThread();
-
-            return results;
+            guids.Add(Guid);
         }
     }
 }
