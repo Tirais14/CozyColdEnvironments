@@ -15,6 +15,7 @@ namespace CCEnvs.Unity.Snapshots
         public bool ActiveSelf { get; set; } = true;
         public TransformSnapshot? Transform { get; set; }
         public string? Guid { get; set; }
+        public string? RuntimeId { get; set; }
 
         public GameObjectSnapshot()
         {
@@ -27,7 +28,7 @@ namespace CCEnvs.Unity.Snapshots
             Layer = target.layer;
             ActiveSelf = target.activeSelf;
             Transform = new TransformSnapshot(target.transform);
-            Guid = target.GetGuid().Raw;
+            Guid = target.GetPersistentGuid().Raw;
         }
 
         public override GameObject Restore()
@@ -37,7 +38,7 @@ namespace CCEnvs.Unity.Snapshots
                 && 
                 Guid.IsNotNullOrWhiteSpace()
                 &&
-                GameObjectHelper.FindByGuid(Guid).TryGetValue(out GameObject? targetByGuid))
+                GameObjectHelper.FindByPersistenGuid(Guid).TryGetValue(out GameObject? targetByGuid))
             {
                 return Restore(targetByGuid);
             }

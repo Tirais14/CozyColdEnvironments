@@ -8,6 +8,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -210,7 +211,7 @@ namespace CCEnvs.Json
                 if (prop.CanRead)
                     getter = (inst) => prop.GetValue(inst);
 
-                if (prop.CanWrite && prop.SetMethod.IsPublic)
+                if (prop.CanWrite)
                     setter = (inst, value) => prop.SetValue(inst, value);
 
                 return (getter, setter);

@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
+using CCEnvs.TypeMatching;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
@@ -66,6 +67,32 @@ namespace CCEnvs.Unity.Saving
                     input.@this.UnbindObject(input.obj);
                 })
                 .BindDisposableTo(this);
+        }
+        public IDisposable BindGameObject(GameObject gameObject, string runtimeId)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+            Guard.IsNotNullOrWhiteSpace(runtimeId, nameof(runtimeId));
+
+            Type runtimeIdType = typeof(RuntimeId);
+
+            if (!gameObject.GetComponents<Component>()
+                .FirstOrDefault(cmp => cmp.GetType() == runtimeIdType)
+                .Is<RuntimeId>(out var runtimeIdCmp))
+            {
+                runtimeIdCmp = gameObject.AddComponent<RuntimeId>();
+            }
+
+            runtimeIdCmp.SetId(runtimeId);
+            return BindObject(gameObject);
+        }
+
+        public IDisposable BindGameObject(
+            GameObject gameObject,
+            Func<GameObject, string> runtimeIdSelector)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+            Guard.IsNotNull(runtimeIdSelector, nameof(runtimeIdSelector));
+            return BindGameObject(gameObject, runtimeIdSelector(gameObject));
         }
 
         public bool UnbindObject(object? obj)
@@ -220,13 +247,26 @@ namespace CCEnvs.Unity.Saving
 
     public static class SaveSystemExtensions
     {
-        /// <summary>
-        /// Use <see cref="SceneManager.GetActiveScene()"/> for scene info argument
-        /// </summary>
+        /// <inheritdoc cref=" SaveSystem.BindObject(object, SceneInfo?)"/>
         public static IDisposable BindToSaveSystem(this object source)
         {
-            CC.Guard.IsNotNull(source, nameof(source));
             return SaveSystem.Self.BindObject(source);
+        }
+
+        /// <inheritdoc cref=" SaveSystem.BindGameObject(GameObject, string)"/>
+        public static IDisposable BindGameObjectToSaveSystem(
+            this GameObject source, 
+            string runtimeId)
+        {
+            return SaveSystem.Self.BindGameObject(source, runtimeId);
+        }
+
+        /// <inheritdoc cref=" SaveSystem.BindGameObject(GameObject, Func{GameObject, string})"/>
+        public static IDisposable BindGameObjectToSaveSystem(
+            this GameObject source,
+            Func<GameObject, string> runtimeIdSelector)
+        {
+            return SaveSystem.Self.BindGameObject(source, runtimeIdSelector);
         }
 
         public static bool IsTypeRegisteredInSaveSystem(this Type? source)
@@ -236,7 +276,6 @@ namespace CCEnvs.Unity.Saving
 
         public static bool IsTypeRegisteredInSaveSystem(this object source)
         {
-            Guard.IsNotNull(source);
             return SaveSystem.Self.IsTypeRegistered(source.GetType());
         }
     }

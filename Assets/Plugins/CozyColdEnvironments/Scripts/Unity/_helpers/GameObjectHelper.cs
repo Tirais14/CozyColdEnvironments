@@ -1,11 +1,13 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -134,7 +136,6 @@ namespace CCEnvs.Unity
             return results.ToArray();
         }
 
-#pragma warning disable S1854
         /// <exception cref="ArgumentNullException"></exception>
         public static Stack<Component> CreateStackByHardDependecies(
             GameObject gameObject)
@@ -201,25 +202,56 @@ namespace CCEnvs.Unity
             }
         }
 
-        public static Maybe<string> GetGuid(this GameObject source)
+        public static Maybe<string> GetPersistentGuid(this GameObject source)
         {
             CC.Guard.IsNotNullSource(source);
-            return source.Q().Component<PersistentGuid>().Lax().Map(x => x.Guid);
+
+            return source.Q()
+                .Component<PersistentGuid>()
+                .Lax()
+                .Map(x => x.Guid)
+                .Where(x => x.IsNotNullOrWhiteSpace());
         }
 
-        public static Maybe<GameObject> FindByGuid(string guid)
+        public static Maybe<GameObject> FindByPersistenGuid(string guid)
         {
             Guard.IsNotNullOrWhiteSpace(guid);
 
             foreach (var cmp in GameObjectQuery.Scene.Components<PersistentGuid>())
             {
-                if (cmp.Guid == guid)
+                if (cmp.Guid.IsNullOrWhiteSpace())
+                    continue;
+
+                if (cmp.Guid.EqualsOrdinal(guid, ignoreCase: false))
                     return cmp.gameObject;
             }
 
             return Maybe<GameObject>.None;
         }
-#pragma warning restore S1854
+
+        public static Maybe<string> GetRuntimeId(this GameObject source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return source.Q()
+                .Component<RuntimeId>()
+                .Lax()
+                .Map(x => x.Id)
+                .Where(x => x.IsNotNullOrWhiteSpace());
+        }
+
+        public static Maybe<GameObject> FindByRuntimeId(string id)
+        {
+            Guard.IsNotNullOrWhiteSpace(id);
+
+            foreach (var cmp in GameObjectQuery.Scene.Components<RuntimeId>())
+            {
+                if (cmp.Id.EqualsOrdinal(id, ignoreCase: false))
+                    return cmp.gameObject;
+            }
+
+            return Maybe<GameObject>.None;
+        }
     }
 }
 

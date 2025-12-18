@@ -1,8 +1,7 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
-using UnityEngine.SceneManagement;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
@@ -15,6 +14,12 @@ namespace CCEnvs.Unity.Saving
 
         /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?)"/></returns>
         IDisposable BindObject(object obj, SceneInfo? sceneInfo = null);
+
+        /// <inheritdoc cref="BindObject(object, SceneInfo?)"/>
+        IDisposable BindGameObject(GameObject gameObject, string runtimeId);
+
+        /// <inheritdoc cref="BindObject(object, SceneInfo?)"/>
+        IDisposable BindGameObject(GameObject gameObject, Func<GameObject, string> runtimeIdSelector);
 
         bool UnbindObject(object? obj);
 

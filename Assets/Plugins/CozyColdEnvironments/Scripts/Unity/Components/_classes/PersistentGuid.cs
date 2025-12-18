@@ -1,11 +1,11 @@
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Serialization;
 using UnityEngine;
-using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -14,6 +14,8 @@ namespace CCEnvs.Unity
     [DisallowMultipleComponent]
     public sealed class PersistentGuid : CCBehaviour
     {
+        public static bool IgnoreWarnings { get; set; }
+
         [JsonProperty]
         [field: SerializeField]
         [Tooltip("Serialized by inspector only for restoring value only. For exapmle from Json serialized value. Don't set the id manually.")]
@@ -29,6 +31,14 @@ namespace CCEnvs.Unity
         {
             if (Guid.IsNullOrWhiteSpace())
                 GenerateGuidAsync().AttachExternalCancellation(destroyCancellationToken).Forget();
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            if (!Application.isEditor && !IgnoreWarnings)
+                this.PrintWarning($"Using in runtime does not make sense. Use '{typeof(RuntimeId)}' instead");
         }
 
         public async UniTask GenerateGuidAsync()

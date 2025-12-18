@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
-using UnityEngine.Rendering;
 
 #nullable enable
 namespace CCEnvs.Json

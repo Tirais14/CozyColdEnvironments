@@ -111,7 +111,7 @@ namespace CCEnvs.Unity
         public static Maybe<string> GetGuid(this Component source)
         {
             CC.Guard.IsNotNullSource(source);
-            return source.gameObject.GetGuid();
+            return source.gameObject.GetPersistentGuid();
         }
     }
 }
