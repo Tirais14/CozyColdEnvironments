@@ -2,7 +2,8 @@ using CCEnvs.Snapshots;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving

@@ -1,39 +1,40 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
 {
-    public class DebugJsonConverter : JsonConverter<object>
+    public class DebugJsonConverter : JsonConverter
     {
-        public override object? Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
+        public override bool CanConvert(Type objectType) => true;
+
+        public override object? ReadJson(
+            JsonReader reader,
+            Type objectType,
+            object? existingValue,
+            JsonSerializer serializer)
         {
-            this.PrintLog($"Reading type '{typeToConvert}'");
+            this.PrintLog($"Reading type '{objectType}'");
 
-            var doc = JsonDocument.ParseValue(ref reader);
+            var token = JToken.ReadFrom(reader);
 
-            foreach (var prop in doc.RootElement.EnumerateObject())
-                this.PrintLog($"Readed '{prop}'");
+            foreach (var childToken in token)
+                this.PrintLog($"Readed '{childToken}'");
 
-            return !typeToConvert.IsClass ? Activator.CreateInstance(typeToConvert) : null;
+            return !objectType.IsClass ? Activator.CreateInstance(objectType) : null;
         }
 
-        public override void Write(
-            Utf8JsonWriter writer,
-            object value,
-            JsonSerializerOptions options)
+        public override void WriteJson(
+            JsonWriter writer,
+            object? value,
+            JsonSerializer serializer)
         {
             this.PrintLog($"Writing type '{value}'");
 
-            var toWrite = JsonSerializer.Serialize(value, options.ExcludeConverters(this));
+            var toWrite = JsonConvert.SerializeObject(value);
 
             this.PrintLog($"To write '{toWrite}'");
         }
-
-        public override bool CanConvert(Type typeToConvert) => true;
     }
 }

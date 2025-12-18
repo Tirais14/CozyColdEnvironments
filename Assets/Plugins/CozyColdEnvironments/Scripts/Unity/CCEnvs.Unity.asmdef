@@ -29,7 +29,6 @@
         "SuperLinq.Async.dll",
         "ZLinq.dll",
         "ZLinq.FileSystem.dll",
-        "ZLinq.Json.dll",
         "ZString.dll",
         "System.Linq.Async.dll",
         "StringExtensions.dll",
@@ -49,7 +48,7 @@
         "R3.dll",
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
-        "System.Text.Json.dll"
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

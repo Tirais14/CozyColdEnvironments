@@ -1,6 +1,6 @@
 using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 
 #nullable enable

@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Linq;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -15,10 +16,10 @@ namespace CCEnvs.Json
     {
         public static IList<JsonPropertyInfoCustom> ResolveJsonPropertyInfos(
             Type instanceType, 
-            JsonSerializerOptions options)
+            JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(instanceType);
-            Guard.IsNotNull(options);
+            settings ??= JsonSerilizerSettingsProvider.GetDefault();
 
             var results = new List<JsonPropertyInfoCustom>();
 
@@ -26,9 +27,9 @@ namespace CCEnvs.Json
             Func<object, object?>? getter;
             Action<object, object?>? setter;
             JsonPropertyInfoCustom propInfo;
-            foreach (var member in ResolveSerializableMembers(instanceType, options))
+            foreach (var member in ResolveSerializableMembers(instanceType, settings))
             {
-                jsonPropName = ResolveJsonPropertyName(member, options);
+                jsonPropName = ResolveJsonPropertyName(member, settings);
                 (getter, setter) = ResolveGetterAndSetter(member);
 
                 propInfo = new JsonPropertyInfoCustom
@@ -45,51 +46,61 @@ namespace CCEnvs.Json
         }
 
         /// <exception cref="ArgumentException"></exception>
-        public static string ResolveJsonPropertyName(MemberInfo member, JsonSerializerOptions options)
+        public static string ResolveJsonPropertyName(
+            MemberInfo member,
+            JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(member);
-            Guard.IsNotNull(options);
+            settings ??= JsonSerilizerSettingsProvider.GetDefault();
 
-            var propNameAttribute = (JsonPropertyNameAttribute?)member.GetCustomAttributes().FirstOrDefault(x => x.GetType() == typeof(JsonPropertyNameAttribute));
-            if (propNameAttribute is null)
+            var jProperty = member.GetCustomAttribute<JsonPropertyAttribute>();
+
+            var namingStrategy = settings.ContractResolver?.Reflect()
+                .NonPublic()
+                .Property()
+                .Lax()
+                .Map(x => x.GetValue(settings))
+                .Cast<NamingStrategy>()
+                .RightTarget;
+
+            if (jProperty is null || jProperty.PropertyName.IsNullOrWhiteSpace())
             {
-                if (options.PropertyNamingPolicy is not null)
-                    return options.PropertyNamingPolicy.ConvertName(member.Name);
-                else
-                    return member.Name;
+                if (namingStrategy is not null)
+                    return namingStrategy.GetPropertyName(member.Name, hasSpecifiedName: false);
+
+                return member.Name;
             }
             else
-                return propNameAttribute.Name;
+                return jProperty.PropertyName;
         }
 
-        public static bool IsSerializableMember(MemberInfo member, JsonSerializerOptions options)
+        public static bool IsSerializableMember(
+            MemberInfo member,
+            JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(member);
-            Guard.IsNotNull(options);
+            settings ??= JsonSerilizerSettingsProvider.GetDefault();
 
             if (member.IsDefined<JsonIgnoreAttribute>())
                 return false;
 
-            bool hasJsonInclude = member.IsDefined<JsonIncludeAttribute>();
-            bool ignoreReadOnlyFields = options.IgnoreReadOnlyFields;
-            bool ignoreReadOnlyProps = options.IgnoreReadOnlyProperties;
-
+            bool isDefinedJProperty = member.IsDefined<JsonPropertyAttribute>();
             if (member is PropertyInfo prop)
             {
-                if (ignoreReadOnlyProps && (prop.SetMethod is null || !prop.SetMethod.IsPublic))
+                if (!isDefinedJProperty && (prop.SetMethod is null || !prop.SetMethod.IsPublic))
                     return false;
 
-                if (!hasJsonInclude && !prop.GetMethod.IsPublic)
+                if (!isDefinedJProperty && !prop.GetMethod.IsPublic)
                     return false;
 
                 return true;
             }  
             else if (member is FieldInfo field)
             {
-                if (ignoreReadOnlyProps && field.IsInitOnly)
+                if (!isDefinedJProperty && field.IsInitOnly)
                     return false;
 
-                if (!hasJsonInclude && !field.IsPublic)
+                if (!isDefinedJProperty && !field.IsPublic)
                     return false;
 
                 return true;
@@ -100,21 +111,20 @@ namespace CCEnvs.Json
 
         public static IList<MemberInfo> ResolveSerializableMembers(
             Type type,
-            JsonSerializerOptions options)
+            JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(type);
-            Guard.IsNotNull(options);
+            settings ??= JsonSerilizerSettingsProvider.GetDefault();
 
             var results = new List<MemberInfo>();
 
-            foreach (var member in type.GetMembers(BindingFlagsDefault.InstanceAll)
-                .Where(x => x.MemberType == MemberTypes.Field || x.MemberType == MemberTypes.Property)
-                .OrderBy(m => m.GetCustomAttribute<JsonPropertyOrderAttribute>()
-                    .Maybe()
-                    .Map(m => m.Order)
-                    .GetValue(0)))
+            foreach (var member in from member in type.GetMembers(BindingFlagsDefault.InstanceAll)
+                where member.MemberType == MemberTypes.Field || member.MemberType == MemberTypes.Property
+                select (member, attribute: member.GetCustomAttribute<JsonPropertyAttribute>()) into pair
+                orderby pair.attribute?.Order ?? 0
+                select pair.member)
             {
-                if (!IsSerializableMember(member, options))
+                if (!IsSerializableMember(member, settings))
                     continue;
 
                 results.Add(member);
@@ -126,7 +136,7 @@ namespace CCEnvs.Json
         public static Maybe<MemberInfo> MatchMember(
             IEnumerable<MemberInfo> members,
             string jsonPropName,
-            JsonSerializerOptions options)
+            JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(members);
 
@@ -134,47 +144,49 @@ namespace CCEnvs.Json
                 return null;
 
             Guard.IsNotNullOrWhiteSpace(jsonPropName);
-            Guard.IsNotNull(options);
+            settings ??= JsonSerilizerSettingsProvider.GetDefault();
 
-            bool ignoreCase = options.PropertyNameCaseInsensitive;
             string memberJsonPropName;
             foreach (var member in members)
             {
-                memberJsonPropName = ResolveJsonPropertyName(member, options);
+                memberJsonPropName = ResolveJsonPropertyName(member, settings);
 
-                if (memberJsonPropName.EqualsOrdinal(jsonPropName, ignoreCase))
+                if (memberJsonPropName.EqualsOrdinal(jsonPropName, ignoreCase: false))
                     return member;
             }
 
             return null;
         }
 
-        public static void Populate(object instance, JsonDocument doc, JsonSerializerOptions options)
+        public static void Populate(
+            object instance,
+            JObject jObject,
+            JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(instance);
-            Guard.IsNotNull(doc);
-            Guard.IsNotNull(options);
+            Guard.IsNotNull(jObject);
+            settings ??= JsonSerilizerSettingsProvider.GetDefault();
 
             Type instType = instance.GetType();
-            var members = ResolveSerializableMembers(instType, options);
+            var members = ResolveSerializableMembers(instType, settings);
             object? deserializedProp = null;
             Action<object, object?>? propSetter = null;
-            foreach (var jsonProp in doc.RootElement.EnumerateObject())
+            foreach (var jProp in jObject.Properties())
             {
-                if (jsonProp.Name == "$type")
+                if (jProp.Name == "$type")
                     continue;
 
-                if (!MatchMember(members, jsonProp.Name, options).TryGetValue(out MemberInfo? member))
+                if (!MatchMember(members, jProp.Name, settings).TryGetValue(out MemberInfo? member))
                     throw new InvalidOperationException($"Serializable member of json property not found in type '{instType}'");
 
                 if (member is PropertyInfo prop)
                 {
-                    deserializedProp = jsonProp.Value.Deserialize(prop.PropertyType, options);
+                    deserializedProp = JsonConvert.DeserializeObject(jProp.ToString(), prop.PropertyType, settings);
                     propSetter = (inst, value) => prop.GetSetMethod().Invoke(inst, Range.From(value));
                 }
                 else if (member is FieldInfo field)
                 {
-                    deserializedProp = jsonProp.Value.Deserialize(field.FieldType, options);
+                    deserializedProp = JsonConvert.DeserializeObject(jProp.ToString(), field.FieldType, settings);
                     propSetter = (inst, value) => field.SetValue(inst, value);
                 }
 

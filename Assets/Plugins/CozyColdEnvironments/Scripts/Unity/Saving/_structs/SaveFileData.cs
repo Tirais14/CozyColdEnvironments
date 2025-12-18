@@ -1,8 +1,8 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving

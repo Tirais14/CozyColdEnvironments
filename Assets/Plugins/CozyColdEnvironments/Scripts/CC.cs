@@ -11,7 +11,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace CCEnvs
@@ -40,8 +40,8 @@ namespace CCEnvs
         public static string WordSeparator { get; set; } = "_";
         public static Func<bool> TruePredicate { get; } = static () => true;
         public static Func<bool> FalsePredicate { get; } = static () => false;
-        public static JsonSerializerOptions JsonOptions { get; } = JsonSerilizerOptionsProvider.GetDefault();
-        public static JsonSerializerOptions DebugJsonOptions { get; } = JsonSerilizerOptionsProvider.GetDefault().AddConverters(new DebugJsonConverter());
+        public static JsonSerializerSettings JsonOptions { get; } = JsonSerilizerSettingsProvider.GetDefault();
+        public static JsonSerializerSettings DebugJsonOptions { get; } = JsonSerilizerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
         //public static JsonSerializerOptions JsonOptionsPolymorph { get; } = JsonSerilizerOptionsProvider.GetDefaultPolymorph();
 
         public static void Install()

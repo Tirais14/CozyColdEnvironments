@@ -1,5 +1,6 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,19 +10,16 @@ namespace CCEnvs.Unity
     [Serializable]
     public struct SceneInfo : IEquatable<SceneInfo>
     {
-        [JsonInclude]
+        [JsonProperty]
         [field: SerializeField]
-        [JsonPropertyName("buildIndex")]
         public int BuildIndex { get; private set; }
 
-        [JsonInclude]
+        [JsonProperty]
         [field: SerializeField]
-        [JsonPropertyName("path")]
         public string Path { get; private set; }
 
-        [JsonInclude]
+        [JsonProperty]
         [field: SerializeField]
-		[JsonPropertyName("name")]
         public string Name { get; private set; }
 
         [JsonConstructor]

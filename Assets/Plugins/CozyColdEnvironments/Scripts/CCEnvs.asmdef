@@ -18,13 +18,10 @@
         "Microsoft.Bcl.HashCode.dll",
         "SuperLinq.dll",
         "SuperLinq.Async.dll",
-        "QuikGraph.dll",
-        "QuikGraph.Graphviz.dll",
         "Humanizer.dll",
         "StringExtensions.dll",
         "ZLinq.dll",
         "ZLinq.FileSystem.dll",
-        "ZLinq.Json.dll",
         "ZString.dll",
         "Microsoft.Extensions.ObjectPool.dll",
         "Microsoft.Extensions.Primitives.dll",
@@ -38,7 +35,7 @@
         "R3.dll",
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
-        "System.Text.Json.dll"
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

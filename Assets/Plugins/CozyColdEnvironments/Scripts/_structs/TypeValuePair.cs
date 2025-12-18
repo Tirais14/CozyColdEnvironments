@@ -2,7 +2,8 @@ using CCEnvs.Reflection;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs
@@ -12,12 +13,10 @@ namespace CCEnvs
     {
         public static TypeValuePair Empty => T<object>();
 
-        [JsonInclude]
-		[JsonPropertyName("type")]
+        [JsonProperty]
         public Type Type { get; private set; }
 
-        [JsonInclude]
-		[JsonPropertyName("value")]
+        [JsonProperty]
         public object? Value { get; private set; }
 
         [JsonConstructor]

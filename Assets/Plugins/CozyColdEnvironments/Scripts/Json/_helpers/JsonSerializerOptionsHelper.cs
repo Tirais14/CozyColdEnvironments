@@ -1,24 +1,23 @@
 using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Json
 {
     public static class JsonSerializerOptionsHelper
     {
-        public static JsonSerializerOptions ExcludeConverters(
-            this JsonSerializerOptions source,
+        public static JsonSerializerSettings ExcludeConverters(
+            this JsonSerializerSettings source,
             params Type[] converterTypes)
         {
             Guard.IsNotNull(source, nameof(source));
             Guard.IsNotNull(converterTypes, nameof(converterTypes));
 
-            if (source.IsReadOnly || source.Converters.IsReadOnly)
+            if (source.Converters.IsReadOnly)
             {
-                var options = new JsonSerializerOptions(source);
+                var options = new JsonSerializerSettings(source);
                 foreach (var conv in source.Converters)
                 {
                     if (!isToRemove(conv, converterTypes))
@@ -54,8 +53,8 @@ namespace CCEnvs.Json
             }
         }
 
-        public static JsonSerializerOptions ExcludeConverters(
-            this JsonSerializerOptions source,
+        public static JsonSerializerSettings ExcludeConverters(
+            this JsonSerializerSettings source,
             params JsonConverter[] converters)
         {
             Guard.IsNotNull(source, nameof(source));
@@ -64,16 +63,16 @@ namespace CCEnvs.Json
             return source.ExcludeConverters(converters.Select(x => x.GetType()).ToArray());
         }
 
-        public static JsonSerializerOptions AddConverters(
-            this JsonSerializerOptions source,
+        public static JsonSerializerSettings AddConverters(
+            this JsonSerializerSettings source,
             params JsonConverter[] converters)
         {
             Guard.IsNotNull(source, nameof(source));
             Guard.IsNotNull(converters, nameof(converters));
 
-            if (source.IsReadOnly || source.Converters.IsReadOnly)
+            if (source.Converters.IsReadOnly)
             {
-                var options = new JsonSerializerOptions(source);
+                var options = new JsonSerializerSettings(source);
                 foreach (var conv in converters)
                     options.Converters.Add(conv);
 
@@ -86,10 +85,10 @@ namespace CCEnvs.Json
             return source;
         }
 
-        public static JsonSerializerOptions Clone(this JsonSerializerOptions source)
+        public static JsonSerializerSettings Clone(this JsonSerializerSettings source)
         {
             Guard.IsNotNull(source, nameof(source));
-            return new JsonSerializerOptions(source);
+            return new JsonSerializerSettings(source);
         }
     }
 }

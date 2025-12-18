@@ -1,24 +1,27 @@
-using CCEnvs.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
 {
     public class PolymorphJsonConverter<T> : JsonConverter<T>
     {
-        public override T? Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-                throw new JsonException();
+        public override bool CanWrite => false;
 
-            using var doc = JsonDocument.ParseValue(ref reader);
-            JsonElement typeProp = doc.RootElement.GetProperty("$type");
-            string typeReference = typeProp.GetString() ?? throw new JsonException("Missing '$type'");
+        public override T? ReadJson(
+            JsonReader reader,
+            Type objectType,
+            T? existingValue,
+            bool hasExistingValue,
+            JsonSerializer serializer)
+        {
+            if (reader.TokenType != JsonToken.StartObject)
+                throw new JsonSerializationException();
+
+            var jObj = JObject.Load(reader);
+            JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing '$type' property");
+            string typeReference = typeProp.ToObject<string>() ?? throw new JsonSerializationException("Missing '$type' content");
             var actualType = Type.GetType(typeReference, throwOnError: true);
 
             T inst;
@@ -28,50 +31,45 @@ namespace CCEnvs.Json.Converters
             }
             catch (Exception ex)
             {
-                throw new NotSupportedException($"Type '{actualType}' not supports constructor with parameters for now", ex);
+                throw new JsonSerializationException($"Type '{actualType}' not supports constructor with parameters for now", ex);
             }
 
-            JsonConverterHelper.Populate(inst, doc, options);
+            JsonConverterHelper.Populate(inst, jObj);
 
             return inst;
         }
 
-        public override void Write(
-            Utf8JsonWriter writer,
-            T value,
-            JsonSerializerOptions options)
+        public override void WriteJson(
+            JsonWriter writer,
+            T? value,
+            JsonSerializer serializer)
         {
-            if (value is null)
-            {
-                JsonSerializer.Serialize(writer, value: default, typeof(object));
-                return;
-            }
+            //if (value is null)
+            //{
+            //    writer.WriteNull();
+            //    return;
+            //}
 
-            Type valueType = value.GetType();
-            var jsonPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, options);
+            //Type valueType = value.GetType();
+            //var jsonPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, options);
 
-            writer.WriteStartObject();
-            writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
+            //writer.WriteStartObject();
+            //writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
 
-            foreach (var jsonPropInfo in jsonPropInfos)
-            {
-                if (jsonPropInfo.Get is null || !jsonPropInfo.Get(value).Let(out object? propValue))
-                {
-                    writer.WriteNull(jsonPropInfo.Name);
-                    continue;
-                }
+            //foreach (var jsonPropInfo in jsonPropInfos)
+            //{
+            //    if (jsonPropInfo.Get is null || !jsonPropInfo.Get(value).Let(out object? propValue))
+            //    {
+            //        writer.WriteNull(jsonPropInfo.Name);
+            //        continue;
+            //    }
 
-                writer.WritePropertyName(jsonPropInfo.Name);
+            //    writer.WritePropertyName(jsonPropInfo.Name);
 
-                JsonSerializer.Serialize(writer, propValue, options);
-            }
+            //    JsonConvert.SerializeObject(writer, propValue, options);
+            //}
 
-            writer.WriteEndObject();
-        }
-
-        public override bool CanConvert(Type typeToConvert)
-        {
-            return typeToConvert.IsType<T>();
+            //writer.WriteEndObject();
         }
     }
 }

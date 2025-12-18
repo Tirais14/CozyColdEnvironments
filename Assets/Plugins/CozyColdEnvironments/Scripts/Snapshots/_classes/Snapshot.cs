@@ -1,7 +1,8 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Snapshots

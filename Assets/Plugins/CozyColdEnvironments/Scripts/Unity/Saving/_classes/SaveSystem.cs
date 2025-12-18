@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
@@ -86,14 +86,14 @@ namespace CCEnvs.Unity.Saving
             string serialized = await File.ReadAllTextAsync(path);
             await UniTask.SwitchToMainThread();
 
-            var saveFileData = JsonSerializer.Deserialize<SaveFileData>(serialized, CC.JsonOptions);
+            var saveFileData = JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonOptions);
             saveFileData.ApplyToLoadedScenes();
         }
 
         public async UniTask SaveAsync(string path)
         {
             SaveFileData saveFileData = await BuildSaveFileDataAsync();
-            string serialized = JsonSerializer.Serialize(saveFileData, CC.JsonOptions);
+            string serialized = JsonConvert.SerializeObject(saveFileData, CC.JsonOptions);
 
             await UniTask.SwitchToThreadPool();
             await File.WriteAllTextAsync(path, serialized);
