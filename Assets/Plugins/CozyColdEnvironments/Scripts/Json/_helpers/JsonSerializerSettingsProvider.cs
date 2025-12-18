@@ -32,6 +32,7 @@ namespace CCEnvs.Json
             settings.Error = (sender, args) => throw args.ErrorContext.Error;
 #endif
 
+            settings.TypeNameHandling = TypeNameHandling.Objects;
             settings.Formatting = Formatting.Indented;
             settings.MaxDepth = 64;
             settings.ObjectCreationHandling = ObjectCreationHandling.Auto;

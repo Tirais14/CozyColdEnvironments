@@ -3,12 +3,14 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
+using Cysharp.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -251,6 +253,21 @@ namespace CCEnvs.Unity
             }
 
             return Maybe<GameObject>.None;
+        }
+
+        public static string GetHierarchyPath(this GameObject source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.transform.parent == null)
+                return source.name;
+
+            var parents = Do.Collect(source.transform, (x) => x.parent);
+            using var pathBuilder = ZString.CreateStringBuilder();
+            pathBuilder.Grow(parents.Count);
+            pathBuilder.AppendJoin("/", parents.Reverse().AsValueEnumerable().Select(x => x.name));
+
+            return pathBuilder.ToString();
         }
     }
 }

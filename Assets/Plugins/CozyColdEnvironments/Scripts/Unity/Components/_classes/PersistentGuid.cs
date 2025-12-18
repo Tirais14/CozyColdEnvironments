@@ -1,9 +1,5 @@
 using CCEnvs.Collections;
-using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
-using JetBrains.Annotations;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Components
 {
     [Serializable]
     [DisallowMultipleComponent]
@@ -22,35 +18,27 @@ namespace CCEnvs.Unity
         private readonly static HashSet<string> guids = new();
         private static bool sceneSubscribed;
 
-        [JsonProperty]
+        [NonSerialized]
+        private int pressCount;
+
         [field: SerializeField]
         [Tooltip("Serialized by inspector only for restoring value only. For exapmle from Json serialized value. Don't set the id manually.")]
         public string? Guid { get; private set; }
-
-        [NonSerialized]
-        private int pressCount;
 
         [field: SerializeField]
         public int PressCountToRegenerate { get; set; } = 6;
 
         private void Reset()
         {
+            InitializeOnLoad();
+            Validate();
+
             if (Guid.IsNullOrWhiteSpace())
                 GenerateGuid();
         }
 
-        protected override void Awake()
-        {
-            base.Awake();
-
-            SubscribeOnSceneChanged();
-
-            if ((!Application.isEditor || Application.isPlaying) && !IgnoreWarnings)
-                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use '{typeof(RuntimeId)}' instead");
-        }
-
         [InitializeOnLoadMethod]
-        public static void SubscribeOnSceneChanged()
+        public static void InitializeOnLoad()
         {
             if (sceneSubscribed)
                 return;
@@ -101,6 +89,18 @@ namespace CCEnvs.Unity
 
             pressCount = 0;
             guids.Add(Guid);
+        }
+
+        private void Validate()
+        {
+            if ((!Application.isEditor || Application.isPlaying) && !IgnoreWarnings)
+                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use '{typeof(RuntimeId)}' instead");
+
+            if (Guid.IsNotNullOrWhiteSpace() && guids.Contains(Guid))
+            {
+                this.PrintError($"Found duplicate id. More often caused by instantiating {nameof(GameObject)} with {nameof(PersistentGuid)}. Guid will be destroyed");
+                Destroy(this);
+            }
         }
     }
 }

@@ -108,10 +108,22 @@ namespace CCEnvs.Unity
                     select t).ToArray();
         }
 
-        public static Maybe<string> GetGuid(this Component source)
+        public static Maybe<string> GetPersistentGuid(this Component source)
         {
             CC.Guard.IsNotNullSource(source);
             return source.gameObject.GetPersistentGuid();
+        }
+
+        public static Maybe<string> GetRuntimeId(this Component source)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetRuntimeId();    
+        }
+
+        public static string GetHierarchyPath(this Component source)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetHierarchyPath();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Snapshots
     public class ComponentSnapshot<T> : Snapshot<T>
         where T : Component
     {
-        public string? Guid { get; set; }
+        public GameObjectExtraInfo ExtraInfo { get; set; }
 
         public ComponentSnapshot()
         {
@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.Snapshots
             :
             base(target)
         {
-            Guid = target.GetGuid().Raw;
+            ExtraInfo = target.GetExtraInfo();
         }
 
         public override T Restore(T target)

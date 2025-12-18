@@ -1,0 +1,49 @@
+using CCEnvs.Unity.Components;
+using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
+using System;
+using UnityEngine;
+
+#nullable enable
+namespace CCEnvs.Unity
+{
+    [Serializable]
+    public class GameObjectExtraInfo : IGameObjectExtraInfo
+    {
+        public string? PersistenGuid { get; }
+        public string? RuntimeId { get; }
+        public string HierarchyPath { get; }
+
+        public GameObjectExtraInfo(GameObject gameObject)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+
+            PersistenGuid = gameObject.GetPersistentGuid().Raw;
+            RuntimeId = gameObject.GetRuntimeId().Raw;
+            HierarchyPath = gameObject.GetHierarchyPath();
+        }
+
+        [JsonConstructor]
+        public GameObjectExtraInfo(string? persistenGuid, string? runtimeId, string hierarchyPath)
+        {
+            Guard.IsNotNull(persistenGuid);
+
+            PersistenGuid = persistenGuid;
+            RuntimeId = runtimeId;
+            HierarchyPath = hierarchyPath;
+        }
+    }
+
+    public static class GameObjectExtraInfoExtensions
+    {
+        public static GameObjectExtraInfo GetExtraInfo(this GameObject source)
+        {
+            return new GameObjectExtraInfo(source);
+        }
+
+        public static GameObjectExtraInfo GetExtraInfo(this Component source)
+        {
+            return new GameObjectExtraInfo(source.gameObject);
+        }
+    }
+}

@@ -64,7 +64,7 @@ namespace CCEnvs.Json.Converters
                         continue;
 
                     writer.WritePropertyName(jsonPropInfo.Name);
-                    writer.WriteValue("null");
+                    writer.WriteNull();
                     continue;
                 }
 

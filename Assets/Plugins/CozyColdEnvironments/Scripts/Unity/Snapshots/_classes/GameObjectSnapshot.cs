@@ -14,8 +14,7 @@ namespace CCEnvs.Unity.Snapshots
         public int Layer { get; set; }
         public bool ActiveSelf { get; set; } = true;
         public TransformSnapshot? Transform { get; set; }
-        public string? Guid { get; set; }
-        public string? RuntimeId { get; set; }
+        public GameObjectExtraInfo? ExtraInfo { get; set; }
 
         public GameObjectSnapshot()
         {
@@ -28,17 +27,19 @@ namespace CCEnvs.Unity.Snapshots
             Layer = target.layer;
             ActiveSelf = target.activeSelf;
             Transform = new TransformSnapshot(target.transform);
-            Guid = target.GetPersistentGuid().Raw;
+            ExtraInfo = target.GetExtraInfo();
         }
 
         public override GameObject Restore()
         {
 
             if (!Target.TryGetValue(out GameObject? target)
-                && 
-                Guid.IsNotNullOrWhiteSpace()
                 &&
-                GameObjectHelper.FindByPersistenGuid(Guid).TryGetValue(out GameObject? targetByGuid))
+                ExtraInfo is not null
+                &&
+                ExtraInfo.PersistenGuid.IsNotNullOrWhiteSpace()
+                &&
+                GameObjectHelper.FindByPersistenGuid(ExtraInfo.PersistenGuid).TryGetValue(out GameObject? targetByGuid))
             {
                 return Restore(targetByGuid);
             }

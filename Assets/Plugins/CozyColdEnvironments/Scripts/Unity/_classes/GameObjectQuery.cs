@@ -808,7 +808,7 @@ namespace CCEnvs.Unity
                 components = components.Where(cmp => cmp.gameObject.CompareTag(tag));
 
             if (this.guid.TryGetValue(out var guid))
-                components = components.Where(cmp => cmp.GetGuid().Has(guid));
+                components = components.Where(cmp => cmp.GetPersistentGuid().Has(guid));
 
             return components;
         }
