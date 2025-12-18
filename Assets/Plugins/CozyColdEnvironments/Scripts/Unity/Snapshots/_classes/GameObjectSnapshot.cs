@@ -9,12 +9,23 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class GameObjectSnapshot : Snapshot<GameObject>
     {
-        public string? Name { get; set; }
-        public string? Tag { get; set; }
-        public int Layer { get; set; }
-        public bool ActiveSelf { get; set; } = true;
-        public TransformSnapshot? Transform { get; set; }
-        public GameObjectExtraInfo? ExtraInfo { get; set; }
+        [field: SerializeField]
+        public string? Name { get; private set; }
+
+        [field: SerializeField]
+        public string? Tag { get; private set; }
+
+        [field: SerializeField]
+        public int Layer { get; private set; }
+
+        [field: SerializeField]
+        public bool ActiveSelf { get; private set; } = true;
+
+        [field: SerializeField]
+        public TransformSnapshot? Transform { get; private set; }
+
+        [field: SerializeField]
+        public GameObjectExtraInfo? ExtraInfo { get; private set; }
 
         public GameObjectSnapshot()
         {

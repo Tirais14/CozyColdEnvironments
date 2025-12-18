@@ -7,10 +7,17 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class QuaternionSnapshot : Snapshot<Quaternion>
     {
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
-        public float W { get; set; }
+        [field: SerializeField]
+        public float X { get; private set; }
+
+        [field: SerializeField]
+        public float Y { get; private set; }
+
+        [field: SerializeField]
+        public float Z { get; private set; }
+
+        [field: SerializeField]
+        public float W { get; private set; }
 
         public QuaternionSnapshot()
         {

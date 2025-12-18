@@ -7,10 +7,17 @@ namespace CCEnvs.Unity.Snapshots.UI
     [Serializable]
     public sealed class CanvasGroupSnapshot : BehaviourSnapshot<CanvasGroup>
     {
-        public float Alpha { get; set; } = 1f;
-        public bool Interctable { get; set; } = true;
-        public bool BlockRaycasts { get; set; } = true;
-        public bool IgnoreParentGroups { get; set; }
+        [field: SerializeField]
+        public float Alpha { get; private set; } = 1f;
+
+        [field: SerializeField]
+        public bool Interctable { get; private set; } = true;
+
+        [field: SerializeField]
+        public bool BlockRaycasts { get; private set; } = true;
+
+        [field: SerializeField]
+        public bool IgnoreParentGroups { get; private set; }
 
         public CanvasGroupSnapshot()
         {

@@ -8,8 +8,13 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public sealed class Vector3Snapshot : Snapshot<Vector3>
     {
+        [field: SerializeField]
         public float X { get; set; }
+
+        [field: SerializeField]
         public float Y { get; set; }
+
+        [field: SerializeField]
         public float Z { get; set; }
 
         public Vector3Snapshot()

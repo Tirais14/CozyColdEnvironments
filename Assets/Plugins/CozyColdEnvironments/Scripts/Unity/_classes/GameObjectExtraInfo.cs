@@ -8,11 +8,16 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public class GameObjectExtraInfo : IGameObjectExtraInfo
+    public sealed class GameObjectExtraInfo : IGameObjectExtraInfo
     {
-        public string? PersistenGuid { get; }
-        public string? RuntimeId { get; }
-        public string HierarchyPath { get; }
+        [field: SerializeField]
+        public string? PersistenGuid { get; private set; }
+
+        [field: SerializeField]
+        public string? RuntimeId { get; private set; }
+
+        [field: SerializeField]
+        public string HierarchyPath { get; private set; }
 
         public GameObjectExtraInfo(GameObject gameObject)
         {

@@ -9,7 +9,16 @@ namespace CCEnvs.Unity.Snapshots
     [Serializable]
     public class MaterialSnapshot : Snapshot<Material>
     {
-        public Color Color { get; set; }
+        [Header(nameof(Material))]
+        [Space(8)]
+
+        [SerializeField]
+        protected Color m_Color;
+
+        public Color Color {
+            get => m_Color;
+            protected set => m_Color = value;
+        }
 
         public MaterialSnapshot()
         {

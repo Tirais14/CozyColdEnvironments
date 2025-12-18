@@ -9,7 +9,16 @@ namespace CCEnvs.Unity.Snapshots
     public class ComponentSnapshot<T> : Snapshot<T>
         where T : Component
     {
-        public GameObjectExtraInfo ExtraInfo { get; set; }
+        [Header(nameof(Component))]
+        [Space(8)]
+
+        [SerializeField]
+        protected GameObjectExtraInfo m_ExtraInfo;
+
+        public GameObjectExtraInfo ExtraInfo {
+            get => m_ExtraInfo;
+            protected set => m_ExtraInfo = value;
+        }
 
         public ComponentSnapshot()
         {

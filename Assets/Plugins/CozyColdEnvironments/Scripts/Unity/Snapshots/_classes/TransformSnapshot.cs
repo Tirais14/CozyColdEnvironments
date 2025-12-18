@@ -11,8 +11,20 @@ namespace CCEnvs.Unity.Snapshots
     [JsonConverter(typeof(SnapshotConverter))]
     public class TransformSnapshot : ComponentSnapshot<Transform>
     {
-        public Vector3Snapshot? Position { get; set; }
-        public QuaternionSnapshot? Rotation { get; set; }
+        [SerializeField]
+        protected Vector3Snapshot? m_Position;
+
+        [SerializeField]
+        protected QuaternionSnapshot? m_Rotation;
+
+        public Vector3Snapshot? Position {
+            get => m_Position;
+            protected set => m_Position = value;
+        }
+        public QuaternionSnapshot? Rotation {
+            get => m_Rotation;
+            protected set => m_Rotation = value;
+        }
 
         public TransformSnapshot()
         {

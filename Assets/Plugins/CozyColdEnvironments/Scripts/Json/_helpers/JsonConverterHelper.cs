@@ -89,7 +89,7 @@ namespace CCEnvs.Json
             bool isDefinedJProperty = member.IsDefined<JsonPropertyAttribute>();
             if (member is PropertyInfo prop)
             {
-                if (!isDefinedJProperty && (prop.SetMethod is null || !prop.SetMethod.IsPublic))
+                if (!isDefinedJProperty && prop.SetMethod is null)
                     return false;
 
                 if (!isDefinedJProperty && !prop.GetMethod.IsPublic)

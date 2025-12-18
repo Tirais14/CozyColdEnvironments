@@ -8,7 +8,13 @@ namespace CCEnvs.Unity.Snapshots
     public class BehaviourSnapshot<T> : ComponentSnapshot<T>
         where T : Behaviour
     {
-        public bool Enabled { get; set; }
+        [SerializeField]
+        protected bool m_Enabled;
+
+        public bool Enabled {
+            get => m_Enabled; 
+            protected set => m_Enabled = value;
+        }
 
         public BehaviourSnapshot()
         {
