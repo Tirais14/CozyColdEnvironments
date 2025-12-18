@@ -172,6 +172,7 @@ namespace CCEnvs.Json
             var members = ResolveSerializableMembers(instType, settings);
             object? deserializedProp = null;
             Action<object, object?>? propSetter = null;
+            var serializer = JsonSerializer.Create(settings);
             foreach (var jProp in jObject.Properties())
             {
                 if (jProp.Name == "$type")
@@ -182,12 +183,12 @@ namespace CCEnvs.Json
 
                 if (member is PropertyInfo prop)
                 {
-                    deserializedProp = JsonConvert.DeserializeObject(jProp.ToString(), prop.PropertyType, settings);
-                    propSetter = (inst, value) => prop.GetSetMethod().Invoke(inst, Range.From(value));
+                    deserializedProp = jProp.Value.ToObject(prop.PropertyType, serializer);
+                    propSetter = (inst, value) => prop.SetValue(inst, value);
                 }
                 else if (member is FieldInfo field)
                 {
-                    deserializedProp = JsonConvert.DeserializeObject(jProp.ToString(), field.FieldType, settings);
+                    deserializedProp = jProp.Value.ToObject(field.FieldType, serializer);
                     propSetter = (inst, value) => field.SetValue(inst, value);
                 }
 

@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
+using UnityEngine.Rendering;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -25,8 +26,13 @@ namespace CCEnvs.Json
             }
 
             settings.NullValueHandling = NullValueHandling.Include;
-            settings.TypeNameHandling = TypeNameHandling.Objects;
+
+#if UNITY_2017_1_OR_NEWER
             settings.Error = (sender, args) => args.CurrentObject.PrintException(args.ErrorContext.Error);
+#else
+            settings.Error = (sender, args) => throw args.ErrorContext.Error;
+#endif
+
             settings.Formatting = Formatting.Indented;
             settings.MaxDepth = 64;
             settings.ObjectCreationHandling = ObjectCreationHandling.Auto;
