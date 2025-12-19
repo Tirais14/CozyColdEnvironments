@@ -1,6 +1,7 @@
 #nullable enable
 using C5;
 using CCEnvs.Attributes;
+using CCEnvs.Collections;
 using CCEnvs.Collections.Unsafe;
 using CCEnvs.Diagnostics;
 using System;

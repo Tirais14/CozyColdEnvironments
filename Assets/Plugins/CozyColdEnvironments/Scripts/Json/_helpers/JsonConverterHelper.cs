@@ -227,8 +227,7 @@ namespace CCEnvs.Json
                 return (getter, setter);
             }
 
-            return CC.Throw.InvalidOperation(member.GetType(), nameof(member))
-                .To<(Func<object, object?>? getter, Action<object, object?>? setter)>();
+            throw CC.ThrowHelper.InvalidOperationException(member.GetType(), nameof(member));
         }
     }
 }

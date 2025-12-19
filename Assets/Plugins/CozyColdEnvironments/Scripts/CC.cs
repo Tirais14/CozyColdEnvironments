@@ -6,6 +6,7 @@ using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Reflection;
 using CCEnvs.Returnables;
+using CommunityToolkit.Diagnostics;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
@@ -52,45 +53,40 @@ namespace CCEnvs
         }
 
 #pragma warning disable S112
-        public static class Throw
+
+        public static class ThrowHelper
         {
-            [DoesNotReturn]
-            public static object InvalidCast(Type toType,
-                                                string? message = null,
-                                                Exception? innerException = null)
+            public static InvalidCastException InvalidCastException(Type toType,
+                          string? message = null,
+                          Exception? innerException = null)
             {
-                throw new InvalidCastException($"Conversation type = {toType.GetFullName()}. {message}", innerException);
+                return new InvalidCastException($"Conversation type = {toType.GetFullName()}. {message}", innerException);
             }
 
-            [DoesNotReturn]
-            public static object InvalidCast(Type fromType,
+            public static InvalidCastException InvalidCastException(Type fromType,
                                                 Type toType,
                                                 string? message = null,
                                                 Exception? innerException = null)
             {
-                throw new InvalidCastException($"From {fromType.GetFullName()} to {toType.GetFullName()}. {message}", innerException);
+                return new InvalidCastException($"From {fromType.GetFullName()} to {toType.GetFullName()}. {message}", innerException);
             }
 
-            [DoesNotReturn]
-            public static object IndexOutOfRange(long index)
+            public static IndexOutOfRangeException IndexOutOfRangeException(long index)
             {
-                throw new IndexOutOfRangeException($"Index = {index}.");
+                return new IndexOutOfRangeException($"Index = {index}.");
             }
 
-            [DoesNotReturn]
-            public static object ArgumentException(object argument, string argName)
+            public static ArgumentException ArgumentExceptionException(object argument, string argName)
             {
-                throw new ArgumentException($"Argument: {argName} cannot be {argName}.");
+                return new ArgumentException($"Argument: {argName} cannot be {argName}.");
             }
 
-            [DoesNotReturn]
-            public static object InvalidOperation(object arg, string? argName = null)
+            public static InvalidOperationException InvalidOperationException(object arg, string? argName = null)
             {
-                throw new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg}");
+                return new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg}");
             }
 
-            [DoesNotReturn]
-            public static object MemberNotFound(string? name = null, MemberTypes? memberType = null, Type? reflectedType = null, BindingFlags? bindingFlags = null, Type[]? argumentTypes = null, Binder? binder = null)
+            public static InvalidOperationException MemberNotFoundException(string? name = null, MemberTypes? memberType = null, Type? reflectedType = null, BindingFlags? bindingFlags = null, Type[]? argumentTypes = null, Binder? binder = null)
             {
                 string msg = Sentence.Empty.Add($"name '{name}'", name)
                     .AddIfNotDefault($"member type '{memberType}'", memberType)
@@ -100,21 +96,26 @@ namespace CCEnvs
                     .AddIfNotDefault($"binder '{binder}'", binder)
                     .ToString();
 
-                throw new InvalidOperationException($"Member not found. {msg}");
+                return new InvalidOperationException($"Member not found. {msg}");
             }
 
-            [DoesNotReturn]
-            public static object EndlessLoop(ulong iterationCount, string? msg = null)
+            public static InvalidOperationException EndlessLoopException(ulong iterationCount, string? msg = null)
             {
-                throw new InvalidOperationException($"Prevented endless loop with interation count '{iterationCount}'. {msg}");
+                return new InvalidOperationException($"Prevented endless loop with interation count '{iterationCount}'. {msg}");
             }
 
-            [DoesNotReturn]
-            public static object MetedataNotFound(MemberInfo member)
+            public static InvalidOperationException MetadataNotFound(MemberInfo member)
             {
-                throw new InvalidOperationException($"Metadata not found. Member info: name '{member}', type '{member.MemberType}'");
+                return new InvalidOperationException($"Metadata not found. Member info: name '{member}', type '{member.MemberType}'");
+            }
+
+            public static InvalidOperationException TypeNotFoundException(string typeName, string? assemblyName = null)
+            {
+                return new InvalidOperationException($"Type name '{typeName}', assembly name '{assemblyName}'");
             }
         }
+
+
 #pragma warning restore S112
 
         public static class Guard

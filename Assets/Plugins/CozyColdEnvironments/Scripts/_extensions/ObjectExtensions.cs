@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
@@ -228,7 +229,7 @@ namespace CCEnvs
             }
             catch (InvalidCastException)
             {
-                return CC.Throw.InvalidCast(obj.GetType(), typeof(T)).As<T>();
+                throw CC.ThrowHelper.InvalidCastException(obj.GetType(), typeof(T));
             }
         }
 

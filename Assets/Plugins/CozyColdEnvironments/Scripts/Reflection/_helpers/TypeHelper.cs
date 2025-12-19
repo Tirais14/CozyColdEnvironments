@@ -79,7 +79,7 @@ namespace CCEnvs.Reflection
                 default:
                     {
                         if (throwOnError)
-                            throw new TypeNotFoundException(shortName, "Type hasn't special short name.");
+                            throw CC.ThrowHelper.TypeNotFoundException(shortName);
                         return null!;
                     }
             }
@@ -307,7 +307,7 @@ namespace CCEnvs.Reflection
 
         public static string GetShortName(Type type)
         {
-            CC.Guard.ArgumentObsolete(type, nameof(type), !type.IsGenericType);
+            Guard.IsTrue(!type.IsGenericType, nameof(type));
 
             if (type == typeof(short))
                 return "short";

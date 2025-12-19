@@ -18,7 +18,7 @@ namespace CCEnvs
             if (iterations > IterationsLimit)
             {
                 if (ThrowOnLimit)
-                    CC.Throw.EndlessLoop(iterations, ExceptionMessage);
+                    throw CC.ThrowHelper.EndlessLoopException(iterations, ExceptionMessage);
                 else
                     return false;
             }

@@ -417,7 +417,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<ConstructorInfo> Constructor()
         {
-            return (Constructors().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Constructor));
+            return (Constructors().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(memberType: MemberTypes.Constructor));
         }
 
         [DebuggerStepThrough]
@@ -434,7 +434,7 @@ namespace CCEnvs.Reflection
             if (name.IsNone && extraType.IsNone)
                 throw new InvalidOperationException($"{nameof(name)} and/or {nameof(extraType)} must be setted.");
 
-            return (Fields().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Field));
+            return (Fields().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(memberType: MemberTypes.Field));
         }
 
         [DebuggerStepThrough]
@@ -451,7 +451,7 @@ namespace CCEnvs.Reflection
             if (name.IsNone && extraType.IsNone)
                 throw new InvalidOperationException($"{nameof(name)} and/or {nameof(extraType)} must be setted.");
 
-            return (Properties().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Property));
+            return (Properties().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(memberType: MemberTypes.Property));
         }
 
         [DebuggerStepThrough]
@@ -477,7 +477,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<MethodInfo> Method()
         {
-            return (Methods().FirstOrDefault(), GetMemberNotFoundException(MemberTypes.Method));
+            return (Methods().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(memberType: MemberTypes.Method));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -639,20 +639,6 @@ namespace CCEnvs.Reflection
                 MemberTypes.TypeInfo => throw new NotImplementedException(memberType.ToString()),
                 _ => throw new InvalidOperationException(memberType.ToString()),
             };
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private InvalidOperationException GetMemberNotFoundException(MemberTypes memberType)
-        {
-            return new InvalidOperationException($"Member not found. Member type '{memberType}', reflected type '{type}', name '{name.Raw}', binding flags '{bindingFlags}', argument types '{argumentTypes.Raw?.Select(x => x.ToString()).Aggregate((left, right) => left + right)}', binder '{binder.Raw}'");
-            return new InvalidOperationException(
-                memberType,
-                reflectedType: type,
-                name: name.Raw,
-                bindingFlags: bindingFlags,
-                types: argumentTypes.Raw,
-                binder: binder.Raw);
         }
 
         [DebuggerStepThrough]

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Files
@@ -123,9 +125,7 @@ namespace CCEnvs.Files
         /// <exception cref="EmptyStringArgumentException"></exception>
         public readonly PathEntry WithExtension(string extension)
         {
-            if (extension.IsNullOrEmpty())
-                throw new EmptyStringArgumentException(nameof(extension), extension);
-
+            Guard.IsNotEmpty(extension, nameof(extension));
             string changed = System.IO.Path.ChangeExtension(value, extension);
 
             return new PathEntry(style, changed);
@@ -137,8 +137,7 @@ namespace CCEnvs.Files
         /// <exception cref="EmptyStringArgumentException"></exception>
         public readonly PathEntry WithFileName(string filename)
         {
-            if (filename.IsNullOrEmpty())
-                throw new EmptyStringArgumentException(nameof(filename), filename);
+            Guard.IsNotEmpty(filename, nameof(filename));
 
             string changed = PathHelper.SetFilename(value, filename);
 

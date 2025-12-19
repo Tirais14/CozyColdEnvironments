@@ -16,7 +16,7 @@ namespace CCEnvs.Attributes.Metadata
             if (attributes.IsNullOrEmpty())
             {
                 if (throwIfNotFound)
-                    CC.Throw.MetedataNotFound(member);
+                    throw CC.ThrowHelper.MetadataNotFound(member);
                 else
                     return Array.Empty<IMetdataAttribute>();
             }
@@ -32,7 +32,7 @@ namespace CCEnvs.Attributes.Metadata
             if (results.IsNullOrEmpty())
             {
                 if (throwIfNotFound)
-                    CC.Throw.MetedataNotFound(member);
+                    throw CC.ThrowHelper.MetadataNotFound(member);
                 else
                     return Array.Empty<T>();
             }

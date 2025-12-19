@@ -31,7 +31,7 @@ namespace CCEnvs.Collections.Unsafe
         /// <returns></returns>
         public static ArraySegment<T> GetInternalArraySegment<T>(this List<T> source)
         {
-            CC.Guard.SourceArg(source);
+            CC.Guard.IsNotNullSource(source);
 
             return new ArraySegment<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }

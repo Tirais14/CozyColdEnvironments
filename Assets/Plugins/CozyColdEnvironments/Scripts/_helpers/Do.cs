@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Collections;
 using CommunityToolkit.Diagnostics;
 using R3;
 using SuperLinq;
@@ -75,7 +76,7 @@ namespace CCEnvs
             else if (compareTypes.IsFlagSetted(CompareTypes.Bigger))
                 return value > 0;
 
-            return CC.Throw.InvalidOperation(compareTypes, nameof(compareTypes)).To<bool>();
+            throw CC.ThrowHelper.InvalidOperationException(compareTypes, nameof(compareTypes));
         }
 
         public static bool CompareTo<T>(this T left, T right, CompareTypes compareTypes)
@@ -136,7 +137,7 @@ namespace CCEnvs
 
                 if (loopState.Break)
                     break;
-                else if (loopState.Continue.Use())
+                else if (loopState.Continue.GetValue())
                     continue;
 
                 int nextValuesCount = nextValues.Length;
@@ -199,13 +200,13 @@ namespace CCEnvs
                         if (state.Break)
                             break;
 
-                        if (state.Continue.Use())
+                        if (state.Continue.GetValue())
                             continue;
 
                         action(state);
                     }
                 }
-                catch (EndlessLoopException ex)
+                catch (InvalidOperationException ex)
                 {
                     typeof(Do).PrintException(ex);
                 }
@@ -217,7 +218,7 @@ namespace CCEnvs
                     if (state.Break)
                         break;
 
-                    if (state.Continue.Use())
+                    if (state.Continue.GetValue())
                         continue;
 
                     action(state);
@@ -259,7 +260,7 @@ namespace CCEnvs
                     while (loopFuse)
                         results.Add(action());
                 }
-                catch (EndlessLoopException ex)
+                catch (InvalidOperationException ex)
                 {
                     typeof(Do).PrintException(ex);
                 }

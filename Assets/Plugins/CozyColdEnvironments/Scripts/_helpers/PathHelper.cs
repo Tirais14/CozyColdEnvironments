@@ -9,6 +9,7 @@ using System.Text;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
+using CommunityToolkit.Diagnostics;
 using SuperLinq;
 
 namespace CCEnvs.Files
@@ -62,7 +63,7 @@ namespace CCEnvs.Files
                 PathStyle.Default => PathEntry.DefaultDirectorySeparator,
                 PathStyle.Windows => '\\',
                 PathStyle.Universal => '/',
-                _ => throw new IncorrectDataException(style),
+                _ => throw CC.ThrowHelper.InvalidOperationException(style)
             };
         }
 
@@ -157,8 +158,7 @@ namespace CCEnvs.Files
                 throw new ArgumentNullException(nameof(path));
             if (path.IsEmpty())
                 return string.Empty;
-            if (toRemove.IsNullOrEmpty())
-                throw new EmptyStringArgumentException(nameof(toRemove), toRemove);
+            Guard.IsNotNullOrEmpty(toRemove, nameof(toRemove));
 
             string[] parts = Split(path);
 
@@ -208,8 +208,7 @@ namespace CCEnvs.Files
                                          string filename,
                                          PathStyle style = PathStyle.Default)
         {
-            if (path.IsNullOrEmpty())
-                throw new EmptyStringArgumentException(nameof(path));
+            Guard.IsNotNullOrEmpty(path, nameof(path));
             if (filename is null)
                 throw new ArgumentNullException(nameof(filename));
 
