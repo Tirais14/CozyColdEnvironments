@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [JsonConverter(typeof(SnapshotConverter))]
+    [JsonConverter(typeof(SnapshotJsonConverter))]
     public class TransformSnapshot : ComponentSnapshot<Transform>
     {
         [SerializeField]

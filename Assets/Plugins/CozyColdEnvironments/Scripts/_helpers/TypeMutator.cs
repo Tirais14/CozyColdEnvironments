@@ -76,7 +76,7 @@ namespace CCEnvs.Conversations
                 .Attributes(typeof(ConverterAttribute))
                 .ArgumentTypes(fromType)
                 .TypeFilter(toType)
-                .Arguments(input)
+                .WithArguments(input)
                 .Method()
                 .Lax()
                 .IfSome(m => m.Invoke(null, Range.From(input)))
@@ -86,7 +86,7 @@ namespace CCEnvs.Conversations
         private static Maybe<object> CreateByReflection(object arg, Type toType)
         {
             return toType.Reflect()
-                       .Arguments(arg)
+                       .WithArguments(arg)
                        .Constructor()
                        .Lax()
                        .Map(m => m.Invoke(Range.From(arg)))

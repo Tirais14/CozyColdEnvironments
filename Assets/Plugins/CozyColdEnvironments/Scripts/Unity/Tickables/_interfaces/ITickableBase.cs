@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.Tickables
 
             this.Reflect()
                 .NonPublic()
-                .Name(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
+                .WithName(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
                 .Property()
                 .Strict()
                 .SetValue(this, susbcription);
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Tickables
         {
             if (this.Reflect()
                 .NonPublic()
-                .Name(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
+                .WithName(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
                 .Property()
                 .Strict()
                 .GetValue(this) is not IDisposable subscription

@@ -339,13 +339,13 @@ namespace CCEnvs.Reflection
                   .Static()
                   .NonPublic()
                   .ByFullName()
-                  .Name("op_Implicit")
+                  .WithName("op_Implicit")
                   .Methods()
                   .Concat(source.Reflect()
                       .Static()
                       .NonPublic()
                       .ByFullName()
-                      .Name("op_Explicit")
+                      .WithName("op_Explicit")
                       .Methods())
                   .ToArray();
 

@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +49,43 @@ namespace CCEnvs.Collections
                                              KeyValuePair<TKey, TValue> item)
         {
             dictionary.Add(item.Key, item.Value);
+        }
+
+        public static TValue GetOrCreate<TKey, TValue>(
+            this IDictionary<TKey, TValue> source,
+            TKey key,
+            Func<TValue> factory)
+        {
+            CC.Guard.IsNotNullSource(source);
+            CC.Guard.IsNotNull(key, nameof(key));
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!source.TryGetValue(key, out TValue value))
+            {
+                value = factory();
+                source.Add(key, value);
+            }
+
+            return value;
+        }
+
+        public static TValue GetOrCreate<TKey, TValue, TState>(
+            this IDictionary<TKey, TValue> source,
+            TKey key,
+            TState state,
+            Func<TState, TValue> factory)
+        {
+            CC.Guard.IsNotNullSource(source);
+            CC.Guard.IsNotNull(key, nameof(key));
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!source.TryGetValue(key, out TValue value))
+            {
+                value = factory(state);
+                source.Add(key, value);
+            }
+
+            return value;
         }
     }
 }

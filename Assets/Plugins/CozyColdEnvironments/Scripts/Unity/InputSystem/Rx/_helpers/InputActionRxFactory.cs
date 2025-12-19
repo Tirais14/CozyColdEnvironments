@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             Guard.IsNotNull(inputAction);
 
             return type.Reflect()
-                       .Arguments(inputAction)
+                       .WithArguments(inputAction)
                        .CreateInstance<IInputActionRx>();
         }
     }

@@ -15,7 +15,7 @@ namespace CCEnvs.Unity._2D
             var t = ScriptableObject.CreateInstance(tileType ?? typeof(Tile));
 
             t.Reflect()
-                .Name(nameof(Tile.sprite))
+                .WithName(nameof(Tile.sprite))
                 .Property()
                 .Strict()
                 .SetValue(t, sprite);

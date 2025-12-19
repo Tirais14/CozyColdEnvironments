@@ -1,9 +1,11 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Text;
+using Humanizer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -239,7 +241,7 @@ namespace CCEnvs.Unity
                 .Component<RuntimeId>()
                 .Lax()
                 .Map(x => x.Id)
-                .Where(x => x.IsNotNullOrWhiteSpace());
+                .Where(x => x.IsNotNullOrWhiteSpace() && x != RuntimeId.DEFAULT_ID_VALUE);
         }
 
         public static Maybe<GameObject> FindByRuntimeId(string id)
@@ -268,6 +270,21 @@ namespace CCEnvs.Unity
             pathBuilder.AppendJoin("/", parents.Reverse().AsValueEnumerable().Select(x => x.name));
 
             return pathBuilder.ToString();
+        }
+
+        public static void AddRuntimeIdComponent(this GameObject source, string id)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.TryGetComponent<RuntimeId>(out var idCmp)
+                &&
+                idCmp.Id == RuntimeId.DEFAULT_ID_VALUE)
+            {
+                throw new InvalidOperationException($"{nameof(RuntimeId).Humanize()} already exists.");
+            }
+
+            idCmp = source.AddComponent<RuntimeId>();
+            idCmp.Reflect().Cache().WithName(nameof(RuntimeId.Id)).WithArguments(id).SetPropertyValue();
         }
     }
 }

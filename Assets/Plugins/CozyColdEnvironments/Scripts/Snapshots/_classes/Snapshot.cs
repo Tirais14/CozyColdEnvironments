@@ -12,7 +12,7 @@ namespace CCEnvs.Snapshots
     }
 
     [Serializable]
-    [JsonConverter(typeof(SnapshotConverter))]
+    [JsonConverter(typeof(SnapshotJsonConverter))]
     public abstract class Snapshot<T> : Snapshot, ISnapshot<T>
     {
 #if UNITY_2017_1_OR_NEWER

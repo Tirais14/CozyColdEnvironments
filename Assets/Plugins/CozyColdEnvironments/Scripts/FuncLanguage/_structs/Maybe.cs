@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,16 +22,21 @@ namespace CCEnvs.FuncLanguage
         //private static readonly Lazy<bool> targetIsStruct = new((() => typeof(T).IsValueType));
 
 #if UNITY_2017_1_OR_NEWER
+        [JsonProperty]
         [UnityEngine.SerializeField]
         private T? target;
 
+        [JsonProperty]
         [UnityEngine.SerializeField]
         [UnityEngine.Tooltip("If target == default value marked as none.")]
         private T? @default;
 
         public bool IsSome { get; private set; }
 #else
+        [JsonProperty]
         private readonly T? target;
+
+        [JsonProperty]
         private readonly T? @default;
 
         public readonly bool IsSome { get; }
@@ -48,6 +54,7 @@ namespace CCEnvs.FuncLanguage
             IsSome = IsSome(value);
         }
 
+        [JsonConstructor]
         public Maybe(T? value, T? @default)
         {
             target = value;

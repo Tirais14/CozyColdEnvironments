@@ -121,7 +121,7 @@ namespace CCEnvs
         public static class Guard
         {
             /// <exception cref="ArgumentNullException"></exception>
-            public static void IsNotNull<T>([NotNull] T? obj, string? paramName)
+            public static void IsNotNull<T>([NotNull] T? obj, string? paramName = null)
             {
                 if (obj.IsNull())
                     throw new ArgumentNullException(paramName ?? "value");
@@ -129,14 +129,22 @@ namespace CCEnvs
 
             public static void IsNotNullTarget<T>([NotNull] T? obj)
             {
-                if (obj.IsNull())
-                    throw new ArgumentNullException("target");
+                IsNotNull(obj, "target");
             }
 
             public static void IsNotNullSource<T>([NotNull] T? obj)
             {
-                if (obj.IsNull())
-                    throw new ArgumentNullException("source");
+                IsNotNull(obj, "source");
+            }
+
+            public static void IsNotNullState<T>([NotNull] T? obj)
+            {
+                IsNotNull(obj, "state");
+            }
+
+            public static void IsNotNullInput<T>([NotNull] T? obj)
+            {
+                IsNotNull(obj, "input");
             }
         }
     }

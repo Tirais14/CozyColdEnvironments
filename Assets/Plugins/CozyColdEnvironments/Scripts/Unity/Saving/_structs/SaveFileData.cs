@@ -11,10 +11,10 @@ namespace CCEnvs.Unity.Saving
     public readonly struct SaveFileData : IEquatable<SaveFileData>
     {
         public string Version { get; }
-        public IReadOnlyList<SaveSceneData> SceneDatas { get;}
+        public IReadOnlyList<SaveFileSceneData> SceneDatas { get;}
 
         [JsonConstructor]
-        public SaveFileData(string version, IReadOnlyList<SaveSceneData> sceneDatas)
+        public SaveFileData(string version, IReadOnlyList<SaveFileSceneData> sceneDatas)
         {
             Version = version;
             SceneDatas = sceneDatas.ToImmutableArray();

@@ -100,7 +100,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect Name(string? name = null)
+        public Reflect WithName(string? name = null)
         {
             this.name = name;
 
@@ -298,7 +298,7 @@ namespace CCEnvs.Reflection
         /// <returns></returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect Arguments(params object[] args)
+        public Reflect WithArguments(params object[] args)
         {
             arguments = args;
 

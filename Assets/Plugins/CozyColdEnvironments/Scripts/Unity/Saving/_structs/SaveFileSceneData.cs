@@ -1,22 +1,21 @@
 using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
 {
     [Serializable]
-    public readonly struct SaveSceneData : IEquatable<SaveSceneData>
+    public readonly struct SaveFileSceneData : IEquatable<SaveFileSceneData>
     {
         public SceneInfo SceneInfo { get; }
 
         public IReadOnlyList<ISnapshot> Snapshots { get; }
 
         [JsonConstructor]
-        public SaveSceneData(SceneInfo sceneInfo, IReadOnlyList<ISnapshot> snapshots)
+        public SaveFileSceneData(SceneInfo sceneInfo, IReadOnlyList<ISnapshot> snapshots)
         {
             CC.Guard.IsNotNull(snapshots, nameof(snapshots));
 
@@ -24,12 +23,12 @@ namespace CCEnvs.Unity.Saving
             Snapshots = snapshots.ToImmutableArray();
         }
 
-        public static bool operator ==(SaveSceneData left, SaveSceneData right)
+        public static bool operator ==(SaveFileSceneData left, SaveFileSceneData right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(SaveSceneData left, SaveSceneData right)
+        public static bool operator !=(SaveFileSceneData left, SaveFileSceneData right)
         {
             return !(left == right);
         }
@@ -41,7 +40,7 @@ namespace CCEnvs.Unity.Saving
                 Snapshots[i].Restore();
         }
 
-        public readonly bool Equals(SaveSceneData other)
+        public readonly bool Equals(SaveFileSceneData other)
         {
             return Snapshots == other.Snapshots
                    &&
@@ -50,7 +49,7 @@ namespace CCEnvs.Unity.Saving
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is SaveSceneData typed && Equals(typed);
+            return obj is SaveFileSceneData typed && Equals(typed);
         }
 
         public readonly override int GetHashCode()

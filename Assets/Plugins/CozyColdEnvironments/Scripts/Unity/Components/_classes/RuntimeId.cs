@@ -1,4 +1,3 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using UnityEngine;
 
@@ -9,13 +8,9 @@ namespace CCEnvs.Unity.Components
     [DisallowMultipleComponent]
     public sealed class RuntimeId : CCBehaviour
     {
+        public const string DEFAULT_ID_VALUE = "Undefined";
+
         [field: SerializeField]
         public string Id { get; private set; } = "Undefined";
-
-        public void SetId(string id)
-        {
-            Guard.IsNotNull(id);
-            Id = id;
-        }
     }
 }
