@@ -32,7 +32,7 @@ namespace Game
         /// </summary>
         /// <param name="assetName"></param>
         /// <returns></returns>
-        public static string DeClone(string assetName)
+        public static string DeleteClonePrefix(string assetName)
         {
             if (assetName is null)
                 throw new ArgumentNullException(assetName);

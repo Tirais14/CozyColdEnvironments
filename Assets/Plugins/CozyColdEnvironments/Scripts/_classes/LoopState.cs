@@ -1,11 +1,11 @@
-using CCEnvs.Properties;
-
 #nullable enable
+using CCEnvs.Proeprties;
+
 namespace CCEnvs
 {
     public record LoopState
     {
         public bool Break { get; set; }
-        public ResetableProperty<bool> Continue { get; } = new();
+        public Trigger<bool> Continue { get; } = new();
     }
 }

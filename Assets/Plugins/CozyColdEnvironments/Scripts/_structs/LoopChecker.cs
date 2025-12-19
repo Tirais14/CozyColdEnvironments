@@ -18,12 +18,7 @@ namespace CCEnvs
             if (iterations > IterationsLimit)
             {
                 if (ThrowOnLimit)
-                {
-                    if (ExceptionMessage.IsNotNullOrEmpty())
-                        throw new EndlessLoopException(iterations, ExceptionMessage);
-                    else
-                        throw new EndlessLoopException(iterations);
-                }
+                    CC.Throw.EndlessLoop(iterations, ExceptionMessage);
                 else
                     return false;
             }

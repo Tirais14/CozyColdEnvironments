@@ -50,17 +50,5 @@ namespace CCEnvs.Collections
             for (int i = 0; i < rangeLength; i++)
                 collection.Remove(range[i]);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrEmpty([NotNullWhen(false)] this ICollection? collection)
-        {
-            return collection.IsNull() || collection.Count == 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNotNullOrEmpty([NotNullWhen(true)] this ICollection? collection)
-        {
-            return collection.IsNotNull() && collection.Count >= 0;
-        }
     }
 }

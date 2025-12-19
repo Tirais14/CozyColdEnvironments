@@ -3,6 +3,8 @@ namespace CCEnvs.Returnables
 {
     public static class Return
     {
-        public static object Void => CC.EmptyObject;
+        public static object Void() => CC.EmptyObject;
+
+        public static T Void<T>() => default!;
     }
 }

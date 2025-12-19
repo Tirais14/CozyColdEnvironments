@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Factory;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
+using System;
+using System.Linq;
+using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Patterns.States
@@ -19,8 +18,8 @@ namespace CCEnvs.Patterns.States
                                         IState[] states)
         {
             CC.Guard.IsNotNull(stateMachine, nameof(stateMachine));
-            CC.Guard.CollectionArgument(stateFields, nameof(stateFields));
-            CC.Guard.CollectionArgument(states, nameof(states));
+            Guard.IsNotNull(stateFields, nameof(stateFields));
+            Guard.IsNotNull(states, nameof(states));
             if (stateFields.Length != states.Length)
                 throw new ArgumentException("Arrays must be the same length.");
 
@@ -53,7 +52,7 @@ namespace CCEnvs.Patterns.States
                                             Type[] stateTypes)
         {
             CC.Guard.IsNotNull(factory, nameof(factory));
-            CC.Guard.CollectionArgument(stateTypes, nameof(stateTypes));
+            Guard.IsNotNull(stateTypes, nameof(stateTypes));
 
             return stateTypes.Select(x => factory.Create(x)).ToArray();
         }

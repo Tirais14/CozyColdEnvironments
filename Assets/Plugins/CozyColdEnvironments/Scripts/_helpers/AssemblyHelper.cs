@@ -1,6 +1,8 @@
 #nullable enable
 
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -11,8 +13,7 @@ namespace CCEnvs
     {
         public static Assembly[] FindAssemblies(string partialName, bool throwIfNotFound = true)
         {
-            if (partialName.IsNullOrWhiteSpace())
-                throw new EmptyStringArgumentException(nameof(partialName), partialName);
+            Guard.IsNotNullOrWhiteSpace(partialName, nameof(partialName));
 
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies().Concat(AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()).Distinct().ToArray();
 
@@ -27,8 +28,7 @@ namespace CCEnvs
 
         public static Assembly GetAssembly(string fullName, bool throwIfNotFound = true)
         {
-            if (fullName.IsNullOrWhiteSpace())
-                throw new EmptyStringArgumentException(nameof(fullName), fullName);
+            Guard.IsNotNullOrWhiteSpace(fullName, nameof(fullName));
 
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies().Concat(AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()).Distinct().ToArray();
 

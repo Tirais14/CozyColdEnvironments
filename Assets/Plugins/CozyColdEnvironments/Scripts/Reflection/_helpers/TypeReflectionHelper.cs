@@ -18,7 +18,7 @@ namespace CCEnvs.Reflection
 
             return target.GetType()
                 .Reflect()
-                .NonPublic()
+                .BindingAttributes(bindingFlags)
                 .IncludeBaseTypes()
                 .Fields()
                 .Select(x => x.GetValue(target))
@@ -64,7 +64,7 @@ namespace CCEnvs.Reflection
             BindingFlags bindingFlags = BindingFlagsDefault.InstanceAll)
         {
             FieldInfo[] objFields = type.Reflect()
-                .NonPublic()
+                .BindingAttributes(bindingFlags)
                 .IncludeBaseTypes()
                 .Fields()
                 .ToArray();
@@ -81,7 +81,7 @@ namespace CCEnvs.Reflection
                 collected = Do.Collect(objFields[i], (current) =>
                 {
                     FieldInfo[] tempFields = current.FieldType.Reflect()
-                        .NonPublic()
+                        .BindingAttributes(bindingFlags)
                         .IncludeBaseTypes()
                         .Fields()
                         .ToArray();

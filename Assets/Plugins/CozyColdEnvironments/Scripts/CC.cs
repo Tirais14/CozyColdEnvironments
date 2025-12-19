@@ -8,11 +8,14 @@ using CCEnvs.Reflection;
 using CCEnvs.Returnables;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CCEnvs
 {
@@ -52,7 +55,7 @@ namespace CCEnvs
         public static class Throw
         {
             [DoesNotReturn]
-            public static ThrowVoid InvalidCast(Type toType,
+            public static object InvalidCast(Type toType,
                                                 string? message = null,
                                                 Exception? innerException = null)
             {
@@ -60,7 +63,7 @@ namespace CCEnvs
             }
 
             [DoesNotReturn]
-            public static ThrowVoid InvalidCast(Type fromType,
+            public static object InvalidCast(Type fromType,
                                                 Type toType,
                                                 string? message = null,
                                                 Exception? innerException = null)
@@ -69,7 +72,7 @@ namespace CCEnvs
             }
 
             [DoesNotReturn]
-            public static ThrowVoid IndexOutOfRange(long index)
+            public static object IndexOutOfRange(long index)
             {
                 throw new IndexOutOfRangeException($"Index = {index}.");
             }
@@ -85,16 +88,37 @@ namespace CCEnvs
             {
                 throw new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg}");
             }
+
+            [DoesNotReturn]
+            public static object MemberNotFound(string? name = null, MemberTypes? memberType = null, Type? reflectedType = null, BindingFlags? bindingFlags = null, Type[]? argumentTypes = null, Binder? binder = null)
+            {
+                string msg = Sentence.Empty.Add($"name '{name}'", name)
+                    .AddIfNotDefault($"member type '{memberType}'", memberType)
+                    .AddIfNotDefault($"reflected type '{reflectedType}'", reflectedType)
+                    .AddIfNotDefault($"binding flags '{bindingFlags}'", bindingFlags)
+                    .AddIfNotDefault($"argument types '{argumentTypes.Select(x => x.ToString()).Aggregate((left, right) => left + right)}'", argumentTypes)
+                    .AddIfNotDefault($"binder '{binder}'", binder)
+                    .ToString();
+
+                throw new InvalidOperationException($"Member not found. {msg}");
+            }
+
+            [DoesNotReturn]
+            public static object EndlessLoop(ulong iterationCount, string? msg = null)
+            {
+                throw new InvalidOperationException($"Prevented endless loop with interation count '{iterationCount}'. {msg}");
+            }
+
+            [DoesNotReturn]
+            public static object MetedataNotFound(MemberInfo member)
+            {
+                throw new InvalidOperationException($"Metadata not found. Member info: name '{member}', type '{member.MemberType}'");
+            }
         }
 #pragma warning restore S112
 
         public static class Guard
         {
-            public static void SourceArg<T>([NotNull] T? obj)
-            {
-                IsNotNull(obj, "source");
-            }
-
             /// <exception cref="ArgumentNullException"></exception>
             public static void IsNotNull<T>([NotNull] T? obj, string? paramName)
             {
@@ -112,67 +136,6 @@ namespace CCEnvs
             {
                 if (obj.IsNull())
                     throw new ArgumentNullException("source");
-            }
-
-            /// <exception cref="ArgumentException"></exception>
-            public static void Argument(bool mustBeFalse,
-                                        string paramName,
-                                        string? message = null)
-            {
-                if (mustBeFalse)
-                    throw new ArgumentException(message, paramName);
-            }
-            public static void Argument<T>(bool mustBeFalse,
-                                           T param,
-                                           string paramName,
-                                           string? message = null)
-            {
-                if (mustBeFalse)
-                    throw new ArgumentException($"Param: {param}; {message}", paramName);
-            }
-
-            [Obsolete("Use Argument instead.")]
-            /// <exception cref="ArgumentException"></exception>
-            public static void ArgumentObsolete<T>(T value,
-                                                   string paramName,
-                                                   bool mustBeTrue,
-                                                   string? message = null)
-            {
-                if (!mustBeTrue)
-                    throw new ArgumentException(message, paramName);
-            }
-
-            /// <exception cref="EmptyStringArgumentException"></exception>
-            public static void StringArgument([NotNull] string? value, string paramName)
-            {
-                IsNotNull(value, paramName);
-
-                if (value == string.Empty)
-                    throw new EmptyStringArgumentException(paramName, value);
-            }
-
-            /// <exception cref="EmptyStringException"></exception>
-            public static void String(string value)
-            {
-                if (value.IsNullOrEmpty())
-                    throw new EmptyStringException(value);
-            }
-
-            /// <exception cref="EmptyCollectionArgumentException"></exception>
-            public static void CollectionArgument([NotNull] IEnumerable? enumerable,
-                                                  string paramName)
-            {
-                IsNotNull(enumerable, paramName);
-
-                if (CCEnumerable.IsNullOrEmpty(enumerable))
-                    throw new EmptyCollectionArgumentException(paramName);
-            }
-
-            /// <exception cref="EmptyCollectionException"></exception>
-            public static void Collection(IEnumerable enumerable)
-            {
-                if (CCEnumerable.IsEmpty(enumerable))
-                    throw new EmptyCollectionException();
             }
         }
     }

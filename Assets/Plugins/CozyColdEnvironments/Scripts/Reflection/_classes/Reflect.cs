@@ -643,9 +643,10 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private MemberNotFoundException GetMemberNotFoundException(MemberTypes memberType)
+        private InvalidOperationException GetMemberNotFoundException(MemberTypes memberType)
         {
-            return new MemberNotFoundException(
+            return new InvalidOperationException($"Member not found. Member type '{memberType}', reflected type '{type}', name '{name.Raw}', binding flags '{bindingFlags}', argument types '{argumentTypes.Raw?.Select(x => x.ToString()).Aggregate((left, right) => left + right)}', binder '{binder.Raw}'");
+            return new InvalidOperationException(
                 memberType,
                 reflectedType: type,
                 name: name.Raw,

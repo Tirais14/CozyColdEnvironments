@@ -1,6 +1,8 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
+using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System;
 using System.Collections.Concurrent;
@@ -26,8 +28,7 @@ namespace CCEnvs.Reflection
                                                bool throwOnError = true)
         {
             CC.Guard.IsNotNull(parameters, nameof(parameters));
-            CC.Guard.StringArgument(parameters.TypeName.Raw,
-                Syntax.Chain(nameof(parameters), nameof(parameters.TypeName)));
+            Guard.IsNotNullOrEmpty(parameters.TypeName.Raw, nameof(parameters.TypeName));
 
             Type[] foundTypes = FindTypesInternal(parameters);
 
@@ -76,7 +77,7 @@ namespace CCEnvs.Reflection
             void TryThrowNotFound()
             {
                 if (throwOnError)
-                    throw new TypeNotFoundException(parameters);
+                    throw new InvalidOperationException($"Type not found. Params {parameters}");
             }
         }
 

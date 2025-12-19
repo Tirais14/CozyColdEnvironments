@@ -5,9 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-#if Z_LINQ
-using ZLinq;
-#endif
 
 #nullable enable
 namespace CCEnvs.Linq
@@ -46,18 +43,6 @@ namespace CCEnvs.Linq
 
             return materialized;
         }
-
-        ///// <summary>
-        ///// Doesn't materialize collection
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="values"></param>
-        ///// <param name="action"></param>
-        ///// <returns></returns>
-        //public static IEnumerable<T> Action<T>(this IEnumerable<T> values, Action<T> action)
-        //{
-        //    return values.Select(x => { action(x); return x; });
-        //}
 
         public static IEnumerable<T> RemoveElement<T>(this IEnumerable<T> values,
                                                       T removeValue)
@@ -128,7 +113,7 @@ namespace CCEnvs.Linq
 #pragma warning restore S112
         }
 
-        public static int SequenceToHashCode<T>(this IEnumerable<T> values)
+        public static int SequenceHashCode<T>(this IEnumerable<T> values)
         {
             CC.Guard.IsNotNull(values, nameof(values));
 
@@ -178,41 +163,6 @@ namespace CCEnvs.Linq
             foreach (var item in value)
                 yield return (TResult)TypeMutator.MutateType(item, typeof(TResult));
         }
-
-        ///// <summary>
-        ///// Only invokes action
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="values"></param>
-        ///// <param name="action"></param>
-        ///// <returns></returns>
-        //public static IEnumerable<T> Before<T>(this IEnumerable<T> values, Action action)
-        //{
-        //    CC.Validate.ArgumentNull(values, nameof(values));
-        //    CC.Validate.ArgumentNull(action, nameof(action));
-
-        //    action();
-
-        //    return values;
-        //}
-        ///// <summary>
-        ///// Only invokes action
-        ///// </summary>
-        ///// <typeparam name="T0"></typeparam>
-        ///// <param name="values"></param>
-        ///// <param name="action"></param>
-        ///// <returns></returns>
-        //public static IEnumerable<T0> Before<T0, T1>(this IEnumerable<T0> values,
-        //                                             T1 arg,
-        //                                             Action<T1> action)
-        //{
-        //    CC.Validate.ArgumentNull(values, nameof(values));
-        //    CC.Validate.ArgumentNull(action, nameof(action));
-
-        //    action(arg);
-
-        //    return values;
-        //}
 
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> values)
         {

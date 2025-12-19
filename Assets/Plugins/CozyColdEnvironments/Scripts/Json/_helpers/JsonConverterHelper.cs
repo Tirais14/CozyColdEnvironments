@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
+using CCEnvs.Collections;
 
 #nullable enable
 namespace CCEnvs.Json

@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+
 namespace CCEnvs
 {
     public abstract class ALoopFuse
@@ -16,12 +18,12 @@ namespace CCEnvs
             return iterations++ < IterationsLimit;
         }
 
-        protected EndlessLoopException GetException()
+        protected InvalidOperationException GetException()
         {
             if (ExceptionMessage.IsNullOrWhiteSpace())
-                return new EndlessLoopException(iterations);
+                return new InvalidOperationException($"Prevented endless loop with interation count '{iterations}'");
             else
-                return new EndlessLoopException(iterations, ExceptionMessage);
+                return new InvalidOperationException($"Prevented endless loop with interation count '{iterations}'. {ExceptionMessage}");
         }
     }
 }

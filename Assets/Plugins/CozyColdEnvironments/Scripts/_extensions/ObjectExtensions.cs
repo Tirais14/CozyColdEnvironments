@@ -8,7 +8,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs
@@ -245,27 +244,6 @@ namespace CCEnvs
             return obj.Is<TValue>(out var typedObj) ? typedObj : default!;
         }
 
-        /// <summary>
-        /// Checks for <see cref="CC.EmptyObject"/>
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static bool IsEmptyObject<T>(this T? value)
-        {
-            if (value is null)
-                return false;
-
-            return value.Equals(CC.EmptyObject) 
-                   ||
-                   value.GetType() == typeof(object);
-        }
-
-        public static bool IsNotEmptyObject<T>(this T? value)
-        {
-            return !value.IsEmptyObject();
-        }
-
         public static bool Let<T>(this T? source, [NotNullWhen(true)] out T? local)
         {
             return source.Is<T>(out local);
@@ -285,76 +263,27 @@ namespace CCEnvs
 
             return converter(source).Is<TOut>(out local);
         }
-    }
-}
 
-namespace CCEnvs.TypeMatching
-{
-    public static class ObjectExtensions
-    {
-        public static bool Is<T>(this object? obj)
+        /// <summary>Checks for unity or system <see langword="null"/></summary>
+        public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
         {
-            if (obj is T && obj.IsNotNull())
-                return true;
-
-            return false;
-        }
-        public static bool Is<TThis, T>(this TThis? obj)
-        {
-            if (obj is T && obj.IsNotNull())
-                return true;
-
-            return false;
-        }
-        public static bool Is<T>(this object? obj, [NotNullWhen(true)] out T? result)
-        {
-            if (obj is T typedObj && obj.IsNotNull())
-            {
-                result = typedObj;
-                return true;
-            }
-
-            result = default;
-            return false;
-        }
-        public static bool Is<TThis, T>(this TThis? obj, [NotNullWhen(true)] out T? result)
-        {
-            if (obj is T typedObj && obj.IsNotNull())
-            {
-                result = typedObj;
-                return true;
-            }
-
-            result = default;
-            return false;
+            return new NullValidator<T>(obj).IsNull;
         }
 
-        public static bool IsNot<T>(this object? obj)
+        /// <summary>Checks for unity or system <see langword="null"/></summary>
+        public static bool IsNull<T>([NotNullWhen(false)] this T? obj, out NullValidator<T> validationResult)
         {
-            return !obj.Is<T>();
+            validationResult = new NullValidator<T>(obj);
+
+            return validationResult.IsNull;
         }
 
-        public static bool IsNot<TThis, T>(this TThis? obj)
+        /// <summary>Inverted</summary>
+        public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj)
         {
-            return !obj.Is<TThis, T>();
+            return !new NullValidator<T>(obj).IsNull;
         }
 
-        public static bool IsNot<T>(this object? obj, [NotNullWhen(false)] out T? result)
-        {
-            return !obj.Is(out result);
-        }
-
-        public static bool IsNot<TThis, T>(this TThis? obj, [NotNullWhen(false)] out T? result)
-        {
-            return !obj.Is(out result);
-        }
-    }
-}
-
-namespace CCEnvs.Conversations
-{
-    public static class ObjectExtensions
-    {
         /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>
         public static object MutateType(this object obj, Type conversionType)
         {
@@ -366,5 +295,13 @@ namespace CCEnvs.Conversations
         {
             return obj.MutateType<T>();
         }
+    }
+}
+
+namespace CCEnvs.Conversations
+{
+    public static class ObjectExtensions
+    {
+
     }
 }
