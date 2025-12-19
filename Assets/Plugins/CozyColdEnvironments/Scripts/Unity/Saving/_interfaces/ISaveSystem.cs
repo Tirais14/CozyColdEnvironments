@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
@@ -12,21 +13,39 @@ namespace CCEnvs.Unity.Saving
 
         UniTask LoadAsync(string path);
 
-        /// <returns>Disposable after dispose that invokes <see cref="UnbindObject(object?)"/></returns>
-        IDisposable BindObject(object obj, SceneInfo? sceneInfo = null);
+        /// <summary>Only for reference types</summary>
+        /// <returns>Disposable which invokes <see cref="UnregisterObject(object?)"/></returns>
+        IDisposable RegisterObject(object obj, string key, SceneInfo? sceneInfo = null);
 
-        /// <inheritdoc cref="BindObject(object, SceneInfo?)"/>
-        IDisposable BindGameObject(GameObject gameObject, string runtimeId);
+        /// <inheritdoc cref="RegisterObject(object, string, SceneInfo?)"/>
+        IDisposable RegisterObject<TObject, TState>(
+            TObject obj,
+            Func<TObject, Maybe<TState>, string> keySelector,
+            SceneInfo? sceneInfo = default,
+            TState? state = default)
+            where TObject : class;
 
-        /// <inheritdoc cref="BindObject(object, SceneInfo?)"/>
-        IDisposable BindGameObject(GameObject gameObject, Func<GameObject, string> runtimeIdSelector);
+        /// <returns>Disposable which invokes <see cref="UnregisterObject(object?)"/></returns>
+        IDisposable RegisterGameObject(GameObject gameObject, string runtimeId);
 
-        bool UnbindObject(object? obj);
+        /// <inheritdoc cref="RegisterGameObject(GameObject, string)"/>
+        IDisposable RegisterGameObject<TState>(
+            GameObject gameObject,
+            Func<GameObject, Maybe<TState>, string> runtimeIdSelector,
+            TState? state = default);
 
-        void RegisterType(Type type, Func<object, ISnapshot> serializableConverter);
-        void RegisterType<T>(Func<object, ISnapshot> serializableConverter);
+        /// <summary>
+        /// Hierarchy path will be used as runtime id or from component <see cref="Components.RuntimeId"/>
+        /// </summary>
+        /// <returns>Disposable which invokes <see cref="UnregisterObject(object?)"/></returns>
+        IDisposable RegisterGameObject(GameObject gameObject);
 
-        bool UnregisterType(Type type);
+        bool UnregisterObject(object? obj);
+
+        void RegisterType(Type type, Func<object, ISnapshot> converter);
+        void RegisterType<T>(Func<T, ISnapshot> converter);
+
+        bool UnregisterType(Type? type);
         bool UnregisterType<T>();
 
         bool IsTypeRegistered(Type? type);
