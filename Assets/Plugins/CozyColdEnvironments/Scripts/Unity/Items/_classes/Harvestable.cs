@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using System;

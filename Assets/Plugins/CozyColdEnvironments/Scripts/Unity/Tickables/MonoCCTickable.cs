@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
+using System;
 
 #nullable enable
 #pragma warning disable IDE1006
@@ -17,7 +18,7 @@ namespace CCEnvs.Unity.Tickables
             get
             {
                 if (ticker.IsNull())
-                    throw new MissingDataException("Tickable not registered in any ticker.");
+                    throw new ArgumentException("Tickable not registered in any ticker.");
 
                 return ticker;
             }

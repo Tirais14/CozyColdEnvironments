@@ -1,5 +1,5 @@
 using CCEnvs.Async;
-using CCEnvs.Diagnostics;
+using CCEnvs.Collections;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using System;
@@ -87,7 +87,6 @@ namespace CCEnvs.Unity.Essentials
                     throw new ArgumentException($"Invalid {nameof(sceneKey)}. Type: {sceneKey.GetType()}");
 
                 beforeLoading?.Invoke(op);
-
                 await op;
 
                 return SceneManager.GetActiveScene();

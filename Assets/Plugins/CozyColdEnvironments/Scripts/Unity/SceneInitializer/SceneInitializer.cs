@@ -124,7 +124,7 @@ namespace CCEnvs.Unity.Initables
                 x.PropertyType == typeof(bool)
                 )
                 ??
-                throw new MemberNotFoundException(MemberTypes.Property, initable.GetType(), nameof(IInitableBase.IsInited));
+                throw CC.ThrowHelper.MemberNotFoundException(name: nameof(IInitable.IsInited), memberType: MemberTypes.Property, reflectedType: initable.GetType());
 
             if (isInitedProp.SetMethod is null)
                 throw new InvalidOperationException("Not found SetMethod.");

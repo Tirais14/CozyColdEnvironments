@@ -1,6 +1,8 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,8 +37,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         /// <exception cref="EmptyStringArgumentException"></exception>
         public IInputActionRx GetInputAction(string inputName)
         {
-            if (inputName.IsNullOrEmpty())
-                throw new EmptyStringArgumentException(nameof(inputName), inputName);
+            Guard.IsNotNullOrWhiteSpace(inputName, nameof(inputName));
             if (!registeredActions.TryGetValue(inputName, out IInputActionRx result))
                 throw new ArgumentException($"Cannot find input action with name {inputName}.");
 

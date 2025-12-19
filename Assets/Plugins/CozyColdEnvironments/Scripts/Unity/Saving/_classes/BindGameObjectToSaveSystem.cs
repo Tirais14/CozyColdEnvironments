@@ -1,5 +1,10 @@
+using CCEnvs.Collections;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Saving;
+using Cysharp.Threading.Tasks;
+using R3;
+using System;
+using System.Linq;
 using UnityEngine;
 
 #nullable enable
@@ -9,37 +14,41 @@ namespace CCEnvs.Unity.Snapshots
     public sealed class BindGameObjectToSaveSystem : CCBehaviour
     {
         [SerializeField]
-        [Tooltip("Binds only enumerated components and self game object. Keep empty for auto binding")]
-        private Component[]? componentsExplicit;
+        private SavingSystemToRegisterObject[] components = Array.Empty<SavingSystemToRegisterObject>();
 
         [SerializeField]
-        private bool ignoreComponents;
+        [Tooltip("Process only specified in 'components' field components")]
+        private bool onlyExplicitComponents = true;
 
         protected override void Awake()
         {
             base.Awake();
 
-            gameObject.BindToSaveSystem().BindDisposableTo(this);
+            gameObject.SavingSystemRegisterGameObject().AddTo(gameObject);
 
-            if (ignoreComponents)
-                return;
-
-            if (componentsExplicit is not null)
-            {
-                foreach (var cmp in componentsExplicit)
-                    cmp.BindToSaveSystem().BindDisposableTo(this);
+            if (components.IsNotNullOrEmpty())
+            {   
+                foreach (var cmp in components)
+                    cmp.Object.SavingSystemRegisterObject(cmp.Key).AddTo(gameObject);
             }
-            else
+
+
+            if (!onlyExplicitComponents)
             {
-                foreach (var cmp in GetComponents<Component>())
+                foreach (var cmp in GetComponents<Component>().Except(components.Select(x => (Component)x.Object)))
                 {
                     if (cmp == this)
                         continue;
 
-                    if (cmp.IsTypeRegisteredInSaveSystem())
-                        cmp.BindToSaveSystem().BindDisposableTo(this);
+                    if (cmp.SavingSystemIsInstanceRegistered())
+                        continue;
+
+                    if (cmp.SavingSystemIsTypeRegistered())
+                        cmp.SavingSystemRegisterComponent().AddTo(gameObject);
                 }
             }
+
+            Destroy(this);
         }
     }
 }

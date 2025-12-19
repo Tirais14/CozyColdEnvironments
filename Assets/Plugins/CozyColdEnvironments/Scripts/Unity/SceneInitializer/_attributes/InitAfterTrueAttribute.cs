@@ -1,6 +1,8 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
+using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Unity.Initables
@@ -13,7 +15,7 @@ namespace CCEnvs.Unity.Initables
     {
         public Type Type { get; }
         public string MemberName { get; }
-        public MemberType MemberType { get; }
+        public MemberTypes MemberType { get; }
         public bool TypeDeclaredOnly { get; }
 
         /// <exception cref="ArgumentNullException"></exception>
@@ -21,22 +23,21 @@ namespace CCEnvs.Unity.Initables
         /// <exception cref="ArgumentException"></exception>
         public InitAfterTrueAttribute(Type type,
                                       string memberName,
-                                      MemberType memberType,
+                                      MemberTypes memberType,
                                       bool declaredOnly = false)
         {
-            if (type is null)
-                throw new ArgumentNullException(nameof(type));
-            if (memberName.IsNullOrWhiteSpace())
-                throw new EmptyStringArgumentException(nameof(memberName), memberName);
-            if (type.IsNotType<UnityEngine.Object>())
-                throw new ArgumentException("Type must be UnityEngine.Object inherited.");
-            if (memberType == MemberType.Undefined
+            Guard.IsNotNull(type, nameof(type));
+            Guard.IsNotNullOrWhiteSpace(memberName, nameof(memberName));
+            CC.Guard.IsNotType<UnityEngine.Object>(type, nameof(type));
+            if (memberType == MemberTypes.Custom
                 ||
-                memberType == MemberType.Event
+                memberType == MemberTypes.Event
                 ||
-                memberType == MemberType.Constructor
+                memberType == MemberTypes.Constructor
                 )
+            {
                 throw new ArgumentException($"Member type cannot be {memberType}.");
+            }
 
             Type = type;
             MemberName = memberName;

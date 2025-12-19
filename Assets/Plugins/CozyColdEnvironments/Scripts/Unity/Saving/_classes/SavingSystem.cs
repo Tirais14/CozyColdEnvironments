@@ -1,5 +1,4 @@
 using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
@@ -20,7 +19,7 @@ using UnityEngine.SceneManagement;
 #nullable enable
 namespace CCEnvs.Unity.Saving
 {
-    public sealed class SaveSystem : CCBehaviourStaticPublic<SaveSystem>, ISaveSystem
+    public sealed class SavingSystem : CCBehaviourStaticPublic<SavingSystem>, ISavingSystem
     {
         private readonly Type gameObjectType = typeof(GameObject);
 
@@ -28,6 +27,7 @@ namespace CCEnvs.Unity.Saving
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
         private readonly Dictionary<RegisteredObject, string> objectKeys = new();
         private readonly Dictionary<SceneInfo?, List<IDisposable>> sceneDisposables = new();
+
         private UnityAction<Scene> onSceneUnloaded;
 
         protected override void Awake()
@@ -74,13 +74,9 @@ namespace CCEnvs.Unity.Saving
             string key,
             SceneInfo? sceneInfo = null)
         {
-            if (!obj.GetType().IsClass)
-            {
-                this.PrintError($"Cannot register {obj.GetType()}. It is not reference type");
-                return Disposable.Empty;
-            }
-
-            sceneInfo ??= ResolveSceneInfo(obj);
+            CC.Guard.IsNotNull(obj, nameof(obj));
+            Guard.IsNotNull(objType, nameof(objType));
+            Guard.IsNotNullOrWhiteSpace(key, nameof(key));
 
             if (!IsTypeRegistered(objType))
             {
@@ -88,6 +84,7 @@ namespace CCEnvs.Unity.Saving
                 return Disposable.Empty;
             }
 
+            sceneInfo ??= ResolveSceneInfo(obj);
             var sysObjects = objectLists.GetOrCreate(objType, () => new List<RegisteredObject>());
             var regObj = new RegisteredObject(obj, sceneInfo, converters);
 
@@ -112,41 +109,30 @@ namespace CCEnvs.Unity.Saving
                 .AddTo(disposables);
         }
 
-        public IDisposable RegisterGameObject(GameObject gameObject)
-        {
-            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
-            return RegisterGameObjectInternal(gameObject, key: null, keyAsRuntimeId: true);
-        }
-
         public IDisposable RegisterGameObject(GameObject gameObject, string key)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
             Guard.IsNotWhiteSpace(key, nameof(key));
-            return RegisterGameObjectInternal(gameObject, key, keyAsRuntimeId: false);
+            return RegisterUnityObject(gameObject, key);
         }
 
-        private IDisposable RegisterGameObjectInternal(
-            GameObject gameObject,
-            string? key,
-            bool keyAsRuntimeId)
+        public IDisposable RegisterGameObject(GameObject gameObject)
         {
-            key ??= gameObject.GetHierarchyPath();
-            if (keyAsRuntimeId)
-            {
-                if (!gameObject.TryGetComponent<RuntimeId>(out var idCmp))
-                    gameObject.AddRuntimeIdComponent(key);
-                else
-                    key = idCmp.Id;
-            }
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
+            return RegisterUnityObject(gameObject, key: null);
+        }
 
-            Scene goScene = gameObject.scene;
-            SceneInfo goSceneInfo = goScene.GetSceneInfo();
+        public IDisposable RegisterComponent(Component component, string key)
+        {
+            CC.Guard.IsNotNull(component, nameof(component));
+            Guard.IsNotNullOrWhiteSpace(key, nameof(key));
+            return RegisterUnityObject(component, key);
+        }
 
-            return RegisterObjectInternal(
-                gameObject,
-                gameObjectType,
-                key,
-                goSceneInfo);
+        public IDisposable RegisterComponent(Component component)
+        {
+            CC.Guard.IsNotNull(component, nameof(component));
+            return RegisterUnityObject(component, key: null);
         }
 
         public bool UnregisterObject(object? obj)
@@ -193,15 +179,16 @@ namespace CCEnvs.Unity.Saving
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
         {
-            Guard.IsNotNull(type);
-            Guard.IsNotNull(converter);
+            Guard.IsNotNull(type, nameof(type));
+            Guard.IsTrue(!type.IsClass, nameof(type), "Is not reference type");
+            Guard.IsNotNull(converter, nameof(converter));
 
             if (IsTypeRegistered(type))
                 throw new InvalidOperationException($"Type: {type} already registered.");
 
             converters.Add(type, converter);
         }
-        public void RegisterType<T>(Func<T, ISnapshot> converter)
+        public void RegisterType<T>(Func<T, ISnapshot> converter) where T : class
         {
             RegisterType(typeof(T), (obj) => converter((T)obj));
         }
@@ -214,7 +201,7 @@ namespace CCEnvs.Unity.Saving
             converters.Remove(type);
             return objectLists.Remove(type);
         }
-        public bool UnregisterType<T>()
+        public bool UnregisterType<T>() where T : class
         {
             return UnregisterType(typeof(T));
         }
@@ -224,11 +211,37 @@ namespace CCEnvs.Unity.Saving
             if (type is null)
                 return false;
 
-            return converters.ContainsKey(type);
+            return converters.ContainsKey(type) || objectLists.ContainsKey(type);
         }
         public bool IsTypeRegistered<T>()
         {
             return IsTypeRegistered(typeof(T));
+        }
+
+        public bool IsInstanceRegistered(object? obj, SceneInfo? sceneInfo = null)
+        {
+            if (obj is null)
+                return false;
+
+            if (!IsTypeRegistered(obj.GetType()))
+                return false;
+
+            var regObj = new RegisteredObject(obj, sceneInfo ?? ResolveSceneInfo(obj), converters);
+            return objectKeys.ContainsKey(regObj) || objectLists[obj.GetType()].Contains(regObj);
+        }
+
+        private IDisposable RegisterUnityObject(
+            UnityEngine.Object uObject,
+            string? key)
+        {
+            key = ResolveKey(uObject, key);
+            SceneInfo? sceneInfo = ResolveSceneInfo(uObject);
+
+            return RegisterObjectInternal(
+                uObject,
+                gameObjectType,
+                key,
+                sceneInfo);
         }
 
         private SceneInfo? ResolveSceneInfo(object obj)
@@ -296,6 +309,32 @@ namespace CCEnvs.Unity.Saving
         {
             using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync();
             return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray()); //TODO: Versioning
+        }
+
+        private string ResolveKey(UnityEngine.Object uObject, string? key)
+        {
+            switch (uObject)
+            {
+                case GameObject go:
+                    {
+                        if (key.IsNotNullOrWhiteSpace() && !go.TryGetComponent<RuntimeId>(out _))
+                            go.AddRuntimeIdComponent(key);
+
+                        if (go.GetRuntimeId().TryGetValue(out var id))
+                            return id;
+
+                        return key ?? go.GetHierarchyPath();
+                    }
+                case Component cmp:
+                    {
+                        if (cmp.gameObject.GetRuntimeId().TryGetValue(out key))
+                            return key;
+
+                        return key ?? cmp.GetHierarchyPath();
+                    }
+                default:
+                    throw CC.ThrowHelper.InvalidOperationException(uObject.GetType());
+            }
         }
 
         private readonly struct RegisteredObject : IEquatable<RegisteredObject>
@@ -371,22 +410,48 @@ namespace CCEnvs.Unity.Saving
 
     public static class SaveSystemExtensions
     {
-        public static IDisposable RegisterObjectToSaveSystem(
+        public static IDisposable SavingSystemRegisterObject(
             this object source,
             string key,
             SceneInfo? sceneInfo = null)
         {
-            return SaveSystem.Self.RegisterObject(source, key, sceneInfo: sceneInfo);
+            return SavingSystem.Self.RegisterObject(source, key, sceneInfo: sceneInfo);
         }
 
-        public static IDisposable RegisterGameObject(this GameObject source)
+        public static IDisposable SavingSystemRegisterGameObject(this GameObject source)
         {
-            return SaveSystem.Self.RegisterGameObject(source);
+            return SavingSystem.Self.RegisterGameObject(source);
         }
 
-        public static IDisposable RegisterGameObject(this GameObject source, string key)
+        public static IDisposable SavingSystemRegisterGameObject(this GameObject source, string key)
         {
-            return SaveSystem.Self.RegisterGameObject(source, key);
+            return SavingSystem.Self.RegisterGameObject(source, key);
+        }
+
+        public static IDisposable SavingSystemRegisterComponent(this Component source)
+        {
+            return SavingSystem.Self.RegisterComponent(source);
+        }
+
+        public static IDisposable SavingSystemRegisterComponent(this Component source, string key)
+        {
+            return SavingSystem.Self.RegisterComponent(source, key);
+        }
+
+        public static bool SavingSystemIsTypeRegistered(this Type source)
+        {
+            return SavingSystem.Self.IsTypeRegistered(source);
+        }
+
+        public static bool SavingSystemIsTypeRegistered(this object source)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.GetType().SavingSystemIsTypeRegistered();
+        }
+
+        public static bool SavingSystemIsInstanceRegistered(this object? source, SceneInfo? sceneInfo = null)
+        {
+            return SavingSystem.Self.IsInstanceRegistered(source, sceneInfo);
         }
     }
 }

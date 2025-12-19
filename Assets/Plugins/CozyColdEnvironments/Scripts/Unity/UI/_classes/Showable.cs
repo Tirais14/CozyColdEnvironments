@@ -9,6 +9,7 @@ using System.Linq;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
+using CCEnvs.Collections;
 
 #nullable enable
 namespace CCEnvs.Unity.UI

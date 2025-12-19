@@ -9,6 +9,7 @@ using R3;
 using UnityEngine;
 using ZLinq;
 using CCEnvs.Unity.Components;
+using CCEnvs.Collections;
 
 #nullable enable
 namespace CCEnvs.Unity.UI

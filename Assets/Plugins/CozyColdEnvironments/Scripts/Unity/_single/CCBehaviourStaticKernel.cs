@@ -4,6 +4,7 @@ using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Attributes;
 using CCEnvs.Unity.Components;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,10 +106,7 @@ namespace CCEnvs.Unity
 
         private CCBehaviourStatic GetInstanceOf(Type type)
         {
-            CC.Guard.ArgumentObsolete(type,
-                                 nameof(type),
-                                 !type.IsAbstract && !type.IsInterface,
-                                 "Type is abstract.");
+            Guard.IsFalse(!type.IsAbstract && !type.IsInterface,nameof(type), "Type is abstract.");
             var value = (CCBehaviourStatic?)FindAnyObjectByType(type);
 
             if (value == null)

@@ -1,4 +1,4 @@
-using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using System;
 
 namespace CCEnvs.Unity.Initables
@@ -8,11 +8,10 @@ namespace CCEnvs.Unity.Initables
     {
         public Type[] InitableTypes { get; }
 
-        /// <exception cref="EmptyCollectionArgumentException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public InitAsyncAfterTypeAttribute(params Type[] types)
         {
-            CC.Guard.CollectionArgument(types, nameof(types));
+            Guard.IsNotNull(types, nameof(types));
 
             InitableTypes = types;
         }

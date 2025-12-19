@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.EditorC
         {
             try
             {
-                Files.PathEntry rootPath = Application.dataPath.ToFilePath() - "Assets" + ".vs";
+                var rootPath = new PathEntry(Application.dataPath) - "Assets" + ".vs";
 
                 CCDebug.Instance.PrintLog($"Deleting {rootPath}.", new DebugContext(typeof(VisualStudioClearCacheTool)).Additive().Editor());
                 var directory = new DirectoryInfo(rootPath);

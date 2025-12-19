@@ -33,11 +33,10 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         public static Sprite[] ConvertTexture(Texture2D texture)
         {
-            return Sprite.Create(
-                texture,
-                new Rect(x: 0f, y: 0f, texture.width, texture.height),
-                new Vector2(texture.width / 2, texture.height / 2),
-                texture.GetPixels().Length).AsBox().ToArray();
+            return Range.From(Sprite.Create(texture,
+                                            new Rect(x: 0f, y: 0f, texture.width, texture.height),
+                                            new Vector2(texture.width / 2, texture.height / 2),
+                                            texture.GetPixels().Length));
         }
     }
 }

@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
@@ -776,7 +777,7 @@ namespace CCEnvs.Unity
             else if (findMode == FindMode.InParents)
                 return CustomParentSearch(target, type);
 
-            return CC.Throw.InvalidOperation(findMode, nameof(findMode)).To<IEnumerable<Component>>();
+            throw CC.ThrowHelper.InvalidOperationException(findMode, nameof(findMode));
         }
 
         protected virtual IEnumerable<Component> ComponentsInternal(GameObject target, Type? type)

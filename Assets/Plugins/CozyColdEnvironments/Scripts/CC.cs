@@ -106,12 +106,19 @@ namespace CCEnvs
 
             public static InvalidOperationException MetadataNotFound(MemberInfo member)
             {
+                Guard.IsNotNull(member, nameof(member));
+
                 return new InvalidOperationException($"Metadata not found. Member info: name '{member}', type '{member.MemberType}'");
             }
 
-            public static InvalidOperationException TypeNotFoundException(string typeName, string? assemblyName = null)
+            public static InvalidOperationException TypeNotFoundException(string? typeName, string? assemblyName = null)
             {
                 return new InvalidOperationException($"Type name '{typeName}', assembly name '{assemblyName}'");
+            }
+
+            public static ArgumentException IsNotTypeException(Type? left, Type? right, string? paramName = null)
+            {
+                return new ArgumentException($"Invalid argument '{paramName ?? "value"}'. Left type '{(left?.ToString() ?? "null")}' is not '{(right?.ToString() ?? "null")}'");
             }
         }
 
@@ -145,6 +152,20 @@ namespace CCEnvs
             public static void IsNotNullInput<T>([NotNull] T? obj)
             {
                 IsNotNull(obj, "input");
+            }
+
+            public static void IsNotType(Type left, Type right, string? paramName = null)
+            {
+                CommunityToolkit.Diagnostics.Guard.IsNotNull(left, nameof(left));
+                CommunityToolkit.Diagnostics.Guard.IsNotNull(right, nameof(right));
+
+                if (left.IsNotType(right))
+                    throw ThrowHelper.IsNotTypeException(left, right, paramName);
+            }
+
+            public static void IsNotType<TRight>(Type left, string? paramName = null)
+            {
+                IsNotType(left, typeof(TRight), paramName);
             }
         }
     }

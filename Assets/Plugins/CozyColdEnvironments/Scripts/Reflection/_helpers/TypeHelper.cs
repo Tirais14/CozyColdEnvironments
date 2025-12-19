@@ -201,7 +201,8 @@ namespace CCEnvs.Reflection
         /// <exception cref="ArgumentNullException"></exception>
         public static bool IsType(this Type source, Type? other, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
-            Guard.IsNotNull(source, nameof(source));
+            CC.Guard.IsNotNullSource(source);
+
             if (other is null)
                 return false;
 
@@ -239,18 +240,18 @@ namespace CCEnvs.Reflection
 
             return result;
         }
-        public static bool IsType<T>(this Type value, TypeMatchingSettings settings = TypeMatchingSettings.Default)
+        public static bool IsType<T>(this Type source, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
-            return value.IsType(typeof(T));
+            return source.IsType(typeof(T), settings: settings);
         }
 
-        public static bool IsNotType(this Type value, Type other, TypeMatchingSettings settings = TypeMatchingSettings.Default)
+        public static bool IsNotType(this Type source, Type? other, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
-            return !value.IsType(other);
+            return !source.IsType(other, settings: settings);
         }
-        public static bool IsNotType<T>(this Type value, TypeMatchingSettings settings = TypeMatchingSettings.Default)
+        public static bool IsNotType<T>(this Type source, TypeMatchingSettings settings = TypeMatchingSettings.Default)
         {
-            return value.IsNotType(typeof(T));
+            return source.IsNotType(typeof(T), settings: settings);
         }
 
         /// <exception cref="ArgumentNullException"></exception>

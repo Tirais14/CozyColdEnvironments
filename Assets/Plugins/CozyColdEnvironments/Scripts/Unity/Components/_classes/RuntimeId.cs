@@ -8,9 +8,10 @@ namespace CCEnvs.Unity.Components
     [DisallowMultipleComponent]
     public sealed class RuntimeId : CCBehaviour
     {
+        [Obsolete]
         public const string DEFAULT_ID_VALUE = "Undefined";
 
         [field: SerializeField]
-        public string Id { get; private set; } = "Undefined";
+        public string? Id { get; private set; }
     }
 }

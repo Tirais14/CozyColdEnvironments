@@ -15,6 +15,7 @@ using Object = UnityEngine.Object;
 using Microsoft.Extensions.Caching.Memory;
 using Humanizer;
 using System.Diagnostics;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.AddrsAssets
@@ -27,7 +28,7 @@ namespace CCEnvs.Unity.AddrsAssets
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection,
             Type? assetType = null)
         {
-            CC.Guard.CollectionArgument(labels, nameof(labels));
+            Guard.IsNotNull(labels, nameof(labels));
 
             var handle = Addressables.LoadResourceLocationsAsync(labels,
                 mergeMode);
@@ -83,7 +84,7 @@ namespace CCEnvs.Unity.AddrsAssets
             Action<T>? callback = null,
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
         {
-            CC.Guard.Argument(labels.IsDefault(), nameof(labels));
+            Guard.IsFalse(labels.IsDefault(), nameof(labels));
 
             var locationsHandle = await LoadLocationsAsync(labels, mergeMode, assetType: typeof(T));
 

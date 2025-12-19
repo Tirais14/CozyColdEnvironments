@@ -241,7 +241,7 @@ namespace CCEnvs.Unity
                 .Component<RuntimeId>()
                 .Lax()
                 .Map(x => x.Id)
-                .Where(x => x.IsNotNullOrWhiteSpace() && x != RuntimeId.DEFAULT_ID_VALUE);
+                .Where(x => x.IsNotNullOrWhiteSpace());
         }
 
         public static Maybe<GameObject> FindByRuntimeId(string id)

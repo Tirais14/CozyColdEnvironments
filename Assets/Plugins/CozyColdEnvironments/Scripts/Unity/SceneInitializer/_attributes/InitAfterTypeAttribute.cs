@@ -1,4 +1,5 @@
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Linq;
 
@@ -16,7 +17,8 @@ namespace CCEnvs.Unity.Initables
         /// <exception cref="ArgumentException"></exception>
         public InitAfterTypeAttribute(params Type[] types)
         {
-            CC.Guard.CollectionArgument(types, nameof(types));
+            Guard.IsNotNull(types, nameof(types));
+
             if (types.Any(x => x.IsNotType<IInitable>()))
                 throw new ArgumentException("Invalid type in collection.");
 

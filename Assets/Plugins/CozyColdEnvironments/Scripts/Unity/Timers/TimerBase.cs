@@ -3,6 +3,7 @@ using CCEnvs.Returnables;
 using System;
 using System.Diagnostics;
 using R3;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 #pragma warning disable S2328
@@ -89,9 +90,7 @@ namespace CCEnvs.Unity.Timers
                 return;
             }
 
-            CC.Guard.ArgumentObsolete(newInterval,
-                                 nameof(newInterval),
-                                 newInterval > TimeSpan.Zero);
+            Guard.IsFalse(newInterval > TimeSpan.Zero, nameof(newInterval));
 
             interval = newInterval;
         }
