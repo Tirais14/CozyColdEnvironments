@@ -74,6 +74,14 @@ namespace CCEnvs.Unity
         {
             return HashCode.Combine(BuildIndex, Path, Name);
         }
+
+        public readonly override string ToString()
+        {
+            if (this.IsDefault())
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"Build index '{BuildIndex}'; name '{Name}'";
+        }
     }
 
     public static class SceneInfoExtensions

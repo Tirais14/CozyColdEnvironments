@@ -32,13 +32,6 @@ namespace CCEnvs.Unity.Saves
                 ObjectType = obj.GetType();
             }
 
-            public void Deconstruct(out object obj, out Type objType, out SceneInfo? sceneInfo)
-            {
-                obj = Object;
-                objType = ObjectType;
-                sceneInfo = SceneInfo;
-            }
-
             public static bool operator ==(RegisteredObject left, RegisteredObject right)
             {
                 return left.Equals(right);
@@ -49,7 +42,7 @@ namespace CCEnvs.Unity.Saves
                 return !(left == right);
             }
 
-            public ISnapshot ConvertToSnapshot()
+            public ISnapshot CreateSnapshot()
             {
                 if (!converters.TryGetValue(ObjectType, out var converter))
                     throw new InvalidOperationException($"Registration of type '{ObjectType}' invalid");
@@ -77,11 +70,19 @@ namespace CCEnvs.Unity.Saves
             {
                 return HashCode.Combine(Object, ObjectType, SceneInfo, converters);
             }
+
+            public override string ToString()
+            {
+                if (this.IsDefault())
+                    return StringHelper.EMPTY_OBJECT;
+
+                return $"Object '{Object}'; scene info {SceneInfo};";
+            }
         }
 
         private interface IKeyFactory
         {
-            Maybe<string> Invoke(); 
+            Maybe<string> CreateKey(); 
         }
 
         private sealed class KeyFactory<TObject> : IKeyFactory
@@ -98,7 +99,7 @@ namespace CCEnvs.Unity.Saves
                 this.keyFactory = keyFactory;
             }
 
-            public Maybe<string> Invoke()
+            public Maybe<string> CreateKey()
             {
                 try
                 {
@@ -130,7 +131,7 @@ namespace CCEnvs.Unity.Saves
                 this.keyFactory = keyFactory;
             }
 
-            public Maybe<string> Invoke()
+            public Maybe<string> CreateKey()
             {
                 try
                 {

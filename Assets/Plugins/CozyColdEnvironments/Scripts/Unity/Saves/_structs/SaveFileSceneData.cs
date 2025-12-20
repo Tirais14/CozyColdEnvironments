@@ -10,12 +10,11 @@ namespace CCEnvs.Unity.Saves
     [Serializable]
     public readonly struct SaveFileSceneData : IEquatable<SaveFileSceneData>
     {
-        public SceneInfo SceneInfo { get; }
-
-        public IReadOnlyList<ISnapshot> Snapshots { get; }
+        public SceneInfo? SceneInfo { get; }
+        public IReadOnlyList<KeyedSnapshot<ISnapshot>> Snapshots { get; }
 
         [JsonConstructor]
-        public SaveFileSceneData(SceneInfo sceneInfo, IReadOnlyList<ISnapshot> snapshots)
+        public SaveFileSceneData(SceneInfo? sceneInfo, IReadOnlyList<KeyedSnapshot<ISnapshot>> snapshots)
         {
             CC.Guard.IsNotNull(snapshots, nameof(snapshots));
 
@@ -33,7 +32,7 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
-        public readonly void Apply()
+        public readonly void RestoreScene()
         {
             int length = Snapshots.Count;
             for (int i = 0; i < length; i++)
@@ -55,6 +54,14 @@ namespace CCEnvs.Unity.Saves
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(Snapshots, SceneInfo);
+        }
+
+        public readonly override string ToString()
+        {
+            if (this.IsDefault())
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"Scene info '{SceneInfo}'";
         }
     }
 }

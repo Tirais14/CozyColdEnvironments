@@ -1,5 +1,3 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -9,43 +7,39 @@ using System;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public struct TypeSnapshot : ISnapshot<Type>
+    public sealed class TypeSnapshot : Snapshot<Type>
     {
+        [JsonProperty]
 #if UNITY_2017_1_OR_NEWER
-        [UnityEngine.SerializeField]
+        [field: UnityEngine.SerializeField]
 #endif
-        [JsonProperty]
-        private string name;
+        public string? Name { get; private set; }
 
+        [JsonProperty]
 #if UNITY_2017_1_OR_NEWER
-        [UnityEngine.SerializeField]
+        [field: UnityEngine.SerializeField]
 #endif
-        [JsonProperty]
-        private string assemblyName;
+        public string? AssemblyName { get; private set; }
 
-        [JsonIgnore]
-        public Maybe<Type> Target { get; private set; }
-
-        [JsonProperty]
-        public string SelfTypeReference { get; private set; }
+        public TypeSnapshot()
+        {
+        }
 
         public TypeSnapshot(Type target)
-            :
-            this()
         {
             Guard.IsNotNull(target);
 
             Target = target;
-            SelfTypeReference = GetType().GetTypeReference();
-            name = target.Name;
-            assemblyName = target.AssemblyQualifiedName;
+            Name = target.Name;
+            AssemblyName = target.AssemblyQualifiedName;
         }
 
-        public readonly Type Restore() => Restore(null);
-
-        public readonly Type Restore(Type? target)
+        public override Type Restore()
         {
-            return Type.GetType($"{name}, {assemblyName}", throwOnError: true);
+            return Type.GetType($"{Name}, {AssemblyName}");
         }
+
+        /// <returns>input type</returns>
+        public override Type Restore(Type target) => target;
     }
 }

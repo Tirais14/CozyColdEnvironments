@@ -15,7 +15,13 @@ namespace CCEnvs.Snapshots
         public object? Key { get; }
 
         [JsonIgnore]
-        public Maybe<object> Target => Snapshot.Target;
+        public Maybe<object> Target {
+            get => Snapshot.Target;
+            set => Snapshot.Target = value; 
+        }
+
+        [JsonIgnore]
+        public Type TargetType => Snapshot.TargetType;
 
         [JsonConstructor]
         public KeyedSnapshot(T snapshot, object? key)

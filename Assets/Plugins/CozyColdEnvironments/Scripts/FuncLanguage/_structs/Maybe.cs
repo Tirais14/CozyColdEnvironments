@@ -131,7 +131,10 @@ namespace CCEnvs.FuncLanguage
 
         public readonly override string ToString()
         {
-            return $"{target}, IsSome: {IsSome}";
+            if (this.IsDefault())
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"Target '{target}'; Default '{@default}'; IsSome '{IsSome}'";
         }
 
         public readonly IEnumerator<T> GetEnumerator()

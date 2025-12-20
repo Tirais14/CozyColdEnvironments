@@ -2,7 +2,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
 
 namespace CCEnvs.Snapshots
@@ -11,7 +11,10 @@ namespace CCEnvs.Snapshots
     public interface ISnapshot
     {
         [JsonIgnore]
-        Maybe<object> Target { get; }
+        Maybe<object> Target { get; set; }
+
+        [JsonIgnore]
+        Type TargetType { get; }
 
         object Restore();
         object Restore(object target);
@@ -20,10 +23,13 @@ namespace CCEnvs.Snapshots
     public interface ISnapshot<T> : ISnapshot
     {
         [JsonIgnore]
-        new Maybe<T> Target { get; }
+        new Maybe<T> Target { get; set; }
 
         [JsonIgnore]
-        Maybe<object> ISnapshot.Target => Target;
+        Maybe<object> ISnapshot.Target {
+            get => Target;
+            set => Target = value.Cast<T>().RightTarget;
+        }
 
         new T Restore();
         T Restore(T target);

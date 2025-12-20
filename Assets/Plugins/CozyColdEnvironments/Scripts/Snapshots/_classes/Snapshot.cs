@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
+using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using System;
 
@@ -15,11 +16,20 @@ namespace CCEnvs.Snapshots
     [JsonConverter(typeof(SnapshotJsonConverter))]
     public abstract class Snapshot<T> : Snapshot, ISnapshot<T>
     {
-#if UNITY_2017_1_OR_NEWER
-        [UnityEngine.SerializeField]
-#endif
         [JsonIgnore]
-        public Maybe<T> Target { get; set; }
+#if UNITY_2017_1_OR_NEWER
+        [field: UnityEngine.SerializeField]
+#endif
+        protected T? m_Target;
+
+        [JsonIgnore]
+        public Maybe<T> Target {
+            get => m_Target;
+            set => m_Target = value.Raw;
+        }
+
+        [JsonIgnore]
+        public virtual Type TargetType => typeof(T);
 
         public Snapshot()
         {

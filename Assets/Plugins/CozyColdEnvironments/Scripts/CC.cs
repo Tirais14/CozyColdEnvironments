@@ -44,9 +44,8 @@ namespace CCEnvs
         public static string WordSeparator { get; set; } = "_";
         public static Func<bool> TruePredicate { get; } = static () => true;
         public static Func<bool> FalsePredicate { get; } = static () => false;
-        public static JsonSerializerSettings JsonOptions { get; } = JsonSerializerSettingsProvider.GetDefault();
-        public static JsonSerializerSettings DebugJsonOptions { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
-        //public static JsonSerializerOptions JsonOptionsPolymorph { get; } = JsonSerilizerOptionsProvider.GetDefaultPolymorph();
+        public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
+        public static JsonSerializerSettings DebugJsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
 
         public static void Install()
         {

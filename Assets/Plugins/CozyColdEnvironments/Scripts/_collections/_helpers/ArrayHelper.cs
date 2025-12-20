@@ -55,7 +55,7 @@ namespace CCEnvs.Collections
 
         public static T[] Append<T>(this T[] source, T item)
         {
-            Guard.IsNotNull(source);
+            CC.Guard.IsNotNullSource(source);
 
             var dest = new T[source.Length + 1];
             source.CopyTo(dest, 0);
@@ -63,20 +63,42 @@ namespace CCEnvs.Collections
             return dest;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetLengthOrZero<T>(this T[]? array) => array?.Length ?? 0;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Fill<T>(this T[] array, T value) => Array.Fill(array, value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Find<T>(this T[] array, Predicate<T> matchPredicate) => Array.Find(array, matchPredicate);
-
-        public static T? Find<T>(this T[] array, T value)
+        public static void Fill<T>(this T[] source, T item)
         {
-            int index = Array.IndexOf(array, value);
+            Array.Fill(source, item);
+        }
 
-            return index > -1 ? array[index] : default;
+        public static T Find<T>(this T[] source, Predicate<T> matchPredicate)
+        {
+            return Array.Find(source, matchPredicate);
+        }
+
+        public static T? Find<T>(this T[] source, T item)
+        {
+            int index = Array.IndexOf(source, item);
+
+            return index > -1 ? source[index] : default;
+        }
+
+        public static bool Contains<T>(this T[] source, T item)
+        {
+            var idx = Array.IndexOf(source, item);
+            return idx > -1;
+        }
+
+        public static int IndexOf<T>(this T[] source, T item)
+        {
+            return Array.IndexOf(source, item); 
+        }
+
+        public static int LastIndexOf<T>(this T[] source, T item)
+        {
+            return Array.LastIndexOf(source, item);
+        }
+
+        public static int FindIndex<T>(this T[] source, Predicate<T> match)
+        {
+            return Array.FindIndex(source, match);
         }
 
         public static ArraySegment<T> GetArraySegment<T>(this T[] source,

@@ -1,9 +1,13 @@
 using CCEnvs.Collections;
+using CCEnvs.Pools;
+using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -31,22 +35,28 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
-        public readonly void ApplyToLoadedScenes()
+        public readonly IList<SaveFileSceneData> RestoreLoadedScenes()
         {
             if (SceneDatas.IsNullOrEmpty())
-                return;
+                return Array.Empty<SaveFileSceneData>();
 
-            HashSet<SceneInfo> loadedSceneInfos = SceneManagerHelper.GetLoadedScenes()
+            SceneInfo[] sceneInfos = SceneManagerHelper.GetLoadedScenes()
                 .Select(x => x.GetSceneInfo())
-                .ToHashSet();
+                .ToArray();
 
-            foreach (var ctx in SceneDatas)
+            var notRestored = new LazyLight<List<SaveFileSceneData>>(static () => new List<SaveFileSceneData>());
+            foreach (var sceneData in SceneDatas)
             {
-                if (!loadedSceneInfos.Contains(ctx.SceneInfo))
+                if (sceneData.SceneInfo == null || !sceneInfos.Contains(sceneData.SceneInfo!.Value))
+                {
+                    notRestored.Value.Add(sceneData);
                     continue;
+                }
 
-                ctx.Apply();
+                sceneData.RestoreScene();
             }
+
+            return notRestored.HasValue ? notRestored.Value : Array.Empty<SaveFileSceneData>();
         }
 
         public readonly bool Equals(SaveFileData other)
@@ -64,6 +74,14 @@ namespace CCEnvs.Unity.Saves
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(SceneDatas, Version);
+        }
+
+        public override string ToString()
+        {
+            if (this.IsDefault())
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"Version '{Version}'";
         }
     }
 }
