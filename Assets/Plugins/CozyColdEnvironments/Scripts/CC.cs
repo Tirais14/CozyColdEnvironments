@@ -88,11 +88,11 @@ namespace CCEnvs
 
             public static InvalidOperationException MemberNotFoundException(string? name = null, MemberTypes? memberType = null, Type? reflectedType = null, BindingFlags? bindingFlags = null, Type[]? argumentTypes = null, Binder? binder = null)
             {
-                string msg = Sentence.Empty.Add($"name '{name}'", name)
+                string msg = Sentence.Empty.AddIfNotDefault($"name '{name}'", name)
                     .AddIfNotDefault($"member type '{memberType}'", memberType)
                     .AddIfNotDefault($"reflected type '{reflectedType}'", reflectedType)
                     .AddIfNotDefault($"binding flags '{bindingFlags}'", bindingFlags)
-                    .AddIfNotDefault($"argument types '{argumentTypes.Select(x => x.ToString()).Aggregate((left, right) => left + right)}'", argumentTypes)
+                    .AddIfNotDefault($"argument types '{argumentTypes?.Select(x => x.ToString()).Aggregate((left, right) => left + right)}'", argumentTypes)
                     .AddIfNotDefault($"binder '{binder}'", binder)
                     .ToString();
 

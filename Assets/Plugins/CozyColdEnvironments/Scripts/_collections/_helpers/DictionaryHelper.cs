@@ -57,7 +57,6 @@ namespace CCEnvs.Collections
             Func<TValue> factory)
         {
             CC.Guard.IsNotNullSource(source);
-            CC.Guard.IsNotNull(key, nameof(key));
             Guard.IsNotNull(factory, nameof(factory));
 
             if (!source.TryGetValue(key, out TValue value))
@@ -76,12 +75,25 @@ namespace CCEnvs.Collections
             Func<TState, TValue> factory)
         {
             CC.Guard.IsNotNullSource(source);
-            CC.Guard.IsNotNull(key, nameof(key));
             Guard.IsNotNull(factory, nameof(factory));
 
             if (!source.TryGetValue(key, out TValue value))
             {
                 value = factory(state);
+                source.Add(key, value);
+            }
+
+            return value;
+        }
+
+        public static TValue GetOrCreateNew<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key)
+            where TValue : new()
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (!source.TryGetValue(key, out TValue value))
+            {
+                value = new TValue();
                 source.Add(key, value);
             }
 

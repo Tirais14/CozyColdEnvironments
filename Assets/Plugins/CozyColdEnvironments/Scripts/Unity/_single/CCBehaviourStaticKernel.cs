@@ -106,7 +106,7 @@ namespace CCEnvs.Unity
 
         private CCBehaviourStatic GetInstanceOf(Type type)
         {
-            Guard.IsFalse(!type.IsAbstract && !type.IsInterface,nameof(type), "Type is abstract.");
+            Guard.IsTrue(!type.IsAbstract && !type.IsInterface,nameof(type), "Type is abstract.");
             var value = (CCBehaviourStatic?)FindAnyObjectByType(type);
 
             if (value == null)

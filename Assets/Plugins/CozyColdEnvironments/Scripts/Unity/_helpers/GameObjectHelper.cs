@@ -272,19 +272,17 @@ namespace CCEnvs.Unity
             return pathBuilder.ToString();
         }
 
-        public static void AddRuntimeIdComponent(this GameObject source, string id)
+        public static RuntimeId AddRuntimeIdComponent(this GameObject source, string id)
         {
             CC.Guard.IsNotNullSource(source);
 
-            if (source.TryGetComponent<RuntimeId>(out var idCmp)
-                &&
-                idCmp.Id == RuntimeId.DEFAULT_ID_VALUE)
-            {
+            if (source.TryGetComponent<RuntimeId>(out var idCmp))
                 throw new InvalidOperationException($"{nameof(RuntimeId).Humanize()} already exists.");
-            }
 
             idCmp = source.AddComponent<RuntimeId>();
             idCmp.Reflect().Cache().WithName(nameof(RuntimeId.Id)).WithArguments(id).SetPropertyValue();
+
+            return idCmp;
         }
     }
 }

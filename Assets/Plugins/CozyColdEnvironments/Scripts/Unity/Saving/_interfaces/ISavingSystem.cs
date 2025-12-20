@@ -2,6 +2,7 @@ using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity.Saving
@@ -13,22 +14,62 @@ namespace CCEnvs.Unity.Saving
         UniTask LoadAsync(string path);
 
         /// <returns>Disposable which initiates unregistering</returns>
-        IDisposable RegisterObject(object obj, string key, SceneInfo? sceneInfo = null);
+        IDisposable RegisterObject<TObject>(
+            TObject obj,
+            string key,
+            SceneInfo? sceneInfo = null)
+            where TObject : class;
+
+        /// <returns>Disposable which initiates unregistering</returns>
+        IDisposable RegisterObject<TObject>(
+            TObject obj,
+            Func<TObject, string> keySelector,
+            SceneInfo? sceneInfo = null)
+            where TObject : class;
+
+        /// <returns>Disposable which initiates unregistering</returns>
+        IDisposable RegisterObject<TObject, TState>(
+            TObject obj,
+            TState state,
+            Func<TObject, TState, string> keySelector,
+            SceneInfo? sceneInfo = null)
+            where TObject : class;
+
+        ///// <summary>
+        ///// Use as key <see cref="Components.RuntimeId.Id"/> or create it and set id by hierarchy path
+        ///// </summary>
+        ///// <returns>Disposable which initiates unregistering</returns>
+        //IDisposable RegisterGameObject(GameObject gameObject);
+
+        ///// <inheritdoc cref="RegisterObject(object, string, SceneInfo?)"/>
+        //IDisposable RegisterGameObject(GameObject gameObject, string key);
+
+        ///// <inheritdoc cref="RegisterObject(object, string, SceneInfo?)"/>
+        //IDisposable RegisterGameObject(GameObject gameObject, Func<GameObject, string> keySelector);
+
+        ///// <inheritdoc cref="RegisterObject(object, string, SceneInfo?)"/>
+        //IDisposable RegisterGameObject<TState>(GameObject gameObject, TState state, Func<GameObject, TState, string> keySelector);
+
+        ///// <inheritdoc cref="RegisterGameObject(GameObject)"/>
+        //IDisposable RegisterComponent(Component component);
+
+        ///// <inheritdoc cref="RegisterGameObject(GameObject, string)"/>
+        //IDisposable RegisterComponent(Component component, string key);
+
+        ///// <inheritdoc cref="RegisterGameObject(GameObject, string)"/>
+        //IDisposable RegisterComponent(Component component, Func<Component, string> keySelector);
+
+        ///// <inheritdoc cref="RegisterGameObject(GameObject, string)"/>
+        //IDisposable RegisterComponent<TState>(Component component, TState state, Func<Component, TState, string> keySelector);
 
         /// <summary>
         /// Use as key <see cref="Components.RuntimeId.Id"/> or create it and set id by hierarchy path
         /// </summary>
         /// <returns>Disposable which initiates unregistering</returns>
-        IDisposable RegisterGameObject(GameObject gameObject);
+        IDisposable RegisterUnityObject(Component component);
 
-        /// <inheritdoc cref="RegisterObject(object, string, SceneInfo?)"/>
-        IDisposable RegisterGameObject(GameObject gameObject, string key);
-
-        /// <inheritdoc cref="RegisterGameObject(GameObject)"/>
-        IDisposable RegisterComponent(Component component);
-
-        /// <inheritdoc cref="RegisterGameObject(GameObject, string)"/>
-        IDisposable RegisterComponent(Component component, string key);
+        /// <inheritdoc cref="RegisterUnityObject(Component)"/>
+        IDisposable RegisterUnityObject(GameObject gameObject);
 
         bool UnregisterObject(object? obj);
 
