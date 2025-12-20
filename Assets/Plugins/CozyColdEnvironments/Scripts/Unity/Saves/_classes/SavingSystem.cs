@@ -9,15 +9,17 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity.Saving
+namespace CCEnvs.Unity.Saves
 {
     public sealed partial class SavingSystem : CCBehaviourStaticPublic<SavingSystem>, ISavingSystem
     {
@@ -269,6 +271,9 @@ namespace CCEnvs.Unity.Saving
                     try
                     {
                         snapshot = regObj.ConvertToSnapshot();
+
+                        snapshot = new KeyedSnapshot<ISnapshot>(snapshot, )
+
                         snapshots.Add(snapshot);
                     }
                     catch (Exception ex)

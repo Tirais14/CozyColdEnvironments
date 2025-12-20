@@ -5,7 +5,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity.Saving
+namespace CCEnvs.Unity.Saves
 {
     public interface ISavingSystem
     {

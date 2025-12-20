@@ -1,5 +1,6 @@
 
 #nullable enable
+using CCEnvs.FuncLanguage;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,14 +8,17 @@ using System.Collections.Generic;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public readonly struct KeyedSnapshot : IEquatable<KeyedSnapshot>
+    public readonly struct KeyedSnapshot<T> : IEquatable<KeyedSnapshot<T>>, ISnapshot
+        where T : ISnapshot
     {
-        public ISnapshot Snapshot { get; }
+        public T Snapshot { get; }
         public object? Key { get; }
 
+        [JsonIgnore]
+        public Maybe<object> Target => Snapshot.Target;
+
         [JsonConstructor]
-        /// <param name="key">Must be serializable by Json</param>
-        public KeyedSnapshot(ISnapshot snapshot, object? key)
+        public KeyedSnapshot(T snapshot, object? key)
         {
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 
@@ -22,22 +26,25 @@ namespace CCEnvs.Snapshots
             Key = key;
         }
 
-        public static bool operator ==(KeyedSnapshot left, KeyedSnapshot right)
+        public static bool operator ==(KeyedSnapshot<T> left, KeyedSnapshot<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(KeyedSnapshot left, KeyedSnapshot right)
+        public static bool operator !=(KeyedSnapshot<T> left, KeyedSnapshot<T> right)
         {
             return !(left == right);
         }
 
+        public object Restore() => Snapshot.Restore();
+        public object Restore(object target) => Snapshot.Restore(target);
+
         public override bool Equals(object? obj)
         {
-            return obj is KeyedSnapshot snapshot && Equals(snapshot);
+            return obj is KeyedSnapshot<T> snapshot && Equals(snapshot);
         }
 
-        public bool Equals(KeyedSnapshot other)
+        public bool Equals(KeyedSnapshot<T> other)
         {
             return EqualityComparer<ISnapshot>.Default.Equals(Snapshot, other.Snapshot)
                    &&

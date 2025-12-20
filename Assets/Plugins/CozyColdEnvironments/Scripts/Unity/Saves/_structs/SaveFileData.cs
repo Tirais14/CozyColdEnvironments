@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 #nullable enable
-namespace CCEnvs.Unity.Saving
+namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     public readonly struct SaveFileData : IEquatable<SaveFileData>
