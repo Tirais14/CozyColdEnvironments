@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.Injections
             Component source)
         {
             FieldInfo[] fields = source.Reflect()
-                                       .NonPublic()
+                                       .IncludeNonPublic()
                                        .IncludeBaseTypes()
                                        .Fields()
                                        .ToArray();

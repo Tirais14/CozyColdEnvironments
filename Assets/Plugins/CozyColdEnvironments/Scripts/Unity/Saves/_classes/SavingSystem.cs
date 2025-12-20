@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.Saves
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
         private readonly Dictionary<SceneInfo?, CompositeDisposable> sceneDisposables = new();
 
-        private readonly Dictionary<(string key, Type type), List<KeyedSnapshot<ISnapshot>>> loadedSnapshots = new();
+        private readonly Dictionary<LoadedSnapshotKey, List<ISnapshot>> loadedSnapshotLists = new();
 
         private UnityAction<Scene> onSceneUnloaded;
 
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Saves
 
         private static string InstanceRegisterdMessage(object obj)
         {
-            return $"Instance '{obj}' already registered";
+            return $"Instance \"{obj}\" already registered";
         }
 
         public IDisposable RegisterObject<TObject>(
@@ -100,7 +100,7 @@ namespace CCEnvs.Unity.Saves
         {
             CC.Guard.IsNotNull(component, nameof(component));
 
-            object keyOrFactory = ResolveKeyForUnityObject(component, key: null);
+            object keyOrFactory = ResolveKeyForUnityObject(component);
             SceneInfo sceneInfo = component.gameObject.scene.GetSceneInfo();
 
             return RegisterObjectInternal(component, component.GetType(), keyOrFactory, sceneInfo);
@@ -110,7 +110,7 @@ namespace CCEnvs.Unity.Saves
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
-            object keyOrFactory = ResolveKeyForUnityObject(gameObject, key: null);
+            object keyOrFactory = ResolveKeyForUnityObject(gameObject);
             SceneInfo sceneInfo = gameObject.scene.GetSceneInfo();
 
             return RegisterObjectInternal(gameObject, gameObjectType, keyOrFactory, sceneInfo);
@@ -140,13 +140,8 @@ namespace CCEnvs.Unity.Saves
         public async UniTask LoadAsync(string path)
         {
             SaveFileData saveFile = await LoadSaveFileAsync(path);
-            IList<SaveFileSceneData> sceneDatas = saveFile.RestoreLoadedScenes();
-
-            List<KeyedSnapshot<ISnapshot>> snapshots;
-            foreach (var item in sceneDatas)
-            {
-                
-            }
+            IList<SaveFileSceneData> notRestoredSceneDatas = saveFile.RestoreLoadedScenes();
+            RegisterLoadedSnapshots(notRestoredSceneDatas);
         }
 
         public async UniTask SaveAsync(string path)
@@ -215,7 +210,15 @@ namespace CCEnvs.Unity.Saves
 
         private bool IsInstanceRegisteredInternal(RegisteredObject regObj)
         {
-            return objectKeys.ContainsKey(regObj) || objectLists[regObj.ObjectType].Contains(regObj);
+            if (!objectKeys.ContainsKey(regObj))
+            {
+                if (!objectLists.TryGetValue(regObj.ObjectType, out var objList))
+                    return false;
+
+                return objList.Contains(regObj);
+            }
+
+            return true;
         }
 
         private SceneInfo? ResolveSceneInfo(object obj)
@@ -248,10 +251,11 @@ namespace CCEnvs.Unity.Saves
 
         private async UniTask<PooledArray<SaveFileSceneData>> BuildSceneDatasAsync()
         {
-            using var __ = ListPool<ISnapshot>.Get(out var snapshots);
+            using var __ = ListPool<KeyedSnapshot<ISnapshot>>.Get(out var snapshots);
             using var _ = ListPool<SaveFileSceneData>.Get(out var sceneDatas);
 
             ISnapshot snapshot;
+            KeyedSnapshot<ISnapshot> keyedSnapshot;
             SaveFileSceneData sceneData;
             Maybe<string> objKey;
             foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes().Select(x => x.GetSceneInfo()))
@@ -266,21 +270,20 @@ namespace CCEnvs.Unity.Saves
 
                         if (!objKey.TryGetValue(out string? key))
                         {
-                            this.PrintError($"Missing key of registered object'{regObj}'");
+                            this.PrintError($"Missing key of registered object\"{regObj}\"");
                             continue;
                         }
 
-                        snapshot = new KeyedSnapshot<ISnapshot>(snapshot, key);
-
-                        snapshots.Add(snapshot);
+                        keyedSnapshot = new KeyedSnapshot<ISnapshot>(snapshot, key);
+                        snapshots.Add(keyedSnapshot);
                     }
                     catch (Exception ex)
                     {
-                        this.PrintException(ex);
+                        this.PrintError($"Registered object \"{regObj}\" throwed exception and will be skipped. {ex.GetType()}: {ex}");
                     }
                 }
 
-                sceneData = new SaveFileSceneData(sceneInfo, snapshots);
+                sceneData = new SaveFileSceneData(sceneInfo, snapshots.Cast<KeyedSnapshot<ISnapshot>>().ToArray());
                 sceneDatas.Add(sceneData);
                 snapshots.Clear();
             }
@@ -294,16 +297,21 @@ namespace CCEnvs.Unity.Saves
             return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray()); //TODO: Versioning
         }
 
-        private object ResolveKeyForUnityObject(UnityEngine.Object uObject, string? key)
+        private object ResolveKeyForUnityObject(UnityEngine.Object uObject)
         {
             switch (uObject)
             {
                 case GameObject go:
                     {
-                        return new KeyFactory<GameObject, string?>(go, key,
-                            static (go, key) =>
+                        return new KeyFactory<GameObject>(go,
+                            static (go) =>
                             {
-                                bool keyValid = key.IsNotNullOrWhiteSpace();
+                                if (go.TryGetComponent<PersistentGuid>(out var guidCmp)
+                                    &&
+                                    guidCmp.Guid.IsNotNullOrWhiteSpace())
+                                {
+                                    return guidCmp.Guid;
+                                }
 
                                 if (go.TryGetComponent<RuntimeId>(out var idCmp))
                                 {
@@ -312,17 +320,12 @@ namespace CCEnvs.Unity.Saves
 
                                     return idCmp.Id;
                                 }
-                                else if (keyValid && idCmp.IsNull())
-                                {
-                                    go.AddRuntimeIdComponent(key!);
-                                    return key!;
-                                }
 
                                 return go.GetHierarchyPath();
                             });
                     }
                 case Component cmp:
-                    return ResolveKeyForUnityObject(cmp.gameObject, key);
+                    return ResolveKeyForUnityObject(cmp.gameObject);
                 default:
                     throw CC.ThrowHelper.InvalidOperationException(uObject.GetType());
             }
@@ -402,6 +405,28 @@ namespace CCEnvs.Unity.Saves
             await UniTask.SwitchToMainThread();
 
             return JsonConvert.DeserializeObject<SaveFileData>(serialized);
+        }
+
+        private void RegisterLoadedSnapshots(IList<SaveFileSceneData> notRestoredDatas)
+        {
+            IList<ISnapshot> snapshotList;
+            LoadedSnapshotKey loadedSnapshotKey;
+            foreach (var sceneData in notRestoredDatas)
+            {
+                foreach (var snapshot in sceneData.Snapshots)
+                {
+                    if (snapshot.Key is not string snapshotKey)
+                    {
+                        this.PrintError($"Key \"{snapshot.Key}\" is not string. Object not restored");
+                        continue;
+                    }
+
+                    loadedSnapshotKey = new LoadedSnapshotKey(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
+                    snapshotList = loadedSnapshotLists.GetOrCreateNew(loadedSnapshotKey);
+                    snapshotList.Add(snapshot);
+                }
+                
+            }
         }
     }
 

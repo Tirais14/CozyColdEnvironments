@@ -11,7 +11,10 @@ namespace CCEnvs.Snapshots
     public readonly struct KeyedSnapshot<T> : IEquatable<KeyedSnapshot<T>>, ISnapshot
         where T : ISnapshot
     {
+        [JsonProperty]
         public T Snapshot { get; }
+
+        [JsonProperty]
         public object? Key { get; }
 
         [JsonIgnore]

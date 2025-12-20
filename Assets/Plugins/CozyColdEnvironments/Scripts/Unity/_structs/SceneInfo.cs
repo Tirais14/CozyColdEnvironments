@@ -80,7 +80,7 @@ namespace CCEnvs.Unity
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Build index '{BuildIndex}'; name '{Name}'";
+            return $"Build index '{BuildIndex}'; name \"{Name}\"";
         }
     }
 

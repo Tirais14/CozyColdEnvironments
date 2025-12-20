@@ -1,13 +1,9 @@
 using CCEnvs.Collections;
-using CCEnvs.Pools;
-using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -35,6 +31,7 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
+        /// <returns>not restored</returns>
         public readonly IList<SaveFileSceneData> RestoreLoadedScenes()
         {
             if (SceneDatas.IsNullOrEmpty())
@@ -53,7 +50,14 @@ namespace CCEnvs.Unity.Saves
                     continue;
                 }
 
-                sceneData.RestoreScene();
+                try
+                {
+                    sceneData.RestoreScene();
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                }
             }
 
             return notRestored.HasValue ? notRestored.Value : Array.Empty<SaveFileSceneData>();
@@ -81,7 +85,7 @@ namespace CCEnvs.Unity.Saves
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Version '{Version}'";
+            return $"Version \"{Version}\"";
         }
     }
 }

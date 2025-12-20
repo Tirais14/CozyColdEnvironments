@@ -176,57 +176,55 @@ namespace CCEnvs
             return value.GetType().IsDefined<FlagsAttribute>();
         }
 
-        public static Enum[] ToArrayByFlags(this Enum value, string? exceptByName = "None")
+        public static IList<Enum> ToArrayByFlags(this Enum source, string? excludeName = "None")
         {
-            bool toExceptByName = exceptByName.IsNotNullOrEmpty();
-            Enum[] typeValues = Enum.GetValues(value.GetType()).Cast<Enum>().ToArray();
-            List<Enum> result = new(typeValues.Length);
-            for (int i = 0; i < typeValues.Length; i++)
+            CC.Guard.IsNotNullSource(source);
+
+            bool hasExcludeName = excludeName.IsNotNullOrWhiteSpace();
+            Enum[] values = EnumCache.GetFieldValues(source.GetType());
+            var results = new List<Enum>(values.Length);
+
+            Enum current;
+            for (int i = 0; i < values.Length; i++)
             {
-                if (value.HasFlag(typeValues[i])
-                    &&
-                    (!toExceptByName
-                        ||
-                        toExceptByName
-                        &&
-                        typeValues[i].ToString()
-                        !=
-                        exceptByName
-                        )
-                    )
-                    result.Add(typeValues[i]);
+                current = values[i];
+
+                if (!source.HasFlag(current))
+                    continue;
+
+                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName!))
+                    continue;
+
+                results.Add(current);
             }
 
-            return result.ToArray();
+            return results;
         }
-        /// <exception cref="EnumNotFlagsException"></exception>
-        public static T[] ToArrayByFlags<T>(this T value, string? exceptByName = "None")
+
+        public static IList<T> ToArrayByFlags<T>(this T value, string? excludeName = "None")
             where T : unmanaged, Enum
         {
-            bool toExceptByName = exceptByName.IsNotNullOrEmpty();
-            List<T> result = new();
-            T[] typeValues = EnumCache<T>.Values;
-            for (int i = 0; i < typeValues.Length; i++)
+            bool hasExcludeName = excludeName.IsNotNullOrWhiteSpace();
+            T[] values = EnumCache<T>.Values;
+            var results = new List<T>(values.Length);
+
+            T current;
+            for (int i = 0; i < values.Length; i++)
             {
-                if (value.IsFlagSetted(typeValues[i])
-                    &&
-                    (!toExceptByName
-                        ||
-                        toExceptByName
-                        &&
-                        typeValues[i].ToString()
-                        !=
-                        exceptByName
-                        )
-                    )
-                    result.Add(typeValues[i]);
+                current = values[i];
+
+                if (!value.IsFlagSetted(current))
+                    continue;
+
+                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName!))
+                    continue;
+
+                results.Add(current);
             }
 
-            return result.ToArray();
+            return results;
         }
 
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="EnumNotFlagsException"></exception>
         public static bool IsFlagsSetted<T>(this T value, IEnumerable<T> flags)
             where T : unmanaged, Enum
         {
@@ -243,8 +241,6 @@ namespace CCEnvs
 
             return true;
         }
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="EnumNotFlagsException"></exception>
         public static bool IsFlagsSetted<T>(this T value, params T[] flags)
             where T : unmanaged, Enum
         {
@@ -322,16 +318,6 @@ namespace CCEnvs
             return value.ResetFlags(flags.ToArrayByFlags());
         }
 
-        public static string[] ToStringArrayByFlags(this Enum value)
-        {
-            return value.ToArrayByFlags().ToStringArray();
-        }
-        public static string[] ToStringArrayByFlags<T>(this T value)
-            where T : unmanaged, Enum
-        {
-            return value.ToArrayByFlags().ToStringArray();
-        }
-
         public static T UniteFlags<T>(this T[] values)
             where T : unmanaged, Enum
         {
@@ -349,16 +335,6 @@ namespace CCEnvs
                 result.SetFlag(value);
 
             return result;
-        }
-
-        public static string[] ToStringArray(this Enum[] values)
-        {
-            return values.Select(x => x.ToString()).ToArray();
-        }
-        public static string[] ToStringArray<T>(this T[] values)
-            where T : unmanaged, Enum
-        {
-            return values.Select(x => x.ToString()).ToArray();
         }
 
         /// <exception cref="EnumNotFlagsException"></exception>

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -14,8 +15,10 @@ namespace CCEnvs.Unity.Components
     public sealed class PersistentGuid : CCBehaviour
     {
         public static bool IgnoreWarnings { get; set; }
+
         private readonly static HashSet<string> guids = new();
-        private static bool sceneSubscribed;
+
+        private static bool sceneUnloadedSubscribed;
 
         [NonSerialized]
         private int pressCount;
@@ -29,11 +32,26 @@ namespace CCEnvs.Unity.Components
 
         private void Reset()
         {
-            SubscribeOnActiveScene();
-            Validate();
-
             if (Guid.IsNullOrWhiteSpace())
                 GenerateGuid();
+
+#if UNITY_EDITOR
+            Validate();
+#endif
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Validate();
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+
+            if (Guid.IsNotNullOrWhiteSpace())
+                guids.Add(Guid);
         }
 
         private void OnValidate()
@@ -41,20 +59,26 @@ namespace CCEnvs.Unity.Components
             Validate();
         }
 
-        private void SubscribeOnActiveScene()
+        protected override void OnDestroy()
         {
-            if (sceneSubscribed)
-                return;
+            base.OnDestroy();
 
-            SceneManager.activeSceneChanged += OnSceneChanged;
-            sceneSubscribed = true;
+            if (Guid.IsNotNullOrWhiteSpace())
+                guids.Remove(Guid!);
         }
 
-        private void OnSceneChanged(Scene _, Scene __)
-        {
-            guids.Clear();
-            guids.AddRange(GetSceneGuids());
-        }
+        //private void SusbcribeOnSceneUnloaded()
+        //{
+        //    if (onSceneUnloaded is not null)
+        //        return;
+
+        //    onSceneUnloaded = _ =>
+        //    {
+        //        guids.Clear();
+        //        guids.AddRange(GetSceneGuids());
+        //    };
+        //    SceneManager.sceneUnloaded += onSceneUnloaded;
+        //}
 
         private HashSet<string> GetSceneGuids()
         {
@@ -70,7 +94,7 @@ namespace CCEnvs.Unity.Components
                     continue;
 
                 if (!results.Add(cmp.Guid))
-                    throw new InvalidOperationException($"Found dublicate id '{cmp.Guid}'");
+                    throw new InvalidOperationException($"Found dublicate id \"{cmp.Guid}\"");
             }
 
             return results;
@@ -110,21 +134,15 @@ namespace CCEnvs.Unity.Components
         {
             if (!Application.isPlaying)
             {
-                SubscribeOnActiveScene();
                 guids.Clear();
                 guids.AddRange(GetSceneGuids());
             }
 
-            if ((Application.isPlaying) && !IgnoreWarnings)
-                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use '{typeof(RuntimeId)}' instead");
+            if (Application.isPlaying && !IgnoreWarnings)
+                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use \"{typeof(RuntimeId)}\" instead");
 
             if (Guid.IsNotNullOrWhiteSpace() && guids.Contains(Guid))
-            {
-                this.PrintError($"Found duplicate id. More often caused by instantiating {nameof(GameObject)} with {nameof(PersistentGuid)}. Guid will be destroyed");
-
-                if (Application.isPlaying)
-                    Destroy(this);
-            }
+                this.PrintError($"Found duplicate id. More often caused by instantiating {nameof(GameObject)} with {nameof(PersistentGuid)}");
 
             if (!Application.isPlaying)
                 guids.Clear();

@@ -87,12 +87,12 @@ namespace CCEnvs
 
             public static InvalidOperationException MemberNotFoundException(string? name = null, MemberTypes? memberType = null, Type? reflectedType = null, BindingFlags? bindingFlags = null, Type[]? argumentTypes = null, Binder? binder = null)
             {
-                string msg = Sentence.Empty.AddIfNotDefault($"name '{name}'", name)
-                    .AddIfNotDefault($"member type '{memberType}'", memberType)
-                    .AddIfNotDefault($"reflected type '{reflectedType}'", reflectedType)
-                    .AddIfNotDefault($"binding flags '{bindingFlags}'", bindingFlags)
-                    .AddIfNotDefault($"argument types '{argumentTypes?.Select(x => x.ToString()).Aggregate((left, right) => left + right)}'", argumentTypes)
-                    .AddIfNotDefault($"binder '{binder}'", binder)
+                string msg = Sentence.Empty.AddIfNotDefault($"name \"{name}\"", name)
+                    .AddIfNotDefault($"member type \"{memberType}\"", memberType)
+                    .AddIfNotDefault($"reflected type \"{reflectedType}\"", reflectedType)
+                    .AddIfNotDefault($"binding flags \"{bindingFlags}\"", bindingFlags)
+                    .AddIfNotDefault($"argument types \"{argumentTypes?.Select(x => x.ToString()).Aggregate((left, right) => left + right)}\"", argumentTypes)
+                    .AddIfNotDefault($"binder \"{binder}\"", binder)
                     .ToString();
 
                 return new InvalidOperationException($"Member not found. {msg}");
@@ -100,24 +100,24 @@ namespace CCEnvs
 
             public static InvalidOperationException EndlessLoopException(ulong iterationCount, string? msg = null)
             {
-                return new InvalidOperationException($"Prevented endless loop with interation count '{iterationCount}'. {msg}");
+                return new InvalidOperationException($"Prevented endless loop with interation count \"{iterationCount}\". {msg}");
             }
 
             public static InvalidOperationException MetadataNotFound(MemberInfo member)
             {
                 Guard.IsNotNull(member, nameof(member));
 
-                return new InvalidOperationException($"Metadata not found. Member info: name '{member}', type '{member.MemberType}'");
+                return new InvalidOperationException($"Metadata not found. Member info: name '{member}', type \"{member.MemberType}\"");
             }
 
             public static InvalidOperationException TypeNotFoundException(string? typeName, string? assemblyName = null)
             {
-                return new InvalidOperationException($"Type name '{typeName}', assembly name '{assemblyName}'");
+                return new InvalidOperationException($"Type name '{typeName}', assembly name \"{assemblyName}\"");
             }
 
             public static ArgumentException IsNotTypeException(Type? left, Type? right, string? paramName = null)
             {
-                return new ArgumentException($"Invalid argument '{paramName ?? "value"}'. Left type '{(left?.ToString() ?? "null")}' is not '{(right?.ToString() ?? "null")}'");
+                return new ArgumentException($"Invalid argument '{paramName ?? "value"}'. Left type '{(left?.ToString() ?? "null")}' is not \"{(right?.ToString() ?? "null")}\"");
             }
         }
 

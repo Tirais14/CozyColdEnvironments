@@ -1,5 +1,6 @@
 using CommunityToolkit.Diagnostics;
 using System;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -7,7 +8,10 @@ namespace CCEnvs.Unity.Saves
     [Serializable]
     public struct SavingSystemToRegisterObject : System.IEquatable<SavingSystemToRegisterObject>
     {
+        [field: SerializeField]
         public UnityEngine.Object Object { get; private set; }
+
+        [field: SerializeField]
         public string Key { get; private set; }
 
         public SavingSystemToRegisterObject(UnityEngine.Object @object, string key)

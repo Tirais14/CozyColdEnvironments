@@ -134,7 +134,7 @@ namespace CCEnvs.FuncLanguage
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Target '{target}'; Default '{@default}'; IsSome '{IsSome}'";
+            return $"Target '{target}'; Default '{@default}'; IsSome \"{IsSome}\"";
         }
 
         public readonly IEnumerator<T> GetEnumerator()

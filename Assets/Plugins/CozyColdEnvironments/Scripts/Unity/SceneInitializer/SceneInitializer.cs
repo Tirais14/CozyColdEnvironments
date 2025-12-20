@@ -110,7 +110,7 @@ namespace CCEnvs.Unity.Initables
         {
             PropertyInfo[] props = initable.GetType()
                                            .Reflect()
-                                           .NonPublic()
+                                           .IncludeNonPublic()
                                            .IncludeBaseTypes()
                                            .Properties()
                                            .ToArray();

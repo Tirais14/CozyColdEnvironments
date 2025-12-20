@@ -10,37 +10,33 @@ using Newtonsoft.Json;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public struct AssemblyNameSnapshot : ISnapshot<AssemblyName>
+    public sealed class AssemblyNameSnapshot : Snapshot<AssemblyName>
     {
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
 #endif
         [JsonProperty]
-        private string name;
+        public string? Name { get; private set; }
 
-        [JsonIgnore]
-        public Maybe<AssemblyName> Target { get; private set; }
-
-        [JsonProperty]
-        public string SelfTypeReference { get; private set; }
+        public AssemblyNameSnapshot()
+        {
+        }
 
         public AssemblyNameSnapshot(AssemblyName target)
             :
-            this()
+            base(target)
         {
             Guard.IsNotNull(target);
 
-            Target = target;
-            SelfTypeReference = GetType().GetTypeReference();
-            name = target.Name;
+            Name = target.Name;
         }
 
-        public readonly AssemblyName Restore() => Restore(Target.Raw);
-
-        public readonly AssemblyName Restore(AssemblyName? target)
+        /// <returns><paramref name="target"/></returns>
+        public override AssemblyName Restore(AssemblyName target)
         {
             target ??= new AssemblyName();
-            target.Name = name;
+
+            target.Name = Name;
 
             return target;
         }

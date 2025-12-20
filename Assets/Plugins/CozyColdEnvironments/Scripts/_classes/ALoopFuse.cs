@@ -21,9 +21,9 @@ namespace CCEnvs
         protected InvalidOperationException GetException()
         {
             if (ExceptionMessage.IsNullOrWhiteSpace())
-                return new InvalidOperationException($"Prevented endless loop with interation count '{iterations}'");
+                return new InvalidOperationException($"Prevented endless loop with interation count \"{iterations}\"");
             else
-                return new InvalidOperationException($"Prevented endless loop with interation count '{iterations}'. {ExceptionMessage}");
+                return new InvalidOperationException($"Prevented endless loop with interation count \"{iterations}\". {ExceptionMessage}");
         }
     }
 }

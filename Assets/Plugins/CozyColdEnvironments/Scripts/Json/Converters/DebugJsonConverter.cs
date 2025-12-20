@@ -15,12 +15,12 @@ namespace CCEnvs.Json.Converters
             object? existingValue,
             JsonSerializer serializer)
         {
-            this.PrintLog($"Reading type '{objectType}'");
+            this.PrintLog($"Reading type \"{objectType}\"");
 
             var token = JToken.ReadFrom(reader);
 
             foreach (var childToken in token)
-                this.PrintLog($"Readed '{childToken}'");
+                this.PrintLog($"Readed \"{childToken}\"");
 
             return !objectType.IsClass ? Activator.CreateInstance(objectType) : null;
         }
@@ -30,11 +30,11 @@ namespace CCEnvs.Json.Converters
             object? value,
             JsonSerializer serializer)
         {
-            this.PrintLog($"Writing type '{value}'");
+            this.PrintLog($"Writing type \"{value}\"");
 
             var toWrite = JsonConvert.SerializeObject(value);
 
-            this.PrintLog($"To write '{toWrite}'");
+            this.PrintLog($"To write \"{toWrite}\"");
         }
     }
 }

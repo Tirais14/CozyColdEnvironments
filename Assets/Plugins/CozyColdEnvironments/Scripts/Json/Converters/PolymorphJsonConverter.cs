@@ -19,7 +19,7 @@ namespace CCEnvs.Json.Converters
                 throw new JsonSerializationException();
 
             var jObj = JObject.Load(reader);
-            JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing '$type' property");
+            JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing \"$type\" property");
             string typeReference = typeProp.Value.ToString();
             var actualType = Type.GetType(typeReference, throwOnError: true);
 
@@ -30,7 +30,7 @@ namespace CCEnvs.Json.Converters
             }
             catch (Exception ex)
             {
-                throw new JsonSerializationException($"Type '{actualType}' not supports constructor with parameters for now", ex);
+                throw new JsonSerializationException($"Type \"{actualType}\" not supports constructor with parameters for now", ex);
             }
 
             JsonConverterHelper.Populate(inst!, jObj);

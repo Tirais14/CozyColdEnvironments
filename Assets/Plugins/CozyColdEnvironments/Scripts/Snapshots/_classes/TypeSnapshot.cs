@@ -26,10 +26,11 @@ namespace CCEnvs.Snapshots
         }
 
         public TypeSnapshot(Type target)
+            :
+            base(target)
         {
             Guard.IsNotNull(target);
 
-            Target = target;
             Name = target.Name;
             AssemblyName = target.AssemblyQualifiedName;
         }
@@ -39,7 +40,7 @@ namespace CCEnvs.Snapshots
             return Type.GetType($"{Name}, {AssemblyName}");
         }
 
-        /// <returns>input type</returns>
+        /// <returns><paramref name="target"/></returns>
         public override Type Restore(Type target) => target;
     }
 }

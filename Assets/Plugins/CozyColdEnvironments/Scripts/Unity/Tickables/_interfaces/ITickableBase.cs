@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.Tickables
             IDisposable susbcription = TickablesManager.RegisterTickable(this, tickerType);
 
             this.Reflect()
-                .NonPublic()
+                .IncludeNonPublic()
                 .WithName(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
                 .Property()
                 .Strict()
@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.Tickables
         bool Unregister()
         {
             if (this.Reflect()
-                .NonPublic()
+                .IncludeNonPublic()
                 .WithName(Tickable.TICKER_SUBSCRIPTION_PROPERTY_NAME)
                 .Property()
                 .Strict()

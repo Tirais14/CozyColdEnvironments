@@ -110,9 +110,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
         private void SetProperties()
         {
             PropertyInfo[] props = this.Reflect()
-                .NonPublic()
+                .IncludeNonPublic()
                 .IncludeBaseTypes()
-                .TypeFilter<IInputActionRx>()
+                .WithTypeFilter<IInputActionRx>()
                 .Properties()
                 .Where(x => x.PropertyType.IsType<IInputActionRx>())
                 .ToArray();

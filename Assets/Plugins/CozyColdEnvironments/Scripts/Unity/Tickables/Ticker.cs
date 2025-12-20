@@ -97,9 +97,9 @@ namespace CCEnvs.Unity.Tickables
         private static void TryVoidInjectedTicker(TTickable tickable)
         {
             tickable.Reflect()
-                    .NonPublic()
+                    .IncludeNonPublic()
                     .IncludeBaseTypes()
-                    .TypeFilter<ITicker>()
+                    .WithTypeFilter<ITicker>()
                     .Cache()
                     .Field()
                     .Lax()
@@ -109,9 +109,9 @@ namespace CCEnvs.Unity.Tickables
         private void TryInjectTicker(TTickable tickable)
         {
             tickable.Reflect()
-                    .NonPublic()
+                    .IncludeNonPublic()
                     .IncludeBaseTypes()
-                    .TypeFilter<ITicker>()
+                    .WithTypeFilter<ITicker>()
                     .Cache()
                     .Field()
                     .Lax()

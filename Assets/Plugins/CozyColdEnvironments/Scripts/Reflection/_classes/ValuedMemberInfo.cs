@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using System.Linq;
 using System.Reflection;
 
 #nullable enable
@@ -7,6 +8,7 @@ namespace CCEnvs.Reflection
 {
     public sealed class ValuedMemberInfo : MemberInfo
     {
+        private readonly MemberInfo memberInternal;
         private readonly Type declaringType;
         private readonly MemberTypes memberType;
         private readonly string name;
@@ -50,6 +52,26 @@ namespace CCEnvs.Reflection
             reflectedType = member.ReflectedType;
         }
 
+        public static implicit operator ValuedMemberInfo(FieldInfo field)
+        {
+            return new ValuedMemberInfo(field);
+        }
+
+        public static implicit operator ValuedMemberInfo(PropertyInfo prop)
+        {
+            return new ValuedMemberInfo(prop); 
+        }
+
+        public static explicit operator FieldInfo(ValuedMemberInfo member)
+        {
+            return member.ToField().Strict();
+        }
+
+        public static explicit operator PropertyInfo(ValuedMemberInfo member)
+        {
+            return member.ToProperty().Strict();
+        }
+
         public override object[] GetCustomAttributes(bool inherit)
         {
             throw new NotImplementedException();
@@ -63,6 +85,65 @@ namespace CCEnvs.Reflection
         public override bool IsDefined(Type attributeType, bool inherit)
         {
             throw new NotImplementedException();
+        }
+
+        public Result<FieldInfo> ToField()
+        {
+            return (memberInternal as FieldInfo, CC.ThrowHelper.InvalidCastException(memberInternal.GetType(), typeof(FieldInfo)));
+        }
+        public Result<PropertyInfo> ToProperty()
+        {
+            return (memberInternal as PropertyInfo, CC.ThrowHelper.InvalidCastException(memberInternal.GetType(), typeof(PropertyInfo)));
+        }
+    }
+
+    public static class ValuedMemberInfoExtensions 
+    {
+        public static ValuedMemberInfo? GetValuedMember(this Type source, string name)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.GetField(name).Let(out FieldInfo? field))
+                return field;
+            else if (source.GetProperty(name).Let(out PropertyInfo? prop))
+                return prop;
+
+            return null;
+        }
+
+        public static ValuedMemberInfo? GetValuedMember(
+            this Type source,
+            string name,
+            BindingFlags bindingFlags)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.GetField(name, bindingFlags).Let(out FieldInfo? field))
+                return field;
+            else if (source.GetProperty(name, bindingFlags).Let(out PropertyInfo? prop))
+                return prop;
+
+            return null;
+        }
+
+        public static ValuedMemberInfo[] GetValuedMembers(this Type source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return source.GetFields()
+                .Select(field => new ValuedMemberInfo(field))
+                .Concat(source.GetProperties().Select(prop => new ValuedMemberInfo(prop)))
+                .ToArray();
+        }
+
+        public static ValuedMemberInfo[] GetValuedMembers(this Type source, BindingFlags bindingFlags)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return source.GetFields(bindingFlags)
+                .Select(field => new ValuedMemberInfo(field))
+                .Concat(source.GetProperties(bindingFlags).Select(prop => new ValuedMemberInfo(prop)))
+                .ToArray();
         }
     }
 }

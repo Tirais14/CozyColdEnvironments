@@ -6,34 +6,32 @@ using R3;
 using System;
 using System.Linq;
 using UnityEngine;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
     [RequireComponent(typeof(PersistentGuid))]
-    public sealed class BindGameObjectToSaveSystem : CCBehaviour
+    public sealed class SavingSystemRegistrationComponent : CCBehaviour
     {
-        [SerializeField]
-        private SavingSystemToRegisterObject[] components = Array.Empty<SavingSystemToRegisterObject>();
+        public SavingSystemToRegisterObject[] components = Array.Empty<SavingSystemToRegisterObject>();
 
-        [SerializeField]
-        [Tooltip("Process only specified in 'components' field components")]
-        private bool onlyExplicitComponents = true;
+        [Tooltip("Always false when component list is empty. Better keep true, otherwise may cause key duplicates and restoring will become impossible or incorrect")]
+        public bool onlyExplicitComponents = true;
 
-        protected override void Awake()
+        protected override void Start()
         {
-            base.Awake();
+            base.Start();
 
-            gameObject.SavingSystemRegisterGameObject().AddTo(gameObject);
+            gameObject.SavingSystemRegisterUnityObject().AddTo(gameObject);
 
             if (components.IsNotNullOrEmpty())
-            {   
+            {
                 foreach (var cmp in components)
                     cmp.Object.SavingSystemRegisterObject(cmp.Key).AddTo(gameObject);
             }
 
-
-            if (!onlyExplicitComponents)
+            if (!onlyExplicitComponents || components.IsNullOrEmpty())
             {
                 foreach (var cmp in GetComponents<Component>().Except(components.Select(x => (Component)x.Object)))
                 {
@@ -44,7 +42,7 @@ namespace CCEnvs.Unity.Snapshots
                         continue;
 
                     if (cmp.SavingSystemIsTypeRegistered())
-                        cmp.SavingSystemRegisterComponent().AddTo(gameObject);
+                        cmp.SavingSystemRegisterUnityObject().AddTo(gameObject);
                 }
             }
 

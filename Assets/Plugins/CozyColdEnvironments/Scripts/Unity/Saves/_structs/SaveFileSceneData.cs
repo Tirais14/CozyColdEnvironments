@@ -61,7 +61,7 @@ namespace CCEnvs.Unity.Saves
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Scene info '{SceneInfo}'";
+            return $"Scene info \"{SceneInfo}\"";
         }
     }
 }

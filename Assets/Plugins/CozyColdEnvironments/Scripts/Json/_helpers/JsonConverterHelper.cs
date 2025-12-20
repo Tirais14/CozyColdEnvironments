@@ -58,8 +58,8 @@ namespace CCEnvs.Json
             var jProperty = member.GetCustomAttribute<JsonPropertyAttribute>();
 
             var namingStrategy = settings.ContractResolver?.Reflect()
-                .NonPublic()
-                .TypeFilter<NamingStrategy>()
+                .IncludeNonPublic()
+                .WithTypeFilter<NamingStrategy>()
                 .Property()
                 .Lax()
                 .Map(x => x.GetValue(settings.ContractResolver))
@@ -181,7 +181,7 @@ namespace CCEnvs.Json
                     continue;
 
                 if (!MatchMember(members, jProp.Name, settings).TryGetValue(out MemberInfo? member))
-                    throw new InvalidOperationException($"Serializable member of json property not found in type '{instType}'");
+                    throw new InvalidOperationException($"Serializable member of json property not found in type \"{instType}\"");
 
                 if (member is PropertyInfo prop)
                 {

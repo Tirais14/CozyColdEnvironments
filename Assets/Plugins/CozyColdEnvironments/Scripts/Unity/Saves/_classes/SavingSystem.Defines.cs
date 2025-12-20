@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.Saves
             public ISnapshot CreateSnapshot()
             {
                 if (!converters.TryGetValue(ObjectType, out var converter))
-                    throw new InvalidOperationException($"Registration of type '{ObjectType}' invalid");
+                    throw new InvalidOperationException($"Registration of type \"{ObjectType}\" invalid");
 
                 return converter(Object);
             }
@@ -76,7 +76,7 @@ namespace CCEnvs.Unity.Saves
                 if (this.IsDefault())
                     return StringHelper.EMPTY_OBJECT;
 
-                return $"Object '{Object}'; scene info {SceneInfo};";
+                return $"Object \"{Object}\"; scene info {SceneInfo};";
             }
         }
 
@@ -170,6 +170,52 @@ namespace CCEnvs.Unity.Saves
                     disposables.Remove(this);
 
                 disposed = true;
+            }
+        }
+
+        private readonly struct LoadedSnapshotKey : IEquatable<LoadedSnapshotKey>
+        {
+            public string Key { get; }
+            public Type TargetType { get; }
+            public SceneInfo? SceneInfo { get; }
+
+            public LoadedSnapshotKey(string key, Type targetType, SceneInfo? sceneInfo)
+            {
+                Guard.IsNotNullOrWhiteSpace(key, nameof(key));
+                Guard.IsNotNull(targetType, nameof(targetType));
+
+                Key = key;
+                TargetType = targetType;
+                SceneInfo = sceneInfo;
+            }
+
+            public static bool operator ==(LoadedSnapshotKey left, LoadedSnapshotKey right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(LoadedSnapshotKey left, LoadedSnapshotKey right)
+            {
+                return !(left == right);
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is LoadedSnapshotKey key && Equals(key);
+            }
+
+            public bool Equals(LoadedSnapshotKey other)
+            {
+                return Key == other.Key
+                       &&
+                       TargetType == other.TargetType
+                       &&
+                       SceneInfo == other.SceneInfo;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Key, TargetType, SceneInfo);
             }
         }
     }

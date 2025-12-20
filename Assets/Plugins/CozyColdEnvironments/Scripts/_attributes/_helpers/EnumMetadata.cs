@@ -34,7 +34,7 @@ namespace CCEnvs.Attributes.Metadata
             if (attribute.IsNullOrEmpty())
             {
                 if (throwIfNotFound)
-                    throw new InvalidOperationException($"Metadata attribute not found. Field name '{value}', type '{value.GetType()}'");
+                    throw new InvalidOperationException($"Metadata attribute not found. Field name '{value}', type \"{value.GetType()}\"");
                 else
                     return Enum.GetNames(typeof(T));
             }

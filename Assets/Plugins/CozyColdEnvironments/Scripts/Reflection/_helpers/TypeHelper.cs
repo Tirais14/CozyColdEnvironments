@@ -337,14 +337,14 @@ namespace CCEnvs.Reflection
             CC.Guard.IsNotNull(source, nameof(source));
 
             var t = source.Reflect()
-                  .Static()
-                  .NonPublic()
+                  .IncludeStatic()
+                  .IncludeNonPublic()
                   .ByFullName()
                   .WithName("op_Implicit")
                   .Methods()
                   .Concat(source.Reflect()
-                      .Static()
-                      .NonPublic()
+                      .IncludeStatic()
+                      .IncludeNonPublic()
                       .ByFullName()
                       .WithName("op_Explicit")
                       .Methods())

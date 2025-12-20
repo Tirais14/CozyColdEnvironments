@@ -14,7 +14,7 @@ namespace CCEnvs.Collections.Unsafe
             CC.Guard.IsNotNull(source, nameof(source));
 
             var t = source.Reflect()
-                .NonPublic()
+                .IncludeNonPublic()
                 .WithName(INTERNAL_ARRAY_FIELD_NAME)
                 .GetFieldValue<T[]>()
                 .GetValueUnsafe();
