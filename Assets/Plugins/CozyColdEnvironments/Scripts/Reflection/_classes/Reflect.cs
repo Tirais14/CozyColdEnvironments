@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
@@ -30,9 +31,7 @@ namespace CCEnvs.Reflection
         {
             None,
             IncludeBaseTypes = 1,
-            ByFullName = 2,
-            ForceConstructors = 4,
-            ForceMethods = 8,
+            ByFullName = 1 << 1,
         }
 
         public Settings settings { get; set; }
@@ -181,30 +180,6 @@ namespace CCEnvs.Reflection
                 settings |= Settings.ByFullName;
             else
                 settings &= ~Settings.ByFullName;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect ForceConstructors(bool state = true)
-        {
-            if (state)
-                settings |= Settings.ForceConstructors;
-            else
-                settings &= ~Settings.ForceConstructors;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Reflect ForceMethods(bool state = true)
-        {
-            if (state)
-                settings |= Settings.ForceMethods;
-            else
-                settings &= ~Settings.ForceMethods;
 
             return this;
         }
@@ -430,7 +405,7 @@ namespace CCEnvs.Reflection
         {
             return IncludeInstance().IncludeMemberTypes(MemberTypes.Constructor)
                 .FindMembers()
-                .OfType<ConstructorInfo>();
+                .CastCustom<ConstructorInfo>();
         }
 
         [DebuggerStepThrough]
@@ -449,7 +424,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<ValuedMemberInfo> ValuedMembers()
         {
-            return IncludeMemberTypes(MemberTypes.Field | MemberTypes.Property).FindMembers()
+            return IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Field | MemberTypes.Property).FindMembers()
                 .Select(member =>
                 {
                     if (member is FieldInfo field)
@@ -479,7 +454,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<FieldInfo> Fields()
         {
-            return IncludeMemberTypes(MemberTypes.Field).FindMembers().OfType<FieldInfo>();
+            return IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Field).FindMembers().CastCustom<FieldInfo>();
         }
 
         [DebuggerStepThrough]
@@ -502,7 +477,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<PropertyInfo> Properties()
         {
-            return IncludeMemberTypes(MemberTypes.Property).FindMembers().OfType<PropertyInfo>();
+            return IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Property).FindMembers().CastCustom<PropertyInfo>();
         }
 
         [DebuggerStepThrough]
@@ -525,7 +500,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<MethodInfo> Methods()
         {
-            var t = IncludeMemberTypes(MemberTypes.Method).FindMembers().OfType<MethodInfo>();
+            var t = IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Method).FindMembers().CastCustom<MethodInfo>();
 
             return genericTypes.Map(
                 genericTypes =>
@@ -570,29 +545,18 @@ namespace CCEnvs.Reflection
         public TReturn InvokeMethod<TReturn>() => WithTypeFilter<TReturn>().InvokeMethod().To<TReturn>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object InvokeConstructor()
+        public object CreateInstance()
         {
-            ConstructorInfo ctor = Constructor().Strict();
+            ConstructorInfo ctor = IncludeInstance().Constructor().Strict();
 
             var result = ctor.Invoke(arguments.GetValue(Type.EmptyTypes));
 
             if (result.IsNull())
-                throw new CCException("Error while invoking constructor. Result is null.");
+                throw new InvalidOperationException("Error while invoking constructor");
 
             PrintMethodInvoked(ctor);
 
             return result;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TCreated InvokeConstructor<TCreated>() => InvokeConstructor().To<TCreated>();
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object CreateInstance()
-        {
-            return IncludeInstance().IncludeStatic().IncludeNonPublic().InvokeConstructor();
         }
 
         [DebuggerStepThrough]
@@ -701,40 +665,42 @@ namespace CCEnvs.Reflection
             else
                 types = Range.From(type);
 
-            IEnumerable<MemberInfo> results = Enumerable.Empty<Type>();
+            var memberTypeArray = memberTypes.Value.ToArrayByFlags();
+            IEnumerable<MemberInfo> results = Enumerable.Empty<MemberInfo>();
             IEnumerable<MemberInfo> current;
-            foreach (var memberType in memberTypes.Value.ToArrayByFlags())
+            foreach (var type in types)
             {
-                current = memberType switch
+                foreach (var memberType in memberTypeArray)
                 {
-                    MemberTypes.All => throw new NotImplementedException(memberTypes.ToString()),
+                    current = memberType switch
+                    {
+                        MemberTypes.All => throw new NotImplementedException(memberTypes.ToString()),
 
-                    MemberTypes.Constructor => types.SelectMany(type => type.GetConstructors(bindingFlags))
-                    .Where(CompareConstructor),
+                        MemberTypes.Constructor => type.GetConstructors(bindingFlags).Where(CompareConstructor),
 
-                    MemberTypes.Custom => throw new NotImplementedException(memberTypes.ToString()),
+                        MemberTypes.Custom => throw new NotImplementedException(memberTypes.ToString()),
 
-                    MemberTypes.Event => throw new NotImplementedException(memberTypes.ToString()),
+                        MemberTypes.Event => throw new NotImplementedException(memberTypes.ToString()),
 
-                    MemberTypes.Field => types.SelectMany(type => type.GetFields(bindingFlags))
-                    .Select(field => new ValuedMemberInfo(field))
-                    .Where(CompareValuedMember),
+                        MemberTypes.Field => type.GetFields(bindingFlags)
+                        .Select(field => new ValuedMemberInfo(field))
+                        .Where(CompareValuedMember),
 
-                    MemberTypes.Method => types.SelectMany(type => type.GetMethods(bindingFlags))
-                    .Where(CompareMethod),
+                        MemberTypes.Method => type.GetMethods(bindingFlags).Where(CompareMethod),
 
-                    MemberTypes.NestedType => throw new NotImplementedException(memberTypes.ToString()),
+                        MemberTypes.NestedType => throw new NotImplementedException(memberTypes.ToString()),
 
-                    MemberTypes.Property => types.SelectMany(type => type.GetProperties(bindingFlags))
-                    .Select(prop => new ValuedMemberInfo(prop))
-                    .Where(CompareValuedMember),
+                        MemberTypes.Property => type.GetProperties(bindingFlags)
+                        .Select(prop => new ValuedMemberInfo(prop))
+                        .Where(CompareValuedMember),
 
-                    MemberTypes.TypeInfo => throw new NotImplementedException(memberTypes.ToString()),
+                        MemberTypes.TypeInfo => throw new NotImplementedException(memberTypes.ToString()),
 
-                    _ => throw new InvalidOperationException(memberTypes.ToString()),
-                };
+                        _ => throw new InvalidOperationException(memberTypes.ToString()),
+                    };
 
-                results = results.Concat(current);
+                    results = results.Concat(current);
+                }
             }
 
             return results;

@@ -1,4 +1,6 @@
+using CCEnvs.Collections;
 using CCEnvs.Conversations;
+using CCEnvs.FuncLanguage;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -194,6 +196,26 @@ namespace CCEnvs.Linq
                 results.Push(value);
 
             return results;
+        }
+
+        public static IEnumerable<TResult> CastCustom<TResult>(this IEnumerable source)
+        {
+            var enumerator = new AnonymousEnumerator<IEnumerable, IEnumerator, TResult>(
+                source,
+                static (enumerable, enumerator) =>
+                {
+                    enumerator = enumerable.GetEnumerator().Maybe();
+                    bool moveNext = enumerator.Map(x => x.MoveNext()).GetValue(false);
+
+                    return (enumerable, enumerator.Map(x => x.Current.To<TResult>()).GetValueUnsafe(), enumerator, moveNext);
+                },
+                static (_, enumerator) =>
+                {
+                    enumerator.IfSome(x => x.Reset());
+                    return (_, enumerator);
+                });
+
+            return new EnumeratorEnumerable<TResult>(enumerator);
         }
     }
 }
