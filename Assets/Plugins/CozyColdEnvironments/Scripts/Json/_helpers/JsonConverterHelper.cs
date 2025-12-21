@@ -90,10 +90,7 @@ namespace CCEnvs.Json
             bool isDefinedJProperty = member.IsDefined<JsonPropertyAttribute>();
             if (member is PropertyInfo prop)
             {
-                if (!isDefinedJProperty && prop.SetMethod is null)
-                    return false;
-
-                if (!isDefinedJProperty && !prop.GetMethod.IsPublic)
+                if (!isDefinedJProperty && prop.GetAccessors().All(x => !x.IsPublic))
                     return false;
 
                 return true;
@@ -198,6 +195,16 @@ namespace CCEnvs.Json
                 Guard.IsNotNull(propSetter);
 
                 propSetter(instance, deserializedProp);
+            }
+        }
+
+        public static object CreateInstance(Type type, IEnumerable<JsonPropertyInfo> propInfos)
+        {
+            Guard.IsNotNull(type, nameof(type));
+
+            foreach (var item in propInfos)
+            {
+                
             }
         }
 

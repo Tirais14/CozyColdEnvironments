@@ -23,6 +23,10 @@ namespace CCEnvs.Reflection
         public Maybe<MethodInfo> ValueSetMethod { get; }
         public Func<object?, object?> ValueGetter { get; }
         public Action<object?, object?> ValueSetter { get; }
+        public bool ValueGetterIsPublic { get; }
+        public bool ValueSetterIsPublic { get; }
+        public bool CanRead { get; }
+        public bool CanWrite { get; }
 
         public ValuedMemberInfo(FieldInfo field)
             :
@@ -31,6 +35,10 @@ namespace CCEnvs.Reflection
             UnderlyingType = field.FieldType;
             ValueGetter = (inst) => field.GetValue(inst);
             ValueSetter = (inst, value) => field.SetValue(inst, value);
+            ValueGetterIsPublic = field.IsPublic;
+            ValueSetterIsPublic = ValueGetterIsPublic;
+            CanRead = true;
+            CanWrite = true;
         }
 
         public ValuedMemberInfo(PropertyInfo prop)
@@ -42,6 +50,10 @@ namespace CCEnvs.Reflection
             ValueSetMethod = prop.SetMethod;
             ValueGetter = (inst) => prop.GetValue(inst);
             ValueSetter = (inst, value) => prop.SetValue(inst, value);
+            ValueGetterIsPublic = prop.GetMethod?.IsPublic ?? false;
+            ValueSetterIsPublic = prop.SetMethod?.IsPublic ?? false;
+            CanRead = prop.GetMethod is not null;
+            CanWrite = prop.SetMethod is not null;
         }
 
         private ValuedMemberInfo(MemberInfo member)

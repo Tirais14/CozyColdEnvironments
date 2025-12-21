@@ -683,16 +683,14 @@ namespace CCEnvs.Reflection
                         MemberTypes.Event => throw new NotImplementedException(memberTypes.ToString()),
 
                         MemberTypes.Field => type.GetFields(bindingFlags)
-                        .Select(field => new ValuedMemberInfo(field))
-                        .Where(CompareValuedMember),
+                        .Where(field => CompareValuedMember(field)),
 
                         MemberTypes.Method => type.GetMethods(bindingFlags).Where(CompareMethod),
 
                         MemberTypes.NestedType => throw new NotImplementedException(memberTypes.ToString()),
 
                         MemberTypes.Property => type.GetProperties(bindingFlags)
-                        .Select(prop => new ValuedMemberInfo(prop))
-                        .Where(CompareValuedMember),
+                        .Where(prop => CompareValuedMember(prop)),
 
                         MemberTypes.TypeInfo => throw new NotImplementedException(memberTypes.ToString()),
 

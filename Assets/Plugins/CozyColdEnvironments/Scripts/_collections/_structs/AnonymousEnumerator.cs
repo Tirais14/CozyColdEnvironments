@@ -10,7 +10,7 @@ namespace CCEnvs.Collections
     public struct AnonymousEnumerator<TTarget, TStateInternal, TItem> : IEnumerator<TItem>
     {
         private readonly Func<TTarget, Maybe<TStateInternal>, (TTarget target, TItem item, Maybe<TStateInternal> stateInternal, bool success)> moveNext;
-        private readonly Func<TTarget, Maybe<TStateInternal>, (TTarget target, Maybe<TStateInternal> stateInternal)> reset;
+        private readonly Func<TTarget, Maybe<TStateInternal>, (TTarget target, Maybe<TStateInternal> stateInternal)>? reset;
         private readonly Action<TTarget, Maybe<TStateInternal>>? dispose;
         private TTarget target;
         private Maybe<TStateInternal> stateInternal;
@@ -22,8 +22,10 @@ namespace CCEnvs.Collections
         public AnonymousEnumerator(
             TTarget target,
             Func<TTarget, Maybe<TStateInternal>, (TTarget target, TItem item, Maybe<TStateInternal> stateInternal, bool success)> moveNext,
-            Func<TTarget, Maybe<TStateInternal>, (TTarget target, Maybe<TStateInternal> stateInternal)> reset,
-            Action<TTarget, Maybe<TStateInternal>>? dispose = null) : this()
+            Func<TTarget, Maybe<TStateInternal>, (TTarget target, Maybe<TStateInternal> stateInternal)>? reset = null,
+            Action<TTarget, Maybe<TStateInternal>>? dispose = null)
+            :
+            this()
         {
             Guard.IsNotNull(moveNext, nameof(moveNext));
             Guard.IsNotNull(target, nameof(target));
@@ -51,6 +53,10 @@ namespace CCEnvs.Collections
         public readonly void Reset()
         {
             Validate();
+
+            if (reset is null)
+                throw new NotSupportedException("Method \"Reset\" is not supported");
+
             reset(target, stateInternal);
         }
 
@@ -60,7 +66,9 @@ namespace CCEnvs.Collections
             if (disposed)
                 return;
 
-            Reset();
+            if (reset is not null)
+                Reset();
+
             dispose?.Invoke(target, stateInternal);
 
             disposed = true;
