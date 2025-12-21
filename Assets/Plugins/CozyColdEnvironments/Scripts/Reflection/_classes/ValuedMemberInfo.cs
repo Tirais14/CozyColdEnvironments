@@ -6,18 +6,11 @@ using System.Reflection;
 #nullable enable
 namespace CCEnvs.Reflection
 {
-    public sealed class ValuedMemberInfo : MemberInfo
+    public sealed class ValuedMemberInfo
     {
-        private readonly MemberInfo memberInternal;
-        private readonly Type declaringType;
-        private readonly MemberTypes memberType;
-        private readonly string name;
-        private readonly Type reflectedType;
-
-        public override Type DeclaringType => declaringType;
-        public override MemberTypes MemberType => memberType;
-        public override string Name => name;
-        public override Type ReflectedType => reflectedType;
+        public MemberInfo Member { get; }
+        public MemberTypes MemberType { get; }
+        public string Name { get; }
         public Type UnderlyingType { get; }
         public Maybe<MethodInfo> ValueGetMethod { get; }
         public Maybe<MethodInfo> ValueSetMethod { get; }
@@ -58,10 +51,10 @@ namespace CCEnvs.Reflection
 
         private ValuedMemberInfo(MemberInfo member)
         {
-            declaringType = member.DeclaringType;
-            memberType = member.MemberType;
-            name = member.Name;
-            reflectedType = member.ReflectedType;
+            Member = member;
+
+            MemberType = member.MemberType;
+            Name = member.Name;
         }
 
         public static implicit operator ValuedMemberInfo(FieldInfo field)
@@ -84,28 +77,13 @@ namespace CCEnvs.Reflection
             return member.ToProperty().Strict();
         }
 
-        public override object[] GetCustomAttributes(bool inherit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            throw new NotImplementedException();
-        }
-
         public Result<FieldInfo> ToField()
         {
-            return (memberInternal as FieldInfo, CC.ThrowHelper.InvalidCastException(memberInternal.GetType(), typeof(FieldInfo)));
+            return (Member as FieldInfo, CC.ThrowHelper.InvalidCastException(Member.GetType(), typeof(FieldInfo)));
         }
         public Result<PropertyInfo> ToProperty()
         {
-            return (memberInternal as PropertyInfo, CC.ThrowHelper.InvalidCastException(memberInternal.GetType(), typeof(PropertyInfo)));
+            return (Member as PropertyInfo, CC.ThrowHelper.InvalidCastException(Member.GetType(), typeof(PropertyInfo)));
         }
     }
 

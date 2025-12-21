@@ -12,7 +12,7 @@ namespace CCEnvs.Snapshots
         where T : ISnapshot
     {
         public T Snapshot { get; }
-        public object? Key { get; }
+        public string? Key { get; }
 
         [JsonIgnore]
         public Maybe<object> Target {
@@ -24,7 +24,7 @@ namespace CCEnvs.Snapshots
         public Type TargetType => Snapshot.TargetType;
 
         [JsonConstructor]
-        public KeyedSnapshot(T snapshot, object? key)
+        public KeyedSnapshot(T snapshot, string? key)
         {
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 

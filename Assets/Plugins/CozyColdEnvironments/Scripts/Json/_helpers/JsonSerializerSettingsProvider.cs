@@ -1,3 +1,5 @@
+using CCEnvs.Json.Converters;
+using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
@@ -15,6 +17,8 @@ namespace CCEnvs.Json
                 settings = new JsonSerializerSettings(JsonConvert.DefaultSettings());
             else
                 settings = new JsonSerializerSettings();
+
+            converters = converters.Concat(Range.From<JsonConverter>(new PolymorphJsonConverter<ISnapshot>())).ToArray();
 
             if (settings.Converters.IsReadOnly)
                 settings.Converters = settings.Converters.Concat(converters).ToList();

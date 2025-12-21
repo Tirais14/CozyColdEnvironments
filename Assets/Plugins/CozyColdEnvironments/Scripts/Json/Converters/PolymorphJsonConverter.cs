@@ -2,6 +2,7 @@ using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
@@ -23,19 +24,19 @@ namespace CCEnvs.Json.Converters
             string typeReference = typeProp.Value.ToString();
             var actualType = Type.GetType(typeReference, throwOnError: true);
 
-            T inst;
-            try
-            {
-                inst = actualType.Reflect().CreateInstance<T>();
-            }
-            catch (Exception ex)
-            {
-                throw new JsonSerializationException($"Type \"{actualType}\" not supports constructor with parameters for now", ex);
-            }
+            //T inst;
+            //try
+            //{
+            //    inst = actualType.Reflect().CreateInstance<T>();
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new JsonSerializationException($"Type \"{actualType}\" not supports constructor with parameters for now", ex);
+            //}
 
-            JsonConverterHelper.Populate(inst!, jObj);
+            //JsonConverterHelper.Populate(inst!, jObj);
 
-            return inst;
+            return (T)JsonConverterHelper.CreateInstance(actualType, jObj.Properties().ToArray(), serializer);
         }
 
         public override void WriteJson(
@@ -54,21 +55,24 @@ namespace CCEnvs.Json.Converters
             writer.WriteValue(value.GetType().GetTypeReference());
 
             Type valueType = value.GetType();
-            var jsonPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, serializer.GetSerializerSettings());
+            var jPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(valueType, serializer.GetSerializerSettings());
             JsonSerializerSettings serializerSettings = serializer.GetSerializerSettings();
-            foreach (var jsonPropInfo in jsonPropInfos)
+            foreach (var jPropInfo in jPropInfos)
             {
-                if (jsonPropInfo.Get is null || !jsonPropInfo.Get(value).Let(out object? propValue))
+                if (!jPropInfo.ShouldSerialize)
+                    continue;
+
+                if (jPropInfo.Get is null || !jPropInfo.Get(value).Let(out object? propValue))
                 {
                     if (serializer.NullValueHandling == NullValueHandling.Ignore)
                         continue;
 
-                    writer.WritePropertyName(jsonPropInfo.Name);
+                    writer.WritePropertyName(jPropInfo.Name);
                     writer.WriteNull();
                     continue;
                 }
 
-                writer.WritePropertyName(jsonPropInfo.Name);
+                writer.WritePropertyName(jPropInfo.Name);
                 serializer.Serialize(writer, propValue);
             }
 

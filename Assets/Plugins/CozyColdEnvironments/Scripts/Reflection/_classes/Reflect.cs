@@ -306,6 +306,13 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect WithoutArguments()
+        {
+            return WithArguments(Array.Empty<object>());
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect WithParameterModifiers(ParameterModifier parameterModifier = default)
         {
             parameterModifiers = Range.From(parameterModifier);
@@ -424,7 +431,8 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<ValuedMemberInfo> ValuedMembers()
         {
-            return IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Field | MemberTypes.Property).FindMembers()
+            return IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Field | MemberTypes.Property).
+                FindMembers()
                 .Select(member =>
                 {
                     if (member is FieldInfo field)
@@ -758,7 +766,7 @@ namespace CCEnvs.Reflection
         {
             if (!CompareName(member.Name))
                 return false;
-            if (!CompareAttributes(member))
+            if (!CompareAttributes(member.Member))
                 return false;
             if (!CompareType(member.UnderlyingType, extraType, useFirstArgument: true))
                 return false;
@@ -766,6 +774,7 @@ namespace CCEnvs.Reflection
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareMethod(MethodInfo method)
         {
             var parameters = method.GetParameters();
@@ -784,15 +793,15 @@ namespace CCEnvs.Reflection
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CompareConstructor(ConstructorInfo ctor)
         {
             var parameters = ctor.GetParameters();
             ParameterModifier paramMods = parameters.GetParameterModifiers();
-            var argumentTypes = this.argumentTypes.GetValue(Type.EmptyTypes);
 
             if (!CompareAttributes(ctor))
                 return false;
-            if (!ctor.CompareParameters(argumentTypes, paramMods))
+            if (argumentTypes.IsSome && !ctor.CompareParameters(argumentTypes.GetValue(Type.EmptyTypes), paramMods))
                 return false;
 
             return true;
