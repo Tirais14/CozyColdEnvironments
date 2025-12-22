@@ -297,34 +297,5 @@ namespace CCEnvs.Json
 
             return instance;
         }
-
-        //private static (Func<object, object?>? getter, Action<object, object?>? setter) ResolveGetterAndSetter(MemberInfo member)
-        //{
-        //    Guard.IsNotNull(member);
-
-        //    Func<object, object?>? getter = null;
-        //    Action<object, object?>? setter = null;
-        //    if (member is PropertyInfo prop)
-        //    {
-        //        if (prop.CanRead)
-        //            getter = (inst) => prop.GetValue(inst);
-
-        //        if (prop.CanWrite)
-        //            setter = (inst, value) => prop.SetValue(inst, value);
-
-        //        return (getter, setter);
-        //    }
-        //    else if (member is FieldInfo field)
-        //    {
-        //        getter = (inst) => field.GetValue(inst);
-
-        //        if (!field.IsInitOnly)
-        //            setter = (inst, value) => field.SetValue(inst, value); 
-
-        //        return (getter, setter);
-        //    }
-
-        //    throw CC.ThrowHelper.InvalidOperationException(member.GetType(), nameof(member));
-        //}
     }
 }

@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
 using UnityEngine;
@@ -20,6 +21,8 @@ namespace CCEnvs.Unity.Snapshots
             protected set => m_ExtraInfo = value;
         }
 
+        public override bool IgnoreTarget => false;
+
         public ComponentSnapshot()
         {
         }
@@ -31,10 +34,6 @@ namespace CCEnvs.Unity.Snapshots
             ExtraInfo = target.GetExtraInfo();
         }
 
-        public override T Restore(T target)
-        {
-            CC.Guard.IsNotNullTarget(target);
-            return target;
-        }
+        public override Maybe<T> Restore(T? target) => target;
     }
 }

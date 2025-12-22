@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -27,6 +28,8 @@ namespace CCEnvs.Unity.Snapshots
         [field: SerializeField]
         public GameObjectExtraInfo? ExtraInfo { get; private set; }
 
+        public override bool IgnoreTarget => false;
+
         public GameObjectSnapshot()
         {
         }
@@ -41,7 +44,7 @@ namespace CCEnvs.Unity.Snapshots
             ExtraInfo = target.GetExtraInfo();
         }
 
-        public override GameObject Restore()
+        public override Maybe<GameObject> Restore()
         {
 
             if (!Target.TryGetValue(out GameObject? target)
@@ -58,9 +61,11 @@ namespace CCEnvs.Unity.Snapshots
             return Restore(target!);
         }
 
-        public override GameObject Restore(GameObject target)
+        public override Maybe<GameObject> Restore(GameObject? target)
         {
-            CC.Guard.IsNotNullTarget(target);
+            if (target.IsNull())
+                return Maybe<GameObject>.None;
+
             CC.Guard.IsNotNull(Transform, nameof(Transform));
             Guard.IsNotNullOrWhiteSpace(Name);
 

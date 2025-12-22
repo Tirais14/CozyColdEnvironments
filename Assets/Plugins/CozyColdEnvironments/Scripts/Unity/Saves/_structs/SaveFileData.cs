@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -12,13 +13,13 @@ namespace CCEnvs.Unity.Saves
     public readonly struct SaveFileData : IEquatable<SaveFileData>
     {
         public string Version { get; }
-        public IReadOnlyList<SaveFileSceneData> SceneDatas { get;}
+        public IList<SaveFileSceneData> SceneDatas { get;}
 
         [JsonConstructor]
-        public SaveFileData(string version, IReadOnlyList<SaveFileSceneData> sceneDatas)
+        public SaveFileData(string version, IList<SaveFileSceneData> sceneDatas)
         {
             Version = version;
-            SceneDatas = sceneDatas.ToImmutableArray();
+            SceneDatas = sceneDatas.ToImmutableList();
         }
 
         public static bool operator ==(SaveFileData left, SaveFileData right)
@@ -41,18 +42,25 @@ namespace CCEnvs.Unity.Saves
                 .Select(x => x.GetSceneInfo())
                 .ToArray();
 
-            var notRestored = new LazyLight<List<SaveFileSceneData>>(static () => new List<SaveFileSceneData>());
+            var notRestoredSceneDatas = LazyLight.Create<List<SaveFileSceneData>>();
             foreach (var sceneData in SceneDatas)
             {
-                if (sceneData.SceneInfo == null || !sceneInfos.Contains(sceneData.SceneInfo!.Value))
+                if (sceneData.SceneInfo != null && !sceneInfos.Contains(sceneData.SceneInfo!.Value))
                 {
-                    notRestored.Value.Add(sceneData);
+                    notRestoredSceneDatas.Value.Add(sceneData);
                     continue;
                 }
 
                 try
                 {
-                    sceneData.RestoreScene();
+                    var restSnapshots = sceneData.RestoreScene();
+
+                    if (restSnapshots.IsNotEmpty())
+                    {
+                        var notRestoredSceneData = new SaveFileSceneData(sceneData.SceneInfo, restSnapshots);
+
+                        notRestoredSceneDatas.Value.Add(notRestoredSceneData);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -60,14 +68,14 @@ namespace CCEnvs.Unity.Saves
                 }
             }
 
-            return notRestored.HasValue ? notRestored.Value : Array.Empty<SaveFileSceneData>();
+            return notRestoredSceneDatas.HasValue ? notRestoredSceneDatas.Value : Array.Empty<SaveFileSceneData>();
         }
 
         public readonly bool Equals(SaveFileData other)
         {
-            return SceneDatas == other.SceneDatas
+            return Version == other.Version
                    &&
-                   Version == other.Version;
+                   SceneDatas == other.SceneDatas;
         }
 
         public readonly override bool Equals(object obj)
@@ -77,7 +85,7 @@ namespace CCEnvs.Unity.Saves
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(SceneDatas, Version);
+            return HashCode.Combine(Version, SceneDatas);
         }
 
         public override string ToString()

@@ -35,8 +35,10 @@ namespace CCEnvs
 
     public readonly struct Result<T>
     {
-        private readonly Lazy<T?> raw;
+        public readonly static Result<T> Empty = new();
+
         public readonly Lazy<Exception?> exception;
+        private readonly Lazy<T?> raw;
 
         public T? Raw => raw.Value;
 

@@ -11,15 +11,15 @@ namespace CCEnvs.Unity.Saves
     public readonly struct SaveFileSceneData : IEquatable<SaveFileSceneData>
     {
         public SceneInfo? SceneInfo { get; }
-        public IReadOnlyList<KeyedSnapshot<ISnapshot>> Snapshots { get; }
+        public IList<KeyedSnapshot<ISnapshot>> Snapshots { get; }
 
         [JsonConstructor]
-        public SaveFileSceneData(SceneInfo? sceneInfo, IReadOnlyList<KeyedSnapshot<ISnapshot>> snapshots)
+        public SaveFileSceneData(SceneInfo? sceneInfo, IList<KeyedSnapshot<ISnapshot>> snapshots)
         {
             CC.Guard.IsNotNull(snapshots, nameof(snapshots));
 
             SceneInfo = sceneInfo;
-            Snapshots = snapshots.ToImmutableArray();
+            Snapshots = snapshots.ToImmutableList();
         }
 
         public static bool operator ==(SaveFileSceneData left, SaveFileSceneData right)
@@ -32,11 +32,25 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
-        public readonly void RestoreScene()
+        public readonly IList<KeyedSnapshot<ISnapshot>> RestoreScene()
         {
+            var notRestored = LazyLight.Create<List<KeyedSnapshot<ISnapshot>>>();
+
+            KeyedSnapshot<ISnapshot> snapshot;
             int length = Snapshots.Count;
             for (int i = 0; i < length; i++)
-                Snapshots[i].Restore();
+            {
+                snapshot = Snapshots[i];
+                if (!snapshot.CanRestore())
+                {
+                    notRestored.Value.Add(snapshot);
+                    continue;
+                }
+
+                snapshot.Restore();
+            }
+
+            return notRestored.HasValue ? notRestored.Value : Array.Empty<KeyedSnapshot<ISnapshot>>();
         }
 
         public readonly bool Equals(SaveFileSceneData other)

@@ -1,8 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
-using Newtonsoft.Json.Serialization;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Items.Snapshots
@@ -10,11 +8,13 @@ namespace CCEnvs.Unity.Items.Snapshots
     [Serializable]
     public class ItemContainerSnapshot : Snapshot<ItemContainer>
     {
-        public Maybe<IItem> item { get; set; }
-        public int itemCount { get; set; }
-        public int capacity { get; set; }
-        public bool isReadOnlyContainer { get; set; }
-        public bool unlockCapacity { get; set; }
+        public Maybe<IItem> Item { get; set; }
+        public int ItemCount { get; set; }
+        public int Capacity { get; set; }
+        public bool IsReadOnlyContainer { get; set; }
+        public bool UnlockCapacity { get; set; }
+
+        public override bool IgnoreTarget => true;
 
         public ItemContainerSnapshot()
         {
@@ -22,11 +22,11 @@ namespace CCEnvs.Unity.Items.Snapshots
 
         public ItemContainerSnapshot(ItemContainer target) : base(target)
         {
-            item = target.Item;
-            itemCount = target.ItemCount;
-            capacity = target.Capacity;
-            isReadOnlyContainer = target.IsReadOnlyContainer;
-            unlockCapacity = target.UnlockCapacity;
+            Item = target.Item;
+            ItemCount = target.ItemCount;
+            Capacity = target.Capacity;
+            IsReadOnlyContainer = target.IsReadOnlyContainer;
+            UnlockCapacity = target.UnlockCapacity;
         }
 
         public ItemContainerSnapshot(IItemContainer target)
@@ -43,17 +43,17 @@ namespace CCEnvs.Unity.Items.Snapshots
         {
         }
 
-        public override ItemContainer Restore(ItemContainer? target)
+        public override Maybe<ItemContainer> Restore(ItemContainer? target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
             return new ItemContainer(
-                item: item.Raw,
-                count: itemCount,
-                isReadOnlyContainer: isReadOnlyContainer)
+                item: Item.Raw,
+                count: ItemCount,
+                isReadOnlyContainer: IsReadOnlyContainer)
             {
-                UnlockCapacity = unlockCapacity,
-                Capacity = capacity,
+                UnlockCapacity = UnlockCapacity,
+                Capacity = Capacity,
             };
         }
     }

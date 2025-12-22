@@ -11,6 +11,8 @@ namespace CCEnvs.Unity.UI
     {
         public bool isShown { get; set; }
 
+        public override bool IgnoreTarget => false;
+
         [NonSerialized]
         protected Maybe<GameObject> gameObject;
 
@@ -24,14 +26,15 @@ namespace CCEnvs.Unity.UI
                 gameObject = cmp.gameObject;
         }
 
-        public override IShowable Restore(IShowable? target)
+        public override Maybe<IShowable> Restore(IShowable? target)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
+            if (target.IsNull())
+                return Maybe<IShowable>.None;
 
             if (isShown)
                 target.Show();
 
-            return target;
+            return target.Maybe();
         }
 
         public override string ToString()

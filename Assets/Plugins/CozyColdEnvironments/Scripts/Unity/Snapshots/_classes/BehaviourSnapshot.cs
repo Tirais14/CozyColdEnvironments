@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using System;
 using UnityEngine;
 
@@ -27,12 +28,15 @@ namespace CCEnvs.Unity.Snapshots
             Enabled = target.enabled;
         }
 
-        public override T Restore(T target)
+        public override Maybe<T> Restore(T? target)
         {
             base.Restore(target);
-            CC.Guard.IsNotNullTarget(target);
+
+            if (target.IsNull())
+                return Maybe<T>.None;
 
             target.enabled = Enabled;
+
             return target;
         }
     }

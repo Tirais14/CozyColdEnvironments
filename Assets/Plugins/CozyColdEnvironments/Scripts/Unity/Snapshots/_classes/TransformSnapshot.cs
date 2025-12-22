@@ -1,6 +1,8 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
+using SuperLinq;
 using System;
 using UnityEngine;
 
@@ -36,15 +38,17 @@ namespace CCEnvs.Unity.Snapshots
             Rotation = new QuaternionSnapshot(target.rotation);
         }
 
-        public override Transform Restore(Transform? target)
+        public override Maybe<Transform> Restore(Transform? target)
         {
             base.Restore(target);
 
-            CC.Guard.IsNotNull(target, nameof(target));
+            if (target.IsNull())
+                return Maybe<Transform>.None;
+
             Guard.IsNotNull(Position);
             Guard.IsNotNull(Rotation);
 
-            target.SetPositionAndRotation(Position.Restore(), Rotation.Restore());
+            target.SetPositionAndRotation(Position.Restore().Raw, Rotation.Restore().Raw);
             return target;
         }
     }

@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using System;
@@ -20,6 +21,8 @@ namespace CCEnvs.Unity.Snapshots
             protected set => m_Color = value;
         }
 
+        public override bool IgnoreTarget => false;
+
         public MaterialSnapshot()
         {
         }
@@ -37,9 +40,10 @@ namespace CCEnvs.Unity.Snapshots
             Color = color;
         }
 
-        public override Material Restore(Material? target)
+        public override Maybe<Material> Restore(Material? target)
         {
-            CC.Guard.IsNotNullTarget(target);
+            if (target.IsNull())
+                return Maybe<Material>.None;
 
             target.color = Color;
             return target;

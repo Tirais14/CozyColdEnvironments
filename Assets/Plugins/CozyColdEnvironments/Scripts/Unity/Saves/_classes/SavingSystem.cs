@@ -24,14 +24,12 @@ namespace CCEnvs.Unity.Saves
     {
         private readonly Type gameObjectType = typeof(GameObject);
 
-        private readonly Dictionary<Type, HashSet<RegisteredObject>> objectLists = new();
+        private readonly Dictionary<Type, HashSet<RegisteredObject>> objectSets = new();
+        private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
 
         private readonly Dictionary<RegisteredObject, object> objectKeys = new();
-
-        private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
+        private readonly Dictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
         private readonly Dictionary<SceneInfo?, CompositeDisposable> sceneDisposables = new();
-
-        private readonly Dictionary<LoadedSnapshotKey, List<ISnapshot>> loadedSnapshotLists = new();
 
         private UnityAction<Scene> onSceneUnloaded;
 
@@ -100,7 +98,7 @@ namespace CCEnvs.Unity.Saves
         {
             CC.Guard.IsNotNull(component, nameof(component));
 
-            object keyOrFactory = ResolveKeyForUnityObject(component);
+            object keyOrFactory = GetOrCreateKeyForUnityObject(component);
             SceneInfo sceneInfo = component.gameObject.scene.GetSceneInfo();
 
             return RegisterObjectInternal(component, component.GetType(), keyOrFactory, sceneInfo);
@@ -110,7 +108,7 @@ namespace CCEnvs.Unity.Saves
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
-            object keyOrFactory = ResolveKeyForUnityObject(gameObject);
+            object keyOrFactory = GetOrCreateKeyForUnityObject(gameObject);
             SceneInfo sceneInfo = gameObject.scene.GetSceneInfo();
 
             return RegisterObjectInternal(gameObject, gameObjectType, keyOrFactory, sceneInfo);
@@ -122,7 +120,7 @@ namespace CCEnvs.Unity.Saves
                 return false;
 
             SceneInfo? objSceneInfo = ResolveSceneInfo(obj);
-            RegisteredObject regObj = new RegisteredObject(obj, objSceneInfo, converters);
+            var regObj = new RegisteredObject(obj, objSceneInfo, converters);
 
             return UnregisterObjectInternal(regObj);
         }
@@ -131,7 +129,7 @@ namespace CCEnvs.Unity.Saves
         {
             objectKeys.Remove(regObj);
 
-            if (!objectLists.TryGetValue(regObj.ObjectType, out var objs))
+            if (!objectSets.TryGetValue(regObj.ObjectType, out var objs))
                 return false;
 
             return objs.Remove(regObj);
@@ -177,7 +175,7 @@ namespace CCEnvs.Unity.Saves
                 return false;
 
             converters.Remove(type);
-            return objectLists.Remove(type);
+            return objectSets.Remove(type);
         }
         public bool UnregisterType<T>() where T : class
         {
@@ -212,7 +210,7 @@ namespace CCEnvs.Unity.Saves
         {
             if (!objectKeys.ContainsKey(regObj))
             {
-                if (!objectLists.TryGetValue(regObj.ObjectType, out var objList))
+                if (!objectSets.TryGetValue(regObj.ObjectType, out var objList))
                     return false;
 
                 return objList.Contains(regObj);
@@ -236,17 +234,17 @@ namespace CCEnvs.Unity.Saves
         {
             await UniTask.SwitchToThreadPool();
 
-            using var _ = ListPool<RegisteredObject>.Get(out var results);
-            foreach (var regObj in objectLists.Values.SelectMany(x => x))
+            using var _ = ListPool<RegisteredObject>.Get(out var regObjs);
+            foreach (var regObj in objectSets.Values.SelectMany(x => x))
             {
                 if (regObj.SceneInfo != sceneInfo)
                     continue;
 
-                results.Add(regObj);
+                regObjs.Add(regObj);
             }
 
             await UniTask.SwitchToMainThread();
-            return results.ToArrayPooled();
+            return regObjs.ToArrayPooled();
         }
 
         private async UniTask<PooledArray<SaveFileSceneData>> BuildSceneDatasAsync()
@@ -258,6 +256,7 @@ namespace CCEnvs.Unity.Saves
             KeyedSnapshot<ISnapshot> keyedSnapshot;
             SaveFileSceneData sceneData;
             Maybe<string> objKey;
+
             foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes().Select(x => x.GetSceneInfo()))
             {
                 using PooledArray<RegisteredObject> regObjects = await GetSceneObjectsAsync(sceneInfo);
@@ -266,7 +265,7 @@ namespace CCEnvs.Unity.Saves
                     try
                     {
                         snapshot = regObj.CreateSnapshot();
-                        objKey = GetKey(regObj);
+                        objKey = ResolveKey(regObj);
 
                         if (!objKey.TryGetValue(out string? key))
                         {
@@ -283,7 +282,7 @@ namespace CCEnvs.Unity.Saves
                     }
                 }
 
-                sceneData = new SaveFileSceneData(sceneInfo, snapshots.Cast<KeyedSnapshot<ISnapshot>>().ToArray());
+                sceneData = new SaveFileSceneData(sceneInfo, snapshots.ToArray());
                 sceneDatas.Add(sceneData);
                 snapshots.Clear();
             }
@@ -294,10 +293,11 @@ namespace CCEnvs.Unity.Saves
         private async UniTask<SaveFileData> BuildSaveFileDataAsync()
         {
             using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync();
-            return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray()); //TODO: Versioning
+            return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray());
+            //TODO: Versioning
         }
 
-        private object ResolveKeyForUnityObject(UnityEngine.Object uObject)
+        private object GetOrCreateKeyForUnityObject(UnityEngine.Object uObject)
         {
             switch (uObject)
             {
@@ -325,10 +325,27 @@ namespace CCEnvs.Unity.Saves
                             });
                     }
                 case Component cmp:
-                    return ResolveKeyForUnityObject(cmp.gameObject);
+                    return GetOrCreateKeyForUnityObject(cmp.gameObject);
                 default:
                     throw CC.ThrowHelper.InvalidOperationException(uObject.GetType());
             }
+        }
+
+        private bool TryRestoreSnapshotFromLoaded(object obj, Type objType, object keyOrFactory, SceneInfo? sceneInfo = null)
+        {
+            string resolvedKey = ResolveKey(keyOrFactory);
+            var regObjInfo = new RegisteredObjectInfo(resolvedKey, objType, sceneInfo);
+
+            if (!loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot))
+            {
+                if (loadedSnapshot.Target.IsNone)
+                    loadedSnapshot.Target = obj;
+
+                loadedSnapshot.Restore();
+                return true;
+            }
+
+            return false;
         }
 
         private IDisposable RegisterObjectInternal(
@@ -356,9 +373,12 @@ namespace CCEnvs.Unity.Saves
                 return Disposable.Empty;
             }
 
+            if (TryRestoreSnapshotFromLoaded(obj, objType, keyOrFactory, sceneInfo))
+                this.PrintLog($"Object \"{obj}\" was restored by loaded snapshot");
+
             objectKeys.Add(regObj, keyOrFactory);
 
-            var sysObjects = objectLists.GetOrCreateNew(objType);
+            var sysObjects = objectSets.GetOrCreateNew(objType);
 
             sysObjects.Add(regObj);
 
@@ -367,20 +387,22 @@ namespace CCEnvs.Unity.Saves
             return new Registration(this, regObj).AddTo(disposables);
         }
 
-        private Maybe<string> GetKey(RegisteredObject regObj)
+        private string ResolveKey(object keyOrFactory)
         {
-            if (!objectKeys.TryGetValue(regObj, out object keyUntyped))
+            return keyOrFactory switch
+            {
+                string key => key,
+                IKeyFactory keyFactory => keyFactory.CreateKey().GetValue(() => throw new InvalidOperationException($"Cannot resolve key from input \"{keyOrFactory}\"")),
+                _ => throw CC.ThrowHelper.InvalidOperationException(keyOrFactory, nameof(keyOrFactory)),
+            };
+        }
+
+        private Maybe<string> ResolveKey(RegisteredObject regObj)
+        {
+            if (!objectKeys.TryGetValue(regObj, out object keyOrFactory))
                 return Maybe<string>.None;
 
-            switch (objectKeys[regObj])
-            {
-                case string key:
-                    return key;
-                case IKeyFactory keyFactory:
-                    return keyFactory.CreateKey();
-                default:
-                    throw CC.ThrowHelper.InvalidOperationException(keyUntyped, nameof(keyUntyped));
-            }
+            return ResolveKey(keyOrFactory);
         }
 
         private void SusbcribeSceneUnloaded()
@@ -409,8 +431,8 @@ namespace CCEnvs.Unity.Saves
 
         private void RegisterLoadedSnapshots(IList<SaveFileSceneData> notRestoredDatas)
         {
-            IList<ISnapshot> snapshotList;
-            LoadedSnapshotKey loadedSnapshotKey;
+            RegisteredObjectInfo regObjInfo;
+
             foreach (var sceneData in notRestoredDatas)
             {
                 foreach (var snapshot in sceneData.Snapshots)
@@ -421,11 +443,9 @@ namespace CCEnvs.Unity.Saves
                         continue;
                     }
 
-                    loadedSnapshotKey = new LoadedSnapshotKey(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
-                    snapshotList = loadedSnapshotLists.GetOrCreateNew(loadedSnapshotKey);
-                    snapshotList.Add(snapshot);
+                    regObjInfo = new RegisteredObjectInfo(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
+                    loadedSnapshots.Add(regObjInfo, snapshot);
                 }
-                
             }
         }
     }

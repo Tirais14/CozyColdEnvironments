@@ -16,8 +16,13 @@ namespace CCEnvs.Snapshots
         [JsonIgnore]
         Type TargetType { get; }
 
-        object Restore();
-        object Restore(object target);
+        public bool CanRestoreWithoutTarget { get; }
+        public bool IgnoreTarget { get; }
+
+        Maybe<object> Restore();
+        Maybe<object> Restore(object? target);
+
+        bool CanRestore();
     }
 
     public interface ISnapshot<T> : ISnapshot
@@ -31,11 +36,11 @@ namespace CCEnvs.Snapshots
             set => Target = value.Cast<T>().RightTarget;
         }
 
-        new T Restore();
-        T Restore(T target);
+        new Maybe<T> Restore();
+        Maybe<T> Restore(T? target);
 
-        object ISnapshot.Restore() => Restore()!;
-        object ISnapshot.Restore(object target) => Restore(target.To<T>())!;
+        Maybe<object> ISnapshot.Restore() => Restore();
+        Maybe<object> ISnapshot.Restore(object? target) => Restore(target.To<T>());
     }
 
     public static class ISnapshotExtensions

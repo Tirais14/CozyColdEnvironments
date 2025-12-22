@@ -8,23 +8,26 @@ using System.Collections.Generic;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public readonly struct KeyedSnapshot<T> : IEquatable<KeyedSnapshot<T>>, ISnapshot
+    public struct KeyedSnapshot<T> : IEquatable<KeyedSnapshot<T>>, ISnapshot
         where T : ISnapshot
     {
-        public T Snapshot { get; }
-        public string? Key { get; }
+        public T Snapshot { readonly get; private set; }
+        public object? Key { readonly get; private set; }
 
         [JsonIgnore]
-        public Maybe<object> Target {
+        public readonly Maybe<object> Target {
             get => Snapshot.Target;
             set => Snapshot.Target = value; 
         }
 
         [JsonIgnore]
-        public Type TargetType => Snapshot.TargetType;
+        public readonly Type TargetType => Snapshot.TargetType;
+
+        public readonly bool CanRestoreWithoutTarget => Snapshot.CanRestoreWithoutTarget;
+        public readonly bool IgnoreTarget => Snapshot.IgnoreTarget;
 
         [JsonConstructor]
-        public KeyedSnapshot(T snapshot, string? key)
+        public KeyedSnapshot(T snapshot, object? key)
         {
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 
@@ -42,22 +45,24 @@ namespace CCEnvs.Snapshots
             return !(left == right);
         }
 
-        public object Restore() => Snapshot.Restore();
-        public object Restore(object target) => Snapshot.Restore(target);
+        public readonly Maybe<object> Restore() => Snapshot.Restore();
+        public readonly Maybe<object> Restore(object? target) => Snapshot.Restore(target);
 
-        public override bool Equals(object? obj)
+        public readonly bool CanRestore() => Snapshot.CanRestore();
+
+        public readonly override bool Equals(object? obj)
         {
             return obj is KeyedSnapshot<T> snapshot && Equals(snapshot);
         }
 
-        public bool Equals(KeyedSnapshot<T> other)
+        public readonly bool Equals(KeyedSnapshot<T> other)
         {
             return EqualityComparer<ISnapshot>.Default.Equals(Snapshot, other.Snapshot)
                    &&
                    Key == other.Key;
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(Snapshot, Key);
         }

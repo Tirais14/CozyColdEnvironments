@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -21,6 +22,8 @@ namespace CCEnvs.Snapshots
 #endif
         public string? AssemblyName { get; private set; }
 
+        public override bool IgnoreTarget => true;
+
         public TypeSnapshot()
         {
         }
@@ -35,12 +38,10 @@ namespace CCEnvs.Snapshots
             AssemblyName = target.AssemblyQualifiedName;
         }
 
-        public override Type Restore()
+        /// <returns><paramref name="target"/></returns>
+        public override Maybe<Type> Restore(Type? target)
         {
             return Type.GetType($"{Name}, {AssemblyName}");
         }
-
-        /// <returns><paramref name="target"/></returns>
-        public override Type Restore(Type target) => target;
     }
 }

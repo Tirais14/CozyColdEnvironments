@@ -4,6 +4,15 @@ using System;
 #nullable enable
 namespace CCEnvs
 {
+    public static class LazyLight
+    {
+        public static LazyLight<T> Create<T>()
+            where T : new()
+        {
+            return new LazyLight<T>(() => new T()); 
+        }
+    }
+
     public ref struct LazyLight<T>
     {
         private readonly Func<T> factory;

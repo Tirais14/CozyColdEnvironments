@@ -18,8 +18,6 @@ namespace CCEnvs.Json
             else
                 settings = new JsonSerializerSettings();
 
-            converters = converters.Concat(Range.From<JsonConverter>(new PolymorphJsonConverter<ISnapshot>())).ToArray();
-
             if (settings.Converters.IsReadOnly)
                 settings.Converters = settings.Converters.Concat(converters).ToList();
             else

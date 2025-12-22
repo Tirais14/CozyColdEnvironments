@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using System;
 using UnityEngine;
 
@@ -31,10 +32,12 @@ namespace CCEnvs.Unity.Snapshots.UI
             IgnoreParentGroups = target.ignoreParentGroups;
         }
 
-        public override CanvasGroup Restore(CanvasGroup target)
+        public override Maybe<CanvasGroup> Restore(CanvasGroup? target)
         {
             base.Restore(target);
-            CC.Guard.IsNotNull(target, nameof(target));
+
+            if (target.IsNull())
+                return null;
 
             target.alpha = Alpha;
             target.interactable = Interctable;

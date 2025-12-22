@@ -1,10 +1,7 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Reflection;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Snapshots
@@ -15,8 +12,9 @@ namespace CCEnvs.Snapshots
 #if UNITY_2017_1_OR_NEWER
         [UnityEngine.SerializeField]
 #endif
-        [JsonProperty]
         public string? Name { get; private set; }
+
+        public override bool IgnoreTarget => false;
 
         public AssemblyNameSnapshot()
         {
@@ -32,7 +30,7 @@ namespace CCEnvs.Snapshots
         }
 
         /// <returns><paramref name="target"/></returns>
-        public override AssemblyName Restore(AssemblyName target)
+        public override Maybe<AssemblyName> Restore(AssemblyName? target)
         {
             target ??= new AssemblyName();
 

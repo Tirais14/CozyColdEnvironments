@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
 using System;
@@ -11,6 +12,8 @@ namespace CCEnvs.Unity.Items.Snapshots
         public ItemContainerSnapshot[] ItemContainers { get; set; } = Array.Empty<ItemContainerSnapshot>();
         public bool AutoSize { get; set; }
 
+        public override bool IgnoreTarget => false;
+
         public InventorySnapshot()
         {
         }
@@ -21,28 +24,29 @@ namespace CCEnvs.Unity.Items.Snapshots
             ItemContainers = CaptureItemContainerStates(target);
         }
 
-        public override Inventory Restore(Inventory target)
+        public override Maybe<Inventory> Restore(Inventory? target)
         {
             var inv = new Inventory
             {
                 AutoSize = AutoSize
             };
 
-            foreach (var cnt in ItemContainers.Select(x => x.Restore()))
+            foreach (var cnt in ItemContainers.Select(x => x.Restore())
+                .Where(x => x.IsSome)
+                .Select(x => x.Raw!))
+            {
                 inv.AddContainer(cnt);
+            }
 
             return inv;
         }
 
-        private static bool ValidateInventory(Inventory target)
+        private static void ValidateInventory(Inventory target)
         {
             if (target.FirstOrDefault(x => x.IsNot<ItemContainer>()).Let(out var cnt))
             {
                 typeof(InventorySnapshot).PrintError($"{nameof(ItemContainer)}: {cnt} not supported. Will be used {typeof(ItemContainer)} instead");
-                return false;
             }
-
-            return true;
         }
 
         private static ItemContainerSnapshot[] CaptureItemContainerStates(Inventory target)

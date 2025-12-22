@@ -1,6 +1,5 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
-using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using System;
 
@@ -31,6 +30,9 @@ namespace CCEnvs.Snapshots
         [JsonIgnore]
         public virtual Type TargetType => typeof(T);
 
+        public virtual bool CanRestoreWithoutTarget => IgnoreTarget;
+        public abstract bool IgnoreTarget { get; }
+
         public Snapshot()
         {
         }
@@ -44,12 +46,22 @@ namespace CCEnvs.Snapshots
             Target = target;
         }
 
-        public virtual T Restore() => Restore(Target.Raw!);
+        public virtual Maybe<T> Restore() => Restore(Target.Raw!);
 
-        public abstract T Restore(T target);
+        public abstract Maybe<T> Restore(T? target);
 
-        protected virtual void OnCreated()
+        public bool CanRestore()
         {
+            if (!CanRestoreWithoutTarget && Target.IsNone)
+                return false;
+
+            return true;
+        }
+
+        protected T FlushTarget(T? target)
+        {
+            CC.Guard.IsNotNullTarget(target);
+            return target;
         }
     }
 }

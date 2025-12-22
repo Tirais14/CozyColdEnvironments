@@ -173,13 +173,13 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private readonly struct LoadedSnapshotKey : IEquatable<LoadedSnapshotKey>
+        private readonly struct RegisteredObjectInfo : IEquatable<RegisteredObjectInfo>
         {
             public string Key { get; }
             public Type TargetType { get; }
             public SceneInfo? SceneInfo { get; }
 
-            public LoadedSnapshotKey(string key, Type targetType, SceneInfo? sceneInfo)
+            public RegisteredObjectInfo(string key, Type targetType, SceneInfo? sceneInfo)
             {
                 Guard.IsNotNullOrWhiteSpace(key, nameof(key));
                 Guard.IsNotNull(targetType, nameof(targetType));
@@ -189,22 +189,22 @@ namespace CCEnvs.Unity.Saves
                 SceneInfo = sceneInfo;
             }
 
-            public static bool operator ==(LoadedSnapshotKey left, LoadedSnapshotKey right)
+            public static bool operator ==(RegisteredObjectInfo left, RegisteredObjectInfo right)
             {
                 return left.Equals(right);
             }
 
-            public static bool operator !=(LoadedSnapshotKey left, LoadedSnapshotKey right)
+            public static bool operator !=(RegisteredObjectInfo left, RegisteredObjectInfo right)
             {
                 return !(left == right);
             }
 
             public override bool Equals(object? obj)
             {
-                return obj is LoadedSnapshotKey key && Equals(key);
+                return obj is RegisteredObjectInfo key && Equals(key);
             }
 
-            public bool Equals(LoadedSnapshotKey other)
+            public bool Equals(RegisteredObjectInfo other)
             {
                 return Key == other.Key
                        &&
