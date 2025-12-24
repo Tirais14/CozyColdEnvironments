@@ -327,14 +327,16 @@ namespace CCEnvs.Unity
                         });
 
                     return attributes.Count;
-                })
-                .ToArray();
+                });
 
             using var _ = HashSetPool<Type>.Get(out var componentTypeSet);
             componentTypeSet.AddRange(componentTypes);
 
             foreach (var (cmp, type, _) in cmpInfos)
             {
+                if (type.IsType<Transform>())
+                    continue;
+
                 if (componentTypes.IsNotEmpty() && !componentTypeSet.Contains(type))
                     continue;
 

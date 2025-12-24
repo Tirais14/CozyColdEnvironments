@@ -7,6 +7,7 @@ namespace CCEnvs.Unity.Components.Specialized
         {
             base.Start();
             gameObject.RemoveComponents();
+            Destroy(this);
         }
     }
 }
