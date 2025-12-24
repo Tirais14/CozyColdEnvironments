@@ -10,8 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Pool;
 using ZLinq;
 using Object = UnityEngine.Object;
 
@@ -280,9 +282,71 @@ namespace CCEnvs.Unity
                 throw new InvalidOperationException($"{nameof(RuntimeId).Humanize()} already exists.");
 
             idCmp = source.AddComponent<RuntimeId>();
-            idCmp.Reflect().Cache().WithName(nameof(RuntimeId.Id)).WithArguments(id).SetPropertyValue();
+
+            idCmp.Reflect()
+                 .Cache()
+                 .WithName(nameof(RuntimeId.Id))
+                 .WithArguments(id)
+                 .SetPropertyValue();
 
             return idCmp;
+        }
+
+        /// <summary>
+        /// Trying to resolve all specified dependecies by <see cref="RequireComponent"/> and in result correctly deletes them. Otherwise will be printed exception and component will be skipped.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="componentTypes">keep empty to delete all</param>
+        public static void RemoveComponents(this GameObject source, params Type[] componentTypes)
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(componentTypes, nameof(componentTypes));
+
+            var cmpInfos = source.GetComponents<Component>()
+                .AsValueEnumerable()
+                .Select(
+                static cmp =>
+                {
+                    var type = cmp.GetType();
+                    var requireCmpAttribute = type.GetCustomAttribute<RequireComponent>(inherit: true).Maybe();
+
+                    return (cmp, type, requireCmpAttribute);
+                })
+                .OrderBy(
+                static cmpInfo =>
+                {
+                    if (!cmpInfo.requireCmpAttribute.TryGetValue(out var reqAttribute))
+                        return int.MaxValue;
+
+                    var attributes = Do.Collect(reqAttribute,
+                        static reqAttribute =>
+                        {
+                            return reqAttribute.TypesToArray()
+                                .Select(x => x.GetCustomAttribute<RequireComponent>())
+                                .ToArray();
+                        });
+
+                    return attributes.Count;
+                })
+                .ToArray();
+
+            using var _ = HashSetPool<Type>.Get(out var componentTypeSet);
+            componentTypeSet.AddRange(componentTypes);
+
+            foreach (var (cmp, type, _) in cmpInfos)
+            {
+                if (componentTypes.IsNotEmpty() && !componentTypeSet.Contains(type))
+                    continue;
+
+                try
+                {
+                    Object.Destroy(cmp);
+                }
+                catch (Exception ex)
+                {
+                    type.PrintException(ex);
+                }
+            }
         }
     }
 }

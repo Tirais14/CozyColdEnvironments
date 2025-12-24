@@ -12,7 +12,7 @@ namespace CCEnvs
 {
     public static class Do
     {
-        public delegate T?[] MoveNext<T>(T current, LoopState loopState);
+        public delegate IReadOnlyCollection<T?> MoveNext<T>(T current, LoopState loopState);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DisposeSubject<T>(ref Subject<T>? subj)
@@ -123,7 +123,7 @@ namespace CCEnvs
             var results = new Queue<T>();
 
             var loopState = new LoopState();
-            T?[] nextValues;
+            IReadOnlyCollection<T?> nextValues;
             T? current;
             var loopPredicate = new LoopFuse(() => toProccess.Count > 0);
             while (loopPredicate.Invoke())
@@ -140,11 +140,12 @@ namespace CCEnvs
                 else if (loopState.Continue.GetValue())
                     continue;
 
-                int nextValuesCount = nextValues.Length;
-                for (int i = 0; i < nextValuesCount; i++)
+                foreach (var nextValue in nextValues)
                 {
-                    if (nextValues[i] is not null)
-                        toProccess.Enqueue(nextValues[i]!);
+                    if (nextValue is null)
+                        continue;
+
+                    toProccess.Enqueue(nextValue!);
                 }
             }
 
