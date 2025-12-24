@@ -10,7 +10,7 @@ namespace CCEnvs.Snapshots
     public sealed class AssemblyNameSnapshot : Snapshot<AssemblyName>
     {
 #if UNITY_2017_1_OR_NEWER
-        [UnityEngine.SerializeField]
+        [field: UnityEngine.SerializeField]
 #endif
         public string? Name { get; private set; }
 

@@ -14,8 +14,8 @@ namespace CCEnvs.Reflection
         public Type UnderlyingType { get; }
         public Maybe<MethodInfo> ValueGetMethod { get; }
         public Maybe<MethodInfo> ValueSetMethod { get; }
-        public Func<object?, object?> ValueGetter { get; }
-        public Action<object?, object?> ValueSetter { get; }
+        public Func<object?, object?>? ValueGetter { get; }
+        public Action<object?, object?>? ValueSetter { get; }
         public bool ValueGetterIsPublic { get; }
         public bool ValueSetterIsPublic { get; }
         public bool CanRead { get; }
@@ -41,8 +41,13 @@ namespace CCEnvs.Reflection
             UnderlyingType = prop.PropertyType;
             ValueGetMethod = prop.GetMethod;
             ValueSetMethod = prop.SetMethod;
-            ValueGetter = (inst) => prop.GetValue(inst);
-            ValueSetter = (inst, value) => prop.SetValue(inst, value);
+
+            if (prop.CanRead)
+                ValueGetter = (inst) => prop.GetValue(inst);
+
+            if (prop.CanWrite)
+                ValueSetter = (inst, value) => prop.SetValue(inst, value);
+
             ValueGetterIsPublic = prop.GetMethod?.IsPublic ?? false;
             ValueSetterIsPublic = prop.SetMethod?.IsPublic ?? false;
             CanRead = prop.GetMethod is not null;

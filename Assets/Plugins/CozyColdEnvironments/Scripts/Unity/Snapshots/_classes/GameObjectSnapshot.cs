@@ -28,6 +28,7 @@ namespace CCEnvs.Unity.Snapshots
         [field: SerializeField]
         public GameObjectExtraInfo? ExtraInfo { get; private set; }
 
+        public override bool CanRestoreWithoutTarget => true;
         public override bool IgnoreTarget => false;
 
         public GameObjectSnapshot()

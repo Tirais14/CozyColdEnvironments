@@ -336,7 +336,7 @@ namespace CCEnvs.Unity.Saves
             string resolvedKey = ResolveKey(keyOrFactory);
             var regObjInfo = new RegisteredObjectInfo(resolvedKey, objType, sceneInfo);
 
-            if (!loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot))
+            if (loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot))
             {
                 if (loadedSnapshot.Target.IsNone)
                     loadedSnapshot.Target = obj;
@@ -431,6 +431,8 @@ namespace CCEnvs.Unity.Saves
 
         private void RegisterLoadedSnapshots(IList<SaveFileSceneData> notRestoredDatas)
         {
+            loadedSnapshots.Clear();
+
             RegisteredObjectInfo regObjInfo;
 
             foreach (var sceneData in notRestoredDatas)

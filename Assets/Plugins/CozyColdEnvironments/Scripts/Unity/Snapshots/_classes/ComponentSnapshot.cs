@@ -21,6 +21,7 @@ namespace CCEnvs.Unity.Snapshots
             protected set => m_ExtraInfo = value;
         }
 
+        public override bool CanRestoreWithoutTarget => true;
         public override bool IgnoreTarget => false;
 
         public ComponentSnapshot()
