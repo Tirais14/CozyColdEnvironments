@@ -7,13 +7,13 @@ namespace CCEnvs
 {
     public static class ArrayPoolHelper
     {
-        public static Pooled<T[]> RentHandled<T>(this ArrayPool<T> source, int minLength)
+        public static PooledHandle<T[]> RentHandled<T>(this ArrayPool<T> source, int minLength)
         {
             Guard.IsNotNull(source, nameof(source));
 
             T[] rented = source.Rent(minLength);
-            var handle = new Pooled<T[]>(rented, source,
-                static (input, arr) =>
+            var handle = new PooledHandle<T[]>(rented, source,
+                static (arr, input) =>
                 {
                     input.To<ArrayPool<T>>().Return(arr);
                 });

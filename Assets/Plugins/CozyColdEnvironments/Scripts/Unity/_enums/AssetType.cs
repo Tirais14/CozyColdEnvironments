@@ -32,7 +32,9 @@ namespace CCEnvs.Unity
                 AssetType.Object => typeof(Object),
                 AssetType.Prefab => typeof(GameObject),
                 AssetType.ScriptableObject => typeof(ScriptableObject),
+#if UNITY_EDITOR
                 AssetType.Scene => typeof(SceneAsset),
+#endif //UNITY_EDITOR
                 AssetType.Texture2D => typeof(Texture2D),
                 AssetType.Sprite => typeof(Sprite),
                 AssetType.SpriteAtlas => typeof(SpriteAtlas),

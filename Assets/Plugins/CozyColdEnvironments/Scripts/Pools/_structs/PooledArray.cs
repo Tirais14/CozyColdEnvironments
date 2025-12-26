@@ -7,11 +7,11 @@ namespace CCEnvs.Pools
 {
     public struct PooledArray<T> : IDisposable
     {
-        private readonly Pooled<T[]> pooledInternal;
+        private readonly PooledHandle<T[]> pooledInternal;
 
         public ArraySegment<T> Value { get; }
 
-        public PooledArray(Pooled<T[]> pooled, int count, int offset = 0)
+        public PooledArray(PooledHandle<T[]> pooled, int count, int offset = 0)
             :
             this()
         {

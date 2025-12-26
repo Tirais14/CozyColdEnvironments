@@ -38,7 +38,7 @@ namespace CCEnvs.Dependencies
             return HasBinding(typeof(T), id);
         }
 
-#if UNITY_2017_1_OR_NEWER
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnEnterPlayMode]
         private static void ClearOnPlayMode()
         {
