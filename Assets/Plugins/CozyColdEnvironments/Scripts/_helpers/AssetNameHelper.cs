@@ -1,5 +1,5 @@
-using CCEnvs;
 using System;
+using System.Text.RegularExpressions;
 
 #nullable enable
 namespace Game
@@ -32,12 +32,12 @@ namespace Game
         /// </summary>
         /// <param name="assetName"></param>
         /// <returns></returns>
-        public static string DeleteClonePrefix(string assetName)
+        public static string DeleteCloneSuffix(string assetName)
         {
             if (assetName is null)
                 throw new ArgumentNullException(assetName);
 
-            return assetName.Delete("Clone").TrimEnd(' ');
+            return Regex.Match(assetName, @"^(\w+)").Value ?? string.Empty;
         }
 #endif
     }
