@@ -1,5 +1,6 @@
 #nullable enable
 using R3;
+using System;
 
 namespace CCEnvs.Pools
 {
@@ -9,8 +10,6 @@ namespace CCEnvs.Pools
 
         void OnSpawned();
 
-        void BindToPool(object pool);
-
-        Observable<object> ObserveOnDespawned();
+        void BindPoolHandle(IDisposable handle);
     }
 }

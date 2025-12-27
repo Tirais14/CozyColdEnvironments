@@ -1,8 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
-using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using SuperLinq;
 using System;
 using UnityEngine;
 
@@ -17,12 +15,21 @@ namespace CCEnvs.Unity.Snapshots
         protected Vector3Snapshot? m_Position;
 
         [SerializeField]
+        protected Vector3Snapshot? m_LocalPosition;   
+
+        [SerializeField]
         protected QuaternionSnapshot? m_Rotation;
 
         public Vector3Snapshot? Position {
             get => m_Position;
             protected set => m_Position = value;
         }
+
+        public Vector3Snapshot? LocalPosition {
+            get => m_LocalPosition;
+            protected set => m_LocalPosition = value;
+        }
+
         public QuaternionSnapshot? Rotation {
             get => m_Rotation;
             protected set => m_Rotation = value;
@@ -35,6 +42,7 @@ namespace CCEnvs.Unity.Snapshots
         public TransformSnapshot(Transform target) : base(target)
         {
             Position = new Vector3Snapshot(target.position);
+            LocalPosition = new Vector3Snapshot(target.localPosition);
             Rotation = new QuaternionSnapshot(target.rotation);
         }
 
@@ -42,13 +50,18 @@ namespace CCEnvs.Unity.Snapshots
         {
             base.Restore(target);
 
-            if (target.IsNull())
+            if (target == null)
                 return Maybe<Transform>.None;
 
-            Guard.IsNotNull(Position);
-            Guard.IsNotNull(Rotation);
+            if (Position is not null)
+                target.position = Position.Restore().Raw;
 
-            target.SetPositionAndRotation(Position.Restore().Raw, Rotation.Restore().Raw);
+            if (LocalPosition is not null) 
+                target.localPosition = LocalPosition.Restore().Raw;
+
+            if (Rotation is not null)
+                target.rotation = Rotation.Restore().Raw;
+
             return target;
         }
     }
