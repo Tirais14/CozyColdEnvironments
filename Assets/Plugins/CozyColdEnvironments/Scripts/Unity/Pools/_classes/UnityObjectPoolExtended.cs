@@ -40,10 +40,8 @@ namespace CCEnvs.Unity.Pools
 
                 actionOnRelease: obj =>
                 {
-                    if (!handles.TryGetValue(obj, out var handle))
-                        obj.OnDespawned();
-
-                    handle.Dispose();
+                    obj.OnDespawned();
+                    handles.Remove(obj);
                 },
 
                 actionOnDestroy: onDestroy,

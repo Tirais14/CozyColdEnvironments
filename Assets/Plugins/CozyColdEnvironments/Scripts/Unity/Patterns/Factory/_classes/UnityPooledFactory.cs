@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using CCEnvs.Pools;
+using CCEnvs.Unity.Pools;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -78,7 +79,7 @@ namespace CCEnvs.Unity.Patterns.Factory
     public abstract class UnityPooledFactory<TDiscriminator, TOut> : IDisposable
     where TOut : class, IPoolable
     {
-        private readonly Dictionary<TDiscriminator, ObjectPool<TOut>> pools = new();
+        private readonly Dictionary<TDiscriminator, UnityObjectPoolExtended<TOut>> pools = new();
 
         private readonly Dictionary<(TOut obj, TDiscriminator discriminator), IDisposable> handles = new(comparer: new AnonymousEqualityComparer<(TOut obj, TDiscriminator discriminator)>(
             comparison: (left, right) =>
@@ -95,10 +96,10 @@ namespace CCEnvs.Unity.Patterns.Factory
         private readonly int poolDefaultCapacity;
         private readonly bool poolCollectionCheck;
         private readonly int poolMaxSize;
-        private readonly Func<object, TDiscriminator> discrimintatorFactory;
+        private readonly Func<TOut, TDiscriminator> discrimintatorFactory;
 
         protected UnityPooledFactory(
-            Func<object, TDiscriminator> discrimintatorFactory,
+            Func<TOut, TDiscriminator> discrimintatorFactory,
             int defaultCapacity = 10,
             bool collectionCheck = true,
             int maxSize = 100000)
@@ -126,54 +127,36 @@ namespace CCEnvs.Unity.Patterns.Factory
             disposed = true;
         }
 
-        protected abstract TOut CreateInternal();
+        protected abstract TOut CreateInternal(object? input);
 
         protected virtual void OnPooledDestroy(TOut pooled)
         {
         }
 
-        protected ObjectPool<TOut> GetPool(object input)
+        protected UnityObjectPoolExtended<TOut> GetOrCreatePool(TOut obj)
         {
-            return pools.GetOrCreate(discrimintatorFactory(input), () => CreatePool(input));
+            TDiscriminator discriminator = discrimintatorFactory(obj);   
+            return pools.GetOrCreate(discriminator, () => CreatePool(discriminator));
         }
 
-        protected TOut GetObject(object input)
+        protected TOut GetObject(TDiscriminator discriminator)
         {
-            return pools[discrimintatorFactory(input)].Get();
+            return pools[discriminator].Get();
         }
 
-        private ObjectPool<TOut> CreatePool(object input)
+        protected UnityObjectPoolExtended<TOut> CreatePool(TDiscriminator discriminator)
         {
-            return new ObjectPool<TOut>(
-                createFunc: CreateInternal,
-
-                actionOnGet: obj =>
+            return new UnityObjectPoolExtended<TOut>(
+                factory: () =>
                 {
-                    var handle = PooledHandle.Create(obj, pools,
-                        (obj, pool) =>
-                        {
-                            pools[discrimintatorFactory(input)].Release(obj);
-                        });
-
-                    obj.BindPoolHandle(handle);
-                    handles.TryAdd((obj, discrimintatorFactory(input)), handle);
-
-                    obj.OnSpawned();
+                    return CreateInternal(discriminator);
                 },
 
-                actionOnRelease: obj =>
-                {
-                    if (!handles.TryGetValue((obj, discrimintatorFactory(input)), out var handle))
-                        obj.OnDespawned();
-
-                    handle.Dispose();
-                },
-
-                actionOnDestroy: OnPooledDestroy,
+                onDestroy: OnPooledDestroy,
                 defaultCapacity: poolDefaultCapacity,
                 collectionCheck: poolCollectionCheck,
-                maxSize: poolMaxSize
-                );
+                maxSize: poolMaxSize)
+                ;
         }
     }
 }
