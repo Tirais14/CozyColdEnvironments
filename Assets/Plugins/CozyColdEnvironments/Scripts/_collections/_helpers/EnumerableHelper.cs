@@ -1,4 +1,6 @@
 using CCEnvs.Diagnostics;
+using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -50,5 +52,19 @@ namespace CCEnvs.Collections
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNotEmpty<T>(this IEnumerable<T> enumerable) => !enumerable.IsEmpty();
+
+        public static IEnumerable<int> RandomizedRange(int count, int start = 0)
+        {
+            var range = Enumerable.Range(start, count).ToArray();
+
+            var r = new System.Random();
+            for (int i = range.Length - 1; i > 0; i--)
+            {
+                int j = r.Next(0, i);
+                (range[i], range[j]) = (range[j], range[i]);
+            }
+
+            return range;
+        }
     }
 }

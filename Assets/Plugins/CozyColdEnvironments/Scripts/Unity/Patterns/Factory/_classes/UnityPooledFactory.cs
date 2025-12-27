@@ -96,18 +96,21 @@ namespace CCEnvs.Unity.Patterns.Factory
         private readonly int poolDefaultCapacity;
         private readonly bool poolCollectionCheck;
         private readonly int poolMaxSize;
+        private readonly bool poolPreheat;
         private readonly Func<TOut, TDiscriminator> discrimintatorFactory;
 
         protected UnityPooledFactory(
             Func<TOut, TDiscriminator> discrimintatorFactory,
             int defaultCapacity = 10,
             bool collectionCheck = true,
-            int maxSize = 100000)
+            int maxSize = 100000,
+            bool preheat = false)
         {
             this.discrimintatorFactory = discrimintatorFactory;
             poolDefaultCapacity = defaultCapacity;
             poolCollectionCheck = collectionCheck;
             poolMaxSize = maxSize;
+            poolPreheat = preheat;
         }
 
         private bool disposed;
@@ -135,6 +138,8 @@ namespace CCEnvs.Unity.Patterns.Factory
 
         protected UnityObjectPoolExtended<TOut> GetOrCreatePool(TOut obj)
         {
+            CC.Guard.IsNotNull(obj, nameof(obj));
+
             TDiscriminator discriminator = discrimintatorFactory(obj);   
             return pools.GetOrCreate(discriminator, () => CreatePool(discriminator));
         }
@@ -155,8 +160,9 @@ namespace CCEnvs.Unity.Patterns.Factory
                 onDestroy: OnPooledDestroy,
                 defaultCapacity: poolDefaultCapacity,
                 collectionCheck: poolCollectionCheck,
-                maxSize: poolMaxSize)
-                ;
+                maxSize: poolMaxSize,
+                preheat: poolPreheat
+                );
         }
     }
 }

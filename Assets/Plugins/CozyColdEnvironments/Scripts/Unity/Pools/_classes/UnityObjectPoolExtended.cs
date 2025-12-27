@@ -1,5 +1,6 @@
 using CCEnvs.Pools;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using UnityEngine.Pool;
 
@@ -19,7 +20,8 @@ namespace CCEnvs.Unity.Pools
             Action<T>? onDestroy = null,
             int defaultCapacity = 10,
             bool collectionCheck = true,
-            int maxSize = 100000)
+            int maxSize = 100000,
+            bool preheat = false)
         {
             poolInternal = new ObjectPool<T>(
                 createFunc: factory,
@@ -49,6 +51,18 @@ namespace CCEnvs.Unity.Pools
                 collectionCheck: collectionCheck,
                 maxSize: maxSize
                 );
+
+            if (preheat)
+            {
+                using var arrHandle = ArrayPool<T>.Shared.RentHandled(defaultCapacity);
+                for (int i = 0; i < defaultCapacity; i++)
+                {
+                    arrHandle.Value[i] = Get();
+                }
+
+                foreach (var item in arrHandle.Value)
+                    Release(item);
+            }
         }
 
         public void Clear() => poolInternal.Clear();
