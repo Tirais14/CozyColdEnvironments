@@ -14,6 +14,7 @@ namespace CCEnvs.Unity.Pools
         private readonly Dictionary<T, IDisposable> handles = new();
 
         public int CountInactive => ((IObjectPool<T>)poolInternal).CountInactive;
+        public int DefaultCapacity { get; }
 
         public UnityObjectPoolExtended(
             Func<T> factory,
@@ -52,17 +53,7 @@ namespace CCEnvs.Unity.Pools
                 maxSize: maxSize
                 );
 
-            if (preheat)
-            {
-                using var arrHandle = ArrayPool<T>.Shared.RentHandled(defaultCapacity);
-                for (int i = 0; i < defaultCapacity; i++)
-                {
-                    arrHandle.Value[i] = Get();
-                }
-
-                foreach (var item in arrHandle.Value)
-                    Release(item);
-            }
+            DefaultCapacity = defaultCapacity;
         }
 
         public void Clear() => poolInternal.Clear();
@@ -72,6 +63,17 @@ namespace CCEnvs.Unity.Pools
         public PooledObject<T> Get(out T v) => poolInternal.Get(out v);
 
         public void Release(T element) => poolInternal.Release(element);
+
+        public void Preheat()
+        {
+            using var arrHandle = ArrayPool<T>.Shared.RentHandled(DefaultCapacity);
+
+            for (int i = 0; i < DefaultCapacity; i++)
+                arrHandle.Value[i] = Get();
+
+            foreach (var item in arrHandle.Value)
+                Release(item);
+        }
 
         private bool disposed;
         public void Dispose() => Dispose(true);

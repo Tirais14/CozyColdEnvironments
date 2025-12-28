@@ -518,7 +518,21 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<GameObject> ChildrenGameObject()
+        {
+            return (ChildrenGameObjects().FirstOrDefault(), GetException("Game object not found", typeof(GameObject)));
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<Transform> ChildrenTransforms() => FromChildrens().ExcludeSelf().Transforms();
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<Transform> ChildrenTransform()
+        {
+            return (ChildrenTransforms().FirstOrDefault(), GetException("Transform not found", typeof(Transform)));
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -812,6 +826,20 @@ namespace CCEnvs.Unity
                 components = components.Where(cmp => cmp.GetPersistentGuid().Has(guid));
 
             return components;
+        }
+
+        protected GameObjectAppealException GetException(string msg, Type? seekingComponentType = null)
+        {
+            return new GameObjectAppealException(
+                Target.Raw,
+                settings,
+                findMode,
+                message: msg,
+                seekingComponentType: seekingComponentType,
+                name: name.Raw,
+                tag: tag.Raw,
+                layer: layerMask.GetValue(-1),
+                componentFilter: hasType.Raw);
         }
     }
 

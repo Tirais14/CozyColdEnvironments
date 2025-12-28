@@ -25,9 +25,15 @@ namespace CCEnvs.Unity.Patterns.Factory
 
                 actionOnGet: obj =>
                 {
+                    if (obj.IsNull())
+                        return;
+
                     var handle = PooledHandle.Create(obj, pool,
                         static (obj, pool) =>
                         {
+                            if (obj.IsNull())
+                                return;
+
                             pool.Release(obj);
                         });
 
@@ -39,6 +45,9 @@ namespace CCEnvs.Unity.Patterns.Factory
 
                 actionOnRelease: obj =>
                 {
+                    if (obj.IsNull())
+                        return;
+
                     if (!handles.TryGetValue(obj, out var handle))
                         obj.OnDespawned();
 
@@ -111,6 +120,12 @@ namespace CCEnvs.Unity.Patterns.Factory
             poolCollectionCheck = collectionCheck;
             poolMaxSize = maxSize;
             poolPreheat = preheat;
+        }
+
+        public void Preheat()
+        {
+            foreach (var pool in pools.Values)
+                pool.Preheat();
         }
 
         private bool disposed;

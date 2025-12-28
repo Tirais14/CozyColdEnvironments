@@ -73,7 +73,7 @@ namespace CCEnvs.Unity.Components
         /// Disposes when <see cref="MonoBehaviour"/> destroyed
         /// </summary>
         /// <returns>self</returns>
-        public static IDisposable BindDisposableTo(this IDisposable? source, MonoBehaviour beh)
+        public static IDisposable AddTo(this IDisposable? source, MonoBehaviour beh)
         {
             if (source.IsNull())
                 return Disposable.Empty;
@@ -89,7 +89,7 @@ namespace CCEnvs.Unity.Components
         /// Disposes when <see cref="CCBehaviour"/> destroyed
         /// </summary>
         /// <returns>self</returns>
-        public static IDisposable BindDisposableTo(this IDisposable? source, CCBehaviour beh)
+        public static IDisposable AddToBehaviour(this IDisposable? source, CCBehaviour beh)
         {
             if (source.IsNull())
                 return Disposable.Empty;

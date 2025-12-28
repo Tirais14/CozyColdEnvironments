@@ -1,6 +1,9 @@
 using CCEnvs.Collections;
 using System;
 using Newtonsoft.Json.Serialization;
+using System.Collections;
+using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -9,7 +12,7 @@ namespace CCEnvs.Pools
     {
         private readonly PooledHandle<T[]> pooledInternal;
 
-        public ArraySegment<T> Value { get; }
+        public IList<T> Value { get; }
 
         public PooledArray(PooledHandle<T[]> pooled, int count, int offset = 0)
             :
