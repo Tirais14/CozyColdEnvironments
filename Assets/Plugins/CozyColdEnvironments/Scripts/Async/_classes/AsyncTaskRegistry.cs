@@ -1,7 +1,9 @@
-#if UNI_TASK
+#if UNITASK_PLUGIN
 using Cysharp.Threading.Tasks;
+using Humanizer;
 
 #endif
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,27 +15,38 @@ namespace CCEnvs.Async
 {
     public sealed class AsyncTaskRegistry : IAsyncTaskRegistry
     {
-#if UNI_TASK
+#if UNITASK_PLUGIN
         private readonly List<UniTask> uniTasks = new();
 #endif
         private readonly List<Task> tasks = new();
         private readonly List<ValueTask> valueTasks = new();
-        private readonly Timer timer = new(1000)
+        private readonly Timer timer = new(100)
         {
             AutoReset = true
         };
-        private int timerTriggeredTimes;
 
-#if UNI_TASK
+        private TimeSpan idleTimeAgo;
+
+#if UNITASK_PLUGIN
         public int TaskCount => tasks.Count + uniTasks.Count + valueTasks.Count;
-        public bool HasTasks => tasks.Any() || uniTasks.Any() || valueTasks.Any();
+        public bool HasTasks {
+            get
+            {
+                return tasks.Any(x => !x.IsCompleted)
+                       ||
+                       uniTasks.Any(x => x.Status == UniTaskStatus.Pending)
+                       ||
+                       valueTasks.Any(x => !x.IsCompleted);
+            }
+        }
 #else
         public int TaskCount => tasks.Count + valueTasks.Count;
         public bool HasTasks => tasks.Any() || valueTasks.Any();
 #endif
-        public bool IsRunning => timer.Enabled && HasTasks;
+        public bool IsRunning { get; private set; }
+        public TimeSpan IdleTimeBeforeDoneRunning { get; set; }
 
-#if UNI_TASK
+#if UNITASK_PLUGIN
         public void RegisterTask(UniTask task)
         {
             if (task.Status == UniTaskStatus.Succeeded
@@ -77,30 +90,46 @@ namespace CCEnvs.Async
             TryStartTimer();
         }
 
+        private void OnTimeElapsed(object _, ElapsedEventArgs __)
+        {
+            if (HasTasks)
+            {
+                idleTimeAgo = TimeSpan.Zero;
+                return;
+            }
+
+            idleTimeAgo += 1.Seconds();
+
+            if (idleTimeAgo < IdleTimeBeforeDoneRunning)
+                return;
+
+            timer.Stop();
+
+#if UNITASK_PLUGIN
+            uniTasks.Clear();
+            uniTasks.TrimExcess();
+#endif
+            tasks.Clear();
+            tasks.TrimExcess();
+
+            valueTasks.Clear();
+            valueTasks.TrimExcess();
+
+            idleTimeAgo = TimeSpan.Zero;
+
+            IsRunning = false;
+
+            timer.Elapsed -= OnTimeElapsed;
+        }
+
         private void TryStartTimer()
         {
             if (IsRunning)
                 return;
 
+            IsRunning = true;
             timer.Start();
-            timer.Elapsed += (_, _) =>
-            {
-                if (HasTasks)
-                    return;
-
-                timerTriggeredTimes++;
-
-                if (timerTriggeredTimes > 1)
-                {
-                    timer.Stop();
-                    timerTriggeredTimes = 0;
-#if UNI_TASK
-                    uniTasks.Clear();
-#endif
-                    tasks.Clear();
-                    valueTasks.Clear();
-                }
-            };
+            timer.Elapsed += OnTimeElapsed;
         }
     }
 }

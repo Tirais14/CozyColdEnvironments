@@ -1,11 +1,11 @@
 using CCEnvs.Collections;
-using Cysharp.Threading.Tasks;
+using CCEnvs.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Components
@@ -34,29 +34,31 @@ namespace CCEnvs.Unity.Components
         {
             if (Guid.IsNullOrWhiteSpace())
                 GenerateGuid();
-
-#if UNITY_EDITOR
-            Validate();
-#endif
         }
 
         protected override void Awake()
         {
             base.Awake();
-            Validate();
+
+            if (Application.isPlaying && !IgnoreWarnings)
+                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use \"{typeof(RuntimeId)}\" instead");
+
+            if (!sceneUnloadedSubscribed && Application.isPlaying)
+                SubscibeToSceneUnloaded();
         }
 
         protected override void Start()
         {
             base.Start();
 
-            if (Guid.IsNotNullOrWhiteSpace())
-                guids.Add(Guid);
-        }
+            if (Guid != null)
+            {
+                if (guids.Contains(Guid))
+                    throw new InvalidOperationException("Found duplicate GUID");
 
-        private void OnValidate()
-        {
-            Validate();
+                if (Guid.IsNotNullOrWhiteSpace())
+                    guids.Add(Guid);
+            }
         }
 
         protected override void OnDestroy()
@@ -67,18 +69,21 @@ namespace CCEnvs.Unity.Components
                 guids.Remove(Guid!);
         }
 
-        //private void SusbcribeOnSceneUnloaded()
-        //{
-        //    if (onSceneUnloaded is not null)
-        //        return;
+        private static void RemoveGuidByScene(Scene scene)
+        {
+            _ = scene.GetRootGameObjects()
+                .AsValueEnumerable()
+                .SelectMany(go => go.GetComponentsInChildren<PersistentGuid>(includeInactive: true))
+                .Where(x => x.Guid != null)
+                .Select(guidCmp => guids.Remove(guidCmp.Guid!))
+                .ToArray();
+        }
 
-        //    onSceneUnloaded = _ =>
-        //    {
-        //        guids.Clear();
-        //        guids.AddRange(GetSceneGuids());
-        //    };
-        //    SceneManager.sceneUnloaded += onSceneUnloaded;
-        //}
+        private static void SubscibeToSceneUnloaded()
+        {
+            SceneManager.sceneUnloaded += RemoveGuidByScene;
+            sceneUnloadedSubscribed = true;
+        }
 
         private HashSet<string> GetSceneGuids()
         {
@@ -100,7 +105,7 @@ namespace CCEnvs.Unity.Components
             return results;
         }
 
-        public async void GenerateGuid()
+        public void GenerateGuid()
         {
             if ((!Application.isEditor || Application.isPlaying) && Guid.IsNotNullOrWhiteSpace())
                 throw new InvalidOperationException("Cannot regenerate GameObject GUID in runtime and build");
@@ -125,24 +130,6 @@ namespace CCEnvs.Unity.Components
 
             pressCount = 0;
             guids.Add(Guid);
-
-            if (!Application.isPlaying)
-                guids.Clear();
-        }
-
-        private void Validate()
-        {
-            if (!Application.isPlaying)
-            {
-                guids.Clear();
-                guids.AddRange(GetSceneGuids());
-            }
-
-            if (Application.isPlaying && !IgnoreWarnings)
-                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use \"{typeof(RuntimeId)}\" instead");
-
-            if (Guid.IsNotNullOrWhiteSpace() && guids.Contains(Guid))
-                this.PrintError($"Found duplicate id. More often caused by instantiating {nameof(GameObject)} with {nameof(PersistentGuid)}");
 
             if (!Application.isPlaying)
                 guids.Clear();

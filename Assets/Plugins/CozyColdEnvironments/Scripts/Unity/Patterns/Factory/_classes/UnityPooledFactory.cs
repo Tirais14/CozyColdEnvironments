@@ -155,16 +155,19 @@ namespace CCEnvs.Unity.Patterns.Factory
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
-            TDiscriminator discriminator = discrimintatorFactory(obj);   
+            TDiscriminator discriminator = discrimintatorFactory(obj);
             return pools.GetOrCreate(discriminator, () => CreatePool(discriminator));
         }
 
         protected TOut GetObject(TDiscriminator discriminator)
         {
-            return pools[discriminator].Get();
+            if (!pools.TryGetValue(discriminator, out var pool))
+                throw new ArgumentException($"{nameof(discriminator)} \"{discriminator}\" not found");
+
+            return pool.Get();
         }
 
-        protected UnityObjectPoolExtended<TOut> CreatePool(TDiscriminator discriminator)
+        private UnityObjectPoolExtended<TOut> CreatePool(TDiscriminator discriminator)
         {
             return new UnityObjectPoolExtended<TOut>(
                 factory: () =>

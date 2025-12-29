@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 #nullable enable
-
 namespace CCEnvs.Collections
 {
     public static class DictionaryHelper
@@ -89,8 +88,6 @@ namespace CCEnvs.Collections
         public static TValue GetOrCreateNew<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key)
             where TValue : new()
         {
-            CC.Guard.IsNotNullSource(source);
-
             if (!source.TryGetValue(key, out TValue value))
             {
                 value = new TValue();

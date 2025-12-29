@@ -45,7 +45,7 @@ namespace CCEnvs.Unity.Saves
             var notRestoredSceneDatas = LazyLight.Create<List<SaveFileSceneData>>();
             foreach (var sceneData in SceneDatas)
             {
-                if (sceneData.SceneInfo != null && !sceneInfos.Contains(sceneData.SceneInfo!.Value))
+                if (sceneData.SceneInfo != null && !sceneInfos.Contains(sceneData.SceneInfo))
                 {
                     notRestoredSceneDatas.Value.Add(sceneData);
                     continue;

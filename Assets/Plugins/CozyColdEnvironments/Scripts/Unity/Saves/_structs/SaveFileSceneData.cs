@@ -10,11 +10,11 @@ namespace CCEnvs.Unity.Saves
     [Serializable]
     public readonly struct SaveFileSceneData : IEquatable<SaveFileSceneData>
     {
-        public SceneInfo? SceneInfo { get; }
+        public SceneInfo SceneInfo { get; }
         public IList<KeyedSnapshot<ISnapshot>> Snapshots { get; }
 
         [JsonConstructor]
-        public SaveFileSceneData(SceneInfo? sceneInfo, IList<KeyedSnapshot<ISnapshot>> snapshots)
+        public SaveFileSceneData(SceneInfo sceneInfo, IList<KeyedSnapshot<ISnapshot>> snapshots)
         {
             CC.Guard.IsNotNull(snapshots, nameof(snapshots));
 

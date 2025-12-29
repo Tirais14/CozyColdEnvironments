@@ -15,11 +15,11 @@ namespace CCEnvs.Unity.Saves
 
             public object Object { get; }
             public Type ObjectType { get; }
-            public SceneInfo? SceneInfo { get; }
+            public SceneInfo SceneInfo { get; }
 
             public RegisteredObject(
                 object obj,
-                SceneInfo? sceneInfo,
+                SceneInfo sceneInfo,
                 IDictionary<Type, Func<object, ISnapshot>> converters)
             {
                 Guard.IsNotNull(obj, nameof(obj));
@@ -177,9 +177,9 @@ namespace CCEnvs.Unity.Saves
         {
             public string Key { get; }
             public Type TargetType { get; }
-            public SceneInfo? SceneInfo { get; }
+            public SceneInfo SceneInfo { get; }
 
-            public RegisteredObjectInfo(string key, Type targetType, SceneInfo? sceneInfo)
+            public RegisteredObjectInfo(string key, Type targetType, SceneInfo sceneInfo)
             {
                 Guard.IsNotNullOrWhiteSpace(key, nameof(key));
                 Guard.IsNotNull(targetType, nameof(targetType));

@@ -2,7 +2,6 @@ using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -13,18 +12,24 @@ namespace CCEnvs.Unity.Saves
 
         UniTask LoadAsync(string path);
 
+        UniTask ApplySaveFileData(SaveFileData saveFileData);
+
+        UniTask<SaveFileData> CaptureSaveData();
+
+        UniTask<string> CaptureSerializedSaveData();
+
         /// <returns>Disposable which initiates unregistering</returns>
         IDisposable RegisterObject<TObject>(
             TObject obj,
             string key,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class;
 
         /// <returns>Disposable which initiates unregistering</returns>
         IDisposable RegisterObject<TObject>(
             TObject obj,
             Func<TObject, string> keySelector,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class;
 
         /// <returns>Disposable which initiates unregistering</returns>
@@ -32,19 +37,19 @@ namespace CCEnvs.Unity.Saves
             TObject obj,
             TState state,
             Func<TObject, TState, string> keySelector,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class;
 
         /// <summary>
         /// Use as key <see cref="Components.RuntimeId.Id"/> or create it and set id by hierarchy path
         /// </summary>
         /// <returns>Disposable which initiates unregistering</returns>
-        IDisposable RegisterUnityObject(Component component);
+        IDisposable RegisterUnityObject(Component component, SceneInfo sceneInfo = default);
 
         /// <inheritdoc cref="RegisterUnityObject(Component)"/>
-        IDisposable RegisterUnityObject(GameObject gameObject);
+        IDisposable RegisterUnityObject(GameObject gameObject, SceneInfo sceneInfo = default);
 
-        bool UnregisterObject(object? obj);
+        bool UnregisterObject(object? obj, SceneInfo sceneInfo = default);
 
         /// <param name="type">Must be reference type</param>
         void RegisterType(Type type, Func<object, ISnapshot> converter);
@@ -62,6 +67,6 @@ namespace CCEnvs.Unity.Saves
         bool IsTypeRegistered(Type? type);
         bool IsTypeRegistered<T>();
 
-        bool IsInstanceRegistered(object? obj, SceneInfo? sceneInfo = null);
+        bool IsInstanceRegistered(object? obj, SceneInfo sceneInfo = default);
     }
 }

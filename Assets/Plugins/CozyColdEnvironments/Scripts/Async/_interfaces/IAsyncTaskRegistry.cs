@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 #nullable enable
@@ -8,6 +9,7 @@ namespace CCEnvs.Async
         int TaskCount { get; }
         bool HasTasks { get; }
         bool IsRunning { get; }
+        TimeSpan IdleTimeBeforeDoneRunning { get; set; }
 
 #if UNI_TASK
         void RegisterTask(Cysharp.Threading.Tasks.UniTask task);

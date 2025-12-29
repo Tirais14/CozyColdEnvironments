@@ -7,6 +7,7 @@ using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
+using R3.Triggers;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -29,7 +30,7 @@ namespace CCEnvs.Unity.Saves
 
         private readonly Dictionary<RegisteredObject, object> objectKeys = new();
         private readonly Dictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
-        private readonly Dictionary<SceneInfo?, CompositeDisposable> sceneDisposables = new();
+        private readonly Dictionary<SceneInfo, CompositeDisposable> sceneDisposables = new();
 
         private UnityAction<Scene> onSceneUnloaded;
 
@@ -56,7 +57,7 @@ namespace CCEnvs.Unity.Saves
         public IDisposable RegisterObject<TObject>(
             TObject obj,
             string key,
-            SceneInfo? sceneInfo = null) 
+            SceneInfo sceneInfo = default) 
             where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
@@ -68,7 +69,7 @@ namespace CCEnvs.Unity.Saves
         public IDisposable RegisterObject<TObject>(
             TObject obj,
             Func<TObject, string> keySelector,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
              where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
@@ -83,7 +84,7 @@ namespace CCEnvs.Unity.Saves
             TObject obj,
             TState state,
             Func<TObject, TState, string> keySelector,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
@@ -94,33 +95,40 @@ namespace CCEnvs.Unity.Saves
             return RegisterObjectInternal(obj, obj.GetType(), keyFactory, sceneInfo);
         }
 
-        public IDisposable RegisterUnityObject(Component component)
+        public IDisposable RegisterUnityObject(Component component, SceneInfo sceneInfo = default)
         {
             CC.Guard.IsNotNull(component, nameof(component));
 
             object keyOrFactory = GetOrCreateKeyForUnityObject(component);
-            SceneInfo sceneInfo = component.gameObject.scene.GetSceneInfo();
 
-            return RegisterObjectInternal(component, component.GetType(), keyOrFactory, sceneInfo);
+            return RegisterObjectInternal(
+                component,
+                component.GetType(),
+                keyOrFactory,
+                sceneInfo
+                );
         }
 
-        public IDisposable RegisterUnityObject(GameObject gameObject)
+        public IDisposable RegisterUnityObject(GameObject gameObject, SceneInfo sceneInfo = default)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
             object keyOrFactory = GetOrCreateKeyForUnityObject(gameObject);
-            SceneInfo sceneInfo = gameObject.scene.GetSceneInfo();
 
-            return RegisterObjectInternal(gameObject, gameObjectType, keyOrFactory, sceneInfo);
+            return RegisterObjectInternal(
+                gameObject,
+                gameObjectType,
+                keyOrFactory,
+                sceneInfo
+                );
         }
 
-        public bool UnregisterObject(object? obj)
+        public bool UnregisterObject(object? obj, SceneInfo sceneInfo = default)
         {
             if (obj is null)
                 return false;
 
-            SceneInfo? objSceneInfo = ResolveSceneInfo(obj);
-            var regObj = new RegisteredObject(obj, objSceneInfo, converters);
+            var regObj = new RegisteredObject(obj, sceneInfo, converters);
 
             return UnregisterObjectInternal(regObj);
         }
@@ -138,18 +146,30 @@ namespace CCEnvs.Unity.Saves
         public async UniTask LoadAsync(string path)
         {
             SaveFileData saveFile = await LoadSaveFileAsync(path);
-            IList<SaveFileSceneData> notRestoredSceneDatas = saveFile.RestoreLoadedScenes();
-            RegisterLoadedSnapshots(notRestoredSceneDatas);
+            await ApplySaveFileData(saveFile);
         }
 
         public async UniTask SaveAsync(string path)
         {
-            SaveFileData saveFileData = await BuildSaveFileDataAsync();
-            string serialized = JsonConvert.SerializeObject(saveFileData, CC.JsonSettings);
-
-            await UniTask.SwitchToThreadPool();
+            string serialized = await CaptureSerializedSaveData();
             await File.WriteAllTextAsync(path, serialized, cancellationToken: destroyCancellationToken);
-            await UniTask.SwitchToMainThread();
+        }
+
+        public async UniTask ApplySaveFileData(SaveFileData saveFileData)
+        {
+            IList<SaveFileSceneData> notRestoredSceneDatas = saveFileData.RestoreLoadedScenes();
+            RegisterLoadedSnapshots(notRestoredSceneDatas);
+        }
+
+        public async UniTask<SaveFileData> CaptureSaveData()
+        {
+            return await BuildSaveFileDataAsync();
+        }
+
+        public async UniTask<string> CaptureSerializedSaveData()
+        {
+            var saveFileData = await CaptureSaveData();
+            return JsonConvert.SerializeObject(saveFileData, CC.JsonSettings);
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -194,7 +214,7 @@ namespace CCEnvs.Unity.Saves
             return IsTypeRegistered(typeof(T));
         }
 
-        public bool IsInstanceRegistered(object? obj, SceneInfo? sceneInfo = null)
+        public bool IsInstanceRegistered(object? obj, SceneInfo sceneInfo = default)
         {
             if (obj is null)
                 return false;
@@ -202,7 +222,7 @@ namespace CCEnvs.Unity.Saves
             if (!IsTypeRegistered(obj.GetType()))
                 return false;
 
-            var regObj = new RegisteredObject(obj, sceneInfo ?? ResolveSceneInfo(obj), converters);
+            var regObj = new RegisteredObject(obj, sceneInfo, converters);
             return IsInstanceRegisteredInternal(regObj);
         }
 
@@ -225,7 +245,7 @@ namespace CCEnvs.Unity.Saves
             {
                 GameObject go => go.scene.GetSceneInfo(),
                 Component cmp => cmp.gameObject.scene.GetSceneInfo(),
-                UnityEngine.Object uObj => GameObject.GetScene(uObj.GetInstanceID()).GetSceneInfo(),
+                UnityEngine.Object uObj => GameObject.GetScene(uObj.GetEntityId()).GetSceneInfo(),
                 _ => null,
             };
         }
@@ -257,7 +277,9 @@ namespace CCEnvs.Unity.Saves
             SaveFileSceneData sceneData;
             Maybe<string> objKey;
 
-            foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes().Select(x => x.GetSceneInfo()))
+            foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes()
+                .Select(x => x.GetSceneInfo())
+                .Prepend(default))
             {
                 using PooledArray<RegisteredObject> regObjects = await GetSceneObjectsAsync(sceneInfo);
                 foreach (var regObj in regObjects.Value)
@@ -331,17 +353,18 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private bool TryRestoreSnapshotFromLoaded(object obj, Type objType, object keyOrFactory, SceneInfo? sceneInfo = null)
+        private bool TryRestoreSnapshotFromLoaded(
+            object obj,
+            Type objType,
+            object keyOrFactory,
+            SceneInfo sceneInfo = default)
         {
             string resolvedKey = ResolveKey(keyOrFactory);
             var regObjInfo = new RegisteredObjectInfo(resolvedKey, objType, sceneInfo);
 
             if (loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot))
             {
-                if (loadedSnapshot.Target.IsNone)
-                    loadedSnapshot.Target = obj;
-
-                loadedSnapshot.Restore();
+                loadedSnapshot.Restore(obj);
                 return true;
             }
 
@@ -352,7 +375,7 @@ namespace CCEnvs.Unity.Saves
             object obj,
             Type objType,
             object keyOrFactory,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
             Guard.IsNotNull(objType, nameof(objType));
@@ -364,7 +387,6 @@ namespace CCEnvs.Unity.Saves
                 return Disposable.Empty;
             }
 
-            sceneInfo ??= ResolveSceneInfo(obj);
             var regObj = new RegisteredObject(obj, sceneInfo, converters);
 
             if (IsInstanceRegisteredInternal(regObj))
@@ -422,9 +444,13 @@ namespace CCEnvs.Unity.Saves
 
         private async UniTask<SaveFileData> LoadSaveFileAsync(string path)
         {
-            await UniTask.SwitchToThreadPool();
+            if (!File.Exists(path))
+                return default;
+
             string serialized = await File.ReadAllTextAsync(path, cancellationToken: destroyCancellationToken);
-            await UniTask.SwitchToMainThread();
+
+            if (serialized.IsNullOrWhiteSpace())
+                return default;
 
             return JsonConvert.DeserializeObject<SaveFileData>(serialized);
         }
@@ -458,7 +484,7 @@ namespace CCEnvs.Unity.Saves
         public static IDisposable SavingSystemRegisterObject<TObject>(
             this TObject source,
             string key,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class
         {
             return SavingSystem.Self.RegisterObject(source, key, sceneInfo: sceneInfo);
@@ -468,7 +494,7 @@ namespace CCEnvs.Unity.Saves
         public static IDisposable SavingSystemRegisterObject<TObject>(
             this TObject source,
             Func<TObject, string> keySelector,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class
         {
             return SavingSystem.Self.RegisterObject(
@@ -482,7 +508,7 @@ namespace CCEnvs.Unity.Saves
             this TObject source,
             TState state,
             Func<TObject, TState, string> keySelector,
-            SceneInfo? sceneInfo = null)
+            SceneInfo sceneInfo = default)
             where TObject : class
         {
             return SavingSystem.Self.RegisterObject(
@@ -492,16 +518,16 @@ namespace CCEnvs.Unity.Saves
                 sceneInfo: sceneInfo);
         }
 
-        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(GameObject)"/>
-        public static IDisposable SavingSystemRegisterUnityObject(this GameObject source)
+        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(GameObject, SceneInfo)"/>
+        public static IDisposable SavingSystemRegisterUnityObject(this GameObject source, SceneInfo sceneInfo = default)
         {
-            return SavingSystem.Self.RegisterUnityObject(source);
+            return SavingSystem.Self.RegisterUnityObject(source, sceneInfo);
         }
 
-        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(Component)"/>
-        public static IDisposable SavingSystemRegisterUnityObject(this Component source)
+        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(Component, SceneInfo)"/>
+        public static IDisposable SavingSystemRegisterUnityObject(this Component source, SceneInfo sceneInfo = default)
         {
-            return SavingSystem.Self.RegisterUnityObject(source);
+            return SavingSystem.Self.RegisterUnityObject(source, sceneInfo);
         }
 
         /// <inheritdoc cref="ISavingSystem.IsTypeRegistered(Type?)"/>
@@ -517,8 +543,8 @@ namespace CCEnvs.Unity.Saves
             return source.GetType().SavingSystemIsTypeRegistered();
         }
 
-        /// <inheritdoc cref="ISavingSystem.IsInstanceRegistered(object?, SceneInfo?)"/>
-        public static bool SavingSystemIsInstanceRegistered(this object? source, SceneInfo? sceneInfo = null)
+        /// <inheritdoc cref="ISavingSystem.IsInstanceRegistered(object?, SceneInfo)"/>
+        public static bool SavingSystemIsInstanceRegistered(this object? source, SceneInfo sceneInfo = default)
         {
             return SavingSystem.Self.IsInstanceRegistered(source, sceneInfo);
         }
