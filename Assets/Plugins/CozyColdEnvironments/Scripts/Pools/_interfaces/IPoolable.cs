@@ -2,6 +2,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 
+
 namespace CCEnvs.Pools
 {
     public interface IPoolable
@@ -11,6 +12,8 @@ namespace CCEnvs.Pools
         void OnDespawned();
 
         void OnSpawned();
+
+        void OnSpawnedLate();
 
         void BindPoolHandle(IDisposable handle);
     }

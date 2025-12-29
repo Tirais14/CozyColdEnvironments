@@ -1,4 +1,5 @@
 using CCEnvs.Pools;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -39,6 +40,13 @@ namespace CCEnvs.Unity.Pools
                     handles.TryAdd(obj, handle);
 
                     obj.OnSpawned();
+                    UniTask.Create(obj,
+                        static async obj =>
+                        {
+                            await UniTask.NextFrame(timing: PlayerLoopTiming.Initialization);
+                            obj.OnSpawnedLate();
+                        })
+                        .Forget();
                 },
 
                 actionOnRelease: obj =>
