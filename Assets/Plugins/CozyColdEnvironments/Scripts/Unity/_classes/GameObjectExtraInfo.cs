@@ -32,8 +32,6 @@ namespace CCEnvs.Unity
         [JsonConstructor]
         public GameObjectExtraInfo(string? persistenGuid, string? runtimeId, string hierarchyPath)
         {
-            Guard.IsNotNull(persistenGuid);
-
             PersistenGuid = persistenGuid;
             RuntimeId = runtimeId;
             HierarchyPath = hierarchyPath;

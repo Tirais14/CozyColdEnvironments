@@ -1,7 +1,10 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
+using System;
+using System.Collections.Generic;
 
 namespace CCEnvs.Patterns.States
 {
@@ -27,15 +30,39 @@ namespace CCEnvs.Patterns.States
                 state.LateTick();
         }
 
+        public bool IsPlaying(Type? stateType)
+        {
+            if (stateType.IsNotType<IState>())
+                return false;
+
+            return (State.IsNone && stateType is null)
+                    ||
+                    (State.TryGetValue(out var state) && state.GetType() == stateType);
+        }
+
         public bool IsPlaying() => State.IsSome;
         public bool IsPlaying<T>()
             where T : IState
         {
-            return State.Map(x => x.Is<T>()).GetValue(false);
+            return IsPlaying(typeof(T));
+        }
+
+        public bool IsPlaying(IState? state)
+        {
+            return IsPlaying(state?.GetType());
+        }
+
+        public bool IsPlaying<T>(T? state)
+            where T : IState
+        {
+            return IsPlaying((IState?)state);
         }
 
         protected void SetState(IState? state)
         {
+            if (EqualityComparer<IState?>.Default.Equals(state, State.Raw))
+                return;
+
             State.IfSome(x => x.Exit());
 
             State = state.Maybe();

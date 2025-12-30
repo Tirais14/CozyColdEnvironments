@@ -1,17 +1,45 @@
-using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Snapshots
 {
-    public abstract class CollectionSnapshot<T> : Snapshot<T>
-        where T : ICollection
+    public class CollectionSnapshot<TCollection, TItem> : Snapshot<TCollection>
+        where TCollection : ICollection<TItem>
     {
-        protected CollectionSnapshot()
+        public IReadOnlyList<TItem> Items { get; private set; } = Array.Empty<TItem>();
+
+        public CollectionSnapshot()
         {
         }
 
-        protected CollectionSnapshot(T target) : base(target)
+        public CollectionSnapshot(TCollection target) : base(target)
         {
+            Items = target.Aggregate(new List<TItem>(),
+                (collection, item) =>
+                {
+                    collection.Add(item);
+                    return collection;
+                });
+        }
+
+        public override bool Restore(
+            TCollection? target,
+            [NotNullWhen(true)] out TCollection? restored)
+        {
+            if (!CanRestore(target))
+            {
+                restored = default;
+                return false;
+            }
+
+            foreach (var item in Items)
+                target.Add(item);
+
+            restored = target;
+            return true;
         }
     }
 }

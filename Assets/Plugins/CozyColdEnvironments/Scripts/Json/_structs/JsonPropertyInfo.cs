@@ -35,7 +35,7 @@ namespace CCEnvs.Json
             UnderlyingType = memberInfo.UnderlyingType;
             Get = memberInfo.ValueGetter;
             Set = memberInfo.ValueSetter;
-            ShouldSerialize = IsSerializable(memberInfo, settings, jPropAttribute);
+            ShouldSerialize = IsSerializable(memberInfo, jPropAttribute);
 
             if (jPropAttribute is not null)
             {
@@ -55,7 +55,6 @@ namespace CCEnvs.Json
 
         private static bool IsSerializable(
             ValuedMemberInfo memberInfo,
-            JsonSerializerSettings settings,
             JsonPropertyAttribute? jPropAttribute)
         {
             if (jPropAttribute is not null)
@@ -125,7 +124,7 @@ namespace CCEnvs.Json
 
         public override string ToString()
         {
-            return $"Name \"{Name}\"; should serialize \"{ShouldSerialize}\"; underlying type \"{UnderlyingType}\"";
+            return $"Name: {Name}; should serialize: {ShouldSerialize}; underlying type: {UnderlyingType}";
         }
     }
 }

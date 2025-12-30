@@ -454,7 +454,7 @@ namespace CCEnvs.Unity.Saves
             if (serialized.IsNullOrWhiteSpace())
                 return default;
 
-            return JsonConvert.DeserializeObject<SaveFileData>(serialized);
+            return JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
         }
 
         private void RegisterLoadedSnapshots(IList<SaveFileSceneData> notRestoredDatas)

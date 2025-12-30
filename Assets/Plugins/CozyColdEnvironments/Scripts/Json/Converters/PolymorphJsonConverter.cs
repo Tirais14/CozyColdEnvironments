@@ -16,25 +16,16 @@ namespace CCEnvs.Json.Converters
             bool hasExistingValue,
             JsonSerializer serializer)
         {
+            if (reader.TokenType == JsonToken.Null)
+                return default;
+
             if (reader.TokenType != JsonToken.StartObject)
-                throw new JsonSerializationException();
+                throw new JsonSerializationException($"Token Type \"{reader.TokenType}\" is not {JsonToken.StartObject}");
 
             var jObj = JObject.Load(reader);
             JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing \"$type\" property");
             string typeReference = typeProp.Value.ToString();
             var actualType = Type.GetType(typeReference, throwOnError: true);
-
-            //T inst;
-            //try
-            //{
-            //    inst = actualType.Reflect().CreateInstance<T>();
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new JsonSerializationException($"Type \"{actualType}\" not supports constructor with parameters for now", ex);
-            //}
-
-            //JsonConverterHelper.Populate(inst!, jObj);
 
             return (T)JsonConverterHelper.CreateInstance(actualType, jObj.Properties().ToArray(), serializer);
         }

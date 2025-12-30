@@ -34,7 +34,6 @@ namespace CCEnvs.Unity.Snapshots
             if (!base.Restore(target, out restored))
                 return false;
 
-
             target!.enabled = Enabled;
 
             restored = target;

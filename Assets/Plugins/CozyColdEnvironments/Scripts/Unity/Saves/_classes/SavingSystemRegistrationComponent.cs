@@ -19,34 +19,49 @@ namespace CCEnvs.Unity.Snapshots
         [Tooltip("Always false when component list is empty. Better keep true, otherwise may cause key duplicates and restoring will become impossible or incorrect")]
         public bool onlyExplicitComponents = true;
 
+        [Tooltip("Doesn't register parent game object")]
+        public bool ignoreGameObject = true;
+
         protected override void Start()
         {
             base.Start();
 
-            gameObject.SavingSystemRegisterUnityObject().AddTo(gameObject);
+            if (!ignoreGameObject)
+                RegisterGameObject();
 
             if (components.IsNotNullOrEmpty())
-            {
-                foreach (var cmp in components)
-                    cmp.Object.SavingSystemRegisterObject(cmp.Key).AddTo(gameObject);
-            }
+                RegisterExplicitComponents();
 
             if (!onlyExplicitComponents || components.IsNullOrEmpty())
-            {
-                foreach (var cmp in GetComponents<Component>().Except(components.Select(x => (Component)x.Object)))
-                {
-                    if (cmp == this)
-                        continue;
-
-                    if (cmp.SavingSystemIsInstanceRegistered())
-                        continue;
-
-                    if (cmp.SavingSystemIsTypeRegistered())
-                        cmp.SavingSystemRegisterUnityObject().AddTo(gameObject);
-                }
-            }
+                RegisterOtherComponents();
 
             Destroy(this);
+        }
+
+        private void RegisterGameObject()
+        {
+            gameObject.SavingSystemRegisterUnityObject().AddTo(gameObject);
+        }
+
+        private void RegisterExplicitComponents()
+        {
+            foreach (var cmp in components)
+                cmp.Object.SavingSystemRegisterObject(cmp.Key).AddTo(gameObject);
+        }
+
+        private void RegisterOtherComponents()
+        {
+            foreach (var cmp in GetComponents<Component>().Except(components.Select(x => (Component)x.Object)))
+            {
+                if (cmp == this)
+                    continue;
+
+                if (cmp.SavingSystemIsInstanceRegistered())
+                    continue;
+
+                if (cmp.SavingSystemIsTypeRegistered())
+                    cmp.SavingSystemRegisterUnityObject().AddTo(gameObject);
+            }
         }
     }
 }

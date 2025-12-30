@@ -270,7 +270,7 @@ namespace CCEnvs.Unity
             var parents = Do.Collect(source.transform, (x) => x.parent);
             using var pathBuilder = ZString.CreateStringBuilder();
             pathBuilder.Grow(parents.Count);
-            pathBuilder.AppendJoin("/", parents.Reverse().AsValueEnumerable().Select(x => x.name));
+            pathBuilder.AppendJoin("/", parents.Reverse().AsValueEnumerable().Select(x => x.name).AsEnumerable());
 
             return pathBuilder.ToString();
         }

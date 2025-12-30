@@ -28,24 +28,8 @@ namespace CCEnvs.Json
                 .IncludeNonPublic()
                 .IncludeInstance()
                 .ValuedMembers()
-                .Select(member => new JsonPropertyInfo(member))
+                .Select(member => new JsonPropertyInfo(member, settings))
                 .ToArray();
-        }
-
-        [DebuggerStepThrough]
-        public static string ResolveJsonPropertyName(
-            MemberInfo member,
-            JsonSerializerSettings? settings = null)
-        {
-            return ResolveJsonPropertyName((object)member, settings);
-        }
-
-        [DebuggerStepThrough]
-        public static string ResolveJsonPropertyName(
-            ParameterInfo member,
-            JsonSerializerSettings? settings = null)
-        {
-            return ResolveJsonPropertyName((object)member, settings);
         }
 
         /// <exception cref="ArgumentException"></exception>
@@ -89,6 +73,22 @@ namespace CCEnvs.Json
             }
             else
                 return jPropAttribute.PropertyName;
+        }
+
+        [DebuggerStepThrough]
+        public static string ResolveJsonPropertyName(
+            MemberInfo member,
+            JsonSerializerSettings? settings = null)
+        {
+            return ResolveJsonPropertyName((object)member, settings);
+        }
+
+        [DebuggerStepThrough]
+        public static string ResolveJsonPropertyName(
+            ParameterInfo member,
+            JsonSerializerSettings? settings = null)
+        {
+            return ResolveJsonPropertyName((object)member, settings);
         }
 
         //public static bool IsSerializableMember(
@@ -203,8 +203,7 @@ namespace CCEnvs.Json
 
         public static (ConstructorInfo ctor, IList<JProperty> jProps)? ResolveConstructor(
             Type type,
-            ICollection<JProperty> jProps,
-            JsonSerializerSettings? settings = null)
+            ICollection<JProperty> jProps, JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(type, nameof(type));
             CC.Guard.IsNotNull(jProps, nameof(jProps));
@@ -231,7 +230,7 @@ namespace CCEnvs.Json
                     bool isFound = true;
                     foreach (var param in prms)
                     {
-                        string paramName = ResolveJsonPropertyName(param);
+                        string paramName = ResolveJsonPropertyName(param, settings);
 
                         var matchingJProp = jProps.FirstOrDefault(jProp =>
                             jProp.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase)
@@ -277,11 +276,11 @@ namespace CCEnvs.Json
             Guard.IsNotNull(type, nameof(type));
 
             JsonSerializerSettings settings = jSerializer.GetSerializerSettings();
-            var resolved = ResolveConstructor(type, jProps, settings) ?? throw new JsonException($"Cannot resolve constructor of type \"{type}\"");
+            var ctorInfo = ResolveConstructor(type, jProps, settings) ?? throw new JsonException($"Cannot resolve constructor of type \"{type}\"");
             var jPropInfos = ResolveJsonPropertyInfos(type, settings);
-
             var deserializedJProps = new List<object?>(jProps.Count);
-            foreach (var jProp in resolved.jProps)
+
+            foreach (JProperty jProp in ctorInfo.jProps)
             {
                 if (!jPropInfos.FirstOrDefault(jPropInfo => jPropInfo.Match(jProp)).Let(out var matchingJPropInfo))
                     continue;
@@ -290,9 +289,9 @@ namespace CCEnvs.Json
                 deserializedJProps.Add(deserializedJProp);
             }
 
-            var instance = resolved.ctor.Invoke(deserializedJProps.ToArray());
+            var instance = ctorInfo.ctor.Invoke(deserializedJProps.ToArray());
 
-            if (resolved.ctor.GetParameters().IsEmpty() && jProps.IsNotEmpty())
+            if (ctorInfo.ctor.GetParameters().IsEmpty() && jProps.IsNotEmpty())
                 Populate(instance, jProps, jSerializer);
 
             return instance;
