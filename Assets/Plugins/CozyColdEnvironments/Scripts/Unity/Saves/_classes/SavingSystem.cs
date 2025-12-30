@@ -157,6 +157,7 @@ namespace CCEnvs.Unity.Saves
 
         public async UniTask ApplySaveFileData(SaveFileData saveFileData)
         {
+            loadedSnapshots.Clear();
             IList<SaveFileSceneData> notRestoredSceneDatas = saveFileData.RestoreLoadedScenes();
             RegisterLoadedSnapshots(notRestoredSceneDatas);
         }
