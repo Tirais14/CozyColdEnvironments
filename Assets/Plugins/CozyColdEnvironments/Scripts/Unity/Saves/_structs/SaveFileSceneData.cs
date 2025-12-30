@@ -38,16 +38,13 @@ namespace CCEnvs.Unity.Saves
 
             KeyedSnapshot<ISnapshot> snapshot;
             int length = Snapshots.Count;
+
             for (int i = 0; i < length; i++)
             {
                 snapshot = Snapshots[i];
-                if (!snapshot.CanRestore())
-                {
-                    notRestored.Value.Add(snapshot);
-                    continue;
-                }
 
-                snapshot.Restore();
+                if (!snapshot.Restore(null, out _))
+                     notRestored.Value.Add(snapshot);
             }
 
             return notRestored.HasValue ? notRestored.Value : Array.Empty<KeyedSnapshot<ISnapshot>>();

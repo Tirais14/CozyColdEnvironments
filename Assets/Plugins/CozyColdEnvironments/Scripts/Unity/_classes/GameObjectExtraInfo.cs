@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
@@ -36,6 +37,32 @@ namespace CCEnvs.Unity
             PersistenGuid = persistenGuid;
             RuntimeId = runtimeId;
             HierarchyPath = hierarchyPath;
+        }
+
+        public Maybe<GameObject> FindGameObject(bool includeInactive = false)
+        {
+            if (PersistenGuid.IsNotNullOrWhiteSpace()
+                &&
+                GameObjectHelper.FindByPersistenGuid(PersistenGuid, includeInactive).TryGetValue(out var go))
+            {
+                return go;
+            }
+
+            if (RuntimeId.IsNotNullOrWhiteSpace()
+                &&
+                GameObjectHelper.FindByRuntimeId(RuntimeId, includeInactive).TryGetValue(out go))
+            {
+                return go;
+            }
+
+            if (HierarchyPath.IsNotNullOrEmpty()
+                &&
+                GameObjectHelper.FindByHierarchyPath(HierarchyPath, includeInactive).TryGetValue(out go))
+            {
+                return go;
+            }
+
+            return Maybe<GameObject>.None;
         }
     }
 

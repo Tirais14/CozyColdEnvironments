@@ -1,45 +1,40 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
-using UnityEngine;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Unity.UI
 {
     [Serializable]
     public class ShowableSnapshot : Snapshot<IShowable>
     {
-        public bool isShown { get; set; }
-
-        public override bool IgnoreTarget => false;
-
-        [NonSerialized]
-        protected Maybe<GameObject> gameObject;
+        public bool IsShown { get; private set; }
 
         public ShowableSnapshot(IShowable target)
             :
             base(target)
         {
-            isShown = target.IsShown;
-
-            if (target.As<Component>().TryGetValue(out var cmp))
-                gameObject = cmp.gameObject;
+            IsShown = target.IsShown;
         }
 
-        public override Maybe<IShowable> Restore(IShowable? target)
+        public override bool Restore(IShowable? target, [NotNullWhen(true)] out IShowable? restored)
         {
-            if (target.IsNull())
-                return Maybe<IShowable>.None;
+            if (!CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
 
-            if (isShown)
+            if (IsShown)
                 target.Show();
 
-            return target.Maybe();
+            restored = target;
+            return true;
         }
 
         public override string ToString()
         {
-            return $"{nameof(Target)}: {Target}; {nameof(isShown)}: {isShown}; {nameof(gameObject)}: {gameObject}.";
+            return $"{nameof(IsShown)} \"{IsShown}\"";
         }
     }
 }

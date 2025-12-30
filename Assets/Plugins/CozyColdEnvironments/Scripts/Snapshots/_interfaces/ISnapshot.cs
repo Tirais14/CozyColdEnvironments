@@ -3,7 +3,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Snapshots
 {
@@ -11,55 +11,50 @@ namespace CCEnvs.Snapshots
     public interface ISnapshot
     {
         [JsonIgnore]
-        Maybe<object> Target { get; set; }
-
-        [JsonIgnore]
         Type TargetType { get; }
 
-        public bool CanRestoreWithoutTarget { get; }
-        public bool IgnoreTarget { get; }
+        bool Restore(object? target, [NotNullWhen(true)] out object? restored);
 
-        Maybe<object> Restore();
-        Maybe<object> Restore(object? target);
-
-        bool CanRestore();
+        bool CanRestore(object? target);
     }
 
     public interface ISnapshot<T> : ISnapshot
     {
-        [JsonIgnore]
-        new Maybe<T> Target { get; set; }
+        bool Restore(T? target, [NotNullWhen(true)] out T? restored);
 
-        [JsonIgnore]
-        Maybe<object> ISnapshot.Target {
-            get => Target;
-            set => Target = value.Cast<T>().RightTarget;
+        bool CanRestore(T? target);
+
+       bool ISnapshot.Restore(object? target, [NotNullWhen(true)] out object? restored)
+        {
+            var isRestored = Restore((T)target!, out var restoredTyped);
+            restored = restoredTyped;
+
+            return isRestored;
         }
 
-        new Maybe<T> Restore();
-        Maybe<T> Restore(T? target);
-
-        Maybe<object> ISnapshot.Restore() => Restore();
-        Maybe<object> ISnapshot.Restore(object? target) => Restore(target.To<T>());
+        bool ISnapshot.CanRestore(object? target)
+        {
+            return target is T typed && CanRestore(typed);
+        }
     }
 
-    public static class ISnapshotExtensions
-    {
-        public static void RestoreSnapshotStates<T>(this IEnumerable<T> states)
-            where T : struct, ISnapshot
-        {
-            CC.Guard.IsNotNull(states, nameof(states));
+    //public static class ISnapshotExtensions
+    //{
+    //    public static void RestoreSnapshotStates<T>(this IEnumerable<T> states)
+    //        where T : struct, ISnapshot
+    //    {
+    //        CC.Guard.IsNotNull(states, nameof(states));
 
-            foreach (var state in states)
-                state.Restore();
-        }
+    //        foreach (var state in states)
+    //            state.Restore();
+    //    }
 
-        public static void RestoreSnapshotStates(this IEnumerable<ISnapshot> states)
-        {
-            CC.Guard.IsNotNull(states, nameof(states));
+    //    public static void RestoreSnapshotStates(this IEnumerable<ISnapshot> states)
+    //    {
+    //        CC.Guard.IsNotNull(states, nameof(states));
 
-            foreach (var state in states)
-                state.Restore();
-        }
-    }
+    //        foreach (var state in states)
+    //            state.Restore();
+    //    }
+    //}
 }

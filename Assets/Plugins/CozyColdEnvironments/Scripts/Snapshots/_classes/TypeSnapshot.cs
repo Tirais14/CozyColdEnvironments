@@ -1,8 +1,8 @@
-using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace CCEnvs.Snapshots
@@ -22,8 +22,6 @@ namespace CCEnvs.Snapshots
 #endif
         public string? AssemblyName { get; private set; }
 
-        public override bool IgnoreTarget => true;
-
         public TypeSnapshot()
         {
         }
@@ -39,9 +37,18 @@ namespace CCEnvs.Snapshots
         }
 
         /// <returns><paramref name="target"/></returns>
-        public override Maybe<Type> Restore(Type? target)
+        public override bool Restore(Type? target, [NotNullWhen(true)] out Type? restored)
         {
-            return Type.GetType($"{Name}, {AssemblyName}");
+            if (CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
+
+            restored = Type.GetType($"{Name}, {AssemblyName}");
+            return true;
         }
+
+        public override bool CanRestore(Type? target) => true;
     }
 }

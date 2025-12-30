@@ -2,6 +2,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -28,9 +29,6 @@ namespace CCEnvs.Unity.Snapshots
         [field: SerializeField]
         public GameObjectExtraInfo? ExtraInfo { get; private set; }
 
-        public override bool CanRestoreWithoutTarget => true;
-        public override bool IgnoreTarget => false;
-
         public GameObjectSnapshot()
         {
         }
@@ -45,27 +43,23 @@ namespace CCEnvs.Unity.Snapshots
             ExtraInfo = target.GetExtraInfo();
         }
 
-        public override Maybe<GameObject> Restore()
+        public override bool Restore(
+            GameObject? target, 
+            [NotNullWhen(true)] out GameObject? restored)
         {
-
-            if (!Target.TryGetValue(out GameObject? target)
-                &&
-                ExtraInfo is not null
-                &&
-                ExtraInfo.PersistenGuid.IsNotNullOrWhiteSpace()
-                &&
-                GameObjectHelper.FindByPersistenGuid(ExtraInfo.PersistenGuid).TryGetValue(out GameObject? targetByGuid))
+            if (!CanRestore(target))
             {
-                return Restore(targetByGuid);
+                restored = null;
+                return false;
             }
 
-            return Restore(target!);
-        }
-
-        public override Maybe<GameObject> Restore(GameObject? target)
-        {
-            if (target.IsNull())
-                return Maybe<GameObject>.None;
+            if (target == null
+                && 
+                (ExtraInfo is null || !ExtraInfo.FindGameObject().TryGetValue(out target)))
+            {
+                restored = null;
+                return false;
+            }
 
             CC.Guard.IsNotNull(Transform, nameof(Transform));
             Guard.IsNotNullOrWhiteSpace(Name);
@@ -74,9 +68,12 @@ namespace CCEnvs.Unity.Snapshots
             target.tag = Tag;
             target.layer = Layer;
             target.SetActive(ActiveSelf);
-            Transform.Restore(target.transform);
 
-            return target;
+            if (Transform is not null)
+                Transform.Restore(target.transform, out _);
+
+            restored = target;
+            return true;
         }
     }
 }

@@ -20,8 +20,6 @@ namespace CCEnvs.Unity.Snapshots
         [field: SerializeField]
         public float W { get; private set; }
 
-        public override bool IgnoreTarget => true;
-
         public QuaternionSnapshot()
         {
         }
@@ -34,9 +32,10 @@ namespace CCEnvs.Unity.Snapshots
             W = target.w;
         }
 
-        public override Maybe<Quaternion> Restore(Quaternion target)
+        public override bool Restore(Quaternion target, out Quaternion restored)
         {
-            return new Quaternion(X, Y, Z, W);
+            restored = new Quaternion(X, Y, Z, W);
+            return true;
         }
     }
 }

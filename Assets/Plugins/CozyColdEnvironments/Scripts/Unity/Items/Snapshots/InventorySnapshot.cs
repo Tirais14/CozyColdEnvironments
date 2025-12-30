@@ -1,7 +1,7 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 #nullable enable
@@ -11,8 +11,6 @@ namespace CCEnvs.Unity.Items.Snapshots
     {
         public ItemContainerSnapshot[] ItemContainers { get; set; } = Array.Empty<ItemContainerSnapshot>();
         public bool AutoSize { get; set; }
-
-        public override bool IgnoreTarget => false;
 
         public InventorySnapshot()
         {
@@ -24,22 +22,32 @@ namespace CCEnvs.Unity.Items.Snapshots
             ItemContainers = CaptureItemContainerStates(target);
         }
 
-        public override Maybe<Inventory> Restore(Inventory? target)
+        public override bool Restore
+            (Inventory? target,
+            [NotNullWhen(true)] out Inventory? restored)
         {
-            var inv = new Inventory
+            if (!CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
+
+            target = new Inventory
             {
                 AutoSize = AutoSize
             };
 
-            foreach (var cnt in ItemContainers.Select(x => x.Restore())
-                .Where(x => x.IsSome)
-                .Select(x => x.Raw!))
+            foreach (var cnt in ItemContainers)
             {
-                inv.AddContainer(cnt);
+                if (cnt.Restore(new ItemContainer(), out ItemContainer cntRestored))
+                    target.AddContainer(cntRestored);
             }
 
-            return inv;
+            restored = target;
+            return true;
         }
+
+        public override bool CanRestore(Inventory? target) => true;
 
         private static void ValidateInventory(Inventory target)
         {

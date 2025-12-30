@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.UI
 {
     public partial class GUITab : IShowable
     {
-        private readonly List<ISnapshot> snapshots = new();
+        private readonly Dictionary<object, ISnapshot> snapshots = new();
         private readonly ReactiveProperty<bool> isShown = new(true);
 
         [Header("Showable settings")]
@@ -134,7 +134,7 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void DoHide()
         {
-            snapshots.Add(new CanvasGroupSnapshot(canvasGroup));
+            snapshots.Add(canvasGroup, new CanvasGroupSnapshot(canvasGroup));
             canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = false;
             canvasGroup.interactable = false;
@@ -144,7 +144,7 @@ namespace CCEnvs.Unity.UI
                 .FirstComponentsOnBranch()
                 .Components<IShowable>())
             {
-                snapshots.Add(new ShowableSnapshot(showable));
+                snapshots.Add(showable, new ShowableSnapshot(showable));
                 showable.Hide();
             }
         }
@@ -163,11 +163,10 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void DoShow()
         {
-            int count = snapshots.Count;
-            for (int i = 0; i < count; i++)
-                snapshots[i].Restore();
+            using var snapshotsCopyHandle = snapshots.ToArrayPooled();
 
-            snapshots.Clear();
+            foreach (var pair in snapshotsCopyHandle.Value)
+                pair.Value.Restore(pair.Key, out _);
         }
 
         protected void DoRedraw()

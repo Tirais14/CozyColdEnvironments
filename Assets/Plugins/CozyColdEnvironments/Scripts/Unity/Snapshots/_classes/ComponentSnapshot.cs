@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -14,27 +15,45 @@ namespace CCEnvs.Unity.Snapshots
         [Space(8)]
 
         [SerializeField]
-        protected GameObjectExtraInfo m_ExtraInfo;
+        protected GameObjectExtraInfo? m_ExtraInfo;
 
-        public GameObjectExtraInfo ExtraInfo {
+        public GameObjectExtraInfo? ExtraInfo {
             get => m_ExtraInfo;
             protected set => m_ExtraInfo = value;
         }
 
-        public override bool CanRestoreWithoutTarget => true;
-        public override bool IgnoreTarget => false;
-
-        public ComponentSnapshot()
+        protected ComponentSnapshot()
         {
         }
 
-        public ComponentSnapshot(T target)
+        protected ComponentSnapshot(T target)
             :
             base(target)
         {
             ExtraInfo = target.GetExtraInfo();
         }
 
-        public override Maybe<T> Restore(T? target) => target;
+        /// <summary>
+        /// Tries to find in scene if <paramref name="target"/> is null.
+        /// </summary>
+        public override bool Restore(T? target, [NotNullWhen(true)] out T? restored)
+        {
+            if (!CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
+
+            if (target == null)
+                ExtraInfo!.FindGameObject(includeInactive: true).IfSome(go => go.Q().Component<T>());
+
+            restored = target!;
+            return true;
+        }
+
+        public override bool CanRestore([NotNull] T? target)
+        {
+            return target != null || ExtraInfo is not null;
+        }
     }
 }

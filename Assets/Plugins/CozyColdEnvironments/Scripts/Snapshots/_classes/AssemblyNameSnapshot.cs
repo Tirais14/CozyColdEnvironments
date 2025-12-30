@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 #nullable enable
@@ -13,8 +14,6 @@ namespace CCEnvs.Snapshots
         [field: UnityEngine.SerializeField]
 #endif
         public string? Name { get; private set; }
-
-        public override bool IgnoreTarget => false;
 
         public AssemblyNameSnapshot()
         {
@@ -30,13 +29,21 @@ namespace CCEnvs.Snapshots
         }
 
         /// <returns><paramref name="target"/></returns>
-        public override Maybe<AssemblyName> Restore(AssemblyName? target)
+        public override bool Restore(
+            AssemblyName? target,
+            [NotNullWhen(true)] out AssemblyName? restored)
         {
-            target ??= new AssemblyName();
+            if (!CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
 
+            target ??= new AssemblyName();
             target.Name = Name;
 
-            return target;
+            restored = target;
+            return true;
         }
     }
 }

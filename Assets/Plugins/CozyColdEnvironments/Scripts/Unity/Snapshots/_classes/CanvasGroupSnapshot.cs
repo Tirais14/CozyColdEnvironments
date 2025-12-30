@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -32,19 +33,18 @@ namespace CCEnvs.Unity.Snapshots.UI
             IgnoreParentGroups = target.ignoreParentGroups;
         }
 
-        public override Maybe<CanvasGroup> Restore(CanvasGroup? target)
+        public override bool Restore(CanvasGroup? target, [NotNullWhen(true)] out CanvasGroup? restored)
         {
-            base.Restore(target);
+            if (!base.Restore(target, out restored))
+                return false;
 
-            if (target.IsNull())
-                return null;
-
-            target.alpha = Alpha;
+            target!.alpha = Alpha;
             target.interactable = Interctable;
             target.blocksRaycasts = BlockRaycasts;
             target.ignoreParentGroups = IgnoreParentGroups;
 
-            return target;
+            restored = target;
+            return true;
         }
     }
 }

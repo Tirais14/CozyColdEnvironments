@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace CCEnvs.Unity.Items.Snapshots
@@ -13,8 +14,6 @@ namespace CCEnvs.Unity.Items.Snapshots
         public int Capacity { get; set; }
         public bool IsReadOnlyContainer { get; set; }
         public bool UnlockCapacity { get; set; }
-
-        public override bool IgnoreTarget => true;
 
         public ItemContainerSnapshot()
         {
@@ -43,11 +42,17 @@ namespace CCEnvs.Unity.Items.Snapshots
         {
         }
 
-        public override Maybe<ItemContainer> Restore(ItemContainer? target)
+        public override bool Restore(
+            ItemContainer? target, 
+            [NotNullWhen(true)] out ItemContainer? restored)
         {
-            CC.Guard.IsNotNull(target, nameof(target));
+            if (!CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
 
-            return new ItemContainer(
+           target = new ItemContainer(
                 item: Item.Raw,
                 count: ItemCount,
                 isReadOnlyContainer: IsReadOnlyContainer)
@@ -55,6 +60,11 @@ namespace CCEnvs.Unity.Items.Snapshots
                 UnlockCapacity = UnlockCapacity,
                 Capacity = Capacity,
             };
+
+            restored = target;
+            return true;
         }
+
+        public override bool CanRestore(ItemContainer? target) => true;
     }
 }

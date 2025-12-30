@@ -1,9 +1,9 @@
 
 #nullable enable
-using CCEnvs.FuncLanguage;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Snapshots
 {
@@ -15,16 +15,7 @@ namespace CCEnvs.Snapshots
         public object? Key { readonly get; private set; }
 
         [JsonIgnore]
-        public readonly Maybe<object> Target {
-            get => Snapshot.Target;
-            set => Snapshot.Target = value; 
-        }
-
-        [JsonIgnore]
         public readonly Type TargetType => Snapshot.TargetType;
-
-        public readonly bool CanRestoreWithoutTarget => Snapshot.CanRestoreWithoutTarget;
-        public readonly bool IgnoreTarget => Snapshot.IgnoreTarget;
 
         [JsonConstructor]
         public KeyedSnapshot(T snapshot, object? key)
@@ -45,10 +36,15 @@ namespace CCEnvs.Snapshots
             return !(left == right);
         }
 
-        public readonly Maybe<object> Restore() => Snapshot.Restore();
-        public readonly Maybe<object> Restore(object? target) => Snapshot.Restore(target);
+        public readonly bool Restore(object? target, [NotNullWhen(true)] out object? restored)
+        {
+            return Snapshot.Restore(target, out restored);
+        }
 
-        public readonly bool CanRestore() => Snapshot.CanRestore();
+        public readonly bool CanRestore(object? target)
+        {
+            return Snapshot.CanRestore(target);
+        }
 
         public readonly override bool Equals(object? obj)
         {

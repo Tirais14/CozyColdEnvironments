@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -28,16 +29,16 @@ namespace CCEnvs.Unity.Snapshots
             Enabled = target.enabled;
         }
 
-        public override Maybe<T> Restore(T? target)
+        public override bool Restore(T? target, [NotNullWhen(true)] out T? restored)
         {
-            base.Restore(target);
+            if (!base.Restore(target, out restored))
+                return false;
 
-            if (target.IsNull())
-                return Maybe<T>.None;
 
-            target.enabled = Enabled;
+            target!.enabled = Enabled;
 
-            return target;
+            restored = target;
+            return true;
         }
     }
 }

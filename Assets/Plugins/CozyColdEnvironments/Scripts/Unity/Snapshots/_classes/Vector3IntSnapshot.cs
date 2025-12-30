@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
 using UnityEngine;
@@ -18,8 +17,6 @@ namespace CCEnvs.Unity.Snapshots
         [field: SerializeField]
         public int Z { get; set; }
 
-        public override bool IgnoreTarget => true;
-
         public Vector3IntSnapshot()
         {
         }
@@ -31,9 +28,16 @@ namespace CCEnvs.Unity.Snapshots
             Z = target.z;
         }
 
-        public override Maybe<Vector3Int> Restore(Vector3Int target)
+        public override bool Restore(Vector3Int target, out Vector3Int restored)
         {
-            return new Vector3Int(X, Y, Z);
+            if (!CanRestore(target))
+            {
+                restored = default;
+                return false;
+            }
+
+            restored = new Vector3Int(X, Y, Z);
+            return true;
         }
     }
 }

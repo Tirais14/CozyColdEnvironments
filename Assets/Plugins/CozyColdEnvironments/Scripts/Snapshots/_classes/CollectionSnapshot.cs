@@ -1,9 +1,17 @@
-using UnityEngine;
+using System.Collections;
 
-namespace CCEnvs
+#nullable enable
+namespace CCEnvs.Snapshots
 {
-    public class CollectionSnapshot
+    public abstract class CollectionSnapshot<T> : Snapshot<T>
+        where T : ICollection
     {
-    
+        protected CollectionSnapshot()
+        {
+        }
+
+        protected CollectionSnapshot(T target) : base(target)
+        {
+        }
     }
 }

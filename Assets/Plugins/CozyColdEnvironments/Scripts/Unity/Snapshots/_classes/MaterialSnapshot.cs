@@ -2,6 +2,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -21,8 +22,6 @@ namespace CCEnvs.Unity.Snapshots
             protected set => m_Color = value;
         }
 
-        public override bool IgnoreTarget => false;
-
         public MaterialSnapshot()
         {
         }
@@ -40,13 +39,18 @@ namespace CCEnvs.Unity.Snapshots
             Color = color;
         }
 
-        public override Maybe<Material> Restore(Material? target)
+        public override bool Restore(Material? target, [NotNullWhen(true)] out Material? restored)
         {
-            if (target.IsNull())
-                return Maybe<Material>.None;
+            if (!CanRestore(target))
+            {
+                restored = null;
+                return false;
+            }
 
             target.color = Color;
-            return target;
+
+            restored = target;
+            return true;
         }
     }
 }

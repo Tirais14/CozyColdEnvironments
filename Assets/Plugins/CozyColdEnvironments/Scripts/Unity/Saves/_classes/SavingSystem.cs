@@ -363,9 +363,10 @@ namespace CCEnvs.Unity.Saves
             string resolvedKey = ResolveKey(keyOrFactory);
             var regObjInfo = new RegisteredObjectInfo(resolvedKey, objType, sceneInfo);
 
-            if (loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot))
+            if (loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot)
+                &&
+                loadedSnapshot.Restore(obj, out _))
             {
-                loadedSnapshot.Restore(obj);
                 return true;
             }
 

@@ -1,8 +1,6 @@
 using CCEnvs.Snapshots;
 using System;
-using Newtonsoft.Json.Serialization;
 using UnityEngine;
-using CCEnvs.FuncLanguage;
 
 namespace CCEnvs.Unity.Snapshots
 {
@@ -18,8 +16,6 @@ namespace CCEnvs.Unity.Snapshots
         [field: SerializeField]
         public float Z { get; set; }
 
-        public override bool IgnoreTarget => true;
-
         public Vector3Snapshot()
         {
         }
@@ -31,9 +27,16 @@ namespace CCEnvs.Unity.Snapshots
             Z = target.z;
         }
 
-        public override Maybe<Vector3> Restore(Vector3 target)
+        public override bool Restore(Vector3 target, out Vector3 restored)
         {
-            return new Vector3(X, Y, Z);
+            if (!CanRestore(target))
+            {
+                restored = default;
+                return false;
+            }
+
+            restored = new Vector3(X, Y, Z);
+            return true;
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -219,11 +220,11 @@ namespace CCEnvs.Unity
                 .Where(x => x.IsNotNullOrWhiteSpace());
         }
 
-        public static Maybe<GameObject> FindByPersistenGuid(string guid)
+        public static Maybe<GameObject> FindByPersistenGuid(string guid, bool includeInactive = false)
         {
             Guard.IsNotNullOrWhiteSpace(guid);
 
-            foreach (var cmp in GameObjectQuery.Scene.Components<PersistentGuid>())
+            foreach (var cmp in GameObjectQuery.Scene.IncludeInactive(includeInactive).Components<PersistentGuid>())
             {
                 if (cmp.Guid.IsNullOrWhiteSpace())
                     continue;
@@ -246,11 +247,11 @@ namespace CCEnvs.Unity
                 .Where(x => x.IsNotNullOrWhiteSpace());
         }
 
-        public static Maybe<GameObject> FindByRuntimeId(string id)
+        public static Maybe<GameObject> FindByRuntimeId(string id, bool includeInactive = false)
         {
             Guard.IsNotNullOrWhiteSpace(id);
 
-            foreach (var cmp in GameObjectQuery.Scene.Components<RuntimeId>())
+            foreach (var cmp in GameObjectQuery.Scene.IncludeInactive(includeInactive).Components<RuntimeId>())
             {
                 if (cmp.Id.EqualsOrdinal(id, ignoreCase: false))
                     return cmp.gameObject;
@@ -349,6 +350,25 @@ namespace CCEnvs.Unity
                     type.PrintException(ex);
                 }
             }
+        }
+
+        public static Maybe<GameObject> FindByHierarchyPath(string path, bool includeInactive = false)
+        {
+            Guard.IsNotNullOrEmpty(path, nameof(path));
+
+            var pathParts = Regex.Split(path, @"[/\\]");
+            var goOption = GameObjectQuery.Scene.IncludeInactive(includeInactive).WithName(pathParts[0]).GameObject().Lax();
+            GameObject? go = goOption.GetValue();
+
+            foreach (var pathPart in pathParts.Skip(1))
+            {
+                if (!goOption.TryGetValue(out go))
+                    return Maybe<GameObject>.None;
+
+                goOption = go.Q().WithName(pathPart).ChildrenGameObject().Lax();
+            }
+
+            return go;
         }
     }
 }

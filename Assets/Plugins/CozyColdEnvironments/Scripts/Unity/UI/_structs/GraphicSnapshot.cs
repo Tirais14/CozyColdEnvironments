@@ -1,5 +1,5 @@
-using CCEnvs.FuncLanguage;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,17 +24,16 @@ namespace CCEnvs.Unity.Snapshots.UI
             RaycastTarget = target.raycastTarget;
         }
 
-        public override Maybe<Graphic> Restore(Graphic? target)
+        public override bool Restore(Graphic? target, [NotNullWhen(true)] out Graphic? restored)
         {
-            base.Restore(target);
+            if (!base.Restore(target, out restored))
+                return false;
 
-            if (target.IsNull())
-                return null;
-
-            target.color = Color;
+            target!.color = Color;
             target.raycastTarget = RaycastTarget;
 
-            return target;
+            restored = target;
+            return true;
         }
     }
 }

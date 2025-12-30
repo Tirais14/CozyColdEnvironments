@@ -1,4 +1,5 @@
-using CCEnvs.FuncLanguage;
+using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -6,8 +7,22 @@ namespace CCEnvs.Unity.Snapshots
 {
     public class RigidBodySnapshot : ComponentSnapshot<Rigidbody>
     {
-        public Vector3Snapshot LinearVelocity { get; private set; }
-        public Vector3Snapshot AngularVelocity { get; private set; }
+        [JsonIgnore]
+        [SerializeField]
+        protected Vector3Snapshot? linearVelocity;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected Vector3Snapshot? angularVelocity;
+
+        public Vector3Snapshot? LinearVelocity {
+            get => linearVelocity; 
+            protected set => linearVelocity = value;
+        }
+        public Vector3Snapshot? AngularVelocity {
+            get => angularVelocity;
+            protected set => angularVelocity = value;
+        }
 
         public RigidBodySnapshot()
         {
@@ -19,17 +34,21 @@ namespace CCEnvs.Unity.Snapshots
             AngularVelocity = new Vector3Snapshot(target.angularVelocity);
         }
 
-        public override Maybe<Rigidbody> Restore(Rigidbody? target)
+        public override bool Restore(
+            Rigidbody? target,
+            [NotNullWhen(true)] out Rigidbody? restored)
         {
-            base.Restore(target);
+            if (!base.Restore(target, out restored))
+                return false;
 
-            if (target == null)
-                return null;
+            if (LinearVelocity is not null && LinearVelocity.Restore(default, out var lVelocuty))
+                target!.linearVelocity = lVelocuty;
 
-            target.linearVelocity = LinearVelocity.Restore().Raw;
-            target.angularVelocity = AngularVelocity.Restore().Raw;
+            if (AngularVelocity is not null && AngularVelocity.Restore(default, out var aVelocity))
+                target!.angularVelocity = aVelocity;
 
-            return target;
+            restored = target!;
+            return true;
         }
     }
 }

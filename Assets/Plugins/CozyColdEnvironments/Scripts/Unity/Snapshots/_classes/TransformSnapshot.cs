@@ -1,7 +1,7 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Json.Converters;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -11,12 +11,15 @@ namespace CCEnvs.Unity.Snapshots
     [JsonConverter(typeof(SnapshotJsonConverter))]
     public class TransformSnapshot : ComponentSnapshot<Transform>
     {
+        [JsonIgnore]
         [SerializeField]
         protected Vector3Snapshot? m_Position;
 
+        [JsonIgnore]
         [SerializeField]
-        protected Vector3Snapshot? m_LocalPosition;   
+        protected Vector3Snapshot? m_LocalPosition;
 
+        [JsonIgnore]
         [SerializeField]
         protected QuaternionSnapshot? m_Rotation;
 
@@ -46,23 +49,24 @@ namespace CCEnvs.Unity.Snapshots
             Rotation = new QuaternionSnapshot(target.rotation);
         }
 
-        public override Maybe<Transform> Restore(Transform? target)
+        public override bool Restore(
+            Transform? target,
+            [NotNullWhen(true)] out Transform? restored)
         {
-            base.Restore(target);
+            if (!base.Restore(target, out restored))
+                return false;
 
-            if (target == null)
-                return Maybe<Transform>.None;
+            if (Position is not null && Position.Restore(default, out var pos))
+                target!.position = pos;
 
-            if (Position is not null)
-                target.position = Position.Restore().Raw;
+            if (LocalPosition is not null && LocalPosition.Restore(default, out var lPos))
+                target!.localPosition = lPos;
 
-            if (LocalPosition is not null) 
-                target.localPosition = LocalPosition.Restore().Raw;
+            if (Rotation is not null && Rotation.Restore(default, out var rot))
+                target!.rotation = rot;
 
-            if (Rotation is not null)
-                target.rotation = Rotation.Restore().Raw;
-
-            return target;
+            restored = target!;
+            return true;
         }
     }
 }
