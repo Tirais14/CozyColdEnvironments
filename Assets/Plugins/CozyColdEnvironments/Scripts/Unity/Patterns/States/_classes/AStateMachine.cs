@@ -10,7 +10,16 @@ namespace CCEnvs.Patterns.States
 {
     public abstract class AStateMachine : CCBehaviour
     {
+        private IState? idleState = null!;
+
         protected Maybe<IState> State { get; private set; } = null!;
+
+        protected override void Start()
+        {
+            base.Start();
+            idleState = InitIdleState();
+            SetIdle();
+        }
 
         protected virtual void Update()
         {
@@ -68,5 +77,12 @@ namespace CCEnvs.Patterns.States
             State = state.Maybe();
             State.IfSome(x => x.Enter());
         }
+
+        protected void SetIdle()
+        {
+            SetState(idleState);
+        }
+
+        protected abstract IState? InitIdleState();
     }
 }
