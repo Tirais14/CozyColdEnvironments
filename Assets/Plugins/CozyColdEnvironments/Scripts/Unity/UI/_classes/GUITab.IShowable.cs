@@ -25,6 +25,9 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         protected bool m_ShowOnInited;
 
+        [SerializeField]
+        protected ShowableSettings showableSettings = ShowableSettings.Default;
+
         [NonSerialized]
         private bool stateTransitioning;
 
@@ -43,8 +46,12 @@ namespace CCEnvs.Unity.UI
 
         private void IShowableAwake()
         {
-            if (canvasGroup == null)
+            if (!showableSettings.IsFlagSetted(ShowableSettings.ShowHideByGameObjectState)
+                &&
+                canvasGroup == null)
+            {
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
 
             isShown.AddToBehaviour(this);
         }
@@ -134,6 +141,12 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void DoHide()
         {
+            if (showableSettings.IsFlagSetted(ShowableSettings.ShowHideByGameObjectState))
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
             snapshots.Add(canvasGroup, new CanvasGroupSnapshot(canvasGroup));
             canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = false;
@@ -153,6 +166,9 @@ namespace CCEnvs.Unity.UI
         protected virtual void OnShow()
         {
             stateTransitioning = true;
+
+            if (showableSettings.IsFlagSetted(ShowableSettings.ShowHideByGameObjectState))
+                gameObject.SetActive(true);
         }
 
         protected virtual void OnShown()

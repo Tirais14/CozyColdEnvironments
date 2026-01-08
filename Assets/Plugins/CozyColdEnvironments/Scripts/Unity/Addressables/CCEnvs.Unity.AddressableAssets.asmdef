@@ -20,7 +20,6 @@
         "SuperLinq.Async.dll",
         "ZLinq.dll",
         "ZLinq.FileSystem.dll",
-        "ZLinq.Json.dll",
         "ZString.dll",
         "System.Linq.Async.dll",
         "StringExtensions.dll",

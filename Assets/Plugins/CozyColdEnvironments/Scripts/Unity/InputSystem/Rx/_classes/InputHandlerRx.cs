@@ -1,6 +1,5 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -86,7 +85,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
             if (disposed)
                 return;
 
-            disposables.DisposeEach();
+            if (disposing)
+                disposables.DisposeEach();
 
             disposed = true;
         }
@@ -128,6 +128,13 @@ namespace CCEnvs.Unity.InputSystem.Rx
             IInputActionRx action;
             foreach (var prop in props)
             {
+                if (prop.GetValue(this).Let(out var propValue)
+                    &&
+                    propValue is IDisposable propValueDisposable)
+                {
+                    propValueDisposable.Dispose();
+                }
+
                 action = InputActionRxFactory.Create(prop.PropertyType, ResolveInputAction(prop));
                 prop.SetValue(this, action);
                 RegsiterAction(action);

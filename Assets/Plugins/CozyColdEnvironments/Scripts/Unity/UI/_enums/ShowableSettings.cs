@@ -7,8 +7,7 @@ namespace CCEnvs.Unity.UI
     public enum ShowableSettings
     {
         None,
-        HideByColor,
-        KeepRaycastTargetState,
-        Default = None
+        ShowHideByGameObjectState = 1,
+        Default = ShowHideByGameObjectState
     }
 }

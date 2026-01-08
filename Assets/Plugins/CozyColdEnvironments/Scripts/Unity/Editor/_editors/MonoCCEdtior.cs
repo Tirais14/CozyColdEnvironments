@@ -21,6 +21,9 @@ namespace CCEnvs.UnityEditor
         {
             root ??= new VisualElement();
 
+            if (target == null)
+                return root;
+
             SerializedObject serializedObject = new(target);
 
             SerializedProperty prop = serializedObject.GetIterator();
