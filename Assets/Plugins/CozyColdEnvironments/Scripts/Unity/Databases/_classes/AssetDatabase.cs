@@ -1,3 +1,4 @@
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
@@ -25,8 +26,10 @@ namespace CCEnvs.Unity.Databases
                         break;
                 }
             }
+            else if (asset.Is<Object>(out var uObj))
+                return uObj.name;
 
-            return asset.To<Object>().name;
+            throw CC.ThrowHelper.InvalidOperationException(asset.GetType(), "asset type");
         };
 
         private readonly Dictionary<Identifier, TAsset> assets = new();
@@ -72,9 +75,15 @@ namespace CCEnvs.Unity.Databases
             RegisterAsset(AssetIdFactory(asset!), asset, onDbDispose);
         }
 
-        public bool UnregisterAsset(Identifier id)
+        public bool UnregisterAsset
+            (Identifier id,
+            [NotNullWhen(true)] out TAsset? asset,
+            out Action<TAsset>? handle)
         {
-            return assets.Remove(id);
+            var result = assets.Remove(id, out asset);
+            assetDisposeHandles.Remove(asset, out handle);
+
+            return result;
         }
 
         public bool TryGetAsset(Identifier id, [NotNullWhen(true)] out TAsset? asset)
@@ -90,10 +99,14 @@ namespace CCEnvs.Unity.Databases
         public void UnregisterAll()
         {
             assets.Clear();
+            assets.TrimExcess();
+
+            assetDisposeHandles.Clear();
+            assetDisposeHandles.TrimExcess();
         }
 
         /// <returns>internal instance</returns>
-        public AssetDatabaseQuery Search()
+        public AssetDatabaseQuery Query()
         {
             return search.Reset().From(this);
         }
@@ -108,9 +121,16 @@ namespace CCEnvs.Unity.Databases
             if (disposing)
             {
                 foreach (var item in assetDisposeHandles)
-                    item.Value(item.Key);
-
-                assets.Clear();
+                {
+                    try
+                    {
+                        item.Value(item.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.PrintExceptionAsLog(ex);
+                    }
+                }
             }
 
             disposed = true;

@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.Databases
         void RegisterAsset(object asset, Action<object>? onDbDispose = null);
         void RegisterAsset(Identifier id, object asset, Action<object>? onDbDispose = null);
 
-        bool UnregisterAsset(Identifier id);
+        bool UnregisterAsset(Identifier id, [NotNullWhen(true)] out object? asset, out Action<object>? handle);
 
         void UnregisterAll();
 
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.Databases
 
         bool TryGetAsset(Identifier id, [NotNullWhen(true)] out object? asset);
 
-        AssetDatabaseQuery Search();
+        AssetDatabaseQuery Query();
     }
     public interface IAssetDatabase<TAsset>
         : IAddressablesDatabase,
@@ -51,7 +51,7 @@ namespace CCEnvs.Unity.Databases
         void RegisterAsset(TAsset asset, Action<TAsset>? onDbDispose = null);
         void RegisterAsset(Identifier id, TAsset asset, Action<TAsset>? onDbDispose = null);
 
-        bool UnregisterAsset(Identifier id);
+        bool UnregisterAsset(Identifier id, [NotNullWhen(true)] out TAsset? asset, out Action<TAsset>? handle);
 
         bool TryGetAsset(Identifier id, [NotNullWhen(true)] out TAsset? asset);
 
@@ -81,9 +81,18 @@ namespace CCEnvs.Unity.Databases
                 RegisterAsset((TAsset)asset);
         }
 
-        bool IAddressablesDatabase.UnregisterAsset(Identifier id)
+        bool IAddressablesDatabase.UnregisterAsset(Identifier id, [NotNullWhen(true)] out object? asset, out Action<object>? handle)
         {
-            return UnregisterAsset(id);
+            var result = UnregisterAsset(id, out TAsset? assetTyped, out Action<TAsset>? handleTyped);
+
+            asset = assetTyped;
+
+            if (handleTyped is not null)
+                handle = asset => handleTyped((TAsset)asset);
+            else
+                handle = null;
+
+            return result;
         }
 
         bool IAddressablesDatabase.TryGetAsset(Identifier id, [NotNullWhen(true)] out object? asset)

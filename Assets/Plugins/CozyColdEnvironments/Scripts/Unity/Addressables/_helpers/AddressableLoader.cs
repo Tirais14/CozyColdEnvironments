@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.AddrsAssets
                 string.Empty);
         }
 
-        public static async UniTask<AsyncOperationHandle<IList<T>>> LoadPrefabsByLablesAsync<T>(
+        public static async UniTask<AsyncOperationHandle<IList<T>>> LoadPrefabsComponentAssetsByLablesAsync<T>(
            string[] labels,
            Action<T>? callback = null,
            Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
