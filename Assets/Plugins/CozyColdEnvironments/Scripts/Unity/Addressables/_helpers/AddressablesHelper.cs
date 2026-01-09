@@ -1,10 +1,12 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using ZLinq;
@@ -44,6 +46,12 @@ namespace CCEnvs.Unity.AddrsAssets
                 results.Add(type, GetLoadPriority(type));
 
             return results;
+        }
+
+        public static void ReleasePrefabComponent<T>(T cmp)
+        {
+            CC.Guard.IsNotNull(cmp, nameof(cmp));
+            Addressables.Release(cmp.To<Component>().gameObject);
         }
     }
 }

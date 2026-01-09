@@ -11,17 +11,17 @@ using ZLinq;
 #nullable enable
 #pragma warning disable S1117
 #pragma warning disable S3236
-namespace CCEnvs.Unity.AddrsAssets.Databases
+namespace CCEnvs.Unity.Databases
 {
-    public record AddressablesDatabaseSearch
+    public record AssetDatabaseQuery
     {
         public Maybe<IAddressablesDatabase> database { get; set; }
-        public Maybe<IAddressablesDatabaseRegistry> registry { get; set; }
+        public Maybe<IAssetDatabaseRegistry> registry { get; set; }
         public Maybe<string> textIdFilter { get; set; }
         public Maybe<int> numberIdFilter { get; set; }
         public StringMatchSettings TextMatchSettings { get; set; }
 
-        public AddressablesDatabaseSearch() => Reset();
+        public AssetDatabaseQuery() => Reset();
 
         protected static bool FilterType(Type left, Type? right)
         {
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch From(IAddressablesDatabase db)
+        public AssetDatabaseQuery From(IAddressablesDatabase db)
         {
             CC.Guard.IsNotNull(db, nameof(db));
 
@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch From(IAddressablesDatabaseRegistry reg)
+        public AssetDatabaseQuery From(IAssetDatabaseRegistry reg)
         {
             CC.Guard.IsNotNull(reg, nameof(reg));
 
@@ -49,7 +49,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ByPartialName(bool state = true)
+        public AssetDatabaseQuery ByPartialName(bool state = true)
         {
             if (state)
                 TextMatchSettings |= StringMatchSettings.Partial;
@@ -61,7 +61,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ByTextID(string? name = null)
+        public AssetDatabaseQuery ByTextID(string? name = null)
         {
             textIdFilter = name;
 
@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ByNumberID(Maybe<int> number = default)
+        public AssetDatabaseQuery ByNumberID(Maybe<int> number = default)
         {
             numberIdFilter = number;
 
@@ -79,7 +79,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ByEnumID<T>(T input)
+        public AssetDatabaseQuery ByEnumID<T>(T input)
             where T : unmanaged, Enum
         {
             var id = Identifier.Create(input);
@@ -91,7 +91,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch InDatabase(Type? type = null, Type? assetType = null)
+        public AssetDatabaseQuery InDatabase(Type? type = null, Type? assetType = null)
         {
             database = Database(type, assetType).Strict().Maybe();
             ResetFilters();
@@ -184,7 +184,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
                 Text = textIdFilter
             };
 
-            if (db[id].Lax().TryGetValue(out object? asset))
+            if (db.TryGetAsset(id, out object? asset))
                 return (asset, null!);
 
             return (Assets(type).FirstOrDefault(), new AssetNotFoundException(db, id, type));
@@ -198,7 +198,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch ResetFilters()
+        public AssetDatabaseQuery ResetFilters()
         {
             textIdFilter = null;
             numberIdFilter = Maybe<int>.None;
@@ -207,7 +207,7 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AddressablesDatabaseSearch Reset()
+        public AssetDatabaseQuery Reset()
         {
             database = null;
             registry = null;

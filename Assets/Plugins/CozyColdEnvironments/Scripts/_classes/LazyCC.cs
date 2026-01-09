@@ -1,8 +1,10 @@
 #nullable enable
+using System;
 using System.Threading;
 
 namespace CCEnvs
 {
+    [Obsolete("Use Lazy instead")]
     /// <summary>
     /// Same as <see cref="System.Lazy{T}"/>, but implements implicit conversation operator
     /// </summary>

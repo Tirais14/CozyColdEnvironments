@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Patterns.Commands
@@ -8,18 +7,16 @@ namespace CCEnvs.Patterns.Commands
     public partial class Command 
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AnonymousCommand Create<T>(
-            Func<bool> isReadyToExecute,
+        public static AnonymousCommand Create(
             Action execute,
+            Func<bool>? isReadyToExecute = null,
             string? name = null,
-            CommandInfo[]? undoCommandsOnAdd = null,
             bool singleCommand = false)
         {
             return new AnonymousCommand(
-                isReadyToExecute,
                 execute,
+                isReadyToExecute,
                 name: name,
-                undoCommandsOnAdd: undoCommandsOnAdd,
                 singleCommand: singleCommand
                 );
         }
@@ -27,62 +24,16 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AnonymousCommand<T> Create<T>(
             T state,
-            Predicate<T> isReadyToExecute,
             Action<T> execute,
+            Predicate<T>? isReadyToExecute = null,
             string? name = null,
-            CommandInfo[]? undoCommandsOnAdd = null,
             bool singleCommand = false)
         {
             return new AnonymousCommand<T>(
                 state,
-                isReadyToExecute,
                 execute,
-                name: name,
-                undoCommandsOnAdd: undoCommandsOnAdd,
-                singleCommand: singleCommand
-                );
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AnonymousCommand<T, T1> Create<T, T1>(
-            T state,
-            T1 state1,
-            Func<T, T1, bool> isReadyToExecute,
-            Action<T, T1> execute,
-            string? name = null,
-            CommandInfo[]? undoCommandsOnAdd = null,
-            bool singleCommand = false)
-        {
-            return new AnonymousCommand<T, T1>(
-                state,
-                state1,
                 isReadyToExecute,
-                execute,
                 name: name,
-                undoCommandsOnAdd: undoCommandsOnAdd,
-                singleCommand: singleCommand
-                );
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AnonymousCommand<T, T1, T2> Create<T, T1, T2>(
-            T state,
-            T1 state1,
-            T2 state2,
-            Func<T, T1, T2, bool> isReadyToExecute,
-            Action<T, T1, T2> execute,
-            string? name = null,
-            CommandInfo[]? undoCommandsOnAdd = null,
-            bool singleCommand = false)
-        {
-            return new AnonymousCommand<T, T1, T2>(
-                state,
-                state1,
-                state2,
-                isReadyToExecute,
-                execute,
-                name: name,
-                undoCommandsOnAdd: undoCommandsOnAdd,
                 singleCommand: singleCommand
                 );
         }
@@ -90,31 +41,57 @@ namespace CCEnvs.Patterns.Commands
 
     public abstract partial class Command : ICommand
     {
-        public abstract bool IsReadyToExecute { get; }
-        public bool IsCancelled { get; private set; }
+        private bool executed;
+        private bool isFaulted;
+        private bool isCanceled;
+
+        public static ICommand Completed { get; } = new CompletedCommand();
+
         public string CommandName { get; } = string.Empty;
+
+        public virtual bool IsReadyToExecute => !IsDone;
+        public virtual bool IsCancelled => isCanceled;
+        public virtual bool IsFaulted => isFaulted;
+        public virtual bool IsCompleted { get; protected set; }
+        public virtual bool IsRunning => executed && IsDone;
+
+        public bool IsDone => !executed && (IsCompleted || IsCancelled || IsFaulted);
         public bool IsSingle { get; }
-        public ImmutableArray<CommandInfo> UndoCommandsOnAdd { get; private set; } = ImmutableArray<CommandInfo>.Empty;
-        public ImmutableArray<CommandInfo> CancelledByCommands { get; private set; } = ImmutableArray<CommandInfo>.Empty;
 
-        public Command()
-        {
-        }
-
-        public Command(
-            string? name = null,
-            CommandInfo[]? undoCommandsOnAdd = null,
-            bool singleCommand = false)
+        protected Command(
+            bool isSingle,
+            string? name = null)
         {
             CommandName = name ?? GetType().ToString();
-            UndoCommandsOnAdd = undoCommandsOnAdd?.ToImmutableArray() ?? ImmutableArray<CommandInfo>.Empty;
-            IsSingle = singleCommand;
+            IsSingle = isSingle;
         }
 
-        public abstract void Execute();
+        public void Execute()
+        {
+            if (IsRunning || IsDone)
+                return;
+
+            executed = true;
+            try
+            {
+                OnExecute();
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+                isFaulted = true;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void Undo() => IsCancelled = true;
+        public void Undo()
+        {
+            if (IsDone)
+                return;
+
+            OnUndo();
+            isCanceled = true;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandInfo GetCommandInfo()
@@ -128,6 +105,12 @@ namespace CCEnvs.Patterns.Commands
                 return GetType().ToString();
             else
                 return CommandName;
+        }
+
+        protected abstract void OnExecute();
+
+        protected virtual void OnUndo()
+        {
         }
     }
 }

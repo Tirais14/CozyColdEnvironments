@@ -3,22 +3,22 @@ using UnityEngine;
 using UnityEngine.U2D;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets.Databases
+namespace CCEnvs.Unity.Databases
 {
-    public class SpriteAddressablesDatabase : AddressablesDatabase<Sprite>
+    public class SpriteDatabase : AssetDatabase<Sprite>
     {
         /// <summary>
         /// Loads <see cref="Texture2D"/> and converts to the <see cref="Sprite"/>
         /// </summary>
         public bool TexturesAsSprites { get; set; }
 
-        public SpriteAddressablesDatabase(int capacity)
+        public SpriteDatabase(int capacity)
             :
             base(capacity)
         {
         }
 
-        public SpriteAddressablesDatabase()
+        public SpriteDatabase()
         {
         }
 

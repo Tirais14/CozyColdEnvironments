@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.Returnables;
 using R3;
 
 namespace CCEnvs.Patterns.Commands
@@ -8,14 +7,14 @@ namespace CCEnvs.Patterns.Commands
     {
         bool HasCommands { get; }
 
-        void AddCommand(ICommand command);
+        void Schedule(ICommand command);
 
-        void Clear();
+        void Reset();
 
         void DoTick();
 
         Observable<ICommand> ObserveAddCommand();
 
-        Observable<Returnables.Unit> ObserveCommandsExecuted();
+        Observable<Unit> ObserveCommandsExecuted();
     }
 }

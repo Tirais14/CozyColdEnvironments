@@ -1,15 +1,14 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.AddrsAssets.Databases;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.Databases
 {
     public class DatabaseNotFoundException : CCException
     {
         public DatabaseNotFoundException(Identifier id,
-            IAddressablesDatabaseRegistry? reg = null,
+            IAssetDatabaseRegistry? reg = null,
             Type? assetType = null)
             :
             base(Sentence.Empty.Add($"ID: {id},...")

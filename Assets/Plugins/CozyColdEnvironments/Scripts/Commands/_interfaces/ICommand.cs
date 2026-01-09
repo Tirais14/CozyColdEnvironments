@@ -1,7 +1,6 @@
 #nullable enable
-using Cysharp.Threading.Tasks;
-using System;
-using System.Collections.Immutable;
+
+using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -10,13 +9,11 @@ namespace CCEnvs.Patterns.Commands
         bool IsReadyToExecute { get; }
         bool IsCancelled { get; }
         bool IsSingle { get; }
+        bool IsCompleted { get; }
+        bool IsRunning { get; }
+        bool IsDone { get; }
+        bool IsFaulted { get; }
         string CommandName { get; }
-
-        [Obsolete]
-        ImmutableArray<CommandInfo> UndoCommandsOnAdd { get; }
-
-        [Obsolete]
-        ImmutableArray<CommandInfo> CancelledByCommands { get; }
 
         void Execute();
 

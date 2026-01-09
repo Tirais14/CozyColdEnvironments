@@ -9,16 +9,16 @@ using ZLinq;
 #nullable enable
 #pragma warning disable S3881
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.AddrsAssets.Databases
+namespace CCEnvs.Unity.Databases
 {
-    public abstract class AddressablesDatabaseRegistry<TThis>
+    public abstract class AssetDatabaseRegistry<TThis>
         : CCBehaviourStaticPublic<TThis>,
-        IAddressablesDatabaseRegistry
+        IAssetDatabaseRegistry
 
-        where TThis : CCBehaviourStatic, IAddressablesDatabaseRegistry
+        where TThis : CCBehaviourStatic, IAssetDatabaseRegistry
     {
         private readonly CCDictionary<Identifier, IAddressablesDatabase> collection = new();
-        private readonly AddressablesDatabaseSearch search = new();
+        private readonly AssetDatabaseQuery query = new();
 
         public Result<IAddressablesDatabase> this[Identifier key] {
             get => collection[key];
@@ -31,9 +31,9 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
 
         bool ICollection<KeyValuePair<Identifier, IAddressablesDatabase>>.IsReadOnly => false;
 
-        public AddressablesDatabaseSearch Search()
+        public AssetDatabaseQuery Query()
         {
-            return search.Reset().From(this);
+            return query.Reset().From(this);
         }
 
         public void Add(Identifier key, IAddressablesDatabase value)

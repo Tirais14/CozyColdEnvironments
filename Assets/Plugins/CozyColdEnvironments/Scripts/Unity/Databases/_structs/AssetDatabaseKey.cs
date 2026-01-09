@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 #nullable enable
 
-namespace CCEnvs.Unity.AddrsAssets.Databases
+namespace CCEnvs.Unity.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
     public readonly struct AssetDatabaseKey

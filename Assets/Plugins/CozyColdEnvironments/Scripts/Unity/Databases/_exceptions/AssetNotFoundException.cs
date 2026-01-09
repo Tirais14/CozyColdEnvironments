@@ -1,9 +1,8 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Unity.AddrsAssets.Databases;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.Unity.Databases
 {
     public class AssetNotFoundException : CCException
     {

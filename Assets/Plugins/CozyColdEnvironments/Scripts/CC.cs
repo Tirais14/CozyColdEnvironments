@@ -56,6 +56,70 @@ namespace CCEnvs
         {
         }
 
+#if UNITASK_PLUGIN
+        public static UniTask RegisterAsNeccessaryTask(this UniTask source)
+        {
+            NeccesaryTasks.RegisterTask(source);
+            return source;
+        }
+
+        public static UniTask<T> RegisterAsNeccessaryTask<T>(this UniTask<T> source)
+        {
+            NeccesaryTasks.RegisterTask(source);
+            return source;
+        }
+#endif
+
+        public static ValueTask RegisterAsNeccessaryTask(this ValueTask source)
+        {
+            NeccesaryTasks.RegisterTask(source);
+            return source;
+        }
+
+        public static ValueTask<T> RegisterAsNeccessaryTask<T>(this ValueTask<T> source)
+        {
+            NeccesaryTasks.RegisterTask(source);
+            return source;
+        }
+
+        public static Task RegisterAsNeccessaryTask(this Task source)
+        {
+            NeccesaryTasks.RegisterTask(source);
+            return source;
+        }
+
+#if UNITASK_PLUGIN
+        public static UniTask RegisterAsBackgroundTask(this UniTask source)
+        {
+            BackgroundTasks.RegisterTask(source);
+            return source;
+        }
+
+        public static UniTask<T> RegisterAsBackgroundTask<T>(this UniTask<T> source)
+        {
+            BackgroundTasks.RegisterTask(source);
+            return source;
+        }
+#endif
+
+        public static ValueTask RegisterAsBackgroundTask(this ValueTask source)
+        {
+            BackgroundTasks.RegisterTask(source);
+            return source;
+        }
+
+        public static ValueTask<T> RegisterAsBackgroundTask<T>(this ValueTask<T> source)
+        {
+            BackgroundTasks.RegisterTask(source);
+            return source;
+        }
+
+        public static Task RegisterAsBackgroundTask(this Task source)
+        {
+            BackgroundTasks.RegisterTask(source);
+            return source;
+        }
+
 #pragma warning disable S112
 
         public static class ThrowHelper

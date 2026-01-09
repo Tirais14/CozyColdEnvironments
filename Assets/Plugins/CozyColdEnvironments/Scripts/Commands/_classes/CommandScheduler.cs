@@ -1,5 +1,4 @@
 using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -13,11 +12,11 @@ namespace CCEnvs.Patterns.Commands
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
 
         private ReactiveCommand<ICommand>? addCommandCmd;
-        private ReactiveCommand<Returnables.Unit>? commandsExecutedCmd;
+        private ReactiveCommand<Unit>? commandsExecutedCmd;
 
         public bool HasCommands => commands.IsNotEmpty();
 
-        public void AddCommand(ICommand command)
+        public void Schedule(ICommand command)
         {
             CC.Guard.IsNotNull(command, nameof(command));
 
@@ -26,14 +25,14 @@ namespace CCEnvs.Patterns.Commands
 
             commands.Enqueue(command);
 
-            ValidateCommandsByAdded(command);
+            ProcessCommandsBy(command);
 
             addedCommandInfos.Add(command.GetCommandInfo());
 
             addCommandCmd?.Execute(command);
         }
 
-        public void Clear()
+        public void Reset()
         {
             commands.Clear();
         }
@@ -51,17 +50,25 @@ namespace CCEnvs.Patterns.Commands
 
         public void DoTick()
         {
+            if (commands.IsEmpty())
+                return;
+
             bool hasCommands = HasCommands;
 
             while (commands.TryPeek(out ICommand cmd))
             {
-                if (cmd.IsCancelled)
+                if (cmd.IsDone)
+                {
+                    _ = commands.Dequeue();
                     continue;
+                }
+
+                if (cmd.IsRunning)
+                    break;
 
                 if (!cmd.IsReadyToExecute)
                     break;
 
-                cmd = commands.Dequeue();
                 cmd.Execute();
             }
 
@@ -71,7 +78,7 @@ namespace CCEnvs.Patterns.Commands
                 &&
                 commands.IsEmpty())
             {
-                commandsExecutedCmd.Execute(Returnables.Unit.Default);
+                commandsExecutedCmd.Execute(Unit.Default);
             }
         }
 
@@ -81,13 +88,13 @@ namespace CCEnvs.Patterns.Commands
             return addCommandCmd;
         }
 
-        public Observable<Returnables.Unit> ObserveCommandsExecuted()
+        public Observable<Unit> ObserveCommandsExecuted()
         {
-            commandsExecutedCmd ??= new ReactiveCommand<Returnables.Unit>();
+            commandsExecutedCmd ??= new ReactiveCommand<Unit>();
             return commandsExecutedCmd;
         }
 
-        private void ValidateCommandsByAdded(ICommand newCmd)
+        private void ProcessCommandsBy(ICommand newCmd)
         {
             if (commands.IsEmpty())
                 return;

@@ -11,7 +11,7 @@ namespace CCEnvs.Async
         bool IsRunning { get; }
         TimeSpan IdleTimeBeforeDoneRunning { get; set; }
 
-#if UNI_TASK
+#if UNITASK_PLUGIN
         void RegisterTask(Cysharp.Threading.Tasks.UniTask task);
         void RegisterTask<T>(Cysharp.Threading.Tasks.UniTask<T> task);
 #endif

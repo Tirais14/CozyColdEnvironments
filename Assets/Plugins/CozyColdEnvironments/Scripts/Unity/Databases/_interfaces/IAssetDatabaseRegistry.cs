@@ -2,12 +2,12 @@ using CCEnvs.Collections;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets.Databases
+namespace CCEnvs.Unity.Databases
 {
-    public interface IAddressablesDatabaseRegistry 
+    public interface IAssetDatabaseRegistry 
         : ICCDictionary<Identifier, IAddressablesDatabase>,
         IDisposable
     {
-        AddressablesDatabaseSearch Search();
+        AssetDatabaseQuery Query();
     }
 }
