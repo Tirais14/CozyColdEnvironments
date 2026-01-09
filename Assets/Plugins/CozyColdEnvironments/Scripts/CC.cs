@@ -1,22 +1,19 @@
 #nullable enable
 using CCEnvs.Async;
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
-using CCEnvs.Returnables;
-using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
+using R3;
 using System;
-using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace CCEnvs
 {
@@ -35,7 +32,7 @@ namespace CCEnvs
 
         public static MemoryCache Cache { get; } = new(new MemoryCacheOptions
         {
-            ExpirationScanFrequency = 5.Seconds(),
+            ExpirationScanFrequency = 1.Seconds(),
         });
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
         public static AsyncTaskRegistry BackgroundTasks { get; } = new();
@@ -46,6 +43,14 @@ namespace CCEnvs
         public static Func<bool> FalsePredicate { get; } = static () => false;
         public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
         public static JsonSerializerSettings DebugJsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
+        public static CommandScheduler CommandScheduler { get; }
+
+        static CC()
+        {
+            CommandScheduler = new CommandScheduler();
+            var frameProvider = ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds());
+            frameProvider.Register(CommandScheduler);
+        }
 
         public static void Install()
         {

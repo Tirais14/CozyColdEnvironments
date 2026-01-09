@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.AddrsAssets
     public static class AddressableLoader
     {
         /// <exception cref="EmptyCollectionArgumentException"></exception>
-        public static async UniTask<AsyncOperationHandle<IList<IResourceLocation>>> LoadLocationsAsync(
+        public static async UniTask<AsyncOperationHandle<IList<IResourceLocation>>> LoadLocationsByLablesAsync(
             string[] labels,
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection,
             Type? assetType = null)
@@ -79,14 +79,14 @@ namespace CCEnvs.Unity.AddrsAssets
             }
         }
 
-        public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsAsync<T>(
+        public static async UniTask<AsyncOperationHandle<IList<T>>> LoadAssetsByLablesAsync<T>(
             string[] labels,
             Action<T>? callback = null,
             Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
         {
             Guard.IsFalse(labels.IsDefault(), nameof(labels));
 
-            var locationsHandle = await LoadLocationsAsync(labels, mergeMode, assetType: typeof(T));
+            var locationsHandle = await LoadLocationsByLablesAsync(labels, mergeMode, assetType: typeof(T));
 
             var assetHandles =
                 from loc in locationsHandle.Result.ZLinq()
@@ -110,6 +110,25 @@ namespace CCEnvs.Unity.AddrsAssets
             return Addressables.ResourceManager.CreateCompletedOperation(
                 assets.To<IList<T>>(),
                 string.Empty);
+        }
+
+        public static async UniTask<AsyncOperationHandle<IList<T>>> LoadPrefabsByLablesAsync<T>(
+           string[] labels,
+           Action<T>? callback = null,
+           Addressables.MergeMode mergeMode = Addressables.MergeMode.Intersection)
+        {
+            var loadedAssets = await await LoadAssetsByLablesAsync<GameObject>(labels, mergeMode: mergeMode);
+
+            var cmps = loadedAssets.Select(prefab => prefab.GetComponent<T>()).ToArray();
+
+            if (callback is not null)
+            {
+                foreach (var cmp in cmps)
+                    callback(cmp);
+            }
+
+            var handle = Addressables.ResourceManager.CreateCompletedOperation((IList<T>)cmps, string.Empty);
+            return handle;
         }
     }
 }

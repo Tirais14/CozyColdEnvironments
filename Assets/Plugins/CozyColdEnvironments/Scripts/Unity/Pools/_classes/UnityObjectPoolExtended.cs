@@ -51,7 +51,9 @@ namespace CCEnvs.Unity.Pools
 
                 actionOnRelease: obj =>
                 {
-                    obj.OnDespawned();
+                    if (obj.IsNotNull())
+                        obj.OnDespawned();
+
                     handles.Remove(obj);
                 },
 

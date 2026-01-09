@@ -40,9 +40,6 @@ namespace CCEnvs.Unity.Components
         {
             base.Awake();
 
-            if (Application.isPlaying && !IgnoreWarnings)
-                this.PrintWarning($"Using in runtime and not in editor does not make sense. Use \"{typeof(RuntimeId)}\" instead");
-
             if (!sceneUnloadedSubscribed && Application.isPlaying)
                 SubscibeToSceneUnloaded();
         }

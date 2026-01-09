@@ -122,7 +122,16 @@ namespace CCEnvs.Unity.AddrsAssets.Databases
             if (disposing)
             {
                 foreach (var asset in collection.Values)
-                    Addressables.Release(asset);
+                {
+                    try
+                    {
+                        Addressables.Release(asset);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.PrintExceptionAsLog(ex);
+                    }
+                }
 
                 collection.Clear();
             }
