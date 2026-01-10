@@ -7,12 +7,12 @@ using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
-using R3.Triggers;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Pool;
@@ -143,33 +143,42 @@ namespace CCEnvs.Unity.Saves
             return objs.Remove(regObj);
         }
 
-        public async UniTask LoadAsync(string path)
+        public async UniTask LoadAsync(string path, CancellationToken cancellationToken = default)
         {
-            SaveFileData saveFile = await LoadSaveFileAsync(path);
-            await ApplySaveFileData(saveFile);
+            if (cancellationToken.IsDefault())
+                cancellationToken = destroyCancellationToken;
+
+            SaveFileData saveFile = await LoadSaveFileAsync(path, cancellationToken);
+            await ApplySaveFileDataAsync(saveFile, cancellationToken);
         }
 
-        public async UniTask SaveAsync(string path)
+        public async UniTask SaveAsync(string path, CancellationToken cancellationToken = default)
         {
-            string serialized = await CaptureSerializedSaveData();
-            await File.WriteAllTextAsync(path, serialized, cancellationToken: destroyCancellationToken);
+            string serialized = await CaptureSerializedSaveDataAsync();
+
+            if (cancellationToken.IsDefault())
+                cancellationToken = destroyCancellationToken;
+
+            await File.WriteAllTextAsync(path, serialized, cancellationToken: cancellationToken);
         }
 
-        public async UniTask ApplySaveFileData(SaveFileData saveFileData)
+        public UniTask ApplySaveFileDataAsync(SaveFileData saveFileData, CancellationToken cancellationToken = default)
         {
             loadedSnapshots.Clear();
             IList<SaveFileSceneData> notRestoredSceneDatas = saveFileData.RestoreLoadedScenes();
             RegisterLoadedSnapshots(notRestoredSceneDatas);
+
+            return UniTask.CompletedTask;
         }
 
-        public async UniTask<SaveFileData> CaptureSaveData()
+        public async UniTask<SaveFileData> CaptureSaveDataAsync(CancellationToken cancellationToken = default)
         {
             return await BuildSaveFileDataAsync();
         }
 
-        public async UniTask<string> CaptureSerializedSaveData()
+        public async UniTask<string> CaptureSerializedSaveDataAsync(CancellationToken cancellationToken = default)
         {
-            var saveFileData = await CaptureSaveData();
+            var saveFileData = await CaptureSaveDataAsync();
             return JsonConvert.SerializeObject(saveFileData, CC.JsonSettings);
         }
 
@@ -444,12 +453,12 @@ namespace CCEnvs.Unity.Saves
             SceneManager.sceneUnloaded += onSceneUnloaded;
         }
 
-        private async UniTask<SaveFileData> LoadSaveFileAsync(string path)
+        private async UniTask<SaveFileData> LoadSaveFileAsync(string path, CancellationToken cancellationToken)
         {
             if (!File.Exists(path))
                 return default;
 
-            string serialized = await File.ReadAllTextAsync(path, cancellationToken: destroyCancellationToken);
+            string serialized = await File.ReadAllTextAsync(path, cancellationToken);
 
             if (serialized.IsNullOrWhiteSpace())
                 return default;

@@ -759,9 +759,7 @@ namespace CCEnvs.Unity
             Type type,
             bool anyType)
         {
-            bool isTransformType = type.IsType<Transform>();
             bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
-            bool firstComponentsOnBranch = settings.IsFlagSetted(Settings.FirstComponentsOnBranch);
             bool excludeSelf = settings.IsFlagSetted(Settings.ExcludeSelf);
 
             if (findMode == FindMode.Self)

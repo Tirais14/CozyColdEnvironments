@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.AddrsAssets
             return results;
         }
 
-        public static void ReleasePrefabComponent<T>(T cmp)
+        public static void ReleasePrefabComponentAsset<T>(T cmp)
         {
             CC.Guard.IsNotNull(cmp, nameof(cmp));
             Addressables.Release(cmp.To<Component>().gameObject);

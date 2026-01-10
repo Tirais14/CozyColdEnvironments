@@ -1,6 +1,7 @@
 using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -8,15 +9,15 @@ namespace CCEnvs.Unity.Saves
 {
     public interface ISavingSystem
     {
-        UniTask SaveAsync(string path);
+        UniTask SaveAsync(string path, CancellationToken cancellationToken = default);
 
-        UniTask LoadAsync(string path);
+        UniTask LoadAsync(string path, CancellationToken cancellationToken = default);
 
-        UniTask ApplySaveFileData(SaveFileData saveFileData);
+        UniTask ApplySaveFileDataAsync(SaveFileData saveFileData, CancellationToken cancellationToken = default);
 
-        UniTask<SaveFileData> CaptureSaveData();
+        UniTask<SaveFileData> CaptureSaveDataAsync(CancellationToken cancellationToken = default);
 
-        UniTask<string> CaptureSerializedSaveData();
+        UniTask<string> CaptureSerializedSaveDataAsync(CancellationToken cancellationToken = default);
 
         /// <returns>Disposable which initiates unregistering</returns>
         IDisposable RegisterObject<TObject>(

@@ -1,14 +1,13 @@
-#if UNITASK_PLUGIN
-using Cysharp.Threading.Tasks;
-using Humanizer;
-
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Humanizer;
+
+#if UNITASK_PLUGIN
+using Cysharp.Threading.Tasks;
+#endif
 
 #nullable enable
 namespace CCEnvs.Async
@@ -25,36 +24,43 @@ namespace CCEnvs.Async
             AutoReset = true
         };
 
+        private int pendingTaskCount;
         private TimeSpan idleTimeAgo;
+        private readonly Action onTaskCompleted;
 
+        public int TaskCount {
+            get
+            {
+                return tasks.Count
+                    +
 #if UNITASK_PLUGIN
-        public int TaskCount => tasks.Count + uniTasks.Count + valueTasks.Count;
+                    uniTasks.Count
+                    +
+#endif
+                    valueTasks.Count;
+            }
+        }
+
         public bool HasTasks {
             get
             {
                 return tasks.Any(x => !x.IsCompleted)
                        ||
+#if UNITASK_PLUGIN
                        uniTasks.Any(x => x.Status == UniTaskStatus.Pending)
                        ||
+#endif
                        valueTasks.Any(x => !x.IsCompleted);
             }
         }
-#else
-        public int TaskCount => tasks.Count + valueTasks.Count;
-        public bool HasTasks => tasks.Any() || valueTasks.Any();
-#endif
+
         public bool IsRunning { get; private set; }
         public TimeSpan IdleTimeBeforeDoneRunning { get; set; }
 
 #if UNITASK_PLUGIN
         public void RegisterTask(UniTask task)
         {
-            if (task.Status == UniTaskStatus.Succeeded
-                ||
-                task.Status == UniTaskStatus.Faulted
-                ||
-                task.Status == UniTaskStatus.Canceled
-                )
+            if (task.Status != UniTaskStatus.Pending)
                 return;
 
             uniTasks.Add(task);

@@ -31,88 +31,88 @@ namespace CCEnvs
 
             return source;
         }
-        public static TOutput IfDefault<TInput, TOutput>(this TInput? source, TOutput output)
-        {
-            if (source.IsDefault())
-                return output;
+        //public static TOutput IfDefault<TInput, TOutput>(this TInput? source, TOutput output)
+        //{
+        //    if (source.IsDefault())
+        //        return output;
 
-            try
-            {
-                return source.MutateType<TOutput>();
-            }
-            catch (Exception ex)
-            {
-                typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
-            }
+        //    try
+        //    {
+        //        return source.MutateType<TOutput>();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
+        //    }
 
-            return source.To<TOutput>();
-        }
-        public static TOutput IfDefault<TInput, TOutput>(this TInput? source,
-            Func<TOutput> factory)
-        {
-            if (source.IsDefault())
-                return factory();
+        //    return source.To<TOutput>();
+        //}
+        //public static TOutput IfDefault<TInput, TOutput>(this TInput? source,
+        //    Func<TOutput> factory)
+        //{
+        //    if (source.IsDefault())
+        //        return factory();
 
-            try
-            {
-                return source.MutateType<TOutput>();
-            }
-            catch (Exception ex)
-            {
-                typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
-            }
+        //    try
+        //    {
+        //        return source.MutateType<TOutput>();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
+        //    }
 
-            return source.To<TOutput>();
-        }
+        //    return source.To<TOutput>();
+        //}
 
-        public static TOutput? IfNotDefault<TInput, TOutput>(
-            this TInput? source,
-            TOutput output,
-            TOutput? ifDefault = default)
-        {
-            if (source.IsNotDefault())
-                return output;
+        //public static TOutput? IfNotDefault<TInput, TOutput>(
+        //    this TInput? source,
+        //    TOutput output,
+        //    TOutput? ifDefault = default)
+        //{
+        //    if (source.IsNotDefault())
+        //        return output;
 
-            return ifDefault;
-        }
+        //    return ifDefault;
+        //}
 
-        public static T? IfNotDefault<T>(
-            this T? source,
-            Action<T> action)
-        {
-            CC.Guard.IsNotNull(action, nameof(action));
+        //public static T? IfNotDefault<T>(
+        //    this T? source,
+        //    Action<T> action)
+        //{
+        //    CC.Guard.IsNotNull(action, nameof(action));
 
-            if (source.IsNotDefault())
-                action(source);
+        //    if (source.IsNotDefault())
+        //        action(source);
 
-            return source;
-        }
+        //    return source;
+        //}
 
-        public static T? IfNotDefault<T>(
-            this T? source,
-            Func<T, T> action)
-        {
-            CC.Guard.IsNotNull(action, nameof(action));
+        //public static T? IfNotDefault<T>(
+        //    this T? source,
+        //    Func<T, T> action)
+        //{
+        //    CC.Guard.IsNotNull(action, nameof(action));
 
-            if (source.IsNotDefault())
-                return action(source);
+        //    if (source.IsNotDefault())
+        //        return action(source);
 
-            return source;
-        }
+        //    return source;
+        //}
 
-        public static TOutput IfNotDefault<TInput, TOutput>(
-            this TInput source,
-            Func<TInput, TOutput> action,
-            Func<TInput, TOutput> ifDefaultAction)
-        {
-            CC.Guard.IsNotNull(action, nameof(action));
-            CC.Guard.IsNotNull(ifDefaultAction, nameof(ifDefaultAction));
+        //public static TOutput IfNotDefault<TInput, TOutput>(
+        //    this TInput source,
+        //    Func<TInput, TOutput> action,
+        //    Func<TInput, TOutput> ifDefaultAction)
+        //{
+        //    CC.Guard.IsNotNull(action, nameof(action));
+        //    CC.Guard.IsNotNull(ifDefaultAction, nameof(ifDefaultAction));
 
-            if (source.IsNotDefault())
-                return action(source);
+        //    if (source.IsNotDefault())
+        //        return action(source);
 
-            return ifDefaultAction(source);
-        }
+        //    return ifDefaultAction(source);
+        //}
 
         public static bool TrySwitch<T>(this T? source,
             params (Predicate<T?> predicate, Action<T> action)[] conditions)
