@@ -43,7 +43,7 @@ namespace CCEnvs.Unity.Saves
             {
                 snapshot = Snapshots[i];
 
-                if (!snapshot.Restore(null, out _))
+                if (!snapshot.TryRestore(null, out _))
                      notRestored.Value.Add(snapshot);
             }
 

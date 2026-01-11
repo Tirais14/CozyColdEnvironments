@@ -182,7 +182,7 @@ namespace CCEnvs.Unity.UI
             using var snapshotsCopyHandle = snapshots.ToArrayPooled();
 
             foreach (var pair in snapshotsCopyHandle.Value)
-                pair.Value.Restore(pair.Key, out _);
+                pair.Value.TryRestore(pair.Key, out _);
         }
 
         protected void DoRedraw()

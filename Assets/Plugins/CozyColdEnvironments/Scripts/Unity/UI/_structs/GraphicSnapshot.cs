@@ -24,9 +24,9 @@ namespace CCEnvs.Unity.Snapshots.UI
             RaycastTarget = target.raycastTarget;
         }
 
-        public override bool Restore(Graphic? target, [NotNullWhen(true)] out Graphic? restored)
+        public override bool TryRestore(Graphic? target, [NotNullWhen(true)] out Graphic? restored)
         {
-            if (!base.Restore(target, out restored))
+            if (!base.TryRestore(target, out restored))
                 return false;
 
             target!.color = Color;

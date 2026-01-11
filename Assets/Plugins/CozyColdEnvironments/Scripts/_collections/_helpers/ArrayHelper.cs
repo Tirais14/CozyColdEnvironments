@@ -53,14 +53,39 @@ namespace CCEnvs.Collections
             throw new ArgumentException("Array must be contain any not null element.");
         }
 
-        public static T[] Append<T>(this T[] source, T item)
+        public static T[] AppendArray<T>(this T[] source, T item)
         {
             CC.Guard.IsNotNullSource(source);
 
             var dest = new T[source.Length + 1];
             source.CopyTo(dest, 0);
             dest[^1] = item;
+
             return dest;
+        }
+
+        public static T[] PrependArray<T>(this T[] source, T item)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            var dest = new T[source.Length + 1];
+            source.CopyTo(dest, 1);
+            dest[0] = item;
+
+            return dest;
+        }
+
+        public static T[] ConcatArray<T>(this T[] source, T[] other)
+        {
+            CC.Guard.IsNotNullSource(source);
+            CC.Guard.IsNotNullSource(source);
+
+            var arr = new T[source.Length + other.Length];
+
+            source.CopyTo(arr, 0);
+            other.CopyTo(arr, source.Length - 1);
+
+            return arr;
         }
 
         public static void Fill<T>(this T[] source, T item)

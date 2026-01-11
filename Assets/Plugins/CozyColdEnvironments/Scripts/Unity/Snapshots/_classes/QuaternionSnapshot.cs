@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Snapshots
             W = target.w;
         }
 
-        public override bool Restore(Quaternion target, out Quaternion restored)
+        public override bool TryRestore(Quaternion target, out Quaternion restored)
         {
             restored = new Quaternion(X, Y, Z, W);
             return true;

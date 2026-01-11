@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.UI
             IsShown = target.IsShown;
         }
 
-        public override bool Restore(IShowable? target, [NotNullWhen(true)] out IShowable? restored)
+        public override bool TryRestore(IShowable? target, [NotNullWhen(true)] out IShowable? restored)
         {
             if (!CanRestore(target))
             {

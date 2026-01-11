@@ -49,20 +49,20 @@ namespace CCEnvs.Unity.Snapshots
             Rotation = new QuaternionSnapshot(target.rotation);
         }
 
-        public override bool Restore(
+        public override bool TryRestore(
             Transform? target,
             [NotNullWhen(true)] out Transform? restored)
         {
-            if (!base.Restore(target, out restored))
+            if (!base.TryRestore(target, out restored))
                 return false;
 
-            if (Position is not null && Position.Restore(default, out var pos))
+            if (Position is not null && Position.TryRestore(default, out var pos))
                 target!.position = pos;
 
-            if (LocalPosition is not null && LocalPosition.Restore(default, out var lPos))
+            if (LocalPosition is not null && LocalPosition.TryRestore(default, out var lPos))
                 target!.localPosition = lPos;
 
-            if (Rotation is not null && Rotation.Restore(default, out var rot))
+            if (Rotation is not null && Rotation.TryRestore(default, out var rot))
                 target!.rotation = rot;
 
             restored = target!;

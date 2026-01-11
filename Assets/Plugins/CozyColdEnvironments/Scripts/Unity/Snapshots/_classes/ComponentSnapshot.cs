@@ -36,7 +36,7 @@ namespace CCEnvs.Unity.Snapshots
         /// <summary>
         /// Tries to find in scene if <paramref name="target"/> is null.
         /// </summary>
-        public override bool Restore(T? target, [NotNullWhen(true)] out T? restored)
+        public override bool TryRestore(T? target, [NotNullWhen(true)] out T? restored)
         {
             if (!CanRestore(target))
             {

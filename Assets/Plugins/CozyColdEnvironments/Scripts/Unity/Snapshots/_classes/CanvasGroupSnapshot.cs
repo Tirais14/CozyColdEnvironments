@@ -33,9 +33,9 @@ namespace CCEnvs.Unity.Snapshots.UI
             IgnoreParentGroups = target.ignoreParentGroups;
         }
 
-        public override bool Restore(CanvasGroup? target, [NotNullWhen(true)] out CanvasGroup? restored)
+        public override bool TryRestore(CanvasGroup? target, [NotNullWhen(true)] out CanvasGroup? restored)
         {
-            if (!base.Restore(target, out restored))
+            if (!base.TryRestore(target, out restored))
                 return false;
 
             target!.alpha = Alpha;

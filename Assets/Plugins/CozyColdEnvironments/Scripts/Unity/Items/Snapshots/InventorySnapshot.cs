@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Items.Snapshots
             ItemContainers = CaptureItemContainerStates(target);
         }
 
-        public override bool Restore
+        public override bool TryRestore
             (Inventory? target,
             [NotNullWhen(true)] out Inventory? restored)
         {
@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.Items.Snapshots
 
             foreach (var cnt in ItemContainers)
             {
-                if (cnt.Restore(new ItemContainer(), out ItemContainer cntRestored))
+                if (cnt.TryRestore(new ItemContainer(), out ItemContainer cntRestored))
                     target.AddContainer(cntRestored);
             }
 

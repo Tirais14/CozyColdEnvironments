@@ -13,20 +13,21 @@ namespace CCEnvs.Snapshots
         [JsonIgnore]
         Type TargetType { get; }
 
-        bool Restore(object? target, [NotNullWhen(true)] out object? restored);
+        bool TryRestore(object? target, [NotNullWhen(true)] out object? restored);
 
         bool CanRestore(object? target);
     }
 
+    [JsonConverter(typeof(PolymorphJsonConverter<ISnapshot>))]
     public interface ISnapshot<T> : ISnapshot
     {
-        bool Restore(T? target, [NotNullWhen(true)] out T? restored);
+        bool TryRestore(T? target, [NotNullWhen(true)] out T? restored);
 
         bool CanRestore(T? target);
 
-       bool ISnapshot.Restore(object? target, [NotNullWhen(true)] out object? restored)
+       bool ISnapshot.TryRestore(object? target, [NotNullWhen(true)] out object? restored)
         {
-            var isRestored = Restore((T)target!, out var restoredTyped);
+            var isRestored = TryRestore((T)target!, out var restoredTyped);
             restored = restoredTyped;
 
             return isRestored;

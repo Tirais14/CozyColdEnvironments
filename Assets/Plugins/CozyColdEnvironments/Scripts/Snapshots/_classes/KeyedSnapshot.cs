@@ -36,9 +36,9 @@ namespace CCEnvs.Snapshots
             return !(left == right);
         }
 
-        public readonly bool Restore(object? target, [NotNullWhen(true)] out object? restored)
+        public readonly bool TryRestore(object? target, [NotNullWhen(true)] out object? restored)
         {
-            return Snapshot.Restore(target, out restored);
+            return Snapshot.TryRestore(target, out restored);
         }
 
         public readonly bool CanRestore(object? target)

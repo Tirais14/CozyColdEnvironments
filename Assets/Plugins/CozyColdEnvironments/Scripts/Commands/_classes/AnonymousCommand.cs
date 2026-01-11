@@ -20,12 +20,11 @@ namespace CCEnvs.Patterns.Commands
             Action execute,
             Func<bool>? isReadyToExecute = null,
             string? name = null,
-            bool singleCommand = false)
+            bool isSingle = false)
             :
             base(name: name,
-                 isSingle: singleCommand)
+                 isSingle: isSingle)
         {
-            Guard.IsNotNull(isReadyToExecute);
             Guard.IsNotNull(execute);
 
             this.isReadyToExecute = isReadyToExecute;

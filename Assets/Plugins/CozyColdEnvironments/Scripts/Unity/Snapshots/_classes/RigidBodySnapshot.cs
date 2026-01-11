@@ -34,17 +34,17 @@ namespace CCEnvs.Unity.Snapshots
             AngularVelocity = new Vector3Snapshot(target.angularVelocity);
         }
 
-        public override bool Restore(
+        public override bool TryRestore(
             Rigidbody? target,
             [NotNullWhen(true)] out Rigidbody? restored)
         {
-            if (!base.Restore(target, out restored))
+            if (!base.TryRestore(target, out restored))
                 return false;
 
-            if (LinearVelocity is not null && LinearVelocity.Restore(default, out var lVelocuty))
+            if (LinearVelocity is not null && LinearVelocity.TryRestore(default, out var lVelocuty))
                 target!.linearVelocity = lVelocuty;
 
-            if (AngularVelocity is not null && AngularVelocity.Restore(default, out var aVelocity))
+            if (AngularVelocity is not null && AngularVelocity.TryRestore(default, out var aVelocity))
                 target!.angularVelocity = aVelocity;
 
             restored = target!;

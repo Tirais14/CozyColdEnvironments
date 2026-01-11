@@ -31,7 +31,7 @@ namespace CCEnvs.Snapshots
             CC.Guard.IsNotNullTarget(target);
         }
 
-        public abstract bool Restore(T? target, [NotNullWhen(true)] out T? restored);
+        public abstract bool TryRestore(T? target, [NotNullWhen(true)] out T? restored);
 
         public virtual bool CanRestore([NotNull] T? target)
         {

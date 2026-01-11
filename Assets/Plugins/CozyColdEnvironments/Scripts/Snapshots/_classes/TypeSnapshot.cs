@@ -37,7 +37,7 @@ namespace CCEnvs.Snapshots
         }
 
         /// <returns><paramref name="target"/></returns>
-        public override bool Restore(Type? target, [NotNullWhen(true)] out Type? restored)
+        public override bool TryRestore(Type? target, [NotNullWhen(true)] out Type? restored)
         {
             if (CanRestore(target))
             {

@@ -29,7 +29,7 @@ namespace CCEnvs.Snapshots
         }
 
         /// <returns><paramref name="target"/></returns>
-        public override bool Restore(
+        public override bool TryRestore(
             AssemblyName? target,
             [NotNullWhen(true)] out AssemblyName? restored)
         {

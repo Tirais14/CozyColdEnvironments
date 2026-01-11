@@ -43,7 +43,7 @@ namespace CCEnvs.Unity.Snapshots
             ExtraInfo = target.GetExtraInfo();
         }
 
-        public override bool Restore(
+        public override bool TryRestore(
             GameObject? target, 
             [NotNullWhen(true)] out GameObject? restored)
         {
@@ -70,7 +70,7 @@ namespace CCEnvs.Unity.Snapshots
             target.SetActive(ActiveSelf);
 
             if (Transform is not null)
-                Transform.Restore(target.transform, out _);
+                Transform.TryRestore(target.transform, out _);
 
             restored = target;
             return true;

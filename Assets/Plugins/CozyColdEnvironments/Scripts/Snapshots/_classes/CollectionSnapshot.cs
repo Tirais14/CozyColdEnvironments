@@ -25,7 +25,7 @@ namespace CCEnvs.Snapshots
                 });
         }
 
-        public override bool Restore(
+        public override bool TryRestore(
             TCollection? target,
             [NotNullWhen(true)] out TCollection? restored)
         {

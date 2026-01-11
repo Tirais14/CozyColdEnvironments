@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.Snapshots
             Color = color;
         }
 
-        public override bool Restore(Material? target, [NotNullWhen(true)] out Material? restored)
+        public override bool TryRestore(Material? target, [NotNullWhen(true)] out Material? restored)
         {
             if (!CanRestore(target))
             {

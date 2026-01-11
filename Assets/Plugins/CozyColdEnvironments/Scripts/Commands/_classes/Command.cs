@@ -11,13 +11,13 @@ namespace CCEnvs.Patterns.Commands
             Action execute,
             Func<bool>? isReadyToExecute = null,
             string? name = null,
-            bool singleCommand = false)
+            bool isSingle = false)
         {
             return new AnonymousCommand(
                 execute,
                 isReadyToExecute,
                 name: name,
-                singleCommand: singleCommand
+                isSingle: isSingle
                 );
         }
 
@@ -27,14 +27,14 @@ namespace CCEnvs.Patterns.Commands
             Action<T> execute,
             Predicate<T>? isReadyToExecute = null,
             string? name = null,
-            bool singleCommand = false)
+            bool isSingle = false)
         {
             return new AnonymousCommand<T>(
                 state,
                 execute,
                 isReadyToExecute,
                 name: name,
-                singleCommand: singleCommand
+                singleCommand: isSingle
                 );
         }
     }
@@ -53,9 +53,9 @@ namespace CCEnvs.Patterns.Commands
         public virtual bool IsCancelled => isCanceled;
         public virtual bool IsFaulted => isFaulted;
         public virtual bool IsCompleted { get; protected set; }
-        public virtual bool IsRunning => executed && IsDone;
+        public virtual bool IsRunning => executed && !IsDone;
 
-        public bool IsDone => !executed && (IsCompleted || IsCancelled || IsFaulted);
+        public bool IsDone => IsCompleted || IsCancelled || IsFaulted;
         public bool IsSingle { get; }
 
         protected Command(

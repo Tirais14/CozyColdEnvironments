@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -29,7 +30,7 @@ namespace CCEnvs.Unity.Saves
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
 
         private readonly Dictionary<RegisteredObject, object> objectKeys = new();
-        private readonly Dictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
+        private readonly ConcurrentDictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
         private readonly Dictionary<SceneInfo, CompositeDisposable> sceneDisposables = new();
 
         private UnityAction<Scene> onSceneUnloaded;
@@ -143,43 +144,64 @@ namespace CCEnvs.Unity.Saves
             return objs.Remove(regObj);
         }
 
-        public async UniTask LoadAsync(string path, CancellationToken cancellationToken = default)
+        public async UniTask ApplySaveFileDataAsync(
+            SaveFileData saveFileData,
+            CancellationToken cancellationToken = default)
         {
-            if (cancellationToken.IsDefault())
-                cancellationToken = destroyCancellationToken;
+            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            SaveFileData saveFile = await LoadSaveFileAsync(path, cancellationToken);
-            await ApplySaveFileDataAsync(saveFile, cancellationToken);
-        }
+            await RegisterSnapshotsAsync(
+                saveFileData.SceneDatas,
+                cancellationToken: cTokenSource.Token
+                );
 
-        public async UniTask SaveAsync(string path, CancellationToken cancellationToken = default)
-        {
-            string serialized = await CaptureSerializedSaveDataAsync();
-
-            if (cancellationToken.IsDefault())
-                cancellationToken = destroyCancellationToken;
-
-            await File.WriteAllTextAsync(path, serialized, cancellationToken: cancellationToken);
-        }
-
-        public UniTask ApplySaveFileDataAsync(SaveFileData saveFileData, CancellationToken cancellationToken = default)
-        {
-            loadedSnapshots.Clear();
-            IList<SaveFileSceneData> notRestoredSceneDatas = saveFileData.RestoreLoadedScenes();
-            RegisterLoadedSnapshots(notRestoredSceneDatas);
-
-            return UniTask.CompletedTask;
+            ApplyRegisteredSnapshots();
         }
 
         public async UniTask<SaveFileData> CaptureSaveDataAsync(CancellationToken cancellationToken = default)
         {
-            return await BuildSaveFileDataAsync();
+            using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                self.destroyCancellationToken,
+                cancellationToken
+                );
+
+            using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync(cancellationToken: cTokenSource.Token);
+
+            //TODO: versioning
+            return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray());
         }
 
         public async UniTask<string> CaptureSerializedSaveDataAsync(CancellationToken cancellationToken = default)
         {
-            var saveFileData = await CaptureSaveDataAsync();
+            using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                self.destroyCancellationToken,
+                cancellationToken
+                );
+
+            var saveFileData = await CaptureSaveDataAsync(cTokenSource.Token);
+
             return JsonConvert.SerializeObject(saveFileData, CC.JsonSettings);
+        }
+
+        public async UniTask LoadAsync(string path, CancellationToken cancellationToken = default)
+        {
+            using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                self.destroyCancellationToken,
+                cancellationToken
+                );
+
+            SaveFileData saveFile = await LoadSaveFileAsync(path, cTokenSource.Token);
+
+            await ApplySaveFileDataAsync(saveFile, cTokenSource.Token);
+        }
+
+        public async UniTask SaveAsync(string path, CancellationToken cancellationToken = default)
+        {
+            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+
+            string serialized = await CaptureSerializedSaveDataAsync(cancellationToken: cTokenSource.Token);
+
+            await File.WriteAllTextAsync(path, serialized, cancellationToken: cTokenSource.Token);
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -260,73 +282,89 @@ namespace CCEnvs.Unity.Saves
             };
         }
 
-        private async UniTask<PooledArray<RegisteredObject>> GetSceneObjectsAsync(SceneInfo sceneInfo)
+        private async UniTask<PooledArray<RegisteredObject>> GetSceneObjectsAsync(
+            SceneInfo sceneInfo,
+            CancellationToken cancellationToken)
         {
-            await UniTask.SwitchToThreadPool();
-
-            using var _ = ListPool<RegisteredObject>.Get(out var regObjs);
-            foreach (var regObj in objectSets.Values.SelectMany(x => x))
+            try
             {
-                if (regObj.SceneInfo != sceneInfo)
-                    continue;
+                await UniTask.SwitchToThreadPool();
 
-                regObjs.Add(regObj);
+                using var _ = ListPool<RegisteredObject>.Get(out var regObjs);
+                int iterationsPassed = 0;
+
+                foreach (var regObj in objectSets.Values.SelectMany(x => x))
+                {
+                    cancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+
+                    if (regObj.SceneInfo != sceneInfo)
+                        continue;
+
+                    regObjs.Add(regObj);
+                }
+
+                return regObjs.ToArrayPooled();
             }
-
-            await UniTask.SwitchToMainThread();
-            return regObjs.ToArrayPooled();
+            finally
+            {
+                await UniTask.SwitchToMainThread();
+            }
         }
 
-        private async UniTask<PooledArray<SaveFileSceneData>> BuildSceneDatasAsync()
+        private async UniTask<PooledArray<SaveFileSceneData>> BuildSceneDatasAsync(CancellationToken cancellationToken)
         {
-            using var __ = ListPool<KeyedSnapshot<ISnapshot>>.Get(out var snapshots);
+            using var __ = ListPool<KeyedSnapshot<ISnapshot>>.Get(out var keyedSnapshots);
             using var _ = ListPool<SaveFileSceneData>.Get(out var sceneDatas);
 
-            ISnapshot snapshot;
             KeyedSnapshot<ISnapshot> keyedSnapshot;
             SaveFileSceneData sceneData;
-            Maybe<string> objKey;
 
-            foreach (var sceneInfo in SceneManagerHelper.GetLoadedScenes()
-                .Select(x => x.GetSceneInfo())
-                .Prepend(default))
+            var loadedScenes = SceneManagerHelper.GetLoadedSceneInfos().PrependArray(default);
+
+            foreach (var sceneInfo in loadedScenes)
             {
-                using PooledArray<RegisteredObject> regObjects = await GetSceneObjectsAsync(sceneInfo);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using PooledArray<RegisteredObject> regObjects = await GetSceneObjectsAsync(
+                    sceneInfo,
+                    cancellationToken
+                    );
+
+                int iterationsPassed = 0;
+
                 foreach (var regObj in regObjects.Value)
                 {
+                    cancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+
                     try
                     {
-                        snapshot = regObj.CreateSnapshot();
-                        objKey = ResolveKey(regObj);
-
-                        if (!objKey.TryGetValue(out string? key))
-                        {
-                            this.PrintError($"Missing key of registered object\"{regObj}\"");
-                            continue;
-                        }
-
-                        keyedSnapshot = new KeyedSnapshot<ISnapshot>(snapshot, key);
-                        snapshots.Add(keyedSnapshot);
+                        keyedSnapshot = CreateKeyedSnapshot(regObj);
+                        keyedSnapshots.Add(keyedSnapshot);
                     }
                     catch (Exception ex)
                     {
-                        this.PrintError($"Registered object \"{regObj}\" throwed exception and will be skipped. {ex.GetType()}: {ex}");
+                        this.PrintException(ex);
                     }
                 }
 
-                sceneData = new SaveFileSceneData(sceneInfo, snapshots.ToArray());
+                sceneData = new SaveFileSceneData(sceneInfo, keyedSnapshots.ToArray());
                 sceneDatas.Add(sceneData);
-                snapshots.Clear();
+
+                keyedSnapshots.Clear();
             }
 
             return sceneDatas.ToArrayPooled();
-        }
 
-        private async UniTask<SaveFileData> BuildSaveFileDataAsync()
-        {
-            using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync();
-            return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray());
-            //TODO: Versioning
+            static KeyedSnapshot<ISnapshot> CreateKeyedSnapshot(RegisteredObject regObj)
+            {
+                ISnapshot snapshot = regObj.CreateSnapshot();
+                Maybe<string> objKey = self.ResolveKey(regObj);
+
+                if (!objKey.TryGetValue(out string? key))
+                    throw new InvalidOperationException($"Missing key of registered object\"{regObj}\"");
+
+                return new KeyedSnapshot<ISnapshot>(snapshot, key);
+            }
         }
 
         private object GetOrCreateKeyForUnityObject(UnityEngine.Object uObject)
@@ -374,7 +412,7 @@ namespace CCEnvs.Unity.Saves
 
             if (loadedSnapshots.TryGetValue(regObjInfo, out ISnapshot loadedSnapshot)
                 &&
-                loadedSnapshot.Restore(obj, out _))
+                loadedSnapshot.TryRestore(obj, out _))
             {
                 return true;
             }
@@ -466,26 +504,50 @@ namespace CCEnvs.Unity.Saves
             return JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
         }
 
-        private void RegisterLoadedSnapshots(IList<SaveFileSceneData> notRestoredDatas)
+        private async UniTask RegisterSnapshotsAsync(
+            IList<SaveFileSceneData> snapshots, 
+            CancellationToken cancellationToken)
         {
             loadedSnapshots.Clear();
 
             RegisteredObjectInfo regObjInfo;
 
-            foreach (var sceneData in notRestoredDatas)
+            try
             {
-                foreach (var snapshot in sceneData.Snapshots)
-                {
-                    if (snapshot.Key is not string snapshotKey)
-                    {
-                        this.PrintError($"Key \"{snapshot.Key}\" is not string. Object not restored");
-                        continue;
-                    }
+                await UniTask.SwitchToThreadPool();
 
-                    regObjInfo = new RegisteredObjectInfo(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
-                    loadedSnapshots.Add(regObjInfo, snapshot);
+                foreach (var sceneData in snapshots)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    int iterationsPassed = 0;
+
+                    foreach (var snapshot in sceneData.Snapshots)
+                    {
+                        cancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+
+                        if (snapshot.Key is not string snapshotKey)
+                        {
+                            this.PrintError($"Key \"{snapshot.Key}\" is not string. Object not restored");
+                            continue;
+                        }
+
+                        regObjInfo = new RegisteredObjectInfo(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
+                        loadedSnapshots.TryAdd(regObjInfo, snapshot);
+
+                        iterationsPassed++;
+                    }
                 }
             }
+            finally
+            {
+                await UniTask.SwitchToMainThread();
+            }
+        }
+
+        private void ApplyRegisteredSnapshots()
+        {
+            foreach (var snapshot in loadedSnapshots.Values)
+                snapshot.TryRestore(target: null, out _);
         }
     }
 

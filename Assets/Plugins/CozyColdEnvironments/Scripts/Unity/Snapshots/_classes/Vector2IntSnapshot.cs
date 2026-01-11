@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.Snapshots
             Y = target.y;
         }
 
-        public override bool Restore(Vector2Int target, out Vector2Int restored)
+        public override bool TryRestore(Vector2Int target, out Vector2Int restored)
         {
             restored = new Vector2Int(X, Y);
             return true;

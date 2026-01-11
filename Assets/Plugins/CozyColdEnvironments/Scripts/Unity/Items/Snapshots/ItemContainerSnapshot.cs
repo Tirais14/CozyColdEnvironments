@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.Items.Snapshots
         {
         }
 
-        public override bool Restore(
+        public override bool TryRestore(
             ItemContainer? target, 
             [NotNullWhen(true)] out ItemContainer? restored)
         {

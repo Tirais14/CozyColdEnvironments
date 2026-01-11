@@ -29,9 +29,9 @@ namespace CCEnvs.Unity.Snapshots
             Enabled = target.enabled;
         }
 
-        public override bool Restore(T? target, [NotNullWhen(true)] out T? restored)
+        public override bool TryRestore(T? target, [NotNullWhen(true)] out T? restored)
         {
-            if (!base.Restore(target, out restored))
+            if (!base.TryRestore(target, out restored))
                 return false;
 
             target!.enabled = Enabled;

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -13,6 +14,11 @@ namespace CCEnvs.Unity
                 scenes[i] = SceneManager.GetSceneAt(i);
 
             return scenes;
+        }
+
+        public static SceneInfo[] GetLoadedSceneInfos()
+        {
+            return GetLoadedScenes().Select(scene => scene.GetSceneInfo()).ToArray();
         }
     }
 }
