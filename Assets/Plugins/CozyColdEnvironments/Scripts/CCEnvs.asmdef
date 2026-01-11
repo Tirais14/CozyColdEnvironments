@@ -37,7 +37,9 @@
         "R3.dll",
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "Serilog.dll",
+        "Serilog.Sinks.File.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

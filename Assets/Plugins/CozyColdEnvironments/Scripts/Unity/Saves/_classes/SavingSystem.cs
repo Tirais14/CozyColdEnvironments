@@ -165,7 +165,9 @@ namespace CCEnvs.Unity.Saves
                 cancellationToken
                 );
 
-            using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync(cancellationToken: cTokenSource.Token);
+            using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync(
+                cancellationToken: cTokenSource.Token
+                );
 
             //TODO: versioning
             return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray());
@@ -180,7 +182,10 @@ namespace CCEnvs.Unity.Saves
 
             var saveFileData = await CaptureSaveDataAsync(cTokenSource.Token);
 
-            return JsonConvert.SerializeObject(saveFileData, CC.JsonSettings);
+            return JsonConvert.SerializeObject(
+                saveFileData,
+                CC.JsonSettings
+                );
         }
 
         public async UniTask LoadAsync(string path, CancellationToken cancellationToken = default)
@@ -190,18 +195,41 @@ namespace CCEnvs.Unity.Saves
                 cancellationToken
                 );
 
-            SaveFileData saveFile = await LoadSaveFileAsync(path, cTokenSource.Token);
+            SaveFileData saveFile = await LoadSaveFileAsync(
+                path,
+                cTokenSource.Token
+                );
 
-            await ApplySaveFileDataAsync(saveFile, cTokenSource.Token);
+            if (saveFile.IsDefault())
+                return;
+
+            await ApplySaveFileDataAsync(
+                saveFile,
+                cTokenSource.Token
+                );
         }
 
         public async UniTask SaveAsync(string path, CancellationToken cancellationToken = default)
         {
             using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            string serialized = await CaptureSerializedSaveDataAsync(cancellationToken: cTokenSource.Token);
+            SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+           
+            await RegisterSnapshotsAsync(
+                saveFileData.SceneDatas,
+                cancellationToken
+                );
 
-            await File.WriteAllTextAsync(path, serialized, cancellationToken: cTokenSource.Token);
+            string serializedsaveFileData = JsonConvert.SerializeObject(
+                saveFileData,
+                CC.JsonSettings
+                );
+
+            await File.WriteAllTextAsync(
+                path,
+                serializedsaveFileData,
+                cancellationToken: cTokenSource.Token
+                );
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -386,12 +414,12 @@ namespace CCEnvs.Unity.Saves
                                 if (go.TryGetComponent<RuntimeId>(out var idCmp))
                                 {
                                     if (idCmp.Id.IsNullOrWhiteSpace())
-                                        return go.GetHierarchyPath();
+                                        return go.GetHierarchyPath().Path;
 
                                     return idCmp.Id;
                                 }
 
-                                return go.GetHierarchyPath();
+                                return go.GetHierarchyPath().Path;
                             });
                     }
                 case Component cmp:
@@ -546,80 +574,21 @@ namespace CCEnvs.Unity.Saves
 
         private void ApplyRegisteredSnapshots()
         {
-            foreach (var snapshot in loadedSnapshots.Values)
-                snapshot.TryRestore(target: null, out _);
-        }
-    }
+            var loadedSceneInfos = SceneManagerHelper.GetLoadedSceneInfos().PrependArray(default);
 
-    public static class SaveSystemExtensions
-    {
-        /// <inheritdoc cref="ISavingSystem.RegisterObject{TObject}(TObject, string, SceneInfo?)"/>
-        public static IDisposable SavingSystemRegisterObject<TObject>(
-            this TObject source,
-            string key,
-            SceneInfo sceneInfo = default)
-            where TObject : class
-        {
-            return SavingSystem.Self.RegisterObject(source, key, sceneInfo: sceneInfo);
-        }
+            foreach (var loadedSceneInfo in loadedSceneInfos)
+            {
+                foreach (var pair in loadedSnapshots)
+                {
+                    if (pair.Key.SceneInfo != loadedSceneInfo)
+                        continue;
 
-        /// <inheritdoc cref="ISavingSystem.RegisterObject{TObject}(TObject, Func{TObject, string}, SceneInfo?)"/>
-        public static IDisposable SavingSystemRegisterObject<TObject>(
-            this TObject source,
-            Func<TObject, string> keySelector,
-            SceneInfo sceneInfo = default)
-            where TObject : class
-        {
-            return SavingSystem.Self.RegisterObject(
-                source,
-                keySelector,
-                sceneInfo: sceneInfo);
-        }
+                    if (!pair.Value.TryRestore(target: null, out _))
+                        continue;
 
-        /// <inheritdoc cref="ISavingSystem.RegisterObject{TObject, TState}(TObject, TState, Func{TObject, TState, string}, SceneInfo?)"/>
-        public static IDisposable SavingSystemRegisterObject<TObject, TState>(
-            this TObject source,
-            TState state,
-            Func<TObject, TState, string> keySelector,
-            SceneInfo sceneInfo = default)
-            where TObject : class
-        {
-            return SavingSystem.Self.RegisterObject(
-                source,
-                state,
-                keySelector,
-                sceneInfo: sceneInfo);
-        }
-
-        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(GameObject, SceneInfo)"/>
-        public static IDisposable SavingSystemRegisterUnityObject(this GameObject source, SceneInfo sceneInfo = default)
-        {
-            return SavingSystem.Self.RegisterUnityObject(source, sceneInfo);
-        }
-
-        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(Component, SceneInfo)"/>
-        public static IDisposable SavingSystemRegisterUnityObject(this Component source, SceneInfo sceneInfo = default)
-        {
-            return SavingSystem.Self.RegisterUnityObject(source, sceneInfo);
-        }
-
-        /// <inheritdoc cref="ISavingSystem.IsTypeRegistered(Type?)"/>
-        public static bool SavingSystemIsTypeRegistered(this Type source)
-        {
-            return SavingSystem.Self.IsTypeRegistered(source);
-        }
-
-        /// <inheritdoc cref="ISavingSystem.IsTypeRegistered{T}()"/>
-        public static bool SavingSystemIsTypeRegistered(this object source)
-        {
-            CC.Guard.IsNotNullSource(source);
-            return source.GetType().SavingSystemIsTypeRegistered();
-        }
-
-        /// <inheritdoc cref="ISavingSystem.IsInstanceRegistered(object?, SceneInfo)"/>
-        public static bool SavingSystemIsInstanceRegistered(this object? source, SceneInfo sceneInfo = default)
-        {
-            return SavingSystem.Self.IsInstanceRegistered(source, sceneInfo);
+                    loadedSnapshots.TryRemove(pair.Key, out _);
+                }
+            }
         }
     }
 }

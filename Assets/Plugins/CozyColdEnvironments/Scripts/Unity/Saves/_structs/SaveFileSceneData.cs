@@ -32,24 +32,6 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
-        public readonly IList<KeyedSnapshot<ISnapshot>> RestoreScene()
-        {
-            var notRestored = LazyLight.Create<List<KeyedSnapshot<ISnapshot>>>();
-
-            KeyedSnapshot<ISnapshot> snapshot;
-            int length = Snapshots.Count;
-
-            for (int i = 0; i < length; i++)
-            {
-                snapshot = Snapshots[i];
-
-                if (!snapshot.TryRestore(null, out _))
-                     notRestored.Value.Add(snapshot);
-            }
-
-            return notRestored.HasValue ? notRestored.Value : Array.Empty<KeyedSnapshot<ISnapshot>>();
-        }
-
         public readonly bool Equals(SaveFileSceneData other)
         {
             return Snapshots == other.Snapshots

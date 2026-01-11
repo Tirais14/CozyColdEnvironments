@@ -32,45 +32,6 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
-        /// <returns>not restored</returns>
-        public readonly IList<SaveFileSceneData> RestoreLoadedScenes()
-        {
-            if (SceneDatas.IsNullOrEmpty())
-                return Array.Empty<SaveFileSceneData>();
-
-            SceneInfo[] sceneInfos = SceneManagerHelper.GetLoadedScenes()
-                .Select(x => x.GetSceneInfo())
-                .ToArray();
-
-            var notRestoredSceneDatas = LazyLight.Create<List<SaveFileSceneData>>();
-            foreach (var sceneData in SceneDatas)
-            {
-                if (sceneData.SceneInfo != null && !sceneInfos.Contains(sceneData.SceneInfo))
-                {
-                    notRestoredSceneDatas.Value.Add(sceneData);
-                    continue;
-                }
-
-                try
-                {
-                    var restSnapshots = sceneData.RestoreScene();
-
-                    if (restSnapshots.IsNotEmpty())
-                    {
-                        var notRestoredSceneData = new SaveFileSceneData(sceneData.SceneInfo, restSnapshots);
-
-                        notRestoredSceneDatas.Value.Add(notRestoredSceneData);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.PrintException(ex);
-                }
-            }
-
-            return notRestoredSceneDatas.HasValue ? notRestoredSceneDatas.Value : Array.Empty<SaveFileSceneData>();
-        }
-
         public readonly bool Equals(SaveFileData other)
         {
             return Version == other.Version

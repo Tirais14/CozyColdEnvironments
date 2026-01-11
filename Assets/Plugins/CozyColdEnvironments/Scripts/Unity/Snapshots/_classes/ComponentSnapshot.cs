@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.Snapshots
                 &&
                 (ExtraInfo is null
                 ||
-                ExtraInfo.FindGameObject(includeInactive: true).Map(go => go.Q().Component<T>().Raw).TryGetValue(out target)
+                !ExtraInfo.FindGameObject(includeInactive: true).Map(go => go.Q().Component<T>().Raw).TryGetValue(out target)
                 ))
             {
                 restored = null;

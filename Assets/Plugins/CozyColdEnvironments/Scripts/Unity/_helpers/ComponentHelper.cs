@@ -121,10 +121,16 @@ namespace CCEnvs.Unity
             return source.gameObject.GetRuntimeId();    
         }
 
-        public static string GetHierarchyPath(this Component source)
+        public static HierarchyPath GetHierarchyPath(this Component source)
         {
             CC.Guard.IsNotNullSource(source);
-            return source.gameObject.GetHierarchyPath();
+            return source.transform.GetHierarchyPath();
+        }
+
+        public static bool MatchHierarchyPath(this Component source, HierarchyPath hierarchyPath)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.transform.MatchHierarchyPath(hierarchyPath);
         }
     }
 }

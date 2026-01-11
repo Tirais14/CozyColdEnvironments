@@ -260,19 +260,10 @@ namespace CCEnvs.Unity
             return Maybe<GameObject>.None;
         }
 
-        public static string GetHierarchyPath(this GameObject source)
+        public static HierarchyPath GetHierarchyPath(this GameObject source)
         {
             CC.Guard.IsNotNullSource(source);
-
-            if (source.transform.parent == null)
-                return source.name;
-
-            var parents = Do.Collect(source.transform, (x) => x.parent);
-            using var pathBuilder = ZString.CreateStringBuilder();
-            pathBuilder.Grow(parents.Count);
-            pathBuilder.AppendJoin("/", parents.Reverse().AsValueEnumerable().Select(x => x.name).AsEnumerable());
-
-            return pathBuilder.ToString();
+            return source.transform.GetHierarchyPath();
         }
 
         public static RuntimeId AddRuntimeIdComponent(this GameObject source, string id)
@@ -352,23 +343,47 @@ namespace CCEnvs.Unity
             }
         }
 
-        public static Maybe<GameObject> FindByHierarchyPath(string path, bool includeInactive = false)
+        public static bool MatchHierarchyPath(this GameObject source, HierarchyPath hierarchyPath)
         {
-            Guard.IsNotNullOrEmpty(path, nameof(path));
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotDefault(hierarchyPath, nameof(hierarchyPath));
 
-            var pathParts = Regex.Split(path, @"[/\\]");
-            var goOption = GameObjectQuery.Scene.IncludeInactive(includeInactive).WithName(pathParts[0]).GameObject().Lax();
-            GameObject? go = goOption.GetValue();
+            return source.transform.MatchHierarchyPath(hierarchyPath);
+        }
 
-            foreach (var pathPart in pathParts.Skip(1))
+        public static Maybe<GameObject> FindByHierarchyPath(HierarchyPath path, bool includeInactive = false)
+        {
+            Guard.IsNotDefault(path, nameof(path));
+
+            var pathParts = path.Split();
+
+            foreach (var transform in GameObjectQuery.Scene.WithName(pathParts[0]).Transforms())
             {
-                if (!goOption.TryGetValue(out go))
-                    return Maybe<GameObject>.None;
-
-                goOption = go.Q().WithName(pathPart).ChildrenGameObject().Lax();
+                if (transform.MatchHierarchyPath(path))
+                    return transform.gameObject;
             }
 
-            return go;
+            return Maybe<GameObject>.None;
+
+            //var goOption = GameObjectQuery.Scene.IncludeInactive(includeInactive)
+            //    .WithName(pathParts[0])
+            //    .GameObject()
+            //    .Lax();
+
+            //GameObject? go = goOption.GetValue();
+
+            //foreach (var pathPart in pathParts.Skip(1))
+            //{
+            //    if (!goOption.TryGetValue(out go))
+            //        return Maybe<GameObject>.None;
+
+            //    goOption = go.Q()
+            //        .WithName(pathPart)
+            //        .ChildrenGameObject()
+            //        .Lax();
+            //}
+
+            //return go;
         }
     }
 }

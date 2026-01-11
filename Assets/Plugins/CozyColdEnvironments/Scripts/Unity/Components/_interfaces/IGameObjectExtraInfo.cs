@@ -5,6 +5,6 @@ namespace CCEnvs.Unity.Components
     {
         public string? PersistenGuid { get; }
         public string? RuntimeId { get; }
-        public string HierarchyPath { get; }
+        public HierarchyPath HierarchyPath { get; }
     }
 }

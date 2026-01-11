@@ -18,7 +18,7 @@ namespace CCEnvs.Unity
         public string? RuntimeId { get; private set; }
 
         [field: SerializeField]
-        public string HierarchyPath { get; private set; }
+        public HierarchyPath HierarchyPath { get; private set; }
 
         public GameObjectExtraInfo(GameObject gameObject)
         {
@@ -30,7 +30,7 @@ namespace CCEnvs.Unity
         }
 
         [JsonConstructor]
-        public GameObjectExtraInfo(string? persistenGuid, string? runtimeId, string hierarchyPath)
+        public GameObjectExtraInfo(string? persistenGuid, string? runtimeId, HierarchyPath hierarchyPath)
         {
             PersistenGuid = persistenGuid;
             RuntimeId = runtimeId;
@@ -53,7 +53,7 @@ namespace CCEnvs.Unity
                 return go;
             }
 
-            if (HierarchyPath.IsNotNullOrEmpty()
+            if (HierarchyPath.IsNotDefault()
                 &&
                 GameObjectHelper.FindByHierarchyPath(HierarchyPath, includeInactive).TryGetValue(out go))
             {
