@@ -39,6 +39,12 @@ namespace CCEnvs.Patterns.States
                 state.LateTick();
         }
 
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            SetIdle();
+        }
+
         public bool IsPlaying(Type? stateType)
         {
             if (stateType.IsNotType<IState>())

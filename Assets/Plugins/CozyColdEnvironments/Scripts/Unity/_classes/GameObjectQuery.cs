@@ -130,22 +130,32 @@ namespace CCEnvs.Unity
         //    return this;
         //}
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public GameObjectQuery ByFullName(bool state = true)
+        //{
+        //    if (state)
+        //        stringMatchSettings &= ~StringMatchSettings.Partial;
+        //    else
+        //        stringMatchSettings |= StringMatchSettings.Partial;
+
+        //    return this;
+        //}
+
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ByFullName(bool state = true)
+        public GameObjectQuery WithName(string? name = null, bool ignoreCase = false, bool byFullName = false)
         {
-            if (state)
+            this.name = name;
+
+            if (byFullName)
                 stringMatchSettings &= ~StringMatchSettings.Partial;
             else
                 stringMatchSettings |= StringMatchSettings.Partial;
 
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery WithName(string? name = null)
-        {
-            this.name = name;
+            if (ignoreCase)
+                stringMatchSettings |= StringMatchSettings.IgnoreCase;
+            else
+                stringMatchSettings &= ~StringMatchSettings.IgnoreCase;
 
             return this;
         }
