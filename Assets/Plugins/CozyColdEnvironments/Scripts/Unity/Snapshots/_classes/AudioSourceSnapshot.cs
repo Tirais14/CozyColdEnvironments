@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.Snapshots
             if (!base.TryRestore(target, out restored))
                 return false;
 
-            target!.volume = Volume;
+            target!.volume = Mathf.Clamp01(Volume);
 
             restored = target;
             return true;

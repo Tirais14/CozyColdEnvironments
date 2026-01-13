@@ -17,13 +17,13 @@ namespace CCEnvs.Unity.Components
             IncludeInactive
         }
 
-        private IEnumerable<AudioSourceRegistryEntry>? _rawAudioSourceEntries;
+        private IEnumerable<AudioSourceManagerEntry>? _rawAudioSourceEntries;
 
-        public IEnumerable<AudioSourceRegistryEntry> AudioSourceEntries { get; set; } = null!;
+        public IEnumerable<AudioSourceManagerEntry> AudioSourceEntries { get; set; } = null!;
 
-        public IEnumerable<AudioSourceRegistryEntry> RawAudioSourceEntries {
+        public IEnumerable<AudioSourceManagerEntry> RawAudioSourceEntries {
             get => _rawAudioSourceEntries ?? AudioSourceEntries; 
-            private set => _rawAudioSourceEntries = value ?? Array.Empty<AudioSourceRegistryEntry>(); 
+            private set => _rawAudioSourceEntries = value ?? Array.Empty<AudioSourceManagerEntry>(); 
         }
 
         public Settings settings { get; set; }
@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.Components
             Reset();
         }
 
-        public AudioSourceRegistryQuery From(IEnumerable<AudioSourceRegistryEntry> entries)
+        public AudioSourceRegistryQuery From(IEnumerable<AudioSourceManagerEntry> entries)
         {
             Guard.IsNotNull(entries, nameof(entries));
 
@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.Components
             return this;
         }
 
-        public AudioSourceRegistryQuery IncludeInactive(bool state)
+        public AudioSourceRegistryQuery IncludeInactive(bool state = true)
         {
             if (state)
                 settings |= Settings.IncludeInactive;
@@ -52,10 +52,12 @@ namespace CCEnvs.Unity.Components
             return this;
         }
 
-        public void Reset()
+        public AudioSourceRegistryQuery Reset()
         {
             _rawAudioSourceEntries = null;
-            AudioSourceEntries = Array.Empty<AudioSourceRegistryEntry>();
+            AudioSourceEntries = Array.Empty<AudioSourceManagerEntry>();
+
+            return this;
         }
 
         public AudioSourceRegistryQuery VolumeMultiplier(float multiplier)
@@ -63,9 +65,9 @@ namespace CCEnvs.Unity.Components
             multiplier = Mathf.Abs(multiplier);
 
             RawAudioSourceEntries = AudioSourceEntries.Do(
-                aSource =>
+                entry =>
                 {
-                    aSource.Source.volume = Mathf.Clamp01(aSource.Source.volume * multiplier);
+                    entry.Source.volume = Mathf.Clamp01(entry.CapturedState.Volume * multiplier);
                 });
 
             return this;
@@ -80,9 +82,6 @@ namespace CCEnvs.Unity.Components
                     return entry.Source.isActiveAndEnabled;
                 });
             }
-
-            foreach (var entry in RawAudioSourceEntries)
-                entry.RestoreAudioSourceState();
 
             return RawAudioSourceEntries.Select(
                 static aSource =>

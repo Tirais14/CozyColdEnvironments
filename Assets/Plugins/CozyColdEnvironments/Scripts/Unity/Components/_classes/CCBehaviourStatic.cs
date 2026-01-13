@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using System.Linq;
 using UnityEngine;
@@ -27,10 +26,13 @@ namespace CCEnvs.Unity.Components
         protected override void Awake()
         {
             base.Awake();
-            if (FindObjectsByType(GetType(),
-                                  UnityEngine.FindObjectsInactive.Include,
-                                  UnityEngine.FindObjectsSortMode.None)
-                .Any(x => x != this))
+
+            if (FindObjectsByType(
+                GetType(),
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+                )
+                .Length > 1)
             {
                 this.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.");
                 this.PrintLog(StackTraceUtility.ExtractStackTrace());

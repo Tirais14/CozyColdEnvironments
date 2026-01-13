@@ -12,10 +12,9 @@ using UnityEditor;
 #pragma warning disable S3267
 namespace CCEnvs.Caching
 {
-    public sealed class ReferenceCache<TKey, TValue> : IReferenceCache<TKey, TValue>
-        where TValue : class
+    public sealed class Cache<TKey, TValue> : ICache<TKey, TValue>
     {
-        private readonly Dictionary<TKey, IReferenceCacheEntry<TValue>> entries = new();
+        private readonly Dictionary<TKey, ICacheEntry<TValue>> entries = new();
         private readonly object lockObject = new();
         private readonly Timer timer = new();
 
@@ -44,7 +43,16 @@ namespace CCEnvs.Caching
             }
         }
 
-        public ReferenceCache()
+        public IEnumerable<TValue> Values {
+            get
+            {
+                return from entry in entries.Values
+                       where entry.IsValid()
+                       select entry.GetValue();
+            }
+        }
+
+        public Cache()
         {
             timer = new Timer
             {
@@ -53,23 +61,24 @@ namespace CCEnvs.Caching
 
             timer.Elapsed += ValidateEntries;
 
-            ExpirationScanFrequency = 60.Seconds();
+            ExpirationScanFrequency = 1.Minutes();
         }
 
-        public IReferenceCacheEntry<TValue> CreateEntry(TKey key)
+        public ICacheEntry<TValue> CreateEntry(TKey key)
         {
             Guard.IsNotNull(key, nameof(key));
 
+            if (entries.ContainsKey(key))
+                throw new InvalidOperationException($"Cache entry with key: {key} already exists");
+
+            var entry = new CacheEntry<TValue>(default);
+
             lock (lockObject)
             {
-                if (entries.ContainsKey(key))
-                    throw new InvalidOperationException($"Cache entry with key: {key} already exists");
-
-                var entry = new ReferenceCacheEntry<TValue>(null);
                 entries.TryAdd(key, entry);
-
-                return entry;
             }
+
+            return entry;
         }
 
         public Maybe<TValue> Get(TKey key)
@@ -78,65 +87,84 @@ namespace CCEnvs.Caching
 
             lock (lockObject)
             {
-                if (!entries.TryGetValue(key, out var entry))
+                if (!entries.TryGetValue(key, out var entry)
+                    ||
+                    !entry.IsValid())
+                {
                     return Maybe<TValue>.None;
+                }
 
                 return entry.GetValue();
             }
         }
 
-        public Maybe<TValue> GetOrCreate(
+        public TValue GetOrCreate(
             TKey key,
-            Func<IReferenceCacheEntry<TValue>, TValue> factory)
+            Func<ICacheEntry<TValue>, TValue> factory)
         {
             Guard.IsNotNull(key, nameof(key));
             Guard.IsNotNull(factory, nameof(factory));
 
-            lock (lockObject)
-            {
-                if (entries.TryGetValue(key, out var entry))
-                    return entry.GetValue();
-
-                entry = CreateEntry(key);
-                var value = factory(entry);
-                entry.SetValue(value);
-
-                return value;
-            }
-        }
-
-        public bool Remove(TKey? key)
-        {
-            if (key is null)
-                return false;
-
-            lock (lockObject)
-            {
-                if (!entries.TryGetValue(key, out var entry))
-                    return false;
-
-                if (entry.IsExpired())
-                    return false;
-
-                entry.SetValue(null);
-                return true;
-            }
-        }
-
-        public bool TryAdd(
-            TKey key,
-            TValue value, 
-            [NotNullWhen(true)] out IReferenceCacheEntry<TValue>? entry)
-        {
-            Guard.IsNotNull(value, nameof(value));
+            ICacheEntry<TValue> entry;
 
             lock (lockObject)
             {
                 if (entries.TryGetValue(key, out entry))
                 {
-                    if (!entry.IsExpired())
-                        return false;
+                    if (!entry.IsValid())
+                        entry.SetValue(factory(entry));
 
+                    return entry.GetValue()!;
+                }
+            }
+
+            entry = CreateEntry(key);
+            var value = factory(entry);
+            entry.SetValue(value);
+
+            return value;
+        }
+
+        public bool TryRemove(TKey? key, [NotNullWhen(true)] out TValue? value)
+        {
+            if (key is null)
+            {
+                value = default;
+                return false;
+            }
+
+            ICacheEntry<TValue> entry;
+
+            lock (lockObject)
+            {
+                if (!entries.TryGetValue(key, out entry)
+                    ||
+                    !entry.HasValue)
+                {
+                    value = default;
+                    return false;
+                }
+            }
+
+            value = entry.GetValue()!;
+            entry.SetValue(default);
+
+            return entry.IsValid();
+        }
+
+        public bool TryAdd(
+            TKey key,
+            TValue value, 
+            [NotNullWhen(true)] out ICacheEntry<TValue>? entry)
+        {
+            Guard.IsNotNull(value, nameof(value));
+
+            lock (lockObject)
+            {
+                if (entries.TryGetValue(key, out entry)
+                    &&
+                    entry.IsValid())
+                {
                     entry.SetValue(value);
                     return true;
                 }
@@ -162,6 +190,10 @@ namespace CCEnvs.Caching
                     {
                         return entry.Value.IdleTime.Ticks;
                     })
+                    .ThenBy(entry =>
+                    {
+                        return Convert.ToByte(entry.Value.HasValue);
+                    })
                     .Select(pair => pair.Key)
                     .Take(toRemoveCount)
                     .ToArray();
@@ -172,8 +204,13 @@ namespace CCEnvs.Caching
 
             foreach (var pair in entries)
             {
-                if (pair.Value.IsExpired())
-                    Remove(pair.Key);
+                if (!pair.Value.HasValue)
+                    continue;
+
+                if (!pair.Value.IsExpired())
+                    continue;
+
+                pair.Value.SetValue(default);
             }
         }
     }
