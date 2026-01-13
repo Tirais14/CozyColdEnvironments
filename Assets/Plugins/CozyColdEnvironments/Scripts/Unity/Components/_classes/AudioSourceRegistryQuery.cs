@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,15 @@ namespace CCEnvs.Unity.Components
         public AudioSourceRegistryQuery()
         {
             Reset();
+        }
+
+        public AudioSourceRegistryQuery From(IEnumerable<AudioSourceRegistryEntry> entries)
+        {
+            Guard.IsNotNull(entries, nameof(entries));
+
+            AudioSourceEntries = entries;
+
+            return this;
         }
 
         public AudioSourceRegistryQuery IncludeInactive(bool state)
@@ -71,10 +81,12 @@ namespace CCEnvs.Unity.Components
                 });
             }
 
+            foreach (var entry in RawAudioSourceEntries)
+                entry.RestoreAudioSourceState();
+
             return RawAudioSourceEntries.Select(
                 static aSource =>
                 {
-                    aSource.RestoreAudioSourceState();
                     return aSource.Source;
                 })
                 .ToArray();
