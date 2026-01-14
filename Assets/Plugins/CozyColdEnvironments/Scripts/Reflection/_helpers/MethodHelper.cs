@@ -23,7 +23,9 @@ namespace CCEnvs.Reflection
                 ||
                 parameters.Zip(inputTypes, (param, other) => param.ParameterType.IsType(other)).Any(x => !x)
                 )
+            {
                 return false;
+            }
 
             ParameterModifier otherMods = parameters.GetParameterModifiers();
             for (int i = 0; i < parameters.Length; i++)

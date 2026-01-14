@@ -8,6 +8,7 @@ namespace CCEnvs.Patterns.Commands
     {
         private readonly Func<bool>? isReadyToExecute;
         private readonly Action execute;
+        private readonly Action? onReset;
 
         public override bool IsReadyToExecute {
             get
@@ -19,16 +20,22 @@ namespace CCEnvs.Patterns.Commands
         public AnonymousCommand(
             Action execute,
             Func<bool>? isReadyToExecute = null,
+            Action? onReset = null!,
             string? name = null,
-            bool isSingle = false)
+            bool isSingle = false,
+            bool isResetable = true,
+            int delayFrameCount = 0)
             :
             base(name: name,
-                 isSingle: isSingle)
+                 isSingle: isSingle,
+                 isResetable: isResetable,
+                 delayFrameCount: delayFrameCount)
         {
             Guard.IsNotNull(execute);
 
             this.isReadyToExecute = isReadyToExecute;
             this.execute = execute;
+            this.onReset = onReset;
         }
 
         public override string ToString()
@@ -37,12 +44,19 @@ namespace CCEnvs.Patterns.Commands
         }
 
         protected override void OnExecute() => execute();
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+            onReset?.Invoke();
+        }
     }
     public class AnonymousCommand<T> : Command, ICommand
     {
         private readonly T state;
-        private readonly Predicate<T>? isReadyToExecute;
         private readonly Action<T> execute;
+        private readonly Func<T, bool>? isReadyToExecute;
+        private readonly Action<T>? onReset;
 
         public override bool IsReadyToExecute {
             get
@@ -53,12 +67,17 @@ namespace CCEnvs.Patterns.Commands
 
         public AnonymousCommand(T state,
             Action<T> execute,
-            Predicate<T>? isReadyToExecute = null,
+            Func<T, bool>? isReadyToExecute = null,
+            Action<T>? onReset = null,
             string? name = null,
-            bool singleCommand = false)
+            bool isSingle = false,
+            bool isResetable = true,
+            int delayFrameCount = 0)
             :
             base(name: name,
-                 isSingle: singleCommand)
+                 isSingle: isSingle,
+                 isResetable: isResetable,
+                 delayFrameCount: delayFrameCount)
         {
             Guard.IsNotNull(isReadyToExecute);
             Guard.IsNotNull(execute);
@@ -66,13 +85,20 @@ namespace CCEnvs.Patterns.Commands
             this.state = state;
             this.isReadyToExecute = isReadyToExecute;
             this.execute = execute;
+            this.onReset = onReset;
         }
 
         public override string ToString()
         {
-            return $"{nameof(CommandName)}: {CommandName}; {nameof(state)}: {state}";
+            return $"{nameof(CommandName)}: {CommandName}; {nameof(IsDone)}: {IsDone}";
         }
 
         protected override void OnExecute() => execute(state);
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+            onReset?.Invoke(state);
+        }
     }
 }

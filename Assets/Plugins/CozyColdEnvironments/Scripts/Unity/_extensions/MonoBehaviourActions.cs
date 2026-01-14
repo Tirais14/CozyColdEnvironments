@@ -218,66 +218,66 @@ namespace CCEnvs.Unity
         //        .Forget();
         //}
 
-        public static void DoActionAsync(this MonoBehaviour source, Func<UniTask> action)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            Guard.IsNotNull(action);
+        //public static void DoActionAsync(this MonoBehaviour source, Func<UniTask> action)
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
+        //    Guard.IsNotNull(action);
 
-            UniTask.Create(action,
-                static async action =>
-                {
-                    await action();
-                })
-                .AttachExternalCancellation(source.destroyCancellationToken)
-                .SuppressCancellationThrow()
-                .Forget();
-        }
+        //    UniTask.Create(action,
+        //        static async action =>
+        //        {
+        //            await action();
+        //        })
+        //        .AttachExternalCancellation(source.destroyCancellationToken)
+        //        .SuppressCancellationThrow()
+        //        .Forget();
+        //}
 
-        public static void DoActionAsync<T>(this MonoBehaviour source, T state, Func<T, UniTask> action)
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            Guard.IsNotNull(action);
+        //public static void DoActionAsync<T>(this MonoBehaviour source, T state, Func<T, UniTask> action)
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
+        //    Guard.IsNotNull(action);
 
-            UniTask.Create((action, state),
-                static async input =>
-                {
-                    await input.action(input.state);
-                })
-                .AttachExternalCancellation(source.destroyCancellationToken)
-                .SuppressCancellationThrow()
-                .Forget();
-        }
+        //    UniTask.Create((action, state),
+        //        static async input =>
+        //        {
+        //            await input.action(input.state);
+        //        })
+        //        .AttachExternalCancellation(source.destroyCancellationToken)
+        //        .SuppressCancellationThrow()
+        //        .Forget();
+        //}
 
-        public static void DoActionAsync<TMonoBehaviour>(this TMonoBehaviour source, Func<TMonoBehaviour, UniTask> action)
-            where TMonoBehaviour : MonoBehaviour
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            Guard.IsNotNull(action);
+        //public static void DoActionAsync<TMonoBehaviour>(this TMonoBehaviour source, Func<TMonoBehaviour, UniTask> action)
+        //    where TMonoBehaviour : MonoBehaviour
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
+        //    Guard.IsNotNull(action);
 
-            UniTask.Create((action, source),
-                static async input =>
-                {
-                    await input.action(input.source);
-                })
-                .AttachExternalCancellation(source.destroyCancellationToken)
-                .SuppressCancellationThrow()
-                .Forget();
-        }
+        //    UniTask.Create((action, source),
+        //        static async input =>
+        //        {
+        //            await input.action(input.source);
+        //        })
+        //        .AttachExternalCancellation(source.destroyCancellationToken)
+        //        .SuppressCancellationThrow()
+        //        .Forget();
+        //}
 
-        public static void DoActionAsync<TMonoBehaviour, T>(this TMonoBehaviour source, T state, Func<TMonoBehaviour, T, UniTask> action)
-            where TMonoBehaviour : MonoBehaviour
-        {
-            CC.Guard.IsNotNull(source, nameof(source));
-            Guard.IsNotNull(action);
+        //public static void DoActionAsync<TMonoBehaviour, T>(this TMonoBehaviour source, T state, Func<TMonoBehaviour, T, UniTask> action)
+        //    where TMonoBehaviour : MonoBehaviour
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
+        //    Guard.IsNotNull(action);
 
-            UniTask.Create((action, source, state),
-                static async input =>
-                {
-                    await input.action(input.source, input.state);
-                })
-                .AttachExternalCancellation(source.destroyCancellationToken)
-                .SuppressCancellationThrow()
-                .Forget();
-        }
+        //    UniTask.Create((action, source, state),
+        //        static async input =>
+        //        {
+        //            await input.action(input.source, input.state);
+        //        })
+        //        .AttachExternalCancellation(source.destroyCancellationToken)
+        //        .SuppressCancellationThrow()
+        //        .Forget();
+        //}
     }
 }

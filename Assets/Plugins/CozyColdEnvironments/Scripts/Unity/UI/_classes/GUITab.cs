@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Dependencies;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
@@ -25,58 +26,52 @@ namespace CCEnvs.Unity.UI
         [Space(8)]
 
         [SerializeField]
-        [GetBySelf(IsOptional = true)]
-        protected Graphic? m_Graphic;
-
-        [SerializeField]
-        [GetBySelf(IsOptional = true)]
-        protected Button? m_Button;
-
-        [SerializeField]
-        [GetBySelf(IsOptional = true)]
-        protected Selectable? m_Selectable;
-
-        [SerializeField]
-        [GetBySelf(IsOptional = true)]
-        protected DragAndDropTarget? m_DragAndDropTarget;
-
-        [SerializeField]
         protected bool switchSelectable = true;
 
-        public Maybe<Image> image => m_Graphic.As<Image>();
-        public Maybe<Button> button => m_Button;
-        public Maybe<Selectable> selectable => m_Selectable;
-        public Maybe<DragAndDropTarget> dragAndDropTarget => m_DragAndDropTarget;
-        public Maybe<Material> material => m_Graphic.Maybe().Map(x => x.material);
-        public Maybe<Graphic> graphic => m_Graphic;
+        [field: GetBySelf(IsOptional = true)]
+        public Maybe<Button> button { get; private set; }
 
-        protected Lazy<ICanvasController> canvasController { get; private set; } = null!;
+        [field: GetBySelf(IsOptional = true)]
+        public Maybe<Selectable> selectable { get; private set; }
+
+        [field: GetBySelf(IsOptional = true)]
+        public Maybe<DragAndDropTarget> dragAndDropTarget { get; private set; }
+
+        [field: GetBySelf(IsOptional = true)]
+        public Maybe<Graphic> graphic { get; private set; }
+
+        [field: GetByParent(IsOptional = true)]
+        public Maybe<ICanvasController> canvasController { get; private set; }
+
+        [field: GetByParent(IsOptional = true)]
+        public Maybe<IGUITab> parent { get; private set; }
+
+        [field: GetBySelf(IsOptional = true)]
+        public Maybe<CanvasGroup> canvasGroup { get; private set; } = null!;
+
+        [field: GetByParent]
+        public Canvas canvas { get; private set; } = null!;
+
+        public Maybe<Image> image => graphic.Raw.As<Image>();
+        public Maybe<IGUITab> root { get; private set; }
+
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
+        protected CommandScheduler commandScheduler { get; private set; } = new(UnityFrameProvider.Update);
 
         protected override void Awake()
         {
             base.Awake();
-
-            canvasController = new Lazy<ICanvasController>(
-                () => this.QueryTo()
-                    .FromParents()
-                    .IncludeInactive()
-                    .Component<ICanvasController>()
-                    .Strict()
-                    );
-
-            pointerInput = new Lazy<InputActionRx<Vector2>>(
-                static () => BuiltInDependecyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput)
-                );
-
+            SetPointerInput();
             IShowableAwake();
         }
 
         protected override void Start()
         {
             base.Start();
-            IShowableStart();
+            InitParentGUITab();
+            InitRootGUITab();
             BindSelectable();
+            IShowableStart();
         }
 
         protected virtual void OnTransformChildrenChanged()
@@ -94,30 +89,31 @@ namespace CCEnvs.Unity.UI
 
             if (button.TryGetValue(out var btn))
                 btn.onClick.RemoveAllListeners();
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<IGUITab> GetParentGUI()
-        {
-            return this.Q()
-                       .FromParents()
-                       .ExcludeSelf()
-                       .Component<IGUITab>()
-                       .Lax();
-        }
-
-        public Maybe<IGUITab> GetRootGUI()
-        {
-            return this.Q()
-                       .FromParents()
-                       .ExcludeSelf()
-                       .Components<IGUITab>()
-                       .LastOrDefault()
-                       .Maybe();
+            IShowableOnDestroy();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual bool SelectableDoSelectPredicate() => true;
+
+        private void InitParentGUITab()
+        {
+            parent = this.Q()
+                .FromParents()
+                .ExcludeSelf()
+                .Component<IGUITab>()
+                .Lax();
+        }
+
+        private void InitRootGUITab()
+        {
+            root = this.Q()
+                .FromParents()
+                .ExcludeSelf()
+                .Components<IGUITab>()
+                .LastOrDefault()
+                .Maybe();
+        }
 
         private void BindSelectable()
         {
@@ -151,6 +147,15 @@ namespace CCEnvs.Unity.UI
 
                 button.onClick.AddListener(onClick);
             }
+        }
+
+        private void SetPointerInput()
+        {
+            pointerInput = new Lazy<InputActionRx<Vector2>>(
+                static () =>
+                {
+                    return BuiltInDependecyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput);
+                });
         }
     }
 }

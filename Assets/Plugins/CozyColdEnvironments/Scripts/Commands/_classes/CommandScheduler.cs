@@ -1,4 +1,5 @@
 using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,24 @@ namespace CCEnvs.Patterns.Commands
         private readonly Queue<ICommand> commands = new();
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
 
-        private ReactiveCommand<ICommand>? addCommandCmd;
+        private ReactiveCommand<ICommand>? addCommandRxCmd;
         private ReactiveCommand<Unit>? commandsExecutedCmd;
 
+        private Maybe<ICommand> executedCmd;
+        private int skipFrameCount;
+
+        public FrameProvider? FrameProvider { get; }
         public bool HasCommands => commands.IsNotEmpty();
+
+        public CommandScheduler()
+        {
+        }
+
+        public CommandScheduler(FrameProvider frameProvider)
+        {
+            FrameProvider = frameProvider;
+            frameProvider.Register(this);
+        }
 
         public void Schedule(ICommand command)
         {
@@ -29,7 +44,7 @@ namespace CCEnvs.Patterns.Commands
 
             addedCommandInfos.Add(command.GetCommandInfo());
 
-            addCommandCmd?.Execute(command);
+            addCommandRxCmd?.Execute(command);
         }
 
         public void Reset()
@@ -43,33 +58,44 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return;
 
-            addCommandCmd?.Dispose();
+            addCommandRxCmd?.Dispose();
 
             disposed = true;
         }
 
         public void DoTick()
         {
+            if (skipFrameCount > 0)
+                skipFrameCount--;
+
             if (commands.IsEmpty())
                 return;
 
             bool hasCommands = HasCommands;
 
-            while (commands.TryPeek(out ICommand cmd))
+            while (true)
             {
-                if (cmd.IsDone)
-                {
-                    _ = commands.Dequeue();
+                if (executedCmd.Map(cmd => cmd.IsRunning).Raw)
                     continue;
-                }
+                else
+                    executedCmd = Maybe<ICommand>.None;
 
-                if (cmd.IsRunning)
+                if (!commands.TryPeek(out ICommand? cmd))
                     break;
 
                 if (!cmd.IsReadyToExecute)
                     break;
 
+                if (cmd.DelayFrameCount > 0)
+                {
+                    skipFrameCount = cmd.DelayFrameCount - 1;
+                    break;
+                }
+
+                //Order is important
+                cmd = commands.Dequeue();
                 cmd.Execute();
+                executedCmd = cmd.Maybe();
             }
 
             if (commandsExecutedCmd is not null
@@ -84,8 +110,8 @@ namespace CCEnvs.Patterns.Commands
 
         public Observable<ICommand> ObserveAddCommand()
         {
-            addCommandCmd ??= new ReactiveCommand<ICommand>();
-            return addCommandCmd;
+            addCommandRxCmd ??= new ReactiveCommand<ICommand>();
+            return addCommandRxCmd;
         }
 
         public Observable<Unit> ObserveCommandsExecuted()

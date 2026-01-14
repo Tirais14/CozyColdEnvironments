@@ -95,7 +95,7 @@ namespace CCEnvs.Unity.Storages.UI
                 instantiatedGameObjects.Add(cnt.Key, go);
                 slots.Add(go);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Destroy(go);
                 this.PrintException(ex);
@@ -105,9 +105,7 @@ namespace CCEnvs.Unity.Storages.UI
                 addCntOperationCount--;
 
                 if (addCntOperationCount <= 0)
-                {
-                    GetRootGUI().IfSome(x => x.Redraw());
-                }
+                    root.IfSome(x => x.Redraw());
             }
         }
 

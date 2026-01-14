@@ -13,11 +13,17 @@ namespace CCEnvs.Patterns.Commands
         bool IsRunning { get; }
         bool IsDone { get; }
         bool IsFaulted { get; }
+        bool IsResetable { get; }
         string CommandName { get; }
+        int DelayFrameCount { get; }
 
         void Execute();
 
         void Undo();
+
+        ICommand Reset();
+
+        bool TryReset();
 
         CommandInfo GetCommandInfo();
     }

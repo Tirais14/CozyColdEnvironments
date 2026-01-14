@@ -12,17 +12,21 @@ namespace CCEnvs.Unity.Components
         protected override void Awake()
         {
             base.Awake();
-            this.DoActionAsync(static async @this =>
-            {
-                await UniTask.WaitForEndOfFrame();
-                Destroy(@this);
-            });
+            UniTask.Create(this,
+                static async @this =>
+                {
+                    await UniTask.WaitForEndOfFrame();
+                    Destroy(@this);
+                })
+                .Forget();
 
-            this.DoActionAsync(static async @this =>
-            {
-                await UniTask.Yield(PlayerLoopTiming.PreUpdate);
-                @this.OnPreUpdate();
-            });
+            UniTask.Create(this,
+                static async @this =>
+                {
+                    await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+                    @this.OnPreUpdate();
+                })
+                .Forget();
         }
 
         protected virtual void OnPreUpdate()

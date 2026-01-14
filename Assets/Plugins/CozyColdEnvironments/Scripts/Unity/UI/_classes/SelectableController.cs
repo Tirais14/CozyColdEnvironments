@@ -111,22 +111,21 @@ namespace CCEnvs.Unity.UI
             selection.Value = Maybe<T>.None;
             collectSelectablesScheduled = true;
 
-            this.DoActionAsync(static async @this =>
-            {
-                await UniTask.NextFrame(PlayerLoopTiming.LastInitialization);
-                try
+            UniTask.Create(this,
+                static async @this =>
                 {
-                    @this.CollectSelectables();
-                }
-                catch (Exception ex)
-                {
-                    @this.PrintError(ex);
-                }
-                finally
-                {
-                    @this.collectSelectablesScheduled = false;
-                }
-            });
+                    await UniTask.NextFrame(PlayerLoopTiming.LastInitialization);
+
+                    try
+                    {
+                        @this.CollectSelectables();
+                    }
+                    finally
+                    {
+                        @this.collectSelectablesScheduled = false;
+                    }
+                })
+                .Forget();
         }
 
         private void OnSelectablesClear(object sender, EventArgs args)

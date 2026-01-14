@@ -34,12 +34,14 @@ namespace CCEnvs.Unity.Components
 
         protected virtual void Start()
         {
-            this.DoActionAsync(static async @this =>
-            {
-                await UniTask.Yield(PlayerLoopTiming.PreUpdate, @this.destroyCancellationToken);
+            UniTask.Create(this,
+                static async @this =>
+                {
+                    await UniTask.Yield(PlayerLoopTiming.PreUpdate, @this.destroyCancellationToken);
 
-                @this.StartPassed = true;
-            });
+                    @this.StartPassed = true;
+                })
+                .Forget();
         }
 
         protected virtual void OnEnable()

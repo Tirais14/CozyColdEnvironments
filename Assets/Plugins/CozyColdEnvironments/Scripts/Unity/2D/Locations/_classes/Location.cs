@@ -114,19 +114,22 @@ namespace CCEnvs.Unity
                 return;
 
             refreshScheduled = true;
-            this.DoActionAsync(static async @this =>
-            {
-                await UniTask.NextFrame(timing: PlayerLoopTiming.Initialization);
 
-                try
+            UniTask.Create(this,
+                static async @this =>
                 {
-                    @this.InitLayers();
-                }
-                finally
-                {
-                    @this.refreshScheduled = false;
-                }
-            });
+                    await UniTask.NextFrame(timing: PlayerLoopTiming.Initialization);
+
+                    try
+                    {
+                        @this.InitLayers();
+                    }
+                    finally
+                    {
+                        @this.refreshScheduled = false;
+                    }
+                })
+                .Forget();
         }
 
         private void InitLayers()

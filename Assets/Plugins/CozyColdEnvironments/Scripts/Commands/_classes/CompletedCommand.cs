@@ -1,9 +1,9 @@
 #nullable enable
-using System.Threading.Tasks;
+using System;
 
 namespace CCEnvs.Patterns.Commands
 {
-    internal class CompletedCommand : ICommand
+    internal sealed class CompletedCommand : ICommand, IEquatable<CompletedCommand>
     {
         public bool IsReadyToExecute { get; } = true;
         public bool IsCancelled { get; }
@@ -12,7 +12,19 @@ namespace CCEnvs.Patterns.Commands
         public bool IsRunning { get; } = false;
         public bool IsDone { get; } = true;
         public bool IsFaulted { get; } = false;
+        public bool IsResetable { get; } = false;
         public string CommandName { get; } = "Completed";
+        public int DelayFrameCount { get; } = 0;
+
+        public static bool operator ==(CompletedCommand? left, CompletedCommand? right)
+        {
+            return left != null && left.Equals(right);
+        }
+
+        public static bool operator !=(CompletedCommand? left, CompletedCommand? right)
+        {
+            return !(left == right);
+        }
 
         public void Execute()
         {
@@ -31,5 +43,18 @@ namespace CCEnvs.Patterns.Commands
         {
             return CommandName;
         }
+
+        public ICommand Reset() => this;
+
+        public bool TryReset() => false;
+
+        public bool Equals(CompletedCommand? other) => other != null;
+
+        public override bool Equals(object obj)
+        {
+            return obj is CompletedCommand typed && Equals(typed);
+        }
+
+        public override int GetHashCode() => 0;
     }
 }

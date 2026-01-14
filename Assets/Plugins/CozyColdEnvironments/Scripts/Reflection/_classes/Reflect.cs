@@ -410,7 +410,8 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<ConstructorInfo> Constructors()
         {
-            return IncludeInstance().IncludeMemberTypes(MemberTypes.Constructor)
+            return IncludeInstance()
+                .IncludeMemberTypes(MemberTypes.Constructor)
                 .FindMembers()
                 .CastCustom<ConstructorInfo>();
         }
@@ -801,8 +802,13 @@ namespace CCEnvs.Reflection
 
             if (!CompareAttributes(ctor))
                 return false;
-            if (argumentTypes.IsSome && !ctor.CompareParameters(argumentTypes.GetValue(Type.EmptyTypes), paramMods))
+
+            if (argumentTypes.IsSome
+                &&
+                !ctor.CompareParameters(argumentTypes.GetValue(Type.EmptyTypes), paramMods))
+            {
                 return false;
+            }
 
             return true;
         }

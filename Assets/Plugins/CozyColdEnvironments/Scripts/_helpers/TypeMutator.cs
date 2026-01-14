@@ -6,6 +6,7 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using UnityEngine.DedicatedServer;
 
 namespace CCEnvs.Conversations
 {
@@ -83,14 +84,18 @@ namespace CCEnvs.Conversations
                 .GetValue();
         }
 
-        private static Maybe<object> CreateByReflection(object arg, Type toType)
+        private static Maybe<object> CreateByReflection(object instance, Type toType)
         {
-            return toType.Reflect()
-                       .WithArguments(arg)
-                       .Constructor()
-                       .Lax()
-                       .Map(m => m.Invoke(Range.From(arg)))
-                       .GetValue();
+            var ctors = from ctr in toType.GetConstructors(BindingFlagsDefault.InstancePublic)
+                        select (ctr, prms: ctr.GetParameters()) into ctorInfo
+                        where ctorInfo.prms.Count(param => !param.HasDefaultValue) == 1
+                        where instance.IsInstanceOfType(ctorInfo.prms[0].ParameterType)
+                        select ctorInfo.ctr;
+
+            if (ctors.FirstOrDefault().Let(out var ctor))
+                return ctor.Invoke(Range.From(instance));
+
+            return Maybe<object>.None;
         }
     }
 }
