@@ -1,10 +1,11 @@
 #nullable enable
 
+using System;
 using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public interface ICommand
+    public interface ICommand : IDisposable
     {
         bool IsReadyToExecute { get; }
         bool IsCancelled { get; }
@@ -15,9 +16,9 @@ namespace CCEnvs.Patterns.Commands
         bool IsFaulted { get; }
         bool IsResetable { get; }
         string CommandName { get; }
-        int DelayFrameCount { get; }
+        int DelayFrameCount { get; set; }
 
-        void Execute();
+        ValueTask ExecuteAsync();
 
         void Undo();
 

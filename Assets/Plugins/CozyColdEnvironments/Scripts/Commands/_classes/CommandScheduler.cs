@@ -1,8 +1,11 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
+using Newtonsoft.Json.Converters;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -15,17 +18,22 @@ namespace CCEnvs.Patterns.Commands
         private ReactiveCommand<ICommand>? addCommandRxCmd;
         private ReactiveCommand<Unit>? commandsExecutedCmd;
 
-        private Maybe<ICommand> executedCmd;
-        private int skipFrameCount;
+        private ICommand? cmd;
+        private bool cmdExecuted;
+        private int idleFrameCount;
 
         public FrameProvider? FrameProvider { get; }
         public bool HasCommands => commands.IsNotEmpty();
+        public bool IsEnabled { get; private set; }
 
         public CommandScheduler()
         {
+            Enable();
         }
 
         public CommandScheduler(FrameProvider frameProvider)
+            :
+            this()
         {
             FrameProvider = frameProvider;
             frameProvider.Register(this);
@@ -65,37 +73,34 @@ namespace CCEnvs.Patterns.Commands
 
         public void DoTick()
         {
-            if (skipFrameCount > 0)
-                skipFrameCount--;
+            if (!IsEnabled)
+                return;
+
+            if (IsIdleFrame())
+                return;
 
             if (commands.IsEmpty())
                 return;
 
             bool hasCommands = HasCommands;
+            int iterationCount = 0;
 
             while (true)
             {
-                if (executedCmd.Map(cmd => cmd.IsRunning).Raw)
-                    continue;
-                else
-                    executedCmd = Maybe<ICommand>.None;
+                if (iterationCount > 10000)
+                    throw new InvalidOperationException("Time out");
 
-                if (!commands.TryPeek(out ICommand? cmd))
+                iterationCount++;
+
+                ResolveCommand();
+
+                if (IsIdleFrame())
                     break;
 
-                if (!cmd.IsReadyToExecute)
+                if (!IsCommandReadyToExecute(cmd))
                     break;
 
-                if (cmd.DelayFrameCount > 0)
-                {
-                    skipFrameCount = cmd.DelayFrameCount - 1;
-                    break;
-                }
-
-                //Order is important
-                cmd = commands.Dequeue();
-                cmd.Execute();
-                executedCmd = cmd.Maybe();
+                ExecuteCommand(cmd!);
             }
 
             if (commandsExecutedCmd is not null
@@ -106,6 +111,16 @@ namespace CCEnvs.Patterns.Commands
             {
                 commandsExecutedCmd.Execute(Unit.Default);
             }
+        }
+
+        public void Enable()
+        {
+            IsEnabled = true;
+        }
+
+        public void Disable()
+        {
+            IsEnabled = false;
         }
 
         public Observable<ICommand> ObserveAddCommand()
@@ -135,6 +150,52 @@ namespace CCEnvs.Patterns.Commands
                 if (newCmd.IsSingle && cmd.GetCommandInfo() == newCmdInfo)
                     cmd.Undo();
             }
+        }
+
+        private bool IsIdleFrame()
+        {
+            if (idleFrameCount > 0)
+                idleFrameCount--;
+
+            return idleFrameCount > 0;
+        }
+
+        private bool IsCommandReseted(ICommand cmd)
+        {
+            return cmdExecuted && !cmd.IsDone && !cmd.IsRunning;
+        }
+
+        private bool IsCommandReadyToExecute(ICommand? cmd)
+        {
+            if (cmd.IsNull()
+                ||
+                cmd.IsDone)
+            {
+                return false;
+            }
+
+            return cmd.IsReadyToExecute;
+        }
+
+        private void EraseCommand()
+        {
+            cmd = null;
+            cmdExecuted = false;
+        }
+
+        private void ResolveCommand()
+        {
+            if (cmd.IsNotNull() && cmd.IsRunning && !IsCommandReseted(cmd))
+                return;
+
+            EraseCommand();
+            commands.TryDequeue(out cmd);
+        }
+
+        private void ExecuteCommand(ICommand cmd)
+        {
+            cmd.ExecuteAsync();
+            cmdExecuted = true;
         }
 
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)

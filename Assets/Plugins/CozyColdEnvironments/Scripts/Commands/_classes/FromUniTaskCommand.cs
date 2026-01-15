@@ -1,5 +1,7 @@
 #if UNITASK_PLUGIN
 using Cysharp.Threading.Tasks;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -19,8 +21,9 @@ namespace CCEnvs.Patterns.Commands
             this.task = task;
         }
 
-        protected override void OnExecute()
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
+            return default;
         }
     }
 
@@ -39,8 +42,9 @@ namespace CCEnvs.Patterns.Commands
             this.task = task;
         }
 
-        protected override void OnExecute()
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
+            return default;
         }
     }
 }

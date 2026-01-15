@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.UI
         private Button button = null!;
 
         [GetByParent]
-        private IGUITab target = null!;
+        private GUITab target = null!;
 
         protected override void Start()
         {

@@ -1,10 +1,12 @@
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class AnonymousCommandBuilder
+    public class AnonymousCommandBuilder
     {
         private Delegate? onExecute;
         private Delegate? executePredicate;
@@ -23,7 +25,7 @@ namespace CCEnvs.Patterns.Commands
             Reset();
         }
 
-        public AnonymousCommandBuilder OnExecute(Action onExecute)
+        public AnonymousCommandBuilder OnExecute(Func<CancellationToken, ValueTask> onExecute)
         {
             Guard.IsNotNull(onExecute, nameof(onExecute));
             ThrowIfStatedCommand();
@@ -33,11 +35,12 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder OnExecute<T>(T state, Action<T> onExecute)
+        public AnonymousCommandBuilder OnExecute<T>(T state, Func<T, CancellationToken, ValueTask> onExecute)
         {
             Guard.IsNotNull(onExecute, nameof(onExecute));
 
             this.onExecute = onExecute;
+
             isStatedCommand = true;
 
             return this;
@@ -55,6 +58,7 @@ namespace CCEnvs.Patterns.Commands
         public AnonymousCommandBuilder ExecuteWhen<T>(T state, Func<T, bool>? executePredicate)
         {
             this.executePredicate = executePredicate;
+
             isStatedCommand = true;
 
             return this;
@@ -72,6 +76,7 @@ namespace CCEnvs.Patterns.Commands
         public AnonymousCommandBuilder OnReset<T>(Action<T>? onReset)
         {
             this.onReset = onReset;
+
             isStatedCommand = true;
 
             return this;
@@ -105,13 +110,13 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public ICommand Build()
+        public Command Build()
         {
             ThrowIfOnExecuteIsNull();
             ThrowIfStatedCommand();
 
             var cmd = new AnonymousCommand(
-                (Action)onExecute!,
+                (Func<CancellationToken, ValueTask>)onExecute!,
                 isReadyToExecute: (Func<bool>?)executePredicate,
                 onReset: (Action?)onReset,
                 name: name,
@@ -125,13 +130,13 @@ namespace CCEnvs.Patterns.Commands
             return cmd;
         }
 
-        public ICommand Build<T>(T state)
+        public Command Build<T>(T state)
         {
             ThrowIfOnExecuteIsNull();
 
             var cmd = new AnonymousCommand<T>(
                 state,
-                (Action<T>)onExecute!,
+                (Func<T, CancellationToken, ValueTask>)onExecute!,
                 isReadyToExecute: (Func<T, bool>?)executePredicate,
                 onReset: (Action<T>?)onReset,
                 name: name,
@@ -145,7 +150,7 @@ namespace CCEnvs.Patterns.Commands
             return cmd;
         }
 
-        public void Reset()
+        public AnonymousCommandBuilder Reset()
         {
             onExecute = null;
             executePredicate = null;
@@ -156,6 +161,8 @@ namespace CCEnvs.Patterns.Commands
             delayFrameCount = 0;
 
             isStatedCommand = false;
+
+            return this;
         }
 
         private void ThrowIfStatedCommand()

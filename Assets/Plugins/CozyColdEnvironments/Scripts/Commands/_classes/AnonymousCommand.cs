@@ -1,13 +1,15 @@
 #nullable enable
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public partial class AnonymousCommand : Command, ICommand
+    public sealed class AnonymousCommand : Command, ICommand
     {
         private readonly Func<bool>? isReadyToExecute;
-        private readonly Action execute;
+        private readonly Func<CancellationToken, ValueTask> onExecute;
         private readonly Action? onReset;
 
         public override bool IsReadyToExecute {
@@ -18,7 +20,7 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public AnonymousCommand(
-            Action execute,
+            Func<CancellationToken, ValueTask> onExecute,
             Func<bool>? isReadyToExecute = null,
             Action? onReset = null!,
             string? name = null,
@@ -31,10 +33,10 @@ namespace CCEnvs.Patterns.Commands
                  isResetable: isResetable,
                  delayFrameCount: delayFrameCount)
         {
-            Guard.IsNotNull(execute);
+            Guard.IsNotNull(onExecute);
 
             this.isReadyToExecute = isReadyToExecute;
-            this.execute = execute;
+            this.onExecute = onExecute;
             this.onReset = onReset;
         }
 
@@ -43,18 +45,22 @@ namespace CCEnvs.Patterns.Commands
             return $"{nameof(CommandName)}: {CommandName}";
         }
 
-        protected override void OnExecute() => execute();
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        {
+            await onExecute(cancellationToken);
+        }
 
         protected override void OnReset()
         {
             base.OnReset();
             onReset?.Invoke();
         }
+
     }
-    public class AnonymousCommand<T> : Command, ICommand
+    public sealed class AnonymousCommand<T> : Command, ICommand
     {
         private readonly T state;
-        private readonly Action<T> execute;
+        private readonly Func<T, CancellationToken, ValueTask> onExecute;
         private readonly Func<T, bool>? isReadyToExecute;
         private readonly Action<T>? onReset;
 
@@ -66,7 +72,7 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public AnonymousCommand(T state,
-            Action<T> execute,
+            Func<T, CancellationToken, ValueTask> onExecute,
             Func<T, bool>? isReadyToExecute = null,
             Action<T>? onReset = null,
             string? name = null,
@@ -79,12 +85,11 @@ namespace CCEnvs.Patterns.Commands
                  isResetable: isResetable,
                  delayFrameCount: delayFrameCount)
         {
-            Guard.IsNotNull(isReadyToExecute);
-            Guard.IsNotNull(execute);
+            Guard.IsNotNull(onExecute);
 
             this.state = state;
             this.isReadyToExecute = isReadyToExecute;
-            this.execute = execute;
+            this.onExecute = onExecute;
             this.onReset = onReset;
         }
 
@@ -93,7 +98,10 @@ namespace CCEnvs.Patterns.Commands
             return $"{nameof(CommandName)}: {CommandName}; {nameof(IsDone)}: {IsDone}";
         }
 
-        protected override void OnExecute() => execute(state);
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        {
+            await onExecute(state, cancellationToken);
+        }
 
         protected override void OnReset()
         {

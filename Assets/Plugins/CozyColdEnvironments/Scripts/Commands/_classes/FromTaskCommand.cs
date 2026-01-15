@@ -1,4 +1,5 @@
 #nullable enable
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
@@ -18,8 +19,9 @@ namespace CCEnvs.Patterns.Commands
             this.task = task;
         }
 
-        protected override void OnExecute()
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
+            return default;
         }
     }
 }

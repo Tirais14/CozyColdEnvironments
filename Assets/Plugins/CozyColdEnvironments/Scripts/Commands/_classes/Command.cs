@@ -1,6 +1,10 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine.UIElements;
 
 #pragma warning disable S107
 #pragma warning disable S3963
@@ -17,7 +21,7 @@ namespace CCEnvs.Patterns.Commands
                 if (isBuilderBusy)
                     return new AnonymousCommandBuilder();
 
-                return builder;
+                return builder.Reset();
             }
         }
 
@@ -26,53 +30,9 @@ namespace CCEnvs.Patterns.Commands
             builder = new AnonymousCommandBuilder();
             builder.OnBuilded += _ => isBuilderBusy = false;
         }
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static AnonymousCommand Create(
-        //    Action execute,
-        //    Func<bool>? isReadyToExecute = null,
-        //    Action? onReset = null,
-        //    string? name = null,
-        //    bool isSingle = false,
-        //    bool isResetable = true,
-        //    int delayFrameCount = 0)
-        //{
-        //    return new AnonymousCommand(
-        //        execute,
-        //        isReadyToExecute,
-        //        onReset: onReset,
-        //        name: name,
-        //        isSingle: isSingle,
-        //        isResetable: isResetable,
-        //        delayFrameCount: delayFrameCount
-        //        );
-        //}
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static AnonymousCommand<T> Create<T>(
-        //    T state,
-        //    Action<T> execute,
-        //    Predicate<T>? isReadyToExecute = null,
-        //    Action<T>? onReset = null,
-        //    string? name = null,
-        //    bool isSingle = false, 
-        //    bool isResetable = true,
-        //    int delayFrameCount = 0)
-        //{
-        //    return new AnonymousCommand<T>(
-        //        state,
-        //        execute,
-        //        isReadyToExecute,
-        //        onReset: onReset,
-        //        name: name,
-        //        isSingle: isSingle,
-        //        isResetable: isResetable,
-        //        delayFrameCount: delayFrameCount
-        //        );
-        //}
     }
 
-    public abstract partial class Command : ICommand
+    public abstract partial class Command : ICommand, IDisposable, IEquatable<Command>
     {
         public static ICommand Completed { get; } = new CompletedCommand();
 
@@ -81,9 +41,12 @@ namespace CCEnvs.Patterns.Commands
         private bool isFaulted;
         private bool isCompleted;
 
+        private CancellationTokenSource? cancellationTokenSource;
+        private readonly Type type;
+
         public string CommandName { get; } = string.Empty;
 
-        public virtual bool IsReadyToExecute => !IsDone;
+        public virtual bool IsReadyToExecute => !IsRunning && !IsDone;
         public virtual bool IsCancelled => isCanceled;
         public virtual bool IsFaulted => isFaulted;
         public virtual bool IsCompleted => isCompleted;
@@ -93,10 +56,10 @@ namespace CCEnvs.Patterns.Commands
         public bool IsSingle { get; }
         public bool IsResetable { get; }
 
-        public int DelayFrameCount { get; }
+        public int DelayFrameCount { get; set; }
 
         protected Command(
-            bool isSingle,
+            bool isSingle = false,
             string? name = null,
             bool isResetable = true,
             int delayFrameCount = 0)
@@ -105,23 +68,61 @@ namespace CCEnvs.Patterns.Commands
             IsSingle = isSingle;
             IsResetable = isResetable;
             DelayFrameCount = delayFrameCount;
+
+            type = GetType();
         }
 
-        public void Execute()
+        public static bool operator ==(Command? left, Command right)
+        {
+            return ReferenceEquals(left, right)
+                   ||
+                   (left is not null && left.Equals(right));
+        }
+
+        public static bool operator !=(Command? left, Command right)
+        {
+            return !(left == right);
+        }
+
+        public async ValueTask ExecuteAsync()
         {
             if (IsRunning || IsDone)
                 return;
 
             isExecuted = true;
+
+            CancelAndDisposeCancellationTokenSource();
+            cancellationTokenSource = new CancellationTokenSource();
+
             try
             {
-                OnExecute();
+                await OnExecuteAsync(cancellationTokenSource.Token);
+                isCompleted = true;
             }
             catch (Exception ex)
             {
-                this.PrintException(ex);
-                isFaulted = true;
+                switch (ex)
+                {
+                    case TaskCanceledException:
+                        isCanceled = true;
+                        break;
+                    default:
+                        isFaulted = true;
+                        this.PrintException(ex);
+                        break;
+                }
             }
+
+            if (!IsDone
+                &&
+                (cancellationTokenSource is null
+                ||
+                cancellationTokenSource.IsCancellationRequested))
+            {
+                isCanceled = true;
+            }
+
+            CancelAndDisposeCancellationTokenSource();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -129,6 +130,11 @@ namespace CCEnvs.Patterns.Commands
         {
             if (IsDone)
                 return;
+
+            if (cancellationTokenSource is null)
+                throw new InvalidOperationException($"{nameof(CancellationTokenSource)} not found");
+
+            CancelAndDisposeCancellationTokenSource();
 
             OnUndo();
             isCanceled = true;
@@ -157,7 +163,7 @@ namespace CCEnvs.Patterns.Commands
 
         public ICommand Reset()
         {
-            if (IsResetable)
+            if (!IsResetable)
                 throw new InvalidOperationException($"Command: {this} is not resetable");
 
             TryReset();
@@ -179,7 +185,21 @@ namespace CCEnvs.Patterns.Commands
                 return CommandName;
         }
 
-        protected abstract void OnExecute();
+        bool disposed;
+        public void Dispose() => Dispose(true);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+                CancelAndDisposeCancellationTokenSource();
+
+            disposed = true;
+        }
+
+        protected abstract ValueTask OnExecuteAsync(CancellationToken cancellationToken);
 
         protected virtual void OnUndo()
         {
@@ -187,6 +207,33 @@ namespace CCEnvs.Patterns.Commands
 
         protected virtual void OnReset()
         {
+        }
+
+        private void CancelAndDisposeCancellationTokenSource()
+        {
+            if (cancellationTokenSource is not null)
+            {
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
+            }
+        }
+
+        public bool Equals(Command other)
+        {
+            return CommandName == other.CommandName
+                   &&
+                   type == other.type;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Command typed && Equals(typed);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(type, CommandName);
         }
     }
 }

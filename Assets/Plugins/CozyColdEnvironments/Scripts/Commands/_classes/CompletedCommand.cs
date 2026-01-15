@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -14,7 +15,11 @@ namespace CCEnvs.Patterns.Commands
         public bool IsFaulted { get; } = false;
         public bool IsResetable { get; } = false;
         public string CommandName { get; } = "Completed";
-        public int DelayFrameCount { get; } = 0;
+
+        public int DelayFrameCount {
+            get => 0;
+            set => _ = value;
+        }
 
         public static bool operator ==(CompletedCommand? left, CompletedCommand? right)
         {
@@ -26,9 +31,7 @@ namespace CCEnvs.Patterns.Commands
             return !(left == right);
         }
 
-        public void Execute()
-        {
-        }
+        public ValueTask ExecuteAsync() => default;
 
         public void Undo()
         {
@@ -56,5 +59,9 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public override int GetHashCode() => 0;
+
+        public void Dispose()
+        {
+        }
     }
 }
