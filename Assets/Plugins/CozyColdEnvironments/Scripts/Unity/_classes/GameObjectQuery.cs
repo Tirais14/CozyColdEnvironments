@@ -261,7 +261,6 @@ namespace CCEnvs.Unity
         {
             depthLimiter = type;
 
-
             return this;
         }
 

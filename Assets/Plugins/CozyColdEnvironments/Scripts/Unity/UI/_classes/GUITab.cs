@@ -8,11 +8,8 @@ using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using R3;
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -55,8 +52,6 @@ namespace CCEnvs.Unity.UI
 
         public Maybe<Image> image => graphic.Raw.As<Image>();
         public Maybe<GUITab> root { get; private set; }
-
-        public ImmutableArray<IShowable> childrens { get; private set; }
 
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
         protected CommandScheduler commandScheduler { get; private set; } = new(UnityFrameProvider.Update);
@@ -116,11 +111,6 @@ namespace CCEnvs.Unity.UI
                 .Components<GUITab>()
                 .LastOrDefault()
                 .Maybe();
-        }
-
-        private void InitChildrens()
-        {
-
         }
 
         private void BindSelectable()

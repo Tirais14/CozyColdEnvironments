@@ -8,9 +8,6 @@ namespace CCEnvs.Unity.UI
     public interface IShowable
     {
         bool IsShown { get; }
-        bool ShowAllowed { get; }
-        bool HideAllowed { get; }
-        bool ShowOnInited { get; set; }
         bool IsInited { get; }
 
         void Hide();

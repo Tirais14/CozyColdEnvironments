@@ -1,7 +1,6 @@
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
-using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using R3;
@@ -38,9 +37,7 @@ namespace CCEnvs.Unity.UI
         private bool stateTransitioning;
 
         private Command hideCmd = null!;
-        private Command onHidenCmd = null!;
         private Command showCmd = null!;
-        private Command onShownCmd = null!;
         private Command redrawCmd = null!;
 
         public bool ShowOnInited {
@@ -49,8 +46,6 @@ namespace CCEnvs.Unity.UI
         }
 
         public bool IsShown => isShown.Value;
-        public virtual bool ShowAllowed => IsInited && !stateTransitioning;
-        public virtual bool HideAllowed => IsInited && !stateTransitioning;
         public bool IsInited { get; private set; }
 
         private void IShowableAwake()
@@ -62,9 +57,9 @@ namespace CCEnvs.Unity.UI
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
 
-            CreateShowCommands();
-            CreateHideCommands();
-            CreateRedrawCommand();
+            hideCmd = new HideCommand(this);
+            showCmd = new ShowCommand(this);
+            redrawCmd = new RedrawCommand(this);
         }
 
         private void IShowableStart()
@@ -76,22 +71,18 @@ namespace CCEnvs.Unity.UI
         {
             isShown.Dispose();
             hideCmd.Dispose();
-            onHidenCmd.Dispose();
             showCmd.Dispose();
-            onShownCmd.Dispose();
             redrawCmd.Dispose();
         }
 
-        public virtual void Hide()
+        public void Hide()
         {
             commandScheduler.Schedule(hideCmd.Reset());
-            commandScheduler.Schedule(onHidenCmd.Reset());
         }
 
-        public virtual void Show()
+        public void Show()
         {
             commandScheduler.Schedule(showCmd.Reset());
-            commandScheduler.Schedule(onShownCmd.Reset());
         }
 
         public bool SwitchShownState()
@@ -242,91 +233,59 @@ namespace CCEnvs.Unity.UI
                 );
         }
 
-        private async UniTask WaitUntilChildrensInitedAsync(IShowable[] childs)
+        private async UniTask WaitUntilChildrensInitedAsync()
         {
-            if (ArrayHelper.IsNotEmpty(childs))
+            var childs = this.Q()
+                .FromChildrens()
+                .ExcludeSelf()
+                .Components<IShowable>();
+
+            if (childs.IsNotEmpty())
             {
                 await UniTask.WaitUntil(
                     childs,
-                    childs => childs.All(x => x.IsInited),
+                    static childs =>
+                    {
+                        return childs.All(x => x.IsInited);
+                    },
                     cancellationToken: destroyCancellationToken
                     );
             }
         }
 
-        private void CreateHideCommands()
-        {
-            hideCmd = new HideCommand(this);
-            onHidenCmd = new OnHidenCommand(this);
-        }
-
-        private void CreateShowCommands()
-        {
-            showCmd = new ShowCommand(this);
-            onShownCmd = new OnShownCommand(this);
-        }
-
-        private void CreateRedrawCommand()
-        {
-            redrawCmd = new RedrawCommand(this);
-        }
-
-        private IShowable[] GetShowableChilds()
+        private IShowable[] GetShowableControlledChilds()
         {
             return this.Q()
                 .FromChildrens()
                 .ExcludeSelf()
+                .FirstComponentsOnBranch()
                 .Components<IShowable>()
-                .Where(x => !x.IsInited)
                 .ToArray();
         }
 
-        private (RectTransform child, Vector3 pos)[] GetChildsForRebuildLayout()
+        private RectTransform[] GetControlledLayouts()
         {
-            using var _ = UnityEngine.Pool.ListPool<(RectTransform child, Vector3 pos)>.Get(out var childInfos);
-
-            foreach (var child in GetComponentsInChildren<RectTransform>(includeInactive: false))
-            {
-                if (child.Q()
-                    .FromParents()
-                    .ExcludeSelf()
-                    .Component<IShowable>()
-                    .Lax()
-                    .TryGetValue(out var parentShowable)
-                    &&
-                    !parentShowable.Equals(this))
-                {
-                    continue;
-                }
-
-                childInfos.Add((child, child.localPosition));
-            }
-
-            return childInfos.ToArray();
+            return this.Q()
+                .FromChildrens()
+                .DepthLimiter<IShowable>()
+                .Components<RectTransform>()
+                .ToArray();
         }
 
-        private async UniTask RebuildLayoutAsync((RectTransform child, Vector3 pos)[] childInfos)
+        private async UniTask RebuildControlledLayouts()
         {
-            await UniTask.NextFrame();
-            await UniTask.WaitForEndOfFrame();
-
-            foreach (var childInfo in childInfos)
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(childInfo.child);
-
-                childInfo.child.localPosition = childInfo.pos;
-            }
+            var childs = GetControlledLayouts();
+            await LayoutHelper.ForceRebuildLayoutsAsync(childs);
         }
 
         private async UniTask InitShowableAsync()
         {
-            var showableChilds = GetShowableChilds();
-            var childsForRebuildLayout = GetChildsForRebuildLayout();
+            IDisposable returnToNormalCanvas = root.GetValue(this)
+                .RectTransform()
+                .MoveToDevCanvas();
 
-            var returnToNormalCanvas = this.RectTransform().MoveToDevCanvas();
-
-            await WaitUntilChildrensInitedAsync(showableChilds);
-            await RebuildLayoutAsync(childsForRebuildLayout);
+            await WaitUntilChildrensInitedAsync();
+            await RebuildControlledLayouts();
             await InitVisibleStateAsync(parent.IsSome);
 
             returnToNormalCanvas.Dispose();
@@ -338,7 +297,7 @@ namespace CCEnvs.Unity.UI
         {
             private readonly GUITab guiTab;
 
-            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.HideAllowed;
+            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.IsInited;
 
             public HideCommand(GUITab guiTab)
                 :
@@ -356,30 +315,11 @@ namespace CCEnvs.Unity.UI
             }
         }
 
-        private sealed class OnHidenCommand : Command
-        {
-            private readonly GUITab guiTab;
-
-            public OnHidenCommand(GUITab guiTab)
-                :
-                base()
-            {
-                this.guiTab = guiTab;
-            }
-
-            protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
-            {
-                guiTab.OnHiden();
-
-                return default;
-            }
-        }
-
         private sealed class ShowCommand : Command
         {
             private readonly GUITab guiTab;
 
-            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.ShowAllowed;
+            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.IsInited;
 
             public ShowCommand(GUITab guiTab)
                 :
@@ -397,28 +337,11 @@ namespace CCEnvs.Unity.UI
             }
         }
 
-        private sealed class OnShownCommand : Command
-        {
-            private readonly GUITab guiTab;
-
-            public OnShownCommand(GUITab guiTab)
-                :
-                base()
-            {
-                this.guiTab = guiTab;
-            }
-
-            protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
-            {
-                guiTab.OnShown();
-
-                return default;
-            }
-        }
-
         private sealed class RedrawCommand : Command
         {
             private readonly GUITab guiTab;
+
+            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.IsInited;
 
             public RedrawCommand(GUITab guiTab)
                 :
@@ -429,26 +352,7 @@ namespace CCEnvs.Unity.UI
 
             protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
             {
-                var toRebuild = guiTab.GetChildsForRebuildLayout();
-
-                var childShowables = guiTab.Q()
-                    .FromChildrens()
-                    .ExcludeSelf()
-                    .FirstComponentsOnBranch()
-                    .Components<IShowable>();
-
-                foreach (var item in childShowables)
-                {
-                    item.Redraw();
-                }
-
-                await guiTab.RebuildLayoutAsync(toRebuild);
-
-                if (guiTab.IsShown)
-                {
-                    guiTab.Hide();
-                    guiTab.Show();
-                }
+                await guiTab.RebuildControlledLayouts();
             }
         }
     }

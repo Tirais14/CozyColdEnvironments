@@ -11,11 +11,15 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNullSource(source);
 
+            if (source.parent.name.Contains("___DevCanvas"))
+                return Disposable.Empty;
+
             var args = new
             {
                 Instance = source,
                 SiblingIdx = source.GetSiblingIndex(),
-                Parent = source.parent
+                Parent = source.parent,
+                LocalPosition = source.localPosition
             };
 
             source.SetParent(UCC.DevCanvas.transform);
@@ -25,6 +29,7 @@ namespace CCEnvs.Unity
                 {
                     args.Instance.transform.SetParent(args.Parent);
                     args.Instance.transform.SetSiblingIndex(args.SiblingIdx);
+                    args.Instance.transform.localPosition = args.LocalPosition;
                 });
         }
     }
