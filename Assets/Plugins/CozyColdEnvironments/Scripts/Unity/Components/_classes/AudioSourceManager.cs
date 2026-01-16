@@ -13,7 +13,13 @@ namespace CCEnvs.Unity.Components
     public sealed class AudioSourceManager : CCBehaviourStaticPublic<AudioSourceManager>
     {
         private readonly Cache<string, Item> items = new();
-        private readonly AudioSourceRegistryQuery query = new();
+        //private readonly AudioSourceRegistryQuery query = new();
+
+        protected override void Awake()
+        {
+            base.Awake();
+            items.CreateEntry(string.Empty).ExpirationTimeRelativeToNow = null;
+        }
 
         /// <returns>registration which already binded to audio source and regsitry life time</returns>
         public static IDisposable RegisterAudioSource(AudioSourceManagerEntry entry)
@@ -54,20 +60,19 @@ namespace CCEnvs.Unity.Components
             return item.Entries.Remove(entry);
         }
 
+        /// <returns>LINQ Query</returns>
         public static IEnumerable<AudioSourceManagerEntry> GetAudioSourceEntries(
             string? tag,
             bool includeInactive = false)
         {
-            IEnumerable<AudioSourceManagerEntry> entries;
-
-            if (tag.IsNullOrWhiteSpace())
-                entries = self.items.Values.SelectMany(static item => item.Entries);
-            else
+            var entries = tag.IsNullOrWhiteSpace() switch
             {
-                entries = self.items.Get(tag)
+                false => self.items.Get(tag)
                     .Map(static item => (IEnumerable<AudioSourceManagerEntry>)item.Entries)
-                    .GetValue(static () => Array.Empty<AudioSourceManagerEntry>());
-            }
+                    .GetValue(static () => Array.Empty<AudioSourceManagerEntry>()),
+
+                _ => self.items.Values.SelectMany(item => item.Entries)
+            };
 
             if (!includeInactive)
                 return entries.Where(static entry => entry.isActiveAndEnabled);
@@ -75,17 +80,11 @@ namespace CCEnvs.Unity.Components
             return entries;
         }
 
-        public static IEnumerable<AudioSource> GetAudioSources(
-            string? tag, 
-            bool includeInactive = false)
+        public static void SetAudioSourceVolumeMultiplier(string? tag, float multiplier)
         {
-            return GetAudioSourceEntries(tag, includeInactive).Select(static entry => entry.Source);
-        }
+            NormalizeTag(tag, out tag);
 
-        public static void SetAudioSoucreVolumeMultiplier(string? tag, float multiplier)
-        {
             multiplier = Mathf.Abs(multiplier);
-            tag ??= string.Empty;
 
             var item = self.items.GetOrCreate(
                 tag,
@@ -97,24 +96,60 @@ namespace CCEnvs.Unity.Components
 
             item.VolumeMultiplier = multiplier;
 
-            foreach (var entry in GetAudioSourceEntries(tag, includeInactive: true))
-                entry.Source.volume = entry.CapturedState.Volume * multiplier;
+            if (IsGeneralTag(tag))
+            {
+                foreach (var tItem in self.items.Where(item => !IsGeneralTag(item.Key)).Select(item => item.Value))
+                    ApplyAudioSourcesVolumeMultiplier(tItem);
+
+                return;
+            }
+
+            ApplyAudioSourcesVolumeMultiplier(item);
         }
 
         public static float GetAudioSourceVolumeMultiplier(string? tag)
         {
-            if (!self.items.Get(tag ?? string.Empty).TryGetValue(out var item))
+            NormalizeTag(tag, out tag);
+
+            if (!self.items.Get(tag).TryGetValue(out var item))
                 return 1f;
 
             return item.VolumeMultiplier;
         }
 
-        public static AudioSourceRegistryQuery Query(string? tag)
+        //public static AudioSourceRegistryQuery Query(string? tag)
+        //{
+        //    return self.query.Reset().From(GetAudioSourceEntries(tag));
+        //}
+
+        //public static AudioSourceRegistryQuery Q(string? tag) => Query(tag);
+
+        private static void ApplyAudioSourcesVolumeMultiplier(
+            Item item)
         {
-            return self.query.Reset().From(GetAudioSourceEntries(tag));
+            float gMultiplier = GetAudioSourceVolumeMultiplier(null);
+
+            float multiplier = item.VolumeMultiplier;
+
+            foreach (var entry in item.Entries)
+                entry.Source.volume = entry.CapturedState.Volume * multiplier * gMultiplier;
         }
 
-        public static AudioSourceRegistryQuery Q(string? tag) => Query(tag);
+        private static void NormalizeTag(string? tag, out string result)
+        {
+            if (IsGeneralTag(tag))
+            {
+                result = string.Empty;
+                return;
+            }
+
+            result = tag;
+        }
+
+        private static bool IsGeneralTag(string? tag)
+        {
+            return tag.IsNullOrWhiteSpace();
+        }
 
         private sealed class Item
         {

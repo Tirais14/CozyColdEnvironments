@@ -1,8 +1,10 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -40,6 +42,15 @@ namespace CCEnvs.Caching
                 }
 
                 _sizeLimit = Math.Abs(value.Value);
+            }
+        }
+
+        public IEnumerable<TKey> Keys {
+            get
+            {
+                return from entry in entries
+                       where entry.Value.IsValid()
+                       select entry.Key;
             }
         }
 
@@ -175,6 +186,16 @@ namespace CCEnvs.Caching
 
             return true;
         }
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
+            return entries.Where(static entry => entry.Value.IsValid())
+                .Select(static entry => new KeyValuePair<TKey, TValue>(entry.Key, entry.Value.GetValue()!))
+                .ToArray()
+                .GetEnumeratorT();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private void ValidateEntries(object sender, ElapsedEventArgs args)
         {

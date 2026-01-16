@@ -6,10 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 #nullable enable
 namespace CCEnvs.Caching
 {
-    public interface ICache<TKey, TValue>
+    public interface ICache<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     {
         TimeSpan ExpirationScanFrequency { get; set; }
         int? SizeLimit { get; set; }
+
+        IEnumerable<TKey> Keys { get; }
         IEnumerable<TValue> Values { get; }
 
         Maybe<TValue> Get(TKey key);

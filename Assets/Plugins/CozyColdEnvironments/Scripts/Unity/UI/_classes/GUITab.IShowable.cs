@@ -323,7 +323,7 @@ namespace CCEnvs.Unity.UI
 
             public ShowCommand(GUITab guiTab)
                 :
-                base()
+                base(delayFrameCount: 1)
             {
                 this.guiTab = guiTab;
             }
@@ -345,7 +345,7 @@ namespace CCEnvs.Unity.UI
 
             public RedrawCommand(GUITab guiTab)
                 :
-                base()
+                base(delayFrameCount: 2)
             {
                 this.guiTab = guiTab;
             }

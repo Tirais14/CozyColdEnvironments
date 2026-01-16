@@ -13,7 +13,7 @@ namespace CCEnvs.UnityEditor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(CCBehaviour), editorForChildClasses: true)]
-    public class MonoCCEdtior : global::UnityEditor.Editor
+    public class CCBehaviourEditor : global::UnityEditor.Editor
     {
         private VisualElement root = null!;
 

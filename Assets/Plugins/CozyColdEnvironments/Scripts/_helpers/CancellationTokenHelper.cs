@@ -20,6 +20,20 @@ namespace CCEnvs
             }
         }
 
+        public static void CheckCancellationRequestByInterval(
+            this in CancellationToken cancellationToken,
+            ref long frame,
+            long frameInterval = 5L)
+        {
+            frame++;
+
+            if (frame > frameInterval)
+            {
+                frame = 0L;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
         public static CancellationTokenSource LinkTokens(
             this CancellationToken source, 
             params CancellationToken[] cancellationTokens)

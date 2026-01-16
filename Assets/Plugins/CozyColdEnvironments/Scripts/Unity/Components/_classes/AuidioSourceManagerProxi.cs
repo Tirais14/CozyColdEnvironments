@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Components
 
         public void SetAudioVolume(float volumeMupltiplier)
         {
-            AudioSourceManager.SetAudioSoucreVolumeMultiplier(audioSourceTag, volumeMupltiplier);
+            AudioSourceManager.SetAudioSourceVolumeMultiplier(audioSourceTag, volumeMupltiplier);
         }
 
         public void SetAudioVolume(string rawVolumeMultiplier)
