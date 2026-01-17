@@ -1,3 +1,4 @@
+#pragma warning disable S2436
 namespace CCEnvs.Patterns.Factory
 {
 #nullable enable
@@ -9,6 +10,7 @@ namespace CCEnvs.Patterns.Factory
 
     public interface IFactory<out T>
     {
+
         public T Create();
     }
 

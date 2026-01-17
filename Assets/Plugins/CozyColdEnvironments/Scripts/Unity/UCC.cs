@@ -33,11 +33,18 @@ namespace CCEnvs.Unity
                 return canvas;
             });
 
+        private readonly static WeakLazy<GameObject> _pooledObjectsParent = new(
+            static () =>
+            {
+                return new GameObject("___Pooled");
+            });
+
         public static Lazy<Sprite> ColorSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/ColorSprite"));
         public static Lazy<Sprite> Transparent { get; } = new(static () => Resources.Load<Sprite>("Textures/DummySprite"));
         public static Lazy<Sprite> RedCrossSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/RedCross"));
         public static Lazy<IInventory> WorldInventory { get; } = new(static () => new Inventory());
         public static Lazy<Material> MockMaterial { get; } = new(static () => Resources.Load<Material>("CC/Mock_Material"));
         public static Canvas DevCanvas => _devCanvas.Value;
+        public static GameObject PooledObjectsParent => _pooledObjectsParent.Value;
     }
 }
