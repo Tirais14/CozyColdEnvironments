@@ -1,19 +1,11 @@
-using UnityEngine;
-
 #nullable enable
 namespace CCEnvs.Pools
 {
-//    public interface IObjectPool<T>
-//    {
-//        void
-//#if UNITASK_PLUGIN
-//            Cysh
-//#else
+    public interface IObjectPool<T>
+        where T : class
+    {
+        void Release(T obj);
 
-//#endif
-
-//        void Release(T obj);
-
-//        Microsoft.Extensions.ObjectPool.ObjectPool<T>().
-//    }
+        PooledHandle<T> Get();
+    }
 }

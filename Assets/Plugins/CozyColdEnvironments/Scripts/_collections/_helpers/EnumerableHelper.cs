@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
@@ -65,6 +66,15 @@ namespace CCEnvs.Collections
             }
 
             return range;
+        }
+
+        public static void DisposeEach<T>(this IEnumerable<T> disposables)
+            where T : IDisposable
+        {
+            CC.Guard.IsNotNull(disposables, nameof(disposables));
+
+            foreach (var item in disposables)
+                item.Dispose();
         }
     }
 }

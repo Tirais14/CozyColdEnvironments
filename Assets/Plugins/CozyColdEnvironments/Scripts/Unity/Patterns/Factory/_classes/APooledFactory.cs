@@ -1,6 +1,5 @@
 using CCEnvs.Collections;
 using CCEnvs.Pools;
-using CCEnvs.Unity.Pools;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -11,7 +10,7 @@ namespace CCEnvs.Unity.Patterns.Factory
     public abstract class APooledFactory<TDiscriminator, TOut> : IDisposable
     where TOut : class, IPoolable
     {
-        private readonly Dictionary<TDiscriminator, ObjectPoolWrapped<TOut>> pools = new();
+        private readonly Dictionary<TDiscriminator, ObjectPoolProxi<TOut>> pools = new();
 
         private readonly Dictionary<(TOut obj, TDiscriminator discriminator), IDisposable> handles = new(comparer: new AnonymousEqualityComparer<(TOut obj, TDiscriminator discriminator)>(
             comparison: (left, right) =>
@@ -72,7 +71,7 @@ namespace CCEnvs.Unity.Patterns.Factory
         {
         }
 
-        protected ObjectPoolWrapped<TOut> GetOrCreatePool(TDiscriminator discriminator)
+        protected ObjectPoolProxi<TOut> GetOrCreatePool(TDiscriminator discriminator)
         {
             CC.Guard.IsNotNull(discriminator, nameof(discriminator));
             return pools.GetOrCreate(discriminator, () => CreatePool(discriminator));
@@ -84,9 +83,9 @@ namespace CCEnvs.Unity.Patterns.Factory
             return pool.Get();
         }
 
-        private ObjectPoolWrapped<TOut> CreatePool(TDiscriminator discriminator)
+        private ObjectPoolProxi<TOut> CreatePool(TDiscriminator discriminator)
         {
-            var pool = new ObjectPoolWrapped<TOut>(
+            var pool = new ObjectPoolProxi<TOut>(
                 factory: () =>
                 {
                     return CreateInternal(discriminator);
