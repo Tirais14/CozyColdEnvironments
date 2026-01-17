@@ -142,6 +142,18 @@ namespace CCEnvs.Collections
             return ((IEnumerable<T>)values).GetEnumerator();
         }
 
+        public static void Add<T>( T[] array, T item)
+        {
+            Guard.IsNotNull(array, nameof(array));
+
+            var holeIdx = Array.IndexOf(array, null);
+
+            if (holeIdx < 0)
+                throw new InvalidOperationException("Array is full");
+
+            array[holeIdx] = item;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmpty<T>(this T[] array) => array.Length == 0;
 

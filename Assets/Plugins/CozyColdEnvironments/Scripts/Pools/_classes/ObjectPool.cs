@@ -1,18 +1,17 @@
 #nullable enable
 using CCEnvs.Patterns.Factories;
-using System.Threading.Tasks;
 
-namespace CCEnvs.Pools  
+namespace CCEnvs.Pools
 {
-    public class ObjectPoolAsync<T> : AObjectPool<T>, IObjectPoolAsync<T>
+    public class ObjectPool<T> : AObjectPool<T>, IObjectPool<T>
         where T : class
     {
-        private readonly IFactory<ValueTask<T>>? factory;
+        private readonly IFactory<T>? factory;
 
         public override bool HasFactory => factory is not null;
 
-        public ObjectPoolAsync(
-            IFactory<ValueTask<T>>? factory = null,
+        public ObjectPool(
+            IFactory<T>? factory = null,
             int capacity = 4,
             int? maxSize = null)
             :
@@ -21,7 +20,7 @@ namespace CCEnvs.Pools
             this.factory = factory;
         }
 
-        public async ValueTask<PooledHandle<T>> GetAsync()
+        public PooledHandle<T> Get()
         {
             T obj;
 
@@ -32,7 +31,7 @@ namespace CCEnvs.Pools
                 if (factory is null)
                     throw IsEmptyException();
 
-                obj = await factory.Create();
+                obj = factory.Create();
             }
             else
                 obj = inactiveItems.Dequeue();
@@ -41,18 +40,6 @@ namespace CCEnvs.Pools
             OnGet(handle);
 
             return handle;
-        }
-
-        public async ValueTask PreheatAsync(int? count = null)
-        {
-            int resolvedCount = (count ?? DefaultCapacity) - Count;
-            PooledHandle<T> handle;
-
-            for (int i = 0; i < resolvedCount; i++)
-            {
-                handle = await GetAsync();
-                handle.Dispose();
-            }
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public abstract class AObjectPool<T> : IDisposable
+    public abstract class AObjectPool<T> : IObjectPool
         where T : class
     {
         protected readonly Queue<T> inactiveItems;
@@ -16,15 +16,18 @@ namespace CCEnvs.Pools
         public int Count => ActiveCount + InactiveCount;
         public int ActiveCount => activeItemHandles.Count;
         public int InactiveCount => inactiveItems.Count + (FastObject is not null ? 1 : 0);
+        public abstract bool HasFactory { get; }
 
         protected bool IsPoolableObject { get; }
         protected T? FastObject { get; private set; }
+        protected int DefaultCapacity { get; }
 
         protected AObjectPool(int capacity, int? maxSize)
         {
             //TODO: Realize max size
             _ = maxSize;
 
+            DefaultCapacity = capacity;
             inactiveItems = new Queue<T>(capacity);
             activeItemHandles = new HashSet<PooledHandle<T>>(capacity);
 
@@ -103,6 +106,11 @@ namespace CCEnvs.Pools
                 {
                     @this.Return(obj);
                 });
+        }
+
+        protected InvalidOperationException IsEmptyException()
+        {
+            return new System.InvalidOperationException("Pool is empty and a factory not found");
         }
     }
 }
