@@ -1,5 +1,5 @@
 #pragma warning disable S2436
-namespace CCEnvs.Patterns.Factory
+namespace CCEnvs.Patterns.Factories
 {
 #nullable enable
 
@@ -19,13 +19,13 @@ namespace CCEnvs.Patterns.Factory
         public TOut Create(T1 arg);
     }
 
-    public interface IFactory<in T1, in T2, out TOut>
+    public interface IFactory<in T, in T1, out TOut>
     {
-        public TOut Create(T1 arg1, T2 arg2);
+        public TOut Create(T arg, T1 arg1);
     }
 
-    public interface IFactory<in T1, in T2, in T3, out TOut>
+    public interface IFactory<in T, in T1, in T2, out TOut>
     {
-        public TOut Create(T1 arg1, T2 arg2, T3 arg3);
+        public TOut Create(T arg, T1 arg1, T2 arg2);
     }
 }

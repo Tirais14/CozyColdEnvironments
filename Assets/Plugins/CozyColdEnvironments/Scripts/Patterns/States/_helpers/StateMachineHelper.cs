@@ -1,4 +1,4 @@
-using CCEnvs.Patterns.Factory;
+using CCEnvs.Patterns.Factories;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;

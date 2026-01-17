@@ -2,7 +2,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S2436
-namespace CCEnvs.Patterns.Factory
+namespace CCEnvs.Patterns.Factories
 {
     public interface IFactoryAsync
     {
