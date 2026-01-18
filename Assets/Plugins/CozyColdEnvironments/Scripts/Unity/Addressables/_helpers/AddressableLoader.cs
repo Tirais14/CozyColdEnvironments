@@ -90,7 +90,7 @@ namespace CCEnvs.Unity.AddrsAssets
 
             var assetHandles =
                 from loc in locationsHandle.Result.ZLinq()
-                select new PrioritizedValue<IResourceLocation>(loc, Prioritized.ResolvePriority(loc.ResourceType, throwIfNotFound: false)) into prioritized
+                select new Prioritized<IResourceLocation, int>(loc, PrioritizedHelper.ResolvePriorityByAttribute(loc.ResourceType, throwIfNotFound: false)) into prioritized
                 orderby prioritized
                 select Addressables.LoadAssetAsync<T>(prioritized.Value);
 

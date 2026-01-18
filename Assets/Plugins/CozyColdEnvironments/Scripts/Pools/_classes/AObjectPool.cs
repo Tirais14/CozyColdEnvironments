@@ -79,9 +79,10 @@ namespace CCEnvs.Pools
 
                 if (poolablePoolHandle.IsSome)
                 {
-                    if (poolablePoolHandle.Raw is not PooledHandle<T>)
+                    if (poolablePoolHandle.Raw is not PooledHandle<T> poolHandleTyped)
                         throw new InvalidOperationException("Invalid pooled handle. Maybe is object controlls by other object pool");
 
+                    activeItemHandles.Remove(poolHandleTyped);
                     poolable.PoolHandle = Maybe<IDisposable>.None;
                 }
 
