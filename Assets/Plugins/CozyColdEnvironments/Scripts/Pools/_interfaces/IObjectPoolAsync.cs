@@ -1,15 +1,22 @@
 #nullable enable
-using System;
-using System.Threading.Tasks;
-
 namespace CCEnvs.Pools
 {
     public interface IObjectPoolAsync<T> : IObjectPool
         where T : class
     {
-        ValueTask<PooledHandle<T>> GetAsync();
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+#else
+        System.Threading.Tasks.ValueTask<PooledHandle<T>>
+#endif
+            GetAsync();
 
-        ValueTask PreheatAsync(int? count = null);
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask
+#else
+        System.Threading.Tasks.ValueTask
+#endif
+            PreheatAsync(int? count = null);
 
         void Return(T obj);
     }

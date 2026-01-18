@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEditorInternal;
 using ZLinq;
 
 #nullable enable
@@ -15,7 +16,7 @@ namespace CCEnvs.Unity.Databases
 {
     public record AssetDatabaseQuery
     {
-        public Maybe<IAddressablesDatabase> database { get; set; }
+        public Maybe<IAssetDatabase> database { get; set; }
         public Maybe<IAssetDatabaseRegistry> registry { get; set; }
         public Maybe<string> textIdFilter { get; set; }
         public Maybe<int> numberIdFilter { get; set; }
@@ -29,7 +30,7 @@ namespace CCEnvs.Unity.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AssetDatabaseQuery From(IAddressablesDatabase db)
+        public AssetDatabaseQuery From(IAssetDatabase db)
         {
             CC.Guard.IsNotNull(db, nameof(db));
 
@@ -93,14 +94,14 @@ namespace CCEnvs.Unity.Databases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AssetDatabaseQuery InDatabase(Type? type = null, Type? assetType = null)
         {
-            database = Database(type, assetType).Strict().Maybe();
+            database = Database(type: type, assetType: assetType).Strict().Maybe();
             ResetFilters();
 
             return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<IAddressablesDatabase> Databases(Type? type = null, Type? assetType = null)
+        public IEnumerable<IAssetDatabase> Databases(Type? type = null, Type? assetType = null)
         {
             CC.Guard.IsNotNull(registry.Raw, nameof(registry));
 
@@ -115,7 +116,7 @@ namespace CCEnvs.Unity.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IAddressablesDatabase> Database(Type? type = null, Type? assetType = null)
+        public Result<IAssetDatabase> Database(Type? assetType = null, Type ? type = null)
         {
             CC.Guard.IsNotNull(registry.Raw, nameof(registry));
 
@@ -127,7 +128,7 @@ namespace CCEnvs.Unity.Databases
                 Text = textIdFilter
             };
 
-            if (reg[id].Lax().TryGetValue(out IAddressablesDatabase? db)
+            if (reg[id].Lax().TryGetValue(out IAssetDatabase? db)
                 &&
                 FilterType(db.GetType(), type)
                 &&
@@ -143,10 +144,9 @@ namespace CCEnvs.Unity.Databases
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T> Database<T>(Type? assetType = null)
-            where T : IAddressablesDatabase
+        public Result<IAssetDatabase<TAssetType>> Database<TAssetType>(Type? dbType = null)
         {
-            return Database(typeof(T), assetType).Cast<T>();
+            return Database(assetType: typeof(TAssetType), type: dbType).Cast<IAssetDatabase<TAssetType>>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,7 +154,7 @@ namespace CCEnvs.Unity.Databases
         {
             CC.Guard.IsNotNull(database.Raw, nameof(database));
 
-            IAddressablesDatabase db = database.GetValueUnsafe();
+            IAssetDatabase db = database.GetValueUnsafe();
 
             return (from item in db.Keys.ZLinq().Zip(db.Values, (key, value) => (key, value))
                    where FilterType(item.value.GetType(), type)

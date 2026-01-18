@@ -17,26 +17,26 @@ namespace CCEnvs.Unity.Databases
 
         where TThis : CCBehaviourStatic, IAssetDatabaseRegistry
     {
-        private readonly CCDictionary<Identifier, IAddressablesDatabase> collection = new();
+        private readonly CCDictionary<Identifier, IAssetDatabase> collection = new();
         private readonly AssetDatabaseQuery query = new();
 
-        public Result<IAddressablesDatabase> this[Identifier key] {
+        public Result<IAssetDatabase> this[Identifier key] {
             get => collection[key];
             set => collection[key] = value;
         }
 
         public IEnumerable<Identifier> Keys => collection.Keys;
-        public IEnumerable<IAddressablesDatabase> Values => collection.Values;
+        public IEnumerable<IAssetDatabase> Values => collection.Values;
         public int Count => collection.Count;
 
-        bool ICollection<KeyValuePair<Identifier, IAddressablesDatabase>>.IsReadOnly => false;
+        bool ICollection<KeyValuePair<Identifier, IAssetDatabase>>.IsReadOnly => false;
 
         public AssetDatabaseQuery Query()
         {
             return query.Reset().From(this);
         }
 
-        public void Add(Identifier key, IAddressablesDatabase value)
+        public void Add(Identifier key, IAssetDatabase value)
         {
             if (key.Number.IsNone)
             {
@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Databases
             collection.Add(key, value);
         }
 
-        public void Add(KeyValuePair<Identifier, IAddressablesDatabase> item)
+        public void Add(KeyValuePair<Identifier, IAssetDatabase> item)
         {
             Add(item.Key, item.Value);
         }
@@ -62,7 +62,7 @@ namespace CCEnvs.Unity.Databases
             return collection.Remove(key);
         }
 
-        public bool Remove(KeyValuePair<Identifier, IAddressablesDatabase> item)
+        public bool Remove(KeyValuePair<Identifier, IAssetDatabase> item)
         {
             return collection.Remove(item.Key);
         }
@@ -72,12 +72,12 @@ namespace CCEnvs.Unity.Databases
             return collection.ContainsKey(key);
         }
 
-        public bool Contains(KeyValuePair<Identifier, IAddressablesDatabase> item)
+        public bool Contains(KeyValuePair<Identifier, IAssetDatabase> item)
         {
             return collection.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Identifier, IAddressablesDatabase>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Identifier, IAssetDatabase>[] array, int arrayIndex)
         {
             collection.CopyTo(array, arrayIndex);
         }
@@ -104,7 +104,7 @@ namespace CCEnvs.Unity.Databases
             disposed = true;
         }
 
-        public IEnumerator<KeyValuePair<Identifier, IAddressablesDatabase>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Identifier, IAssetDatabase>> GetEnumerator()
         {
             return collection.GetEnumerator();
         }

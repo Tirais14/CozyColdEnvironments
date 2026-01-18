@@ -32,12 +32,12 @@ namespace CCEnvs.Unity.Databases
             DatabaseID = id;
         }
 
-        public AssetDatabaseKey(IAddressablesDatabase database, Identifier id)
+        public AssetDatabaseKey(IAssetDatabase database, Identifier id)
             :
             this(database.AssetType, id)
         {
         }
-        public AssetDatabaseKey(IAddressablesDatabase database)
+        public AssetDatabaseKey(IAssetDatabase database)
             :
             this(database, id: default)
         {

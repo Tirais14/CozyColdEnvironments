@@ -35,29 +35,119 @@ namespace CCEnvs.Patterns.Factories
 
         public static class Async
         {
-            public static IFactory<ValueTask<TOut>> Create<TOut>(Func<ValueTask<TOut>> factory)
+            public static IFactory<
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                > Create<TOut>(Func<
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                > factory)
             {
-                return new AnonymousFactory<ValueTask<TOut>>(factory);
+                return new AnonymousFactory<
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    >(factory);
             }
 
-            public static IFactory<T, ValueTask<TOut>> Create<T, TOut>(Func<T, ValueTask<TOut>> factory)
+            public static IFactory<T,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                > Create<T, TOut>(Func<T,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    > factory)
             {
-                return new AnonymousFactory<T, ValueTask<TOut>>(factory);
+                return new AnonymousFactory<T,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    >(factory);
             }
 
-            public static IFactory<T, T1, ValueTask<TOut>> Create<T, T1, TOut>(Func<T, T1, ValueTask<TOut>> factory)
+            public static IFactory<T, T1,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                > Create<T, T1, TOut>(Func<T, T1,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    > factory)
             {
-                return new AnonymousFactory<T, T1, ValueTask<TOut>>(factory);
+                return new AnonymousFactory<T, T1,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    >(factory);
             }
 
-            public static IFactory<T, T1, T2, ValueTask<TOut>> Create<T, T1, T2, TOut>(Func<T, T1, T2, ValueTask<TOut>> factory)
+            public static IFactory<T, T1, T2,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                > Create<T, T1, T2, TOut>(Func<T, T1, T2,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    > factory)
             {
-                return new AnonymousFactory<T, T1, T2, ValueTask<TOut>>(factory);
+                return new AnonymousFactory<T, T1, T2,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    >(factory);
             }
 
-            public static IFactory<ValueTask<TOut>> Create<TState, TOut>(TState state, Func<TState, ValueTask<TOut>> factory)
+            public static IFactory<
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                > Create<TState, TOut>(TState state, Func<TState,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    > factory)
             {
-                return new AnonymousStatedFactory<TState, ValueTask<TOut>>(state, factory);
+                return new AnonymousStatedFactory<TState,
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<TOut>
+#else
+        System.Threading.Tasks.ValueTask<TOut>
+#endif
+                    >(state, factory);
             }
         }
     }

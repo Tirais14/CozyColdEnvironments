@@ -7,12 +7,26 @@ namespace CCEnvs.Pools
     public class ObjectPoolAsync<T> : AObjectPool<T>, IObjectPoolAsync<T>
         where T : class
     {
-        private readonly IFactory<ValueTask<T>>? factory;
+        private readonly IFactory<
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<T>
+#else
+        System.Threading.Tasks.ValueTask<T>
+#endif
+            >? factory;
 
         public override bool HasFactory => factory is not null;
 
         public ObjectPoolAsync(
-            IFactory<ValueTask<T>>? factory = null,
+
+            IFactory<
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<T>
+#else
+        System.Threading.Tasks.ValueTask<T>
+#endif
+                >? factory = null,
+
             int capacity = 4,
             int? maxSize = null)
             :
@@ -21,7 +35,13 @@ namespace CCEnvs.Pools
             this.factory = factory;
         }
 
-        public async ValueTask<PooledHandle<T>> GetAsync()
+        public async
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+#else
+        System.Threading.Tasks.ValueTask<PooledHandle<T>>
+#endif
+            GetAsync()
         {
             T obj;
 
@@ -43,7 +63,13 @@ namespace CCEnvs.Pools
             return handle;
         }
 
-        public async ValueTask PreheatAsync(int? count = null)
+        public async
+#if UNITASK_PLUGIN
+        Cysharp.Threading.Tasks.UniTask
+#else
+        System.Threading.Tasks.ValueTask
+#endif
+            PreheatAsync(int? count = null)
         {
             int resolvedCount = (count ?? DefaultCapacity) - Count;
             PooledHandle<T> handle;

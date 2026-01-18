@@ -5,7 +5,7 @@ using System;
 namespace CCEnvs.Unity.Databases
 {
     public interface IAssetDatabaseRegistry 
-        : ICCDictionary<Identifier, IAddressablesDatabase>,
+        : ICCDictionary<Identifier, IAssetDatabase>,
         IDisposable
     {
         AssetDatabaseQuery Query();

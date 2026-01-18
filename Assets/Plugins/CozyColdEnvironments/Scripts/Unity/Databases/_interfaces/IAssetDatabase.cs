@@ -7,7 +7,7 @@ using System.Linq;
 #nullable enable
 namespace CCEnvs.Unity.Databases
 {
-    public interface IAddressablesDatabase
+    public interface IAssetDatabase
         : IDisposable,
         IEnumerable
     {
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Databases
         AssetDatabaseQuery Query();
     }
     public interface IAssetDatabase<TAsset>
-        : IAddressablesDatabase,
+        : IAssetDatabase,
         IEnumerable<KeyValuePair<Identifier, TAsset>>
     {
         new TAsset this[Identifier id] { get; }
@@ -40,11 +40,11 @@ namespace CCEnvs.Unity.Databases
         new IEnumerable<Identifier> Keys { get; }
         new IEnumerable<TAsset> Values { get; }
 
-        object IAddressablesDatabase.this[Identifier key] {
+        object IAssetDatabase.this[Identifier key] {
             get => this[key]!;
         }
 
-        IEnumerable<object> IAddressablesDatabase.Values {
+        IEnumerable<object> IAssetDatabase.Values {
             get => Values.Cast<object>();
         }
 
@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Databases
 
         bool TryGetAsset(Identifier id, [NotNullWhen(true)] out TAsset? asset);
 
-        void IAddressablesDatabase.RegisterAsset(Identifier id, object asset, Action<object>? onDbDispose)
+        void IAssetDatabase.RegisterAsset(Identifier id, object asset, Action<object>? onDbDispose)
         {
             if (onDbDispose is not null)
             {
@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.Databases
                 RegisterAsset(id, (TAsset)asset);
         }
 
-        void IAddressablesDatabase.RegisterAsset(object asset, Action<object>? onDbDispose)
+        void IAssetDatabase.RegisterAsset(object asset, Action<object>? onDbDispose)
         {
             if (onDbDispose is not null)
             {
@@ -81,7 +81,7 @@ namespace CCEnvs.Unity.Databases
                 RegisterAsset((TAsset)asset);
         }
 
-        bool IAddressablesDatabase.UnregisterAsset(Identifier id, [NotNullWhen(true)] out object? asset, out Action<object>? handle)
+        bool IAssetDatabase.UnregisterAsset(Identifier id, [NotNullWhen(true)] out object? asset, out Action<object>? handle)
         {
             var result = UnregisterAsset(id, out TAsset? assetTyped, out Action<TAsset>? handleTyped);
 
@@ -95,7 +95,7 @@ namespace CCEnvs.Unity.Databases
             return result;
         }
 
-        bool IAddressablesDatabase.TryGetAsset(Identifier id, [NotNullWhen(true)] out object? asset)
+        bool IAssetDatabase.TryGetAsset(Identifier id, [NotNullWhen(true)] out object? asset)
         {
             if (!TryGetAsset(id, out TAsset? assetTyped))
             {

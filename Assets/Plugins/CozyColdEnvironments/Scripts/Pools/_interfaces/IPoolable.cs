@@ -14,8 +14,6 @@ namespace CCEnvs.Pools
 
         void OnSpawned();
 
-        void OnSpawnedLate();
-
         Observable<IPoolable> ObserveDespawn();
     }
 }

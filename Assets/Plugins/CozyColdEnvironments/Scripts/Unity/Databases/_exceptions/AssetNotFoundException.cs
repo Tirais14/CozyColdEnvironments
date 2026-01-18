@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Databases
         {
         }
 
-        public AssetNotFoundException(IAddressablesDatabase? db, Identifier id, Type? type)
+        public AssetNotFoundException(IAssetDatabase? db, Identifier id, Type? type)
             : 
             base(Sentence.Empty.AddIfNotDefault(() => $"Database: {db},...", db)
                 .Add($"ID: {id},...")
