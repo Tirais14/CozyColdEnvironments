@@ -3,7 +3,7 @@ using CCEnvs.Patterns.Factories;
 
 namespace CCEnvs.Pools
 {
-    public class ObjectPool<T> : AObjectPool<T>, IObjectPool<T>
+    public class ObjectPool<T> : ObjectPoolBase<T>, IObjectPool<T>
         where T : class
     {
         private readonly IFactory<T>? factory;

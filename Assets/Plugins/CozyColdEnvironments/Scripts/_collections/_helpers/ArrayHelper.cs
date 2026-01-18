@@ -139,9 +139,20 @@ namespace CCEnvs.Collections
         {
             Guard.IsNotNull(array, nameof(array));
 
-            holeIdx = Array.IndexOf(array, null);
+            int arrLength = array.Length;
+            var defaultEqComparer = EqualityComparer<T?>.Default;
 
-            return holeIdx > -1;
+            for (int i = 0; i < arrLength; i++)
+            {
+                if (defaultEqComparer.Equals(array[i], default))
+                {
+                    holeIdx = i;
+                    return true;
+                }
+            }
+
+            holeIdx = null;
+            return false;
         }
 
         public static bool TryAddToArray<T>(this T?[] array, T item, [NotNullWhen(true)] out int? addedIdx)

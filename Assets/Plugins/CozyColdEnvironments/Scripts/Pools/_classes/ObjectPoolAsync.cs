@@ -1,11 +1,14 @@
 #nullable enable
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Factories;
+using System;
 using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CCEnvs.Pools  
 {
-    public class ObjectPoolAsync<T> : AObjectPool<T>, IObjectPoolAsync<T>
+    public class ObjectPoolAsync<T> : ObjectPoolBase<T>, IObjectPoolAsync<T>
         where T : class
     {
         private readonly IFactory<
@@ -70,11 +73,14 @@ namespace CCEnvs.Pools
 #else
         System.Threading.Tasks.Task
 #endif
-            PreheatAsync(int? count = null)
+            PreheatAsync(int? count = null, int? batchSize = null)
         {
             int resolvedCount = (count ?? DefaultCapacity) - Count;
 
-            var tasksHandle = ArrayPool<
+            if (batchSize is null || batchSize.Value < 1)
+                batchSize = Environment.ProcessorCount * 2;
+
+            var tasks = ArrayPool<
 #if UNITASK_PLUGIN
             Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
 #else
@@ -89,28 +95,59 @@ namespace CCEnvs.Pools
 #endif
                 task;
 
-            for (int i = 0; i < resolvedCount; i++)
-            {
-                task = GetAsync();
+            var handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(resolvedCount, resolvedCount);
 
-                tasksHandle.Value.AddToArraySegment(task);
-            }
-
-            await
-#if UNITASK_PLUGIN
-            Cysharp.Threading.Tasks.UniTask
-#else
-            System.Threading.Tasks.Task
-#endif
-                .WhenAll(tasksHandle.Value.ToArray());
+            int batchCount = (int)MathF.Round((float)resolvedCount / (float)batchSize.Value, MidpointRounding.AwayFromZero);
 
             PooledHandle<T> handle;
 
-            for (int i = 0; i < resolvedCount; i++)
+            try
             {
-                handle = await tasksHandle.Value[i];
-                handle.Dispose();
+                for (int i = 0; i < batchCount; i++)
+                {
+                    int taskCount = Math.Min(batchSize.Value, resolvedCount - batchSize.Value * i);
+
+                    for (int j = 0; j < taskCount; j++)
+                    {
+                        task = GetAsync();
+                        tasks[batchSize.Value * i + j] = task;
+                    }
+
+                    for (int j = 0; j < taskCount; j++)
+                    {
+                        int offsetedIdx = batchSize.Value * i + j;
+
+                        task = tasks[offsetedIdx];
+
+#if UNITASK_PLUGIN
+                        if (task.Status != Cysharp.Threading.Tasks.UniTaskStatus.Pending)
+                            handle = task.GetAwaiter().GetResult();
+#else
+                        if (task.IsCompleted)
+                            handle = task.Result;
+#endif
+                        else
+                            handle = await task;
+
+                        handles[offsetedIdx] = handle;
+                    }
+                }
             }
+            finally
+            {
+                tasks.Dispose();
+                handles.Dispose();
+            }
+
+            #region OnlyOneAwaited
+            //var handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(DefaultCapacity, DefaultCapacity);
+
+            //for (int i = 0; i < resolvedCount; i++)
+            //    handles[i] = await GetAsync();
+
+            //for (int i = 0; i < resolvedCount; i++)
+            //    handles[i].Dispose();
+            #endregion
         }
     }
 }

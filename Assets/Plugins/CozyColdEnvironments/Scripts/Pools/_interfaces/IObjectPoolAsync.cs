@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public interface IObjectPoolAsync<T> : IObjectPool
+    public interface IObjectPoolAsync<T> : IObjectPoolBase<T>
         where T : class
     {
 #if UNITASK_PLUGIN
@@ -16,8 +16,6 @@ namespace CCEnvs.Pools
 #else
         System.Threading.Tasks.Task
 #endif
-            PreheatAsync(int? count = null);
-
-        void Return(T obj);
+            PreheatAsync(int? count = null, int? batchSize = null);
     }
 }
