@@ -1,10 +1,7 @@
 #nullable enable
-using CCEnvs.Collections;
 using CCEnvs.Patterns.Factories;
 using System;
 using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CCEnvs.Pools  
 {
@@ -49,14 +46,19 @@ namespace CCEnvs.Pools
         {
             T obj;
 
-            if (FastObject is not null)
-                obj = FastObject;
-            else if (InactiveCount == 0)
+            if (InactiveCount == 0)
             {
                 if (factory is null)
                     throw IsEmptyException();
 
                 obj = await factory.Create();
+                Return(obj);
+            }
+
+            if (fastObject is not null)
+            {
+                obj = fastObject;
+                fastObject = null;
             }
             else
                 obj = inactiveItems.Dequeue();

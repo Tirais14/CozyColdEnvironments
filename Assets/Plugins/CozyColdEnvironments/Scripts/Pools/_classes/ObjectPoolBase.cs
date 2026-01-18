@@ -4,6 +4,7 @@ using CCEnvs.Reflection;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -17,17 +18,18 @@ namespace CCEnvs.Pools
         protected ReactiveCommand<T>? getCmd;
         protected ReactiveCommand<T>? returnCmd;
 
+        protected T? fastObject;
+
 #if UNITY_EDITOR
         private bool _OnGetExecuting;
 #endif
 
         public int Count => ActiveCount + InactiveCount;
         public int ActiveCount => activeItemHandles.Count;
-        public int InactiveCount => inactiveItems.Count + (FastObject is not null ? 1 : 0);
+        public int InactiveCount => inactiveItems.Count + (fastObject is not null ? 1 : 0);
         public abstract bool HasFactory { get; }
 
         protected bool IsPoolableObject { get; }
-        protected T? FastObject { get; private set; }
         protected int DefaultCapacity { get; }
 
         protected ObjectPoolBase(int capacity, int? maxSize)
@@ -86,40 +88,30 @@ namespace CCEnvs.Pools
 
         protected virtual void OnGet(PooledHandle<T> handledObj)
         {
-#if UNITY_EDITOR
-            if (_OnGetExecuting)
-                throw new InvalidOperationException($"{nameof(OnGet)} already executing");
-#endif
-
-#if UNITY_EDITOR
-            _OnGetExecuting = true;
-#endif
-
             if (IsPoolableObject)
             {
                 var poolable = (IPoolable)handledObj.Value;
+
+                if (poolable.PoolHandle.IsSome)
+                    throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}");
 
                 poolable.PoolHandle = handledObj;
                 poolable.OnSpawned();
             }
 
             activeItemHandles.Add(handledObj);
-
-#if UNITY_EDITOR
-            _OnGetExecuting = false;
-#endif
+            getCmd?.Execute(handledObj.Value);
         }
 
         protected virtual void ReturnCore(T obj)
         {
-            if (FastObject is null)
+            if (fastObject is null)
             {
-                FastObject = obj;
+                fastObject = obj;
                 return;
             }
 
             inactiveItems.Enqueue(obj);
-            returnCmd?.Execute(obj);
         }
 
         protected virtual void OnReturn(T obj)
@@ -136,9 +128,9 @@ namespace CCEnvs.Pools
 
                     activeItemHandles.Remove(poolHandleTyped);
                     poolable.PoolHandle = Maybe<IDisposable>.None;
-                }
 
-                poolable.OnDespawned();
+                    poolable.OnDespawned();
+                }
             }
 
             returnCmd?.Execute(obj);

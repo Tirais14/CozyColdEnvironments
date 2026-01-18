@@ -41,14 +41,19 @@ namespace CCEnvs.Pools
         {
             T obj;
 
-            if (FastObject is not null)
-                obj = FastObject;
-            else if (InactiveCount <= 0)
+            if (InactiveCount <= 0)
             {
                 if (factory is null)
                     throw IsEmptyException();
 
                 obj = factory.Create();
+                Return(obj);
+            }
+
+            if (fastObject is not null)
+            {
+                obj = fastObject;
+                fastObject = null;
             }
             else
                 obj = inactiveItems.Dequeue();
@@ -120,12 +125,6 @@ namespace CCEnvs.Pools
             {
                 int handlesIdx = currentBatch * batchSize;
                 int itemCount = Math.Min(count - handlesIdx, batchSize);
-                var handles = new Span<PooledHandle<T>>(this.handles.Value.Array, handlesIdx, itemCount);
-
-                for (int i = 0; i < itemCount; i++)
-                    handles[i] = pool.Get();
-
-                currentBatch++;
 
                 if (itemCount < 1)
                 {
@@ -133,7 +132,14 @@ namespace CCEnvs.Pools
                     return false;
                 }
 
+                var handles = new Span<PooledHandle<T>>(this.handles.Value.Array, handlesIdx, itemCount);
+
+                for (int i = 0; i < itemCount; i++)
+                    handles[i] = pool.Get();
+
+                currentBatch++;
                 Progress += progressPerItem;
+
                 return true;
             }
 
