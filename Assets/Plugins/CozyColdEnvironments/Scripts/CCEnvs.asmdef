@@ -39,7 +39,9 @@
         "ObservableCollections.R3.dll",
         "Newtonsoft.Json.dll",
         "Serilog.dll",
-        "Serilog.Sinks.File.dll"
+        "Serilog.Sinks.File.dll",
+        "Microsoft.Bcl.TimeProvider.dll",
+        "Microsoft.Bcl.Memory.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

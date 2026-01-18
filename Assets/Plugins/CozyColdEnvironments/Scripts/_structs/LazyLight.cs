@@ -52,14 +52,14 @@ namespace CCEnvs
         public T Value => GetValue();
         public bool HasValue { get; private set; }  
 
-        public LazyLight(Func<TState, T> factory, TState state)
+        public LazyLight(TState state, Func<TState, T> factory)
             :
             this()
         {
             Guard.IsNotNull(factory, nameof(factory));
 
-            this.factory = factory;
             this.state = state;
+            this.factory = factory;
             value = default!;
         }
 

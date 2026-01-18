@@ -1,5 +1,7 @@
+using CCEnvs.Collections;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,6 +10,9 @@ namespace CCEnvs.Patterns.Commands
 {
     public class AnonymousCommandBuilder
     {
+        private static Func<CancellationToken, ValueTask> onExecuteDefault = _ => default;
+        private readonly Dictionary<Type, Delegate> onExecuteStateDefaultValues = new();
+
         private Delegate? onExecute;
         private Delegate? executePredicate;
         private Delegate? onReset;
@@ -25,9 +30,8 @@ namespace CCEnvs.Patterns.Commands
             Reset();
         }
 
-        public AnonymousCommandBuilder OnExecute(Func<CancellationToken, ValueTask> onExecute)
+        public AnonymousCommandBuilder OnExecute(Func<CancellationToken, ValueTask>? onExecute)
         {
-            Guard.IsNotNull(onExecute, nameof(onExecute));
             ThrowIfStatedCommand();
 
             this.onExecute = onExecute;
@@ -35,10 +39,8 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder OnExecute<T>(T state, Func<T, CancellationToken, ValueTask> onExecute)
+        public AnonymousCommandBuilder OnExecute<T>(T state, Func<T, CancellationToken, ValueTask>? onExecute)
         {
-            Guard.IsNotNull(onExecute, nameof(onExecute));
-
             this.onExecute = onExecute;
 
             isStatedCommand = true;
@@ -112,11 +114,11 @@ namespace CCEnvs.Patterns.Commands
 
         public Command Build()
         {
-            ThrowIfOnExecuteIsNull();
+            //ThrowIfOnExecuteIsNull();
             ThrowIfStatedCommand();
 
             var cmd = new AnonymousCommand(
-                (Func<CancellationToken, ValueTask>)onExecute!,
+                ((Func<CancellationToken, ValueTask>?)onExecute) ?? onExecuteDefault,
                 isReadyToExecute: (Func<bool>?)executePredicate,
                 onReset: (Action?)onReset,
                 name: name,
@@ -132,7 +134,17 @@ namespace CCEnvs.Patterns.Commands
 
         public Command Build<T>(T state)
         {
-            ThrowIfOnExecuteIsNull();
+            //ThrowIfOnExecuteIsNull();
+
+            if (onExecute is null)
+            {
+                onExecute = onExecuteStateDefaultValues.GetOrCreate(typeof(T),
+                    factory: static () =>
+                    {
+                        Func<T, CancellationToken, ValueTask> t = (_, _) => default;
+                        return t;
+                    });
+            }
 
             var cmd = new AnonymousCommand<T>(
                 state,
