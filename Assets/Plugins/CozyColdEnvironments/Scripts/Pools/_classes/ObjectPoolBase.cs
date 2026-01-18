@@ -96,7 +96,15 @@ namespace CCEnvs.Pools
                     throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}");
 
                 poolable.PoolHandle = handledObj;
-                poolable.OnSpawned();
+
+                try
+                {
+                    poolable.OnSpawned();
+                }
+                catch (Exception ex)
+                {
+                    poolable.PrintException(ex);
+                }
             }
 
             activeItemHandles.Add(handledObj);
@@ -126,10 +134,30 @@ namespace CCEnvs.Pools
                     if (poolablePoolHandle.Raw is not PooledHandle<T> poolHandleTyped)
                         throw new InvalidOperationException("Invalid pooled handle. Maybe is object controlls by other object pool");
 
-                    activeItemHandles.Remove(poolHandleTyped);
+                    if (!activeItemHandles.Remove(poolHandleTyped))
+                    {
+                        PooledHandle<T> handleToRemove = default;
+
+                        foreach (var itemHandle in activeItemHandles.ToArrayPooled())
+                        {
+                            if (EqualityComparer<T?>.Default.Equals(itemHandle.Value, obj))
+                                handleToRemove = itemHandle;
+                        }
+
+                        if (handleToRemove.IsDefault() || !activeItemHandles.Remove(handleToRemove))
+                            this.PrintWarning($"Cannot remove object handle: {poolablePoolHandle}");
+                    }
+                    
                     poolable.PoolHandle = Maybe<IDisposable>.None;
 
-                    poolable.OnDespawned();
+                    try
+                    {
+                        poolable.OnDespawned();
+                    }
+                    catch (Exception ex)
+                    {
+                        poolable.PrintException(ex);
+                    }
                 }
             }
 
