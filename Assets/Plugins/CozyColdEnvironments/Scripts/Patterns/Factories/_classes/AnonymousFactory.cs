@@ -1,8 +1,8 @@
 using CommunityToolkit.Diagnostics;
 using System;
-using UnityEngine;
 
 #nullable enable
+#pragma warning disable S2436
 namespace CCEnvs.Patterns.Factories
 {
     public class AnonymousFactory<TOut> : IFactory<TOut>

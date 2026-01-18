@@ -37,7 +37,7 @@ namespace CCEnvs.MPipe
                 ?
                 new MessageHandlerFilter<TMessage>[] { predicateFilter }
                 :
-                filters.AppendArray(predicateFilter);
+                filters.AppendToArray(predicateFilter);
 
             return source.Subscribe(state, handler, filters);
         }

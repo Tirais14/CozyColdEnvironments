@@ -68,7 +68,7 @@ namespace CCEnvs.Unity
 
         public readonly HierarchyPath Combine(params string[] pathParts)
         {
-            pathParts = pathParts.PrependArray(RawPath.TrimEnd('/', '\\'));
+            pathParts = pathParts.PrependToArray(RawPath.TrimEnd('/', '\\'));
 
             for (int i = 0; i < pathParts.Length; i++)
                 pathParts[i] = pathParts[i].Trim('/', '\\');

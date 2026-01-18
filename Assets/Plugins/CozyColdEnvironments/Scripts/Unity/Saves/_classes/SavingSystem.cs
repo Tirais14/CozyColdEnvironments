@@ -347,7 +347,7 @@ namespace CCEnvs.Unity.Saves
             KeyedSnapshot<ISnapshot> keyedSnapshot;
             SaveFileSceneData sceneData;
 
-            var loadedScenes = SceneManagerHelper.GetLoadedSceneInfos().PrependArray(default);
+            var loadedScenes = SceneManagerHelper.GetLoadedSceneInfos().PrependToArray(default);
 
             foreach (var sceneInfo in loadedScenes)
             {
@@ -574,7 +574,7 @@ namespace CCEnvs.Unity.Saves
 
         private void ApplyRegisteredSnapshots()
         {
-            var loadedSceneInfos = SceneManagerHelper.GetLoadedSceneInfos().PrependArray(default);
+            var loadedSceneInfos = SceneManagerHelper.GetLoadedSceneInfos().PrependToArray(default);
 
             foreach (var loadedSceneInfo in loadedSceneInfos)
             {

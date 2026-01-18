@@ -1,6 +1,7 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Patterns.Factories;
-using System.Threading.Tasks;
+using System.Buffers;
 
 namespace CCEnvs.Pools  
 {
@@ -11,7 +12,7 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<T>
 #else
-        System.Threading.Tasks.ValueTask<T>
+        System.Threading.Tasks.Task<T>
 #endif
             >? factory;
 
@@ -23,7 +24,7 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<T>
 #else
-        System.Threading.Tasks.ValueTask<T>
+        System.Threading.Tasks.Task<T>
 #endif
                 >? factory = null,
 
@@ -39,7 +40,7 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
 #else
-        System.Threading.Tasks.ValueTask<PooledHandle<T>>
+        System.Threading.Tasks.Task<PooledHandle<T>>
 #endif
             GetAsync()
         {
@@ -47,7 +48,7 @@ namespace CCEnvs.Pools
 
             if (FastObject is not null)
                 obj = FastObject;
-            else if (InactiveCount <= 0)
+            else if (InactiveCount == 0)
             {
                 if (factory is null)
                     throw IsEmptyException();
@@ -67,16 +68,47 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask
 #else
-        System.Threading.Tasks.ValueTask
+        System.Threading.Tasks.Task
 #endif
             PreheatAsync(int? count = null)
         {
             int resolvedCount = (count ?? DefaultCapacity) - Count;
+
+            var tasksHandle = ArrayPool<
+#if UNITASK_PLUGIN
+            Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+#else
+            System.Threading.Tasks.Task<T>
+#endif
+            >.Shared.RentHandled(resolvedCount, resolvedCount);
+
+#if UNITASK_PLUGIN
+            Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+#else
+            System.Threading.Tasks.Task<T>
+#endif
+                task;
+
+            for (int i = 0; i < resolvedCount; i++)
+            {
+                task = GetAsync();
+
+                tasksHandle.Value.AddToArraySegment(task);
+            }
+
+            await
+#if UNITASK_PLUGIN
+            Cysharp.Threading.Tasks.UniTask
+#else
+            System.Threading.Tasks.Task
+#endif
+                .WhenAll(tasksHandle.Value.ToArray());
+
             PooledHandle<T> handle;
 
             for (int i = 0; i < resolvedCount; i++)
             {
-                handle = await GetAsync();
+                handle = await tasksHandle.Value[i];
                 handle.Dispose();
             }
         }

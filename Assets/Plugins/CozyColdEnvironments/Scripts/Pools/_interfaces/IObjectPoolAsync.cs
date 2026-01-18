@@ -7,14 +7,14 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
 #else
-        System.Threading.Tasks.ValueTask<PooledHandle<T>>
+        System.Threading.Tasks.Task<PooledHandle<T>>
 #endif
             GetAsync();
 
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask
 #else
-        System.Threading.Tasks.ValueTask
+        System.Threading.Tasks.Task
 #endif
             PreheatAsync(int? count = null);
 

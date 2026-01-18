@@ -1,6 +1,7 @@
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using System.Buffers;
+using Unity.Android.Gradle;
 
 #nullable enable
 namespace CCEnvs
@@ -12,13 +13,28 @@ namespace CCEnvs
             Guard.IsNotNull(source, nameof(source));
 
             T[] rented = source.Rent(minLength);
+
             var handle = new PooledHandle<T[]>(rented, source,
-                static (arr, input) =>
+                static (arr, args) =>
                 {
-                    input.To<ArrayPool<T>>().Return(arr);
+                    args.To<ArrayPool<T>>().Return(arr);
                 });
 
             return handle;
+        }
+
+        public static PooledArray<T> RentHandled<T>(
+            this ArrayPool<T> source,
+            int minLength,
+            int count,
+            int offset = 0)
+        {
+            Guard.IsNotNull(source, nameof(source));
+
+            var handle = source.RentHandled(minLength);
+            var segmentHandle = new PooledArray<T>(handle, count, offset);
+
+            return segmentHandle;
         }
     }
 }

@@ -236,6 +236,13 @@ namespace CCEnvs
             {
                 IsNotType(left, typeof(TRight), paramName);
             }
+
+            public static void IsNotDefault<T>(T value, string paramName = "value")
+                where T : struct
+            {
+                if (value.IsDefault())
+                    throw new ArgumentException($"{paramName} is default");
+            }
         }
     }
 }

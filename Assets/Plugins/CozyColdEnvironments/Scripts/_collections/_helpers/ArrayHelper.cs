@@ -53,7 +53,7 @@ namespace CCEnvs.Collections
             throw new ArgumentException("Array must be contain any not null element.");
         }
 
-        public static T[] AppendArray<T>(this T[] source, T item)
+        public static T[] AppendToArray<T>(this T[] source, T item)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -64,7 +64,7 @@ namespace CCEnvs.Collections
             return dest;
         }
 
-        public static T[] PrependArray<T>(this T[] source, T item)
+        public static T[] PrependToArray<T>(this T[] source, T item)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -75,7 +75,7 @@ namespace CCEnvs.Collections
             return dest;
         }
 
-        public static T[] ConcatArray<T>(this T[] source, T[] other)
+        public static T[] ConcatToArray<T>(this T[] source, T[] other)
         {
             CC.Guard.IsNotNullSource(source);
             CC.Guard.IsNotNullSource(source);
@@ -135,23 +135,44 @@ namespace CCEnvs.Collections
             return new ArraySegment<T>(source, offset, count);
         }
 
+        public static bool TryFindHole<T>(this T?[] array, [NotNullWhen(true)] out int? holeIdx)
+        {
+            Guard.IsNotNull(array, nameof(array));
+
+            holeIdx = Array.IndexOf(array, null);
+
+            return holeIdx > -1;
+        }
+
+        public static bool TryAddToArray<T>(this T?[] array, T item, [NotNullWhen(true)] out int? addedIdx)
+        {
+            Guard.IsNotNull(array, nameof(array));
+            CC.Guard.IsNotNull(item, nameof(item));
+
+            if (!array.TryFindHole(out var holeIdx))
+            {
+                addedIdx = null;
+                return false;
+            }
+
+            array[holeIdx.Value] = item;
+            addedIdx = holeIdx;
+            return true;
+        }
+
+        public static int AddToArray<T>(this T?[] array, T item)
+        {
+            if (!array.TryAddToArray(item, out var addedIdx))
+                throw new InvalidOperationException("Array is full");
+
+            return addedIdx.Value;
+        }
+
         public static IEnumerator<T> GetEnumeratorT<T>(this T[] values)
         {
             CC.Guard.IsNotNull(values, nameof(values));
 
             return ((IEnumerable<T>)values).GetEnumerator();
-        }
-
-        public static void Add<T>( T[] array, T item)
-        {
-            Guard.IsNotNull(array, nameof(array));
-
-            var holeIdx = Array.IndexOf(array, null);
-
-            if (holeIdx < 0)
-                throw new InvalidOperationException("Array is full");
-
-            array[holeIdx] = item;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

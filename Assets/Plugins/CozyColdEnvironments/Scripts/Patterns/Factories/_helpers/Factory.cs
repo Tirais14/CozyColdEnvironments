@@ -39,13 +39,13 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                 > Create<TOut>(Func<
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                 > factory)
             {
@@ -53,7 +53,7 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     >(factory);
             }
@@ -62,13 +62,13 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                 > Create<T, TOut>(Func<T,
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     > factory)
             {
@@ -76,7 +76,7 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     >(factory);
             }
@@ -85,13 +85,13 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                 > Create<T, T1, TOut>(Func<T, T1,
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     > factory)
             {
@@ -99,7 +99,7 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     >(factory);
             }
@@ -108,13 +108,13 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                 > Create<T, T1, T2, TOut>(Func<T, T1, T2,
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     > factory)
             {
@@ -122,7 +122,7 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     >(factory);
             }
@@ -131,13 +131,13 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                 > Create<TState, TOut>(TState state, Func<TState,
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     > factory)
             {
@@ -145,7 +145,7 @@ namespace CCEnvs.Patterns.Factories
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<TOut>
 #else
-        System.Threading.Tasks.ValueTask<TOut>
+        System.Threading.Tasks.Task<TOut>
 #endif
                     >(state, factory);
             }

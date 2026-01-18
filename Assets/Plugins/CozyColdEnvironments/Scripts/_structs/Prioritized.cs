@@ -37,8 +37,6 @@ namespace CCEnvs
             IEqualityComparer<TValue>? valueEqualityComparer = null,
             IEqualityComparer<TComparable>? comparableEqualityComparer = null)
         {
-            CC.Guard.IsNotNull(valueEqualityComparer, nameof(valueEqualityComparer));
-
             Value = value;
             Comparable = comparable;
             ValueEqualityComparer = valueEqualityComparer ?? EqualityComparer<TValue>.Default;
