@@ -4,25 +4,21 @@ using CCEnvs.Reflection;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 #nullable enable
+#pragma warning disable S3267
 namespace CCEnvs.Pools
 {
     public abstract class ObjectPoolBase<T> : IObjectPoolBase<T>
         where T : class
     {
-        protected readonly Queue<T> inactiveItems;
-        protected readonly HashSet<PooledHandle<T>> activeItemHandles;
+        protected readonly Stack<T> inactiveItems;
+        protected readonly Dictionary<T, PooledHandle<T>> activeItemHandles;
 
         protected ReactiveCommand<T>? getCmd;
         protected ReactiveCommand<T>? returnCmd;
 
         protected T? fastObject;
-
-#if UNITY_EDITOR
-        private bool _OnGetExecuting;
-#endif
 
         public int Count => ActiveCount + InactiveCount;
         public int ActiveCount => activeItemHandles.Count;
@@ -32,16 +28,32 @@ namespace CCEnvs.Pools
         protected bool IsPoolableObject { get; }
         protected int DefaultCapacity { get; }
 
+#if UNITY_2017_1_OR_NEWER
+        protected bool IsUnityGameObject { get; }
+        protected bool IsUnityComponent { get; }
+        protected bool IsUnityObject { get; }
+#endif
+
         protected ObjectPoolBase(int capacity, int? maxSize)
         {
             //TODO: Realize max size
             _ = maxSize;
 
             DefaultCapacity = capacity;
-            inactiveItems = new Queue<T>(capacity);
-            activeItemHandles = new HashSet<PooledHandle<T>>(capacity);
+            inactiveItems = new Stack<T>(capacity);
+            activeItemHandles = new Dictionary<T, PooledHandle<T>>(capacity, new ReferenceEqualityComparer<T>());
 
-            IsPoolableObject = typeof(T).IsType<IPoolable>();
+            Type objType = typeof(T);
+            IsPoolableObject = objType.IsType<IPoolable>();
+
+#if UNITY_2017_1_OR_NEWER
+            IsUnityGameObject = objType.IsType<UnityEngine.GameObject>();
+
+            if (!IsUnityGameObject)
+                IsUnityComponent = objType.IsType<UnityEngine.Component>();
+
+            IsUnityObject = IsUnityComponent || IsUnityGameObject;
+#endif
         }
 
         public void Clear()
@@ -78,7 +90,7 @@ namespace CCEnvs.Pools
 
             if (disposing)
             {
-                activeItemHandles.DisposeEach();
+                activeItemHandles.Values.DisposeEach();
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
             }
@@ -88,13 +100,29 @@ namespace CCEnvs.Pools
 
         protected virtual void OnGet(PooledHandle<T> handledObj)
         {
+#if UNITY_2017_1_OR_NEWER
+
+            T obj = handledObj.Value;
+
+            if (IsUnityObject)
+            {
+                UnityEngine.GameObject? go = null;
+
+                if (IsUnityGameObject)
+                    go = obj.To<UnityEngine.GameObject>();
+                else if (IsUnityComponent)
+                    go = obj.To<UnityEngine.Component>().gameObject;
+
+                if (go != null)
+                    OnGameObjectGet(go);
+            }
+#endif
+
             if (IsPoolableObject)
             {
-                var poolable = (IPoolable)handledObj.Value;
+                var poolable = (IPoolable)obj;
 
-                if (poolable.PoolHandle.IsSome)
-                    throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}");
-
+                poolable.PoolHandle.IfSome(static _ => throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}"));
                 poolable.PoolHandle = handledObj;
 
                 try
@@ -107,8 +135,7 @@ namespace CCEnvs.Pools
                 }
             }
 
-            activeItemHandles.Add(handledObj);
-            getCmd?.Execute(handledObj.Value);
+            getCmd?.Execute(obj);
         }
 
         protected virtual void ReturnCore(T obj)
@@ -119,48 +146,56 @@ namespace CCEnvs.Pools
                 return;
             }
 
-            inactiveItems.Enqueue(obj);
+            inactiveItems.Push(obj);
         }
 
         protected virtual void OnReturn(T obj)
         {
+#if UNITY_2017_1_OR_NEWER
+
+            if (IsUnityObject)
+            {
+                UnityEngine.GameObject? go = null;
+
+                if (IsUnityGameObject)
+                    go = obj.To<UnityEngine.GameObject>();
+                else if (IsUnityComponent)
+                    go = obj.To<UnityEngine.Component>().gameObject;
+
+                if (go != null)
+                    OnGameObjectReturn(go);
+            }
+#endif
+
             if (IsPoolableObject)
             {
                 var poolable = (IPoolable)obj;
-                var poolablePoolHandle = poolable.PoolHandle;
 
-                if (poolablePoolHandle.IsSome)
-                {
-                    if (poolablePoolHandle.Raw is not PooledHandle<T> poolHandleTyped)
+                poolable.PoolHandle.Cast<PooledHandle<T>>()
+                    .Match(
+                    Right: static handle =>
+                    {
+                        handle.Dispose();
+                    },
+
+                    Left: static _ =>
+                    {
                         throw new InvalidOperationException("Invalid pooled handle. Maybe is object controlls by other object pool");
+                    });
 
-                    if (!activeItemHandles.Remove(poolHandleTyped))
-                    {
-                        PooledHandle<T> handleToRemove = default;
+                poolable.PoolHandle = Maybe<IDisposable>.None;
 
-                        foreach (var itemHandle in activeItemHandles.ToArrayPooled())
-                        {
-                            if (EqualityComparer<T?>.Default.Equals(itemHandle.Value, obj))
-                                handleToRemove = itemHandle;
-                        }
-
-                        if (handleToRemove.IsDefault() || !activeItemHandles.Remove(handleToRemove))
-                            this.PrintWarning($"Cannot remove object handle: {poolablePoolHandle}");
-                    }
-                    
-                    poolable.PoolHandle = Maybe<IDisposable>.None;
-
-                    try
-                    {
-                        poolable.OnDespawned();
-                    }
-                    catch (Exception ex)
-                    {
-                        poolable.PrintException(ex);
-                    }
+                try
+                {
+                    poolable.OnDespawned();
+                }
+                catch (Exception ex)
+                {
+                    poolable.PrintException(ex);
                 }
             }
 
+            RemoveFromActive(obj);
             returnCmd?.Execute(obj);
         }
 
@@ -179,5 +214,23 @@ namespace CCEnvs.Pools
         {
             return new System.InvalidOperationException("Pool is empty and a factory not found");
         }
+
+        private void RemoveFromActive(T obj)
+        {
+            activeItemHandles.Remove(obj);
+        }
+
+#if UNITY_2017_1_OR_NEWER
+        private void OnGameObjectReturn(UnityEngine.GameObject go)
+        {
+            go.transform.position = new UnityEngine.Vector3(0f, -100000);
+            go.SetActive(false);
+        }
+
+        private void OnGameObjectGet(UnityEngine.GameObject go)
+        {
+            go.SetActive(true);
+        }
+#endif
     }
 }

@@ -56,7 +56,7 @@ namespace CCEnvs.Pools
                 fastObject = null;
             }
             else
-                obj = inactiveItems.Dequeue();
+                obj = inactiveItems.Pop();
 
             var handle = CreateHandle(obj);
             OnGet(handle);
@@ -148,6 +148,7 @@ namespace CCEnvs.Pools
                 Progress = 1f;
 
                 handles.DisposeEach();
+                handles.Dispose();
                 pool.preheatOperation = null;
             }
         }
