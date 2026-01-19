@@ -172,13 +172,7 @@ namespace CCEnvs.Pools
                 var poolable = (IPoolable)obj;
 
                 poolable.PoolHandle.Cast<PooledHandle<T>>()
-                    .Match(
-                    Right: static handle =>
-                    {
-                        handle.Dispose();
-                    },
-
-                    Left: static _ =>
+                    .IfLeft(static _ =>
                     {
                         throw new InvalidOperationException("Invalid pooled handle. Maybe is object controlls by other object pool");
                     });

@@ -1,10 +1,17 @@
 #nullable enable
 
+using System.Runtime.CompilerServices;
+
 namespace CCEnvs.Diagnostics
 {
     public struct NullValidator<T>
     {
-        public bool IsNull { readonly get; private set; }
+        public bool IsNull { 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get; 
+
+            private set;
+        }
 
         public NullValidator(T? obj)
         {
