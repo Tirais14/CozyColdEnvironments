@@ -1,19 +1,21 @@
 using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
-using Newtonsoft.Json.Converters;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class CommandScheduler : ICommandScheduler, IDisposable, IFrameRunnerWorkItem
+    public sealed class CommandScheduler 
+        : 
+        ICommandScheduler, 
+        IDisposable, 
+        IFrameRunnerWorkItem,
+        ISwitchable
     {
         private readonly Queue<ICommand> commands = new();
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
+        private readonly ReactiveProperty<bool> isEnabled = new();
 
         private ReactiveCommand<ICommand>? addCommandRxCmd;
         private ReactiveCommand<Unit>? commandsExecutedCmd;
@@ -21,10 +23,11 @@ namespace CCEnvs.Patterns.Commands
         private ICommand? cmd;
         private bool cmdExecuted;
         private int idleFrameCount;
+        private bool disposed;
 
         public FrameProvider? FrameProvider { get; }
         public bool HasCommands => commands.IsNotEmpty();
-        public bool IsEnabled { get; private set; }
+        public bool IsEnabled => isEnabled.Value;   
 
         public CommandScheduler()
         {
@@ -43,7 +46,7 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNull(command, nameof(command));
 
-            if (command.IsCancelled)
+            if (command.IsDone)
                 return;
 
             commands.Enqueue(command);
@@ -53,6 +56,8 @@ namespace CCEnvs.Patterns.Commands
             addedCommandInfos.Add(command.GetCommandInfo());
 
             addCommandRxCmd?.Execute(command);
+
+            Enable();
         }
 
         public void Reset()
@@ -60,13 +65,13 @@ namespace CCEnvs.Patterns.Commands
             commands.Clear();
         }
 
-        private bool disposed;
         public void Dispose()
         {
             if (disposed)
                 return;
 
             addCommandRxCmd?.Dispose();
+            commandsExecutedCmd?.Dispose();
 
             disposed = true;
         }
@@ -76,10 +81,10 @@ namespace CCEnvs.Patterns.Commands
             if (!IsEnabled)
                 return;
 
-            if (IsIdleFrame())
-                return;
+            if (disposed)
+                throw new ObjectDisposedException(GetType().ToString());
 
-            if (commands.IsEmpty())
+            if (IsIdleFrame())
                 return;
 
             bool hasCommands = HasCommands;
@@ -87,7 +92,7 @@ namespace CCEnvs.Patterns.Commands
 
             while (true)
             {
-                if (iterationCount > 10000)
+                if (iterationCount > 100000)
                     throw new InvalidOperationException("Time out");
 
                 iterationCount++;
@@ -103,24 +108,29 @@ namespace CCEnvs.Patterns.Commands
                 ExecuteCommand(cmd!);
             }
 
-            if (commandsExecutedCmd is not null
-                &&
-                hasCommands
+            if (hasCommands
                 &&
                 commands.IsEmpty())
             {
-                commandsExecutedCmd.Execute(Unit.Default);
+                commandsExecutedCmd?.Execute(Unit.Default);
+                Disable();
             }
         }
 
         public void Enable()
         {
-            IsEnabled = true;
+            if (isEnabled.Value)
+                return;
+
+            isEnabled.Value = true;
         }
 
         public void Disable()
         {
-            IsEnabled = false;
+            if (!isEnabled.Value)
+                return;
+
+            isEnabled.Value = false;
         }
 
         public Observable<ICommand> ObserveAddCommand()
@@ -133,6 +143,16 @@ namespace CCEnvs.Patterns.Commands
         {
             commandsExecutedCmd ??= new ReactiveCommand<Unit>();
             return commandsExecutedCmd;
+        }
+
+        public Observable<bool> ObserveEnabled()
+        {
+            return isEnabled.Where(x => x);
+        }
+
+        public Observable<bool> ObserveDisabled()
+        {
+            return isEnabled.Where(x => !x);
         }
 
         private void ProcessCommandsBy(ICommand newCmd)
@@ -200,7 +220,11 @@ namespace CCEnvs.Patterns.Commands
 
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)
         {
+            if (disposed)
+                return false;
+
             DoTick();
+
             return true;
         }
     }

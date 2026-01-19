@@ -2,13 +2,14 @@
 using CCEnvs.Patterns.Factories;
 using System;
 using System.Buffers;
+using System.Threading;
 
 namespace CCEnvs.Pools  
 {
     public class ObjectPoolAsync<T> : ObjectPoolBase<T>, IObjectPoolAsync<T>
         where T : class
     {
-        private readonly IFactory<
+        private readonly IFactory<CancellationToken,
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<T>
 #else
@@ -20,7 +21,7 @@ namespace CCEnvs.Pools
 
         public ObjectPoolAsync(
 
-            IFactory<
+            IFactory<CancellationToken,
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<T>
 #else
@@ -42,7 +43,7 @@ namespace CCEnvs.Pools
 #else
         System.Threading.Tasks.Task<PooledHandle<T>>
 #endif
-            GetAsync()
+            GetAsync(CancellationToken cancellationToken = default)
         {
             T obj;
 
@@ -51,7 +52,7 @@ namespace CCEnvs.Pools
                 if (factory is null)
                     throw IsEmptyException();
 
-                obj = await factory.Create();
+                obj = await factory.Create(cancellationToken);
                 Return(obj);
             }
 
@@ -75,7 +76,11 @@ namespace CCEnvs.Pools
 #else
         System.Threading.Tasks.Task
 #endif
-            PreheatAsync(int? count = null, int? batchSize = null)
+            PreheatAsync(
+            int? count = null,
+            int? batchSize = null,
+            CancellationToken cancellationToken = default
+            )
         {
             int resolvedCount = (count ?? DefaultCapacity) - Count;
 
@@ -107,16 +112,27 @@ namespace CCEnvs.Pools
             {
                 for (int i = 0; i < batchCount; i++)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     int taskCount = Math.Min(batchSize.Value, resolvedCount - batchSize.Value * i);
+
+                    int frameCount = 0;
 
                     for (int j = 0; j < taskCount; j++)
                     {
-                        task = GetAsync();
+                        cancellationToken.CheckCancellationRequestByInterval(ref frameCount, taskCount / 2);
+
+                        task = GetAsync(cancellationToken);
+
                         tasks[batchSize.Value * i + j] = task;
                     }
 
+                    frameCount = 0;
+
                     for (int j = 0; j < taskCount; j++)
                     {
+                        cancellationToken.CheckCancellationRequestByInterval(ref frameCount, taskCount / 2);
+
                         int offsetedIdx = batchSize.Value * i + j;
 
                         task = tasks[offsetedIdx];

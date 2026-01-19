@@ -1,4 +1,6 @@
 #nullable enable
+using System.Threading;
+
 namespace CCEnvs.Pools
 {
     public interface IObjectPoolAsync<T> : IObjectPoolBase<T>
@@ -9,13 +11,17 @@ namespace CCEnvs.Pools
 #else
         System.Threading.Tasks.Task<PooledHandle<T>>
 #endif
-            GetAsync();
+            GetAsync(CancellationToken cancellationToken = default);
 
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask
 #else
         System.Threading.Tasks.Task
 #endif
-            PreheatAsync(int? count = null, int? batchSize = null);
+            PreheatAsync(
+            int? count = null, 
+            int? batchSize = null, 
+            CancellationToken cancellationToken = default
+            );
     }
 }

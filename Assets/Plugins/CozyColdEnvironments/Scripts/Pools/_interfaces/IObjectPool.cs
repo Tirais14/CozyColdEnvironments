@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Patterns.Commands;
 using R3;
+using System;
 
 namespace CCEnvs.Pools
 {
@@ -21,8 +22,11 @@ namespace CCEnvs.Pools
         /// <param name="count"></param>
         /// <param name="batchSize"></param>
         /// <returns>A lazy factory of command which completed when <see cref="PreheatProgress"/> == 1</returns>
-        LazyLight<ICommand, IObjectPool<T>> Preheat(FrameProvider? frameProvider,
+        IDisposable Preheat(
+            FrameProvider? frameProvider,
             int? count = null,
-            int? batchSize = null);
+            int? batchSize = null,
+            int delayFrameBetweenBatchesCount = 0
+            );
     }
 }

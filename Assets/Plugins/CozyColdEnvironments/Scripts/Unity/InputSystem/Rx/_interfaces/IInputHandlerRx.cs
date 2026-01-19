@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Rx
 {
-    public interface IInputHandlerRx : ISwitchable, IDisposable
+    public interface IInputHandlerRx : IDisposable, ISwitchable
     {
         InputActionMap ActionMap { get; }
 

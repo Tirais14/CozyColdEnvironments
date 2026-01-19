@@ -171,11 +171,8 @@ namespace CCEnvs.Pools
             {
                 var poolable = (IPoolable)obj;
 
-                poolable.PoolHandle.Cast<PooledHandle<T>>()
-                    .IfLeft(static _ =>
-                    {
-                        throw new InvalidOperationException("Invalid pooled handle. Maybe is object controlls by other object pool");
-                    });
+                if (poolable.PoolHandle.IsSome)
+                    poolable.PoolHandle.Raw.As<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
 
                 poolable.PoolHandle = Maybe<IDisposable>.None;
 

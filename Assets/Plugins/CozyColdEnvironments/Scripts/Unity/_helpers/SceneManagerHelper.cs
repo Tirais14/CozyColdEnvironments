@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using System.Linq;
 using UnityEngine.SceneManagement;
 
@@ -19,6 +20,17 @@ namespace CCEnvs.Unity
         public static SceneInfo[] GetLoadedSceneInfos()
         {
             return GetLoadedScenes().Select(scene => scene.GetSceneInfo()).ToArray();
+        }
+
+        public static Maybe<Scene> FindScene(string name, bool ignoreCase = false)
+        {
+            foreach (var scene in GetLoadedScenes())
+            {
+                if (scene.name.EqualsOrdinal(name, ignoreCase))
+                    return scene;
+            }
+
+            return Maybe<Scene>.None;
         }
     }
 }

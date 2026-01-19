@@ -10,6 +10,7 @@ namespace CCEnvs.Unity.UI
     public class Selectable : CCBehaviour, ISelectable
     {
         protected readonly ReactiveProperty<bool> isSelected = new();
+        protected readonly ReactiveProperty<bool> isEnabled = new();
 
         [SerializeField]
         protected Image m_SelectionOverlay;
@@ -17,12 +18,24 @@ namespace CCEnvs.Unity.UI
         public Image SelectionOverlay => m_SelectionOverlay;
 
         public bool IsSelected => isSelected.Value;
-        public bool IsEnabled => enabled;
+        public bool IsEnabled => isEnabled.Value;
 
         protected override void Start()
         {
             base.Start();
             InitSelectionOverlay();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            isEnabled.Value = true;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            isEnabled.Value = false;
         }
 
         protected virtual void OnTransformChildrenChanged()
@@ -93,6 +106,16 @@ namespace CCEnvs.Unity.UI
         public Observable<ISelectable> ObserveDoDeselect()
         {
             return isSelected.Where(x => !x).Select(_ => (ISelectable)this);
+        }
+
+        public Observable<bool> ObserveEnabled()
+        {
+            return isEnabled.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveDisabled()
+        {
+            return isEnabled.Where(static x => !x);
         }
 
         private void InitSelectionOverlay()

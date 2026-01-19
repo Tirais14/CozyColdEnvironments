@@ -1,6 +1,4 @@
 using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -8,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.ResourceLocations;
 using ZLinq;
 
 #nullable enable
@@ -16,13 +13,6 @@ namespace CCEnvs.Unity.AddrsAssets
 {
     public static class AddressablesHelper
     {
-        public static Type[] GetResourceTypes(IEnumerable<IResourceLocation> locations)
-        {
-            CC.Guard.IsNotNull(locations, nameof(locations));
-
-            return locations.Select(x => x.ResourceType).ToArray();
-        }
-
         public static int GetLoadPriority(Type fromType)
         {
             CC.Guard.IsNotNull(fromType, nameof(fromType));

@@ -1,5 +1,7 @@
 #nullable enable
 
+using R3;
+
 namespace CCEnvs
 {
     public interface ISwitchable
@@ -9,5 +11,9 @@ namespace CCEnvs
         void Enable();
 
         void Disable();
+
+        Observable<bool> ObserveEnabled();
+
+        Observable<bool> ObserveDisabled();
     }
 }

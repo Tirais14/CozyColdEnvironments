@@ -1,11 +1,9 @@
-using CCEnvs.Cacheables;
-using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
+using R3;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 #nullable enable
 #pragma warning disable S3881
@@ -18,13 +16,15 @@ namespace CCEnvs.Unity.Tickables
 
         where TTickable : ITickableBase
     {
-        private int tickablesCount;
-
         protected readonly List<TTickable> tickables = new();
+
+        private readonly ReactiveProperty<bool> isEnabled = new();
+
+        private int tickablesCount;
 
         public float TickablesCount => tickablesCount;
         public float DeltaTime { get; protected set; }
-        public bool IsEnabled => enabled;
+        public bool IsEnabled => isEnabled.Value;
         public virtual int FramesProcessed => 1;
 
         protected override void OnDestroy()
@@ -33,9 +33,33 @@ namespace CCEnvs.Unity.Tickables
             ((IDisposable)this).Dispose();
         }
 
-        public void Enable() => enabled = true;
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            isEnabled.Value = true;
+        }
 
-        public void Disable() => enabled = false;
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            isEnabled.Value = false;
+        }
+
+        public void Enable()
+        {
+            if (isEnabled.Value)
+                return;
+
+            enabled = true;
+        }
+
+        public void Disable()
+        {
+            if (!isEnabled.Value)
+                return;
+
+            enabled = false;
+        }
 
         /// <exception cref="ArgumentNullException"></exception>
         public IDisposable Register(TTickable tickable)
@@ -76,6 +100,16 @@ namespace CCEnvs.Unity.Tickables
         public bool IsRegistered(TTickable tickable)
         {
             return tickables.Contains(tickable);
+        }
+
+        public Observable<bool> ObserveEnabled()
+        {
+            return isEnabled.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveDisabled()
+        {
+            return isEnabled.Where(static x => !x);
         }
 
         /// <summary>

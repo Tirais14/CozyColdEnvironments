@@ -1,6 +1,6 @@
+using R3;
 using System;
 using System.Collections.Generic;
-using R3;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 
@@ -16,26 +16,31 @@ namespace CCEnvs.Unity.InputSystem.Rx
         private readonly ReactiveCommand<CallbackContext> started = new();
         private readonly ReactiveCommand<CallbackContext> performed = new();
         private readonly ReactiveCommand<CallbackContext> canceled = new();
-
-        private bool disposed;
+        private readonly ReactiveProperty<bool> isEnabled;
 
         public InputAction Action { get; }
         public Observable<CallbackContext> Raw => raw;
+
         public Observable<CallbackContext> Started {
             get => started;
         }
+
         public Observable<CallbackContext> Performed {
             get => performed;
         }
+
         public Observable<CallbackContext> Canceled {
             get => canceled;
         }
+
         public string ActionName => Action.name;
-        public bool IsEnabled => Action.enabled;
+        public bool IsEnabled => isEnabled.Value && Action.enabled;
 
         public InputActionRx(InputAction inputAction)
         {
-            CCEnvs.CC.Guard.IsNotNull(inputAction, nameof(inputAction));
+            CC.Guard.IsNotNull(inputAction, nameof(inputAction));
+
+            isEnabled = new ReactiveProperty<bool>(inputAction.enabled);
 
             Action = inputAction;  
             Setup();
@@ -48,12 +53,20 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public bool IsButtonPressed() => Action.IsPressed();
 
-        public void Enable() => Action.Enable();
+        public void Enable()
+        {
+            Action.Enable();
+            isEnabled.Value = true;
+        }
 
-        public void Disable() => Action.Disable();
+        public void Disable()
+        {
+            Action.Disable();
+            isEnabled.Value = false;
+        }
 
+        private bool disposed;
         public void Dispose() => Dispose(disposing: true);
-
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
@@ -73,6 +86,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 started.Dispose();
                 performed.Dispose();
                 canceled.Dispose();
+                isEnabled.Dispose();
             }
 
             disposed = true;
@@ -107,6 +121,16 @@ namespace CCEnvs.Unity.InputSystem.Rx
         private void OnCanceled(CallbackContext context)
         {
             canceled.Execute(context);
+        }
+
+        public Observable<bool> ObserveEnabled()
+        {
+            return isEnabled.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveDisabled()
+        {
+            return isEnabled.Where(static x => !x);
         }
     }
     public class InputActionRx<T> 

@@ -1,5 +1,7 @@
 using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Serialization;
 using Cysharp.Threading.Tasks;
+using R3;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -7,64 +9,102 @@ using UnityEngine.SceneManagement;
 #nullable enable
 namespace CCEnvs.Unity.Essentials
 {
-    public class GameBootsrapper : CCBehaviourStatic<GameBootsrapper>
+    public sealed class GameBootsrapper : CCBehaviourStatic<GameBootsrapper>
     {
         [SerializeField]
         [Tooltip("Stops loading scenes by specified key. This is scene also will be laoded.")]
-        protected string finalSceneKey = string.Empty;
+        private int finalSceneIdx = -1;
 
         [SerializeField]
-        protected bool destroyGameObjectOnFinished = true;
+        private bool destroyGameObjectOnFinished = true;
+
+        [SerializeField]
+        private string loadingScenePath;
+
+        private Scene loadingScene;
+
+        private ReactiveCommand<Unit>? gameBootstrappedCmd;
 
         protected override async void Start()
         {
             base.Start();
-            await LoadScenes();
+            await LoadScenesAsync();
         }
 
-        protected virtual void OnGameLoaded()
+        protected override void OnDestroy()
         {
-            UniTask.Create(this,
-                static async @this =>
-                {
-                    await UniTask.NextFrame();
-                    await UniTask.WaitForEndOfFrame();
-
-                    if (@this.destroyGameObjectOnFinished)
-                        Destroy(@this.gameObject);
-                    else
-                        Destroy(@this);
-                })
-                .Forget();
+            base.OnDestroy();
+            gameBootstrappedCmd?.Dispose();
         }
 
-        private async UniTask LoadScenes()
+        public static Observable<Unit> ObserveGameBootrapped()
         {
-            Scene scene;
+            self.gameBootstrappedCmd ??= new ReactiveCommand<Unit>();
+
+            return self.gameBootstrappedCmd;
+        }
+
+        private async UniTask OnGameLoadedAsync()
+        {
+            await UniTask.NextFrame(
+                timing: PlayerLoopTiming.Initialization,
+                destroyCancellationToken)
+            ;
+
+            if (loadingScene.IsValid())
+            {
+                await UniTask.WaitForSeconds(
+                    duration: 3f,
+                    ignoreTimeScale: true,
+                    delayTiming: PlayerLoopTiming.Update
+                    );
+
+                await SceneManager.UnloadSceneAsync(loadingScene);
+            }
+
+            gameBootstrappedCmd?.Execute(Unit.Default);
+
+            if (destroyGameObjectOnFinished)
+                Destroy(gameObject);
+            else
+                Destroy(this);
+        }
+
+        private async UniTask LoadScenesAsync()
+        {
+            Scene scene = default;
+
+            if (loadingScenePath.IsNotNullOrWhiteSpace())
+            {
+                await SceneManager.LoadSceneAsync(loadingScenePath, LoadSceneMode.Single);
+
+                loadingScene = SceneManager.GetSceneByName(loadingScenePath);
+
+                SceneManager.SetActiveScene(loadingScene);
+            }
+
             for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
             {
-                scene = await SceneLoader.LoadSceneAsync(i);
+                await SceneManager.LoadSceneAsync(i, LoadSceneMode.Additive);
 
-                if (finalSceneKey.IsNotNullOrEmpty() && scene.IsValid())
+                if (scene.IsValid())
+                    await SceneManager.UnloadSceneAsync(scene);
+
+                scene = SceneManager.GetSceneByBuildIndex(i);
+
+                if (loadingScene.IsValid())
+                    SceneManager.SetActiveScene(loadingScene);
+
+                if (finalSceneIdx > -1 && i == finalSceneIdx)
                 {
-                    if (int.TryParse(finalSceneKey, out int buildIndex)
-                        &&
-                        scene.buildIndex == buildIndex)
-                    {
-                        break;
-                    }
-                    else if (scene.name == finalSceneKey 
-                             || 
-                             scene.path == finalSceneKey)
-                    {
-                        break;
-                    }
+                    SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(i));
+                    break;
                 }
             }
 
             try
             {
-                OnGameLoaded();
+                await OnGameLoadedAsync();
             }
             catch (Exception ex)
             {

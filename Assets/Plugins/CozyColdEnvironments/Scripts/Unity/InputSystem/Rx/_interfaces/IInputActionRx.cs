@@ -8,8 +8,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 {
     public interface IInputActionRx
         :
-        ISwitchable,
-        IDisposable
+        IDisposable,
+        ISwitchable
     {
         InputAction Action { get; }
         string ActionName { get; }

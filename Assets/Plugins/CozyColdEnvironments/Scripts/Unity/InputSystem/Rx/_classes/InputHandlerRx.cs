@@ -2,6 +2,7 @@ using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +18,17 @@ namespace CCEnvs.Unity.InputSystem.Rx
         IInputHandlerRx
     {
         protected readonly List<IDisposable> disposables = new();
+
         private readonly Dictionary<string, IInputActionRx> registeredActions = new(0);
-        private bool disposed;
+        private readonly ReactiveProperty<bool> isEnabled;
 
         public InputActionMap ActionMap { get; }
-        public bool IsEnabled { get; private set; }
+        public bool IsEnabled => isEnabled.Value && ActionMap.enabled;
 
         protected InputHandlerRx(InputActionMap actionMap, bool autoSetProps)
         {
             ActionMap = actionMap;
+            isEnabled = new ReactiveProperty<bool>(actionMap.enabled);
 
             if (autoSetProps)
                 SetProperties();
@@ -50,13 +53,13 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 foreach (var item in registeredActions.Values)
                     item.Enable();
 
-                IsEnabled = true;
+                isEnabled.Value = true;
                 CCDebug.Instance.PrintLog("Enabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {
                 CCDebug.Instance.PrintException(ex);
-                IsEnabled = false;
+                isEnabled.Value = false;
             }
         }
 
@@ -67,19 +70,29 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 foreach (var item in registeredActions.Values)
                     item.Disable();
 
-                IsEnabled = false;
+                isEnabled.Value = false;
 
                 CCDebug.Instance.PrintLog("Disabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {
                 CCDebug.Instance.PrintException(ex);
-                IsEnabled = false;
+                isEnabled.Value = false;
             }
         }
 
-        public void Dispose() => Dispose(disposing: true);
+        public R3.Observable<bool> ObserveEnabled()
+        {
+            return isEnabled.Where(static x => x);
+        }
 
+        public R3.Observable<bool> ObserveDisabled()
+        {
+            return isEnabled.Where(static x => !x);
+        }
+
+        private bool disposed;
+        public void Dispose() => Dispose(disposing: true);
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)

@@ -273,6 +273,17 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<L, R> IfNotRight(Action action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            if (!IsRight)
+                action();
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Either<L, R> IfLeft(Action<L> action)
         {
             Guard.IsNotNull(action, nameof(action));
