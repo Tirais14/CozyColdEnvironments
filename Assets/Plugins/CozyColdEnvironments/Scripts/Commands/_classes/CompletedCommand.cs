@@ -1,10 +1,11 @@
 #nullable enable
+using R3;
 using System;
 using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    internal sealed class CompletedCommand : ICommand, IEquatable<CompletedCommand>
+    public sealed class CompletedCommand : ICommand, IEquatable<CompletedCommand>
     {
         public bool IsReadyToExecute { get; } = true;
         public bool IsCancelled { get; }
@@ -14,12 +15,14 @@ namespace CCEnvs.Patterns.Commands
         public bool IsDone { get; } = true;
         public bool IsFaulted { get; } = false;
         public bool IsResetable { get; } = false;
-        public string CommandName { get; } = "Completed";
+        public string Name { get; } = "Completed";
 
         public int DelayFrameCount {
             get => 0;
             set => _ = value;
         }
+
+        public CommandStatus Status { get; } = CommandStatus.Completed;
 
         public static bool operator ==(CompletedCommand? left, CompletedCommand? right)
         {
@@ -39,12 +42,12 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandInfo GetCommandInfo()
         {
-            return new CommandInfo(typeof(CompletedCommand), CommandName);
+            return new CommandInfo(typeof(CompletedCommand), Name);
         }
 
         public override string ToString()
         {
-            return CommandName;
+            return Name;
         }
 
         public ICommand Reset() => this;
@@ -62,6 +65,11 @@ namespace CCEnvs.Patterns.Commands
 
         public void Dispose()
         {
+        }
+
+        public Observable<CommandStatus> ObserveIsDone()
+        {
+            return Observable.Empty<CommandStatus>();
         }
     }
 }

@@ -1,10 +1,9 @@
 #nullable enable
+using R3;
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine.UIElements;
 
 #pragma warning disable S107
 #pragma warning disable S3963
@@ -12,44 +11,26 @@ namespace CCEnvs.Patterns.Commands
 {
     public partial class Command 
     {
-        private static AnonymousCommandBuilder builder;
-        private static bool isBuilderBusy;
-
-        public static AnonymousCommandBuilder Builder {
-            get
-            {
-                if (isBuilderBusy)
-                    return new AnonymousCommandBuilder();
-
-                return builder.Reset();
-            }
-        }
-
-        static Command()
-        {
-            builder = new AnonymousCommandBuilder();
-            builder.OnBuilded += _ => isBuilderBusy = false;
-        }
+        public static CommandBuilder Builder { get; } = CommandBuilder.Create();
     }
 
-    public abstract partial class Command : ICommand, IDisposable, IEquatable<Command>
+    public abstract partial class Command : ICommand, IEquatable<Command>
     {
-        public static ICommand Completed { get; } = new CompletedCommand();
+        public static CompletedCommand Completed { get; } = new();
 
-        private bool isExecuted;
-        private bool isCanceled;
-        private bool isFaulted;
-        private bool isCompleted;
-
-        private CancellationTokenSource? cancellationTokenSource;
+        private readonly ReactiveProperty<CommandStatus> status = new();
         private readonly Type type;
 
-        public string CommandName { get; } = string.Empty;
+        private bool isExecuted = new();
+
+        private CancellationTokenSource? cancellationTokenSource;
+
+        public string Name { get; } = string.Empty;
 
         public virtual bool IsReadyToExecute => !IsRunning && !IsDone;
-        public virtual bool IsCancelled => isCanceled;
-        public virtual bool IsFaulted => isFaulted;
-        public virtual bool IsCompleted => isCompleted;
+        public virtual bool IsCancelled => status.Value == CommandStatus.Canceled;
+        public virtual bool IsFaulted => status.Value == CommandStatus.Faulted;
+        public virtual bool IsCompleted => status.Value == CommandStatus.Completed;
         public virtual bool IsRunning => isExecuted && !IsDone;
 
         public bool IsDone => IsCompleted || IsCancelled || IsFaulted;
@@ -58,13 +39,15 @@ namespace CCEnvs.Patterns.Commands
 
         public int DelayFrameCount { get; set; }
 
+        public CommandStatus Status => status.Value;
+
         protected Command(
             bool isSingle = false,
             string? name = null,
             bool isResetable = true,
             int delayFrameCount = 0)
         {
-            CommandName = name ?? GetType().ToString();
+            Name = name ?? GetType().ToString();
             IsSingle = isSingle;
             IsResetable = isResetable;
             DelayFrameCount = delayFrameCount;
@@ -97,17 +80,17 @@ namespace CCEnvs.Patterns.Commands
             try
             {
                 await OnExecuteAsync(cancellationTokenSource.Token);
-                isCompleted = true;
+                status.Value = CommandStatus.Completed;
             }
             catch (Exception ex)
             {
                 switch (ex)
                 {
                     case TaskCanceledException:
-                        isCanceled = true;
+                        status.Value = CommandStatus.Canceled;
                         break;
                     default:
-                        isFaulted = true;
+                        status.Value = CommandStatus.Faulted;
                         this.PrintException(ex);
                         break;
                 }
@@ -119,7 +102,7 @@ namespace CCEnvs.Patterns.Commands
                 ||
                 cancellationTokenSource.IsCancellationRequested))
             {
-                isCanceled = true;
+                status.Value = CommandStatus.Canceled;
             }
 
             CancelAndDisposeCancellationTokenSource();
@@ -128,16 +111,15 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Undo()
         {
-            if (IsDone)
-                return;
-
             if (cancellationTokenSource is null)
                 throw new InvalidOperationException($"{nameof(CancellationTokenSource)} not found");
 
             CancelAndDisposeCancellationTokenSource();
 
             OnUndo();
-            isCanceled = true;
+
+            if (!IsFaulted)
+                status.Value = CommandStatus.Canceled;
         }
 
         public bool TryReset()
@@ -151,10 +133,8 @@ namespace CCEnvs.Patterns.Commands
             if (IsRunning)
                 Undo();
 
+            status.Value = CommandStatus.None;
             isExecuted = false;
-            isCanceled = false;
-            isFaulted = false;
-            isCompleted = false;
 
             OnReset();
 
@@ -174,27 +154,59 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandInfo GetCommandInfo()
         {
-            return new CommandInfo(GetType(), CommandName);
+            return new CommandInfo(GetType(), Name);
         }
 
         public override string ToString()
         {
-            if (CommandName.IsNullOrWhiteSpace())
+            if (Name.IsNullOrWhiteSpace())
                 return GetType().ToString();
             else
-                return CommandName;
+                return Name;
+        }
+
+        public bool Equals(Command other)
+        {
+            return Name == other.Name
+                   &&
+                   type == other.type;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Command typed && Equals(typed);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(type, Name);
+        }
+
+        public Observable<CommandStatus> ObserveIsDone()
+        {
+            return status.Where(
+                static status =>
+                {
+                    return status == CommandStatus.Completed
+                           ||
+                           status == CommandStatus.Canceled
+                           ||
+                           status == CommandStatus.Faulted;
+                });
         }
 
         bool disposed;
         public void Dispose() => Dispose(true);
-
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
                 return;
 
             if (disposing)
+            {
                 CancelAndDisposeCancellationTokenSource();
+                status.Dispose();
+            }
 
             disposed = true;
         }
@@ -217,23 +229,6 @@ namespace CCEnvs.Patterns.Commands
                 cancellationTokenSource.Dispose();
                 cancellationTokenSource = null;
             }
-        }
-
-        public bool Equals(Command other)
-        {
-            return CommandName == other.CommandName
-                   &&
-                   type == other.type;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is Command typed && Equals(typed);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(type, CommandName);
         }
     }
 }

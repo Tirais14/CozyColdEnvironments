@@ -36,7 +36,7 @@ namespace CCEnvs.Patterns.Commands
 
             return (CommandType.IsNone || command.GetType().IsType(CommandType.GetValueUnsafe()))
                    &&
-                   command.CommandName == CommandName;
+                   command.Name == CommandName;
         }
 
         public override string ToString()

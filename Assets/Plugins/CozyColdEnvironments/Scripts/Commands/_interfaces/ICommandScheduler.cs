@@ -1,25 +1,24 @@
 #nullable enable
 using R3;
+using System;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public interface ICommandScheduler
+    public interface ICommandScheduler : ISwitchable
     {
         bool HasCommands { get; }
-        bool IsEnabled { get; }
+        bool IsRunning { get; }
 
         void Schedule(ICommand command);
 
         void Reset();
 
-        void DoTick();
-
-        void Enable();
-
-        void Disable();
+        void DoFrame();
 
         Observable<ICommand> ObserveAddCommand();
 
-        Observable<Unit> ObserveCommandsExecuted();
+        Observable<bool> ObserveIsRunningFinsihed();
+
+        Observable<bool> ObserveIsRunningStarted();
     }
 }

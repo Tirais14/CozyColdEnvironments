@@ -1,18 +1,12 @@
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public class AnonymousCommandBuilder
+    public struct CommandBuilder
     {
-        private static Func<CancellationToken, ValueTask> onExecuteDefault = _ => default;
-        private readonly Dictionary<Type, Delegate> onExecuteStateDefaultValues = new();
-
         private Delegate? onExecute;
         private Delegate? executePredicate;
         private Delegate? onReset;
@@ -25,12 +19,12 @@ namespace CCEnvs.Patterns.Commands
 
         public event Action<ICommand>? OnBuilded;
 
-        public AnonymousCommandBuilder()
+        public static CommandBuilder Create()
         {
-            Reset();
+            return new CommandBuilder().Reset();
         }
 
-        public AnonymousCommandBuilder OnExecute(Func<CancellationToken, ValueTask>? onExecute)
+        public CommandBuilder OnExecute(Func<CancellationToken, ValueTask>? onExecute)
         {
             ThrowIfStatedCommand();
 
@@ -39,7 +33,7 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder OnExecute<T>(T state, Func<T, CancellationToken, ValueTask>? onExecute)
+        public CommandBuilder OnExecute<T>(T state, Func<T, CancellationToken, ValueTask>? onExecute)
         {
             this.onExecute = onExecute;
 
@@ -48,7 +42,7 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder ExecuteWhen(Func<bool>? executePredicate)
+        public CommandBuilder ExecuteWhen(Func<bool>? executePredicate)
         {
             ThrowIfStatedCommand();
 
@@ -57,7 +51,7 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder ExecuteWhen<T>(T state, Func<T, bool>? executePredicate)
+        public CommandBuilder ExecuteWhen<T>(T state, Func<T, bool>? executePredicate)
         {
             this.executePredicate = executePredicate;
 
@@ -66,7 +60,7 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder OnReset(Action? onReset)
+        public CommandBuilder OnReset(Action? onReset)
         {
             ThrowIfStatedCommand();
 
@@ -75,7 +69,7 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder OnReset<T>(Action<T>? onReset)
+        public CommandBuilder OnReset<T>(Action<T>? onReset)
         {
             this.onReset = onReset;
 
@@ -84,41 +78,40 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public AnonymousCommandBuilder Name(string? name = null)
+        public CommandBuilder Name(string? name = null)
         {
             this.name = name;
 
             return this;
         }
 
-        public AnonymousCommandBuilder IsSingleCommand(bool state = true)
+        public CommandBuilder IsSingleCommand(bool state = true)
         {
             isSingle = state;
 
             return this;
         }
 
-        public AnonymousCommandBuilder IsResetable(bool state = true)
+        public CommandBuilder IsResetable(bool state = true)
         {
             isResetable = state; 
 
             return this; 
         }
 
-        public AnonymousCommandBuilder DelayFrames(int count)
+        public CommandBuilder DelayFrames(int count)
         {
             delayFrameCount = count;
 
             return this;
         }
 
-        public Command Build()
+        public readonly Command Build()
         {
-            //ThrowIfOnExecuteIsNull();
             ThrowIfStatedCommand();
 
             var cmd = new AnonymousCommand(
-                ((Func<CancellationToken, ValueTask>?)onExecute) ?? onExecuteDefault,
+                (Func<CancellationToken, ValueTask>?)onExecute,
                 isReadyToExecute: (Func<bool>?)executePredicate,
                 onReset: (Action?)onReset,
                 name: name,
@@ -132,23 +125,11 @@ namespace CCEnvs.Patterns.Commands
             return cmd;
         }
 
-        public Command Build<T>(T state)
+        public readonly Command Build<T>(T state)
         {
-            //ThrowIfOnExecuteIsNull();
-
-            if (onExecute is null)
-            {
-                onExecute = onExecuteStateDefaultValues.GetOrCreate(typeof(T),
-                    factory: static () =>
-                    {
-                        Func<T, CancellationToken, ValueTask> t = (_, _) => default;
-                        return t;
-                    });
-            }
-
             var cmd = new AnonymousCommand<T>(
                 state,
-                (Func<T, CancellationToken, ValueTask>)onExecute!,
+                (Func<T, CancellationToken, ValueTask>?)onExecute!,
                 isReadyToExecute: (Func<T, bool>?)executePredicate,
                 onReset: (Action<T>?)onReset,
                 name: name,
@@ -162,7 +143,7 @@ namespace CCEnvs.Patterns.Commands
             return cmd;
         }
 
-        public AnonymousCommandBuilder Reset()
+        public CommandBuilder Reset()
         {
             onExecute = null;
             executePredicate = null;
@@ -177,16 +158,10 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        private void ThrowIfStatedCommand()
+        private readonly void ThrowIfStatedCommand()
         {
             if (isStatedCommand)
                 throw new InvalidOperationException($"Cannot create a stated command without the state");
-        }
-
-        private void ThrowIfOnExecuteIsNull()
-        {
-            if (onExecute is null)
-                throw new InvalidOperationException($"Cannot create a command without {nameof(onExecute)} action");
         }
     }
 }

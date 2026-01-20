@@ -10,24 +10,25 @@ namespace CCEnvs.Patterns.Commands
         : 
         ICommandScheduler, 
         IDisposable, 
-        IFrameRunnerWorkItem,
-        ISwitchable
+        IFrameRunnerWorkItem
     {
         private readonly Queue<ICommand> commands = new();
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
         private readonly ReactiveProperty<bool> isEnabled = new();
-
-        private ReactiveCommand<ICommand>? addCommandRxCmd;
-        private ReactiveCommand<Unit>? commandsExecutedCmd;
+        private readonly ReactiveProperty<bool> isRunning = new();
 
         private ICommand? cmd;
         private bool cmdExecuted;
         private int idleFrameCount;
         private bool disposed;
 
+        private ReactiveCommand<ICommand>? addCommandRxCmd;
+
         public FrameProvider? FrameProvider { get; }
+
         public bool HasCommands => commands.IsNotEmpty();
-        public bool IsEnabled => isEnabled.Value;   
+        public bool IsEnabled => isEnabled.Value;
+        public bool IsRunning => isRunning.Value;
 
         public CommandScheduler()
         {
@@ -45,6 +46,7 @@ namespace CCEnvs.Patterns.Commands
         public void Schedule(ICommand command)
         {
             CC.Guard.IsNotNull(command, nameof(command));
+            ValidateDisposed();
 
             if (command.IsDone)
                 return;
@@ -56,8 +58,6 @@ namespace CCEnvs.Patterns.Commands
             addedCommandInfos.Add(command.GetCommandInfo());
 
             addCommandRxCmd?.Execute(command);
-
-            Enable();
         }
 
         public void Reset()
@@ -71,18 +71,20 @@ namespace CCEnvs.Patterns.Commands
                 return;
 
             addCommandRxCmd?.Dispose();
-            commandsExecutedCmd?.Dispose();
+            isRunning.Dispose();
 
             disposed = true;
         }
 
-        public void DoTick()
+        public void DoFrame()
         {
-            if (!IsEnabled)
+            if (commands.IsEmpty())
                 return;
 
-            if (disposed)
-                throw new ObjectDisposedException(GetType().ToString());
+            ValidateDisposed();
+
+            if (!isRunning.Value)
+                isRunning.Value = true;
 
             if (IsIdleFrame())
                 return;
@@ -112,13 +114,14 @@ namespace CCEnvs.Patterns.Commands
                 &&
                 commands.IsEmpty())
             {
-                commandsExecutedCmd?.Execute(Unit.Default);
-                Disable();
+                isRunning.Value = false;
             }
         }
 
         public void Enable()
         {
+            ValidateDisposed();
+
             if (isEnabled.Value)
                 return;
 
@@ -139,10 +142,14 @@ namespace CCEnvs.Patterns.Commands
             return addCommandRxCmd;
         }
 
-        public Observable<Unit> ObserveCommandsExecuted()
+        public Observable<bool> ObserveIsRunningFinsihed()
         {
-            commandsExecutedCmd ??= new ReactiveCommand<Unit>();
-            return commandsExecutedCmd;
+            return isRunning.Where(static x => !x);
+        }
+
+        public Observable<bool> ObserveIsRunningStarted()
+        {
+            return isRunning.Where(static x => x);
         }
 
         public Observable<bool> ObserveEnabled()
@@ -218,12 +225,18 @@ namespace CCEnvs.Patterns.Commands
             cmdExecuted = true;
         }
 
+        private void ValidateDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().ToString());
+        }
+
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)
         {
             if (disposed)
                 return false;
 
-            DoTick();
+            DoFrame();
 
             return true;
         }

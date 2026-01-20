@@ -1,5 +1,6 @@
 #nullable enable
 
+using R3;
 using System;
 using System.Threading.Tasks;
 
@@ -15,8 +16,12 @@ namespace CCEnvs.Patterns.Commands
         bool IsDone { get; }
         bool IsFaulted { get; }
         bool IsResetable { get; }
-        string CommandName { get; }
+        //bool IsAsync { get; }
+        string Name { get; }
         int DelayFrameCount { get; set; }
+        CommandStatus Status { get; }
+
+        //void Execute();
 
         ValueTask ExecuteAsync();
 
@@ -27,5 +32,20 @@ namespace CCEnvs.Patterns.Commands
         bool TryReset();
 
         CommandInfo GetCommandInfo();
+
+        Observable<CommandStatus> ObserveIsDone();
+    }
+
+    public static class ICommandExtensions
+    {
+        public static ICommand ScheduleBy(this ICommand command, ICommandScheduler commandScheduler)
+        {
+            CC.Guard.IsNotNull(command, nameof(command));
+            CC.Guard.IsNotNull(commandScheduler, nameof(commandScheduler));
+
+            commandScheduler.Schedule(command);
+
+            return command;
+        }
     }
 }
