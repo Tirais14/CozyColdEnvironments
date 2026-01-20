@@ -9,11 +9,13 @@ namespace CCEnvs.Patterns.Commands
         bool HasCommands { get; }
         bool IsRunning { get; }
 
+        int DelayFrameCountBeforeRunningFinished { get; set; }
+
         void Schedule(ICommand command);
 
         void Reset();
 
-        void DoFrame();
+        void OnFrame();
 
         Observable<ICommand> ObserveAddCommand();
 

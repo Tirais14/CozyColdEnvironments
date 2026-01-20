@@ -36,26 +36,29 @@ namespace CCEnvs.Pools
             this.factory = factory;
         }
 
-        public PooledHandle<T> Get()
+        public virtual PooledHandle<T> Get()
         {
-            T obj;
+            T? obj = null;
 
-            if (InactiveCount <= 0)
+            while (obj.IsNull())
             {
-                if (factory is null)
-                    throw IsEmptyException();
+                if (InactiveCount <= 0)
+                {
+                    if (factory is null)
+                        throw IsEmptyException();
 
-                obj = factory.Create();
-                Return(obj);
-            }
+                    obj = factory.Create();
+                    Return(obj);
+                }
 
-            if (fastObject is not null)
-            {
-                obj = fastObject;
-                fastObject = null;
+                if (fastObject is not null)
+                {
+                    obj = fastObject;
+                    fastObject = null;
+                }
+                else
+                    obj = inactiveItems.Pop();
             }
-            else
-                obj = inactiveItems.Pop();
 
             var handle = CreateHandle(obj);
             OnGet(handle);

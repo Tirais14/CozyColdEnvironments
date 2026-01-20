@@ -1,10 +1,13 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Attributes;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +15,25 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
+#pragma warning disable S2696
 namespace CCEnvs.Unity
 {
     [DefaultExecutionOrder(-10)]
     public sealed class CCBehaviourStaticKernel : CCBehaviour
     {
-        private static CCBehaviourStaticKernel instance = null!;
+        private static WeakLazy<CCBehaviourStaticKernel> m_Self = new(GetOrCreateSelf);
+        private static CCBehaviourStaticKernel self => m_Self.Value;
 
         private readonly Dictionary<Type, CCBehaviourStatic> instances = new();
+
+        private readonly Lazy<GameObject> instancesGameObject = new(static () =>
+        {
+            var go = new GameObject($"___{nameof(CCBehaviourStatic)}Instances");
+
+            DontDestroyOnLoad(go);
+
+            return go;
+        });
 
         protected override void Awake()
         {
@@ -30,48 +44,67 @@ namespace CCEnvs.Unity
             base.Awake();
         }
 
-        /// <exception cref="ArgumentNullException"></exception>
-        public static CCBehaviourStatic GetInstance(Type type)
+        public static CCBehaviourStatic GetOrCreateInstance(Type type)
         {
-            if (type is null)
-                throw new ArgumentNullException(nameof(type));
+            Guard.IsTrue(!type.IsAbstract && !type.IsInterface, nameof(type), "Type is abstract.");
 
-            if (instance == null)
-                GetOrCreateSelf();
+            if (!GetInstance(type).TryGetValue(out var instance))
+                instance = CreateInstance(type);
 
-            if (!instance!.instances.TryGetValue(type, out CCBehaviourStatic? result)
-                || result == null
-                )
-                return instance.GetInstanceOf(type);
-            if (result == null)
-            {
-                var created = instance.GetInstanceOf(type);
-                instance.instances[type] = created;
-
-                return created;
-            }
-
-            return result;
+            return instance;
         }
-        public static T GetInstance<T>()
+
+        public static T GetOrCreateInstance<T>()
             where T : CCBehaviourStatic
         {
-            return (T)GetInstance(typeof(T));
+            return (T)GetOrCreateInstance(typeof(T));
+        }
+
+        public static Maybe<CCBehaviourStatic> GetInstance(Type type)
+        {
+            Guard.IsTrue(!type.IsAbstract && !type.IsInterface, nameof(type), "Type is abstract.");
+
+            if (!self.instances.TryGetValue(type, out var instance)
+                ||
+                (!ReferenceEquals(instance, null) && instance == null && instance!.DestroyedFrameIdx != UCC.CurrentFrame))
+            {
+                instance = (CCBehaviourStatic?)FindAnyObjectByType(type, FindObjectsInactive.Include);
+            }
+
+            return instance;
+        }
+
+        public static Maybe<T> GetInstance<T>()
+            where T : CCBehaviourStatic
+        {
+            return GetInstance(typeof(T)).Cast<T>().RightTarget;
         }
 
         private void Validate()
         {
             if (FindObjectsByType<CCBehaviourStaticKernel>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None).Any(x => x != this)
+                    FindObjectsInactive.Include, FindObjectsSortMode.None).Any(x => x != this)
                 )
+            {
                 throw new CCException($"Cannot create more than one {nameof(CCBehaviourStaticKernel)}.");
+            }
         }
 
         private void Setup()
         {
-            instance = this;
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += (_, _) => instances.Clear();
+
+            SceneManager.sceneUnloaded += unloadedScene =>
+            {
+                var toRemoveInstanceTypes =
+                from instanceInfo in instances.ToArrayPooled()
+                where instanceInfo.Value == null || instanceInfo.Value.gameObject.scene == unloadedScene
+                select instanceInfo.Key;
+
+                foreach (var instanceType in toRemoveInstanceTypes)
+                    instances.Remove(instanceType);
+            };
         }
 
         private void CreateInstantClasses()
@@ -83,41 +116,30 @@ namespace CCEnvs.Unity
                  where type.IsType<CCBehaviourStatic>()
                  where type.IsDefined<InstantCreationAttribute>(inherit: false)
                  select type)
-                 .CForEach(type => GetInstance(type))
+                 .ForEachAndMaterialize(type => GetInstance(type))
                  .Length;
 
             CCDebug.Instance.PrintLog($"Instant created class count = {instantCreatedClassCount}.",
                              new DebugContext(this).Additive());
         }
 
-        private static void GetOrCreateSelf()
+        private static CCBehaviourStaticKernel GetOrCreateSelf()
         {
-            if (FindAnyObjectByType<CCBehaviourStaticKernel>(FindObjectsInactive.Include)
-                .Is<CCBehaviourStaticKernel>(out CCBehaviourStaticKernel found)
-                )
+            if (FindAnyObjectByType<CCBehaviourStaticKernel>(FindObjectsInactive.Include).Let(out var found))
             {
-                instance = found;
-                return;
+                return found;
             }
 
-            var go = new GameObject("___StaticCore", typeof(CCBehaviourStaticKernel));
-            instance = go.GetComponent<CCBehaviourStaticKernel>();
+            var go = new GameObject($"___{nameof(CCBehaviourStaticKernel)}");
+
+            var instance = go.AddComponent<CCBehaviourStaticKernel>();
+
+            return instance;
         }
 
-        private CCBehaviourStatic GetInstanceOf(Type type)
+        private static CCBehaviourStatic CreateInstance(Type type)
         {
-            Guard.IsTrue(!type.IsAbstract && !type.IsInterface,nameof(type), "Type is abstract.");
-            var value = (CCBehaviourStatic?)FindAnyObjectByType(type);
-
-            if (value == null)
-                value = (CCBehaviourStatic)gameObject.AddComponent(type);
-
-            if (instances.ContainsKey(type))
-                instances[type] = value;
-            else
-                instances.Add(value.GetType(), value);
-
-            return value;
+            return (CCBehaviourStatic)self.instancesGameObject.Value.AddComponent(type);
         }
     }
 }

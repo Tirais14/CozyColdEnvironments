@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using R3;
+using Serilog;
 using System;
 using System.Collections.Generic;
 
@@ -18,9 +19,14 @@ namespace CCEnvs.Patterns.Commands
         private readonly ReactiveProperty<bool> isRunning = new();
 
         private ICommand? cmd;
+
         private bool cmdExecuted;
-        private int idleFrameCount;
         private bool disposed;
+
+        private int delayFrameCountBeforeRunningFinished;
+        private int delayCommandFrameCount;
+
+        private ulong idleFrameCount;
 
         private ReactiveCommand<ICommand>? addCommandRxCmd;
 
@@ -28,7 +34,12 @@ namespace CCEnvs.Patterns.Commands
 
         public bool HasCommands => commands.IsNotEmpty();
         public bool IsEnabled => isEnabled.Value;
-        public bool IsRunning => isRunning.Value;
+        public bool IsRunning => isRunning.Value && idleFrameCount >= (ulong)DelayFrameCountBeforeRunningFinished;
+
+        public int DelayFrameCountBeforeRunningFinished {
+            get => delayFrameCountBeforeRunningFinished;
+            set => delayFrameCountBeforeRunningFinished = Math.Clamp(value, 0, int.MaxValue);
+        }
 
         public CommandScheduler()
         {
@@ -71,25 +82,33 @@ namespace CCEnvs.Patterns.Commands
                 return;
 
             addCommandRxCmd?.Dispose();
+            isEnabled.Dispose();
             isRunning.Dispose();
 
             disposed = true;
         }
 
-        public void DoFrame()
+        public void OnFrame()
         {
-            if (commands.IsEmpty())
+            if (!IsEnabled)
                 return;
 
+            if (commands.IsEmpty())
+            {
+                idleFrameCount++;
+                return;
+            }
+
             ValidateDisposed();
+
+            if (IsFrameDelayedByCommand())
+                return;
+
+            idleFrameCount = 0;
 
             if (!isRunning.Value)
                 isRunning.Value = true;
 
-            if (IsIdleFrame())
-                return;
-
-            bool hasCommands = HasCommands;
             int iterationCount = 0;
 
             while (true)
@@ -101,7 +120,7 @@ namespace CCEnvs.Patterns.Commands
 
                 ResolveCommand();
 
-                if (IsIdleFrame())
+                if (IsFrameDelayedByCommand())
                     break;
 
                 if (!IsCommandReadyToExecute(cmd))
@@ -110,12 +129,8 @@ namespace CCEnvs.Patterns.Commands
                 ExecuteCommand(cmd!);
             }
 
-            if (hasCommands
-                &&
-                commands.IsEmpty())
-            {
+            if (commands.IsEmpty())
                 isRunning.Value = false;
-            }
         }
 
         public void Enable()
@@ -179,12 +194,18 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
-        private bool IsIdleFrame()
+        private bool IsFrameDelayedByCommand()
         {
-            if (idleFrameCount > 0)
-                idleFrameCount--;
-
-            return idleFrameCount > 0;
+            if (cmd is null
+                ||
+                cmd.IsDone
+                ||
+                delayCommandFrameCount < 1)
+            {
+                return false;
+            }
+            
+            return delayCommandFrameCount-- < 1;
         }
 
         private bool IsCommandReseted(ICommand cmd)
@@ -216,7 +237,11 @@ namespace CCEnvs.Patterns.Commands
                 return;
 
             EraseCommand();
-            commands.TryDequeue(out cmd);
+
+            if (!commands.TryDequeue(out cmd))
+                return;
+
+            delayCommandFrameCount = cmd.DelayFrameCount;
         }
 
         private void ExecuteCommand(ICommand cmd)
@@ -236,7 +261,7 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return false;
 
-            DoFrame();
+            OnFrame();
 
             return true;
         }

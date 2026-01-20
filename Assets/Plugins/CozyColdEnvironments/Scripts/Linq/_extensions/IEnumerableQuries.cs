@@ -33,17 +33,27 @@ namespace CCEnvs.Linq
             return source.Select(x => new KeyValuePair<T, TValue>(selector(x.Key), x.Value));
         }
 
-        public static T[] CForEach<T>(this IEnumerable<T> values, Action<T> action)
+        public static T[] ForEachAndMaterialize<T>(this IEnumerable<T> values, Action<T> action)
         {
             CC.Guard.IsNotNull(values, nameof(values));
             CC.Guard.IsNotNull(action, nameof(action));
 
-            T[] materialized = values.ToArray();
-            int count = materialized.Length;
-            for (int i = 0; i < count; i++)
-                action(materialized[i]);
+            var materialized = new List<T>();
 
-            return materialized;
+            foreach (var value in values)
+            {
+                materialized.Add(value);
+                action(value);
+            }
+
+            return materialized.ToArray();
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            foreach (var _ in source) { }
         }
 
         public static IEnumerable<T> RemoveElement<T>(this IEnumerable<T> values,
@@ -170,8 +180,9 @@ namespace CCEnvs.Linq
         {
             if (values is T[] array)
                 return array;
+
             if (values is ICollection<T> collection)
-                return collection;  
+                return collection;
 
             return values.ToArray();
         }

@@ -318,7 +318,7 @@ namespace CCEnvs.Unity.Saves
             {
                 await UniTask.SwitchToThreadPool();
 
-                using var _ = ListPool<RegisteredObject>.Get(out var regObjs);
+                using var _ = UnityEngine.Pool.ListPool<RegisteredObject>.Get(out var regObjs);
                 int iterationsPassed = 0;
 
                 foreach (var regObj in objectSets.Values.SelectMany(x => x))
@@ -341,8 +341,8 @@ namespace CCEnvs.Unity.Saves
 
         private async UniTask<PooledArray<SaveFileSceneData>> BuildSceneDatasAsync(CancellationToken cancellationToken)
         {
-            using var __ = ListPool<KeyedSnapshot<ISnapshot>>.Get(out var keyedSnapshots);
-            using var _ = ListPool<SaveFileSceneData>.Get(out var sceneDatas);
+            using var __ = UnityEngine.Pool.ListPool<KeyedSnapshot<ISnapshot>>.Get(out var keyedSnapshots);
+            using var _ = UnityEngine.Pool.ListPool<SaveFileSceneData>.Get(out var sceneDatas);
 
             KeyedSnapshot<ISnapshot> keyedSnapshot;
             SaveFileSceneData sceneData;

@@ -46,5 +46,18 @@ namespace CCEnvs.Unity
         public static Lazy<Material> MockMaterial { get; } = new(static () => Resources.Load<Material>("CC/Mock_Material"));
         public static Canvas DevCanvas => _devCanvas.Value;
         public static GameObject PooledObjectsParent => _pooledObjectsParent.Value;
+
+        /// <summary>
+        /// If !(<see cref="Application.isPlaying"/>) returns -1
+        /// </summary>
+        public static long CurrentFrame {
+            get
+            {
+                if (Application.isPlaying)
+                    return Time.frameCount - 1;
+
+                return -1;
+            }
+        }
     }
 }

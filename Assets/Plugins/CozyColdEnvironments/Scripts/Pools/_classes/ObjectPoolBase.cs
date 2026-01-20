@@ -4,6 +4,7 @@ using CCEnvs.Reflection;
 using R3;
 using System;
 using System.Collections.Generic;
+using Unity.Collections;
 
 #nullable enable
 #pragma warning disable S3267
@@ -61,8 +62,17 @@ namespace CCEnvs.Pools
             inactiveItems.Clear();
         }
 
-        public virtual void Return(T obj)
+        public virtual void Return(T? obj)
         {
+            if (obj is null)
+                return;
+
+            if (obj.Equals(null))
+            {
+                activeItemHandles.Remove(obj!);
+                return;
+            }
+
             ReturnCore(obj);
             OnReturn(obj);
         }
@@ -93,6 +103,7 @@ namespace CCEnvs.Pools
                 activeItemHandles.Values.DisposeEach();
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
+                fastObject = null;
             }
 
             disposed = true;
@@ -101,7 +112,6 @@ namespace CCEnvs.Pools
         protected virtual void OnGet(PooledHandle<T> handledObj)
         {
 #if UNITY_2017_1_OR_NEWER
-
             T obj = handledObj.Value;
 
             if (IsUnityObject)

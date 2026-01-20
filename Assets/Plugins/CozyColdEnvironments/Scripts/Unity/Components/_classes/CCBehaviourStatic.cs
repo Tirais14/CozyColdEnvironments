@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.Reflection;
-using System.Linq;
 using UnityEngine;
 
 #pragma warning disable IDE1006
@@ -13,11 +12,13 @@ namespace CCEnvs.Unity.Components
     {
         private CCBehaviourStatic? _self;
 
+        public long? DestroyedFrameIdx { get; private set; }
+
         protected CCBehaviourStatic self {
             get
             {
                 if (_self == null)
-                    _self = CCBehaviourStaticKernel.GetInstance(GetType());
+                    _self = CCBehaviourStaticKernel.GetOrCreateInstance(GetType());
 
                 return _self;
             }
@@ -42,6 +43,12 @@ namespace CCEnvs.Unity.Components
 
             this.PrintLog("Awaked");
         }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            DestroyedFrameIdx = UCC.CurrentFrame;
+        }
     }
     /// <summary>
     /// Do not add this or derived from this component! On scene must be only one <see cref="CCBehaviourStaticKernel"/>
@@ -55,7 +62,7 @@ namespace CCEnvs.Unity.Components
             get
             {
                 if (_self == null)
-                    _self = CCBehaviourStaticKernel.GetInstance<TThis>();
+                    _self = CCBehaviourStaticKernel.GetOrCreateInstance<TThis>();
 
                 return _self;
             }
