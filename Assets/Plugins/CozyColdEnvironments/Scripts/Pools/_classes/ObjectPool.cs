@@ -5,6 +5,7 @@ using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 
 #pragma warning disable S108
 namespace CCEnvs.Pools
@@ -109,14 +110,18 @@ namespace CCEnvs.Pools
             private readonly ObjectPool<T> pool;
             private readonly int count;
             private readonly int batchSize;
-            private readonly float progressPerItem;
             private readonly int frameDelayBetweenBatches;
+
+            private readonly float progressPerItem;
+
             private readonly bool hasFrameDelayBetweenBatches;
 
             private int currentBatch;
             private int currentFrame;
-            private PooledArray<PooledHandle<T>> handles;
+
             private bool disposed;
+
+            private PooledArray<PooledHandle<T>> handles;
 
             public PreheatOperation(
                 ObjectPool<T> pool,
@@ -154,10 +159,12 @@ namespace CCEnvs.Pools
                 var handles = new Span<PooledHandle<T>>(this.handles.Value.Array, handlesIdx, itemCount);
 
                 for (int i = 0; i < itemCount; i++)
+                {
                     handles[i] = pool.Get();
+                    Progress += progressPerItem;
+                }
 
                 currentBatch++;
-                Progress += progressPerItem;
 
                 return true;
             }

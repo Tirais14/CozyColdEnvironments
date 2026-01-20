@@ -4,6 +4,7 @@ using CCEnvs.Reflection;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Unity.Collections;
 
 #nullable enable
@@ -111,21 +112,10 @@ namespace CCEnvs.Pools
 
         protected virtual void OnGet(PooledHandle<T> handledObj)
         {
-#if UNITY_2017_1_OR_NEWER
             T obj = handledObj.Value;
 
-            if (IsUnityObject)
-            {
-                UnityEngine.GameObject? go = null;
-
-                if (IsUnityGameObject)
-                    go = obj.To<UnityEngine.GameObject>();
-                else if (IsUnityComponent)
-                    go = obj.To<UnityEngine.Component>().gameObject;
-
-                if (go != null)
-                    OnGameObjectGet(go);
-            }
+#if UNITY_2017_1_OR_NEWER
+            TryProcessUnityObjectOnGet(obj);
 #endif
 
             if (IsPoolableObject)
@@ -163,18 +153,7 @@ namespace CCEnvs.Pools
         {
 #if UNITY_2017_1_OR_NEWER
 
-            if (IsUnityObject)
-            {
-                UnityEngine.GameObject? go = null;
-
-                if (IsUnityGameObject)
-                    go = obj.To<UnityEngine.GameObject>();
-                else if (IsUnityComponent)
-                    go = obj.To<UnityEngine.Component>().gameObject;
-
-                if (go != null)
-                    OnGameObjectReturn(go);
-            }
+            TryProcessUnityObjectOnReturn(obj);
 #endif
 
             if (IsPoolableObject)
@@ -222,15 +201,49 @@ namespace CCEnvs.Pools
         }
 
 #if UNITY_2017_1_OR_NEWER
+
+        protected void TryProcessUnityObjectOnGet(T obj)
+        {
+            if (IsUnityObject
+                &&
+                TryGetGameObject(obj, out var go))
+            {
+                OnGameObjectGet(go);
+            }
+        }
+
+        protected void TryProcessUnityObjectOnReturn(T obj)
+        {
+            if (IsUnityObject
+                &&
+                TryGetGameObject(obj, out var go))
+            {
+                OnGameObjectReturn(go);
+            }
+        }
+
         private void OnGameObjectReturn(UnityEngine.GameObject go)
         {
-            go.transform.position = new UnityEngine.Vector3(0f, -100000);
+            go.transform.position = new UnityEngine.Vector3(0f, -100000f);
             go.SetActive(false);
         }
 
         private void OnGameObjectGet(UnityEngine.GameObject go)
         {
+            go.transform.position = new UnityEngine.Vector3(0f, -100000f);
             go.SetActive(true);
+        }
+
+        private bool TryGetGameObject(T obj, [NotNullWhen(true)] out UnityEngine.GameObject? go)
+        {
+            go = null;
+
+            if (IsUnityGameObject)
+                go = obj.To<UnityEngine.GameObject>();
+            else if (IsUnityComponent)
+                go = obj.To<UnityEngine.Component>().gameObject;
+
+            return go != null;
         }
 #endif
     }
