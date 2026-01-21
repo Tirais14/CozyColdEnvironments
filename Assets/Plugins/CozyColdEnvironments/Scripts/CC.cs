@@ -168,7 +168,7 @@ namespace CCEnvs
                 return new InvalidOperationException($"Member not found. {msg}");
             }
 
-            public static InvalidOperationException EndlessLoopException(ulong iterationCount, string? msg = null)
+            public static InvalidOperationException EndlessLoopException(long iterationCount, string? msg = null)
             {
                 return new InvalidOperationException($"Prevented endless loop with interation count: {iterationCount}. {msg}");
             }

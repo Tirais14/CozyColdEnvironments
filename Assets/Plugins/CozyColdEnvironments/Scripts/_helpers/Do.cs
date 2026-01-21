@@ -123,10 +123,13 @@ namespace CCEnvs
             var results = new Queue<T>();
 
             var loopState = new LoopState();
+
+            var loopFuse = LoopFuse.Create();
+
             IReadOnlyCollection<T?> nextValues;
             T? current;
-            var loopPredicate = new LoopFuse(() => toProccess.Count > 0);
-            while (loopPredicate.Invoke())
+
+            while (toProccess.Count > 0 && loopFuse.DebugMoveNext())
             {
                 current = toProccess.Dequeue();
                 if (current is null)
@@ -176,101 +179,101 @@ namespace CCEnvs
             return Collect(first, (x, _) => new T?[] { moveNext(x) });
         }
 
-        public static void While(
-            Func<bool> predicate,
-            Action<LoopState>? action,
-            ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
-            bool throwOnLimit = true)
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
+        //public static void While(
+        //    Func<bool> predicate,
+        //    Action<LoopState>? action,
+        //    ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
+        //    bool throwOnLimit = true)
+        //{
+        //    Guard.IsNotNull(predicate, nameof(predicate));
 
-            if (action is null)
-                return;
+        //    if (action is null)
+        //        return;
 
-            var loopFuse = new LoopFuse(predicate)
-            {
-                IterationsLimit = iterationsLimit
-            };
-            var state = new LoopState();
-            if (!throwOnLimit)
-            {
-                try
-                {
-                    while (loopFuse)
-                    {
-                        if (state.Break)
-                            break;
+        //    var loopFuse = new LoopFuse(predicate)
+        //    {
+        //        IterationsLimit = iterationsLimit
+        //    };
+        //    var state = new LoopState();
+        //    if (!throwOnLimit)
+        //    {
+        //        try
+        //        {
+        //            while (loopFuse)
+        //            {
+        //                if (state.Break)
+        //                    break;
 
-                        if (state.Continue.GetValue())
-                            continue;
+        //                if (state.Continue.GetValue())
+        //                    continue;
 
-                        action(state);
-                    }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    typeof(Do).PrintException(ex);
-                }
-            }
-            else
-            {
-                while (loopFuse)
-                {
-                    if (state.Break)
-                        break;
+        //                action(state);
+        //            }
+        //        }
+        //        catch (InvalidOperationException ex)
+        //        {
+        //            typeof(Do).PrintException(ex);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        while (loopFuse)
+        //        {
+        //            if (state.Break)
+        //                break;
 
-                    if (state.Continue.GetValue())
-                        continue;
+        //            if (state.Continue.GetValue())
+        //                continue;
 
-                    action(state);
-                }
-            }
-        }
-        public static void While(
-            Func<bool> predicate,
-            Action? action,
-            ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
-            bool throwOnLimit = true)
-        {
-            if (action is null)
-                return;
+        //            action(state);
+        //        }
+        //    }
+        //}
+        //public static void While(
+        //    Func<bool> predicate,
+        //    Action? action,
+        //    ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
+        //    bool throwOnLimit = true)
+        //{
+        //    if (action is null)
+        //        return;
 
-            While(predicate, _ => action(), iterationsLimit, throwOnLimit);
-        }
+        //    While(predicate, _ => action(), iterationsLimit, throwOnLimit);
+        //}
 
-        public static T[] While<T>(
-            Func<bool> predicate,
-            Func<T>? action,
-            ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
-            bool throwOnLimit = true)
-        {
-            Guard.IsNotNull(predicate, nameof(predicate));
+        //public static T[] While<T>(
+        //    Func<bool> predicate,
+        //    Func<T>? action,
+        //    ulong iterationsLimit = LoopChecker.ITERATIONS_LIMIT_DEFAULT,
+        //    bool throwOnLimit = true)
+        //{
+        //    Guard.IsNotNull(predicate, nameof(predicate));
 
-            if (action is null)
-                return Array.Empty<T>();
+        //    if (action is null)
+        //        return Array.Empty<T>();
 
-            var results = new List<T>();
-            var loopFuse = new LoopFuse(predicate)
-            {
-                IterationsLimit = iterationsLimit
-            };
-            if (!throwOnLimit)
-            {
-                try
-                {
-                    while (loopFuse)
-                        results.Add(action());
-                }
-                catch (InvalidOperationException ex)
-                {
-                    typeof(Do).PrintException(ex);
-                }
-            }
-            else
-                while (loopFuse)
-                    results.Add(action());
+        //    var results = new List<T>();
+        //    var loopFuse = new LoopFuse(predicate)
+        //    {
+        //        IterationsLimit = iterationsLimit
+        //    };
+        //    if (!throwOnLimit)
+        //    {
+        //        try
+        //        {
+        //            while (loopFuse)
+        //                results.Add(action());
+        //        }
+        //        catch (InvalidOperationException ex)
+        //        {
+        //            typeof(Do).PrintException(ex);
+        //        }
+        //    }
+        //    else
+        //        while (loopFuse)
+        //            results.Add(action());
 
-            return results.ToArray();
-        }
+        //    return results.ToArray();
+        //}
     }
 }

@@ -126,10 +126,14 @@ namespace CCEnvs.Unity
                 throw new ArgumentNullException(nameof(args));
 
             Stack<Component> components = CreateStackByHardDependecies(args.Object);
+
             var results = new List<Type>(components.Count);
+
+            var loopFuse = LoopFuse.Create();
+
             Component component;
-            var predicate = new LoopFuse(() => components.Count > 0);
-            while (predicate)
+
+            while (loopFuse.DebugMoveNext() && components.Count > 0)
             {
                 component = components.Pop();
                 Type componentType = component.GetType();
@@ -160,11 +164,9 @@ namespace CCEnvs.Unity
 
             AddToResults();
 
-            var predicate = new LoopFuse(() => results.Count < components.Length)
-            {
-                IterationsLimit = 1000
-            };
-            while (predicate)
+            var loopFuse = LoopFuse.Create();
+
+            while (loopFuse.MoveNext() && results.Count < components.Length)
             {
                 toStack = GetComponentsByDependencies();
                 AddToResults();

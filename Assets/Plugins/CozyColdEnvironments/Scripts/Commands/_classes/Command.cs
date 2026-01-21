@@ -159,10 +159,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            if (Name.IsNullOrWhiteSpace())
-                return GetType().ToString();
-            else
-                return Name;
+            return $"({Name}: {Name}; {IsDone}: {IsDone}; {IsReadyToExecute}: {IsReadyToExecute})";
         }
 
         public bool Equals(Command other)

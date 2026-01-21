@@ -1,0 +1,181 @@
+using R3;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+#nullable enable
+#pragma warning disable IDE0251
+namespace CCEnvs
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public struct LoopFuse : IDisposable, IEquatable<LoopFuse>
+    {
+        public const int DEFAULT_ITERATION_LIMIT = 1000000;
+
+        private ReactiveCommand<int>? onLimitReachedCmd;
+        private bool isNotDefault;
+
+        /// <summary>
+        /// Triggered before the exception
+        /// </summary>
+        public event Action<int>? OnLimitReached;
+
+        public int IterationPosition { 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+            readonly get;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private set;
+        }
+
+        public int IterationCount {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private set;
+        }
+
+        public int IterationLimit {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set;
+        }
+
+        public bool ThrowOnLimitReached {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set;
+        }
+
+        public static LoopFuse Create()
+        {
+            return new LoopFuse()
+            {
+                IterationLimit = DEFAULT_ITERATION_LIMIT,
+                ThrowOnLimitReached = true,
+                isNotDefault = true,
+            };
+        }
+
+        public static bool operator ==(LoopFuse left, LoopFuse right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(LoopFuse left, LoopFuse right)
+        {
+            return !(left == right);
+        }
+
+        public bool MoveNext()
+        {
+            if (!isNotDefault
+                &&
+                this.IsDefault())
+            {
+                IterationPosition = -1;
+                IterationLimit = DEFAULT_ITERATION_LIMIT;
+                ThrowOnLimitReached = true;
+
+                isNotDefault = true;
+            }
+
+            IterationCount++;
+            IterationPosition++;
+
+            if (IterationCount > IterationLimit)
+            {
+                OnLimitReached?.Invoke(IterationPosition);
+                onLimitReachedCmd?.Execute(IterationPosition);
+
+                if (ThrowOnLimitReached)
+                    throw CC.ThrowHelper.EndlessLoopException(IterationCount);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Works only if setted CC_DEBUG preprocessor variable
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool DebugMoveNext()
+        {
+#if CC_DEBUG
+            return MoveNext();
+#else
+            return true;
+#endif
+        }
+
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            onLimitReachedCmd?.Dispose();
+
+            disposed = true;
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is LoopFuse fuse && Equals(fuse);
+        }
+
+        public readonly bool Equals(LoopFuse other)
+        {
+            return EqualityComparer<ReactiveCommand<int>?>.Default.Equals(onLimitReachedCmd, other.onLimitReachedCmd)
+                   &&
+                   IterationPosition == other.IterationPosition
+                   &&
+                   IterationCount == other.IterationCount
+                   &&
+                   IterationLimit == other.IterationLimit
+                   &&
+                   ThrowOnLimitReached == other.ThrowOnLimitReached;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(
+                onLimitReachedCmd,
+                IterationPosition,
+                IterationCount,
+                IterationLimit,
+                ThrowOnLimitReached
+                );
+        }
+
+        public readonly override string ToString()
+        {
+            if (this.IsDefault())
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"({nameof(IterationPosition)}: {IterationPosition}; {nameof(IterationLimit)}: {IterationLimit})";
+        }
+
+        /// <summary>
+        /// Triggered before the exception
+        /// </summary>
+        public Observable<int> ObserveLimitReached()
+        {
+            if (this.IsDefault())
+                return Observable.Empty<int>();
+
+            onLimitReachedCmd ??= new ReactiveCommand<int>();
+
+            return onLimitReachedCmd;
+        }
+    }
+}

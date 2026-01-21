@@ -185,21 +185,14 @@ namespace CCEnvs.Unity.Initables
         {
             var toProccess = new List<(IInitable value, InitAfterTypeAttribute attribute)>(predicated);
             var proccessed = new List<IInitable>(predicated.Length);
-
-            var loopPredicate = new LoopFuse<int, int, int>
-            {
-                Predicate = (toProccessCount, proccessedCount, maxCount) =>
-                {
-                    return toProccessCount > 0
-                           &&
-                           proccessedCount < maxCount;
-                }
-            };
+            var loopFuse = LoopFuse.Create();
 
             (IInitable value, InitAfterTypeAttribute attribute)[] foundValues;
-            while (loopPredicate.Invoke(toProccess.Count,
-                                        proccessed.Count,
-                                        predicated.Length))
+            while (loopFuse.DebugMoveNext()
+                   &&
+                   toProccess.Count > 0
+                   &&
+                   proccessed.Count < predicated.Length)
             {
                 foundValues = ResolveAfterTypeInits(toProccess, proccessed);
 
@@ -276,9 +269,12 @@ namespace CCEnvs.Unity.Initables
         private static void DoInitInitables(IInitable[] inits)
         {
             Queue<IInitable> queue = CreateInitsQueue(inits);
+
             IInitable initable;
-            var loopPredicate = new LoopFuse<int>(x => x > 0);
-            while (loopPredicate.Invoke(queue.Count))
+
+            var loopFuse = LoopFuse.Create();
+
+            while (loopFuse.DebugMoveNext() && queue.Count > 0)
             {
                 initable = queue.Dequeue();
 

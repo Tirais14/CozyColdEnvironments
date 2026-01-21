@@ -5,10 +5,6 @@ namespace CCEnvs.Unity.Tickables
         where T : ITickableBase
     {
         private readonly TickerTimeCounter timeCounter = new();
-        private readonly LoopFuse<TickerTimeCounter, float> tickPredicate = new()
-        {
-            Predicate = static (timer, deltaTime) => timer.IsTickAllowed(deltaTime)
-        };
 
         private int framesProcessed;
 
@@ -19,7 +15,9 @@ namespace CCEnvs.Unity.Tickables
             framesProcessed = 0;
             timeCounter.OnStartTick(baseDeltaTime);
 
-            while (tickPredicate.Invoke(timeCounter, baseDeltaTime))
+            var loopFuse = LoopFuse.Create();
+
+            while (loopFuse.DebugMoveNext() && timeCounter.IsTickAllowed(baseDeltaTime))
             {
                 DoTickablesTicks();
                 framesProcessed++;

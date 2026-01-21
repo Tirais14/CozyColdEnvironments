@@ -143,7 +143,7 @@ namespace CCEnvs.Pools
             private readonly bool hasFrameDelayBetweenBatches;
 
             private int batch;
-            private int frame;
+            private int idleFramCount;
 
             private bool disposed;
 
@@ -161,7 +161,12 @@ namespace CCEnvs.Pools
                 this.frameDelayBetweenBatches = frameDelayBetweenBatches;
 
                 progressPerItem = 1f / count;
+
+                ///for some delay before is disposed and all handles will be freed
+                Progress -= progressPerItem;
+
                 handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(count, count);
+
                 hasFrameDelayBetweenBatches = frameDelayBetweenBatches > 0;
             }
 
@@ -170,13 +175,14 @@ namespace CCEnvs.Pools
                 if (disposed)
                     return false;
 
-                frame++;
+                idleFramCount++;
 
                 try
                 {
-                    if (hasFrameDelayBetweenBatches && !IsFrameToSkip())
+                    if (IsFrameToSkip())
                         return true;
 
+                    idleFramCount = 0;
                     int handlesIdxOffseted = batch * batchSize;
                     int itemCount = Math.Min(count - handlesIdxOffseted, batchSize);
 
@@ -216,7 +222,10 @@ namespace CCEnvs.Pools
 
             private bool IsFrameToSkip()
             {
-                return frame != 1 && frame < frameDelayBetweenBatches;
+                if (!hasFrameDelayBetweenBatches)
+                    return false;
+
+                return batch != 0 && idleFramCount <= frameDelayBetweenBatches;
             }
 
             public void Dispose()

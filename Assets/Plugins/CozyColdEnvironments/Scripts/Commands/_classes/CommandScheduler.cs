@@ -14,7 +14,9 @@ namespace CCEnvs.Patterns.Commands
         IFrameRunnerWorkItem
     {
         private readonly Queue<ICommand> commands = new();
+
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
+
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
 
@@ -22,6 +24,7 @@ namespace CCEnvs.Patterns.Commands
 
         private bool cmdExecuted;
         private bool disposed;
+        private bool isRunningFinshingDelayed;
 
         private int delayFrameCountBeforeRunningFinished;
         private int delayCommandFrameCount;
@@ -93,9 +96,9 @@ namespace CCEnvs.Patterns.Commands
             if (!IsEnabled)
                 return;
 
-            if (commands.IsEmpty())
+            if (IsIdleFrame())
             {
-                idleFrameCount++;
+                DoIdleFrame();
                 return;
             }
 
@@ -104,33 +107,31 @@ namespace CCEnvs.Patterns.Commands
             if (IsFrameDelayedByCommand())
                 return;
 
-            idleFrameCount = 0;
+            StartRunningFrame();
 
-            if (!isRunning.Value)
-                isRunning.Value = true;
+#if CC_DEBUG
+            var loopFuse = LoopFuse.Create();
+#endif
 
-            int iterationCount = 0;
-
-            while (true)
+            while (!disposed
+#if CC_DEBUG
+                &&
+                loopFuse.MoveNext()
+#endif
+                )
             {
-                if (iterationCount > 100000)
-                    throw new InvalidOperationException("Time out");
-
-                iterationCount++;
-
                 ResolveCommand();
 
                 if (IsFrameDelayedByCommand())
                     break;
 
-                if (!IsCommandReadyToExecute(cmd))
+                if (!IsCommandReadyToExecute())
                     break;
 
-                ExecuteCommand(cmd!);
+                ExecuteCommand();
             }
 
-            if (commands.IsEmpty())
-                isRunning.Value = false;
+            EndRunningFrame();
         }
 
         public void Enable()
@@ -213,7 +214,7 @@ namespace CCEnvs.Patterns.Commands
             return cmdExecuted && !cmd.IsDone && !cmd.IsRunning;
         }
 
-        private bool IsCommandReadyToExecute(ICommand? cmd)
+        private bool IsCommandReadyToExecute()
         {
             if (cmd.IsNull()
                 ||
@@ -227,6 +228,9 @@ namespace CCEnvs.Patterns.Commands
 
         private void EraseCommand()
         {
+            if (cmd.IsNotNull())
+                addedCommandInfos.Remove(cmd.GetCommandInfo());
+
             cmd = null;
             cmdExecuted = false;
         }
@@ -244,9 +248,9 @@ namespace CCEnvs.Patterns.Commands
             delayCommandFrameCount = cmd.DelayFrameCount;
         }
 
-        private void ExecuteCommand(ICommand cmd)
+        private void ExecuteCommand()
         {
-            cmd.ExecuteAsync();
+            cmd!.ExecuteAsync();
             cmdExecuted = true;
         }
 
@@ -254,6 +258,49 @@ namespace CCEnvs.Patterns.Commands
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().ToString());
+        }
+
+        private void OnRunningFinished()
+        {
+            isRunningFinshingDelayed = false;
+            isRunning.Value = false;
+        }
+
+        private void DoIdleFrame()
+        {
+            idleFrameCount++;
+
+            if (isRunningFinshingDelayed
+                &&
+                idleFrameCount > (ulong)DelayFrameCountBeforeRunningFinished)
+            {
+                OnRunningFinished();
+            }
+        }
+
+        private void StartRunningFrame()
+        {
+            idleFrameCount = 0;
+            isRunning.Value = true;
+        }
+
+        private void EndRunningFrame()
+        {
+            if (commands.IsEmpty())
+            {
+                if (DelayFrameCountBeforeRunningFinished > 0)
+                {
+                    isRunningFinshingDelayed = true;
+                    return;
+                }
+
+                OnRunningFinished();
+            }
+        }
+
+        private bool IsIdleFrame()
+        {
+            return commands.IsEmpty();
         }
 
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)
