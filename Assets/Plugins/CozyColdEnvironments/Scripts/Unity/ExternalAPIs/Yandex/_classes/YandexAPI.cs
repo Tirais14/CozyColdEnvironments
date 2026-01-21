@@ -4,9 +4,9 @@ using System;
 using YG;
 
 #nullable enable
-namespace CCEnvs.Unity.ExternalAPI
+namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
-    public sealed class YandexAPI : IExternalAPI
+    public sealed class YandexAPI : IGeneralAPI
     {
         public static YandexAPI? Instance { get; private set; }
 
@@ -60,10 +60,6 @@ namespace CCEnvs.Unity.ExternalAPI
             Instance = this;
         }
 
-        public void Authorize()
-        {
-        }
-
         public void GameplayStart()
         {
             YG2.GameplayStart();
@@ -96,11 +92,6 @@ namespace CCEnvs.Unity.ExternalAPI
                 YG2.GameReadyAPI();
                 isGameReady.Value = true;
             }
-        }
-
-        public Observable<bool> ObserveIsAuthorised()
-        {
-            throw new NotSupportedException();
         }
 
         public Observable<bool> ObserveIsGameplayMode()

@@ -2,11 +2,12 @@
 using R3;
 using System;
 
-namespace CCEnvs.Unity.ExternalAPI
+namespace CCEnvs.Unity.ExternalAPIs
 {
-    public interface IExternalAPI : IDisposable
+    public interface IGeneralAPI : IDisposable
     {
-        bool IsAuthorized { get; }
+        IPlayerAPI PlayerAPI { get; }
+
         bool IsGameReady { get; }
         bool IsGameplayMode { get; }
         bool IsGamePaused { get; }
@@ -14,8 +15,6 @@ namespace CCEnvs.Unity.ExternalAPI
         bool IsGameWindowShown { get; }
 
         void Initialize();
-
-        void Authorize();
 
         void SetGameReady(bool state);
 
@@ -26,8 +25,6 @@ namespace CCEnvs.Unity.ExternalAPI
         void PauseGame();
 
         void UnpauseGame();
-
-        Observable<bool> ObserveIsAuthorised();
 
         Observable<bool> ObserveIsGameplayMode();
 
