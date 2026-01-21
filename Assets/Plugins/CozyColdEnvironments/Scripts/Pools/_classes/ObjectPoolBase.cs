@@ -5,7 +5,6 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Unity.Collections;
 
 #nullable enable
 #pragma warning disable S3267

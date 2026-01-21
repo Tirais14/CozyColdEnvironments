@@ -1,9 +1,7 @@
 using CCEnvs.Pools;
-using SuperLinq;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -53,16 +51,18 @@ namespace CCEnvs.Collections
                 collection.Remove(range[i]);
         }
 
-        public static PooledArray<T> ToArrayPooled<T>(this IEnumerable<T> source, int? sourceCount = null)
+        public static PooledArray<T> ToArrayPooledReadOnly<T>(this IReadOnlyCollection<T> source)
         {
             CC.Guard.IsNotNullSource(source);
 
-            sourceCount ??= source.Count();
-            var arrHandle = ArrayPool<T>.Shared.RentHandled(sourceCount.Value);
-            source.CopyTo(arrHandle.Value, 0);
-
-            return new PooledArray<T>(arrHandle, sourceCount.Value, offset: 0);
+            return ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
         }
 
+        public static PooledArray<T> ToArrayPooled<T>(this ICollection<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+        }
     }
 }

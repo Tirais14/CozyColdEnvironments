@@ -7,13 +7,13 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public struct PooledArray<T> : IList<T>, IDisposable
+    public struct PooledArray<T> : IList<T>, IReadOnlyList<T>, IDisposable
     {
-        private const string COLLECTION_IS_READONLY = "Collection is read only";
+        private readonly IDisposable poolReturnHandle;
 
-        private readonly PooledHandle<T[]> pooledInternal;
+        private readonly T[] array;
+
         private readonly ArraySegment<T> value;
-        private readonly T[] rawArray;
 
         readonly public ArraySegment<T> Value {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,6 +26,7 @@ namespace CCEnvs.Pools
         }
 
         readonly int ICollection<T>.Count => Length;
+        readonly int IReadOnlyCollection<T>.Count => Length;
         readonly bool ICollection<T>.IsReadOnly => true;
 
         readonly public T this[int index] {
@@ -41,10 +42,20 @@ namespace CCEnvs.Pools
             :
             this()
         {
-            pooledInternal = pooled;
+            poolReturnHandle = pooled;
 
             value = pooled.Value.GetArraySegment(count, offset);
-            rawArray = pooled.Value;
+            array = pooled.Value;
+        }
+
+        public PooledArray(IDisposable poolReturnHandle, T[] array, int count, int offset = 0)
+            :
+            this()
+        {
+            this.poolReturnHandle = poolReturnHandle;
+
+            value = array.GetArraySegment(count, offset);
+            this.array = array;
         }
 
         private bool disposed;
@@ -53,53 +64,63 @@ namespace CCEnvs.Pools
             if (disposed)
                 return;
 
-            pooledInternal.Dispose();
+            poolReturnHandle.Dispose();
 
             disposed = true;
         }
 
-        readonly public int IndexOf(T item)
+        public readonly int IndexOf(T item)
         {
-            return rawArray.IndexOf(item);
+            return array.IndexOf(item);
         }
 
-        readonly public bool Contains(T item)
+        public readonly bool Contains(T item)
         {
             return IndexOf(item) > -1;
         }
 
-        readonly public void CopyTo(T[] array, int arrayIndex)
+        public readonly void CopyTo(T[] array, int arrayIndex)
         {
             throw new NotImplementedException();
         }
 
-        readonly public IEnumerator<T> GetEnumerator() => value.GetEnumerator();
+        public readonly Span<T> GetSpan(int start = 0, int? length = null)
+        {
+            return new Span<T>(array, start, length ?? value.Count);
+        }
+
+        public readonly Memory<T> GetMemory(int start = 0, int? length = null)
+        {
+            return new Memory<T>(array, start, length ?? value.Count);
+        }
+
+        public readonly IEnumerator<T> GetEnumerator() => value.GetEnumerator();
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        void IList<T>.Insert(int index, T item)
+        readonly void IList<T>.Insert(int index, T item)
         {
-            throw new NotSupportedException(COLLECTION_IS_READONLY);
+            throw CC.ThrowHelper.CollectionIsReadOnly(GetType());
         }
 
-        void IList<T>.RemoveAt(int index)
+        readonly void IList<T>.RemoveAt(int index)
         {
-            throw new NotSupportedException(COLLECTION_IS_READONLY);
+            throw CC.ThrowHelper.CollectionIsReadOnly(GetType());
         }
 
-        void ICollection<T>.Add(T item)
+        readonly void ICollection<T>.Add(T item)
         {
-            throw new NotSupportedException(COLLECTION_IS_READONLY);
+            throw CC.ThrowHelper.CollectionIsReadOnly(GetType());
         }
 
-        void ICollection<T>.Clear()
+        readonly void ICollection<T>.Clear()
         {
-            throw new NotSupportedException(COLLECTION_IS_READONLY);
+            throw CC.ThrowHelper.CollectionIsReadOnly(GetType());
         }
 
-        bool ICollection<T>.Remove(T item)
+        readonly bool ICollection<T>.Remove(T item)
         {
-            throw new NotSupportedException(COLLECTION_IS_READONLY);
+            throw CC.ThrowHelper.CollectionIsReadOnly(GetType());
         }
     }
 }

@@ -98,7 +98,7 @@ namespace CCEnvs.Unity
             SceneManager.sceneUnloaded += unloadedScene =>
             {
                 var toRemoveInstanceTypes =
-                from instanceInfo in instances.ToArrayPooled()
+                from instanceInfo in instances.ToArrayPooledReadOnly()
                 where instanceInfo.Value == null || instanceInfo.Value.gameObject.scene == unloadedScene
                 select instanceInfo.Key;
 

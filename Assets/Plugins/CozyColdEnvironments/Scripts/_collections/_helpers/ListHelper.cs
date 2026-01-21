@@ -1,6 +1,8 @@
 using CCEnvs.Collections.Unsafe;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -42,5 +44,19 @@ namespace CCEnvs.Collections
 
             return new Memory<T>(source.GetInternalArrayUnsafe(), 0, source.Count);
         }
+
+        //public static PooledArray<T> ToArrayPooled<T>(this IReadOnlyList<T> source)
+        //{
+        //    CC.Guard.IsNotNullSource(source);
+
+        //    return ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+        //}
+
+        //public static PooledArray<T> ToArrayPooled<T>(this IList<T> source)
+        //{
+        //    CC.Guard.IsNotNullSource(source);
+
+        //    return ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+        //}
     }
 }

@@ -17,7 +17,7 @@ namespace CCEnvs.Pools
     public interface IObjectPoolBase<T> : IObjectPoolBase
         where T : class
     {
-        void Return(T obj);
+        void Return(T? obj);
 
         Observable<T> ObserveReturn();
 

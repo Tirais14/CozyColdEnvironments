@@ -125,7 +125,7 @@ namespace CCEnvs.Linq
 #pragma warning restore S112
         }
 
-        public static int SequenceHashCode<T>(this IEnumerable<T> values)
+        public static int GetSequencedHashCode<T>(this IEnumerable<T> values)
         {
             CC.Guard.IsNotNull(values, nameof(values));
 
@@ -176,15 +176,35 @@ namespace CCEnvs.Linq
                 yield return (TResult)TypeMutator.MutateType(item, typeof(TResult));
         }
 
-        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> values)
+        public static bool TryGetNonEnumeratedCount<T>(this IEnumerable<T> source, out int count)
         {
-            if (values is T[] array)
+            CC.Guard.IsNotNullSource(source);
+
+            count = -1;
+
+            if (source is T[] array)
+                count = array.Length;
+
+            if (source is ICollection<T> collection)
+                count = collection.Count;
+
+            if (source is IReadOnlyCollection<T> readOnlyCollection)
+                count = readOnlyCollection.Count;
+
+            return count != -1;
+        }
+
+        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source is T[] array)
                 return array;
 
-            if (values is ICollection<T> collection)
+            if (source is ICollection<T> collection)
                 return collection;
 
-            return values.ToArray();
+            return source.ToArray();
         }
 
         public static Queue<T> ToQueue<T>(this IEnumerable<T> values)

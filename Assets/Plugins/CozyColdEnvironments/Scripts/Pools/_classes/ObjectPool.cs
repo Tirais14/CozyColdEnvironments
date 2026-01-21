@@ -5,7 +5,6 @@ using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 
 #pragma warning disable S108
 namespace CCEnvs.Pools
@@ -14,9 +13,11 @@ namespace CCEnvs.Pools
         where T : class
     {
         private readonly IFactory<T>? factory;
+
         private PreheatOperation? preheatOperation;
 
         public override bool HasFactory => factory is not null;
+
         public float PreheatProgress {
             get
             {
@@ -26,6 +27,8 @@ namespace CCEnvs.Pools
                 return preheatOperation.Progress;
             }
         }
+
+        public bool PreheatStarted => preheatOperation is not null;
 
         public ObjectPool(
             IFactory<T>? factory = null,
@@ -68,10 +71,8 @@ namespace CCEnvs.Pools
         }
 
         public IDisposable Preheat(
-            FrameProvider? frameProvider,
             int? count = null, 
-            int? batchSize = null,
-            int delayFrameBetweenBatchesCount = 0)
+            int? batchSize = null)
         {
             if (preheatOperation is not null)
                 throw new InvalidOperationException("Preheating already launched");
@@ -81,7 +82,38 @@ namespace CCEnvs.Pools
             Guard.IsGreaterThan(count.Value, 0, nameof(count));
 
             if (batchSize is null || batchSize.Value < 1)
-                batchSize = Environment.ProcessorCount;
+                batchSize = Math.Clamp(Environment.ProcessorCount / 2, 1, int.MaxValue);
+
+            preheatOperation = new PreheatOperation(
+                this,
+                count.Value,
+                batchSize.Value
+                );
+
+            while (preheatOperation.MoveNext(0L))
+            {
+            }
+
+            return preheatOperation;
+        }
+
+        public IDisposable Preheat(
+            FrameProvider frameProvider,
+            int? count = null,
+            int? batchSize = null,
+            int delayFrameBetweenBatchesCount = 0)
+        {
+            Guard.IsNotNull(frameProvider, nameof(frameProvider));
+
+            if (preheatOperation is not null)
+                throw new InvalidOperationException("Preheating already launched");
+
+            count ??= DefaultCapacity;
+
+            Guard.IsGreaterThan(count.Value, 0, nameof(count));
+
+            if (batchSize is null || batchSize.Value < 1)
+                batchSize = Math.Clamp(Environment.ProcessorCount / 2, 1, int.MaxValue);
 
             preheatOperation = new PreheatOperation(
                 this,
@@ -90,14 +122,7 @@ namespace CCEnvs.Pools
                 delayFrameBetweenBatchesCount
                 );
 
-            if (frameProvider is not null)
-                frameProvider.Register(preheatOperation);
-            else
-            {
-                while (preheatOperation.MoveNext(0L))
-                {
-                }
-            }
+            frameProvider.Register(preheatOperation);
 
             return preheatOperation;
         }
@@ -108,6 +133,7 @@ namespace CCEnvs.Pools
             public float Progress;
 
             private readonly ObjectPool<T> pool;
+
             private readonly int count;
             private readonly int batchSize;
             private readonly int frameDelayBetweenBatches;
@@ -116,8 +142,8 @@ namespace CCEnvs.Pools
 
             private readonly bool hasFrameDelayBetweenBatches;
 
-            private int currentBatch;
-            private int currentFrame;
+            private int batch;
+            private int frame;
 
             private bool disposed;
 
@@ -127,7 +153,7 @@ namespace CCEnvs.Pools
                 ObjectPool<T> pool,
                 int count,
                 int batchSize,
-                int frameDelayBetweenBatches)
+                int frameDelayBetweenBatches = 0)
             {
                 this.pool = pool;
                 this.count = count;
@@ -144,49 +170,53 @@ namespace CCEnvs.Pools
                 if (disposed)
                     return false;
 
-                if (hasFrameDelayBetweenBatches && !PassFrame())
+                frame++;
+
+                try
+                {
+                    if (hasFrameDelayBetweenBatches && !IsFrameToSkip())
+                        return true;
+
+                    int handlesIdxOffseted = batch * batchSize;
+                    int itemCount = Math.Min(count - handlesIdxOffseted, batchSize);
+
+                    if (itemCount < 1)
+                    {
+                        Dispose();
+                        return false;
+                    }
+
+                    var handles = this.handles.GetSpan(handlesIdxOffseted, itemCount);
+
+                    for (int i = 0; i < itemCount; i++)
+                    {
+                        if (disposed)
+                        {
+                            Dispose();
+                            return false;
+                        }
+
+                        handles[i] = pool.Get();
+                        Progress += progressPerItem;
+                    }
+
+                    batch++;
+
                     return true;
-
-                int handlesIdx = currentBatch * batchSize;
-                int itemCount = Math.Min(count - handlesIdx, batchSize);
-
-                if (itemCount < 1)
+                }
+                catch (Exception ex)
                 {
-                    Close();
+                    Dispose();
+
+                    this.PrintException(ex);
+
                     return false;
                 }
-
-                var handles = new Span<PooledHandle<T>>(this.handles.Value.Array, handlesIdx, itemCount);
-
-                for (int i = 0; i < itemCount; i++)
-                {
-                    handles[i] = pool.Get();
-                    Progress += progressPerItem;
-                }
-
-                currentBatch++;
-
-                return true;
             }
 
-            private void Close()
+            private bool IsFrameToSkip()
             {
-                Progress = 1f;
-
-                handles.DisposeEach();
-                handles.Dispose();
-                pool.preheatOperation = null;
-            }
-
-            private bool PassFrame()
-            {
-                currentFrame++;
-
-                if (currentFrame <= frameDelayBetweenBatches)
-                    return false;
-
-                currentFrame = 1;
-                return true;
+                return frame != 1 && frame < frameDelayBetweenBatches;
             }
 
             public void Dispose()
@@ -194,7 +224,12 @@ namespace CCEnvs.Pools
                 if (disposed)
                     return;
 
-                Close();
+                Progress = 1f;
+
+                handles.DisposeEach();
+                handles.Dispose();
+
+                pool.preheatOperation = null;
 
                 disposed = true;
             }

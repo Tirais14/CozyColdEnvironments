@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.Patterns.Factories;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 
@@ -8,11 +7,15 @@ namespace CCEnvs.Pools
 {
     public class ListPool<T> : ObjectPool<List<T>>
     {
-        private static ListPool<T> Instance { get; } = new();
+        public static ListPool<T> Shared { get; } = new();
 
-        public ListPool()
+        public ListPool(
+            int capacity = 4,
+            int? maxSize = null)
             :
-            base(factory: Factory.Create(() => new List<T>()))
+            base(factory: Factory.Create(static () => new List<T>()),
+                capacity: capacity,
+                maxSize: maxSize)
         {
             
         }
@@ -29,9 +32,9 @@ namespace CCEnvs.Pools
                 });
         }
 
-        public override void Return(List<T> obj)
+        public override void Return(List<T>? obj)
         {
-            Guard.IsNotNull(obj, nameof(obj));
+            UnityEngine.Pool.ListPool<T>.Release(obj);
         }
 #endif
     }

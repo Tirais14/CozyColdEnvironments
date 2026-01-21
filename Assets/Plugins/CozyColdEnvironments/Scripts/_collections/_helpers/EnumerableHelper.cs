@@ -1,4 +1,8 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
+using CCEnvs.Pools;
+using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -75,6 +79,47 @@ namespace CCEnvs.Collections
 
             foreach (var item in disposables)
                 item.Dispose();
+        }
+
+        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T> source, int sourceCount)
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsGreaterThan(sourceCount, 0, nameof(sourceCount));
+
+            var arrHandle = ArrayPool<T>.Shared.RentHandled(sourceCount);
+            source.CopyTo(arrHandle.Value, 0);
+
+            return new PooledArray<T>(arrHandle, sourceCount, offset: 0);
+        }
+
+        public static PooledHandle<T[]> EnumerableToArrayPooled<T>(this IEnumerable<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.TryGetNonEnumeratedCount(out int count))
+                return ArrayPool<T>.Shared.RentHandled(count);
+
+            PooledHandle<T[]> items = ArrayPool<T>.Shared.RentHandled(16);
+            int itemCount = 0;
+
+            foreach (var item in source)
+            {
+                itemCount++;
+
+                if (items.Value.Length == itemCount)
+                {
+                    var tItems = items;
+
+                    items = ArrayPool<T>.Shared.RentHandled((int)(tItems.Value.Length * 1.5));
+
+                    tItems.Value.CopyTo(items.Value, 0);
+                    tItems.Dispose();
+                }
+
+                items.Value[itemCount - 1] = item;
+            }
+
+            return items;
         }
     }
 }

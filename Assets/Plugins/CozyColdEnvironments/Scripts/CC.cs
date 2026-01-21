@@ -189,6 +189,16 @@ namespace CCEnvs
             {
                 return new ArgumentException($"Invalid argument '{paramName ?? "value"}'. Left type '{(left?.ToString() ?? "null")}' is not \"{(right?.ToString() ?? "null")}\"");
             }
+
+            public static NotSupportedException CollectionIsReadOnly()
+            {
+                return new NotSupportedException("Collection is read only");
+            }
+
+            public static NotSupportedException CollectionIsReadOnly(Type? collectionType)
+            {
+                return new NotSupportedException($"Collection: {collectionType} is read only");
+            }
         }
 
 
