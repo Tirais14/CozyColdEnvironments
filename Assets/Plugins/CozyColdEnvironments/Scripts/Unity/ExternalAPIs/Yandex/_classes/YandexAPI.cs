@@ -1,7 +1,7 @@
 #if YandexGamesPlatform_yg
+using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using R3;
-using System;
 using YG;
 
 #nullable enable
@@ -13,41 +13,34 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private readonly ReactiveProperty<bool> isGameReady = new();
         private readonly ReactiveProperty<bool> isGamePaused = new();
-        private readonly ReactiveProperty<bool> isAdvertisementMode = new();
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
+        private readonly ReactiveProperty<bool> isGameWindowFocused = new();
+        private readonly ReactiveProperty<bool> isGameSaving = new();
 
         private Observable<bool>? isGameplayModeObservable;
-        private Observable<bool>? isGameWindowFocused;
 
-        public IPlayerAPI PlayerAPI { get; }
-        public bool IsAuthorized => throw new NotImplementedException();
-        public bool IsGameReady => isGameReady.Value;
+        public Maybe<IPlayerAPI> PlayerAPI { get; }
+        public Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
+
         public bool IsGameplayMode => YG2.isGameplaying;
+
+        public bool IsGameReady => isGameReady.Value;
         public bool IsGamePaused => isGamePaused.Value;
-        public bool IsAdvertisementMode => isAdvertisementMode.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
-        public bool IsGameWindowFocused => YG2.isFocusWindowGame;
+        public bool IsGameWindowFocused => isGameWindowFocused.Value;
+        public bool IsGameSaving => isGameSaving.Value;
 
-        public YandexAPI(YandexPlayerAPI playerAPI)
+        public YandexAPI(
+            YandexPlayerAPI? playerAPI = null,
+            YandexAdvertisementAPI? advertisementAPI = null
+            )
         {
-            Guard.IsNotNull(playerAPI, nameof(playerAPI));
-
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
 
             YG2.onPauseGame += (state) =>
             {
                 isGamePaused.Value = state;
-            };
-
-            YG2.onCloseAnyAdv += () =>
-            {
-                isAdvertisementMode.Value = false;
-            };
-
-            YG2.onOpenAnyAdv += () =>
-            {
-                isAdvertisementMode.Value = true;
             };
 
             YG2.onHideWindowGame += () =>
@@ -60,7 +53,13 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 isGameWindowShown.Value = true;
             };
 
+            YG2.onFocusWindowGame += state =>
+            {
+                isGameWindowFocused.Value = state;
+            };
+
             PlayerAPI = playerAPI;
+            AdvertisementAPI = advertisementAPI;
 
             Instance = this;
         }
@@ -99,6 +98,22 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
+        public void SaveGame(string serializedData)
+        {
+            Guard.IsNotNullOrWhiteSpace(serializedData, nameof(serializedData));
+
+            isGameSaving.Value = true;
+
+            YG2.saves = new SavesYG()
+            {
+                serializedData = serializedData
+            };
+
+            YG2.SaveProgress();
+
+            isGameSaving.Value = false;
+        }
+
         private bool disposed;
         public void Dispose()
         {
@@ -107,8 +122,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             isGameReady.Dispose();
             isGamePaused.Dispose();
-            isAdvertisementMode.Dispose();
             isGameWindowShown.Dispose();
+            isGameWindowFocused.Dispose();
 
             disposed = true;
         }
@@ -134,11 +149,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             return isGameReady;
         }
 
-        public Observable<bool> ObserveIsAdvertisementMode()
-        {
-            return isAdvertisementMode;
-        }
-
         public Observable<bool> ObserveIsGameWindowShown()
         {
             return isGameWindowShown;
@@ -146,13 +156,12 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public Observable<bool> ObserveIsGameWindowFocused()
         {
-            isGameWindowFocused ??= Observable.EveryValueChanged((object)null!,
-                static _ =>
-                {
-                    return YG2.isFocusWindowGame;
-                });
-
             return isGameWindowFocused;
+        }
+
+        public Observable<bool> ObserveIsGameSaving()
+        {
+            return isGameSaving;
         }
     }
 }
