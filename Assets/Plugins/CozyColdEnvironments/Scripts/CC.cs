@@ -199,6 +199,11 @@ namespace CCEnvs
             {
                 return new NotSupportedException($"Collection: {collectionType} is read only");
             }
+
+            public static InvalidOperationException CannotCreateInstance(string name)
+            {
+                return new InvalidOperationException($"Cannot create instance: {name}");
+            }
         }
 
 

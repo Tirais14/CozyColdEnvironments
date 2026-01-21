@@ -13,6 +13,7 @@ namespace CCEnvs.Unity.ExternalAPIs
         bool IsGamePaused { get; }
         bool IsAdvertisementMode { get; }
         bool IsGameWindowShown { get; }
+        bool IsGameWindowFocused { get; }
 
         void Initialize();
 
@@ -35,5 +36,7 @@ namespace CCEnvs.Unity.ExternalAPIs
         Observable<bool> ObserveIsAdvertisementMode();
 
         Observable<bool> ObserveIsGameWindowShown();
+
+        Observable<bool> ObserveIsGameWindowFocused();
     }
 }

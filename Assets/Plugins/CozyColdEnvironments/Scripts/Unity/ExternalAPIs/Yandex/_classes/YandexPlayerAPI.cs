@@ -1,15 +1,36 @@
+#if YandexGamesPlatform_yg
 using R3;
-using UnityEngine;
 using YG;
 
 #nullable enable
 namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
-    public class YandexPlayerAPI : IPlayerAPI
+    public sealed class YandexPlayerAPI : IPlayerAPI
     {
-        private Observable<bool>? isAuthorizedObservable;
+        public static YandexPlayerAPI? Instance { get; private set; }
 
-        public bool IsAuthorized => YG2.player.auth;
+#if Authorization_yg
+        private Observable<bool>? isAuthorizedObservable;
+#endif
+
+        public bool IsAuthorized {
+            get
+            {
+#if Authorization_yg
+                return YG2.player.auth;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public YandexPlayerAPI()
+        {
+            if (Instance is not null)
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
+
+            Instance = this;
+        }
 
         public void Authorize()
         {
@@ -18,8 +39,18 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 #endif
         }
 
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+        }
+
         public Observable<bool> ObserveIsAuthorised()
         {
+#if Authorization_yg
             isAuthorizedObservable ??= Observable.EveryValueChanged((object)null!,
                 static _ =>
                 {
@@ -27,6 +58,10 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 });
 
             return isAuthorizedObservable;
+#else
+            return Observable.Empty<bool>();
+#endif
         }
     }
 }
+#endif

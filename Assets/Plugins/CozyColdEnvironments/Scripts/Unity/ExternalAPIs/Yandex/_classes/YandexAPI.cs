@@ -1,4 +1,5 @@
 #if YandexGamesPlatform_yg
+using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using YG;
@@ -10,27 +11,29 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
     {
         public static YandexAPI? Instance { get; private set; }
 
-        private readonly CompositeDisposable disposables = new();
-
         private readonly ReactiveProperty<bool> isGameReady = new();
         private readonly ReactiveProperty<bool> isGamePaused = new();
         private readonly ReactiveProperty<bool> isAdvertisementMode = new();
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
-        private readonly ReactiveProperty<bool> isGameWindowFocused = new();
 
         private Observable<bool>? isGameplayModeObservable;
+        private Observable<bool>? isGameWindowFocused;
 
+        public IPlayerAPI PlayerAPI { get; }
         public bool IsAuthorized => throw new NotImplementedException();
         public bool IsGameReady => isGameReady.Value;
         public bool IsGameplayMode => YG2.isGameplaying;
         public bool IsGamePaused => isGamePaused.Value;
         public bool IsAdvertisementMode => isAdvertisementMode.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
+        public bool IsGameWindowFocused => YG2.isFocusWindowGame;
 
-        public YandexAPI()
+        public YandexAPI(YandexPlayerAPI playerAPI)
         {
+            Guard.IsNotNull(playerAPI, nameof(playerAPI));
+
             if (Instance is not null)
-                throw new InvalidOperationException($"Cannot create new instance of {nameof(YandexAPI)}");
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
 
             YG2.onPauseGame += (state) =>
             {
@@ -56,6 +59,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             {
                 isGameWindowShown.Value = true;
             };
+
+            PlayerAPI = playerAPI;
 
             Instance = this;
         }
@@ -94,6 +99,20 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            isGameReady.Dispose();
+            isGamePaused.Dispose();
+            isAdvertisementMode.Dispose();
+            isGameWindowShown.Dispose();
+
+            disposed = true;
+        }
+
         public Observable<bool> ObserveIsGameplayMode()
         {
             isGameplayModeObservable ??= Observable.EveryValueChanged((object)null!,
@@ -125,21 +144,15 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             return isGameWindowShown;
         }
 
-        private bool disposed;
-        public void Dispose()
+        public Observable<bool> ObserveIsGameWindowFocused()
         {
-            if (disposed)
-                return;
+            isGameWindowFocused ??= Observable.EveryValueChanged((object)null!,
+                static _ =>
+                {
+                    return YG2.isFocusWindowGame;
+                });
 
-            disposables.Dispose();
-
-            isGameReady.Dispose();
-            isGamePaused.Dispose();
-            isAdvertisementMode.Dispose();
-            isGameWindowShown.Dispose();
-            isGameWindowFocused.Dispose();
-
-            disposed = true;
+            return isGameWindowFocused;
         }
     }
 }
