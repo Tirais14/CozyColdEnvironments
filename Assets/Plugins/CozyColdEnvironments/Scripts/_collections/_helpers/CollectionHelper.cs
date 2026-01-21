@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using static UnityEditor.Progress;
 
 #nullable enable
 
@@ -55,14 +56,26 @@ namespace CCEnvs.Collections
         {
             CC.Guard.IsNotNullSource(source);
 
-            return ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+            var items = ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+            int i = 0;
+
+            foreach (var item in source)
+                items[i++] = item;
+
+            return items;
         }
 
         public static PooledArray<T> ToArrayPooled<T>(this ICollection<T> source)
         {
             CC.Guard.IsNotNullSource(source);
 
-            return ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+            var items = ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+            int i = 0;
+
+            foreach (var item in source)
+                items[i++] = item;
+
+            return items;
         }
     }
 }
