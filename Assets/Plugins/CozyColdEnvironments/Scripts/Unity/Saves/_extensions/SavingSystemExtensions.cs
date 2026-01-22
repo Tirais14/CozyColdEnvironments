@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -7,53 +9,83 @@ namespace CCEnvs.Unity.Saves
     public static class SavingSystemExtensions
     {
         /// <inheritdoc cref="ISavingSystem.RegisterObject{TObject}(TObject, string, SceneInfo?)"/>
-        public static IDisposable SavingSystemRegisterObject<TObject>(
+        public static async UniTask<IDisposable> SavingSystemRegisterObjectAsync<TObject>(
             this TObject source,
             string key,
-            SceneInfo sceneInfo = default)
+            SceneInfo sceneInfo = default,
+            CancellationToken cancellationToken = default
+            )
             where TObject : class
         {
-            return SavingSystem.Self.RegisterObject(source, key, sceneInfo: sceneInfo);
+            return await SavingSystem.Self.RegisterObjectAsync(
+                obj: source,
+                key: key,
+                sceneInfo: sceneInfo,
+                cancellationToken: cancellationToken
+                );
         }
 
         /// <inheritdoc cref="ISavingSystem.RegisterObject{TObject}(TObject, Func{TObject, string}, SceneInfo?)"/>
-        public static IDisposable SavingSystemRegisterObject<TObject>(
+        public static async UniTask<IDisposable> SavingSystemRegisterObjectAsync<TObject>(
             this TObject source,
             Func<TObject, string> keySelector,
-            SceneInfo sceneInfo = default)
+            SceneInfo sceneInfo = default,
+            CancellationToken cancellationToken = default
+            )
             where TObject : class
         {
-            return SavingSystem.Self.RegisterObject(
-                source,
-                keySelector,
-                sceneInfo: sceneInfo);
+            return await SavingSystem.Self.RegisterObjectAsync(
+                obj: source,
+                keySelector: keySelector,
+                sceneInfo: sceneInfo,
+                cancellationToken: cancellationToken
+                );
         }
 
         /// <inheritdoc cref="ISavingSystem.RegisterObject{TObject, TState}(TObject, TState, Func{TObject, TState, string}, SceneInfo?)"/>
-        public static IDisposable SavingSystemRegisterObject<TObject, TState>(
+        public static async UniTask<IDisposable> SavingSystemRegisterObjectAsync<TObject, TState>(
             this TObject source,
             TState state,
             Func<TObject, TState, string> keySelector,
-            SceneInfo sceneInfo = default)
+            SceneInfo sceneInfo = default,
+            CancellationToken cancellationToken = default)
             where TObject : class
         {
-            return SavingSystem.Self.RegisterObject(
+            return await SavingSystem.Self.RegisterObjectAsync(
                 source,
                 state,
                 keySelector,
-                sceneInfo: sceneInfo);
+                sceneInfo: sceneInfo,
+                cancellationToken: cancellationToken
+                );
         }
 
-        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(GameObject, SceneInfo)"/>
-        public static IDisposable SavingSystemRegisterUnityObject(this GameObject source, SceneInfo sceneInfo = default)
+        /// <inheritdoc cref="ISavingSystem.RegisterUnityObjectAsync(GameObject, SceneInfo)"/>
+        public static async UniTask<IDisposable> SavingSystemRegisterUnityObjectAsync(
+            this GameObject source, 
+            SceneInfo sceneInfo = default,
+            CancellationToken cancellationToken = default
+            )
         {
-            return SavingSystem.Self.RegisterUnityObject(source, sceneInfo);
+            return await SavingSystem.Self.RegisterUnityObjectAsync(
+                gameObject: source,
+                sceneInfo: sceneInfo,
+                cancellationToken: cancellationToken
+                );
         }
 
-        /// <inheritdoc cref="ISavingSystem.RegisterUnityObject(Component, SceneInfo)"/>
-        public static IDisposable SavingSystemRegisterUnityObject(this Component source, SceneInfo sceneInfo = default)
+        /// <inheritdoc cref="ISavingSystem.RegisterUnityObjectAsync(Component, SceneInfo)"/>
+        public static async UniTask<IDisposable> SavingSystemRegisterUnityObjectAsync(
+            this Component source, 
+            SceneInfo sceneInfo = default,
+            CancellationToken cancellationToken = default
+            )
         {
-            return SavingSystem.Self.RegisterUnityObject(source, sceneInfo);
+            return await SavingSystem.Self.RegisterUnityObjectAsync(
+                component: source,
+                sceneInfo: sceneInfo,
+                cancellationToken: cancellationToken
+                );
         }
 
         /// <inheritdoc cref="ISavingSystem.IsTypeRegistered(Type?)"/>

@@ -39,13 +39,13 @@ namespace CCEnvs.Unity.Snapshots
 
         private void RegisterGameObject()
         {
-            gameObject.SavingSystemRegisterUnityObject().AddTo(gameObject);
+            gameObject.SavingSystemRegisterUnityObjectAsync().AddTo(gameObject);
         }
 
         private void RegisterExplicitComponents()
         {
             foreach (var cmp in components)
-                cmp.Object.SavingSystemRegisterObject(cmp.Key).AddTo(gameObject);
+                cmp.Object.SavingSystemRegisterObjectAsync(cmp.Key).AddTo(gameObject);
         }
 
         private void RegisterOtherComponents()
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.Snapshots
                     continue;
 
                 if (cmp.SavingSystemIsTypeRegistered())
-                    cmp.SavingSystemRegisterUnityObject().AddTo(gameObject);
+                    cmp.SavingSystemRegisterUnityObjectAsync().AddTo(gameObject);
             }
         }
     }

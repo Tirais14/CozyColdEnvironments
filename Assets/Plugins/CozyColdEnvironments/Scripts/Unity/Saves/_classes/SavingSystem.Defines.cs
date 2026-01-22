@@ -226,13 +226,5 @@ namespace CCEnvs.Unity.Saves
                 return HashCode.Combine(Key, TargetType, SceneInfo);
             }
         }
-
-        private class RestoreInstanceFromMemoryCommand : CommandAsync
-        {
-            protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }
