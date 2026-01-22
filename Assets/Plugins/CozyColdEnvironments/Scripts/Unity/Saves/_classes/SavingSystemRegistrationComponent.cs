@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.Snapshots
         public SavingSystemToRegisterObject[] components = Array.Empty<SavingSystemToRegisterObject>();
 
         [Tooltip("Always false when component list is empty. Better keep true, otherwise may cause key duplicates and restoring will become impossible or incorrect")]
-        public bool onlyExplicitComponents = true;
+        public bool onlyExplicitComponents = false;
 
         [Tooltip("Doesn't register parent game object")]
         public bool ignoreGameObject = true;

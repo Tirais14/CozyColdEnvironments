@@ -25,7 +25,25 @@ namespace CCEnvs.Json.Converters
             var jObj = JObject.Load(reader);
             JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing \"$type\" property");
             string typeReference = typeProp.Value.ToString();
-            var actualType = Type.GetType(typeReference, throwOnError: true);
+            Type actualType;
+
+            try
+            {
+                actualType = Type.GetType(typeReference, throwOnError: true);
+            }
+            catch (Exception ex)
+            {
+                switch (ex)
+                {
+                    case TypeLoadException:
+                        this.PrintWarning("A type specified in a json file cannot be loaded. Maybe it was deleted from assembly");
+                        return default;
+                    default:
+                        break;
+                }
+
+                throw;
+            }
 
             return (T)JsonConverterHelper.CreateInstance(actualType, jObj.Properties().ToArray(), serializer);
         }
