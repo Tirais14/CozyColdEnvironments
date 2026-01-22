@@ -13,14 +13,14 @@ namespace CCEnvs.Patterns.Commands
         IDisposable, 
         IFrameRunnerWorkItem
     {
-        private readonly Queue<ICommandAsync> commands = new();
+        private readonly Queue<ICommandBase> commands = new();
 
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
 
-        private ICommandAsync? cmd;
+        private ICommandBase? cmd;
 
         private bool cmdExecuted;
         private bool disposed;
@@ -31,7 +31,7 @@ namespace CCEnvs.Patterns.Commands
 
         private ulong idleFrameCount;
 
-        private ReactiveCommand<ICommandAsync>? addCommandRxCmd;
+        private ReactiveCommand<ICommandBase>? addCommandRxCmd;
 
         public FrameProvider? FrameProvider { get; }
 
@@ -57,7 +57,7 @@ namespace CCEnvs.Patterns.Commands
             frameProvider.Register(this);
         }
 
-        public void Schedule(ICommandAsync command)
+        public void Schedule(ICommandBase command)
         {
             CC.Guard.IsNotNull(command, nameof(command));
             ValidateDisposed();
@@ -152,9 +152,9 @@ namespace CCEnvs.Patterns.Commands
             isEnabled.Value = false;
         }
 
-        public Observable<ICommandAsync> ObserveAddCommand()
+        public Observable<ICommandBase> ObserveAddCommand()
         {
-            addCommandRxCmd ??= new ReactiveCommand<ICommandAsync>();
+            addCommandRxCmd ??= new ReactiveCommand<ICommandBase>();
             return addCommandRxCmd;
         }
 
@@ -178,7 +178,7 @@ namespace CCEnvs.Patterns.Commands
             return isEnabled.Where(x => !x);
         }
 
-        private void ProcessCommandsBy(ICommandAsync newCmd)
+        private void ProcessCommandsBy(ICommandBase newCmd)
         {
             if (commands.IsEmpty())
                 return;
@@ -209,7 +209,7 @@ namespace CCEnvs.Patterns.Commands
             return delayCommandFrameCount-- < 1;
         }
 
-        private bool IsCommandReseted(ICommandAsync cmd)
+        private bool IsCommandReseted(ICommandBase cmd)
         {
             return cmdExecuted && !cmd.IsDone && !cmd.IsRunning;
         }
@@ -237,7 +237,7 @@ namespace CCEnvs.Patterns.Commands
 
         private void ResolveCommand()
         {
-            if (cmd.IsNotNull() && cmd.IsRunning && !IsCommandReseted(cmd))
+            if (cmd is not null && cmd.IsRunning && !IsCommandReseted(cmd))
                 return;
 
             EraseCommand();
@@ -250,8 +250,19 @@ namespace CCEnvs.Patterns.Commands
 
         private void ExecuteCommand()
         {
-            cmd!.ExecuteAsync();
-            cmdExecuted = true;
+            switch (cmd)
+            {
+                case ICommand cmdSync:
+                    cmdSync.Execute();
+                    cmdExecuted = true;
+                    break;
+                case ICommandAsync cmdAsync:
+                    cmdAsync.ExecuteAsync();
+                    cmdExecuted = true;
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void ValidateDisposed()

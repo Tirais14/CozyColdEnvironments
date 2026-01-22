@@ -14,7 +14,7 @@ namespace CCEnvs.Patterns.Commands
         public static CommandBuilder Builder { get; } = CommandBuilder.Create();
     }
 
-    public abstract partial class CommandAsync : CommandBase, ICommandAsync
+    public abstract partial class CommandAsync : CommandBase<ICommandAsync>, ICommandAsync
     {
         protected CancellationTokenSource? cancellationTokenSource;
 

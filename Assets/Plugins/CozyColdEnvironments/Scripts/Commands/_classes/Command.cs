@@ -3,7 +3,7 @@ using System;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public abstract partial class Command : CommandBase, ICommand
+    public abstract partial class Command : CommandBase<ICommand>, ICommand
     {
         public static CommandBuilder Builder { get; } = new();
 

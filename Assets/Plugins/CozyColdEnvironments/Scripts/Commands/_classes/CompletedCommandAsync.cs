@@ -1,6 +1,7 @@
 #nullable enable
 using R3;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
@@ -24,6 +25,8 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandStatus Status { get; } = CommandStatus.Completed;
 
+        public Type CommandType { get; } = typeof(CompletedCommandAsync);
+
         public static bool operator ==(CompletedCommandAsync? left, CompletedCommandAsync? right)
         {
             return left != null && left.Equals(right);
@@ -34,7 +37,10 @@ namespace CCEnvs.Patterns.Commands
             return !(left == right);
         }
 
-        public ValueTask ExecuteAsync() => default;
+        public ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
+        {
+            return default;
+        }
 
         public void Undo()
         {

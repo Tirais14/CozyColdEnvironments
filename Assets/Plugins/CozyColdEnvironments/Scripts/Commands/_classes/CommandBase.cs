@@ -2,13 +2,13 @@
 using R3;
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 #pragma warning disable S107
 #pragma warning disable S3963
 namespace CCEnvs.Patterns.Commands
 {
-    public abstract partial class CommandBase : ICommandBase
+    public abstract partial class CommandBase<TThis> : ICommandBase
+        where TThis : ICommandBase
     {
 
         protected readonly ReactiveProperty<CommandStatus> status = new();
@@ -65,14 +65,14 @@ namespace CCEnvs.Patterns.Commands
             return true;
         }
 
-        public ICommandBase Reset()
+        public TThis Reset()
         {
             if (!IsResetable)
                 throw new InvalidOperationException($"Command: {this} is not resetable");
 
             TryReset();
 
-            return this;
+            return this.To<TThis>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

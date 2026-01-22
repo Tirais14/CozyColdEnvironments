@@ -8,5 +8,7 @@ namespace CCEnvs.Patterns.Commands
     public interface ICommandAsync : ICommandBase
     {
         ValueTask ExecuteAsync(CancellationToken cancellationToken = default);
+
+        ICommandAsync Reset();
     }
 }
