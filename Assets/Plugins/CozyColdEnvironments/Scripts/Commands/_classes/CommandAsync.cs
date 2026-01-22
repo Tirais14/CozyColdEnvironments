@@ -3,17 +3,11 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using static CCEnvs.Disposables.Subscription;
 
 #pragma warning disable S107
 #pragma warning disable S3963
 namespace CCEnvs.Patterns.Commands
 {
-    public partial class CommandAsync 
-    {
-        public static CommandBuilder Builder { get; } = CommandBuilder.Create();
-    }
-
     public abstract partial class CommandAsync : CommandBase<ICommandAsync>, ICommandAsync
     {
         protected CancellationTokenSource? cancellationTokenSource;

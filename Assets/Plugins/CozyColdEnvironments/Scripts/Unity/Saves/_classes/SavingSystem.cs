@@ -68,109 +68,93 @@ namespace CCEnvs.Unity.Saves
             return $"Instance: {obj} already registered";
         }
 
-        public async UniTask<IDisposable> RegisterObjectAsync<TObject>(
+        public IDisposable RegisterObject<TObject>(
             TObject obj,
             string key,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default) 
+            SceneInfo sceneInfo = default) 
             where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
             Guard.IsNotNullOrWhiteSpace(key, nameof(key));
 
-            var tokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
-
-            return await RegisterObjectAsyncInternal(
+            return RegisterObjectInternal(
                 obj, 
                 obj.GetType(),
                 key, 
-                sceneInfo,
-                tokenSource.Token
+                sceneInfo
                 );
         }
 
-        public async UniTask<IDisposable> RegisterObjectAsync<TObject>(
+        public IDisposable RegisterObject<TObject>(
             TObject obj,
             Func<TObject, string> keySelector,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default)
+            SceneInfo sceneInfo = default)
              where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
             Guard.IsNotNull(keySelector, nameof(keySelector));
 
             var keyFactory = new KeyFactory<TObject>(obj, keySelector);
-            var tokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            return await RegisterObjectAsyncInternal(
+            return RegisterObjectInternal(
                 obj,
                 obj.GetType(), 
                 keyFactory, 
-                sceneInfo,
-                tokenSource.Token
+                sceneInfo
                 );
         }
 
-        public async UniTask<IDisposable> RegisterObjectAsync<TObject, TState>(
+        public IDisposable RegisterObject<TObject, TState>(
             TObject obj,
             TState state,
             Func<TObject, TState, string> keySelector,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default)
+            SceneInfo sceneInfo = default)
             where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
             Guard.IsNotNull(keySelector, nameof(keySelector));
 
             var keyFactory = new KeyFactory<TObject, TState>(obj, state, keySelector);
-            var tokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            return await RegisterObjectAsyncInternal(
+            return RegisterObjectInternal(
                 obj,
                 obj.GetType(),
                 keyFactory,
-                sceneInfo,
-                tokenSource.Token
+                sceneInfo
                 );
         }
 
-        public async UniTask<IDisposable> RegisterUnityObjectAsync(
+        public IDisposable RegisterUnityObject(
             Component component,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default
+            SceneInfo sceneInfo = default
             )
         {
             CC.Guard.IsNotNull(component, nameof(component));
 
             object keyOrFactory = GetOrCreateKeyForUnityObject(component);
-            var tokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            return await RegisterObjectAsyncInternal(
+            return RegisterObjectInternal(
                 component,
                 component.GetType(),
                 keyOrFactory,
-                sceneInfo,
-                tokenSource.Token
+                sceneInfo
                 );
         }
 
-        public async UniTask<IDisposable> RegisterUnityObjectAsync(
+        public IDisposable RegisterUnityObject(
             GameObject gameObject,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default
+            SceneInfo sceneInfo = default
             )
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
             object keyOrFactory = GetOrCreateKeyForUnityObject(gameObject);
-            var tokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            return await RegisterObjectAsyncInternal(
+            return RegisterObjectInternal(
                 gameObject,
                 gameObjectType,
                 keyOrFactory,
-                sceneInfo,
-                tokenSource.Token
+                sceneInfo
                 );
         }
 
@@ -382,21 +366,17 @@ namespace CCEnvs.Unity.Saves
             return IsTypeRegistered(typeof(T));
         }
 
-        public async UniTask<bool> TryRestoreInstanceFromMemoryAsync(
+        public bool TryRestoreInstanceFromMemoryAsync(
             object obj,
             string key, 
-            SceneInfo byScene = default,
-            CancellationToken cancellationToken = default
+            SceneInfo byScene = default
             )
         {
-            using var tokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
-
-            return await TryRestoreInstanceFromMemoryAsyncCore(
+            return TryRestoreInstanceFromMemoryAsyncCore(
                 obj,
                 obj.GetType(),
                 key,
-                byScene,
-                tokenSource.Token
+                byScene
                 );
         }
 
@@ -555,9 +535,10 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private async UniTask WaitUntilMonoBehaviourInitialized(
+        private async UniTask RestoreMonoBehaviourAfterInitialized(
             RegisteredObjectInfo regObjInfo,
             MonoBehaviour monoBeh,
+            ISnapshot snapshot,
             CancellationToken cancellationToken)
         {
             try
@@ -575,6 +556,8 @@ namespace CCEnvs.Unity.Saves
                     timing: PlayerLoopTiming.EarlyUpdate,
                     cancellationToken: cancellationToken
                     );
+
+                snapshot.TryRestore(monoBeh, out _);
             }
             finally
             {
@@ -583,12 +566,11 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private async UniTask<bool> TryRestoreInstanceFromMemoryAsyncCore(
+        private bool TryRestoreInstanceFromMemoryAsyncCore(
             object obj,
             Type objType,
             object keyOrFactory,
-            SceneInfo sceneInfo,
-            CancellationToken cancellationToken
+            SceneInfo sceneInfo
             )
         {
             string resolvedKey = ResolveKey(keyOrFactory);
@@ -604,28 +586,34 @@ namespace CCEnvs.Unity.Saves
                 tokenSource.Dispose();
             }
 
+            if (!loadedSnapshot.CanRestore(obj))
+                return false;
+
             if (obj is MonoBehaviour monoBeh)
             {
-                tokenSource = cancellationToken.LinkTokens(monoBeh.destroyCancellationToken);
+                tokenSource = destroyCancellationToken.LinkTokens(monoBeh.destroyCancellationToken);
 
                 restoreInstanceTokenSources.TryAdd(regObjInfo, tokenSource);
 
-                await WaitUntilMonoBehaviourInitialized(
+                RestoreMonoBehaviourAfterInitialized(
                     regObjInfo,
                     monoBeh,
+                    loadedSnapshot,
                     tokenSource.Token
-                    );
+                    )
+                    .Forget();
+
+                return true;
             }
 
             return loadedSnapshot.TryRestore(obj, out _);
         }
 
-        private async UniTask<IDisposable> RegisterObjectAsyncInternal(
+        private IDisposable RegisterObjectInternal(
             object obj,
             Type objType,
             object keyOrFactory,
-            SceneInfo sceneInfo,
-            CancellationToken cancellationToken)
+            SceneInfo sceneInfo)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
             Guard.IsNotNull(objType, nameof(objType));
@@ -639,12 +627,11 @@ namespace CCEnvs.Unity.Saves
             if (IsInstanceRegisteredInternal(regObj))
                 throw new InvalidOperationException(InstanceRegisterdMessage(obj));
 
-            if (await TryRestoreInstanceFromMemoryAsyncCore(
+            if (TryRestoreInstanceFromMemoryAsyncCore(
                 obj,
                 objType, 
                 keyOrFactory,
-                sceneInfo,
-                cancellationToken))
+                sceneInfo))
             {
                 this.PrintLog($"Object: {obj} was restored by loaded snapshot");
             }

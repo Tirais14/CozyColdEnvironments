@@ -27,45 +27,43 @@ namespace CCEnvs.Unity.Saves
         UniTask<string> CaptureSerializedSaveDataAsync(CancellationToken cancellationToken = default);
 
         /// <returns>Disposable which initiates unregistering</returns>
-        UniTask<IDisposable> RegisterObjectAsync<TObject>(
+        IDisposable RegisterObject<TObject>(
             TObject obj,
             string key,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default)
+            SceneInfo sceneInfo = default
+            )
             where TObject : class;
 
         /// <returns>Disposable which initiates unregistering</returns>
-        UniTask<IDisposable> RegisterObjectAsync<TObject>(
+        IDisposable RegisterObject<TObject>(
             TObject obj,
             Func<TObject, string> keySelector,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default)
+            SceneInfo sceneInfo = default
+            )
             where TObject : class;
 
         /// <returns>Disposable which initiates unregistering</returns>
-        UniTask<IDisposable> RegisterObjectAsync<TObject, TState>(
+        IDisposable RegisterObject<TObject, TState>(
             TObject obj,
             TState state,
             Func<TObject, TState, string> keySelector,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default)
+            SceneInfo sceneInfo = default
+            )
             where TObject : class;
 
         /// <summary>
         /// Use as key <see cref="Components.RuntimeId.Id"/> or create it and set id by hierarchy path
         /// </summary>
         /// <returns>Disposable which initiates unregistering</returns>
-        UniTask<IDisposable> RegisterUnityObjectAsync(
+        IDisposable RegisterUnityObject(
             Component component,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default
+            SceneInfo sceneInfo = default
             );
 
-        /// <inheritdoc cref="RegisterUnityObject(Component)"/>
-        UniTask<IDisposable> RegisterUnityObjectAsync(
+        /// <inheritdoc cref="RegisterUnityObject(Component, SceneInfo)"/>
+        IDisposable RegisterUnityObject(
             GameObject gameObject,
-            SceneInfo sceneInfo = default,
-            CancellationToken cancellationToken = default
+            SceneInfo sceneInfo = default
             );
 
         bool UnregisterObject(object? obj, SceneInfo sceneInfo = default);
@@ -88,11 +86,10 @@ namespace CCEnvs.Unity.Saves
 
         bool IsInstanceRegistered(object? obj, SceneInfo sceneInfo = default);
 
-        UniTask<bool> TryRestoreInstanceFromMemoryAsync(
+        bool TryRestoreInstanceFromMemoryAsync(
             object obj,
             string key,
-            SceneInfo byScene = default,
-            CancellationToken cancellationToken = default
+            SceneInfo byScene = default
             );
     }
 }
