@@ -1,8 +1,10 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.ExternalAPIs.Yandex;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
+using System.Threading;
 
 namespace CCEnvs.Unity.ExternalAPIs
 {
@@ -11,6 +13,7 @@ namespace CCEnvs.Unity.ExternalAPIs
         Maybe<IPlayerAPI> PlayerAPI { get; }
         Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
 
+        bool IsInitialized { get; }
         bool IsGameReady { get; }
         bool IsGameplayMode { get; }
         bool IsGamePaused { get; }
@@ -30,7 +33,11 @@ namespace CCEnvs.Unity.ExternalAPIs
 
         void UnpauseGame();
 
-        void SaveGame(string serializedData);
+        UniTask SaveGameAsync(string? serializedData = null, CancellationToken cancellationToken = default);
+
+        UniTask LoadGameAsync(CancellationToken cancellationToken = default);
+
+        Observable<bool> ObserveIsInitialized();
 
         Observable<bool> ObserveIsGameplayMode();
 

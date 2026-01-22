@@ -16,7 +16,6 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -35,6 +34,9 @@ namespace CCEnvs.Unity.Saves
 
         private UnityAction<Scene> onSceneUnloaded;
 
+        public string? LoadedFileDataRaw { get; private set; }
+        public Maybe<SaveFileData> LoadedFileData { get; private set; }
+
         protected override void Awake()
         {
             base.Awake();
@@ -52,7 +54,7 @@ namespace CCEnvs.Unity.Saves
 
         private static string InstanceRegisterdMessage(object obj)
         {
-            return $"Instance \"{obj}\" already registered";
+            return $"Instance: {obj} already registered";
         }
 
         public IDisposable RegisterObject<TObject>(
@@ -188,28 +190,33 @@ namespace CCEnvs.Unity.Saves
                 );
         }
 
-        public async UniTask LoadAsync(string path, CancellationToken cancellationToken = default)
+        public async UniTask<string> LoadFromFileAsync(string path, CancellationToken cancellationToken = default)
         {
             using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
                 self.destroyCancellationToken,
                 cancellationToken
                 );
 
-            SaveFileData saveFile = await LoadSaveFileAsync(
+            var saveFileInfo = await LoadSaveFileAsync(
                 path,
                 cTokenSource.Token
                 );
 
-            if (saveFile.IsDefault())
-                return;
+            if (saveFileInfo.fileData.IsDefault())
+                return string.Empty;
 
             await ApplySaveFileDataAsync(
-                saveFile,
+                saveFileInfo.fileData,
                 cTokenSource.Token
                 );
+
+            LoadedFileDataRaw = saveFileInfo.fileDataRaw;
+            LoadedFileData = saveFileInfo.fileData;
+
+            return saveFileInfo.fileDataRaw;
         }
 
-        public async UniTask SaveAsync(string path, CancellationToken cancellationToken = default)
+        public async UniTask SaveInFileAsync(string path, CancellationToken cancellationToken = default)
         {
             using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
@@ -229,6 +236,23 @@ namespace CCEnvs.Unity.Saves
                 path,
                 serializedsaveFileData,
                 cancellationToken: cTokenSource.Token
+                );
+        }
+
+        public async UniTask<string> SaveInMemoryAsync(CancellationToken cancellationToken = default)
+        {
+            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+
+            SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+
+            await RegisterSnapshotsAsync(
+                saveFileData.SceneDatas,
+                cancellationToken
+                );
+
+            return JsonConvert.SerializeObject(
+                saveFileData,
+                CC.JsonSettings
                 );
         }
 
@@ -519,7 +543,7 @@ namespace CCEnvs.Unity.Saves
             SceneManager.sceneUnloaded += onSceneUnloaded;
         }
 
-        private async UniTask<SaveFileData> LoadSaveFileAsync(string path, CancellationToken cancellationToken)
+        private async UniTask<(SaveFileData fileData, string fileDataRaw)> LoadSaveFileAsync(string path, CancellationToken cancellationToken)
         {
             if (!File.Exists(path))
                 return default;
@@ -529,7 +553,9 @@ namespace CCEnvs.Unity.Saves
             if (serialized.IsNullOrWhiteSpace())
                 return default;
 
-            return JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
+            var fileData = JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
+
+            return (fileData, serialized);
         }
 
         private async UniTask RegisterSnapshotsAsync(

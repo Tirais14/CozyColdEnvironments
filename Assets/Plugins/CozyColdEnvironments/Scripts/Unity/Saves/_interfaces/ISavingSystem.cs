@@ -1,3 +1,4 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
@@ -9,9 +10,12 @@ namespace CCEnvs.Unity.Saves
 {
     public interface ISavingSystem
     {
-        UniTask SaveAsync(string path, CancellationToken cancellationToken = default);
+        string? LoadedFileDataRaw { get; }
+        Maybe<SaveFileData> LoadedFileData { get; }
 
-        UniTask LoadAsync(string path, CancellationToken cancellationToken = default);
+        UniTask SaveInFileAsync(string path, CancellationToken cancellationToken = default);
+
+        UniTask<string> LoadFromFileAsync(string path, CancellationToken cancellationToken = default);
 
         UniTask ApplySaveFileDataAsync(SaveFileData saveFileData, CancellationToken cancellationToken = default);
 

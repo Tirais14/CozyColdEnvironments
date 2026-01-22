@@ -44,10 +44,16 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public Observable<bool> ObserveIsAdvertisementShown()
         {
-            return advertisementCount.Select(
-                static count =>
+            return advertisementCount.Pairwise()
+                .Where(
+                static pair =>
                 {
-                    return count > 0;
+                    return pair.Current != pair.Previous;
+                })
+                .Select(
+                static pair =>
+                {
+                    return pair.Current > 0;
                 });
         }
 

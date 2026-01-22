@@ -68,7 +68,12 @@ namespace CCEnvs.Unity.Saves
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Object, ObjectType, SceneInfo, converters);
+                return HashCode.Combine(
+                    Object,
+                    ObjectType,
+                    SceneInfo,
+                    converters
+                    );
             }
 
             public override string ToString()
@@ -76,7 +81,7 @@ namespace CCEnvs.Unity.Saves
                 if (this.IsDefault())
                     return StringHelper.EMPTY_OBJECT;
 
-                return $"Object \"{Object}\"; scene info {SceneInfo};";
+                return $"({nameof(Object)}: {Object}; {nameof(SceneInfo)} {SceneInfo})";
             }
         }
 

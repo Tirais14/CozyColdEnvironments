@@ -1,7 +1,8 @@
 #if YandexGamesPlatform_yg
 using CCEnvs.FuncLanguage;
-using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 using R3;
+using System.Threading;
 using YG;
 
 #nullable enable
@@ -11,6 +12,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
     {
         public static YandexAPI? Instance { get; private set; }
 
+        private readonly ReactiveProperty<bool> isInitialized = new();
         private readonly ReactiveProperty<bool> isGameReady = new();
         private readonly ReactiveProperty<bool> isGamePaused = new();
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
@@ -24,6 +26,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public bool IsGameplayMode => YG2.isGameplaying;
 
+        public bool IsInitialized => isInitialized.Value;
         public bool IsGameReady => isGameReady.Value;
         public bool IsGamePaused => isGamePaused.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
@@ -77,6 +80,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public void Initialize()
         {
             YG2.StartInit();
+            isInitialized.Value = true;
         }
 
         public void PauseGame()
@@ -98,10 +102,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
-        public void SaveGame(string serializedData)
+        public UniTask SaveGameAsync(string? serializedData = null, CancellationToken cancellationToken = default)
         {
-            Guard.IsNotNullOrWhiteSpace(serializedData, nameof(serializedData));
-
             isGameSaving.Value = true;
 
             YG2.saves = new SavesYG()
@@ -112,6 +114,13 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             YG2.SaveProgress();
 
             isGameSaving.Value = false;
+
+            return UniTask.CompletedTask;
+        }
+
+        public UniTask LoadGameAsync(CancellationToken cancellationToken = default)
+        {
+            return UniTask.FromResult(string.Empty);
         }
 
         private bool disposed;
@@ -120,12 +129,20 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (disposed)
                 return;
 
+            PlayerAPI.IfSome(x => x.Dispose());
+            AdvertisementAPI.IfSome(x => x.Dispose());
+
             isGameReady.Dispose();
             isGamePaused.Dispose();
             isGameWindowShown.Dispose();
             isGameWindowFocused.Dispose();
 
             disposed = true;
+        }
+
+        public Observable<bool> ObserveIsInitialized()
+        {
+            return isInitialized;
         }
 
         public Observable<bool> ObserveIsGameplayMode()
