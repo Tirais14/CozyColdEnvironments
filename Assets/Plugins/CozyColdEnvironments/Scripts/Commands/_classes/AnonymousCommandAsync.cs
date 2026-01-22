@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class AnonymousCommand : Command
+    public sealed class AnonymousCommandAsync : CommandAsync
     {
-        private readonly Action? onExecute;
         private readonly Func<bool>? isReadyToExecute;
+        private readonly Func<CancellationToken, ValueTask>? onExecute;
         private readonly Action? onReset;
 
         public override bool IsReadyToExecute {
@@ -18,8 +18,8 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
-        public AnonymousCommand(
-            Action? onExecute,
+        public AnonymousCommandAsync(
+            Func<CancellationToken, ValueTask>? onExecute,
             Func<bool>? isReadyToExecute = null,
             Action? onReset = null!,
             string? name = null,
@@ -42,12 +42,15 @@ namespace CCEnvs.Patterns.Commands
             return $"{nameof(Name)}: {Name}";
         }
 
-        protected override void OnExecute()
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
             if (onExecute is null)
                 return;
 
-            onExecute();
+            var task = onExecute(cancellationToken);
+
+            if (!task.IsCompleted)
+                await task;
         }
 
         protected override void OnReset()
@@ -57,11 +60,10 @@ namespace CCEnvs.Patterns.Commands
         }
 
     }
-
-    public sealed class AnonymousCommand<T> : Command
+    public sealed class AnonymousCommandAsync<T> : CommandAsync
     {
         private readonly T state;
-        private readonly Action<T>? onExecute;
+        private readonly Func<T, CancellationToken, ValueTask>? onExecute;
         private readonly Func<T, bool>? isReadyToExecute;
         private readonly Action<T>? onReset;
 
@@ -72,8 +74,8 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
-        public AnonymousCommand(T state,
-            Action<T>? onExecute,
+        public AnonymousCommandAsync(T state,
+            Func<T, CancellationToken, ValueTask>? onExecute,
             Func<T, bool>? isReadyToExecute = null,
             Action<T>? onReset = null,
             string? name = null,
@@ -97,12 +99,15 @@ namespace CCEnvs.Patterns.Commands
             return $"{nameof(Name)}: {Name}; {nameof(IsDone)}: {IsDone}";
         }
 
-        protected override void OnExecute()
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
             if (onExecute is null)
                 return;
 
-            onExecute(state);
+            var task = onExecute(state, cancellationToken);
+
+            if (!task.IsCompleted)
+                await task;
         }
 
         protected override void OnReset()

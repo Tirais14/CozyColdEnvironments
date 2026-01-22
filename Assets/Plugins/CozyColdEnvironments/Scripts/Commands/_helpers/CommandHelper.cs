@@ -12,34 +12,34 @@ namespace CCEnvs.Patterns.Commands
     public static class CommandHelper
     {
 #if UNITASK_PLUGIN
-        public static ICommand TaskToCommand(this UniTask source)
+        public static ICommandAsync TaskToCommand(this UniTask source)
         {
             return new FromUniTaskCommand(source);
         }
 
-        public static ICommand TaskToCommand<T>(this UniTask<T> source)
+        public static ICommandAsync TaskToCommand<T>(this UniTask<T> source)
         {
             return new FromUniTaskCommand(source);
         }
 #endif
 
-        public static ICommand TaskToCommand(this ValueTask source)
+        public static ICommandAsync TaskToCommand(this ValueTask source)
         {
             return new FromValueTaskCommand(source);
         }
 
-        public static ICommand TaskToCommand<T>(this ValueTask<T> source)
+        public static ICommandAsync TaskToCommand<T>(this ValueTask<T> source)
         {
             return new FromValueTaskCommand<T>(source);
         }
 
-        public static ICommand TaskToCommand(this Task source)
+        public static ICommandAsync TaskToCommand(this Task source)
         {
             CC.Guard.IsNotNullSource(source);
             return new FromTaskCommand(source);
         }
 
-        public static ICommand ScheduleByGlobalScheduler(this ICommand source)
+        public static ICommandAsync ScheduleByGlobalScheduler(this ICommandAsync source)
         {
             CC.Guard.IsNotNullSource(source);
             CC.CommandScheduler.Schedule(source);

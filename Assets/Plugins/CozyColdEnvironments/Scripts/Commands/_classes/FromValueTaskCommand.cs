@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public class FromValueTaskCommand : Command
+    public class FromValueTaskCommand : CommandAsync
     {
         private readonly ValueTask task;
 
@@ -25,7 +25,7 @@ namespace CCEnvs.Patterns.Commands
         }
     }
 
-    public class FromValueTaskCommand<T> : Command
+    public class FromValueTaskCommand<T> : CommandAsync
     {
         private readonly ValueTask<T> task;
 

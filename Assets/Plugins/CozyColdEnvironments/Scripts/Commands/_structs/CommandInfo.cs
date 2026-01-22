@@ -29,7 +29,7 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(ICommand? command)
+        public bool IsMatch(ICommandAsync? command)
         {
             if (command.IsNull())
                 return false;

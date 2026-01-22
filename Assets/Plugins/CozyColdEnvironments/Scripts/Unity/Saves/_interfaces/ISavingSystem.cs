@@ -13,6 +13,9 @@ namespace CCEnvs.Unity.Saves
         string? LoadedFileDataRaw { get; }
         Maybe<SaveFileData> LoadedFileData { get; }
 
+        bool IsSaving { get; }
+        bool IsSaveLoading { get; }
+
         UniTask SaveInFileAsync(string path, CancellationToken cancellationToken = default);
 
         UniTask<string> LoadFromFileAsync(string path, CancellationToken cancellationToken = default);
@@ -73,5 +76,7 @@ namespace CCEnvs.Unity.Saves
         bool IsTypeRegistered<T>();
 
         bool IsInstanceRegistered(object? obj, SceneInfo sceneInfo = default);
+
+        bool TryRestoreInstanceFromMemory(object obj, string key, SceneInfo byScene = default);
     }
 }

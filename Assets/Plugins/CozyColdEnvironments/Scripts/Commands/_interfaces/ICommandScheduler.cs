@@ -1,6 +1,5 @@
 #nullable enable
 using R3;
-using System;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -11,13 +10,13 @@ namespace CCEnvs.Patterns.Commands
 
         int DelayFrameCountBeforeRunningFinished { get; set; }
 
-        void Schedule(ICommand command);
+        void Schedule(ICommandBase command);
 
         void Reset();
 
         void OnFrame();
 
-        Observable<ICommand> ObserveAddCommand();
+        Observable<ICommandBase> ObserveAddCommand();
 
         Observable<bool> ObserveIsRunningFinsihed();
 

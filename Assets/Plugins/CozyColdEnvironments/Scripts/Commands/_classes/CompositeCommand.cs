@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class CompositeCommand : Command
+    public sealed class CompositeCommand : CommandAsync
     {
-        private readonly Queue<ICommand> commands = new();
+        private readonly Queue<ICommandAsync> commands = new();
         private readonly Func<bool>? isReadyToExecute;
         private readonly ICommandScheduler commandScheduler;
         private readonly CompositeDisposable disposables = new();
@@ -40,7 +40,7 @@ namespace CCEnvs.Patterns.Commands
             this.isReadyToExecute = isReadyToExecute;
         }
 
-        public CompositeCommand Add(ICommand cmd, CommandStatus continuationStatus = CommandStatus.Completed)
+        public CompositeCommand Add(ICommandAsync cmd, CommandStatus continuationStatus = CommandStatus.Completed)
         {
             CC.Guard.IsNotNull(cmd, nameof(cmd));
 
@@ -98,7 +98,7 @@ namespace CCEnvs.Patterns.Commands
             disposed = true;
         }
 
-        private void SubscribeCommand(ICommand cmd, CommandStatus continuationStatus)
+        private void SubscribeCommand(ICommandAsync cmd, CommandStatus continuationStatus)
         {
             cmd.ObserveIsDone()
                 .Skip(1)

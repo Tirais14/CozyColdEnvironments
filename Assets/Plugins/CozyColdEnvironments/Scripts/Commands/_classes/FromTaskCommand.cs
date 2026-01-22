@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class FromTaskCommand : Command
+    public sealed class FromTaskCommand : CommandAsync
     {
         private readonly Task task;
 

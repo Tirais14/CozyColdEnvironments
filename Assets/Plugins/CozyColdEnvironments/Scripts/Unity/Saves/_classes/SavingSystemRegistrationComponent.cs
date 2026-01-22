@@ -11,7 +11,6 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
-    [RequireComponent(typeof(PersistentGuid))]
     public sealed class SavingSystemRegistrationComponent : CCBehaviour
     {
         public SavingSystemToRegisterObject[] components = Array.Empty<SavingSystemToRegisterObject>();

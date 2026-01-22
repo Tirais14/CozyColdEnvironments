@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class FromUniTaskCommand : Command
+    public sealed class FromUniTaskCommand : CommandAsync
     {
         private readonly UniTask task;
 
@@ -27,7 +27,7 @@ namespace CCEnvs.Patterns.Commands
         }
     }
 
-    public class FromUniTaskCommand<T> : Command
+    public class FromUniTaskCommand<T> : CommandAsync
     {
         private readonly UniTask<T> task;
 

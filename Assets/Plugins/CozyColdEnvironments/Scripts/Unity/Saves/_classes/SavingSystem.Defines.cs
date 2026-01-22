@@ -1,14 +1,22 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
     public sealed partial class SavingSystem 
     {
+        private interface IKeyFactory
+        {
+            Maybe<string> CreateKey();
+        }
+
         private readonly struct RegisteredObject : IEquatable<RegisteredObject>
         {
             private readonly IDictionary<Type, Func<object, ISnapshot>> converters;
@@ -83,11 +91,6 @@ namespace CCEnvs.Unity.Saves
 
                 return $"({nameof(Object)}: {Object}; {nameof(SceneInfo)} {SceneInfo})";
             }
-        }
-
-        private interface IKeyFactory
-        {
-            Maybe<string> CreateKey(); 
         }
 
         private sealed class KeyFactory<TObject> : IKeyFactory
@@ -221,6 +224,14 @@ namespace CCEnvs.Unity.Saves
             public override int GetHashCode()
             {
                 return HashCode.Combine(Key, TargetType, SceneInfo);
+            }
+        }
+
+        private class RestoreInstanceFromMemoryCommand : CommandAsync
+        {
+            protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
             }
         }
     }

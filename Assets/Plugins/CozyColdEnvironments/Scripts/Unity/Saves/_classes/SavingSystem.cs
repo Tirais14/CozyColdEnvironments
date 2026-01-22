@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
@@ -32,10 +33,19 @@ namespace CCEnvs.Unity.Saves
         private readonly ConcurrentDictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
         private readonly Dictionary<SceneInfo, CompositeDisposable> sceneDisposables = new();
 
+        private readonly ReactiveProperty<bool> isSaving = new();
+        private readonly ReactiveProperty<bool> isSaveLoading = new();
+
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
+
         private UnityAction<Scene> onSceneUnloaded;
 
         public string? LoadedFileDataRaw { get; private set; }
+
         public Maybe<SaveFileData> LoadedFileData { get; private set; }
+
+        public bool IsSaving => isSaving.Value;
+        public bool IsSaveLoading => isSaveLoading.Value;
 
         protected override void Awake()
         {
@@ -50,6 +60,10 @@ namespace CCEnvs.Unity.Saves
             base.OnDestroy();
             SceneManager.sceneUnloaded -= onSceneUnloaded;
             onSceneUnloaded = null!;
+
+            isSaving.Dispose();
+            isSaveLoading.Dispose();
+            commandScheduler.Dispose();
         }
 
         private static string InstanceRegisterdMessage(object obj)
@@ -192,68 +206,104 @@ namespace CCEnvs.Unity.Saves
 
         public async UniTask<string> LoadFromFileAsync(string path, CancellationToken cancellationToken = default)
         {
-            using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                self.destroyCancellationToken,
-                cancellationToken
-                );
+            if (IsSaveLoading)
+                throw new InvalidOperationException("Already in save loading process");
 
-            var saveFileInfo = await LoadSaveFileAsync(
-                path,
-                cTokenSource.Token
-                );
+            isSaveLoading.Value = true;
 
-            if (saveFileInfo.fileData.IsDefault())
-                return string.Empty;
+            try
+            {
+                using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    self.destroyCancellationToken,
+                    cancellationToken
+                    );
 
-            await ApplySaveFileDataAsync(
-                saveFileInfo.fileData,
-                cTokenSource.Token
-                );
+                var saveFileInfo = await LoadSaveFileAsync(
+                    path,
+                    cTokenSource.Token
+                    );
 
-            LoadedFileDataRaw = saveFileInfo.fileDataRaw;
-            LoadedFileData = saveFileInfo.fileData;
+                if (saveFileInfo.fileData.IsDefault())
+                    return string.Empty;
 
-            return saveFileInfo.fileDataRaw;
+                await ApplySaveFileDataAsync(
+                    saveFileInfo.fileData,
+                    cTokenSource.Token
+                    );
+
+                LoadedFileDataRaw = saveFileInfo.fileDataRaw;
+                LoadedFileData = saveFileInfo.fileData;
+
+                return saveFileInfo.fileDataRaw;
+            }
+            finally
+            {
+                isSaveLoading.Value = false;
+            }
         }
 
         public async UniTask SaveInFileAsync(string path, CancellationToken cancellationToken = default)
         {
-            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+            if (IsSaving)
+                throw new InvalidOperationException("Already in saving process");
 
-            SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
-           
-            await RegisterSnapshotsAsync(
-                saveFileData.SceneDatas,
-                cancellationToken
-                );
+            isSaving.Value = true;
 
-            string serializedsaveFileData = JsonConvert.SerializeObject(
-                saveFileData,
-                CC.JsonSettings
-                );
+            try
+            {
+                using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            await File.WriteAllTextAsync(
-                path,
-                serializedsaveFileData,
-                cancellationToken: cTokenSource.Token
-                );
+                SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+
+                await RegisterSnapshotsAsync(
+                    saveFileData.SceneDatas,
+                    cancellationToken
+                    );
+
+                string serializedsaveFileData = JsonConvert.SerializeObject(
+                    saveFileData,
+                    CC.JsonSettings
+                    );
+
+                await File.WriteAllTextAsync(
+                    path,
+                    serializedsaveFileData,
+                    cancellationToken: cTokenSource.Token
+                    );
+            }
+            finally
+            {
+                isSaving.Value = false;
+            }
         }
 
         public async UniTask<string> SaveInMemoryAsync(CancellationToken cancellationToken = default)
         {
-            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+            if (IsSaving)
+                throw new InvalidOperationException("Already in saving process");
 
-            SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+            isSaving.Value = true;
 
-            await RegisterSnapshotsAsync(
-                saveFileData.SceneDatas,
-                cancellationToken
-                );
+            try
+            {
+                using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            return JsonConvert.SerializeObject(
-                saveFileData,
-                CC.JsonSettings
-                );
+                SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+
+                await RegisterSnapshotsAsync(
+                    saveFileData.SceneDatas,
+                    cancellationToken
+                    );
+
+                return JsonConvert.SerializeObject(
+                    saveFileData,
+                    CC.JsonSettings
+                    );
+            }
+            finally
+            {
+                isSaving.Value = false;
+            }
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -483,21 +533,15 @@ namespace CCEnvs.Unity.Saves
             CC.Guard.IsNotNull(keyOrFactory, nameof(keyOrFactory));
 
             if (!IsTypeRegistered(objType))
-            {
-                this.PrintError($"Type: {objType} is not registered");
-                return Disposable.Empty;
-            }
+                throw new InvalidOperationException($"Type: {objType} is not registered");
 
             var regObj = new RegisteredObject(obj, sceneInfo, converters);
 
             if (IsInstanceRegisteredInternal(regObj))
-            {
-                this.PrintError(InstanceRegisterdMessage(obj));
-                return Disposable.Empty;
-            }
+                throw new InvalidOperationException(InstanceRegisterdMessage(obj));
 
             if (TryRestoreSnapshotFromLoaded(obj, objType, keyOrFactory, sceneInfo))
-                this.PrintLog($"Object \"{obj}\" was restored by loaded snapshot");
+                this.PrintLog($"Object: {obj} was restored by loaded snapshot");
 
             objectKeys.Add(regObj, keyOrFactory);
 
@@ -581,7 +625,7 @@ namespace CCEnvs.Unity.Saves
 
                         if (snapshot.Key is not string snapshotKey)
                         {
-                            this.PrintError($"Key \"{snapshot.Key}\" is not string. Object not restored");
+                            this.PrintError($"Key: {snapshot.Key} must be a string");
                             continue;
                         }
 

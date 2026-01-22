@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class CompletedCommand : ICommand, IEquatable<CompletedCommand>
+    public sealed class CompletedCommandAsync : ICommandAsync, IEquatable<CompletedCommandAsync>
     {
         public bool IsReadyToExecute { get; } = true;
         public bool IsCancelled { get; }
@@ -24,12 +24,12 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandStatus Status { get; } = CommandStatus.Completed;
 
-        public static bool operator ==(CompletedCommand? left, CompletedCommand? right)
+        public static bool operator ==(CompletedCommandAsync? left, CompletedCommandAsync? right)
         {
             return left != null && left.Equals(right);
         }
 
-        public static bool operator !=(CompletedCommand? left, CompletedCommand? right)
+        public static bool operator !=(CompletedCommandAsync? left, CompletedCommandAsync? right)
         {
             return !(left == right);
         }
@@ -42,7 +42,7 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandInfo GetCommandInfo()
         {
-            return new CommandInfo(typeof(CompletedCommand), Name);
+            return new CommandInfo(typeof(CompletedCommandAsync), Name);
         }
 
         public override string ToString()
@@ -50,15 +50,15 @@ namespace CCEnvs.Patterns.Commands
             return Name;
         }
 
-        public ICommand Reset() => this;
+        public ICommandAsync Reset() => this;
 
         public bool TryReset() => false;
 
-        public bool Equals(CompletedCommand? other) => other != null;
+        public bool Equals(CompletedCommandAsync? other) => other != null;
 
         public override bool Equals(object obj)
         {
-            return obj is CompletedCommand typed && Equals(typed);
+            return obj is CompletedCommandAsync typed && Equals(typed);
         }
 
         public override int GetHashCode() => 0;

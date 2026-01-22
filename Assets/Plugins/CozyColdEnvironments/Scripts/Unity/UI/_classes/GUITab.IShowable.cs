@@ -36,9 +36,9 @@ namespace CCEnvs.Unity.UI
         [NonSerialized]
         private bool stateTransitioning;
 
-        private Command hideCmd = null!;
-        private Command showCmd = null!;
-        private Command redrawCmd = null!;
+        private CommandAsync hideCmd = null!;
+        private CommandAsync showCmd = null!;
+        private CommandAsync redrawCmd = null!;
 
         public bool ShowOnInited {
             get => m_ShowOnInited;
@@ -293,7 +293,7 @@ namespace CCEnvs.Unity.UI
             IsInited = true;
         }
 
-        private sealed class HideCommand : Command
+        private sealed class HideCommand : CommandAsync
         {
             private readonly GUITab guiTab;
 
@@ -315,7 +315,7 @@ namespace CCEnvs.Unity.UI
             }
         }
 
-        private sealed class ShowCommand : Command
+        private sealed class ShowCommand : CommandAsync
         {
             private readonly GUITab guiTab;
 
@@ -337,7 +337,7 @@ namespace CCEnvs.Unity.UI
             }
         }
 
-        private sealed class RedrawCommand : Command
+        private sealed class RedrawCommand : CommandAsync
         {
             private readonly GUITab guiTab;
 

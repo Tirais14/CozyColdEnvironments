@@ -13,14 +13,14 @@ namespace CCEnvs.Patterns.Commands
         IDisposable, 
         IFrameRunnerWorkItem
     {
-        private readonly Queue<ICommand> commands = new();
+        private readonly Queue<ICommandAsync> commands = new();
 
         private readonly HashSet<CommandInfo> addedCommandInfos = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
 
-        private ICommand? cmd;
+        private ICommandAsync? cmd;
 
         private bool cmdExecuted;
         private bool disposed;
@@ -31,7 +31,7 @@ namespace CCEnvs.Patterns.Commands
 
         private ulong idleFrameCount;
 
-        private ReactiveCommand<ICommand>? addCommandRxCmd;
+        private ReactiveCommand<ICommandAsync>? addCommandRxCmd;
 
         public FrameProvider? FrameProvider { get; }
 
@@ -57,7 +57,7 @@ namespace CCEnvs.Patterns.Commands
             frameProvider.Register(this);
         }
 
-        public void Schedule(ICommand command)
+        public void Schedule(ICommandAsync command)
         {
             CC.Guard.IsNotNull(command, nameof(command));
             ValidateDisposed();
@@ -152,9 +152,9 @@ namespace CCEnvs.Patterns.Commands
             isEnabled.Value = false;
         }
 
-        public Observable<ICommand> ObserveAddCommand()
+        public Observable<ICommandAsync> ObserveAddCommand()
         {
-            addCommandRxCmd ??= new ReactiveCommand<ICommand>();
+            addCommandRxCmd ??= new ReactiveCommand<ICommandAsync>();
             return addCommandRxCmd;
         }
 
@@ -178,7 +178,7 @@ namespace CCEnvs.Patterns.Commands
             return isEnabled.Where(x => !x);
         }
 
-        private void ProcessCommandsBy(ICommand newCmd)
+        private void ProcessCommandsBy(ICommandAsync newCmd)
         {
             if (commands.IsEmpty())
                 return;
@@ -209,7 +209,7 @@ namespace CCEnvs.Patterns.Commands
             return delayCommandFrameCount-- < 1;
         }
 
-        private bool IsCommandReseted(ICommand cmd)
+        private bool IsCommandReseted(ICommandAsync cmd)
         {
             return cmdExecuted && !cmd.IsDone && !cmd.IsRunning;
         }
