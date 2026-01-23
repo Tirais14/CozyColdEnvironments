@@ -1,7 +1,10 @@
 #if YandexGamesPlatform_yg
 using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using R3;
+using System;
 using System.Threading;
 using YG;
 
@@ -18,6 +21,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
         private readonly ReactiveProperty<bool> isGameWindowFocused = new();
         private readonly ReactiveProperty<bool> isGameSaving = new();
+
+        private readonly CompositeDisposable disposables = new();
 
         private Observable<bool>? isGameplayModeObservable;
 
@@ -41,25 +46,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
 
-            YG2.onPauseGame += (state) =>
-            {
-                isGamePaused.Value = state;
-            };
-
-            YG2.onHideWindowGame += () =>
-            {
-                isGameWindowShown.Value = false;
-            };
-
-            YG2.onShowWindowGame += () =>
-            {
-                isGameWindowShown.Value = true;
-            };
-
-            YG2.onFocusWindowGame += state =>
-            {
-                isGameWindowFocused.Value = state;
-            };
+            BindEvents();
+            BindSavingSystem();
 
             PlayerAPI = playerAPI;
             AdvertisementAPI = advertisementAPI;
@@ -102,6 +90,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
+        [Obsolete]
         public UniTask SaveGameAsync(string? serializedData = null, CancellationToken cancellationToken = default)
         {
             isGameSaving.Value = true;
@@ -118,6 +107,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             return UniTask.CompletedTask;
         }
 
+        [Obsolete]
         public UniTask LoadGameAsync(CancellationToken cancellationToken = default)
         {
             return UniTask.FromResult(string.Empty);
@@ -136,6 +126,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             isGamePaused.Dispose();
             isGameWindowShown.Dispose();
             isGameWindowFocused.Dispose();
+
+            disposables.Dispose();
 
             disposed = true;
         }
@@ -179,6 +171,42 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public Observable<bool> ObserveIsGameSaving()
         {
             return isGameSaving;
+        }
+
+        private void BindEvents()
+        {
+            YG2.onPauseGame += (state) =>
+            {
+                isGamePaused.Value = state;
+            };
+
+            YG2.onHideWindowGame += () =>
+            {
+                isGameWindowShown.Value = false;
+            };
+
+            YG2.onShowWindowGame += () =>
+            {
+                isGameWindowShown.Value = true;
+            };
+
+            YG2.onFocusWindowGame += state =>
+            {
+                isGameWindowFocused.Value = state;
+            };
+        }
+
+        private void BindSavingSystem()
+        {
+            SavingSystem.Self.ObserveSaveData()
+                .Where(this, static (_, @this) => @this.isInitialized.Value)
+                .Subscribe(
+                saveData =>
+                {
+                    var serializedSaveData = JsonConvert.SerializeObject(saveData, CC.JsonSettings);
+                    YG2.saves.serializedData = serializedSaveData;
+                })
+                .AddTo(disposables);
         }
     }
 }

@@ -51,6 +51,8 @@ namespace CCEnvs.Patterns.Commands
 
         public bool TryReset()
         {
+            ValidateDisposed();
+
             if (!IsResetable)
                 return false;
 
@@ -88,6 +90,8 @@ namespace CCEnvs.Patterns.Commands
 
         public Observable<CommandStatus> ObserveIsDone()
         {
+            ValidateDisposed();
+
             return status.Where(
                 static status =>
                 {
@@ -99,9 +103,16 @@ namespace CCEnvs.Patterns.Commands
                 });
         }
 
+        private bool disposed;
         public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)
         {
+            if (disposed)
+                return;
+
+            status.Dispose();
+
+            disposed = true;
         }
 
         protected virtual void OnUndo()
@@ -110,6 +121,12 @@ namespace CCEnvs.Patterns.Commands
 
         protected virtual void OnReset()
         {
+        }
+
+        protected void ValidateDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().ToString());
         }
     }
 }

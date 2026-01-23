@@ -14,6 +14,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -35,12 +36,14 @@ namespace CCEnvs.Unity.Saves
 
         private readonly ReactiveProperty<bool> isSaving = new();
         private readonly ReactiveProperty<bool> isSaveLoading = new();
+        private readonly ReactiveProperty<SaveFileData> saveData = new();
 
         private UnityAction<Scene> onSceneUnloaded;
 
         public string? LoadedFileDataRaw { get; private set; }
 
         public Maybe<SaveFileData> LoadedFileData { get; private set; }
+        public SaveFileData SaveData => saveData.Value; 
 
         public bool IsSaving => isSaving.Value;
         public bool IsSaveLoading => isSaveLoading.Value;
@@ -236,23 +239,25 @@ namespace CCEnvs.Unity.Saves
                     cancellationToken
                     );
 
-                var saveFileInfo = await LoadSaveFileAsync(
+                var (saveData, saveDataRaw) = await LoadSaveFileAsync(
                     path,
                     cTokenSource.Token
                     );
 
-                if (saveFileInfo.fileData.IsDefault())
+                this.saveData.Value = saveData;
+
+                if (saveData.IsDefault())
                     return string.Empty;
 
                 await ApplySaveFileDataAsync(
-                    saveFileInfo.fileData,
+                    saveData,
                     cTokenSource.Token
                     );
 
-                LoadedFileDataRaw = saveFileInfo.fileDataRaw;
-                LoadedFileData = saveFileInfo.fileData;
+                LoadedFileDataRaw = saveDataRaw;
+                LoadedFileData = saveData;
 
-                return saveFileInfo.fileDataRaw;
+                return saveDataRaw;
             }
             finally
             {
@@ -272,6 +277,7 @@ namespace CCEnvs.Unity.Saves
                 using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
                 SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+                saveData.Value = saveFileData;
 
                 await RegisterSnapshotsAsync(
                     saveFileData.SceneDatas,
@@ -307,6 +313,7 @@ namespace CCEnvs.Unity.Saves
                 using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
                 SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+                saveData.Value = saveFileData;
 
                 await RegisterSnapshotsAsync(
                     saveFileData.SceneDatas,
@@ -390,6 +397,21 @@ namespace CCEnvs.Unity.Saves
 
             var regObj = new RegisteredObject(obj, sceneInfo, converters);
             return IsInstanceRegisteredInternal(regObj);
+        }
+
+        public Observable<bool> ObserveSavingStarted()
+        {
+            return isSaving.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveSavingFinished()
+        {
+            return isSaving.Where(static x => !x);
+        }
+
+        public Observable<SaveFileData> ObserveSaveData()
+        {
+            return saveData;
         }
 
         private bool IsInstanceRegisteredInternal(RegisteredObject regObj)

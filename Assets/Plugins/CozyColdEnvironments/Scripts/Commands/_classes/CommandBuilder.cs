@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,11 +16,15 @@ namespace CCEnvs.Patterns.Commands
 
         public int DelayFrameCount;
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static CommandBuilder Create()
         {
             return new CommandBuilder().Reset();
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandBuilder SetName(string? name = null)
         {
             this.Name = name;
@@ -26,6 +32,8 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandBuilder AsSingle(bool state = true)
         {
             IsSingle = state;
@@ -33,6 +41,8 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandBuilder AsResetable(bool state = true)
         {
             IsResetable = state; 
@@ -40,6 +50,8 @@ namespace CCEnvs.Patterns.Commands
             return this; 
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandBuilder SetDelayFrames(int count)
         {
             DelayFrameCount = count;
@@ -47,20 +59,29 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Sync Syncronously() => new(this);
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Sync.Stated<TState> Syncronously<TState>(TState state)
         {
             return new Sync.Stated<TState>(state, this);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Async Asyncronously() => new(this);
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Async.Stated<TState> Asyncronously<TState>(TState state)
         {
             return new Async.Stated<TState>(state, this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandBuilder Reset()
         {
             Name = null;
@@ -86,6 +107,8 @@ namespace CCEnvs.Patterns.Commands
                 this.builderBase = builderBase;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Async SetExecuteAction(Func<CancellationToken, ValueTask>? executeAction)
             {
                 ExecuteAction = executeAction;
@@ -93,6 +116,8 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Async SetExecutePredicate(Func<bool>? executePredicate)
             {
                 ExecutePredicate = executePredicate;
@@ -101,6 +126,8 @@ namespace CCEnvs.Patterns.Commands
             }
 
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Async SetResetAction(Action? resetAction)
             {
                 ResetAction = resetAction;
@@ -108,6 +135,7 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Async Reset()
             {
                 ExecuteAction = null;
@@ -117,6 +145,8 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly AnonymousCommandAsync Build()
             {
                 return new AnonymousCommandAsync(
@@ -147,6 +177,8 @@ namespace CCEnvs.Patterns.Commands
                     this.builderBase = builderBase;
                 }
 
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> SetExecuteAction(Func<TState, CancellationToken, ValueTask>? executeAction)
                 {
                     ExecuteAction = executeAction;
@@ -154,6 +186,8 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> SetExecutePredicate(Func<TState, bool>? executePredicate)
                 {
                     ExecutePredicate = executePredicate;
@@ -161,7 +195,8 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
-
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> SetResetAction(Action<TState>? resetAction)
                 {
                     ResetAction = resetAction;
@@ -169,6 +204,7 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> Reset()
                 {
                     ExecuteAction = null;
@@ -178,6 +214,8 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public readonly AnonymousCommandAsync<TState> Build()
                 {
                     return new AnonymousCommandAsync<TState>(
@@ -209,6 +247,8 @@ namespace CCEnvs.Patterns.Commands
                 this.builderBase = builderBase;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Sync SetExecuteAction(Action? executeAction)
             {
                 ExecuteAction = executeAction;
@@ -216,6 +256,8 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Sync SetExecutePredicate(Func<bool>? executePredicate)
             {
                 ExecutePredicate = executePredicate;
@@ -223,7 +265,8 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
-
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Sync SetResetAction(Action? resetAction)
             {
                 ResetAction = resetAction;
@@ -231,6 +274,7 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Sync Reset()
             {
                 ExecuteAction = null;
@@ -240,6 +284,8 @@ namespace CCEnvs.Patterns.Commands
                 return this;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly AnonymousCommand Build()
             {
                 return new AnonymousCommand(
@@ -270,6 +316,8 @@ namespace CCEnvs.Patterns.Commands
                     this.builderBase = builderBase;
                 }
 
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> SetExecuteAction(Action<TState>? executeAction)
                 {
                     ExecuteAction = executeAction;
@@ -277,6 +325,8 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> SetExecutePredicate(Func<TState, bool>? executePredicate)
                 {
                     ExecutePredicate = executePredicate;
@@ -284,7 +334,8 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
-
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> SetResetAction(Action<TState>? resetAction)
                 {
                     ResetAction = resetAction;
@@ -292,6 +343,7 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public Stated<TState> Reset()
                 {
                     ExecuteAction = null;
@@ -301,6 +353,8 @@ namespace CCEnvs.Patterns.Commands
                     return this;
                 }
 
+                [DebuggerStepThrough]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public readonly AnonymousCommand<TState> Build()
                 {
                     return new AnonymousCommand<TState>(

@@ -1,8 +1,9 @@
 using CCEnvs.Collections;
 using R3;
-using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -15,7 +16,7 @@ namespace CCEnvs.Patterns.Commands
     {
         private readonly Queue<ICommandBase> commands = new();
 
-        private readonly HashSet<CommandInfo> addedCommandInfos = new();
+        private readonly HashSet<CommandInfo> commandInfos = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
@@ -29,7 +30,7 @@ namespace CCEnvs.Patterns.Commands
         private int delayFrameCountBeforeRunningFinished;
         private int cmdDelayFrameCount;
 
-        private ulong idleFrameCount;
+        private long idleFrameCount;
 
         private ReactiveCommand<ICommandBase>? addCommandRxCmd;
 
@@ -37,7 +38,7 @@ namespace CCEnvs.Patterns.Commands
 
         public bool HasCommands => cmd is not null || commands.IsNotEmpty();
         public bool IsEnabled => isEnabled.Value;
-        public bool IsRunning => isRunning.Value && idleFrameCount >= (ulong)DelayFrameCountBeforeRunningFinished;
+        public bool IsRunning => isRunning.Value && idleFrameCount >= DelayFrameCountBeforeRunningFinished;
 
         public int DelayFrameCountBeforeRunningFinished {
             get => delayFrameCountBeforeRunningFinished;
@@ -57,28 +58,41 @@ namespace CCEnvs.Patterns.Commands
             frameProvider.Register(this);
         }
 
-        public void Schedule(ICommandBase command)
+        public void Schedule(ICommandBase cmd)
         {
-            CC.Guard.IsNotNull(command, nameof(command));
+            CC.Guard.IsNotNull(cmd, nameof(cmd));
+
             ValidateDisposed();
 
-            if (command.IsDone)
+            if (cmd.IsDone)
+            {
+                this.PrintLog($"Command: {cmd} not scheduled by {nameof(cmd.Status)}: {cmd.Status}");
                 return;
+            }
 
-            ProcessCommandsBy(command);
+            ProcessCommandsBy(cmd);
 
-            commands.Enqueue(command);
+            commands.Enqueue(cmd);
+            commandInfos.Add(cmd.GetCommandInfo());
 
-            addedCommandInfos.Add(command.GetCommandInfo());
+            if (cmd.Name.Contains("Item Cannon"))
+            {
+                _ = 1;
+            }
 
-            addCommandRxCmd?.Execute(command);
+            this.PrintLog($"Command: {cmd} scheduled");
+
+            addCommandRxCmd?.Execute(cmd);
         }
 
         public void Reset()
         {
-            EraseCommand();
+            this.PrintLog("Reseting");
 
             cmd?.Dispose();
+
+            EraseCommand();
+
             commands.DisposeEach();
             commands.Clear();
         }
@@ -88,6 +102,8 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return;
 
+            this.PrintLog("Disposing");
+
             Reset();
             addCommandRxCmd?.Dispose();
             isEnabled.Dispose();
@@ -96,10 +112,16 @@ namespace CCEnvs.Patterns.Commands
             disposed = true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnFrame()
         {
             if (!IsEnabled)
                 return;
+
+            if (commands.Any(cmd => cmd.Name.Contains("Item Cannon")))
+            {
+                _ = 1;
+            }
 
             if (IsIdleFrame())
             {
@@ -123,7 +145,8 @@ namespace CCEnvs.Patterns.Commands
                    &&
                    loopFuse.MoveNext())
             {
-                ResolveCommand();
+                if (!TryResolveCommand())
+                    break;
 
                 if (IsFrameDelayedByCommand())
                 {
@@ -184,6 +207,7 @@ namespace CCEnvs.Patterns.Commands
             return isEnabled.Where(x => !x);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessCommandsBy(ICommandBase newCmd)
         {
             if (commands.IsEmpty())
@@ -191,26 +215,33 @@ namespace CCEnvs.Patterns.Commands
 
             CommandInfo newCmdInfo = newCmd.GetCommandInfo();
 
-            if (!addedCommandInfos.Contains(newCmdInfo))
+            if (!commandInfos.Contains(newCmdInfo))
                 return;
 
             foreach (var cmd in commands)
             {
-                if (newCmd.IsSingle && cmd.GetCommandInfo() == newCmdInfo)
+                if (!newCmd.IsCancelled
+                    && 
+                    newCmd.IsSingle
+                    &&
+                    cmd.GetCommandInfo() == newCmdInfo)
+                {
+                    this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
                     cmd.Undo();
+                }
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnCommandDelayedFrame()
         {
             cmdDelayFrameCount--;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsFrameDelayedByCommand()
         {
-            if (cmd is null
-                ||
-                cmd.IsDone
+            if (!HasUndoneCommand()
                 ||
                 cmdDelayFrameCount < 1)
             {
@@ -220,47 +251,60 @@ namespace CCEnvs.Patterns.Commands
             return cmdDelayFrameCount > 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCommandReseted(ICommandBase cmd)
         {
             return cmdExecuted && !cmd.IsDone && !cmd.IsRunning;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCommandReadyToExecute()
         {
-            if (cmd.IsNull()
-                ||
-                cmd.IsDone)
-            {
+            if (!HasUndoneCommand())
                 return false;
-            }
 
-            return cmd.IsReadyToExecute;
+            return cmd!.IsReadyToExecute;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EraseCommand()
         {
-            if (cmd.IsNotNull())
-                addedCommandInfos.Remove(cmd.GetCommandInfo());
+            if (cmd is not null)
+            {
+                this.PrintLog($"Command: {cmd} erasing");
 
-            cmd = null;
+                commandInfos.Remove(cmd!.GetCommandInfo());
+                cmd = null;
+            }
+
             cmdExecuted = false;
         }
 
-        private void ResolveCommand()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryResolveCommand()
         {
-            if (cmd is not null && !cmd.IsDone && !IsCommandReseted(cmd))
-                return;
+            if (HasUndoneCommand())
+                return true;
 
             EraseCommand();
 
-            if (!commands.TryDequeue(out cmd))
-                return;
+            while (commands.TryDequeue(out cmd))
+            {
+                if (HasUndoneCommand())
+                {
+                    cmdDelayFrameCount = cmd.DelayFrameCount;
+                    return true;
+                }
+            }
 
-            cmdDelayFrameCount = cmd.DelayFrameCount;
+            return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExecuteCommand()
         {
+            this.PrintLog($"Command: {cmd} will be executed");
+
             switch (cmd)
             {
                 case ICommand cmdSync:
@@ -274,40 +318,43 @@ namespace CCEnvs.Patterns.Commands
             }
 
             cmdExecuted = true;
-
-            this.PrintLog($"Command: {cmd} executed");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidateDisposed()
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().ToString());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnRunningFinished()
         {
             isRunningFinshingDelayed = false;
             isRunning.Value = false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnIdleFrame()
         {
             idleFrameCount++;
 
             if (isRunningFinshingDelayed
                 &&
-                idleFrameCount > (ulong)DelayFrameCountBeforeRunningFinished)
+                idleFrameCount > DelayFrameCountBeforeRunningFinished)
             {
                 OnRunningFinished();
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void StartRunningFrame()
         {
             idleFrameCount = 0;
             isRunning.Value = true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EndRunningFrame()
         {
             if (commands.IsEmpty())
@@ -322,11 +369,19 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsIdleFrame()
         {
             return !HasCommands;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HasUndoneCommand()
+        {
+            return cmd is not null && !cmd!.IsDone && !IsCommandReseted(cmd!);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)
         {
             if (disposed)

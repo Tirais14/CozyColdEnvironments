@@ -27,6 +27,8 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual async ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
         {
+            ValidateDisposed();
+
             if (IsRunning || IsDone)
                 return;
 
@@ -71,6 +73,8 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Undo()
         {
+            ValidateDisposed();
+
             if (cancellationTokenSource is null)
                 throw new InvalidOperationException($"{nameof(CancellationTokenSource)} not found");
 

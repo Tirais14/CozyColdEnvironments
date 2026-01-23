@@ -22,6 +22,8 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual void Execute()
         {
+            ValidateDisposed();
+
             if (IsRunning || IsDone)
                 return;
 
@@ -45,6 +47,8 @@ namespace CCEnvs.Patterns.Commands
 
         public override void Undo()
         {
+            ValidateDisposed();
+
             OnUndo();
 
             if (!IsFaulted)

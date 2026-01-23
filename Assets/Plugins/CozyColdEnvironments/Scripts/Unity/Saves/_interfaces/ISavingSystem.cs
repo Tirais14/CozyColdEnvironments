@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Cysharp.Threading.Tasks;
+using R3;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -12,6 +13,7 @@ namespace CCEnvs.Unity.Saves
     {
         string? LoadedFileDataRaw { get; }
         Maybe<SaveFileData> LoadedFileData { get; }
+        SaveFileData SaveData { get; }
 
         bool IsSaving { get; }
         bool IsSaveLoading { get; }
@@ -91,5 +93,11 @@ namespace CCEnvs.Unity.Saves
             string key,
             SceneInfo byScene = default
             );
+
+        Observable<bool> ObserveSavingStarted();
+
+        Observable<bool> ObserveSavingFinished();
+
+        Observable<SaveFileData> ObserveSaveData();
     }
 }

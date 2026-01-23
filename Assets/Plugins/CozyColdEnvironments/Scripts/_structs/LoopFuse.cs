@@ -1,6 +1,7 @@
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -54,12 +55,16 @@ namespace CCEnvs
             set;
         }
 
-        public static LoopFuse Create()
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static LoopFuse Create(
+            int iterationLimit = DEFAULT_ITERATION_LIMIT,
+            bool throwOnLimitReached = true)
         {
             return new LoopFuse()
             {
-                IterationLimit = DEFAULT_ITERATION_LIMIT,
-                ThrowOnLimitReached = true,
+                IterationLimit = iterationLimit,
+                ThrowOnLimitReached = throwOnLimitReached,
                 isNotDefault = true,
             };
         }
@@ -74,6 +79,7 @@ namespace CCEnvs
             return !(left == right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
             if (!isNotDefault
@@ -104,10 +110,11 @@ namespace CCEnvs
             return true;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>
         /// Works only if setted CC_DEBUG preprocessor variable
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool DebugMoveNext()
         {
 #if CC_DEBUG
@@ -115,6 +122,15 @@ namespace CCEnvs
 #else
             return true;
 #endif
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public LoopFuse ResetIterationCount()
+        {
+            IterationCount = 0;
+
+            return this;
         }
 
         private bool disposed;
