@@ -65,9 +65,11 @@ namespace CCEnvs.Patterns.Commands
             if (command.IsDone)
                 return;
 
-            commands.Enqueue(command);
+            CommandEqualityComparer
 
             ProcessCommandsBy(command);
+
+            commands.Enqueue(command);
 
             addedCommandInfos.Add(command.GetCommandInfo());
 

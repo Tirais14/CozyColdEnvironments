@@ -26,14 +26,14 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public CommandBuilder SetIsSingleCommand(bool state = true)
+        public CommandBuilder AsSingle(bool state = true)
         {
             IsSingle = state;
 
             return this;
         }
 
-        public CommandBuilder SetIsResetable(bool state = true)
+        public CommandBuilder AsResetable(bool state = true)
         {
             IsResetable = state; 
 
@@ -47,16 +47,16 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public readonly Sync AsSync() => new(this);
+        public readonly Sync Syncronously() => new(this);
 
-        public readonly Sync.Stated<TState> AsSync<TState>(TState state)
+        public readonly Sync.Stated<TState> Syncronously<TState>(TState state)
         {
             return new Sync.Stated<TState>(state, this);
         }
 
-        public readonly Async AsAsync() => new(this);
+        public readonly Async Asyncronously() => new(this);
 
-        public readonly Async.Stated<TState> AsAsync<TState>(TState state)
+        public readonly Async.Stated<TState> Asyncronously<TState>(TState state)
         {
             return new Async.Stated<TState>(state, this);
         }

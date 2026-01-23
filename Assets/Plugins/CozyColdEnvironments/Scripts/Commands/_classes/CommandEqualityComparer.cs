@@ -6,6 +6,8 @@ namespace CCEnvs.Patterns.Commands
 {
     public class CommandEqualityComparer : IEqualityComparer<ICommandBase>
     {
+        public static CommandEqualityComparer Instance { get; } = new();
+
         public bool Equals(ICommandBase x, ICommandBase y)
         {
             return ReferenceEquals(x, y)

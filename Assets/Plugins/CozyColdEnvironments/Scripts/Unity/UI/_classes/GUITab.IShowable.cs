@@ -151,6 +151,7 @@ namespace CCEnvs.Unity.UI
                         SetHiden();
                     }
                     break;
+
                 case ShowableRenderMode.CanvasGroup:
                     {
                         var canvasGroup = this.canvasGroup.GetValueUnsafe(static () => throw new InvalidOperationException("Canvas group not found."));
@@ -177,6 +178,7 @@ namespace CCEnvs.Unity.UI
                         SetHiden();
                     }
                     break;
+
                 default:
                     throw new InvalidOperationException();
             }
@@ -299,7 +301,17 @@ namespace CCEnvs.Unity.UI
         private async UniTask RebuildControlledLayouts()
         {
             var childs = GetControlledLayouts();
+
+            var returnToNormalCanvas = CanvasHelper.MoveToDevCanvas(this.RectTransform());
+
+            if (!IsShown)
+                Show();
+
             await LayoutHelper.ForceRebuildLayoutsAsync(childs);
+
+            Hide();
+
+            returnToNormalCanvas.Dispose();
         }
 
         private async UniTask InitShowableAsync()
