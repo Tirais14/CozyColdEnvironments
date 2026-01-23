@@ -22,7 +22,6 @@ namespace CCEnvs.Unity.ExternalAPIs
         public bool IsGamePaused => apis.All(api => api.IsGamePaused);
         public bool IsGameWindowShown => apis.All(api => api.IsGameWindowShown);
         public bool IsGameWindowFocused => apis.All(api => api.IsGameWindowFocused);
-        public bool IsGameSaving => apis.All(api => api.IsGameSaving);
 
         public CompositeGeneralAPI(
             IPlayerAPI? playerAPI,
@@ -74,18 +73,6 @@ namespace CCEnvs.Unity.ExternalAPIs
                 apis[i].UnpauseGame();
         }
 
-        public async UniTask SaveGameAsync(string? serializedData = null, CancellationToken cancellationToken = default)
-        {
-            for (int i = 0; i < apis.Count; i++)
-                await apis[i].SaveGameAsync(serializedData, cancellationToken);
-        }
-
-        public async UniTask LoadGameAsync(CancellationToken cancellationToken = default)
-        {
-            for (int i = 0; i < apis.Count; i++)
-                await apis[i].LoadGameAsync(cancellationToken);
-        }
-
         public void SetGameReady(bool state)
         {
             for (int i = 0; i < apis.Count; i++)
@@ -121,11 +108,6 @@ namespace CCEnvs.Unity.ExternalAPIs
         public Observable<bool> ObserveIsGameReady()
         {
             return ObservableHelper.MergeMany(apis, static api => api.ObserveIsGameReady());
-        }
-
-        public Observable<bool> ObserveIsGameSaving()
-        {
-            return ObservableHelper.MergeMany(apis, static api => api.ObserveIsGameSaving());
         }
 
         public Observable<bool> ObserveIsGameWindowFocused()

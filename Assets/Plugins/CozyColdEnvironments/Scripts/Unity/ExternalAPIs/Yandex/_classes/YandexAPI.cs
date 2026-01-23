@@ -1,11 +1,11 @@
-#if YandexGamesPlatform_yg
+#if YandexGamesPlatform_yg && WEBGL
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using System;
-using System.Threading;
+using UnityEditor;
 using YG;
 
 #nullable enable
@@ -55,6 +55,14 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             Instance = this;
         }
 
+#if UNITY_EDITOR
+        [InitializeOnEnterPlayMode]
+        public static void OnEnterPlayMode()
+        {
+            Instance = null;
+        }
+#endif
+
         public void GameplayStart()
         {
             YG2.GameplayStart();
@@ -88,29 +96,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 YG2.GameReadyAPI();
                 isGameReady.Value = true;
             }
-        }
-
-        [Obsolete]
-        public UniTask SaveGameAsync(string? serializedData = null, CancellationToken cancellationToken = default)
-        {
-            isGameSaving.Value = true;
-
-            YG2.saves = new SavesYG()
-            {
-                serializedData = serializedData
-            };
-
-            YG2.SaveProgress();
-
-            isGameSaving.Value = false;
-
-            return UniTask.CompletedTask;
-        }
-
-        [Obsolete]
-        public UniTask LoadGameAsync(CancellationToken cancellationToken = default)
-        {
-            return UniTask.FromResult(string.Empty);
         }
 
         private bool disposed;

@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.Essentials
         protected override void Awake()
         {
             base.Awake();
-            Install.Static();
+            CCProjectHelper.StaticObsolete();
             CC.Install();
             SceneInitializer.InitAllObjectsAsync(FindObjectsInactive.Exclude)
                 .Forget(ex => this.PrintException(ex));

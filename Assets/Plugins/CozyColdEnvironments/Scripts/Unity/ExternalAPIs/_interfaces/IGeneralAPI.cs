@@ -19,7 +19,6 @@ namespace CCEnvs.Unity.ExternalAPIs
         bool IsGamePaused { get; }
         bool IsGameWindowShown { get; }
         bool IsGameWindowFocused { get; }
-        bool IsGameSaving { get; }
 
         void Initialize();
 
@@ -33,10 +32,6 @@ namespace CCEnvs.Unity.ExternalAPIs
 
         void UnpauseGame();
 
-        UniTask SaveGameAsync(string? serializedData = null, CancellationToken cancellationToken = default);
-
-        UniTask LoadGameAsync(CancellationToken cancellationToken = default);
-
         Observable<bool> ObserveIsInitialized();
 
         Observable<bool> ObserveIsGameplayMode();
@@ -48,7 +43,5 @@ namespace CCEnvs.Unity.ExternalAPIs
         Observable<bool> ObserveIsGameWindowShown();
 
         Observable<bool> ObserveIsGameWindowFocused();
-
-        Observable<bool> ObserveIsGameSaving();
     }
 }

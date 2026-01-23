@@ -1,7 +1,12 @@
+using CCEnvs.Attributes;
 using CCEnvs.Unity.Items;
+using CCEnvs.Unity.Saves;
+using CCEnvs.Unity.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -59,5 +64,29 @@ namespace CCEnvs.Unity
                 return -1;
             }
         }
+
+        #region Install
+        [OnInstallMethod]
+        private static void InstallSavingSystem()
+        {
+            SavingSystem.Self.RegisterType<GameObject>(
+                static (go) =>
+                {
+                    return new GameObjectSnapshot(go);
+                });
+
+            SavingSystem.Self.RegisterType<Slider>(
+                static (slider) =>
+                {
+                    return new SliderSnapshot(slider);
+                });
+
+            SavingSystem.Self.RegisterType<TMP_Dropdown>(
+                static (dropdown) =>
+                {
+                    return new TMP_DropdownSnapshot(dropdown);
+                });
+        }
+        #endregion Install
     }
 }

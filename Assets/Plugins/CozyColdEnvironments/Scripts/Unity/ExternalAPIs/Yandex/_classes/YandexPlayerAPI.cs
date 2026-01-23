@@ -1,5 +1,6 @@
-#if YandexGamesPlatform_yg
+#if YandexGamesPlatform_yg && WEBGL
 using R3;
+using UnityEditor;
 using YG;
 
 #nullable enable
@@ -31,6 +32,14 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             Instance = this;
         }
+
+#if UNITY_EDITOR
+        [InitializeOnEnterPlayMode]
+        public static void OnEnterPlayMode()
+        {
+            Instance = null;
+        }
+#endif
 
         public void Authorize()
         {

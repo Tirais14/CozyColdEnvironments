@@ -1,150 +1,112 @@
-//using CCEnvs.FuncLanguage;
-//using CCEnvs.Unity.ExternalAPIs;
-//using CCEnvs.Unity.ExternalAPIs.Yandex;
-//using CCEnvs.Unity.Saves;
-//using Cysharp.Threading.Tasks;
-//using R3;
-//using System.Threading;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.ExternalAPIs.Yandex;
+using R3;
 
-//#nullable enable
-//namespace CCEnvs.Unity
-//{
-//    public class DefaultGeneralAPI : IGeneralAPI
-//    {
-//        private readonly ReactiveProperty<bool> isInitialized = new();
-//        private readonly ReactiveProperty<bool> isGameReady = new();
-//        private readonly ReactiveProperty<bool> isGameplayMode = new();
-//        private readonly ReactiveProperty<bool> isGamePaused = new();
-//        private readonly ReactiveProperty<bool> isGameWindowShown = new();
-//        private readonly ReactiveProperty<bool> isGameWindowFocused = new();
-//        private readonly ReactiveProperty<bool> isGameSaving = new();
+#nullable enable
+namespace CCEnvs.Unity.ExternalAPIs
+{
+    public class DefaultGeneralAPI : IGeneralAPI
+    {
+        private readonly ReactiveProperty<bool> isInitialized = new();
+        private readonly ReactiveProperty<bool> isGameReady = new();
+        private readonly ReactiveProperty<bool> isGameplayMode = new();
+        private readonly ReactiveProperty<bool> isGamePaused = new();
+        private readonly ReactiveProperty<bool> isGameWindowShown = new();
+        private readonly ReactiveProperty<bool> isGameWindowFocused = new();
 
-//        public Maybe<IPlayerAPI> PlayerAPI => throw new System.NotImplementedException();
-//        public Maybe<IAdvertisementAPI> AdvertisementAPI => throw new System.NotImplementedException();
+        public Maybe<IPlayerAPI> PlayerAPI { get; }
+        public Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
 
-//        public bool IsInitialized => isInitialized.Value;
-//        public bool IsGameReady => isGameReady.Value;
-//        public bool IsGameplayMode => isGameplayMode.Value;
-//        public bool IsGamePaused => isGamePaused.Value;
-//        public bool IsGameWindowShown => isGameWindowShown.Value;
-//        public bool IsGameWindowFocused => isGameWindowFocused.Value;
-//        public bool IsGameSaving => isGameSaving.Value;
+        public bool IsInitialized => isInitialized.Value;
+        public bool IsGameReady => isGameReady.Value;
+        public bool IsGameplayMode => isGameplayMode.Value;
+        public bool IsGamePaused => isGamePaused.Value;
+        public bool IsGameWindowShown => isGameWindowShown.Value;
+        public bool IsGameWindowFocused => isGameWindowFocused.Value;
 
-//        public void GameplayStart()
-//        {
-//            isGameplayMode.Value = true;
-//        }
+        public DefaultGeneralAPI(IPlayerAPI? playerAPI = null, IAdvertisementAPI? advertisementAPI = null)
+        {
+            PlayerAPI = playerAPI.Maybe();
+            AdvertisementAPI = advertisementAPI.Maybe();
+        }
 
-//        public void GameplayStop()
-//        {
-//            isGameplayMode.Value = false;
-//        }
+        public void GameplayStart()
+        {
+            isGameplayMode.Value = true;
+        }
 
-//        public void Initialize()
-//        {
-//            isInitialized.Value = true;
-//        }
+        public void GameplayStop()
+        {
+            isGameplayMode.Value = false;
+        }
 
-//        public void PauseGame()
-//        {
-//            isGamePaused.Value = true;
-//        }
+        public void Initialize()
+        {
+            isInitialized.Value = true;
+        }
 
-//        public void UnpauseGame()
-//        {
-//            isGamePaused.Value = false;
-//        }
+        public void PauseGame()
+        {
+            isGamePaused.Value = true;
+        }
 
-//        public UniTask SaveGame()
-//        {
-//            return UniTask.CompletedTask;
-//        }
+        public void UnpauseGame()
+        {
+            isGamePaused.Value = false;
+        }
 
-//        public UniTask LoadSaveGame()
-//        {
-//            return UniTask.CompletedTask;
-//        }
+        public void SetGameReady(bool state)
+        {
+            isGameReady.Value = state;
+        }
 
-//        //public async UniTask SaveGameAsync(
-//        //    string? path = null,
-//        //    string? serializedData = null, 
-//        //    CancellationToken cancellationToken = default
-//        //    )
-//        //{
-//        //    if (path.IsNullOrWhiteSpace())
-//        //        await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
 
-//        //    await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
-//        //}
+            PlayerAPI.IfSome(api => api.Dispose());
+            AdvertisementAPI.IfSome(api => api.Dispose());
 
-//        //public async UniTask<string> LoadGameAsync(
-//        //    string? path = null,
-//        //    CancellationToken cancellationToken = default
-//        //    )
-//        //{
-//        //    if (path.IsNullOrWhiteSpace())
-//        //        return SavingSystem.Self.LoadedFileDataRaw ?? string.Empty;
+            isInitialized.Dispose();
+            isGameReady.Dispose();
+            isGameplayMode.Dispose();
+            isGamePaused.Dispose();
+            isGameWindowShown.Dispose();
+            isGameWindowFocused.Dispose();
 
-//        //    return await SavingSystem.Self.LoadFromFileAsync(path, cancellationToken);
-//        //}
+            disposed = true;
+        }
 
-//        public void SetGameReady(bool state)
-//        {
-//            isGameReady.Value = state;
-//        }
+        public Observable<bool> ObserveIsInitialized()
+        {
+            return isInitialized;
+        }
 
-//        private bool disposed;
-//        public void Dispose()
-//        {
-//            if (disposed)
-//                return;
+        public Observable<bool> ObserveIsGamePaused()
+        {
+            return isGamePaused;
+        }
 
-//            PlayerAPI.IfSome(api => api.Dispose());
-//            AdvertisementAPI.IfSome(api => api.Dispose());
+        public Observable<bool> ObserveIsGameplayMode()
+        {
+            return isGameplayMode;
+        }
 
-//            isInitialized.Dispose();
-//            isGameReady.Dispose();
-//            isGameplayMode.Dispose();
-//            isGamePaused.Dispose();
-//            isGameWindowShown.Dispose();
-//            isGameWindowFocused.Dispose();
+        public Observable<bool> ObserveIsGameReady()
+        {
+            return isGameReady;
+        }
 
-//            disposed = true;
-//        }
+        public Observable<bool> ObserveIsGameWindowFocused()
+        {
+            return isGameWindowFocused;
+        }
 
-//        public Observable<bool> ObserveIsInitialized()
-//        {
-//            return isInitialized;
-//        }
-
-//        public Observable<bool> ObserveIsGamePaused()
-//        {
-//            return isGamePaused;
-//        }
-
-//        public Observable<bool> ObserveIsGameplayMode()
-//        {
-//            return isGameplayMode;
-//        }
-
-//        public Observable<bool> ObserveIsGameReady()
-//        {
-//            return isGameReady;
-//        }
-
-//        public Observable<bool> ObserveIsGameSaving()
-//        {
-//            return isGameSaving;
-//        }
-
-//        public Observable<bool> ObserveIsGameWindowFocused()
-//        {
-//            return isGameWindowFocused;
-//        }
-
-//        public Observable<bool> ObserveIsGameWindowShown()
-//        {
-//            return isGameWindowShown;
-//        }
-//    }
-//}
+        public Observable<bool> ObserveIsGameWindowShown()
+        {
+            return isGameWindowShown;
+        }
+    }
+}

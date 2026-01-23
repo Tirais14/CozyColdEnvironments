@@ -1,4 +1,6 @@
+#if YandexGamesPlatform_yg && WEBGL
 using R3;
+using UnityEditor;
 using YG;
 
 #nullable enable
@@ -30,6 +32,15 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             Instance = this;
         }
+
+
+#if UNITY_EDITOR
+        [InitializeOnEnterPlayMode]
+        public static void OnEnterPlayMode()
+        {
+            Instance = null;
+        }
+#endif
 
         private bool disposed;
         public void Dispose()
@@ -63,3 +74,4 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         }
     }
 }
+#endif

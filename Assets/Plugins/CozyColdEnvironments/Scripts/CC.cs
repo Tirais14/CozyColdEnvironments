@@ -15,6 +15,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
 
 namespace CCEnvs
 {
@@ -53,9 +55,12 @@ namespace CCEnvs
             frameProvider.Register(CommandScheduler);
         }
 
+        #region Install
         public static void Install()
         {
+            CCProjectHelper.Install();
         }
+        #endregion Install
 
 #if UNITASK_PLUGIN
         public static UniTask RegisterAsNeccessaryTask(this UniTask source)

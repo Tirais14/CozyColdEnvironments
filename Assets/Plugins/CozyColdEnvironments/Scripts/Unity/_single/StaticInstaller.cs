@@ -11,7 +11,7 @@ namespace CCEnvs.Unity
         protected override void Awake()
         {
             base.Awake();
-            Install.Static();
+            CCProjectHelper.StaticObsolete();
 
             Destroy(gameObject);
         }
