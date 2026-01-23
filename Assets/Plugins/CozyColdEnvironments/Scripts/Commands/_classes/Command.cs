@@ -5,12 +5,12 @@ namespace CCEnvs.Patterns.Commands
 {
     public abstract partial class Command : CommandBase<ICommand>, ICommand
     {
-        public static CommandBuilder Builder { get; } = new();
+        public static CommandBuilder Builder { get; } = CommandBuilder.Create();
 
         protected Command(
             bool isSingle = false,
             string? name = null,
-            bool isResetable = true,
+            bool isResetable = false,
             int delayFrameCount = 0)
             :
             base(isSingle: isSingle,
@@ -20,7 +20,7 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
-        public void Execute()
+        public virtual void Execute()
         {
             if (IsRunning || IsDone)
                 return;

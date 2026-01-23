@@ -1,5 +1,8 @@
 using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
+using CCEnvs.Patterns.Factories;
+using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Snapshots.UI;
 using Cysharp.Threading.Tasks;
@@ -10,7 +13,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using ZLinq;
 
 #nullable enable
@@ -18,6 +20,33 @@ namespace CCEnvs.Unity.UI
 {
     public partial class GUITab : IShowable
     {
+        private readonly static Lazy<ObjectPool<HideCommand>> hideCmdPool = new(
+            static () =>
+            {
+                return new ObjectPool<HideCommand>(
+                    factory: Factory.DefaultValueFactory<HideCommand>(),
+                    capacity: 16
+                    );
+            });
+
+        private readonly static Lazy<ObjectPool<ShowCommand>> showCmdPool = new(
+            static () =>
+            {
+                return new ObjectPool<ShowCommand>(
+                    factory: Factory.DefaultValueFactory<ShowCommand>(),
+                    capacity: 16
+                    );
+            });
+
+        private readonly static Lazy<ObjectPool<RedrawCommand>> redrawCmdPool = new(
+            static () =>
+            {
+                return new ObjectPool<RedrawCommand>(
+                    factory: Factory.DefaultValueFactory<RedrawCommand>(),
+                    capacity: 16
+                    );
+            });
+
         [Header("Showable settings")]
         [Space(8)]
 
@@ -36,10 +65,6 @@ namespace CCEnvs.Unity.UI
         [NonSerialized]
         private bool stateTransitioning;
 
-        private CommandAsync hideCmd = null!;
-        private CommandAsync showCmd = null!;
-        private CommandAsync redrawCmd = null!;
-
         public bool ShowOnInited {
             get => m_ShowOnInited;
             set => m_ShowOnInited = value;
@@ -56,10 +81,6 @@ namespace CCEnvs.Unity.UI
             {
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
-
-            hideCmd = new HideCommand(this);
-            showCmd = new ShowCommand(this);
-            redrawCmd = new RedrawCommand(this);
         }
 
         private void IShowableStart()
@@ -70,19 +91,20 @@ namespace CCEnvs.Unity.UI
         private void IShowableOnDestroy()
         {
             isShown.Dispose();
-            hideCmd.Dispose();
-            showCmd.Dispose();
-            redrawCmd.Dispose();
         }
 
         public void Hide()
         {
-            commandScheduler.Schedule(hideCmd.Reset());
+            hideCmdPool.Value.Get().Value
+                .SetGUITab(this)
+                .ScheduleBy(commandScheduler);
         }
 
         public void Show()
         {
-            commandScheduler.Schedule(showCmd.Reset());
+            showCmdPool.Value.Get().Value
+                .SetGUITab(this)
+                .ScheduleBy(commandScheduler);
         }
 
         public bool SwitchShownState()
@@ -99,7 +121,9 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
-            commandScheduler.Schedule(redrawCmd.Reset());
+            redrawCmdPool.Value.Get().Value
+                .SetGUITab(this)
+                .ScheduleBy(commandScheduler);
         }
 
         public Observable<Unit> ObserveShow()
@@ -293,66 +317,126 @@ namespace CCEnvs.Unity.UI
             IsInited = true;
         }
 
-        private sealed class HideCommand : CommandAsync
+        private sealed class HideCommand : PoolableCommand
         {
-            private readonly GUITab guiTab;
+            public Maybe<GUITab> Tab { get; set; }
 
-            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.IsInited;
+            public override bool IsReadyToExecute {
+                get
+                {
+                    return base.IsReadyToExecute
+                           &&
+                           Tab.Map(target => target.IsInited).GetValue();
+                }
+            }
 
-            public HideCommand(GUITab guiTab)
+            public HideCommand()
                 :
                 base()
             {
-                this.guiTab = guiTab;
             }
 
-            protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+            public override void OnDespawned()
             {
-                guiTab.OnHide();
-                guiTab.DoHide();
+                Tab = Maybe<GUITab>.None;
 
-                return default;
-            }
-        }
-
-        private sealed class ShowCommand : CommandAsync
-        {
-            private readonly GUITab guiTab;
-
-            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.IsInited;
-
-            public ShowCommand(GUITab guiTab)
-                :
-                base(delayFrameCount: 1)
-            {
-                this.guiTab = guiTab;
+                base.OnDespawned();
             }
 
-            protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+            public HideCommand SetGUITab(GUITab? guiTab)
             {
-                guiTab.OnShow();
-                guiTab.DoShow();
+                Tab = guiTab;
+                return this;
+            }
 
-                return default;
+            protected override void OnExecute()
+            {
+                Tab.IfSome(target =>
+                {
+                    target.OnHide();
+                    target.DoHide();
+                });
             }
         }
 
-        private sealed class RedrawCommand : CommandAsync
+        private sealed class ShowCommand : PoolableCommand, IPoolable
         {
-            private readonly GUITab guiTab;
+            public Maybe<GUITab> Tab { get; set; }
 
-            public override bool IsReadyToExecute => base.IsReadyToExecute && guiTab.IsInited;
+            public override bool IsReadyToExecute {
+                get
+                {
+                    return base.IsReadyToExecute
+                           &&
+                           Tab.Map(target => target.IsInited).GetValue();
+                }
+            }
 
-            public RedrawCommand(GUITab guiTab)
+            public ShowCommand()
                 :
-                base(delayFrameCount: 2)
+                base()
             {
-                this.guiTab = guiTab;
+            }
+
+            public override void OnDespawned()
+            {
+                Tab = Maybe<GUITab>.None;
+                base.OnDespawned();
+            }
+
+            public ShowCommand SetGUITab(GUITab? guiTab)
+            {
+                Tab = guiTab;
+                return this;
+            }
+
+            protected override void OnExecute()
+            {
+                Tab.IfSome(static target =>
+                {
+                    target.OnShow();
+                    target.DoShow();
+                });
+            }
+        }
+
+        private sealed class RedrawCommand : PoolableCommandAsync
+        {
+            public Maybe<GUITab> Tab { get; set; }
+
+            public override bool IsReadyToExecute {
+                get
+                {
+                    return base.IsReadyToExecute
+                           &&
+                           Tab.Map(target => target.IsInited).GetValue();
+                }
+            }
+
+            public RedrawCommand()
+                :
+                base()
+            {
+            }
+
+            public override void OnDespawned()
+            {
+                Tab = Maybe<GUITab>.None;
+                base.OnDespawned();
+            }
+
+            public RedrawCommand SetGUITab(GUITab? guiTab)
+            {
+                Tab = guiTab;
+                return this;
             }
 
             protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
             {
-                await guiTab.RebuildControlledLayouts();
+                if (!Tab.TryGetValue(out var target))
+                    return;
+
+                await target.RebuildControlledLayouts();
             }
         }
     }

@@ -11,7 +11,7 @@ namespace CCEnvs.Pools
         /// -1 if <see cref="Preheat(FrameProvider?, int?, int?)"/> not started, otherwise value from 0 to 1
         /// </summary>
         float PreheatProgress { get; }
-        bool PreheatStarted { get; }
+        bool IsPreheating { get; }
 
         PooledHandle<T> Get();
 

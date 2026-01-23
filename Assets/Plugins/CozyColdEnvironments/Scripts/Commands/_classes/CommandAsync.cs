@@ -25,7 +25,7 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
-        public async ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
+        public virtual async ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
         {
             if (IsRunning || IsDone)
                 return;

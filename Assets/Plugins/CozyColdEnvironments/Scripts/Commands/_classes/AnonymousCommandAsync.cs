@@ -24,7 +24,7 @@ namespace CCEnvs.Patterns.Commands
             Action? onReset = null!,
             string? name = null,
             bool isSingle = false,
-            bool isResetable = true,
+            bool isResetable = false,
             int delayFrameCount = 0)
             :
             base(name: name,
@@ -39,7 +39,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}";
+            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status})";
         }
 
         protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
@@ -80,7 +80,7 @@ namespace CCEnvs.Patterns.Commands
             Action<T>? onReset = null,
             string? name = null,
             bool isSingle = false,
-            bool isResetable = true,
+            bool isResetable = false,
             int delayFrameCount = 0)
             :
             base(name: name,
@@ -96,7 +96,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}; {nameof(IsDone)}: {IsDone}";
+            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(state)}: {state})";
         }
 
         protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)

@@ -27,7 +27,7 @@ namespace CCEnvs.Patterns.Commands
         private bool isRunningFinshingDelayed;
 
         private int delayFrameCountBeforeRunningFinished;
-        private int delayCommandFrameCount;
+        private int cmdDelayFrameCount;
 
         private ulong idleFrameCount;
 
@@ -35,7 +35,7 @@ namespace CCEnvs.Patterns.Commands
 
         public FrameProvider? FrameProvider { get; }
 
-        public bool HasCommands => commands.IsNotEmpty();
+        public bool HasCommands => cmd is not null || commands.IsNotEmpty();
         public bool IsEnabled => isEnabled.Value;
         public bool IsRunning => isRunning.Value && idleFrameCount >= (ulong)DelayFrameCountBeforeRunningFinished;
 
@@ -76,6 +76,10 @@ namespace CCEnvs.Patterns.Commands
 
         public void Reset()
         {
+            EraseCommand();
+
+            cmd?.Dispose();
+            commands.DisposeEach();
             commands.Clear();
         }
 
@@ -84,6 +88,7 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return;
 
+            Reset();
             addCommandRxCmd?.Dispose();
             isEnabled.Dispose();
             isRunning.Dispose();
@@ -98,32 +103,33 @@ namespace CCEnvs.Patterns.Commands
 
             if (IsIdleFrame())
             {
-                DoIdleFrame();
+                OnIdleFrame();
                 return;
             }
 
             ValidateDisposed();
 
             if (IsFrameDelayedByCommand())
+            {
+                OnCommandDelayedFrame();
                 return;
+            }
 
             StartRunningFrame();
 
-#if CC_DEBUG
             var loopFuse = LoopFuse.Create();
-#endif
 
             while (!disposed
-#if CC_DEBUG
-                &&
-                loopFuse.MoveNext()
-#endif
-                )
+                   &&
+                   loopFuse.MoveNext())
             {
                 ResolveCommand();
 
                 if (IsFrameDelayedByCommand())
+                {
+                    OnCommandDelayedFrame();
                     break;
+                }
 
                 if (!IsCommandReadyToExecute())
                     break;
@@ -195,18 +201,23 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
+        private void OnCommandDelayedFrame()
+        {
+            cmdDelayFrameCount--;
+        }
+
         private bool IsFrameDelayedByCommand()
         {
             if (cmd is null
                 ||
                 cmd.IsDone
                 ||
-                delayCommandFrameCount < 1)
+                cmdDelayFrameCount < 1)
             {
                 return false;
             }
             
-            return delayCommandFrameCount-- < 1;
+            return cmdDelayFrameCount > 0;
         }
 
         private bool IsCommandReseted(ICommandBase cmd)
@@ -237,7 +248,7 @@ namespace CCEnvs.Patterns.Commands
 
         private void ResolveCommand()
         {
-            if (cmd is not null && cmd.IsRunning && !IsCommandReseted(cmd))
+            if (cmd is not null && !cmd.IsDone && !IsCommandReseted(cmd))
                 return;
 
             EraseCommand();
@@ -245,7 +256,7 @@ namespace CCEnvs.Patterns.Commands
             if (!commands.TryDequeue(out cmd))
                 return;
 
-            delayCommandFrameCount = cmd.DelayFrameCount;
+            cmdDelayFrameCount = cmd.DelayFrameCount;
         }
 
         private void ExecuteCommand()
@@ -254,15 +265,17 @@ namespace CCEnvs.Patterns.Commands
             {
                 case ICommand cmdSync:
                     cmdSync.Execute();
-                    cmdExecuted = true;
                     break;
                 case ICommandAsync cmdAsync:
                     cmdAsync.ExecuteAsync();
-                    cmdExecuted = true;
                     break;
                 default:
-                    break;
+                    throw new InvalidOperationException();
             }
+
+            cmdExecuted = true;
+
+            this.PrintLog($"Command: {cmd} executed");
         }
 
         private void ValidateDisposed()
@@ -277,7 +290,7 @@ namespace CCEnvs.Patterns.Commands
             isRunning.Value = false;
         }
 
-        private void DoIdleFrame()
+        private void OnIdleFrame()
         {
             idleFrameCount++;
 
@@ -311,7 +324,7 @@ namespace CCEnvs.Patterns.Commands
 
         private bool IsIdleFrame()
         {
-            return commands.IsEmpty();
+            return !HasCommands;
         }
 
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)

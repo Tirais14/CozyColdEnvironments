@@ -83,7 +83,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return $"({Name}: {Name}; {IsDone}: {IsDone}; {IsReadyToExecute}: {IsReadyToExecute})";
+            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status})";
         }
 
         public Observable<CommandStatus> ObserveIsDone()

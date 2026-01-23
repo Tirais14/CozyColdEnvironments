@@ -85,6 +85,8 @@ namespace CCEnvs.Unity.UI
         {
             base.OnDestroy();
 
+            commandScheduler.Dispose();
+
             if (button.TryGetValue(out var btn))
                 btn.onClick.RemoveAllListeners();
 

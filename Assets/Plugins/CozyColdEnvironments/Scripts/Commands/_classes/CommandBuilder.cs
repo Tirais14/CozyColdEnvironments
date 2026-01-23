@@ -14,6 +14,11 @@ namespace CCEnvs.Patterns.Commands
 
         public int DelayFrameCount;
 
+        public static CommandBuilder Create()
+        {
+            return new CommandBuilder().Reset();
+        }
+
         public CommandBuilder SetName(string? name = null)
         {
             this.Name = name;
@@ -60,7 +65,7 @@ namespace CCEnvs.Patterns.Commands
         {
             Name = null;
             IsSingle = false;
-            IsResetable = true;
+            IsResetable = false;
             DelayFrameCount = 0;
 
             return this;

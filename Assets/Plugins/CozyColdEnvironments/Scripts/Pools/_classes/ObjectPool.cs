@@ -28,7 +28,7 @@ namespace CCEnvs.Pools
             }
         }
 
-        public bool PreheatStarted => preheatOperation is not null;
+        public bool IsPreheating => preheatOperation is not null;
 
         public ObjectPool(
             IFactory<T>? factory = null,
