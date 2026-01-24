@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using R3;
 using System;
@@ -45,17 +46,16 @@ namespace CCEnvs.Patterns.Commands
             set => delayFrameCountBeforeRunningFinished = Math.Clamp(value, 0, int.MaxValue);
         }
 
-        public CommandScheduler()
-        {
-            Enable();
-        }
+        public string Name { get; }
 
-        public CommandScheduler(FrameProvider frameProvider)
-            :
-            this()
+        public CommandScheduler(FrameProvider? frameProvider = null, string? name = null)
         {
-            FrameProvider = frameProvider;
-            frameProvider.Register(this);
+            if (frameProvider is not null)
+                frameProvider.Register(this);
+
+            Name = name ?? string.Empty;
+
+            Enable();
         }
 
         public void Schedule(ICommandBase cmd)
@@ -64,11 +64,11 @@ namespace CCEnvs.Patterns.Commands
 
             ValidateDisposed();
 
+            if (!cmd.IsValid)
+                throw new ArgumentException("Command is not valid", nameof(cmd));
+
             if (cmd.IsDone)
-            {
-                this.PrintLog($"Command: {cmd} not scheduled by {nameof(cmd.Status)}: {cmd.Status}");
-                return;
-            }
+                throw new ArgumentException("Command already done", nameof(cmd));
 
             ProcessCommandsBy(cmd);
 
@@ -85,6 +85,7 @@ namespace CCEnvs.Patterns.Commands
             addCommandRxCmd?.Execute(cmd);
         }
 
+        [OnInstallMethod]
         public void Reset()
         {
             this.PrintLog("Reseting");
@@ -95,6 +96,8 @@ namespace CCEnvs.Patterns.Commands
 
             commands.DisposeEach();
             commands.Clear();
+
+            commandInfos.Clear();
         }
 
         public void Dispose()
@@ -181,6 +184,11 @@ namespace CCEnvs.Patterns.Commands
             isEnabled.Value = false;
         }
 
+        public override string ToString()
+        {
+            return $"({nameof(Name)}: {Name})";
+        }
+
         public Observable<ICommandBase> ObserveAddCommand()
         {
             addCommandRxCmd ??= new ReactiveCommand<ICommandBase>();
@@ -220,9 +228,14 @@ namespace CCEnvs.Patterns.Commands
 
             foreach (var cmd in commands)
             {
-                if (!newCmd.IsCancelled
-                    && 
+                if (!newCmd.IsValid)
+                    return;
+
+                if (cmd.IsValid
+                    &&
                     newCmd.IsSingle
+                    &&
+                    !cmd.IsCancelled
                     &&
                     cmd.GetCommandInfo() == newCmdInfo)
                 {
@@ -378,7 +391,7 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HasUndoneCommand()
         {
-            return cmd is not null && !cmd!.IsDone && !IsCommandReseted(cmd!);
+            return cmd is not null && cmd.IsValid && !cmd!.IsDone && !IsCommandReseted(cmd!);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

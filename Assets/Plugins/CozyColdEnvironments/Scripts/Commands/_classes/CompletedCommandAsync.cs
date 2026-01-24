@@ -16,6 +16,7 @@ namespace CCEnvs.Patterns.Commands
         public bool IsDone { get; } = true;
         public bool IsFaulted { get; } = false;
         public bool IsResetable { get; } = false;
+        public bool IsValid { get; } = true;
         public string Name { get; } = "Completed";
 
         public int DelayFrameCount {
@@ -53,7 +54,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return Name;
+            return $"({Name})";
         }
 
         public ICommandAsync Reset() => this;
@@ -75,7 +76,7 @@ namespace CCEnvs.Patterns.Commands
 
         public Observable<CommandStatus> ObserveIsDone()
         {
-            return Observable.Empty<CommandStatus>();
+            return Observable.Return(CommandStatus.Completed);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CCEnvs.Patterns.Commands
     public static class CommandHelper
     {
 #if UNITASK_PLUGIN
-        public static ICommandAsync TaskToCommand(this UniTask source)
+        public static ICommandAsync ToCommand(this UniTask source)
         {
             return new FromUniTaskCommand(source);
         }

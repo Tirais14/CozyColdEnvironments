@@ -1,4 +1,3 @@
-using CCEnvs.Attributes;
 using System;
 
 #nullable enable
@@ -11,6 +10,5 @@ namespace CCEnvs.Attributes
         )]
     public class OnInstallResetableAttribute : Attribute, ICCAttribute
     {
- 
     }
 }

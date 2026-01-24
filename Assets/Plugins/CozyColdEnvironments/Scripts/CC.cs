@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Async;
+using CCEnvs.Attributes;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Patterns.Commands;
@@ -13,10 +14,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using TMPro;
-using UnityEngine;
 
 namespace CCEnvs
 {
@@ -37,8 +35,13 @@ namespace CCEnvs
         {
             ExpirationScanFrequency = 1.Seconds(),
         });
+
+        [Obsolete]
         public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
+
+        [Obsolete]
         public static AsyncTaskRegistry BackgroundTasks { get; } = new();
+
         public static object EmptyObject { get; } = new object();
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
         public static string WordSeparator { get; set; } = "_";
@@ -46,14 +49,12 @@ namespace CCEnvs
         public static Func<bool> FalsePredicate { get; } = static () => false;
         public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
         public static JsonSerializerSettings DebugJsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
-        public static CommandScheduler CommandScheduler { get; }
 
-        static CC()
-        {
-            CommandScheduler = new CommandScheduler();
-            var frameProvider = ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds());
-            frameProvider.Register(CommandScheduler);
-        }
+        [field: OnInstallMethod]
+        public static CommandScheduler CommandScheduler { get; } = new(
+            ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds()),
+            name: nameof(CC)
+            );
 
         #region Install
         public static void Install()
@@ -63,12 +64,15 @@ namespace CCEnvs
         #endregion Install
 
 #if UNITASK_PLUGIN
+
+        [Obsolete]
         public static UniTask RegisterAsNeccessaryTask(this UniTask source)
         {
             NeccesaryTasks.RegisterTask(source);
             return source;
         }
 
+        [Obsolete]
         public static UniTask<T> RegisterAsNeccessaryTask<T>(this UniTask<T> source)
         {
             NeccesaryTasks.RegisterTask(source);
@@ -76,18 +80,21 @@ namespace CCEnvs
         }
 #endif
 
+        [Obsolete]
         public static ValueTask RegisterAsNeccessaryTask(this ValueTask source)
         {
             NeccesaryTasks.RegisterTask(source);
             return source;
         }
 
+        [Obsolete]
         public static ValueTask<T> RegisterAsNeccessaryTask<T>(this ValueTask<T> source)
         {
             NeccesaryTasks.RegisterTask(source);
             return source;
         }
 
+        [Obsolete]
         public static Task RegisterAsNeccessaryTask(this Task source)
         {
             NeccesaryTasks.RegisterTask(source);
@@ -95,12 +102,14 @@ namespace CCEnvs
         }
 
 #if UNITASK_PLUGIN
+        [Obsolete]
         public static UniTask RegisterAsBackgroundTask(this UniTask source)
         {
             BackgroundTasks.RegisterTask(source);
             return source;
         }
 
+        [Obsolete]
         public static UniTask<T> RegisterAsBackgroundTask<T>(this UniTask<T> source)
         {
             BackgroundTasks.RegisterTask(source);
@@ -108,18 +117,21 @@ namespace CCEnvs
         }
 #endif
 
+        [Obsolete]
         public static ValueTask RegisterAsBackgroundTask(this ValueTask source)
         {
             BackgroundTasks.RegisterTask(source);
             return source;
         }
 
+        [Obsolete]
         public static ValueTask<T> RegisterAsBackgroundTask<T>(this ValueTask<T> source)
         {
             BackgroundTasks.RegisterTask(source);
             return source;
         }
 
+        [Obsolete]
         public static Task RegisterAsBackgroundTask(this Task source)
         {
             BackgroundTasks.RegisterTask(source);

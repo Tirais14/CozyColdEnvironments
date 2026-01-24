@@ -26,6 +26,7 @@ namespace CCEnvs.Patterns.Commands
         public bool IsDone => IsCompleted || IsCancelled || IsFaulted;
         public bool IsSingle { get; }
         public bool IsResetable { get; }
+        public bool IsValid => !disposed;
 
         public int DelayFrameCount { get; set; }
 
@@ -56,13 +57,15 @@ namespace CCEnvs.Patterns.Commands
             if (!IsResetable)
                 return false;
 
-            if (IsRunning)
-                Undo();
-
-            status.Value = CommandStatus.None;
-            isExecuted = false;
-
-            OnReset();
+            try
+            {
+                OnReset();
+            }
+            finally
+            {
+                status.Value = CommandStatus.None;
+                isExecuted = false;
+            }
 
             return true;
         }

@@ -5,6 +5,8 @@ namespace CCEnvs.Patterns.Commands
 {
     public interface ICommandScheduler : ISwitchable
     {
+        string Name { get; }
+
         bool HasCommands { get; }
         bool IsRunning { get; }
 

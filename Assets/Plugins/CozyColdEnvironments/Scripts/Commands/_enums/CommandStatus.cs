@@ -10,6 +10,6 @@ namespace CCEnvs.Patterns.Commands
         Running,
         Completed = 1 << 1,
         Canceled = 1 << 2,
-        Faulted = 1 << 3
+        Faulted = 1 << 3,
     }
 }

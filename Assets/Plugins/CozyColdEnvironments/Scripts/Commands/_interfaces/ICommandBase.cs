@@ -15,6 +15,7 @@ namespace CCEnvs.Patterns.Commands
         bool IsDone { get; }
         bool IsFaulted { get; }
         bool IsResetable { get; }
+        bool IsValid { get; }
 
         string Name { get; }
 
