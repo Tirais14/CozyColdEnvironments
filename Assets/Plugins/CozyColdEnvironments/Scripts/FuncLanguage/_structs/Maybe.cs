@@ -56,6 +56,8 @@ namespace CCEnvs.FuncLanguage
 
         [JsonConstructor]
         public Maybe(T? value, T? @default)
+            :
+            this()
         {
             target = value;
             this.@default = @default;
@@ -68,8 +70,8 @@ namespace CCEnvs.FuncLanguage
             this()
         {
             Guard.IsNotNull(isSome, nameof(isSome));
-            target = value;
 
+            target = value;
             IsSome = isSome(value);
         }
 
