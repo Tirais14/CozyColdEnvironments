@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Linq;
 using System;
@@ -16,6 +17,7 @@ namespace CCEnvs.Unity.Components
     {
         public static bool IgnoreWarnings { get; set; }
 
+        [OnInstallResetable]
         private readonly static HashSet<string> guids = new();
 
         private static bool sceneUnloadedSubscribed;
@@ -51,7 +53,7 @@ namespace CCEnvs.Unity.Components
             if (Guid != null)
             {
                 if (guids.Contains(Guid))
-                    throw new InvalidOperationException("Found duplicate GUID");
+                    throw new InvalidOperationException($"Found duplicate GUID. Object: {this}");
 
                 if (Guid.IsNotNullOrWhiteSpace())
                     guids.Add(Guid);

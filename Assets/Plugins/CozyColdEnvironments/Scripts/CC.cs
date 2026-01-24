@@ -44,22 +44,24 @@ namespace CCEnvs
 
         public static object EmptyObject { get; } = new object();
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
-        public static string WordSeparator { get; set; } = "_";
-        public static Func<bool> TruePredicate { get; } = static () => true;
-        public static Func<bool> FalsePredicate { get; } = static () => false;
+        public static Func<bool> TrueFactory { get; } = static () => true;
+        public static Func<bool> FalseFactory { get; } = static () => false;
         public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
         public static JsonSerializerSettings DebugJsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
 
-        [field: OnInstallMethod]
-        public static CommandScheduler CommandScheduler { get; } = new(
-            ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds()),
-            name: nameof(CC)
-            );
+        [field: OnInstallResetable]
+        public static CommandScheduler CommandScheduler { get; private set; } = CommandScheduler.CreateDefaultRegistered();
 
         #region Install
         public static void Install()
         {
             CCProjectHelper.Install();
+        }
+
+        [OnInstallMethod]
+        private static void CreateCommandScheduler()
+        {
+            CommandScheduler = CommandScheduler.CreateDefaultRegistered();
         }
         #endregion Install
 

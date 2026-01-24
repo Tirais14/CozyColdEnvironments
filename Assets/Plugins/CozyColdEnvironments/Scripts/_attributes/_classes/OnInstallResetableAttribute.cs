@@ -8,7 +8,7 @@ namespace CCEnvs.Attributes
         AllowMultiple = false, 
         Inherited = true
         )]
-    public class OnInstallResetableAttribute : Attribute, ICCAttribute
+    public class OnInstallResetableAttribute : OnInstallAttribute, ICCAttribute
     {
     }
 }

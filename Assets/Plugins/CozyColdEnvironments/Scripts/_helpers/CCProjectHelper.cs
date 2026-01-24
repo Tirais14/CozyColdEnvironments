@@ -4,6 +4,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using SuperLinq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -109,10 +110,7 @@ namespace CCEnvs
             var fieldInfos = (from memberInfo in memberInfos
                               where memberInfo.member.MemberType == MemberTypes.Field
                               select (field: (FieldInfo)memberInfo.member, memberInfo.attributes) into fieldInfo
-                              where fieldInfo.attributes.ContainsKey(typeof(OnInstallMethodAttribute))
-                                    ||
-                                    fieldInfo.attributes.ContainsKey(typeof(OnInstallResetableAttribute))
-
+                              where fieldInfo.attributes.ContainsKey(typeof(OnInstallAttribute))
                               select fieldInfo)
                               .ToArray();
 
@@ -125,10 +123,11 @@ namespace CCEnvs
             (FieldInfo field, Dictionary<Type, Attribute> attributes)[] fieldInfos
             )
         {
+            Reflect fieldReflect;
+
             foreach (var (field, attributes, fieldValue) in
 
                 from fieldInfo in fieldInfos
-                where !fieldInfo.field.IsInitOnly
                 where fieldInfo.attributes.ContainsKey(typeof(OnInstallResetableAttribute))
                 select (fieldInfo.field, fieldInfo.attributes, fieldValue: fieldInfo.field.GetValue(target)) into fieldInfo
                 where fieldInfo.fieldValue.IsNotDefault()
@@ -137,6 +136,27 @@ namespace CCEnvs
             {
                 try
                 {
+                    fieldReflect = field.FieldType.Reflect();
+
+                    fieldReflect.Reset()
+                        .IncludeInstance()
+                        .IncludeNonPublic()
+                        .WithName("Clear")
+                        .Method()
+                        .Lax()
+                        .IfSome(method => method.Invoke(fieldValue, CC.EmptyArguments));
+
+                    fieldReflect.Reset()
+                        .IncludeInstance()
+                        .IncludeNonPublic()
+                        .WithName("Reset")
+                        .Method()
+                        .Lax()
+                        .IfSome(method => method.Invoke(fieldValue, CC.EmptyArguments));
+
+                    if (!field.IsInitOnly)
+                        continue;
+
                     if (fieldValue is IDisposable disposable)
                         disposable.Dispose();
 
@@ -159,7 +179,6 @@ namespace CCEnvs
             foreach (var (field, attributes, fieldValue) in
 
                 from fieldInfo in fieldInfos
-                where fieldInfo.attributes.ContainsKey(typeof(OnInstallMethodAttribute))
                 select (fieldInfo.field, fieldInfo.attributes, fieldValue: fieldInfo.field.GetValue(null)) into fieldInfo
                 where fieldInfo.fieldValue.IsNotDefault()
                 select fieldInfo
@@ -181,12 +200,16 @@ namespace CCEnvs
         {
             var assemblyName = assembly.GetName();
 
-            if (assemblyName.Name.StartsWith("System"))
-                return false;
-            else if (assemblyName.Name.StartsWith("Microsoft"))
-                return false;
+            var filters = new HashSet<string>(5)
+            {
+                "System",
+                "Microsoft",
+                "Unity",
+                "UniTask",
+                "Cysharp",
+            };
 
-            return true;
+            return !filters.Any(filter => assemblyName.Name.StartsWith(filter));
         }
     }
 }

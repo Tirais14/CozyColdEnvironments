@@ -307,22 +307,21 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<Component> Components(Type? type = null)
         {
-            return Target.BiMap(
-                some: target => ComponentsInternal(target, type),
-                none: () =>
-                {
-                    var includeInactiveState = settings.IsFlagSetted(Settings.IncludeInactive)
+            if (Target.TryGetValue(out var target))
+                return ComponentsInternal(target, type);
+
+            var includeInactiveState = settings.IsFlagSetted(Settings.IncludeInactive)
                         ?
                         FindObjectsInactive.Include
                         :
                         FindObjectsInactive.Exclude;
 
-                    return Object.FindObjectsByType<Transform>(includeInactiveState, sortMode)
-                        .Select(transform => transform.gameObject)
-                        .Select(go => ComponentsInternal(go, type))
-                        .SelectMany(x => x);
-                })
-                .GetValueUnsafe();
+            return Object.FindObjectsByType<Transform>(includeInactiveState, sortMode)
+                .AsValueEnumerable()
+                .Select(static transform => transform.gameObject)
+                .Select(go => ComponentsInternal(go, type))
+                .SelectMany(static x => x)
+                .AsEnumerable();
         }
 
         [DebuggerStepThrough]
@@ -804,6 +803,7 @@ namespace CCEnvs.Unity
         protected virtual IEnumerable<Component> ComponentsInternal(GameObject target, Type? type)
         {
             CC.Guard.IsNotNull(target, nameof(target));
+
             if (type == typeof(GameObject))
                 throw new ArgumentException($"Type cannot be: {type.GetFullName()}.");
 

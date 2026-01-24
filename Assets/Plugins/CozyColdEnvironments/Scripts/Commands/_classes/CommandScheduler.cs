@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using Humanizer;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,6 @@ namespace CCEnvs.Patterns.Commands
         IFrameRunnerWorkItem
     {
         private readonly Queue<ICommandBase> commands = new();
-
-        private readonly HashSet<CommandInfo> commandInfos = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
@@ -50,12 +49,20 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandScheduler(FrameProvider? frameProvider = null, string? name = null)
         {
-            if (frameProvider is not null)
-                frameProvider.Register(this);
+            frameProvider?.Register(this);
 
+            FrameProvider = frameProvider;
             Name = name ?? string.Empty;
 
             Enable();
+        }
+
+        public static CommandScheduler CreateDefaultRegistered()
+        {
+            return new CommandScheduler(
+                ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds()),
+                name: nameof(CC)
+                );
         }
 
         public void Schedule(ICommandBase cmd)
@@ -73,7 +80,6 @@ namespace CCEnvs.Patterns.Commands
             ProcessCommandsBy(cmd);
 
             commands.Enqueue(cmd);
-            commandInfos.Add(cmd.GetCommandInfo());
 
             if (cmd.Name.Contains("Item Cannon"))
             {
@@ -96,8 +102,6 @@ namespace CCEnvs.Patterns.Commands
 
             commands.DisposeEach();
             commands.Clear();
-
-            commandInfos.Clear();
         }
 
         public void Dispose()
@@ -223,21 +227,23 @@ namespace CCEnvs.Patterns.Commands
 
             CommandInfo newCmdInfo = newCmd.GetCommandInfo();
 
-            if (!commandInfos.Contains(newCmdInfo))
-                return;
-
             foreach (var cmd in commands)
             {
                 if (!newCmd.IsValid)
                     return;
 
-                if (cmd.IsValid
+                if (!cmd.IsValid
+                    ||
+                    cmd.GetCommandInfo() != newCmdInfo)
+                {
+                    continue;
+                }
+
+                if (newCmd.IsSingle
                     &&
-                    newCmd.IsSingle
+                    !cmd.IsDone
                     &&
-                    !cmd.IsCancelled
-                    &&
-                    cmd.GetCommandInfo() == newCmdInfo)
+                    !cmd.IsCancelled)
                 {
                     this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
                     cmd.Undo();
@@ -286,7 +292,6 @@ namespace CCEnvs.Patterns.Commands
             {
                 this.PrintLog($"Command: {cmd} erasing");
 
-                commandInfos.Remove(cmd!.GetCommandInfo());
                 cmd = null;
             }
 
