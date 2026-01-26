@@ -1,4 +1,4 @@
-#if YandexGamesPlatform_yg && WEBGL
+#if YandexGamesPlatform_yg && PLATFORM_WEBGL
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
@@ -26,9 +26,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private Observable<bool>? isGameplayModeObservable;
 
-        public Maybe<IPlayerAPI> PlayerAPI { get; }
-        public Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
-
         public bool IsGameplayMode => YG2.isGameplaying;
 
         public bool IsInitialized => isInitialized.Value;
@@ -38,10 +35,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
         public bool IsGameSaving => isGameSaving.Value;
 
-        public YandexAPI(
-            YandexPlayerAPI? playerAPI = null,
-            YandexAdvertisementAPI? advertisementAPI = null
-            )
+        public YandexAPI()
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
@@ -49,19 +43,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             BindEvents();
             BindSavingSystem();
 
-            PlayerAPI = playerAPI;
-            AdvertisementAPI = advertisementAPI;
-
             Instance = this;
         }
-
-#if UNITY_EDITOR
-        [InitializeOnEnterPlayMode]
-        public static void OnEnterPlayMode()
-        {
-            Instance = null;
-        }
-#endif
 
         public void GameplayStart()
         {
@@ -103,9 +86,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         {
             if (disposed)
                 return;
-
-            PlayerAPI.IfSome(x => x.Dispose());
-            AdvertisementAPI.IfSome(x => x.Dispose());
 
             isGameReady.Dispose();
             isGamePaused.Dispose();

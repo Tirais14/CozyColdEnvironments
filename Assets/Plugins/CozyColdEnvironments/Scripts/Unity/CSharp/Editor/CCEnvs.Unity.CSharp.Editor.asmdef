@@ -1,8 +1,10 @@
 {
-    "name": "CCEnvs.Unity",
-    "rootNamespace": "CCEnvs.Unity",
+    "name": "CCEnvs.Unity.CSharp.Editor",
+    "rootNamespace": "CCEnvs.Unity.CSharp.Editor",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:1898880136cb79448802a5416e8c3523",
+        "GUID:c228f3ca8f6bb594b968cbb82beea483",
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:84651a3751eca9349aac36a66bba901b",
@@ -16,7 +18,9 @@
         "GUID:f02da9ca564ed54499f6f43d8249d415",
         "GUID:a6aa2a5c9160eda409f7bef9bc1134e8"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,

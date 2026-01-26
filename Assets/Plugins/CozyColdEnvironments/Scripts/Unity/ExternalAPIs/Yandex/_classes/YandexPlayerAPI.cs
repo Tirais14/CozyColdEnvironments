@@ -1,4 +1,4 @@
-#if YandexGamesPlatform_yg && WEBGL
+#if YandexGamesPlatform_yg && PLATFORM_WEBGL
 using R3;
 using UnityEditor;
 using YG;

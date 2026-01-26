@@ -1,8 +1,9 @@
 {
-    "name": "CCEnvs.Unity",
-    "rootNamespace": "CCEnvs.Unity",
+    "name": "CCEnvs.Unity.ExternalAPIs.Yandex",
+    "rootNamespace": "CCEnvs.Unity.ExternalAPIs.Yandex",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:1898880136cb79448802a5416e8c3523",
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:84651a3751eca9349aac36a66bba901b",
@@ -10,13 +11,15 @@
         "GUID:5c01796d064528144a599661eaab93a6",
         "GUID:4129704b5a1a13841ba16f230bf24a57",
         "GUID:dc47925d1a5fa2946bdd37746b2b5d48",
-        "GUID:029c1c1b674aaae47a6841a0b89ad80e",
         "GUID:77221876cc6b8244180b96e320b1bcd4",
         "GUID:f8c68d614fe30d647996098360b5e0d5",
         "GUID:f02da9ca564ed54499f6f43d8249d415",
-        "GUID:a6aa2a5c9160eda409f7bef9bc1134e8"
+        "GUID:2ae4bb17f29fc9e4db4c705a8e1efc8a"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor",
+        "WebGL"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
@@ -36,7 +39,6 @@
         "ZString.dll",
         "StringExtensions.dll",
         "Humanizer.dll",
-        "DOTween.dll",
         "CommunityToolkit.Common.dll",
         "CommunityToolkit.Diagnostics.dll",
         "C5.dll",
@@ -44,10 +46,13 @@
         "R3.dll",
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "nunit.framework.dll"
     ],
     "autoReferenced": false,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "YandexGamesPlatform_yg"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

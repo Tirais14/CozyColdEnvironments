@@ -1,5 +1,4 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.ExternalAPIs.Yandex;
+using CCEnvs.Attributes;
 using R3;
 
 #nullable enable
@@ -7,15 +6,15 @@ namespace CCEnvs.Unity.ExternalAPIs
 {
     public class DefaultGeneralAPI : IGeneralAPI
     {
+        [OnInstallResetable]
+        public static DefaultGeneralAPI? Instance { get; private set; }
+
         private readonly ReactiveProperty<bool> isInitialized = new();
         private readonly ReactiveProperty<bool> isGameReady = new();
         private readonly ReactiveProperty<bool> isGameplayMode = new();
         private readonly ReactiveProperty<bool> isGamePaused = new();
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
         private readonly ReactiveProperty<bool> isGameWindowFocused = new();
-
-        public Maybe<IPlayerAPI> PlayerAPI { get; }
-        public Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
 
         public bool IsInitialized => isInitialized.Value;
         public bool IsGameReady => isGameReady.Value;
@@ -24,10 +23,12 @@ namespace CCEnvs.Unity.ExternalAPIs
         public bool IsGameWindowShown => isGameWindowShown.Value;
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
 
-        public DefaultGeneralAPI(IPlayerAPI? playerAPI = null, IAdvertisementAPI? advertisementAPI = null)
+        public DefaultGeneralAPI()
         {
-            PlayerAPI = playerAPI.Maybe();
-            AdvertisementAPI = advertisementAPI.Maybe();
+            if (Instance is not null)
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(DefaultGeneralAPI));
+
+            Instance = this;
         }
 
         public void GameplayStart()
@@ -65,9 +66,6 @@ namespace CCEnvs.Unity.ExternalAPIs
         {
             if (disposed)
                 return;
-
-            PlayerAPI.IfSome(api => api.Dispose());
-            AdvertisementAPI.IfSome(api => api.Dispose());
 
             isInitialized.Dispose();
             isGameReady.Dispose();

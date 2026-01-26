@@ -1,4 +1,5 @@
-#if YandexGamesPlatform_yg && WEBGL
+#if YandexGamesPlatform_yg && PLATFORM_WEBGL
+using CCEnvs.Attributes;
 using R3;
 using UnityEditor;
 using YG;
@@ -8,12 +9,15 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexAdvertisementAPI : IAdvertisementAPI
     {
+        [OnInstallResetable]
         public static YandexAdvertisementAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<int> advertisementCount = new();
+        private readonly ReactiveProperty<AdvertisementTypes> shownAdvertisementType = new();
 
         public bool IsAdvertisementShown => advertisementCount.Value > 0;
         public int AdvertisementCount => advertisementCount.Value;
+        public AdvertisementTypes ShownAdvertisementType => shownAdvertisementType.Value;
 
         public YandexAdvertisementAPI()
         {
@@ -23,24 +27,40 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             YG2.onCloseAnyAdv += () =>
             {
                 advertisementCount.Value--;
+
+                if (advertisementCount.Value < 0)
+                    advertisementCount.Value = 0;
+
+                if (advertisementCount.Value == 0)
+                    shownAdvertisementType.Value = AdvertisementTypes.None;
             };
 
             YG2.onOpenAnyAdv += () =>
             {
                 advertisementCount.Value++;
+
+                if (shownAdvertisementType.Value == AdvertisementTypes.None)
+                    shownAdvertisementType.Value = AdvertisementTypes.Any;
             };
 
             Instance = this;
         }
 
-
-#if UNITY_EDITOR
-        [InitializeOnEnterPlayMode]
-        public static void OnEnterPlayMode()
+        public void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null)
         {
-            Instance = null;
+            if (advertisementType == AdvertisementTypes.None)
+                throw new System.ArgumentException(advertisementType.ToString(), nameof(advertisementType));
+
+            if (advertisementType.IsFlagSetted(AdvertisementTypes.Banner))
+            {
+                YG2.ShowBanner();
+                shownAdvertisementType.Value = AdvertisementTypes.Banner;
+            }
+            else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
+                throw new System.NotImplementedException();
+            else if (advertisementType.IsFlagSetted(AdvertisementTypes.Rewarding))
+                throw new System.NotImplementedException();
         }
-#endif
 
         private bool disposed;
         public void Dispose()
@@ -71,6 +91,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public Observable<int> ObserveAdvertisementCount()
         {
             return advertisementCount;
+        }
+
+        public Observable<AdvertisementTypes> ObserveShownAdvertisementType()
+        {
+            return shownAdvertisementType;
         }
     }
 }
