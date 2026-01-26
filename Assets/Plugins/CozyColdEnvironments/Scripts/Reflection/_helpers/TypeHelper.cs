@@ -46,7 +46,7 @@ namespace CCEnvs.Reflection
             //if (type.IsInterface)
             //    return GetInterfaceInheritancePath(type);
 
-            return Do.Collect(type, x => x.BaseType);
+            return Loops.BreadthFirstSearch(type, x => x.BaseType);
         }
 
         /// <exception cref="TypeNotFoundException"></exception>

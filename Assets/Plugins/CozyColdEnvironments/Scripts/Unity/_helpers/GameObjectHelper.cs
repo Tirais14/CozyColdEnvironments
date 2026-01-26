@@ -312,7 +312,7 @@ namespace CCEnvs.Unity
                     if (!cmpInfo.requireCmpAttribute.TryGetValue(out var reqAttribute))
                         return int.MaxValue;
 
-                    var attributes = Do.Collect(reqAttribute,
+                    var attributes = Loops.BreadthFirstSearch(reqAttribute,
                         static reqAttribute =>
                         {
                             return reqAttribute.TypesToArray()

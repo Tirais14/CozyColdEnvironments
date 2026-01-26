@@ -58,7 +58,7 @@ namespace CCEnvs.Unity
             if (source.parent == null)
                 return new HierarchyPath(source.name, source.GetSiblingIndex());
 
-            var parents = Do.Collect(source, (x) => x.parent);
+            var parents = Loops.BreadthFirstSearch(source, (x) => x.parent);
 
             using var pathBuilder = ZString.CreateStringBuilder();
 

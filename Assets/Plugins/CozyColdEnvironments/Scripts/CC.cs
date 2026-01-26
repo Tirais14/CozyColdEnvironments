@@ -189,7 +189,7 @@ namespace CCEnvs
 
             public static InvalidOperationException EndlessLoopException(long iterationCount, string? msg = null)
             {
-                return new InvalidOperationException($"Prevented endless loop with interation count: {iterationCount}. {msg}");
+                return new InvalidOperationException($"Prevented endless loop. Iteration count: {iterationCount}. {msg}");
             }
 
             public static InvalidOperationException MetadataNotFound(MemberInfo member)

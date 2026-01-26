@@ -44,7 +44,7 @@ namespace CCEnvs.Reflection
             int targetFieldCount = targetFieldValues.Length;
             for (int i = 0; i < targetFieldCount; i++)
             {
-                collected = Do.Collect(targetFieldValues[i], (current) =>
+                collected = Loops.BreadthFirstSearch(targetFieldValues[i], (current) =>
                 {
                     if (current is null)
                         return Array.Empty<object?>();
@@ -79,7 +79,7 @@ namespace CCEnvs.Reflection
 
             for (int i = 0; i < objFieldCount; i++)
             {
-                collected = Do.Collect(objFields[i], (current) =>
+                collected = Loops.BreadthFirstSearch(objFields[i], (current) =>
                 {
                     FieldInfo[] tempFields = current.FieldType.Reflect()
                         .WithBindingFlags(bindingFlags)
