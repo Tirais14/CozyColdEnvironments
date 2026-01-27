@@ -13,6 +13,8 @@ namespace CCEnvs.Unity.ExternalAPIs
         bool IsGameWindowShown { get; }
         bool IsGameWindowFocused { get; }
 
+        int GameplaySession { get; }
+
         void Initialize();
 
         void SetGameReady(bool state);
@@ -36,5 +38,7 @@ namespace CCEnvs.Unity.ExternalAPIs
         Observable<bool> ObserveIsGameWindowShown();
 
         Observable<bool> ObserveIsGameWindowFocused();
+
+        Observable<int> ObserveGameplaySession();
     }
 }

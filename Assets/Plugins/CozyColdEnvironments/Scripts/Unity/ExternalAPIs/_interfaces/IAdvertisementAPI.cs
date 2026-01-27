@@ -9,8 +9,6 @@ namespace CCEnvs.Unity.ExternalAPIs
         bool IsAdvertisementShown { get; }
         int AdvertisementCount { get; }
 
-        AdvertisementTypes ShownAdvertisementType { get; }
-
         void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null);
 
         Observable<bool> ObserveIsAdvertisementShown();
@@ -18,5 +16,7 @@ namespace CCEnvs.Unity.ExternalAPIs
         Observable<int> ObserveAdvertisementCount();
 
         Observable<AdvertisementTypes> ObserveShownAdvertisementType();
+
+        Observable<AdvertisementTypes> ObserveShowAdvertisementError();
     }
 }

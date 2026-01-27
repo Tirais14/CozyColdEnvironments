@@ -13,11 +13,12 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public static YandexAdvertisementAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<int> advertisementCount = new();
-        private readonly ReactiveProperty<AdvertisementTypes> shownAdvertisementType = new();
+
+        private ReactiveCommand<AdvertisementTypes>? shownAdvertisementTypeCmd;
+        private ReactiveCommand<AdvertisementTypes>? showAdvertisementErrorCmd;
 
         public bool IsAdvertisementShown => advertisementCount.Value > 0;
         public int AdvertisementCount => advertisementCount.Value;
-        public AdvertisementTypes ShownAdvertisementType => shownAdvertisementType.Value;
 
         public YandexAdvertisementAPI()
         {
@@ -30,17 +31,21 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
                 if (advertisementCount.Value < 0)
                     advertisementCount.Value = 0;
-
-                if (advertisementCount.Value == 0)
-                    shownAdvertisementType.Value = AdvertisementTypes.None;
             };
 
             YG2.onOpenAnyAdv += () =>
             {
                 advertisementCount.Value++;
+            };
 
-                if (shownAdvertisementType.Value == AdvertisementTypes.None)
-                    shownAdvertisementType.Value = AdvertisementTypes.Any;
+            YG2.onErrorAnyAdv += () =>
+            {
+                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
+            };
+
+            YG2.onBannerError += () =>
+            {
+                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Banner);
             };
 
             Instance = this;
@@ -54,7 +59,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (advertisementType.IsFlagSetted(AdvertisementTypes.Banner))
             {
                 YG2.ShowBanner();
-                shownAdvertisementType.Value = AdvertisementTypes.Banner;
+                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Banner);
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
                 throw new System.NotImplementedException();
@@ -69,6 +74,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 return;
 
             advertisementCount.Dispose();
+            shownAdvertisementTypeCmd?.Dispose();
+            showAdvertisementErrorCmd?.Dispose();
 
             disposed = true;
         }
@@ -95,7 +102,16 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public Observable<AdvertisementTypes> ObserveShownAdvertisementType()
         {
-            return shownAdvertisementType;
+            shownAdvertisementTypeCmd ??= new ReactiveCommand<AdvertisementTypes>();
+
+            return shownAdvertisementTypeCmd;
+        }
+
+        public Observable<AdvertisementTypes> ObserveShowAdvertisementError()
+        {
+            showAdvertisementErrorCmd ??= new ReactiveCommand<AdvertisementTypes>();
+
+            return showAdvertisementErrorCmd;
         }
     }
 }

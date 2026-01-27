@@ -20,6 +20,8 @@ namespace CCEnvs.Unity.ExternalAPIs
         public bool IsGameWindowShown => apis.All(api => api.IsGameWindowShown);
         public bool IsGameWindowFocused => apis.All(api => api.IsGameWindowFocused);
 
+        public int GameplaySession => apis.Max(api => api.GameplaySession);
+
         public CompositeGeneralAPI(
             IPlayerAPI? playerAPI,
             IAdvertisementAPI? advertisementAPI,
@@ -117,6 +119,11 @@ namespace CCEnvs.Unity.ExternalAPIs
         {
             return ObservableHelper.MergeMany(apis, static api => api.ObserveIsGameWindowShown());
 
+        }
+
+        public Observable<int> ObserveGameplaySession()
+        {
+            return ObservableHelper.MergeMany(apis, static api => api.ObserveGameplaySession());
         }
     }
 }

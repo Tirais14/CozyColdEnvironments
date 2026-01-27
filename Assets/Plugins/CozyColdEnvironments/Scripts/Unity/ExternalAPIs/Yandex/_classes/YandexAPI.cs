@@ -1,11 +1,9 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using System;
-using UnityEditor;
 using YG;
 
 #nullable enable
@@ -22,6 +20,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         private readonly ReactiveProperty<bool> isGameWindowFocused = new();
         private readonly ReactiveProperty<bool> isGameSaving = new();
 
+        private readonly ReactiveProperty<int> gameplaySession = new();
+
         private readonly CompositeDisposable disposables = new();
 
         private Observable<bool>? isGameplayModeObservable;
@@ -34,6 +34,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public bool IsGameWindowShown => isGameWindowShown.Value;
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
         public bool IsGameSaving => isGameSaving.Value;
+
+        public int GameplaySession => gameplaySession.Value;
 
         public YandexAPI()
         {
@@ -49,6 +51,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public void GameplayStart()
         {
             YG2.GameplayStart();
+            gameplaySession.Value++;
         }
 
         public void GameplayStop()
@@ -91,6 +94,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             isGamePaused.Dispose();
             isGameWindowShown.Dispose();
             isGameWindowFocused.Dispose();
+
+            gameplaySession.Dispose();
 
             disposables.Dispose();
 
@@ -136,6 +141,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public Observable<bool> ObserveIsGameSaving()
         {
             return isGameSaving;
+        }
+
+        public Observable<int> ObserveGameplaySession()
+        {
+            return gameplaySession;
         }
 
         private void BindEvents()

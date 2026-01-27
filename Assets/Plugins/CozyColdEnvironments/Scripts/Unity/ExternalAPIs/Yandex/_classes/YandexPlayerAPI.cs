@@ -1,6 +1,6 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
+using CCEnvs.Attributes;
 using R3;
-using UnityEditor;
 using YG;
 
 #nullable enable
@@ -8,6 +8,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexPlayerAPI : IPlayerAPI
     {
+        [OnInstallResetable]
         public static YandexPlayerAPI? Instance { get; private set; }
 
 #if Authorization_yg
@@ -32,14 +33,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             Instance = this;
         }
-
-#if UNITY_EDITOR
-        [InitializeOnEnterPlayMode]
-        public static void OnEnterPlayMode()
-        {
-            Instance = null;
-        }
-#endif
 
         public void Authorize()
         {

@@ -16,12 +16,16 @@ namespace CCEnvs.Unity.ExternalAPIs
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
         private readonly ReactiveProperty<bool> isGameWindowFocused = new();
 
+        private readonly ReactiveProperty<int> gameplaySession = new();
+
         public bool IsInitialized => isInitialized.Value;
         public bool IsGameReady => isGameReady.Value;
         public bool IsGameplayMode => isGameplayMode.Value;
         public bool IsGamePaused => isGamePaused.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
+
+        public int GameplaySession => gameplaySession.Value;
 
         public DefaultGeneralAPI()
         {
@@ -34,6 +38,7 @@ namespace CCEnvs.Unity.ExternalAPIs
         public void GameplayStart()
         {
             isGameplayMode.Value = true;
+            gameplaySession.Value++;
         }
 
         public void GameplayStop()
@@ -74,6 +79,8 @@ namespace CCEnvs.Unity.ExternalAPIs
             isGameWindowShown.Dispose();
             isGameWindowFocused.Dispose();
 
+            gameplaySession.Dispose();
+
             disposed = true;
         }
 
@@ -105,6 +112,11 @@ namespace CCEnvs.Unity.ExternalAPIs
         public Observable<bool> ObserveIsGameWindowShown()
         {
             return isGameWindowShown;
+        }
+
+        public Observable<int> ObserveGameplaySession()
+        {
+            return gameplaySession;
         }
     }
 }
