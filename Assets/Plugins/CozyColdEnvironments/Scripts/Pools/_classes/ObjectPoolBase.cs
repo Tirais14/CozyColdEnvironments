@@ -101,6 +101,7 @@ namespace CCEnvs.Pools
             if (disposing)
             {
                 activeItemHandles.Values.DisposeEach();
+                activeItemHandles.Clear();
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
                 fastObject = null;

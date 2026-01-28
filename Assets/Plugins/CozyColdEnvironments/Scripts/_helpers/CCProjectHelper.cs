@@ -47,6 +47,7 @@ namespace CCEnvs
                      where OnInstallAssemblyFilter(assembly)
                      select assembly.GetTypes() into tps
                      from type in tps
+                     where OnInstallTypeFilter(type)
                      select type
                      )
                      .ToArray();
@@ -198,20 +199,52 @@ namespace CCEnvs
             }
         }
 
-        private static bool OnInstallAssemblyFilter(Assembly assembly)
+        private static string[] GetOnInstallFilters()
         {
-            var assemblyName = assembly.GetName();
-
-            var filters = new HashSet<string>(5)
+            return new string[]
             {
                 "System",
                 "Microsoft",
                 "Unity",
                 "UniTask",
                 "Cysharp",
+                "mscorlib",
+                "Mono",
+                "R3",
+                "MessagePipe",
+                "Newtonsoft",
+                "Codice.",
+                "DG.",
+                "Zenject"
             };
+        }
 
-            return !filters.Any(filter => assemblyName.Name.StartsWith(filter));
+        private static bool OnInstallAssemblyFilter(Assembly assembly)
+        {
+            var assemblyName = assembly.GetName();
+
+            if (assemblyName is null)
+                return false;
+
+            return !GetOnInstallFilters().Any(filter =>
+            {
+                var t = assemblyName.Name.StartsWith(filter);
+
+                return t;
+            });
+        }
+
+        private static bool OnInstallTypeFilter(Type type)
+        {
+            if (type.Namespace is null)
+                return true;
+
+            return !GetOnInstallFilters().Any(filter =>
+            {
+                var t = type.Namespace.StartsWith(filter);
+
+                return t;
+            });
         }
 
         //private static void OnInstallProcessProperties(

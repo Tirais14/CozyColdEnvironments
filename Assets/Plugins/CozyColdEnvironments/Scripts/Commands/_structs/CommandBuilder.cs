@@ -64,6 +64,8 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Intermediate<TState> NextStep<TState>(TState state)
         {
+            Guard.IsNotNull(state, nameof(state));
+
             return new Intermediate<TState>(this)
             {
                 State = state
@@ -228,12 +230,12 @@ namespace CCEnvs.Patterns.Commands
                     name: builder.Name,
                     isSingle: builder.IsSingle,
                     delayFrameCount: builder.DelayFrameCount)
-                    {
-                        ExecuteAction = ExecuteAction,
-                        ExecutePredicate = intermediate.ExecutePredicate,
-                        ResetAction = intermediate.ResetAction,
-                        CancelAction = intermediate.CancelAction
-                    };
+                {
+                    ExecuteAction = ExecuteAction,
+                    ExecutePredicate = intermediate.ExecutePredicate,
+                    ResetAction = intermediate.ResetAction,
+                    CancelAction = intermediate.CancelAction
+                };
             }
 
             [DebuggerStepThrough]
@@ -306,12 +308,13 @@ namespace CCEnvs.Patterns.Commands
                     name: builder.Name,
                     isSingle: builder.IsSingle,
                     delayFrameCount: builder.DelayFrameCount)
-                    {
-                        ExecuteAction = ExecuteAction,
-                        ExecutePredicate = intermediate.ExecutePredicate,
-                        ResetAction = intermediate.ResetAction,
-                        CancelAction = intermediate.CancelAction
-                    };
+                {
+                    State = intermediate.State,
+                    ExecuteAction = ExecuteAction,
+                    ExecutePredicate = intermediate.ExecutePredicate,
+                    ResetAction = intermediate.ResetAction,
+                    CancelAction = intermediate.CancelAction
+                };
             }
 
             [DebuggerStepThrough]
@@ -385,12 +388,12 @@ namespace CCEnvs.Patterns.Commands
                     name: builder.Name,
                     isSingle: builder.IsSingle,
                     delayFrameCount: builder.DelayFrameCount)
-                    {
-                        ExecuteAction = ExecuteAction,
-                        ExecutePredicate = intermediate.ExecutePredicate,
-                        ResetAction = intermediate.ResetAction,
-                        CancelAction = intermediate.CancelAction
-                    };
+                {
+                    ExecuteAction = ExecuteAction,
+                    ExecutePredicate = intermediate.ExecutePredicate,
+                    ResetAction = intermediate.ResetAction,
+                    CancelAction = intermediate.CancelAction
+                };
             }
 
             [DebuggerStepThrough]
@@ -463,12 +466,13 @@ namespace CCEnvs.Patterns.Commands
                     name: builder.Name,
                     isSingle: builder.IsSingle,
                     delayFrameCount: builder.DelayFrameCount)
-                    {
-                        ExecuteAction = ExecuteAction,
-                        ExecutePredicate = intermediate.ExecutePredicate,
-                        ResetAction = intermediate.ResetAction,
-                        CancelAction = intermediate.CancelAction
-                    };
+                {
+                    State = intermediate.State,
+                    ExecuteAction = ExecuteAction,
+                    ExecutePredicate = intermediate.ExecutePredicate,
+                    ResetAction = intermediate.ResetAction,
+                    CancelAction = intermediate.CancelAction
+                };
             }
 
             [DebuggerStepThrough]
