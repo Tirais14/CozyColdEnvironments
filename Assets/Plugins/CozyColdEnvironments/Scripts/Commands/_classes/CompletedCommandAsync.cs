@@ -74,6 +74,10 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
+        public void Cancel()
+        {
+        }
+
         public Observable<CommandStatus> ObserveIsDone()
         {
             return Observable.Return(CommandStatus.Completed);

@@ -54,7 +54,8 @@ namespace CCEnvs.Unity.Components
 
         private async UniTaskVoid OnLocaleChangedAsync()
         {
-            Command.Builder.Asyncronously(this)
+            Command.Builder.NextStep(this)
+                .Asyncronously()
                 .SetExecuteAction(async (@this, token) =>
                 {
                     var tokenSource = token.LinkTokens(@this.destroyCancellationToken);

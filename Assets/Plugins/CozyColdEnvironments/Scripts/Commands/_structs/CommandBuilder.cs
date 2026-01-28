@@ -52,6 +52,20 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Intermediate NextStep()
+        {
+            return new Intermediate(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Intermediate<TState> NextStep<TState>(TState state)
+        {
+            return new Intermediate<TState>(this);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandBuilder Reset()
         {
