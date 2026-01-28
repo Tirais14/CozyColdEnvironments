@@ -64,7 +64,10 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Intermediate<TState> NextStep<TState>(TState state)
         {
-            return new Intermediate<TState>(this);
+            return new Intermediate<TState>(this)
+            {
+                State = state
+            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
