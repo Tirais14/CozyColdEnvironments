@@ -143,19 +143,23 @@ namespace CCEnvs
 
                     fieldReflect.From(field.FieldType)
                         .IncludeInstance()
-                        .IncludeNonPublic()
                         .WithName("Clear")
                         .Method()
                         .Lax()
-                        .IfSome(method => method.Invoke(fieldValue, CC.EmptyArguments));
+                        .IfSome(method =>
+                        {
+                            method.Invoke(fieldValue, CC.EmptyArguments);
+                        });
 
                     fieldReflect.From(field.FieldType)
                         .IncludeInstance()
-                        .IncludeNonPublic()
                         .WithName("Reset")
                         .Method()
                         .Lax()
-                        .IfSome(method => method.Invoke(fieldValue, CC.EmptyArguments));
+                        .IfSome(method =>
+                        {
+                            method.Invoke(fieldValue, CC.EmptyArguments);
+                        });
 
                     if (field.IsInitOnly)
                         continue;
