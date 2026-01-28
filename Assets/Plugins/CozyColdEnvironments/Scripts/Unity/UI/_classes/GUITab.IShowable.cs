@@ -4,6 +4,7 @@ using CCEnvs.Patterns.Commands;
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using R3;

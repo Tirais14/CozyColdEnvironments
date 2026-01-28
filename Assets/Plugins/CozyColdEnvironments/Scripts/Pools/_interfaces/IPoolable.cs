@@ -10,6 +10,8 @@ namespace CCEnvs.Pools
     {
         Maybe<IDisposable> PoolHandle { get; set; }
 
+        bool IsValid { get; }
+
         void OnDespawned();
 
         void OnSpawned();

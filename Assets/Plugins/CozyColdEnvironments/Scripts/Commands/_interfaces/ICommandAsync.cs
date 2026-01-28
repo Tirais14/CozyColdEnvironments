@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public interface ICommandAsync : ICommandBase
+    public interface ICommandAsync : ICommandBase<ICommandAsync>
     {
         ValueTask ExecuteAsync(CancellationToken cancellationToken = default);
-
-        ICommandAsync Reset();
     }
 }

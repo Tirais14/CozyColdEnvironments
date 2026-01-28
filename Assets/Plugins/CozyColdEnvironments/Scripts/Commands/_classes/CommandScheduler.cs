@@ -73,10 +73,10 @@ namespace CCEnvs.Patterns.Commands
             ValidateDisposed();
 
             if (!cmd.IsValid)
-                throw new ArgumentException("Command is not valid", nameof(cmd));
+                throw new ArgumentException($"Command: {cmd} is not valid", nameof(cmd));
 
             if (cmd.IsDone)
-                throw new ArgumentException("Command already done", nameof(cmd));
+                throw new ArgumentException($"Command: {cmd} invalid status: {cmd.Status}", nameof(cmd));
 
             ProcessCommandsBy(cmd);
 

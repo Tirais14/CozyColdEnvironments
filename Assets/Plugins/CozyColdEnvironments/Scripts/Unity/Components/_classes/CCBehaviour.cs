@@ -2,6 +2,7 @@ using CCEnvs.Unity.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable

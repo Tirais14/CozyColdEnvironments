@@ -1,18 +1,27 @@
 #nullable enable
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
 using R3;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 #pragma warning disable S107
 #pragma warning disable S3963
 namespace CCEnvs.Patterns.Commands
 {
-    public abstract partial class CommandBase<TThis> : ICommandBase
+    public abstract partial class CommandBase<TThis> : ICommandBase<TThis>
         where TThis : ICommandBase
     {
         protected bool isExecuted;
 
         private readonly ReactiveProperty<CommandStatus> status = new();
+
+        private readonly List<CancellationTokenSource> cancellationTokenSources = new(2);
+        private readonly List<CancellationTokenRegistration> cancellationTokenRegistrations = new(4);
+
+        private bool cancellation;
 
         public string Name { get; } = string.Empty;
 
@@ -33,6 +42,8 @@ namespace CCEnvs.Patterns.Commands
 
         public Type CommandType { get; }
 
+        public CancellationToken CancellationToken { get; private set; }
+
         protected CommandBase(
             bool isSingle = false,
             string? name = null,
@@ -45,6 +56,8 @@ namespace CCEnvs.Patterns.Commands
             DelayFrameCount = delayFrameCount;
 
             CommandType = GetType();
+
+            SetDefaultCancellationToken();
         }
 
         public virtual void Undo()
@@ -76,6 +89,7 @@ namespace CCEnvs.Patterns.Commands
 
             try
             {
+                Cancel();
                 OnReset();
             }
             catch (Exception ex)
@@ -85,8 +99,7 @@ namespace CCEnvs.Patterns.Commands
                 return false;
             }
 
-            SetCanceled();
-            isExecuted = false;
+            SetResetted();
 
             return true;
         }
@@ -116,8 +129,13 @@ namespace CCEnvs.Patterns.Commands
         {
             ValidateDisposed();
 
+            if (cancellation)
+                return;
+
             if (IsDone)
                 return;
+
+            cancellation = true;
 
             try
             {
@@ -129,8 +147,39 @@ namespace CCEnvs.Patterns.Commands
 
                 return;
             }
+            finally
+            {
+                SetDefaultCancellationToken();
+                cancellation = false;
+            }
 
             SetCanceled();
+        }
+
+        public IDisposable GetCancellationHandle()
+        {
+            return Disposable.Create(this,
+                static @this =>
+                {
+                    @this.Cancel();
+                });
+        }
+
+        public TThis AttachExternalCancellationToken(CancellationToken cancellationToken)
+        {
+            ValidateDisposed();
+
+            Guard.IsTrue(cancellationToken.CanBeCanceled, nameof(cancellationToken), "Invalid Token");
+
+            var linkedTokenSource = cancellationToken.LinkTokens(CancellationToken);
+
+            cancellationTokenSources.Add(linkedTokenSource);
+
+            CancellationToken = linkedTokenSource.Token;
+
+            RegisterCancellationTokenToCancel(CancellationToken);
+
+            return this.To<TThis>();
         }
 
         public Observable<CommandStatus> ObserveIsDone()
@@ -157,8 +206,9 @@ namespace CCEnvs.Patterns.Commands
 
             if (disposing)
             {
+                Cancel();
                 status.Dispose();
-                TryReset();
+                DisposeCancellationTokenSources();
             }
 
             disposed = true;
@@ -196,6 +246,60 @@ namespace CCEnvs.Patterns.Commands
         protected void SetCompleted()
         {
             status.Value = CommandStatus.Completed;
+        }
+
+        protected void SetResetted()
+        {
+            status.Value = CommandStatus.None;
+            isExecuted = false;
+        }
+
+        protected void RegisterCancellationTokenToCancel(CancellationToken cancellationToken)
+        {
+            var reg = cancellationToken.Register(
+                static @this =>
+                {
+                    var typed = @this.To<CommandBase<TThis>>();
+
+                    if (typed.cancellation)
+                        return;
+
+                    typed.Cancel();
+                },
+                this
+                );
+
+            cancellationTokenRegistrations.Add(reg);
+        }
+
+        protected void SetDefaultCancellationToken()
+        {
+            DisposeCancellationTokenSources();
+
+            var defaultCancellationTokenSource = new CancellationTokenSource();
+
+            cancellationTokenSources.Add(defaultCancellationTokenSource);
+            CancellationToken = defaultCancellationTokenSource.Token;
+
+            RegisterCancellationTokenToCancel(CancellationToken);
+        }
+
+        protected void DisposeCancellationTokenSources()
+        {
+            cancellationTokenRegistrations.DisposeEach();
+            cancellationTokenRegistrations.Clear();
+
+            cancellationTokenSources.DisposeEach();
+            cancellationTokenSources.Clear();
+        }
+
+        protected void CancelByCancellationToken()
+        {
+            if (cancellationTokenSources.IsEmpty())
+                throw new InvalidOperationException($"Command: {this} corrupted and cannot be canceled by token");
+
+            cancellationTokenSources[^1].Cancel();
+            DisposeCancellationTokenSources();
         }
 
         protected void ValidateDisposed()

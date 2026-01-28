@@ -2,6 +2,7 @@
 
 using R3;
 using System;
+using System.Threading;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -25,6 +26,8 @@ namespace CCEnvs.Patterns.Commands
 
         Type CommandType { get; }
 
+        CancellationToken CancellationToken { get; }
+
         void Undo();
 
         void Cancel();
@@ -33,7 +36,17 @@ namespace CCEnvs.Patterns.Commands
 
         CommandInfo GetCommandInfo();
 
+        IDisposable GetCancellationHandle();
+
         Observable<CommandStatus> ObserveIsDone();
+    }
+
+    public interface ICommandBase<TThis> : ICommandBase
+        where TThis : ICommandBase
+    {
+        TThis Reset();
+
+        TThis AttachExternalCancellationToken(CancellationToken cancellationToken);
     }
 
     public static class ICommandBaseExtensions

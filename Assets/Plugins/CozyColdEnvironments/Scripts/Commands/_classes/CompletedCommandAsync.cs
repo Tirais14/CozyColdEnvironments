@@ -78,6 +78,11 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
+        public IDisposable GetCancellationHandle()
+        {
+            return Disposable.Empty;
+        }
+
         public Observable<CommandStatus> ObserveIsDone()
         {
             return Observable.Return(CommandStatus.Completed);

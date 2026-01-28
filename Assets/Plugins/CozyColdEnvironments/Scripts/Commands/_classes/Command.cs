@@ -1,4 +1,5 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 
 namespace CCEnvs.Patterns.Commands
@@ -24,15 +25,16 @@ namespace CCEnvs.Patterns.Commands
         {
             ValidateDisposed();
 
-            if (IsRunning || IsDone)
-                return;
+            Guard.IsFalse(IsRunning, nameof(IsRunning), "Is already running");
+            Guard.IsFalse(IsDone, nameof(IsDone), "Already done");
 
             isExecuted = true;
 
             try
             {
                 OnExecute();
-                SetCanceled();
+
+                SetCompleted();
             }
             catch (Exception ex)
             {
