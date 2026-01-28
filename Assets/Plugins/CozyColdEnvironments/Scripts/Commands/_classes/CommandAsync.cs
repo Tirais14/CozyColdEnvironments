@@ -32,7 +32,8 @@ namespace CCEnvs.Patterns.Commands
 
             isExecuted = true;
 
-            AttachExternalCancellationToken(cancellationToken);
+            if (cancellationToken.CanBeCanceled)
+                AttachExternalCancellationToken(cancellationToken);
 
             try
             {

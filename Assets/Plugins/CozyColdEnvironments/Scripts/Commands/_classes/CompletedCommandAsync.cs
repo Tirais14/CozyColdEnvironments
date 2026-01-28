@@ -28,6 +28,8 @@ namespace CCEnvs.Patterns.Commands
 
         public Type CommandType { get; } = typeof(CompletedCommandAsync);
 
+        public CancellationToken CancellationToken { get; } = default;
+
         public static bool operator ==(CompletedCommandAsync? left, CompletedCommandAsync? right)
         {
             return left != null && left.Equals(right);
@@ -81,6 +83,11 @@ namespace CCEnvs.Patterns.Commands
         public IDisposable GetCancellationHandle()
         {
             return Disposable.Empty;
+        }
+
+        public ICommandAsync AttachExternalCancellationToken(CancellationToken cancellationToken)
+        {
+            return this;
         }
 
         public Observable<CommandStatus> ObserveIsDone()

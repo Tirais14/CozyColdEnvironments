@@ -1,6 +1,7 @@
 #nullable enable
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -38,13 +39,16 @@ namespace CCEnvs.Patterns.Commands
             }
             catch (Exception ex)
             {
-                SetFaulted(ex);
-
-                return;
+                switch (ex)
+                {
+                    case TaskCanceledException:
+                        SetCanceled();
+                        break;
+                    default:
+                        SetFaulted(ex);
+                        break;
+                }
             }
-
-            if (!IsCompleted && !IsFaulted)
-                SetCanceled();
         }
 
         protected abstract void OnExecute();

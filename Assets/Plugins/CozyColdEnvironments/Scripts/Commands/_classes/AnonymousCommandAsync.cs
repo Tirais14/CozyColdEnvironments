@@ -7,23 +7,19 @@ namespace CCEnvs.Patterns.Commands
 {
     public sealed class AnonymousCommandAsync : PoolableCommandAsync
     {
-        private readonly Func<bool>? isReadyToExecute;
-        private readonly Func<CancellationToken, ValueTask>? onExecute;
-        private readonly Action? onReset;
-        private readonly Action? onCancel;
+        public Func<bool>? ExecutePredicate { get; set; }
+        public Func<CancellationToken, ValueTask>? ExecuteAction { get; set; }
+        public Action? ResetAction { get; set; }
+        public Action? CancelAction { get; set; }
 
         public override bool IsReadyToExecute {
             get
             {
-                return base.IsReadyToExecute && (isReadyToExecute?.Invoke() ?? true);
+                return base.IsReadyToExecute && (ExecutePredicate?.Invoke() ?? true);
             }
         }
 
         public AnonymousCommandAsync(
-            Func<CancellationToken, ValueTask>? onExecute,
-            Func<bool>? isReadyToExecute = null,
-            Action? onReset = null!,
-            Action? onCancel = null!,
             string? name = null,
             bool isSingle = false,
             int delayFrameCount = 0)
@@ -32,10 +28,6 @@ namespace CCEnvs.Patterns.Commands
                  isSingle: isSingle,
                  delayFrameCount: delayFrameCount)
         {
-            this.isReadyToExecute = isReadyToExecute;
-            this.onExecute = onExecute;
-            this.onReset = onReset;
-            this.onCancel = onCancel;
         }
 
         public override string ToString()
@@ -45,10 +37,10 @@ namespace CCEnvs.Patterns.Commands
 
         protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            if (onExecute is null)
+            if (ExecuteAction is null)
                 return;
 
-            var task = onExecute(cancellationToken);
+            var task = ExecuteAction(cancellationToken);
 
             if (!task.IsCompleted)
                 await task;
@@ -57,35 +49,42 @@ namespace CCEnvs.Patterns.Commands
         protected override void OnReset()
         {
             base.OnReset();
-            onReset?.Invoke();
+
+            try
+            {
+                ResetAction?.Invoke();
+            }
+            finally
+            {
+                ExecuteAction = null;
+                ExecutePredicate = null;
+                ResetAction = null;
+                CancelAction = null;
+            }
         }
 
         protected override void OnCancel()
         {
             base.OnCancel();
-            onCancel?.Invoke();
+            CancelAction?.Invoke();
         }
     }
     public sealed class AnonymousCommandAsync<T> : PoolableCommandAsync
     {
-        private readonly T state;
-        private readonly Func<T, CancellationToken, ValueTask>? onExecute;
-        private readonly Func<T, bool>? isReadyToExecute;
-        private readonly Action<T>? onReset;
-        private readonly Action<T>? onCancel;
+        public T State { get; set; }
+        public Func<T, CancellationToken, ValueTask>? ExecuteAction { get; set; }
+        public Func<T, bool>? ExecutePredicate { get; set; }
+        public Action<T>? ResetAction { get; set; }
+        public Action<T>? CancelAction { get; set; }
 
         public override bool IsReadyToExecute {
             get
             {
-                return base.IsReadyToExecute && (isReadyToExecute?.Invoke(state) ?? true);
+                return base.IsReadyToExecute && (ExecutePredicate?.Invoke(State) ?? true);
             }
         }
 
-        public AnonymousCommandAsync(T state,
-            Func<T, CancellationToken, ValueTask>? onExecute,
-            Func<T, bool>? isReadyToExecute = null,
-            Action<T>? onReset = null,
-            Action<T>? onCancel = null,
+        public AnonymousCommandAsync(
             string? name = null,
             bool isSingle = false,
             int delayFrameCount = 0)
@@ -94,24 +93,19 @@ namespace CCEnvs.Patterns.Commands
                  isSingle: isSingle,
                  delayFrameCount: delayFrameCount)
         {
-            this.state = state;
-            this.isReadyToExecute = isReadyToExecute;
-            this.onExecute = onExecute;
-            this.onReset = onReset;
-            this.onCancel = onCancel;
         }
 
         public override string ToString()
         {
-            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(state)}: {state})";
+            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(State)}: {State})";
         }
 
         protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            if (onExecute is null)
+            if (ExecuteAction is null)
                 return;
 
-            var task = onExecute(state, cancellationToken);
+            var task = ExecuteAction(State, cancellationToken);
 
             if (!task.IsCompleted)
                 await task;
@@ -120,13 +114,25 @@ namespace CCEnvs.Patterns.Commands
         protected override void OnReset()
         {
             base.OnReset();
-            onReset?.Invoke(state);
+
+            try
+            {
+                ResetAction?.Invoke(State);
+            }
+            finally
+            {
+                State = default;
+                ExecuteAction = null;
+                ExecutePredicate = null;
+                ResetAction = null;
+                CancelAction = null;
+            }
         }
 
         protected override void OnCancel()
         {
             base.OnCancel();
-            onCancel?.Invoke(state);
+            CancelAction?.Invoke(State);
         }
     }
 }

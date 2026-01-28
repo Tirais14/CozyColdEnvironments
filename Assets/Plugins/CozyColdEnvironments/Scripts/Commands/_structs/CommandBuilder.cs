@@ -211,38 +211,49 @@ namespace CCEnvs.Patterns.Commands
             public readonly AnonymousCommandAsync Build()
             {
                 return new AnonymousCommandAsync(
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
                     name: builder.Name,
                     isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    delayFrameCount: builder.DelayFrameCount)
+                    {
+                        ExecuteAction = ExecuteAction,
+                        ExecutePredicate = intermediate.ExecutePredicate,
+                        ResetAction = intermediate.ResetAction,
+                        CancelAction = intermediate.CancelAction
+                    };
             }
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledHandle<AnonymousCommandAsync> BuildPooled()
             {
+                PooledHandle<AnonymousCommandAsync> pooledCmd;
+                AnonymousCommandAsync cmd;
+
                 if (pool is not null && pool.InactiveCount > 0)
-                    return pool.Get();
+                {
+                    pooledCmd = pool.Get();
+                    cmd = pooledCmd.Value;
+                }
+                else
+                {
+                    cmd = new AnonymousCommandAsync(
+                        name: builder.Name,
+                        isSingle: builder.IsSingle,
+                        delayFrameCount: builder.DelayFrameCount
+                        );
 
-                var cmd = new AnonymousCommandAsync(
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    pool ??= new ObjectPool<AnonymousCommandAsync>();
 
-                pool ??= new ObjectPool<AnonymousCommandAsync>();
+                    pool.Return(cmd);
+                    pooledCmd = pool.Get();
+                }
 
-                pool.Return(cmd);
+                cmd.ExecuteAction = ExecuteAction;
+                cmd.ExecutePredicate = intermediate.ExecutePredicate;
+                cmd.ResetAction = intermediate.ResetAction;
+                cmd.CancelAction = intermediate.CancelAction;
 
-                return pool.Get();
+                return pooledCmd;
             }
         }
 
@@ -280,40 +291,50 @@ namespace CCEnvs.Patterns.Commands
             public readonly AnonymousCommandAsync<TState> Build()
             {
                 return new AnonymousCommandAsync<TState>(
-                    state: State,
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
                     name: builder.Name,
                     isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    delayFrameCount: builder.DelayFrameCount)
+                    {
+                        ExecuteAction = ExecuteAction,
+                        ExecutePredicate = intermediate.ExecutePredicate,
+                        ResetAction = intermediate.ResetAction,
+                        CancelAction = intermediate.CancelAction
+                    };
             }
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledHandle<AnonymousCommandAsync<TState>> BuildPooled()
             {
+                PooledHandle<AnonymousCommandAsync<TState>> pooledCmd;
+                AnonymousCommandAsync<TState> cmd;
+
                 if (pool is not null && pool.InactiveCount > 0)
-                    return pool.Get();
+                {
+                    pooledCmd = pool.Get();
+                    cmd = pooledCmd.Value;
+                }
+                else
+                {
+                    cmd = new AnonymousCommandAsync<TState>(
+                        name: builder.Name,
+                        isSingle: builder.IsSingle,
+                        delayFrameCount: builder.DelayFrameCount
+                        );
 
-                var cmd = new AnonymousCommandAsync<TState>(
-                    state: State,
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    pool ??= new ObjectPool<AnonymousCommandAsync<TState>>();
 
-                pool ??= new ObjectPool<AnonymousCommandAsync<TState>>();
+                    pool.Return(cmd);
+                    pooledCmd = pool.Get();
+                }
 
-                pool.Return(cmd);
+                cmd.State = State;
+                cmd.ExecuteAction = ExecuteAction;
+                cmd.ExecutePredicate = intermediate.ExecutePredicate;
+                cmd.ResetAction = intermediate.ResetAction;
+                cmd.CancelAction = intermediate.CancelAction;
 
-                return pool.Get();
+                return pooledCmd;
             }
         }
 
@@ -349,38 +370,49 @@ namespace CCEnvs.Patterns.Commands
             public readonly AnonymousCommand Build()
             {
                 return new AnonymousCommand(
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
                     name: builder.Name,
                     isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    delayFrameCount: builder.DelayFrameCount)
+                    {
+                        ExecuteAction = ExecuteAction,
+                        ExecutePredicate = intermediate.ExecutePredicate,
+                        ResetAction = intermediate.ResetAction,
+                        CancelAction = intermediate.CancelAction
+                    };
             }
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledHandle<AnonymousCommand> BuildPooled()
             {
+                PooledHandle<AnonymousCommand> pooledCmd;
+                AnonymousCommand cmd;
+
                 if (pool is not null && pool.InactiveCount > 0)
-                    return pool.Get();
+                {
+                    pooledCmd = pool.Get();
+                    cmd = pooledCmd.Value;
+                }
+                else
+                {
+                    cmd = new AnonymousCommand(
+                        name: builder.Name,
+                        isSingle: builder.IsSingle,
+                        delayFrameCount: builder.DelayFrameCount
+                        );
 
-                var cmd = new AnonymousCommand(
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    pool ??= new ObjectPool<AnonymousCommand>();
 
-                pool ??= new ObjectPool<AnonymousCommand>();
+                    pool.Return(cmd);
+                    pooledCmd = pool.Get();
+                }
 
-                pool.Return(cmd);
+                cmd.ExecuteAction = ExecuteAction;
+                cmd.ExecutePredicate = intermediate.ExecutePredicate;
+                cmd.ResetAction = intermediate.ResetAction;
+                cmd.CancelAction = intermediate.CancelAction;
 
-                return pool.Get();
+                return pooledCmd;
             }
         }
 
@@ -418,40 +450,50 @@ namespace CCEnvs.Patterns.Commands
             public readonly AnonymousCommand<TState> Build()
             {
                 return new AnonymousCommand<TState>(
-                    state: State,
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
                     name: builder.Name,
                     isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    delayFrameCount: builder.DelayFrameCount)
+                    {
+                        ExecuteAction = ExecuteAction,
+                        ExecutePredicate = intermediate.ExecutePredicate,
+                        ResetAction = intermediate.ResetAction,
+                        CancelAction = intermediate.CancelAction
+                    };
             }
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledHandle<AnonymousCommand<TState>> BuildPooled()
             {
+                PooledHandle<AnonymousCommand<TState>> pooledCmd;
+                AnonymousCommand<TState> cmd;
+
                 if (pool is not null && pool.InactiveCount > 0)
-                    return pool.Get();
+                {
+                    pooledCmd = pool.Get();
+                    cmd = pooledCmd.Value;
+                }
+                else
+                {
+                    cmd = new AnonymousCommand<TState>(
+                        name: builder.Name,
+                        isSingle: builder.IsSingle,
+                        delayFrameCount: builder.DelayFrameCount
+                        );
 
-                var cmd = new AnonymousCommand<TState>(
-                    state: State,
-                    onExecute: ExecuteAction,
-                    isReadyToExecute: intermediate.ExecutePredicate,
-                    onReset: intermediate.ResetAction,
-                    onCancel: intermediate.CancelAction,
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount
-                    );
+                    pool ??= new ObjectPool<AnonymousCommand<TState>>();
 
-                pool ??= new ObjectPool<AnonymousCommand<TState>>();
+                    pool.Return(cmd);
+                    pooledCmd = pool.Get();
+                }
 
-                pool.Return(cmd);
+                cmd.State = State;
+                cmd.ExecuteAction = ExecuteAction;
+                cmd.ExecutePredicate = intermediate.ExecutePredicate;
+                cmd.ResetAction = intermediate.ResetAction;
+                cmd.CancelAction = intermediate.CancelAction;
 
-                return pool.Get();
+                return pooledCmd;
             }
         }
     }

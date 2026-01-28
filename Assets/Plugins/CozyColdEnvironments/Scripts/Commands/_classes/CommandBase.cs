@@ -5,6 +5,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Threading;
 
 #pragma warning disable S107
@@ -122,7 +123,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status})";
+            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(IsValid)}: {IsValid})";
         }
 
         public virtual void Cancel()
