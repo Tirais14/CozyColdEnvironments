@@ -1,4 +1,5 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 
 namespace CCEnvs.Patterns.Commands
@@ -26,11 +27,6 @@ namespace CCEnvs.Patterns.Commands
                  isSingle: isSingle,
                  delayFrameCount: delayFrameCount)
         {
-        }
-
-        public override string ToString()
-        {
-            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status})";
         }
 
         protected override void OnExecute()
@@ -91,15 +87,12 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
-        public override string ToString()
-        {
-            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(State)}: {State})";
-        }
-
         protected override void OnExecute()
         {
             if (ExecuteAction is null)
                 return;
+
+            Guard.IsNotNull(State, nameof(State));
 
             ExecuteAction(State);
         }

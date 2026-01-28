@@ -98,14 +98,16 @@ namespace CCEnvs.Unity.UI
         {
             hideCmdPool.Value.Get().Value
                 .SetGUITab(this)
-                .ScheduleBy(commandScheduler);
+                .ScheduleBy(commandScheduler)
+                .AttachExternalCancellationToken(destroyCancellationToken);
         }
 
         public void Show()
         {
             showCmdPool.Value.Get().Value
                 .SetGUITab(this)
-                .ScheduleBy(commandScheduler);
+                .ScheduleBy(commandScheduler)
+                .AttachExternalCancellationToken(destroyCancellationToken);
         }
 
         public bool SwitchShownState()
@@ -124,7 +126,8 @@ namespace CCEnvs.Unity.UI
         {
             redrawCmdPool.Value.Get().Value
                 .SetGUITab(this)
-                .ScheduleBy(commandScheduler);
+                .ScheduleBy(commandScheduler)
+                .AttachExternalCancellationToken(destroyCancellationToken);
         }
 
         public Observable<Unit> ObserveShow()

@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Pools;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -172,11 +173,21 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly Sync<TState> Syncronously() => new(State, builder, this);
+            public readonly Sync<TState> Syncronously()
+            {
+                Guard.IsNotNull(State, nameof(State));
+
+                return new Sync<TState>(builder, this);
+            }
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly Async<TState> Asyncronously() => new(State, builder, this);
+            public readonly Async<TState> Asyncronously()
+            {
+                Guard.IsNotNull(State, nameof(State));
+
+                return new Async<TState>(builder, this);
+            }
         }
 
         public struct Async
@@ -265,14 +276,12 @@ namespace CCEnvs.Patterns.Commands
             private readonly CommandBuilder builder;
             private readonly Intermediate<TState> intermediate;
 
-            public TState State;
             public Func<TState, CancellationToken, ValueTask>? ExecuteAction;
 
-            public Async(TState state, CommandBuilder builder, Intermediate<TState> intermediate)
+            public Async(CommandBuilder builder, Intermediate<TState> intermediate)
                 :
                 this()
             {
-                State = state;
                 this.builder = builder;
                 this.intermediate = intermediate;
             }
@@ -328,7 +337,7 @@ namespace CCEnvs.Patterns.Commands
                     pooledCmd = pool.Get();
                 }
 
-                cmd.State = State;
+                cmd.State = intermediate.State;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
@@ -424,14 +433,12 @@ namespace CCEnvs.Patterns.Commands
             private readonly CommandBuilder builder;
             private readonly Intermediate<TState> intermediate;
 
-            public TState State;
             public Action<TState>? ExecuteAction;
 
-            public Sync(TState state, CommandBuilder builder, Intermediate<TState> intermediate)
+            public Sync(CommandBuilder builder, Intermediate<TState> intermediate)
                 :
                 this()
             {
-                State = state;
                 this.builder = builder;
                 this.intermediate = intermediate;
             }
@@ -487,7 +494,7 @@ namespace CCEnvs.Patterns.Commands
                     pooledCmd = pool.Get();
                 }
 
-                cmd.State = State;
+                cmd.State = intermediate.State;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;

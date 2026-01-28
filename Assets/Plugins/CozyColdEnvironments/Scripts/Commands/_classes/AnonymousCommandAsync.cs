@@ -1,4 +1,5 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,11 +29,6 @@ namespace CCEnvs.Patterns.Commands
                  isSingle: isSingle,
                  delayFrameCount: delayFrameCount)
         {
-        }
-
-        public override string ToString()
-        {
-            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status})";
         }
 
         protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
@@ -95,15 +91,12 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
-        public override string ToString()
-        {
-            return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(State)}: {State})";
-        }
-
         protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
             if (ExecuteAction is null)
                 return;
+
+            Guard.IsNotNull(State, nameof(State));
 
             var task = ExecuteAction(State, cancellationToken);
 

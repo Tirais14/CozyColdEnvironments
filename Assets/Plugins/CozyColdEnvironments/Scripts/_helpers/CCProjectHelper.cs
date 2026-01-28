@@ -42,14 +42,28 @@ namespace CCEnvs
 
             try
             {
-                var types = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                             where OnInstallAssemblyFilter(assembly)
-                             select assembly.GetTypes() into tps
-                             from type in tps
-                             select type)
-                             .ToArray();
+                var assemblyTypes =
+                    (from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                     where OnInstallAssemblyFilter(assembly)
+                     select assembly.GetTypes() into tps
+                     from type in tps
+                     select type
+                     )
+                     .ToArray();
 
-                var members = GetMembers(BindingFlagsDefault.StaticAll, types);
+                IEnumerable<Type> types = assemblyTypes;
+
+                foreach (var assemblyType in assemblyTypes)
+                {
+                    types = types.Concat(Loops.BreadthFirstSearch(assemblyType,
+                        static assemblyType =>
+                        {
+                            return assemblyType.GetNestedTypes(BindingFlagsDefault.All);
+                        })
+                        .Skip(1)); //Excludes assemblyType from collection
+                }
+
+                var members = GetMembers(BindingFlagsDefault.StaticAll, types.ToArray());
 
                 OnInstallProcessFields(null, members);
                 OnInstallExecuteMethods(null, members);

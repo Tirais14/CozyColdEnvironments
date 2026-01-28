@@ -49,6 +49,7 @@ namespace CCEnvs.Unity.Components
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            commandScheduler.Dispose();
             LocalizationSettings.SelectedLocaleChanged -= onLocaleChanged;
         }
 
