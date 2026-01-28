@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.Pools;
 using Humanizer;
 using R3;
 using System;
@@ -291,6 +292,13 @@ namespace CCEnvs.Patterns.Commands
             if (cmd is not null)
             {
                 this.PrintLog($"Command: {cmd} erasing");
+
+                if (cmd.IsValid)
+                {
+                    cmd.As<IPoolable>()
+                        .Map(poolable => poolable.PoolHandle.Raw)
+                        .IfSome(handle => handle.Dispose());
+                }
 
                 cmd = null;
             }

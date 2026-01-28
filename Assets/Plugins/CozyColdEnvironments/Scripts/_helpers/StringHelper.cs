@@ -14,8 +14,8 @@ namespace CCEnvs
 {
     public static class StringHelper
     {
-        public const string EMPTY_OBJECT = "{}";
-        public const string EMPTY_ARRAY = "[]";
+        public const string EMPTY_OBJECT = "( )";
+        public const string EMPTY_ARRAY = "[ ]";
 
         public static bool Match(this string? left, string? right,
             StringMatchSettings settings = StringMatchSettings.Default)

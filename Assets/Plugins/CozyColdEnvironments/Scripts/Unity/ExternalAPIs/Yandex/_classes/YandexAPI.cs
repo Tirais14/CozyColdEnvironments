@@ -1,4 +1,5 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
+using CCEnvs.Attributes;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexAPI : IGeneralAPI
     {
+        [field: OnInstallResetable]
         public static YandexAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<bool> isInitialized = new();
@@ -90,6 +92,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (disposed)
                 return;
 
+            YG2.onPauseGame -= OnPauseGame;
+            YG2.onHideWindowGame -= OnHideWindowGame;
+            YG2.onShowWindowGame -= OnShowWindowGame;
+            YG2.onFocusWindowGame -= OnFocusWindowGame;
+
             isGameReady.Dispose();
             isGamePaused.Dispose();
             isGameWindowShown.Dispose();
@@ -148,27 +155,32 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             return gameplaySession;
         }
 
+        private void OnPauseGame(bool state)
+        {
+            isGamePaused.Value = state;
+        }
+
+        private void OnHideWindowGame()
+        {
+            isGameWindowShown.Value = false;
+        }
+
+        private void OnShowWindowGame()
+        {
+            isGameWindowShown.Value = true;
+        }
+
+        private void OnFocusWindowGame(bool state)
+        {
+            isGameWindowFocused.Value = state;
+        }
+
         private void BindEvents()
         {
-            YG2.onPauseGame += (state) =>
-            {
-                isGamePaused.Value = state;
-            };
-
-            YG2.onHideWindowGame += () =>
-            {
-                isGameWindowShown.Value = false;
-            };
-
-            YG2.onShowWindowGame += () =>
-            {
-                isGameWindowShown.Value = true;
-            };
-
-            YG2.onFocusWindowGame += state =>
-            {
-                isGameWindowFocused.Value = state;
-            };
+            YG2.onPauseGame += OnPauseGame;
+            YG2.onHideWindowGame += OnHideWindowGame;
+            YG2.onShowWindowGame += OnShowWindowGame;
+            YG2.onFocusWindowGame += OnFocusWindowGame;
         }
 
         private void BindSavingSystem()
@@ -180,6 +192,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 {
                     var serializedSaveData = JsonConvert.SerializeObject(saveData, CC.JsonSettings);
                     YG2.saves.serializedData = serializedSaveData;
+                    YG2.SaveProgress();
                 })
                 .AddTo(disposables);
         }

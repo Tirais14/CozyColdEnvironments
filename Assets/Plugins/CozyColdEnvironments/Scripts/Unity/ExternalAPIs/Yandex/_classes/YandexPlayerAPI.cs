@@ -8,7 +8,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexPlayerAPI : IPlayerAPI
     {
-        [OnInstallResetable]
+        [field: OnInstallResetable]
         public static YandexPlayerAPI? Instance { get; private set; }
 
 #if Authorization_yg

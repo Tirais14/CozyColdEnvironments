@@ -27,6 +27,8 @@ namespace CCEnvs.Patterns.Commands
 
         void Undo();
 
+        void Cancel();
+
         bool TryReset();
 
         CommandInfo GetCommandInfo();

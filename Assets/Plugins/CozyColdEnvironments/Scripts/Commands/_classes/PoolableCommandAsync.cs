@@ -12,6 +12,8 @@ namespace CCEnvs.Patterns.Commands
     {
         private ReactiveCommand<IPoolable>? onDespawnCmd;
 
+        protected Maybe<IDisposable> poolHandle => this.To<IPoolable>().PoolHandle;
+
         Maybe<IDisposable> IPoolable.PoolHandle { get; set; }
 
         protected PoolableCommandAsync(
@@ -60,6 +62,7 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return;
 
+            poolHandle.IfSome(x => x.Dispose());
             onDespawnCmd?.Dispose();
 
             disposed = true;

@@ -39,9 +39,6 @@ namespace CCEnvs.Unity.Saves
 
         private UnityAction<Scene> onSceneUnloaded;
 
-        public string? LoadedFileDataRaw { get; private set; }
-
-        public Maybe<SaveFileData> LoadedFileData { get; private set; }
         public SaveFileData SaveData => saveData.Value; 
 
         public bool IsSaving => isSaving.Value;
@@ -184,14 +181,21 @@ namespace CCEnvs.Unity.Saves
             SaveFileData saveFileData,
             CancellationToken cancellationToken = default)
         {
-            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+            var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            await RegisterSnapshotsAsync(
-                saveFileData.SceneDatas,
-                cancellationToken: cTokenSource.Token
-                );
+            try
+            {
+                await RegisterSnapshotsAsync(
+                    saveFileData.SceneDatas,
+                    cancellationToken: cTokenSource.Token
+                    );
 
-            ApplyRegisteredSnapshots();
+                ApplyRegisteredSnapshots();
+            }
+            finally
+            {
+                cTokenSource.Dispose();
+            }
         }
 
         public async UniTask<SaveFileData> CaptureSaveDataAsync(CancellationToken cancellationToken = default)
@@ -201,12 +205,20 @@ namespace CCEnvs.Unity.Saves
                 cancellationToken
                 );
 
-            using PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync(
-                cancellationToken: cTokenSource.Token
-                );
+            PooledArray<SaveFileSceneData> sceneDatas = await BuildSceneDatasAsync(
+                    cancellationToken: cTokenSource.Token
+                    );
 
-            //TODO: versioning
-            return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray());
+            try
+            {
+                //TODO: versioning
+                return new SaveFileData("0.0.0.0", sceneDatas.Value.ToImmutableArray());
+            }
+            finally
+            {
+                sceneDatas.Dispose();
+                cTokenSource.Dispose();
+            }
         }
 
         public async UniTask<string> CaptureSerializedSaveDataAsync(CancellationToken cancellationToken = default)
@@ -216,12 +228,19 @@ namespace CCEnvs.Unity.Saves
                 cancellationToken
                 );
 
-            var saveFileData = await CaptureSaveDataAsync(cTokenSource.Token);
+            try
+            {
+                var saveFileData = await CaptureSaveDataAsync(cTokenSource.Token);
 
-            return JsonConvert.SerializeObject(
-                saveFileData,
-                CC.JsonSettings
-                );
+                return JsonConvert.SerializeObject(
+                    saveFileData,
+                    CC.JsonSettings
+                    );
+            }
+            finally
+            {
+                cTokenSource.Dispose();
+            }
         }
 
         public async UniTask<string> LoadFromFileAsync(string path, CancellationToken cancellationToken = default)
@@ -230,37 +249,60 @@ namespace CCEnvs.Unity.Saves
                 throw new InvalidOperationException("Already in save loading process");
 
             isSaveLoading.Value = true;
+            var linkedTokenSource = cancellationToken.LinkTokens(self.destroyCancellationToken);
 
             try
             {
-                using var cTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                    self.destroyCancellationToken,
-                    cancellationToken
-                    );
-
                 var (saveData, saveDataRaw) = await LoadSaveFileAsync(
                     path,
-                    cTokenSource.Token
+                    linkedTokenSource.Token
                     );
-
-                this.saveData.Value = saveData;
 
                 if (saveData.IsDefault())
                     return string.Empty;
 
                 await ApplySaveFileDataAsync(
                     saveData,
-                    cTokenSource.Token
+                    linkedTokenSource.Token
                     );
 
-                LoadedFileDataRaw = saveDataRaw;
-                LoadedFileData = saveData;
+                this.saveData.Value = saveData;
 
                 return saveDataRaw;
             }
             finally
             {
                 isSaveLoading.Value = false;
+                linkedTokenSource.Dispose();
+            }
+        }
+
+        public async UniTask LoadFromSerializedData(
+            string serializedData,
+            CancellationToken cancellationToken = default
+            )
+        {
+            if (serializedData.IsNullOrWhiteSpace())
+                return;
+
+            if (IsSaveLoading)
+                throw new InvalidOperationException("Already in save loading process");
+
+            isSaveLoading.Value = true;
+            var linkedTokenSource = cancellationToken.LinkTokens(self.destroyCancellationToken);
+
+            try
+            {
+                var saveData = JsonConvert.DeserializeObject<SaveFileData>(serializedData, CC.JsonSettings);
+
+                await ApplySaveFileDataAsync(saveData, linkedTokenSource.Token);
+
+                this.saveData.Value = saveData;
+            }
+            finally
+            {
+                isSaveLoading.Value = false;
+                linkedTokenSource.Dispose();
             }
         }
 
@@ -270,18 +312,18 @@ namespace CCEnvs.Unity.Saves
                 throw new InvalidOperationException("Already in saving process");
 
             isSaving.Value = true;
+            var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
             try
             {
-                using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
-
                 SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
-                saveData.Value = saveFileData;
 
                 await RegisterSnapshotsAsync(
                     saveFileData.SceneDatas,
                     cancellationToken
                     );
+
+                saveData.Value = saveFileData;
 
                 string serializedsaveFileData = JsonConvert.SerializeObject(
                     saveFileData,
@@ -297,6 +339,7 @@ namespace CCEnvs.Unity.Saves
             finally
             {
                 isSaving.Value = false;
+                cTokenSource.Dispose();
             }
         }
 
@@ -306,18 +349,18 @@ namespace CCEnvs.Unity.Saves
                 throw new InvalidOperationException("Already in saving process");
 
             isSaving.Value = true;
+            var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
             try
             {
-                using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
-
                 SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
-                saveData.Value = saveFileData;
 
                 await RegisterSnapshotsAsync(
                     saveFileData.SceneDatas,
                     cancellationToken
                     );
+
+                saveData.Value = saveFileData;
 
                 return JsonConvert.SerializeObject(
                     saveFileData,
@@ -327,6 +370,7 @@ namespace CCEnvs.Unity.Saves
             finally
             {
                 isSaving.Value = false;
+                cTokenSource.Dispose();
             }
         }
 
@@ -450,7 +494,7 @@ namespace CCEnvs.Unity.Saves
 
                 foreach (var regObj in objectSets.Values.SelectMany(x => x))
                 {
-                    cancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+                    cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
 
                     if (regObj.SceneInfo != sceneInfo)
                         continue;
@@ -489,7 +533,7 @@ namespace CCEnvs.Unity.Saves
 
                 foreach (var regObj in regObjects.Value)
                 {
-                    cancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+                    cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
 
                     try
                     {
@@ -735,7 +779,7 @@ namespace CCEnvs.Unity.Saves
 
                     foreach (var snapshot in sceneData.Snapshots)
                     {
-                        cancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+                        cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
 
                         if (snapshot.Key is not string snapshotKey)
                         {

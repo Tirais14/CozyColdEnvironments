@@ -36,26 +36,29 @@ namespace CCEnvs.Patterns.Commands
 
             CancelAndDisposeCancellationTokenSource();
             cancellationTokenSource = new CancellationTokenSource();
+            var linkedTokenSource = cancellationTokenSource.Token.LinkTokens(cancellationToken);
 
             try
             {
-                using var linkedTokenSource = cancellationTokenSource.Token.LinkTokens(cancellationToken);
-
                 await OnExecuteAsync(linkedTokenSource.Token);
-                status.Value = CommandStatus.Completed;
+
+                SetCompleted();
             }
             catch (Exception ex)
             {
                 switch (ex)
                 {
                     case TaskCanceledException:
-                        status.Value = CommandStatus.Canceled;
+                        SetCanceled();
                         break;
                     default:
-                        status.Value = CommandStatus.Faulted;
-                        this.PrintException(ex);
+                        SetFaulted(ex);
                         break;
                 }
+            }
+            finally
+            {
+                linkedTokenSource.Dispose();
             }
 
             if (!IsCompleted
@@ -64,10 +67,10 @@ namespace CCEnvs.Patterns.Commands
                 ||
                 cancellationTokenSource.IsCancellationRequested))
             {
-                status.Value = CommandStatus.Canceled;
+                SetCanceled();
             }
 
-            CancelAndDisposeCancellationTokenSource();
+            DisposeCancellationToken();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,20 +83,35 @@ namespace CCEnvs.Patterns.Commands
 
             CancelAndDisposeCancellationTokenSource();
 
-            OnUndo();
+            base.Undo();
+        }
 
-            if (!IsFaulted)
-                status.Value = CommandStatus.Canceled;
+        public override void Cancel()
+        {
+            base.Cancel();
+
+            if (IsDone)
+                return;
+
+            CancelAndDisposeCancellationTokenSource();
+        }
+
+        protected void DisposeCancellationToken()
+        {
+            if (cancellationTokenSource is null)
+                return;
+
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = null;
         }
 
         protected void CancelAndDisposeCancellationTokenSource()
         {
-            if (cancellationTokenSource is not null)
-            {
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource.Dispose();
-                cancellationTokenSource = null;
-            }
+            if (cancellationTokenSource is null)
+                return;
+
+            cancellationTokenSource.Cancel();
+            DisposeCancellationToken();
         }
 
         private bool disposed;
@@ -107,7 +125,6 @@ namespace CCEnvs.Patterns.Commands
             if (disposing)
             {
                 CancelAndDisposeCancellationTokenSource();
-                status.Dispose();
             }
 
             disposed = true;

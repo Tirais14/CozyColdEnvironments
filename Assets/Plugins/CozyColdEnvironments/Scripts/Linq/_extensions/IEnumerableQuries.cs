@@ -125,11 +125,13 @@ namespace CCEnvs.Linq
 #pragma warning restore S112
         }
 
-        public static int GetSequencedHashCode<T>(this IEnumerable<T> values)
+        public static int HashCodeByElements<T>(this IEnumerable<T>? values)
         {
-            CC.Guard.IsNotNull(values, nameof(values));
+            if (values.IsNull())
+                return 0;
 
             var hash = new HashCode();
+
             foreach ( var item in values)
                 hash.Add(item);
 

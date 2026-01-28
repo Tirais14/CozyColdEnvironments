@@ -1,10 +1,9 @@
 using CCEnvs.Collections;
+using CCEnvs.Linq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -36,7 +35,7 @@ namespace CCEnvs.Unity.Saves
         {
             return Version == other.Version
                    &&
-                   SceneDatas == other.SceneDatas;
+                   SceneDatas.EqualsByElements(other.SceneDatas);
         }
 
         public readonly override bool Equals(object obj)
@@ -46,7 +45,7 @@ namespace CCEnvs.Unity.Saves
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(Version, SceneDatas);
+            return HashCode.Combine(Version, SceneDatas.HashCodeByElements());
         }
 
         public override string ToString()
@@ -54,7 +53,7 @@ namespace CCEnvs.Unity.Saves
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Version \"{Version}\"";
+            return $"{nameof(Version)}: {Version}";
         }
     }
 }

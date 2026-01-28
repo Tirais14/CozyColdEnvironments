@@ -282,8 +282,14 @@ namespace CCEnvs.Json
 
             foreach (JProperty jProp in ctorInfo.jProps)
             {
-                if (!jPropInfos.FirstOrDefault(jPropInfo => jPropInfo.Match(jProp)).Let(out var matchingJPropInfo))
+                if (!jPropInfos.FirstOrDefault(jPropInfo =>
+                    {
+                        return jPropInfo.Match(jProp);
+                    })
+                    .Let(out var matchingJPropInfo))
+                {
                     continue;
+                }
 
                 object? deserializedJProp = jProp.Value.ToObject(matchingJPropInfo.UnderlyingType, jSerializer);
                 deserializedJProps.Add(deserializedJProp);

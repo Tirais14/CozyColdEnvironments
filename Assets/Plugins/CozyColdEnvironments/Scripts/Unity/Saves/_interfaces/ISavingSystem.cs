@@ -11,8 +11,6 @@ namespace CCEnvs.Unity.Saves
 {
     public interface ISavingSystem
     {
-        string? LoadedFileDataRaw { get; }
-        Maybe<SaveFileData> LoadedFileData { get; }
         SaveFileData SaveData { get; }
 
         bool IsSaving { get; }

@@ -169,7 +169,7 @@ namespace CCEnvs.Unity.UI
                             .FirstComponentsOnBranch()
                             .Components<IShowable>())
                         {
-                            destroyCancellationToken.CheckCancellationRequestByInterval(ref iterationsPassed);
+                            destroyCancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
 
                             snapshots.Value.Add(showable, new ShowableSnapshot(showable));
                             showable.Hide();

@@ -1,8 +1,10 @@
 using CCEnvs.Attributes;
 using CCEnvs.Unity.EditorC;
+using CCEnvs.UnityEditor;
 using System;
 using System.IO;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
@@ -30,6 +32,20 @@ namespace CCEnvs.Unity.CSharp.Editor
         public static void GetWindow()
         {
             GetWindow<AddUnityEditorDefineWindow>(); 
+        }
+
+        [MenuItem("Assets/Add Unity Editor Defines")]
+        public static void GetWindowByProjectBrowser()
+        {
+            var instance = GetWindow<AddUnityEditorDefineWindow>();
+
+            if (Selection.activeObject == null)
+                return;
+
+            var folderPath = EditorHelper.GetProjectActiveFolderPath().Raw;
+            var objectPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+
+            instance.folderPath.value = Path.Combine(folderPath, objectPath);
         }
 
         protected override void CreateElements()
@@ -69,6 +85,8 @@ namespace CCEnvs.Unity.CSharp.Editor
             }
 
             inProcess = true;
+            processBtn.enabledSelf = false;
+            this.PrintLog($"Adding editor define by path: {byFolders.value} in folders: {byFolders.value}");
 
             try
             {
@@ -80,6 +98,8 @@ namespace CCEnvs.Unity.CSharp.Editor
             finally
             {
                 inProcess = false;
+                processBtn.enabledSelf = true;
+                this.PrintLog("Editor defines added");
             }
         }
     }

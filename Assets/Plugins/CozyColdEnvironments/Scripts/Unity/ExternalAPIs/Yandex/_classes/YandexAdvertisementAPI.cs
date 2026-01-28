@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexAdvertisementAPI : IAdvertisementAPI
     {
-        [OnInstallResetable]
+        [field: OnInstallResetable]
         public static YandexAdvertisementAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<int> advertisementCount = new();
@@ -25,6 +25,12 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAdvertisementAPI));
 
+            YG2.onOpenAnyAdv += () =>
+            {
+                advertisementCount.Value++;
+                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Any);
+            };
+
             YG2.onCloseAnyAdv += () =>
             {
                 advertisementCount.Value--;
@@ -33,20 +39,29 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                     advertisementCount.Value = 0;
             };
 
-            YG2.onOpenAnyAdv += () =>
-            {
-                advertisementCount.Value++;
-            };
-
             YG2.onErrorAnyAdv += () =>
             {
                 showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
             };
 
+#if BannerAdv_yg
             YG2.onBannerError += () =>
             {
                 showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Banner);
             };
+#endif
+
+#if InterstitialAdv_yg
+            YG2.onOpenInterAdv += () =>
+            {
+                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Fullscreen);
+            };
+
+            YG2.onErrorInterAdv += () =>
+            {
+                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Fullscreen);
+            };
+#endif
 
             Instance = this;
         }
@@ -58,13 +73,22 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             if (advertisementType.IsFlagSetted(AdvertisementTypes.Banner))
             {
+#if BannerAdv_yg
                 YG2.ShowBanner();
-                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Banner);
+#else
+                throw new System.NotSupportedException(AdvertisementTypes.Banner.ToString());
+#endif
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
-                throw new System.NotImplementedException();
+            {
+#if InterstitialAdv_yg
+                YG2.InterstitialAdvShow();
+#else
+                throw new System.NotSupportedException(AdvertisementTypes.Fullscreen.ToString());
+#endif
+            }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Rewarding))
-                throw new System.NotImplementedException();
+                throw new System.NotSupportedException(AdvertisementTypes.Rewarding.ToString());
         }
 
         private bool disposed;

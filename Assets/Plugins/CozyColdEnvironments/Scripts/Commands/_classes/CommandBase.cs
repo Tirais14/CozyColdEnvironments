@@ -10,10 +10,9 @@ namespace CCEnvs.Patterns.Commands
     public abstract partial class CommandBase<TThis> : ICommandBase
         where TThis : ICommandBase
     {
-
-        protected readonly ReactiveProperty<CommandStatus> status = new();
-
         protected bool isExecuted;
+
+        private readonly ReactiveProperty<CommandStatus> status = new();
 
         public string Name { get; } = string.Empty;
 
@@ -48,7 +47,25 @@ namespace CCEnvs.Patterns.Commands
             CommandType = GetType();
         }
 
-        public abstract void Undo();
+        public virtual void Undo()
+        {
+            ValidateDisposed();
+
+            OnCancel();
+
+            try
+            {
+                OnUndo();
+            }
+            catch (Exception ex)
+            {
+                SetFaulted(ex);
+
+                return;
+            }
+
+            SetCanceled();
+        }
 
         public bool TryReset()
         {
@@ -61,11 +78,15 @@ namespace CCEnvs.Patterns.Commands
             {
                 OnReset();
             }
-            finally
+            catch (Exception ex)
             {
-                status.Value = CommandStatus.None;
-                isExecuted = false;
+                SetFaulted(ex);
+
+                return false;
             }
+
+            SetCanceled();
+            isExecuted = false;
 
             return true;
         }
@@ -91,6 +112,27 @@ namespace CCEnvs.Patterns.Commands
             return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status})";
         }
 
+        public virtual void Cancel()
+        {
+            ValidateDisposed();
+
+            if (IsDone)
+                return;
+
+            try
+            {
+                OnCancel();
+            }
+            catch (Exception ex)
+            {
+                SetFaulted(ex);
+
+                return;
+            }
+
+            SetCanceled();
+        }
+
         public Observable<CommandStatus> ObserveIsDone()
         {
             ValidateDisposed();
@@ -113,7 +155,11 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return;
 
-            status.Dispose();
+            if (disposing)
+            {
+                status.Dispose();
+                TryReset();
+            }
 
             disposed = true;
         }
@@ -124,6 +170,32 @@ namespace CCEnvs.Patterns.Commands
 
         protected virtual void OnReset()
         {
+        }
+
+        protected virtual void OnCancel()
+        {
+
+        }
+
+        protected void SetFaulted(Exception? ex)
+        {
+            status.Value = CommandStatus.Faulted;
+
+            if (ex is not null)
+                this.PrintException(ex);
+        }
+
+        protected void SetCanceled()
+        {
+            if (IsFaulted)
+                return;
+
+            status.Value = CommandStatus.Canceled;
+        }
+
+        protected void SetCompleted()
+        {
+            status.Value = CommandStatus.Completed;
         }
 
         protected void ValidateDisposed()

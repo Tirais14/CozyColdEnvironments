@@ -320,6 +320,19 @@ namespace CCEnvs.Reflection
             return this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Reflect WithParameterModifiers(params bool[] flags)
+        {
+            var paramMods = new ParameterModifier(flags.Length);
+
+            for (int i = 0; i < flags.Length; i++)
+                paramMods[i] = flags[i];
+
+            WithParameterModifiers(paramMods);
+
+            return this;
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect WithParameterModifiers(ParameterModifier[]? parameterModifiers = null)
@@ -509,7 +522,9 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<MethodInfo> Methods()
         {
-            var t = IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Method).FindMembers().CastCustom<MethodInfo>();
+            var t = IncludeMemberTypes().IncludeMemberTypes(MemberTypes.Method)
+                .FindMembers()
+                .CastCustom<MethodInfo>();
 
             return genericTypes.Map(
                 genericTypes =>

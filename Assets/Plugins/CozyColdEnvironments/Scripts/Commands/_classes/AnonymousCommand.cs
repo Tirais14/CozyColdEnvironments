@@ -1,15 +1,14 @@
 #nullable enable
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class AnonymousCommand : Command
+    public sealed class AnonymousCommand : PoolableCommand
     {
         private readonly Action? onExecute;
         private readonly Func<bool>? isReadyToExecute;
         private readonly Action? onReset;
+        private readonly Action? onCancel;
 
         public override bool IsReadyToExecute {
             get
@@ -22,19 +21,19 @@ namespace CCEnvs.Patterns.Commands
             Action? onExecute,
             Func<bool>? isReadyToExecute = null,
             Action? onReset = null!,
+            Action? onCancel = null,
             string? name = null,
             bool isSingle = false,
-            bool isResetable = false,
             int delayFrameCount = 0)
             :
             base(name: name,
                  isSingle: isSingle,
-                 isResetable: isResetable,
                  delayFrameCount: delayFrameCount)
         {
             this.isReadyToExecute = isReadyToExecute;
             this.onExecute = onExecute;
             this.onReset = onReset;
+            this.onCancel = onCancel;
         }
 
         public override string ToString()
@@ -56,6 +55,11 @@ namespace CCEnvs.Patterns.Commands
             onReset?.Invoke();
         }
 
+        protected override void OnCancel()
+        {
+            base.OnCancel();
+            onCancel?.Invoke();
+        }
     }
 
     public sealed class AnonymousCommand<T> : Command
@@ -64,6 +68,7 @@ namespace CCEnvs.Patterns.Commands
         private readonly Action<T>? onExecute;
         private readonly Func<T, bool>? isReadyToExecute;
         private readonly Action<T>? onReset;
+        private readonly Action<T>? onCancel;
 
         public override bool IsReadyToExecute {
             get
@@ -76,20 +81,20 @@ namespace CCEnvs.Patterns.Commands
             Action<T>? onExecute,
             Func<T, bool>? isReadyToExecute = null,
             Action<T>? onReset = null,
+            Action<T>? onCancel = null,
             string? name = null,
             bool isSingle = false,
-            bool isResetable = false,
             int delayFrameCount = 0)
             :
             base(name: name,
                  isSingle: isSingle,
-                 isResetable: isResetable,
                  delayFrameCount: delayFrameCount)
         {
             this.state = state;
             this.isReadyToExecute = isReadyToExecute;
             this.onExecute = onExecute;
             this.onReset = onReset;
+            this.onCancel = onCancel;
         }
 
         public override string ToString()
@@ -109,6 +114,12 @@ namespace CCEnvs.Patterns.Commands
         {
             base.OnReset();
             onReset?.Invoke(state);
+        }
+
+        protected override void OnCancel()
+        {
+            base.OnCancel();
+            onCancel?.Invoke(state);
         }
     }
 }

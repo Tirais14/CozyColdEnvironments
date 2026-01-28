@@ -6,10 +6,10 @@ namespace CCEnvs
 {
     public static class CancellationTokenHelper
     {
-        public static void CheckCancellationRequestByInterval(
+        public static void ThrowIfCancellationRequestedByIntervalAndMoveNext(
             this in CancellationToken cancellationToken,
             ref int frame,
-            int frameInterval = 5)
+            int frameInterval = 3)
         {
             frame++;
 
@@ -20,10 +20,10 @@ namespace CCEnvs
             }
         }
 
-        public static void CheckCancellationRequestByInterval(
+        public static void ThrowIfCancellationRequestedByIntervalAndMoveNext(
             this in CancellationToken cancellationToken,
             ref long frame,
-            long frameInterval = 5L)
+            long frameInterval = 10L)
         {
             frame++;
 
@@ -32,6 +32,24 @@ namespace CCEnvs
                 frame = 0L;
                 cancellationToken.ThrowIfCancellationRequested();
             }
+        }
+
+        public static void ThrowIfCancellationRequestedByInterval(
+            this in CancellationToken cancellationToken,
+            int frame,
+            int frameInterval = 3)
+        {
+            if ((frame % frameInterval) == 0)
+                cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        public static void ThrowIfCancellationRequestedByInterval(
+            this in CancellationToken cancellationToken,
+            long frame,
+            long frameInterval = 10L)
+        {
+            if ((frame % frameInterval) == 0)
+                cancellationToken.ThrowIfCancellationRequested();
         }
 
         public static CancellationTokenSource LinkTokens(

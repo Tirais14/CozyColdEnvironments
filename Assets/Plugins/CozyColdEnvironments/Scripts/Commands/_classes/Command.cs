@@ -32,27 +32,17 @@ namespace CCEnvs.Patterns.Commands
             try
             {
                 OnExecute();
-                status.Value = CommandStatus.Completed;
+                SetCanceled();
             }
             catch (Exception ex)
             {
-                status.Value = CommandStatus.Faulted;
-                this.PrintException(ex);
+                SetFaulted(ex);
+
                 return;
             }
 
             if (!IsCompleted && !IsFaulted)
-                status.Value = CommandStatus.Canceled;
-        }
-
-        public override void Undo()
-        {
-            ValidateDisposed();
-
-            OnUndo();
-
-            if (!IsFaulted)
-                status.Value = CommandStatus.Canceled;
+                SetCanceled();
         }
 
         protected abstract void OnExecute();

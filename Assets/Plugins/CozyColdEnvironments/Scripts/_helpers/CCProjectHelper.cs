@@ -4,7 +4,6 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using SuperLinq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -50,10 +49,10 @@ namespace CCEnvs
                              select type)
                              .ToArray();
 
-                var members = GetMembersInfos(BindingFlagsDefault.StaticAll, types);
+                var members = GetMembers(BindingFlagsDefault.StaticAll, types);
 
-                OnInstallExecuteMethods(null, members);
                 OnInstallProcessFields(null, members);
+                OnInstallExecuteMethods(null, members);
             }
             finally
             {
@@ -61,40 +60,28 @@ namespace CCEnvs
             }
         }
 
-        private static (MemberInfo member, Dictionary<Type, Attribute> attributes)[] GetMembersInfos(
-            BindingFlags bindingFlags,
-            params Type[] types)
+        private static IEnumerable<MemberInfo> GetMembers(BindingFlags bindingFlags, params Type[] types)
         {
-            return (from type in types
-                    select type.GetMembers(bindingFlags) into mbms
-                    from member in mbms
-                    select (member, attributes: member.GetCustomAttributes(inherit: true)
-                    .Cast<Attribute>()
-                    .Select(att => (value: att, type: att.GetType()))
-                    .DistinctBy(attInfo => attInfo.type)
-                    .Select(attInfo => attInfo.value)
-                    .ToDictionary(attInfo => attInfo.GetType()))
-                    )
-                    .ToArray();
+            return types.SelectMany(type => type.GetMembers(bindingFlags));
         }
 
-        private static void OnInstallExecuteMethods(object? target, (MemberInfo member, Dictionary<Type, Attribute> attributes)[] memberInfos)
+        private static void OnInstallExecuteMethods(object? target, IEnumerable<MemberInfo> members)
         {
-            var methodInfos = from memberInfo in memberInfos
-                          where memberInfo.member.MemberType == MemberTypes.Method
-                          select (method: (MethodInfo)memberInfo.member, memberInfo.attributes) into methodInfo
-                          where methodInfo.attributes.ContainsKey(typeof(OnInstallMethodAttribute))
-                          where methodInfo.method.GetGenericArguments().Length == 0
+            var methods = from member in members
+                          where member.MemberType == MemberTypes.Method
+                          select (MethodInfo)member into method
+                          where method.IsDefined<OnInstallMethodAttribute>(inherit: true)
+                          where method.GetGenericArguments().Length == 0
                                 &&
-                                methodInfo.method.GetParameters().Where(param => !param.HasDefaultValue).Count() == 0
+                                method.GetParameters().Count(param => !param.HasDefaultValue) == 0
 
-                          select methodInfo;
+                          select method;
 
-            foreach (var methodInfo in methodInfos)
+            foreach (var method in methods)
             {
                 try
                 {
-                    methodInfo.method.Invoke(target, CC.EmptyArguments);
+                    method.Invoke(target, CC.EmptyArguments);
                 }
                 catch (Exception ex)
                 {
@@ -105,13 +92,14 @@ namespace CCEnvs
 
         private static void OnInstallProcessFields(
             object? target,
-            (MemberInfo member, Dictionary<Type, Attribute> attributes)[] memberInfos)
+            IEnumerable<MemberInfo> members)
         {
-            var fieldInfos = (from memberInfo in memberInfos
-                              where memberInfo.member.MemberType == MemberTypes.Field
-                              select (field: (FieldInfo)memberInfo.member, memberInfo.attributes) into fieldInfo
-                              where fieldInfo.attributes.ContainsKey(typeof(OnInstallAttribute))
-                              select fieldInfo)
+            var fieldInfos = (from member in members
+                              where member.MemberType == MemberTypes.Field
+                              select (FieldInfo)member into field
+                              where !field.FieldType.ContainsGenericParameters
+                              where field.IsDefined<OnInstallAttribute>(inherit: true)
+                              select field)
                               .ToArray();
 
             OnInstallResetFields(target, fieldInfos);
@@ -120,25 +108,25 @@ namespace CCEnvs
 
         private static void OnInstallResetFields(
             object? target,
-            (FieldInfo field, Dictionary<Type, Attribute> attributes)[] fieldInfos
+            IEnumerable<FieldInfo> fields
             )
         {
             Reflect fieldReflect;
 
-            foreach (var (field, attributes, fieldValue) in
+            foreach (var (field, fieldValue) in
 
-                from fieldInfo in fieldInfos
-                where fieldInfo.attributes.ContainsKey(typeof(OnInstallResetableAttribute))
-                select (fieldInfo.field, fieldInfo.attributes, fieldValue: fieldInfo.field.GetValue(target)) into fieldInfo
+                from field in fields
+                where field.IsDefined<OnInstallResetableAttribute>(inherit: true)
+                select (field, fieldValue: field.GetValue(target)) into fieldInfo
                 where fieldInfo.fieldValue.IsNotDefault()
                 select fieldInfo
                 )
             {
                 try
                 {
-                    fieldReflect = field.FieldType.Reflect();
+                    fieldReflect = new Reflect();
 
-                    fieldReflect.Reset()
+                    fieldReflect.From(field.FieldType)
                         .IncludeInstance()
                         .IncludeNonPublic()
                         .WithName("Clear")
@@ -146,7 +134,7 @@ namespace CCEnvs
                         .Lax()
                         .IfSome(method => method.Invoke(fieldValue, CC.EmptyArguments));
 
-                    fieldReflect.Reset()
+                    fieldReflect.From(field.FieldType)
                         .IncludeInstance()
                         .IncludeNonPublic()
                         .WithName("Reset")
@@ -154,7 +142,7 @@ namespace CCEnvs
                         .Lax()
                         .IfSome(method => method.Invoke(fieldValue, CC.EmptyArguments));
 
-                    if (!field.IsInitOnly)
+                    if (field.IsInitOnly)
                         continue;
 
                     if (fieldValue is IDisposable disposable)
@@ -173,21 +161,21 @@ namespace CCEnvs
         }
 
         private static void OnInstallExecuteFieldMethods(
-            (FieldInfo field, Dictionary<Type, Attribute> attributes)[] fieldInfos
+            IEnumerable<FieldInfo> fields
             )
         {
-            foreach (var (field, attributes, fieldValue) in
+            foreach (var (field, fieldValue) in
 
-                from fieldInfo in fieldInfos
-                select (fieldInfo.field, fieldInfo.attributes, fieldValue: fieldInfo.field.GetValue(null)) into fieldInfo
+                from field in fields
+                select (field, fieldValue: field.GetValue(null)) into fieldInfo
                 where fieldInfo.fieldValue.IsNotDefault()
                 select fieldInfo
                 )
             {
                 try
                 {
-                    var memberInfos = GetMembersInfos(BindingFlagsDefault.InstanceAll, field.FieldType);
-                    OnInstallExecuteMethods(fieldValue, memberInfos);
+                    var members = GetMembers(BindingFlagsDefault.InstanceAll, field.FieldType);
+                    OnInstallExecuteMethods(fieldValue, members);
                 }
                 catch (Exception ex)
                 {
@@ -211,5 +199,16 @@ namespace CCEnvs
 
             return !filters.Any(filter => assemblyName.Name.StartsWith(filter));
         }
+
+        //private static void OnInstallProcessProperties(
+        //    MemberInfo[] members
+        //    )
+        //{
+        //    var props = from member in members
+        //                where member.MemberType == MemberTypes.Property
+        //                where member.IsDefined<OnInstallAttribute>()
+        //                select ((PropertyInfo)member).
+
+        //}
     }
 }

@@ -121,5 +121,14 @@ namespace CCEnvs.Collections
 
             return items;
         }
+
+        public static bool EqualsByElements<T>(this IEnumerable<T>? source, IEnumerable<T>? other)
+        {
+            return EqualityComparer<IEnumerable<T>?>.Default.Equals(source, other)
+                   &&
+                   (source == null
+                   ||
+                   source.SequenceEqual(other));
+        }
     }
 }

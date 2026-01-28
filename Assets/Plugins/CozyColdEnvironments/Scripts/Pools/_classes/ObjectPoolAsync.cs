@@ -116,22 +116,18 @@ namespace CCEnvs.Pools
 
                     int taskCount = Math.Min(batchSize.Value, resolvedCount - batchSize.Value * i);
 
-                    int frameCount = 0;
-
                     for (int j = 0; j < taskCount; j++)
                     {
-                        cancellationToken.CheckCancellationRequestByInterval(ref frameCount, taskCount / 2);
+                        cancellationToken.ThrowIfCancellationRequestedByInterval(j, taskCount / 2);
 
                         task = GetAsync(cancellationToken);
 
                         tasks[batchSize.Value * i + j] = task;
                     }
 
-                    frameCount = 0;
-
                     for (int j = 0; j < taskCount; j++)
                     {
-                        cancellationToken.CheckCancellationRequestByInterval(ref frameCount, taskCount / 2);
+                        cancellationToken.ThrowIfCancellationRequestedByInterval(j, taskCount / 2);
 
                         int offsetedIdx = batchSize.Value * i + j;
 

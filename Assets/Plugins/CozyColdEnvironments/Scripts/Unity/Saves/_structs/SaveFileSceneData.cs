@@ -1,3 +1,5 @@
+using CCEnvs.Collections;
+using CCEnvs.Linq;
 using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using System;
@@ -34,9 +36,9 @@ namespace CCEnvs.Unity.Saves
 
         public readonly bool Equals(SaveFileSceneData other)
         {
-            return Snapshots == other.Snapshots
+            return SceneInfo == other.SceneInfo
                    &&
-                   SceneInfo == other.SceneInfo;
+                   Snapshots.EqualsByElements(other.Snapshots);
         }
 
         public readonly override bool Equals(object? obj)
@@ -46,7 +48,7 @@ namespace CCEnvs.Unity.Saves
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(Snapshots, SceneInfo);
+            return HashCode.Combine(SceneInfo, Snapshots.HashCodeByElements());
         }
 
         public readonly override string ToString()
@@ -54,7 +56,7 @@ namespace CCEnvs.Unity.Saves
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Scene info \"{SceneInfo}\"";
+            return $"{nameof(SceneInfo)}: {SceneInfo}";
         }
     }
 }
