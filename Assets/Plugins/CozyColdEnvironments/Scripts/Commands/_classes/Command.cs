@@ -49,9 +49,11 @@ namespace CCEnvs.Patterns.Commands
                         break;
                 }
             }
-
-            //Prevents the callback triggering after execution completed
-            SetDefaultCancellationToken();
+            finally
+            {
+                //Prevents the callback triggering after execution completed
+                SetDefaultCancellationToken();
+            }
         }
 
         protected abstract void OnExecute();

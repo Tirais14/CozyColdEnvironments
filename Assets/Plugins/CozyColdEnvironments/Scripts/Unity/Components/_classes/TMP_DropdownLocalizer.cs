@@ -93,28 +93,27 @@ namespace CCEnvs.Unity.Components
 
         private async UniTask UpdateDropdownValueAsync()
         {
-            //if (dropdown.options.Count <= 1)
-            //    return;
+            if (dropdown.options.Count <= 1)
+                return;
 
-            //await UniTask.Yield(timing: PlayerLoopTiming.PostLateUpdate);
+            await UniTask.Yield(timing: PlayerLoopTiming.PostLateUpdate);
 
-            //var dropdownValue = dropdown.value;
-            //var options = dropdown.options;
-            //var optionCount = dropdown.options.Count;
+            var dropdownValue = dropdown.value;
+            var optionCount = dropdown.options.Count;
 
-            //for (int i = 0; i < optionCount; i++)
-            //{
-            //    if (i == dropdownValue)
-            //        continue;
+            for (int i = 0; i < optionCount; i++)
+            {
+                if (i == dropdownValue)
+                    continue;
 
-            //    dropdown.value = i;
+                dropdown.value = i;
 
-            //    await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+                await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
 
-            //    dropdown.value = dropdownValue;
+                dropdown.value = dropdownValue;
 
-            //    break;
-            //}
+                break;
+            }
         }
 
         private async UniTask RecreateOptionsAsync(CancellationToken cancellationToken)

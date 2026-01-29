@@ -5,7 +5,6 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Threading;
 
 #pragma warning disable S107
@@ -65,10 +64,9 @@ namespace CCEnvs.Patterns.Commands
         {
             ValidateDisposed();
 
-            OnCancel();
-
             try
             {
+                OnCancel();
                 OnUndo();
             }
             catch (Exception ex)
@@ -88,9 +86,10 @@ namespace CCEnvs.Patterns.Commands
             if (!IsResetable)
                 return false;
 
+            Cancel();
+
             try
             {
-                Cancel();
                 OnReset();
             }
             catch (Exception ex)
@@ -208,6 +207,7 @@ namespace CCEnvs.Patterns.Commands
             if (disposing)
             {
                 Cancel();
+                SetFaulted(null);
                 status.Dispose();
                 DisposeCancellationTokenSources();
             }

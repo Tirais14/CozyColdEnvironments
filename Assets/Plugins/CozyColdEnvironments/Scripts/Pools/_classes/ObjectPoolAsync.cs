@@ -45,27 +45,24 @@ namespace CCEnvs.Pools
 #endif
             GetAsync(CancellationToken cancellationToken = default)
         {
-            T obj;
+            T? obj = null;
 
-            if (InactiveCount <= 0)
+            while (!IsObjectValid(obj))
             {
-                if (factory is null)
-                    throw IsEmptyException();
+                if (InactiveCount < 1)
+                {
+                    if (factory is null)
+                        throw IsEmptyException();
 
-                obj = await factory.Create(cancellationToken);
-                Return(obj);
-            }
+                    obj = await factory.Create(cancellationToken);
+                    Return(obj);
+                }
 
-            if (fastObject is not null)
-            {
-                obj = fastObject;
-                fastObject = null;
+                obj = GetFromInactive();
             }
-            else
-                obj = inactiveItems.Pop();
 
             var handle = CreateHandle(obj);
-            OnGet(handle);
+            GetCore(handle);
 
             return handle;
         }

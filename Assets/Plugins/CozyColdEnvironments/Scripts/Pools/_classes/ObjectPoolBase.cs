@@ -110,7 +110,7 @@ namespace CCEnvs.Pools
             disposed = true;
         }
 
-        protected virtual void OnGet(PooledHandle<T> handledObj)
+        protected virtual void GetCore(PooledHandle<T> handledObj)
         {
             T obj = handledObj.Value;
 
@@ -118,65 +118,36 @@ namespace CCEnvs.Pools
             TryProcessUnityObjectOnGet(obj);
 #endif
 
-            if (IsPoolableObject)
-            {
-                var poolable = (IPoolable)obj;
+            TryProcessPoolableObjectOnGet(handledObj);
 
-                poolable.PoolHandle.IfSome(static _ => throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}"));
-                poolable.PoolHandle = handledObj;
-
-                try
-                {
-                    poolable.OnSpawned();
-                }
-                catch (Exception ex)
-                {
-                    poolable.PrintException(ex);
-                }
-            }
+            activeItemHandles.Add(handledObj.Value, handledObj);
 
             getCmd?.Execute(obj);
         }
 
         protected virtual void ReturnCore(T obj)
         {
-            if (fastObject is null)
-            {
-                fastObject = obj;
-                return;
-            }
+            activeItemHandles.Remove(obj);
 
-            inactiveItems.Push(obj);
-        }
-
-        protected virtual void OnReturn(T obj)
-        {
 #if UNITY_2017_1_OR_NEWER
 
             TryProcessUnityObjectOnReturn(obj);
 #endif
 
-            if (IsPoolableObject)
-            {
-                var poolable = (IPoolable)obj;
+            TryProcessPoolableObjectOnReturn(obj);
 
-                if (poolable.PoolHandle.IsSome)
-                    poolable.PoolHandle.Raw.As<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
+            inactiveItems.Push(obj);
 
-                poolable.PoolHandle = Maybe<IDisposable>.None;
-
-                try
-                {
-                    poolable.OnDespawned();
-                }
-                catch (Exception ex)
-                {
-                    poolable.PrintException(ex);
-                }
-            }
-
-            RemoveFromActive(obj);
             returnCmd?.Execute(obj);
+        }
+
+        protected virtual void OnReturn(T obj)
+        {
+            if (fastObject is null)
+            {
+                fastObject = obj;
+                return;
+            }
         }
 
         protected PooledHandle<T> CreateHandle(T obj)
@@ -195,9 +166,63 @@ namespace CCEnvs.Pools
             return new System.InvalidOperationException("Pool is empty and a factory not found");
         }
 
+        protected void TryProcessPoolableObjectOnGet(PooledHandle<T> obj)
+        {
+            if (IsPoolableObject)
+                OnPoolableGet((IPoolable)obj.Value, obj);
+        }
+
+        protected void TryProcessPoolableObjectOnReturn(T obj)
+        {
+            if (IsPoolableObject)
+                OnPoolableReturn((IPoolable)obj);
+        }
+
+        protected T GetFromInactive()
+        {
+            if (fastObject is not null)
+            {
+                var t = fastObject;
+                fastObject = null;
+
+                return t;
+            }
+
+            return inactiveItems.Pop();
+        }
+
+        protected bool IsObjectValid([NotNullWhen(true)] T? obj)
+        {
+            if (obj.IsNull())
+                return false;
+
+            if (!IsPoolableObject)
+                return true;
+
+            return ((IPoolable)obj).IsValid;
+        }
+
         private void RemoveFromActive(T obj)
         {
             activeItemHandles.Remove(obj);
+        }
+
+        private void OnPoolableGet(IPoolable poolable, PooledHandle<T> handledObj)
+        {
+            poolable.PoolHandle.IfSome(static _ => throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}"));
+            poolable.PoolHandle = handledObj;
+
+            poolable.OnSpawned();
+        }
+
+        private void OnPoolableReturn(IPoolable poolable)
+        {
+            if (poolable.PoolHandle.IsSome)
+                poolable.PoolHandle.Raw.As<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
+
+            poolable.PoolHandle = Maybe<IDisposable>.None;
+
+            poolable.OnDespawned();
         }
 
 #if UNITY_2017_1_OR_NEWER

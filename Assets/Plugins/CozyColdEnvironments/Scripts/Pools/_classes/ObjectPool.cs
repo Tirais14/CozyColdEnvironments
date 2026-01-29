@@ -44,9 +44,9 @@ namespace CCEnvs.Pools
         {
             T? obj = null;
 
-            while (obj.IsNull())
+            while (!IsObjectValid(obj))
             {
-                if (InactiveCount <= 0)
+                if (InactiveCount < 1)
                 {
                     if (factory is null)
                         throw IsEmptyException();
@@ -55,17 +55,11 @@ namespace CCEnvs.Pools
                     Return(obj);
                 }
 
-                if (fastObject is not null)
-                {
-                    obj = fastObject;
-                    fastObject = null;
-                }
-                else
-                    obj = inactiveItems.Pop();
+                obj = GetFromInactive();
             }
 
             var handle = CreateHandle(obj);
-            OnGet(handle);
+            GetCore(handle);
 
             return handle;
         }
