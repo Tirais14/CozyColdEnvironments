@@ -1,10 +1,12 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 #nullable enable
 #pragma warning disable S3267
@@ -64,14 +66,8 @@ namespace CCEnvs.Pools
 
         public virtual void Return(T? obj)
         {
-            if (obj is null)
+            if (!IsObjectValid(obj))
                 return;
-
-            if (obj.Equals(null))
-            {
-                activeItemHandles.Remove(obj!);
-                return;
-            }
 
             ReturnCore(obj);
             OnReturn(obj);
@@ -100,8 +96,11 @@ namespace CCEnvs.Pools
 
             if (disposing)
             {
+                DisposeInactiveItems();
+
                 activeItemHandles.Values.DisposeEach();
                 activeItemHandles.Clear();
+
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
                 fastObject = null;
@@ -136,7 +135,10 @@ namespace CCEnvs.Pools
 
             TryProcessPoolableObjectOnReturn(obj);
 
-            inactiveItems.Push(obj);
+            if (fastObject is null)
+                fastObject = obj;
+            else
+                inactiveItems.Push(obj);
 
             returnCmd?.Execute(obj);
         }
@@ -209,7 +211,9 @@ namespace CCEnvs.Pools
 
         private void OnPoolableGet(IPoolable poolable, PooledHandle<T> handledObj)
         {
-            poolable.PoolHandle.IfSome(static _ => throw new InvalidOperationException($"Trying to get a poolable which has a {nameof(IPoolable.PoolHandle)}"));
+            if (poolable.PoolHandle.IsSome)
+                throw new InvalidOperationException($"Object: {handledObj.Value} already has pool handle");
+
             poolable.PoolHandle = handledObj;
 
             poolable.OnSpawned();
@@ -223,6 +227,22 @@ namespace CCEnvs.Pools
             poolable.PoolHandle = Maybe<IDisposable>.None;
 
             poolable.OnDespawned();
+        }
+
+        private void DisposeInactiveItems()
+        {
+            foreach (var item in inactiveItems)
+            {
+#if UNITY_2017_1_OR_NEWER
+                if (TryGetGameObject(item, out var go))
+                    UnityEngine.Object.Destroy(go);
+#endif
+
+                if (item is IDisposable objDispsoable)
+                    objDispsoable.Dispose();
+            }
+
+            inactiveItems.Clear();
         }
 
 #if UNITY_2017_1_OR_NEWER

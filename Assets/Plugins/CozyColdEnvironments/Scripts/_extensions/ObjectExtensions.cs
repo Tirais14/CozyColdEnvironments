@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs
@@ -263,26 +264,6 @@ namespace CCEnvs
             }
 
             return converter(source).Is<TOut>(out local);
-        }
-
-        /// <summary>Checks for unity or system <see langword="null"/></summary>
-        public static bool IsNull<T>([NotNullWhen(false)] this T? obj)
-        {
-            return new NullValidator<T>(obj).IsNull;
-        }
-
-        /// <summary>Checks for unity or system <see langword="null"/></summary>
-        public static bool IsNull<T>([NotNullWhen(false)] this T? obj, out NullValidator<T> validationResult)
-        {
-            validationResult = new NullValidator<T>(obj);
-
-            return validationResult.IsNull;
-        }
-
-        /// <summary>Inverted</summary>
-        public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj)
-        {
-            return !new NullValidator<T>(obj).IsNull;
         }
 
         /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>

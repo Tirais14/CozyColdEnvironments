@@ -1,8 +1,8 @@
+#if UNITY_2017_1_OR_NEWER
 using CCEnvs.Unity.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.Components
             IsDestroyed = true;
         }
 
-        public IDisposable BindDisposable(IDisposable disposable)
+        public IDisposable RegisterDisposable(IDisposable disposable)
         {
             CC.Guard.IsNotNull(disposable, nameof(disposable));
 
@@ -70,34 +70,19 @@ namespace CCEnvs.Unity.Components
 
     public static class CCBehaviourExtensions
     {
-        ///// <summary>
-        ///// Disposes when <see cref="MonoBehaviour"/> destroyed
-        ///// </summary>
-        ///// <returns>self</returns>
-        //public static IDisposable AddTo(this IDisposable? source, MonoBehaviour beh)
-        //{
-        //    if (source.IsNull())
-        //        return Disposable.Empty;
-
-        //    CC.Guard.IsNotNull(beh, nameof(beh));
-
-        //    source.AddTo(beh.destroyCancellationToken);
-
-        //    return source;
-        //}
-
         /// <summary>
         /// Disposes when <see cref="CCBehaviour"/> destroyed
         /// </summary>
         /// <returns>self</returns>
-        public static IDisposable AddToBehaviour(this IDisposable? source, CCBehaviour beh)
+        public static IDisposable RegisterDisposableTo(this IDisposable? source, CCBehaviour beh)
         {
             if (source.IsNull())
                 return Disposable.Empty;
 
             CC.Guard.IsNotNull(beh, nameof(beh));
 
-            return beh.BindDisposable(source);
+            return beh.RegisterDisposable(source);
         }
     }
 }
+#endif

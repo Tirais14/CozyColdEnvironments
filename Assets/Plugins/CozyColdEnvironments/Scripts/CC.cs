@@ -14,6 +14,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CCEnvs
@@ -52,10 +53,28 @@ namespace CCEnvs
         [field: OnInstallResetable]
         public static CommandScheduler CommandScheduler { get; private set; } = CommandScheduler.CreateDefaultRegistered();
 
+        public static Thread MainThread { get; private set; } = null!;
+
         #region Install
         public static void Install()
         {
+            MainThread = Thread.CurrentThread;
+
             CCProjectHelper.Install();
+        }
+
+        public static bool IsMainThread(Thread thread)
+        {
+            Guard.IsNotNull(thread, nameof(thread));
+
+            return thread.ManagedThreadId == MainThread.ManagedThreadId;
+        }
+
+        public static void AddNullValidationStep(Action<object, bool> nullValidation)
+        {
+            Guard.IsNotNull(nullValidation, nameof(nullValidation));
+
+
         }
 
         [OnInstallMethod]

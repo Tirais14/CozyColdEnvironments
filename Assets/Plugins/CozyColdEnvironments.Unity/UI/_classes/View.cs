@@ -130,12 +130,12 @@ namespace CCEnvs.Unity.UI
                     if (pair.Current.Value.IsSome)
                     {
                         if (pair.Current.Value.Raw is IDisposable disp)
-                            disp.AddToBehaviour(@this);
+                            disp.RegisterDisposableTo(@this);
 
                         @this.Init();
                     }
                 })
-                .AddToBehaviour(this);
+                .RegisterDisposableTo(this);
         }
     }
 }

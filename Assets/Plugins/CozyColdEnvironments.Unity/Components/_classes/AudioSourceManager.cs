@@ -45,8 +45,8 @@ namespace CCEnvs.Unity.Components
                 {
                     UnregisterAudioSource(audioSourceEntry);
                 })
-                .AddToBehaviour(entry)
-                .AddToBehaviour(self);
+                .RegisterDisposableTo(entry)
+                .RegisterDisposableTo(self);
         }
 
         public static bool UnregisterAudioSource(AudioSourceManagerEntry entry)

@@ -147,7 +147,7 @@ namespace CCEnvs.Unity._3D
                 IsJumping = false;
 
             })
-                .AddToBehaviour(this);
+                .RegisterDisposableTo(this);
         }
 
         private Vector3 GetMoveDirection(Direction2D direction2D)

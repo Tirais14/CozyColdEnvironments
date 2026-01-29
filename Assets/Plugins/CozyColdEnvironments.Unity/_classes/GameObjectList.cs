@@ -173,7 +173,7 @@ namespace CCEnvs.Unity.UI
               {
                   input.@this.collection.Remove(input.go);
               })
-              .AddToBehaviour(this);
+              .RegisterDisposableTo(this);
         }
 
         protected virtual void OnRemove(GameObject go)
@@ -221,7 +221,7 @@ namespace CCEnvs.Unity.UI
                     @this.OnRemove(ev.OldValue);
                     @this.OnAdd(ev.NewValue);
                 })
-                .AddToBehaviour(this);
+                .RegisterDisposableTo(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

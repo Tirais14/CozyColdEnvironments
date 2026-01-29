@@ -1,4 +1,5 @@
 using CCEnvs.Attributes;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
@@ -8,6 +9,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using static CCEnvs.CC;
+using System.Threading;
 
 #nullable enable
 #pragma warning disable S101
@@ -63,6 +66,25 @@ namespace CCEnvs.Unity
 
                 return -1;
             }
+        }
+
+        [OnInstallMethod]
+        private static void SetupNullValidation()
+        {
+            NullValidation.SetOverride(static
+                obj =>
+                {
+                    if (obj is Object uObj)
+                    {
+                        if (obj is CCBehaviour beh)
+                            return beh.IsDestroyed;
+
+                        if (IsMainThread(Thread.CurrentThread))
+                            return uObj.Equals(null);
+                    }
+
+                    return false;
+                });
         }
 
         #region Install

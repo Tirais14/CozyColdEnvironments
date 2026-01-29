@@ -29,7 +29,7 @@ namespace CCEnvs.Unity
                     else
                         @this.modelSelection.Value = cmp.As<TModel>();
                 })
-                .AddToBehaviour(this);
+                .RegisterDisposableTo(this);
         }
 
         Observable<TModel> ISelectableController<TModel>.ObserveDeselected()
