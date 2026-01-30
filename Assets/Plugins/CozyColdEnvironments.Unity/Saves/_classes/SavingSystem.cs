@@ -248,6 +248,9 @@ namespace CCEnvs.Unity.Saves
             if (IsSaveLoading)
                 throw new InvalidOperationException("Already in save loading process");
 
+            if (IsSaving)
+                throw new InvalidOperationException("Cannot load save while saving");
+
             isSaveLoading.Value = true;
             var linkedTokenSource = cancellationToken.LinkTokens(self.destroyCancellationToken);
 
@@ -288,6 +291,9 @@ namespace CCEnvs.Unity.Saves
             if (IsSaveLoading)
                 throw new InvalidOperationException("Already in save loading process");
 
+            if (IsSaving)
+                throw new InvalidOperationException("Cannot load save while saving");
+
             isSaveLoading.Value = true;
             var linkedTokenSource = cancellationToken.LinkTokens(self.destroyCancellationToken);
 
@@ -310,6 +316,9 @@ namespace CCEnvs.Unity.Saves
         {
             if (IsSaving)
                 throw new InvalidOperationException("Already in saving process");
+
+            if (IsSaveLoading)
+                throw new InvalidOperationException("Cannot save game while save loading");
 
             isSaving.Value = true;
             var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
@@ -348,6 +357,9 @@ namespace CCEnvs.Unity.Saves
         {
             if (IsSaving)
                 throw new InvalidOperationException("Already in saving process");
+
+            if (IsSaveLoading)
+                throw new InvalidOperationException("Cannot save game while save loading");
 
             isSaving.Value = true;
             var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
@@ -451,6 +463,16 @@ namespace CCEnvs.Unity.Saves
         public Observable<bool> ObserveSavingFinished()
         {
             return isSaving.Where(static x => !x);
+        }
+
+        public Observable<bool> ObserveSaveLoadingStarted()
+        {
+            return isSaveLoading.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveSaveLoadingFinished()
+        {
+            return isSaveLoading.Where(static x => !x);
         }
 
         public Observable<SaveFileData> ObserveSaveData()

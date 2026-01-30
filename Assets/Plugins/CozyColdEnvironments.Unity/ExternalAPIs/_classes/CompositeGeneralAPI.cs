@@ -10,9 +10,6 @@ namespace CCEnvs.Unity.ExternalAPIs
     {
         private readonly List<IGeneralAPI> apis;
 
-        public Maybe<IPlayerAPI> PlayerAPI { get; }
-        public Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
-
         public bool IsInitialized => apis.All(api => api.IsInitialized);
         public bool IsGameReady => apis.All(api => api.IsGameReady);
         public bool IsGameplayMode => apis.All(api => api.IsGameplayMode);
@@ -23,13 +20,8 @@ namespace CCEnvs.Unity.ExternalAPIs
         public int GameplaySession => apis.Max(api => api.GameplaySession);
 
         public CompositeGeneralAPI(
-            IPlayerAPI? playerAPI,
-            IAdvertisementAPI? advertisementAPI,
             int capacity = 2)
         {
-            PlayerAPI = playerAPI.Maybe();
-            AdvertisementAPI = advertisementAPI.Maybe();
-
             apis = new List<IGeneralAPI>(capacity);
         }
 

@@ -8,6 +8,7 @@ using System;
 using YG;
 
 #nullable enable
+#pragma warning disable IDE0060
 namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexAPI : IGeneralAPI
@@ -20,13 +21,14 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         private readonly ReactiveProperty<bool> isGamePaused = new();
         private readonly ReactiveProperty<bool> isGameWindowShown = new();
         private readonly ReactiveProperty<bool> isGameWindowFocused = new();
-        private readonly ReactiveProperty<bool> isGameSaving = new();
 
         private readonly ReactiveProperty<int> gameplaySession = new();
 
         private readonly CompositeDisposable disposables = new();
 
         private Observable<bool>? isGameplayModeObservable;
+
+        private bool isInitializing;
 
         public bool IsGameplayMode => YG2.isGameplaying;
 
@@ -35,7 +37,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public bool IsGamePaused => isGamePaused.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
-        public bool IsGameSaving => isGameSaving.Value;
+        public bool IsGameSaving => SavingSystem.Self.IsSaving;
+        public bool IsSaveGameLoading => SavingSystem.Self.IsSaveLoading;
 
         public int GameplaySession => gameplaySession.Value;
 
@@ -63,8 +66,28 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public void Initialize()
         {
+            if (IsInitialized)
+                throw new InvalidOperationException("Already initialized");
+
+            if (isInitializing)
+                throw new InvalidOperationException("Already initializing");
+
+            isInitializing = true;
+
             YG2.StartInit();
-            isInitialized.Value = true;
+
+            UniTask.Create(this,
+                static async @this =>
+                {
+                    await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
+
+                    //some delay between initialized
+                    await UniTask.WaitForSeconds(1f);
+
+                    @this.isInitialized.Value = true;
+                    @this.isInitializing = false;
+                })
+                .Forget();
         }
 
         public void PauseGame()
@@ -86,6 +109,16 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
+        public async UniTask SaveGameAsync(string? filePath = null)
+        {
+            await SavingSystem.Self.SaveInMemoryAsync();
+        }
+
+        public async UniTask LoadSaveGameAsync(string? filePath = null)
+        {
+            await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
+        }
+
         private bool disposed;
         public void Dispose()
         {
@@ -97,6 +130,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             YG2.onShowWindowGame -= OnShowWindowGame;
             YG2.onFocusWindowGame -= OnFocusWindowGame;
 
+            isInitialized.Dispose();
             isGameReady.Dispose();
             isGamePaused.Dispose();
             isGameWindowShown.Dispose();
@@ -105,6 +139,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             gameplaySession.Dispose();
 
             disposables.Dispose();
+            disposables.Clear();
 
             disposed = true;
         }
@@ -145,14 +180,19 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             return isGameWindowFocused;
         }
 
-        public Observable<bool> ObserveIsGameSaving()
-        {
-            return isGameSaving;
-        }
-
         public Observable<int> ObserveGameplaySession()
         {
             return gameplaySession;
+        }
+
+        public Observable<bool> ObserveIsGameSaving()
+        {
+            return SavingSystem.Self.ObserveSavingStarted().Merge(SavingSystem.Self.ObserveSavingFinished());
+        }
+
+        public Observable<bool> ObserveIsSaveGameLoading()
+        {
+            return SavingSystem.Self.ObserveSaveLoadingStarted().Merge(SavingSystem.Self.ObserveSaveLoadingFinished());
         }
 
         private void OnPauseGame(bool state)
@@ -187,8 +227,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         {
             SavingSystem.Self.ObserveSaveData()
                 .Where(this, static (_, @this) => @this.isInitialized.Value)
-                .Subscribe(
-                saveData =>
+                .Subscribe(this,
+                static (saveData, @this) =>
                 {
                     var serializedSaveData = JsonConvert.SerializeObject(saveData, CC.JsonSettings);
                     YG2.saves.serializedData = serializedSaveData;
