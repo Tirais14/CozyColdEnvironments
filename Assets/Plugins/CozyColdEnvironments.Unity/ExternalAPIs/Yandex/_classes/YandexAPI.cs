@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using System;
+using System.Threading;
 using YG;
 
 #nullable enable
@@ -109,14 +110,23 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
-        public async UniTask SaveGameAsync(string? filePath = null)
+        public async UniTask SaveGameAsync(
+            string? filePath = null,
+            CancellationToken cancellationToken = default
+            )
         {
-            await SavingSystem.Self.SaveInMemoryAsync();
+            await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
         }
 
-        public async UniTask LoadSaveGameAsync(string? filePath = null)
+        public async UniTask LoadSaveGameAsync(
+            string? filePath = null,
+            CancellationToken cancellationToken = default
+            )
         {
-            await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
+            await SavingSystem.Self.LoadFromSerializedData(
+                YG2.saves.serializedData,
+                cancellationToken
+                );
         }
 
         private bool disposed;

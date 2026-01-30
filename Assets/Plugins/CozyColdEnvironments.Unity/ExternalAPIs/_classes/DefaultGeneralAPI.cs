@@ -1,5 +1,8 @@
 using CCEnvs.Attributes;
+using CCEnvs.Unity.Saves;
+using Cysharp.Threading.Tasks;
 using R3;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.ExternalAPIs
@@ -24,6 +27,8 @@ namespace CCEnvs.Unity.ExternalAPIs
         public bool IsGamePaused => isGamePaused.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
+        public bool IsGameSaving => SavingSystem.Self.IsSaving;
+        public bool IsSaveGameLoading => SavingSystem.Self.IsSaveLoading;
 
         public int GameplaySession => gameplaySession.Value;
 
@@ -64,6 +69,31 @@ namespace CCEnvs.Unity.ExternalAPIs
         public void SetGameReady(bool state)
         {
             isGameReady.Value = state;
+        }
+
+        public async UniTask SaveGameAsync(
+            string? filePath = null,
+            CancellationToken cancellationToken = default
+            )
+        {
+            if (filePath.IsNullOrWhiteSpace())
+            {
+                await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
+                return;
+            }
+
+            await SavingSystem.Self.SaveInFileAsync(filePath, cancellationToken);
+        }
+
+        public async UniTask LoadSaveGameAsync(
+            string? filePath = null,
+            CancellationToken cancellationToken = default
+            )
+        {
+            if (filePath.IsNullOrWhiteSpace())
+                throw new System.NotSupportedException($"Save game loading without {nameof(filePath)} not supported");
+
+            await SavingSystem.Self.LoadFromFileAsync(filePath, cancellationToken);
         }
 
         private bool disposed;
@@ -117,6 +147,16 @@ namespace CCEnvs.Unity.ExternalAPIs
         public Observable<int> ObserveGameplaySession()
         {
             return gameplaySession;
+        }
+
+        public Observable<bool> ObserveIsGameSaving()
+        {
+            return SavingSystem.Self.ObserveSaveLoadingStarted().Merge(SavingSystem.Self.ObserveSaveLoadingFinished());
+        }
+
+        public Observable<bool> ObserveIsSaveGameLoading()
+        {
+            return SavingSystem.Self.ObserveSavingStarted().Merge(SavingSystem.Self.ObserveSavingFinished());
         }
     }
 }

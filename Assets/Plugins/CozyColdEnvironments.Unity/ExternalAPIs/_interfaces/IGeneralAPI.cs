@@ -1,8 +1,8 @@
 #nullable enable
-using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
+using System.Threading;
 
 namespace CCEnvs.Unity.ExternalAPIs
 {
@@ -31,9 +31,9 @@ namespace CCEnvs.Unity.ExternalAPIs
 
         void UnpauseGame();
 
-        UniTask SaveGameAsync(string? filePath = null);
+        UniTask SaveGameAsync(string? filePath = null, CancellationToken cancellationToken = default);
 
-        UniTask LoadSaveGameAsync(string? filePath = null);
+        UniTask LoadSaveGameAsync(string? filePath = null, CancellationToken cancellationToken = default);
 
         Observable<bool> ObserveIsInitialized();
 
