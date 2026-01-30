@@ -18,14 +18,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private readonly ReactiveProperty<int> advertisementCount = new();
 
-        private readonly Dictionary<AdvertisementTypes, AdvertisementInfo> advertisementInfos = new()
-        {
-            { AdvertisementTypes.None, new AdvertisementInfo().SetShowInterval(float.PositiveInfinity) },
-            { AdvertisementTypes.Fullscreen, new AdvertisementInfo().SetShowInterval(0f) },
-            { AdvertisementTypes.Sticker, new AdvertisementInfo().SetShowInterval(0f) },
-            { AdvertisementTypes.Other, new AdvertisementInfo().SetShowInterval(0f) },
-            { AdvertisementTypes.Any, new AdvertisementInfo().SetShowInterval(0f) },
-        };
+        private readonly Dictionary<AdvertisementTypes, AdvertisementInfo> advertisementInfos = new();
 
         private ReactiveCommand<AdvertisementTypes>? shownAdvertisementTypeCmd;
         private ReactiveCommand<AdvertisementTypes>? showAdvertisementErrorCmd;
@@ -42,43 +35,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             TimeProvider = timeProvider ?? UnityTimeProvider.Update;
 
-            YG2.onOpenAnyAdv += () =>
-            {
-                advertisementCount.Value++;
-                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Any);
-            };
-
-            YG2.onCloseAnyAdv += () =>
-            {
-                advertisementCount.Value--;
-
-                if (advertisementCount.Value < 0)
-                    advertisementCount.Value = 0;
-            };
-
-            YG2.onErrorAnyAdv += () =>
-            {
-                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
-            };
-
-#if BannerAdv_yg
-            YG2.onBannerError += () =>
-            {
-                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Banner);
-            };
-#endif
-
-#if InterstitialAdv_yg
-            YG2.onOpenInterAdv += () =>
-            {
-                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Fullscreen);
-            };
-
-            YG2.onErrorInterAdv += () =>
-            {
-                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Fullscreen);
-            };
-#endif
+            BindEvents();
+            SetupAdvertisementInfos();
 
             Instance = this;
         }
@@ -106,7 +64,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
             {
 #if InterstitialAdv_yg
-                if (YG2.timerInterAdv <= YG2.interAdvInterval
+                if (!YG2.isTimerAdvCompleted
                     ||
                     !advertisementInfos.TryGetValue(advertisementType, out var adInfo)
                     ||
@@ -185,6 +143,61 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             showAdvertisementErrorCmd ??= new ReactiveCommand<AdvertisementTypes>();
 
             return showAdvertisementErrorCmd;
+        }
+
+        private void BindEvents()
+        {
+            YG2.onOpenAnyAdv += () =>
+            {
+                advertisementCount.Value++;
+                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Any);
+            };
+
+            YG2.onCloseAnyAdv += () =>
+            {
+                advertisementCount.Value--;
+
+                if (advertisementCount.Value < 0)
+                    advertisementCount.Value = 0;
+            };
+
+            YG2.onErrorAnyAdv += () =>
+            {
+                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
+            };
+
+#if BannerAdv_yg
+            YG2.onBannerError += () =>
+            {
+                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Banner);
+            };
+#endif
+
+#if InterstitialAdv_yg
+            YG2.onOpenInterAdv += () =>
+            {
+                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Fullscreen);
+            };
+
+            YG2.onErrorInterAdv += () =>
+            {
+                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Fullscreen);
+            };
+#endif
+        }
+
+        private void SetupAdvertisementInfos()
+        {
+            var pairs = new KeyValuePair<AdvertisementTypes, AdvertisementInfo>[]
+            {
+                new(AdvertisementTypes.None, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(float.PositiveInfinity)),
+                new(AdvertisementTypes.Fullscreen, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
+                new(AdvertisementTypes.Sticker, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
+                new(AdvertisementTypes.Other, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
+                new(AdvertisementTypes.Any, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
+            };
+
+            advertisementInfos.AddRange(pairs);
         }
     }
 }
