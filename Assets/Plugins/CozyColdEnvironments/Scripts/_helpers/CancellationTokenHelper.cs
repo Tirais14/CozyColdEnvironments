@@ -11,13 +11,13 @@ namespace CCEnvs
             ref int frame,
             int frameInterval = 3)
         {
-            frame++;
-
-            if (frame > frameInterval)
+            if (frameInterval == 0 || (frame % frameInterval) == 0)
             {
                 frame = 0;
                 cancellationToken.ThrowIfCancellationRequested();
             }
+
+            frame++;
         }
 
         public static void ThrowIfCancellationRequestedByIntervalAndMoveNext(
@@ -25,13 +25,13 @@ namespace CCEnvs
             ref long frame,
             long frameInterval = 10L)
         {
-            frame++;
-
-            if (frame > frameInterval)
+            if (frameInterval == 0 || (frame % frameInterval) == 0)
             {
                 frame = 0L;
                 cancellationToken.ThrowIfCancellationRequested();
             }
+
+            frame++;
         }
 
         public static void ThrowIfCancellationRequestedByInterval(
@@ -39,7 +39,7 @@ namespace CCEnvs
             int frame,
             int frameInterval = 3)
         {
-            if ((frame % frameInterval) == 0)
+            if (frameInterval == 0 || (frame % frameInterval) == 0)
                 cancellationToken.ThrowIfCancellationRequested();
         }
 
@@ -48,7 +48,7 @@ namespace CCEnvs
             long frame,
             long frameInterval = 10L)
         {
-            if ((frame % frameInterval) == 0)
+            if (frameInterval == 0L || (frame % frameInterval) == 0)
                 cancellationToken.ThrowIfCancellationRequested();
         }
 

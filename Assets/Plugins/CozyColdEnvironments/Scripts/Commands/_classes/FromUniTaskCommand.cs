@@ -14,16 +14,9 @@ namespace CCEnvs.Patterns.Commands
         public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;
         public override bool IsFaulted => Task.Status == UniTaskStatus.Faulted;
 
-        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await Task;
-            }
-            catch (System.Exception ex)
-            {
-                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
-            }
+            return default;
         }
 
         protected override void OnReset()
@@ -41,16 +34,9 @@ namespace CCEnvs.Patterns.Commands
         public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;
         public override bool IsFaulted => Task.Status == UniTaskStatus.Faulted;
 
-        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await Task;
-            }
-            catch (System.Exception ex)
-            {
-                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
-            }
+            return default;
         }
 
         protected override void OnReset()

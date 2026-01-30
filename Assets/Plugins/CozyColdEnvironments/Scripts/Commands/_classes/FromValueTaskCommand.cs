@@ -12,16 +12,9 @@ namespace CCEnvs.Patterns.Commands
         public override bool IsCompleted => Task.IsCompletedSuccessfully;
         public override bool IsFaulted => Task.IsFaulted;
 
-        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await Task;
-            }
-            catch (System.Exception ex)
-            {
-                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
-            }
+            return default;
         }
 
         protected override void OnReset()
@@ -39,16 +32,9 @@ namespace CCEnvs.Patterns.Commands
         public override bool IsCompleted => Task.IsCompletedSuccessfully;
         public override bool IsFaulted => Task.IsFaulted;
 
-        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await Task;
-            }
-            catch (System.Exception ex)
-            {
-                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
-            }
+            return default;
         }
 
         protected override void OnReset()

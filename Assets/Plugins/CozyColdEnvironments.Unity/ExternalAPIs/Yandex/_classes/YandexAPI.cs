@@ -43,10 +43,14 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public int GameplaySession => gameplaySession.Value;
 
-        public YandexAPI()
+        public TimeProvider TimeProvider { get; }
+
+        public YandexAPI(TimeProvider? timeProvider = null)
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
+
+            TimeProvider = timeProvider ?? UnityTimeProvider.Update;
 
             BindEvents();
             BindSavingSystem();

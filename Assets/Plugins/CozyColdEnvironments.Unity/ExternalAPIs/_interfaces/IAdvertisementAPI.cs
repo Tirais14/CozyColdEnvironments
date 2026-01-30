@@ -9,7 +9,14 @@ namespace CCEnvs.Unity.ExternalAPIs
         bool IsAdvertisementShown { get; }
         int AdvertisementCount { get; }
 
+        TimeProvider TimeProvider { get; }
+
         void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null);
+
+        IAdvertisementAPI SetAdvertisementShowInterval(
+            AdvertisementTypes advertisementType,
+            float intervalInSeconds
+            );
 
         Observable<bool> ObserveIsAdvertisementShown();
 

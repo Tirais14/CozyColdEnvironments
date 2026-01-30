@@ -2,6 +2,7 @@ using CCEnvs.Attributes;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using R3;
+using System;
 using System.Threading;
 
 #nullable enable
@@ -32,10 +33,14 @@ namespace CCEnvs.Unity.ExternalAPIs
 
         public int GameplaySession => gameplaySession.Value;
 
-        public DefaultGeneralAPI()
+        public TimeProvider TimeProvider { get; }
+
+        public DefaultGeneralAPI(TimeProvider? timeProvider = null)
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(DefaultGeneralAPI));
+
+            TimeProvider = timeProvider ?? UnityTimeProvider.Update;
 
             Instance = this;
         }

@@ -1,6 +1,10 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
 using R3;
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using YG;
 
@@ -14,16 +18,29 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private readonly ReactiveProperty<int> advertisementCount = new();
 
+        private readonly Dictionary<AdvertisementTypes, AdvertisementInfo> advertisementInfos = new()
+        {
+            { AdvertisementTypes.None, new AdvertisementInfo().SetShowInterval(float.PositiveInfinity) },
+            { AdvertisementTypes.Fullscreen, new AdvertisementInfo().SetShowInterval(0f) },
+            { AdvertisementTypes.Sticker, new AdvertisementInfo().SetShowInterval(0f) },
+            { AdvertisementTypes.Other, new AdvertisementInfo().SetShowInterval(0f) },
+            { AdvertisementTypes.Any, new AdvertisementInfo().SetShowInterval(0f) },
+        };
+
         private ReactiveCommand<AdvertisementTypes>? shownAdvertisementTypeCmd;
         private ReactiveCommand<AdvertisementTypes>? showAdvertisementErrorCmd;
 
         public bool IsAdvertisementShown => advertisementCount.Value > 0;
         public int AdvertisementCount => advertisementCount.Value;
 
-        public YandexAdvertisementAPI()
+        public TimeProvider TimeProvider { get; }
+
+        public YandexAdvertisementAPI(TimeProvider? timeProvider = null)
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAdvertisementAPI));
+
+            TimeProvider = timeProvider ?? UnityTimeProvider.Update;
 
             YG2.onOpenAnyAdv += () =>
             {
@@ -74,6 +91,13 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (advertisementType.IsFlagSetted(AdvertisementTypes.Banner))
             {
 #if BannerAdv_yg
+                if (!advertisementInfos.TryGetValue(advertisementType, out var adInfo)
+                    ||
+                    !adInfo.TrySetShown())
+                {
+                    return;
+                }
+
                 YG2.ShowBanner();
 #else
                 throw new System.NotSupportedException(AdvertisementTypes.Banner.ToString());
@@ -82,6 +106,15 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
             {
 #if InterstitialAdv_yg
+                if (YG2.timerInterAdv <= YG2.interAdvInterval
+                    ||
+                    !advertisementInfos.TryGetValue(advertisementType, out var adInfo)
+                    ||
+                    !adInfo.TrySetShown())
+                {
+                    return;
+                }
+
                 YG2.InterstitialAdvShow();
 #else
                 throw new System.NotSupportedException(AdvertisementTypes.Fullscreen.ToString());
@@ -89,6 +122,22 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Rewarding))
                 throw new System.NotSupportedException(AdvertisementTypes.Rewarding.ToString());
+        }
+
+        public IAdvertisementAPI SetAdvertisementShowInterval(
+            AdvertisementTypes advertisementType, 
+            float intervalInSeconds
+            )
+        {
+            if (advertisementType == AdvertisementTypes.None)
+                throw new ArgumentException(advertisementType.ToString(), nameof(advertisementType));
+
+            Guard.IsGreaterThanOrEqualTo(intervalInSeconds, 0, nameof(intervalInSeconds));
+
+            advertisementInfos[advertisementType] = advertisementInfos.GetOrCreateNew(advertisementType)
+                .SetShowInterval(intervalInSeconds);
+
+            return this;
         }
 
         private bool disposed;

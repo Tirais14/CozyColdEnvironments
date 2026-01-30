@@ -19,6 +19,8 @@ namespace CCEnvs.Unity.ExternalAPIs
 
         int GameplaySession { get; }
 
+        TimeProvider TimeProvider { get; }
+
         void Initialize();
 
         void SetGameReady(bool state);

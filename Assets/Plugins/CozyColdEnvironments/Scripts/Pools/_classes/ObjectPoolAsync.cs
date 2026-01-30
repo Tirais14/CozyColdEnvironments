@@ -149,16 +149,6 @@ namespace CCEnvs.Pools
                 tasks.Dispose();
                 handles.Dispose();
             }
-
-            #region OnlyOneAwaited
-            //var handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(DefaultCapacity, DefaultCapacity);
-
-            //for (int i = 0; i < resolvedCount; i++)
-            //    handles[i] = await GetAsync();
-
-            //for (int i = 0; i < resolvedCount; i++)
-            //    handles[i].Dispose();
-            #endregion
         }
     }
 }
