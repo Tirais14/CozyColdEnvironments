@@ -55,7 +55,8 @@ namespace CCEnvs.Unity.Components
 
         private async UniTaskVoid OnLocaleChangedAsync()
         {
-            Command.Builder.NextStep(this)
+            Command.Builder.SetName(string.Join('.', nameof(TMP_DropdownLocalizer), nameof(OnLocaleChangedAsync)))
+                .NextStep(this)
                 .Asyncronously()
                 .SetExecuteAction(async (@this, token) =>
                 {
@@ -65,7 +66,7 @@ namespace CCEnvs.Unity.Components
                     {
                         await @this.RecreateOptionsAsync(tokenSource.Token);
 
-                        await UpdateDropdownValueAsync();
+                        UpdateDropdownValue();
                     }
                     finally
                     {
@@ -91,29 +92,12 @@ namespace CCEnvs.Unity.Components
             option.text = localizedString.GetLocalizedString();
         }
 
-        private async UniTask UpdateDropdownValueAsync()
+        private void UpdateDropdownValue()
         {
             if (dropdown.options.Count <= 1)
                 return;
 
-            await UniTask.Yield(timing: PlayerLoopTiming.PostLateUpdate);
-
-            var dropdownValue = dropdown.value;
-            var optionCount = dropdown.options.Count;
-
-            for (int i = 0; i < optionCount; i++)
-            {
-                if (i == dropdownValue)
-                    continue;
-
-                dropdown.value = i;
-
-                await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
-
-                dropdown.value = dropdownValue;
-
-                break;
-            }
+            dropdown.captionText.text = dropdown.options[dropdown.value].text;
         }
 
         private async UniTask RecreateOptionsAsync(CancellationToken cancellationToken)

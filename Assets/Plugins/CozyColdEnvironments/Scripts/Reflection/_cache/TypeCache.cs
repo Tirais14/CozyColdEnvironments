@@ -6,6 +6,7 @@ using System.Reflection;
 #nullable enable
 namespace CCEnvs.Reflection
 {
+    [Obsolete]
     public static class TypeCache
     {
         public static Dictionary<Type, object?> DefaultValues { get; } = new(0);

@@ -6,45 +6,57 @@ using System.Threading.Tasks;
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class FromUniTaskCommand : CommandAsync
+    public sealed class FromUniTaskCommand : PoolableCommandAsync
     {
-        private readonly UniTask task;
+        public UniTask Task { get; set; }
 
-        public override bool IsCancelled => task.Status == UniTaskStatus.Canceled;
-        public override bool IsCompleted => task.Status == UniTaskStatus.Succeeded;
-        public override bool IsFaulted => task.Status == UniTaskStatus.Faulted;
+        public override bool IsCancelled => Task.Status == UniTaskStatus.Canceled;
+        public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;
+        public override bool IsFaulted => Task.Status == UniTaskStatus.Faulted;
 
-        public FromUniTaskCommand(UniTask task)
-            :
-            base(isSingle: false)
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            this.task = task;
+            try
+            {
+                await Task;
+            }
+            catch (System.Exception ex)
+            {
+                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
+            }
         }
 
-        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override void OnReset()
         {
-            return default;
+            base.OnReset();
+            Task = default;
         }
     }
 
-    public class FromUniTaskCommand<T> : CommandAsync
+    public class FromUniTaskCommand<T> : PoolableCommandAsync
     {
-        private readonly UniTask<T> task;
+        public UniTask<T> Task { get; set; }
 
-        public override bool IsCancelled => task.Status == UniTaskStatus.Canceled;
-        public override bool IsCompleted => task.Status == UniTaskStatus.Succeeded;
-        public override bool IsFaulted => task.Status == UniTaskStatus.Faulted;
+        public override bool IsCancelled => Task.Status == UniTaskStatus.Canceled;
+        public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;
+        public override bool IsFaulted => Task.Status == UniTaskStatus.Faulted;
 
-        public FromUniTaskCommand(UniTask<T> task)
-            :
-            base(isSingle: false)
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            this.task = task;
+            try
+            {
+                await Task;
+            }
+            catch (System.Exception ex)
+            {
+                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
+            }
         }
 
-        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override void OnReset()
         {
-            return default;
+            base.OnReset();
+            Task = default;
         }
     }
 }

@@ -334,7 +334,8 @@ namespace CCEnvs.Unity.Saves
                     path,
                     serializedsaveFileData,
                     cancellationToken: cTokenSource.Token
-                    );
+                    )
+                    .ConfigureAwait(true);
             }
             finally
             {
@@ -487,14 +488,16 @@ namespace CCEnvs.Unity.Saves
         {
             try
             {
+#if !PLATFORM_WEBGL
                 await UniTask.SwitchToThreadPool();
+#endif
 
                 using var _ = UnityEngine.Pool.ListPool<RegisteredObject>.Get(out var regObjs);
-                int iterationsPassed = 0;
+                int i = 0;
 
                 foreach (var regObj in objectSets.Values.SelectMany(x => x))
                 {
-                    cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
+                    cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref i);
 
                     if (regObj.SceneInfo != sceneInfo)
                         continue;
@@ -506,7 +509,9 @@ namespace CCEnvs.Unity.Saves
             }
             finally
             {
+#if !PLATFORM_WEBGL
                 await UniTask.SwitchToMainThread();
+#endif
             }
         }
 
@@ -529,11 +534,11 @@ namespace CCEnvs.Unity.Saves
                     cancellationToken
                     );
 
-                int iterationsPassed = 0;
+                int i = 0;
 
                 foreach (var regObj in regObjects.Value)
                 {
-                    cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
+                    cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref i);
 
                     try
                     {
@@ -750,7 +755,7 @@ namespace CCEnvs.Unity.Saves
             if (!File.Exists(path))
                 return default;
 
-            string serialized = await File.ReadAllTextAsync(path, cancellationToken);
+            string serialized = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(true);
 
             if (serialized.IsNullOrWhiteSpace())
                 return default;
@@ -768,18 +773,24 @@ namespace CCEnvs.Unity.Saves
 
             RegisteredObjectInfo regObjInfo;
 
-            try
-            {
+#if !PLATFORM_WEBGL
                 await UniTask.SwitchToThreadPool();
+            try
+#endif
+            {
 
                 foreach (var sceneData in snapshots)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    int iterationsPassed = 0;
 
-                    foreach (var snapshot in sceneData.Snapshots)
+                    int sceneDataSnapshotCount = sceneData.Snapshots.Count;
+                    KeyedSnapshot<ISnapshot> snapshot;
+
+                    for (int i = 0; i < sceneDataSnapshotCount; i++)
                     {
-                        cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);
+                        snapshot = sceneData.Snapshots[i];
+
+                        cancellationToken.ThrowIfCancellationRequestedByInterval(i);
 
                         if (snapshot.Key is not string snapshotKey)
                         {
@@ -789,15 +800,15 @@ namespace CCEnvs.Unity.Saves
 
                         regObjInfo = new RegisteredObjectInfo(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
                         loadedSnapshots.TryAdd(regObjInfo, snapshot);
-
-                        iterationsPassed++;
                     }
                 }
             }
+#if !PLATFORM_WEBGL
             finally
             {
                 await UniTask.SwitchToMainThread();
             }
+#endif
         }
 
         private void ApplyRegisteredSnapshots()

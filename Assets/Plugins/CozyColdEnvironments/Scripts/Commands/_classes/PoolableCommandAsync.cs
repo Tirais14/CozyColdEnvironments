@@ -31,12 +31,6 @@ namespace CCEnvs.Patterns.Commands
 
         }
 
-        public override async ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
-        {
-            await base.ExecuteAsync(cancellationToken);
-            this.To<IPoolable>().PoolHandle.IfSome(static handle => handle.Dispose());
-        }
-
         public virtual void OnDespawned()
         {
             Reset();

@@ -51,30 +51,24 @@ namespace CCEnvs
         public static JsonSerializerSettings DebugJsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
 
         [field: OnInstallResetable]
-        public static CommandScheduler CommandScheduler { get; private set; } = CommandScheduler.CreateDefaultRegistered();
+        public static CommandScheduler CommandScheduler { get; private set; } = null!;
 
-        public static Thread MainThread { get; private set; } = null!;
+        [field: OnInstallResetable]
+        public static int MainThreadID { get; private set; }
 
         #region Install
         public static void Install()
         {
-            MainThread = Thread.CurrentThread;
+            MainThreadID = Thread.CurrentThread.ManagedThreadId;
 
             CCProjectHelper.Install();
         }
 
         public static bool IsMainThread(Thread thread)
         {
-            Guard.IsNotNull(thread, nameof(thread));
+            CommunityToolkit.Diagnostics.Guard.IsNotNull(thread, nameof(thread));
 
-            return thread.ManagedThreadId == MainThread.ManagedThreadId;
-        }
-
-        public static void AddNullValidationStep(Action<object, bool> nullValidation)
-        {
-            Guard.IsNotNull(nullValidation, nameof(nullValidation));
-
-
+            return thread.ManagedThreadId == MainThreadID;
         }
 
         [OnInstallMethod]

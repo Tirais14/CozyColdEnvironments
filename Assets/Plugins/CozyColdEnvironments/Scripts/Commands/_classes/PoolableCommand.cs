@@ -29,12 +29,6 @@ namespace CCEnvs.Patterns.Commands
 
         }
 
-        public override sealed void Execute()
-        {
-            base.Execute();
-            this.To<IPoolable>().PoolHandle.IfSome(static handle => handle.Dispose());
-        }
-
         public virtual void OnDespawned()
         {
             Reset();

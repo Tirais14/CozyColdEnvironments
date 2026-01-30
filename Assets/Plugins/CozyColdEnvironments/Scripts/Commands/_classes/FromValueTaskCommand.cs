@@ -4,45 +4,57 @@ using System.Threading.Tasks;
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public class FromValueTaskCommand : CommandAsync
+    public class FromValueTaskCommand : PoolableCommandAsync
     {
-        private readonly ValueTask task;
+        public ValueTask Task { get; set; }
 
-        public override bool IsCancelled => task.IsCanceled;
-        public override bool IsCompleted => task.IsCompletedSuccessfully;
-        public override bool IsFaulted => task.IsFaulted;
+        public override bool IsCancelled => Task.IsCanceled;
+        public override bool IsCompleted => Task.IsCompletedSuccessfully;
+        public override bool IsFaulted => Task.IsFaulted;
 
-        public FromValueTaskCommand(ValueTask task)
-            :
-            base(isSingle: false)
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            this.task = task;
+            try
+            {
+                await Task;
+            }
+            catch (System.Exception ex)
+            {
+                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
+            }
         }
 
-        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override void OnReset()
         {
-            return default;
+            base.OnReset();
+            Task = default;
         }
     }
 
-    public class FromValueTaskCommand<T> : CommandAsync
+    public class FromValueTaskCommand<T> : PoolableCommandAsync
     {
-        private readonly ValueTask<T> task;
+        public ValueTask<T> Task { get; set; }
 
-        public override bool IsCancelled => task.IsCanceled;
-        public override bool IsCompleted => task.IsCompletedSuccessfully;
-        public override bool IsFaulted => task.IsFaulted;
+        public override bool IsCancelled => Task.IsCanceled;
+        public override bool IsCompleted => Task.IsCompletedSuccessfully;
+        public override bool IsFaulted => Task.IsFaulted;
 
-        public FromValueTaskCommand(ValueTask<T> task)
-            :
-            base(isSingle: false)
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            this.task = task;
+            try
+            {
+                await Task;
+            }
+            catch (System.Exception ex)
+            {
+                this.PrintExceptionAsLog(ex, Diagnostics.DebugArguments.Editor);
+            }
         }
 
-        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override void OnReset()
         {
-            return default;
+            base.OnReset();
+            Task = default;
         }
     }
 }

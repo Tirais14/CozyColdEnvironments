@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using CCEnvs.Collections;
+using CCEnvs.Pools;
 
 #nullable enable
 
@@ -77,8 +79,19 @@ namespace CCEnvs.Collections
         {
             CC.Guard.IsNotNull(disposables, nameof(disposables));
 
-            foreach (var item in disposables)
-                item.Dispose();
+            using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
+
+            foreach (var item in disposablesPooled.Value)
+            {
+                try
+                {
+                    item.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    item.PrintException(ex);
+                }
+            }
         }
 
         public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T> source, int sourceCount)
@@ -92,12 +105,9 @@ namespace CCEnvs.Collections
             return new PooledArray<T>(arrHandle, sourceCount, offset: 0);
         }
 
-        public static PooledHandle<T[]> EnumerableToArrayPooled<T>(this IEnumerable<T> source)
+        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T> source)
         {
             CC.Guard.IsNotNullSource(source);
-
-            if (source.TryGetNonEnumeratedCount(out int count))
-                return ArrayPool<T>.Shared.RentHandled(count);
 
             PooledHandle<T[]> items = ArrayPool<T>.Shared.RentHandled(16);
             int itemCount = 0;
@@ -119,7 +129,7 @@ namespace CCEnvs.Collections
                 items.Value[itemCount - 1] = item;
             }
 
-            return items;
+            return new PooledArray<T>(items, itemCount);
         }
 
         public static bool EqualsByElements<T>(this IEnumerable<T>? source, IEnumerable<T>? other)

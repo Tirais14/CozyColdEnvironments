@@ -2,6 +2,8 @@
 using CCEnvs.Collections;
 using System.Collections.Generic;
 using System;
+using CommunityToolkit.Diagnostics;
+
 
 #if UNITY_2017_1_OR_NEWER
 using Random = UnityEngine.Random;
@@ -11,10 +13,13 @@ namespace CCEnvs
 {
     public static class WeightedHelper
     {
-        public static T ElementByWeightLinear<T>(this IEnumerable<T> source, int? randomSeed = null)
-            where T : IWeighted
+        public static T ElementByWeightLinear<T>(
+            this IEnumerable<T> source, 
+            Func<T, float> weightSelector,
+            int? randomSeed = null)
         {
             CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(weightSelector, nameof(weightSelector));
 
             if (source.IsEmpty())
                 throw new ArgumentException($"Source is empty");
@@ -22,7 +27,7 @@ namespace CCEnvs
             float weightSum = 0f;
 
             foreach (var item in source)
-                weightSum += item.Weight;
+                weightSum += weightSelector(item);
 
             float targetWeight;
 #if UNITY_2017_1_OR_NEWER
@@ -41,7 +46,7 @@ namespace CCEnvs
 
             foreach (var item in source)
             {
-                weightSum += item.Weight;
+                weightSum += weightSelector(item);
 
                 if (weightSum > targetWeight)
                     return item;

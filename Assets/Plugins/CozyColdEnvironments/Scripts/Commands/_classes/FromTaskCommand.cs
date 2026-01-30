@@ -4,24 +4,49 @@ using System.Threading.Tasks;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class FromTaskCommand : CommandAsync
+    public sealed class FromTaskCommand : PoolableCommandAsync
     {
-        private readonly Task task;
+        public Task? Task { get; set; }
 
-        public override bool IsCancelled => task.IsCanceled;
-        public override bool IsFaulted => task.IsFaulted;
-        public override bool IsCompleted => task.IsCompletedSuccessfully;
+        public override bool IsCancelled => Task?.IsCanceled ?? false;
+        public override bool IsFaulted => Task?.IsFaulted ?? false;
+        public override bool IsCompleted => Task?.IsCompletedSuccessfully ?? false;
 
-        public FromTaskCommand(Task task)
-            :
-            base(isSingle: false)
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            this.task = task;
+            if (Task is null)
+                return;
+
+            await Task;
         }
 
-        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        protected override void OnReset()
         {
-            return default;
+            base.OnReset();
+            Task = null;
+        }
+    }
+
+    public sealed class FromTaskCommand<T> : PoolableCommandAsync
+    {
+        public Task? Task { get; set; }
+
+        public override bool IsCancelled => Task?.IsCanceled ?? false;
+        public override bool IsFaulted => Task?.IsFaulted ?? false;
+        public override bool IsCompleted => Task?.IsCompletedSuccessfully ?? false;
+
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        {
+            if (Task is null)
+                return;
+
+            await Task;
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+            Task = null;
         }
     }
 }

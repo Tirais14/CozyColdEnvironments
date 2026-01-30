@@ -1,4 +1,5 @@
 using CCEnvs.Attributes;
+using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -12,19 +13,15 @@ namespace CCEnvs
         [OnInstallResetable]
         private static Func<object, bool>? overrided;
 
-        [OnInstallResetable]
-        private static bool hasOverride;
-
         public static Func<object, bool>? Overrided {
             get => overrided;
         }
 
-        public static bool HasOverride => hasOverride;
+        public static bool HasOverride => overrided is not null;
 
-        public static void SetOverride(Func<object, bool>? overrideFund)
+        public static void SetOverride(Func<object, bool>? overrideFunc)
         {
-            overrided = overrideFund;
-            hasOverride = overrideFund is not null;
+            overrided = overrideFunc;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,7 +30,10 @@ namespace CCEnvs
             if (source is null)
                 return true;
 
-            if (!hasOverride)
+            if (CachedTypeof<T>.Type.IsValueType)
+                return false;
+
+            if (overrided is null)
             {
                 if (CC.IsMainThread(Thread.CurrentThread))
                     return source.Equals(null);
