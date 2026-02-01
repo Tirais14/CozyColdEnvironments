@@ -8,10 +8,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
         : 
         IViewModel
     {
-        IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Profiles { get; }
+        IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
 
         void Add(ILeaderboardEntry userProfile);
 
         bool Remove(Identifier userProfileID);
+
+        void Clear();
     }
 }

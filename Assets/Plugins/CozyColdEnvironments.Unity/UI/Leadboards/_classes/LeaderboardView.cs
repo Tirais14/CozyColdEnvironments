@@ -1,11 +1,14 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Collections;
 using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using ZLinq;
 
@@ -17,20 +20,17 @@ namespace CCEnvs.Unity.UI.Leaderboards
     {
         private readonly List<IDisposable> viewModelDisposables = new();
 
-        private readonly ReactiveProperty<int> toInstaniateCount = new();
-
         [SerializeField]
         private GameObject entryPrefab;
 
         [SerializeField]
         private ComponentList<ILeaderboardEntry> entries = null!;
 
-        private bool isEntriesInstantiating;
+        private int instantiationCount;
 
         protected override void Start()
         {
             base.Start();
-            BindToInstantiateCount();
             entries.SetDestroyOnRemove(true).SetDestroyByGameObject(true);
         }
 
@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
             viewModelDisposables.DisposeEach();
             viewModelDisposables.Clear();
 
-            BindEntryGameObjects();
+            BindEntries();
         }
 
         protected override void OnDestroy()
@@ -50,101 +50,110 @@ namespace CCEnvs.Unity.UI.Leaderboards
             toInstaniateCount.Dispose();
         }
 
-        private void BindEntryGameObjects()
+        //private void BindEntries()
+        //{
+        //    if (viewModel.IsNone)
+        //        return;
+
+        //    entries.Value.ObserveAdd(destroyCancellationToken)
+        //        .Select(static ev => ev.Value)
+        //        .Subscribe(this,
+        //        static (entry, @this) =>
+        //        {
+        //            @this.viewModelUnsafe.Add(entry);
+        //        })
+        //        .AddTo(viewModelDisposables);
+
+        //    entries.Value.ObserveRemove(destroyCancellationToken)
+        //        .Select(static ev => ev.Value)
+        //        .Subscribe(this,
+        //        static (entry, @this) =>
+        //        {
+        //            @this.viewModelUnsafe.Remove(entry.Profile.ID);
+        //        })
+        //        .AddTo(viewModelDisposables);
+
+        //    entries.Value.ObserveClear(destroyCancellationToken)
+        //        .Subscribe(this,
+        //        static (_, @this) =>
+        //        {
+        //            @this.viewModelUnsafe.Clear();
+        //        })
+        //        .AddTo(viewModelDisposables);
+        //}
+
+        protected abstract ILeaderboardViewModel CreateEntryViewModel(ILeaderboardEntry entry);
+
+        private async UniTask WaitWhileInstantiationAsync()
         {
-            entries.Value.ObserveAdd()
-                .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (entry, @this) =>
-                {
-                    if (!@this.viewModel.TryGetValue(out var vm))
-                        return;
-
-                    vm.Add(entry);
-                })
-                .AddTo(viewModelDisposables);
-
-            entries.Value.ObserveRemove()
-                .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (entry, @this) =>
-                {
-                    if (!@this.viewModel.TryGetValue(out var vm))
-                        return;
-
-                    vm.Remove(entry.Profile.ID);
-                })
-                .AddTo(viewModelDisposables);
+            await UniTask.WaitWhile(this,
+                static @this => @this.instantiationCount > 0,
+                cancellationToken: destroyCancellationToken
+                );
         }
 
-        private void BindProfilesAdd()
+        private void BindEntries()
         {
             if (!viewModel.TryGetValue(out var vm))
                 return;
 
-            vm.Profiles.ObserveDictionaryAdd()
+            vm.Entries.ObserveDictionaryAdd()
+                .Select(ev => ev.Value)
                 .Subscribe(this,
-                async (ev, @this) =>
+                async (entry, @this) =>
                 {
-                    if (!viewModel.TryGetValue(out var vm))
-                        return;
+                    UniTask.Create((entry, @this),
+                        static async (args) =>
+                        {
+                            args.@this.instantiationCount++;
 
-                    @this.toInstaniateCount.Value++;
+                            try
+                            {
+                                (await InstantiateAsync(args.@this.entryPrefab))[0].Q()
+                                    .Component<IView>()
+                                    .Strict()
+                                    .SetViewModelUnsafe(args.@this.CreateEntryViewModel(args.entry)
+                                    );
+                            }
+                            finally
+                            {
+                                args.@this.instantiationCount--;
+                            }
+                        })
+                        .Forget();
                 })
-                .RegisterDisposableTo(this);
+                .AddTo(viewModelDisposables);
 
-            vm.Profiles.ObserveDictionaryRemove()
+            vm.Entries.ObserveDictionaryRemove()
+                .Select(ev => ev.Value)
                 .Subscribe(this,
-                async (ev, @this) =>
+                async (entry, @this) =>
                 {
-                    if (!viewModel.TryGetValue(out var vm))
-                        return;
+                    UniTask.Create((entry, @this),
+                        static async (args) =>
+                        {
+                            await args.@this.WaitWhileInstantiationAsync();
 
-                    if (@this.toInstaniateCount.Value < 1)
-                    {
-                        @this.toInstaniateCount.Value = 0;
-                        return;
-                    }
-
-                    @this.toInstaniateCount.Value--;
+                            args.@this.entries.Value.Remove(args.entry);
+                        })
+                        .Forget();
                 })
-                .RegisterDisposableTo(this);
-        }
+                .AddTo(viewModelDisposables);
 
-        private void BindToInstantiateCount()
-        {
-            toInstaniateCount.Where(this,
-                static (_, @this) => !@this.isEntriesInstantiating)
+            vm.Entries.ObserveClear()
                 .Subscribe(this,
-                static (_, @this) => @this.InstantiateEntriesAsync().Forget())
-                .RegisterDisposableTo(this);
-        }
+                static (_, @this) =>
+                {
+                    UniTask.Create(@this,
+                        static async @this =>
+                        {
+                            await @this.WaitWhileInstantiationAsync();
 
-        private async UniTask InstantiateEntriesAsync()
-        {
-            isEntriesInstantiating = true;
-
-            try
-            {
-                await UniTask.WaitForEndOfFrame(cancellationToken: destroyCancellationToken);
-
-                var entries = (await InstantiateAsync(
-                    entryPrefab,
-                    toInstaniateCount.Value,
-                    new InstantiateParameters(),
-                    cancellationToken: destroyCancellationToken
-                    ))
-                    .Select(go =>
-                    {
-                        return go.Q().Component<ILeaderboardEntry>().Strict();
-                    });
-
-                this.entries.Value.AddRange(entries);
-            }
-            finally
-            {
-                isEntriesInstantiating = false;
-            }
+                            @this.entries.Value.Clear();
+                        })
+                        .Forget();
+                })
+                .AddTo(viewModelDisposables);
         }
     }
 }

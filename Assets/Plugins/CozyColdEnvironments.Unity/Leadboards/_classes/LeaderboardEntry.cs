@@ -9,9 +9,11 @@ namespace CCEnvs.Unity.Leaderboards
 {
     public class LeaderboardEntry : ILeaderboardEntry
     {
-        private readonly Dictionary<string, IDisposable> subbs = new();
-        private readonly List<IDisposable> disposables = new();
         private readonly ReactiveProperty<float> score = new();
+
+        private readonly Dictionary<string, IDisposable> subbs = new();
+
+        private readonly List<IDisposable> disposables = new();
 
         public IUserProfile Profile { get; }
         public ObservableDictionary<string, ReactiveProperty<float>> ScoreValues { get; } = new();

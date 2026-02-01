@@ -6,8 +6,8 @@ namespace CCEnvs.Unity.Leaderboards
 {
     public interface ILeaderboard : IDisposable
     {
-        ObservableDictionary<Identifier, ILeaderboardEntry> Profiles { get; }
+        ObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
 
-        long GetScore(Identifier userProfileID);
+        float GetScore(Identifier userProfileID);
     }
 }
