@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.Serialization
         {
             var collection = new Dictionary<TKey, TValue>(this.items.Length);
 
-            var items = this.items.Where(item => !ItemEqualityComparer.Equals(item, defaultItem))
+            var items = this.items.Skip(1)
                 .Select(pair => pair.Deserialized)
                 .DistinctBy(pair => pair.Key);
 

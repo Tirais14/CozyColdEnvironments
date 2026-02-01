@@ -1,3 +1,4 @@
+using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
@@ -32,12 +33,12 @@ namespace CCEnvs.Unity.Collections
             BindComponentRemove();
             BindComponentsClear();
 
-            CollectChildsAsync().Forget();
+            OnTransformChildrenChanged();
         }
 
         protected virtual void OnTransformChildrenChanged()
         {
-            CollectChildsAsync().Forget();
+            CollectChildsAsync().ForgetByPrintException();
         }
 
         public ComponentList<T> SetDestroyOnRemove(bool state)
@@ -144,7 +145,7 @@ namespace CCEnvs.Unity.Collections
             }
         }
 
-        private async UniTaskVoid CollectChildsAsync()
+        private async UniTask CollectChildsAsync()
         {
             if (isChildsCollecting)
                 return;

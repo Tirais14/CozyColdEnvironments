@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Unity.Collections;
@@ -33,15 +34,11 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             base.Awake();
 
+            isMutable = true;
+
             entryViews.SetTypeFilter(typeof(LeaderboardEntryView))
                 .SetDestroyOnRemove(true)
                 .SetDestroyByGameObject(true);
-        }
-
-        protected override void Start()
-        {
-            base.Start();
-            isMutable = true;
         }
 
         protected override void Init()
@@ -67,6 +64,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (newEntries.IsEmpty())
+                return;
+
             await UniTask.WaitForEndOfFrame(cancellationToken: cancellationToken);
 
             var instantiatedGOs = await InstantiateAsync(
@@ -80,13 +80,25 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 );
 
             int i = 0;
+            ILeaderboardEntry entry;
 
-            foreach (var (go, entry) in instantiatedGOs.AsValueEnumerable()
-                .Zip(newEntries))
+            int newEntriesCount = newEntries.Count;
+
+            if (newEntries.Count > instantiatedGOs.Length)
+                throw new InvalidOperationException("Instantiated count less than to instantaite count");
+
+            while (newEntries.Count > 0)
             {
-                cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref i);
+                cancellationToken.ThrowIfCancellationRequestedByInterval(i);
 
-                var entryView = go.Q()
+                entry = newEntries[^1];
+
+                newEntries.RemoveAt(newEntries.Count - 1);
+
+                if (!viewModelUnsafe.Entries.ContainsKey(entry.Profile.ID))
+                    continue;
+
+                var entryView = instantiatedGOs[i++].Q()
                         .IncludeInactive()
                         .Component<LeaderboardEntryView>()
                         .Strict();
@@ -94,11 +106,20 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry);
 
                 entryView.SetViewModel(entryViewModel);
+
+                entries.Add(entry, entryView.transform);
             }
+
+            int restGOs = newEntriesCount - instantiatedGOs.Length;
+
+            for (int j = 0; j < restGOs; j++)
+                Destroy(instantiatedGOs[j]);
         }
 
         private void OnEntryAdd(ILeaderboardEntry entry)
         {
+            this.PrintLog($"Adding entry with id: {entry.Profile.ID}");
+
             newEntries.Add(entry);
 
             Command.Builder.SetName(nameof(OnEntryAdd))
@@ -118,6 +139,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryRemove(ILeaderboardEntry entry)
         {
+            this.PrintLog($"Removing entry with id: {entry.Profile.ID}");
+
             Command.Builder.SetName(nameof(OnEntryRemove))
                 .NextStep((@this: this, entry))
                 .Asyncronously()
@@ -125,6 +148,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 static async (args, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    args.@this.newEntries.Remove(args.entry);
 
                     if (args.@this.entries.Remove(args.entry, out var entryTransform))
                         args.@this.entryViews.Value.Remove(entryTransform);
@@ -137,12 +162,15 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryClear()
         {
+            this.PrintLog($"Clearing entries");
+
             Command.Builder.SetName(nameof(OnEntryClear))
                 .NextStep(this)
                 .Syncronously()
                 .SetExecuteAction(
                 static @this =>
                 {
+                    @this.newEntries.Clear();
                     @this.entries.Clear();
                     @this.entryViews.Value.Clear();
                 })
@@ -154,7 +182,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void BindEntryAdd()
         {
-            viewModelUnsafe.Entries.ObserveDictionaryAdd()
+            viewModelUnsafe.Entries.ObserveDictionaryAdd(destroyCancellationToken)
                 .Select(ev => ev.Value)
                 .Subscribe(this,
                 static (entry, @this) => @this.OnEntryAdd(entry))
@@ -163,7 +191,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void BindEntryRemove()
         {
-            viewModelUnsafe.Entries.ObserveDictionaryRemove()
+            viewModelUnsafe.Entries.ObserveDictionaryRemove(destroyCancellationToken)
                 .Select(ev => ev.Value)
                 .Subscribe(this,
                 static (entry, @this) => @this.OnEntryRemove(entry))
@@ -172,7 +200,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void BindEntryClear()
         {
-            viewModelUnsafe.Entries.ObserveClear()
+            viewModelUnsafe.Entries.ObserveClear(destroyCancellationToken)
                 .Subscribe(this,
                 static (_, @this) => @this.OnEntryClear())
                 .AddTo(viewModelDisposables);
