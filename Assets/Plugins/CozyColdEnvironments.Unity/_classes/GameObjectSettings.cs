@@ -4,6 +4,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity
 {
+    [Obsolete("Use snapshots instead")]
     [Serializable]
     public sealed record GameObjectSettings
         :

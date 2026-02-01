@@ -10,7 +10,8 @@ using ObservableCollections;
 namespace CCEnvs.Unity.UI
 {
     public interface IGameObjectBag
-        : IObservableCollection<GameObject>
+        : 
+        IObservableCollection<GameObject>
     {
         [Flags]
         public enum Settings

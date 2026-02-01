@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Serialization
     {
         protected readonly Lazy<TOut> lazy;
 
-        public TOut Value {
+        public TOut Deserialized {
             [Converter]
             get => lazy.Value;
         }
@@ -30,11 +30,11 @@ namespace CCEnvs.Unity.Serialization
 
         public static implicit operator TOut(Serialized<TOut> source)
         {
-            return source.Value;
+            return source.Deserialized;
         }
 
         protected abstract TOut ValueFactory();
 
-        TOut IMutable<TOut>.MutateType() => Value;
+        TOut IMutable<TOut>.MutateType() => Deserialized;
     }
 }

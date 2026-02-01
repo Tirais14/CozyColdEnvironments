@@ -1,10 +1,11 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine.UIElements;
-using CCEnvs.Reflection;
 
 #nullable enable
 
@@ -12,6 +13,7 @@ namespace CCEnvs.UnityEditor
 {
     public static class EditorHelper
     {
+        [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>
         public static void AddUIElementsByReflection(Type type, object editorInstance,
             VisualElement root)
@@ -47,6 +49,19 @@ namespace CCEnvs.UnityEditor
             tryGetActiveFolderPathMethod.Invoke(null, prms);
 
             return (string?)prms[0];
+        }
+
+        public static void AddUIElements(VisualElement root, object instance)
+        {
+            foreach (var item in from field in instance.Reflect().IncludeNonPublic().Fields()
+                                 where field.FieldType.IsType<VisualElement>()
+                                 select field.GetValue(instance).To<VisualElement>())
+            {
+                if (root.Contains(item))
+                    continue;
+
+                root.Add(item);
+            }
         }
     }
 }

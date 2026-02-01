@@ -1,6 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Utils;
@@ -38,7 +39,8 @@ namespace CCEnvs.Unity.Initables
                     throw new CCException($"{initableAsync.GetTypeName()} is already inited.");
 
                 UniTask task = initableAsync.InitAsync();
-                CCEnvs.CC.NeccesaryTasks.RegisterTask(task);
+                task.ToCommand().ScheduleByGlobalScheduler();
+
                 await task;
 
                 SetInited(initableAsync);

@@ -12,10 +12,12 @@ namespace CCEnvs.Unity.Serialization
 {
     [Serializable]
     public sealed class SerializedDictionary<TKey, TValue>
-        : Serialized<Dictionary<TKey, TValue>>
+        : 
+        Serialized<Dictionary<TKey, TValue>>,
+        ISerializationCallbackReceiver
     {
         [SerializeField]
-        private SerializedTuple<TKey, TValue>[] items;
+        private SerializedKeyValuePair<TKey, TValue>[] items;
 
         public SerializedDictionary()
         {
@@ -31,10 +33,20 @@ namespace CCEnvs.Unity.Serialization
         {
             var collection = new Dictionary<TKey, TValue>(this.items.Length);
 
-            var items = this.items.Select(x => x.Value.ToKeyValuePair()).DistinctBy(pair => pair.Key);
+            var items = this.items.Select(pair => pair.Deserialized)
+                .DistinctBy(pair => pair.Key);
+
             collection.AddRange(items);
 
             return collection;
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
         }
     }
 }

@@ -455,22 +455,22 @@ namespace CCEnvs.Unity.Saves
             return IsInstanceRegisteredInternal(regObj);
         }
 
-        public Observable<bool> ObserveSavingStarted()
+        public Observable<bool> ObserveSaving()
         {
             return isSaving.Where(static x => x);
         }
 
-        public Observable<bool> ObserveSavingFinished()
+        public Observable<bool> ObserveSaved()
         {
             return isSaving.Where(static x => !x);
         }
 
-        public Observable<bool> ObserveSaveLoadingStarted()
+        public Observable<bool> ObserveSaveLoading()
         {
             return isSaveLoading.Where(static x => x);
         }
 
-        public Observable<bool> ObserveSaveLoadingFinished()
+        public Observable<bool> ObserveSaveLoaded()
         {
             return isSaveLoading.Where(static x => !x);
         }

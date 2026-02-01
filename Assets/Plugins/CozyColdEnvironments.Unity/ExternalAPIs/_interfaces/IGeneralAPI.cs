@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
@@ -14,8 +15,6 @@ namespace CCEnvs.Unity.ExternalAPIs
         bool IsGamePaused { get; }
         bool IsGameWindowShown { get; }
         bool IsGameWindowFocused { get; }
-        bool IsGameSaving { get; }
-        bool IsSaveGameLoading { get; }
 
         int GameplaySession { get; }
 
@@ -33,15 +32,13 @@ namespace CCEnvs.Unity.ExternalAPIs
 
         void UnpauseGame();
 
-        UniTask SaveGameAsync(string? filePath = null, CancellationToken cancellationToken = default);
-
-        UniTask LoadSaveGameAsync(string? filePath = null, CancellationToken cancellationToken = default);
-
         Observable<bool> ObserveIsInitialized();
 
         Observable<bool> ObserveIsGameplayMode();
 
-        Observable<bool> ObserveIsGamePaused();
+        Observable<bool> ObserveGamePaused();
+
+        Observable<bool> ObserveGameUnpaused();
 
         Observable<bool> ObserveIsGameReady();
 
@@ -50,9 +47,5 @@ namespace CCEnvs.Unity.ExternalAPIs
         Observable<bool> ObserveIsGameWindowFocused();
 
         Observable<int> ObserveGameplaySession();
-
-        Observable<bool> ObserveIsGameSaving();
-
-        Observable<bool> ObserveIsSaveGameLoading();
     }
 }

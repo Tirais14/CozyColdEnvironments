@@ -23,6 +23,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         private ReactiveCommand<AdvertisementTypes>? shownAdvertisementTypeCmd;
         private ReactiveCommand<AdvertisementTypes>? showAdvertisementErrorCmd;
 
+        private bool bannerInitialized;
+
         public bool IsAdvertisementShown => advertisementCount.Value > 0;
         public int AdvertisementCount => advertisementCount.Value;
 
@@ -56,7 +58,15 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                     return;
                 }
 
+                if (!bannerInitialized)
+                {
+                    YG2.LoadBanner();
+                    bannerInitialized = true;
+                    YG2.SetBannerPosition(YG2.BannerPosition.Bottom);
+                }
+
                 YG2.ShowBanner();
+                YG2.LoadBanner();
 #else
                 throw new System.NotSupportedException(AdvertisementTypes.Banner.ToString());
 #endif

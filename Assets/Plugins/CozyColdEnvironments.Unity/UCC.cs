@@ -79,7 +79,7 @@ namespace CCEnvs.Unity
                         if (obj is CCBehaviour beh)
                             return beh.IsDestroyed;
 
-                        if (IsMainThread(Thread.CurrentThread))
+                        if (Thread.CurrentThread.IsMainThread())
                             return uObj.Equals(null);
                     }
 

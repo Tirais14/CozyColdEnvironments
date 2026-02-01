@@ -140,7 +140,7 @@ namespace CCEnvs.Unity
 
         private void InitCellBounds()
         {
-            BoundsInt bounds = m_CellBounds.Value;
+            BoundsInt bounds = m_CellBounds.Deserialized;
 
             if (bounds.size.x > 0 || bounds.size.y > 0)
             {

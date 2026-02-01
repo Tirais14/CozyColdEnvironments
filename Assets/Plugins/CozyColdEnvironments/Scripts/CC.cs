@@ -1,47 +1,28 @@
 #nullable enable
-using CCEnvs.Async;
 using CCEnvs.Attributes;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
 using Cysharp.Threading.Tasks;
-using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using R3;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace CCEnvs
 {
-    public delegate Task<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
-    public delegate void ActionPredicated<T>(Predicate<T> predicate, T value);
-
-    /// <summary>
-    /// Must be null after call
-    /// </summary>
-    public delegate void SingleUseAction();
+    public delegate ValueTask<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
 
     public static class CC
     {
         public const string FULL_NAME = "CozyColdEnvironments";
         public const string COPYRIGHT_STAMP = "@Tirais: " + FULL_NAME;
-
-        public static MemoryCache Cache { get; } = new(new MemoryCacheOptions
-        {
-            ExpirationScanFrequency = 1.Seconds(),
-        });
-
-        [Obsolete]
-        public static AsyncTaskRegistry NeccesaryTasks { get; } = new();
-
-        [Obsolete]
-        public static AsyncTaskRegistry BackgroundTasks { get; } = new();
 
         public static object EmptyObject { get; } = new object();
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
@@ -64,7 +45,8 @@ namespace CCEnvs
             CCProjectHelper.Install();
         }
 
-        public static bool IsMainThread(Thread thread)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMainThread(this Thread thread)
         {
             CommunityToolkit.Diagnostics.Guard.IsNotNull(thread, nameof(thread));
 
@@ -77,81 +59,6 @@ namespace CCEnvs
             CommandScheduler = CommandScheduler.CreateDefaultRegistered();
         }
         #endregion Install
-
-#if UNITASK_PLUGIN
-
-        [Obsolete]
-        public static UniTask RegisterAsNeccessaryTask(this UniTask source)
-        {
-            NeccesaryTasks.RegisterTask(source);
-            return source;
-        }
-
-        [Obsolete]
-        public static UniTask<T> RegisterAsNeccessaryTask<T>(this UniTask<T> source)
-        {
-            NeccesaryTasks.RegisterTask(source);
-            return source;
-        }
-#endif
-
-        [Obsolete]
-        public static ValueTask RegisterAsNeccessaryTask(this ValueTask source)
-        {
-            NeccesaryTasks.RegisterTask(source);
-            return source;
-        }
-
-        [Obsolete]
-        public static ValueTask<T> RegisterAsNeccessaryTask<T>(this ValueTask<T> source)
-        {
-            NeccesaryTasks.RegisterTask(source);
-            return source;
-        }
-
-        [Obsolete]
-        public static Task RegisterAsNeccessaryTask(this Task source)
-        {
-            NeccesaryTasks.RegisterTask(source);
-            return source;
-        }
-
-#if UNITASK_PLUGIN
-        [Obsolete]
-        public static UniTask RegisterAsBackgroundTask(this UniTask source)
-        {
-            BackgroundTasks.RegisterTask(source);
-            return source;
-        }
-
-        [Obsolete]
-        public static UniTask<T> RegisterAsBackgroundTask<T>(this UniTask<T> source)
-        {
-            BackgroundTasks.RegisterTask(source);
-            return source;
-        }
-#endif
-
-        [Obsolete]
-        public static ValueTask RegisterAsBackgroundTask(this ValueTask source)
-        {
-            BackgroundTasks.RegisterTask(source);
-            return source;
-        }
-
-        [Obsolete]
-        public static ValueTask<T> RegisterAsBackgroundTask<T>(this ValueTask<T> source)
-        {
-            BackgroundTasks.RegisterTask(source);
-            return source;
-        }
-
-        [Obsolete]
-        public static Task RegisterAsBackgroundTask(this Task source)
-        {
-            BackgroundTasks.RegisterTask(source);
-            return source;
-        }
 
 #pragma warning disable S112
 

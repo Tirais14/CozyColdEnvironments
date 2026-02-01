@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using System;
-using System.Threading;
 using YG;
 
 #nullable enable
@@ -38,8 +37,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public bool IsGamePaused => isGamePaused.Value;
         public bool IsGameWindowShown => isGameWindowShown.Value;
         public bool IsGameWindowFocused => isGameWindowFocused.Value;
-        public bool IsGameSaving => SavingSystem.Self.IsSaving;
-        public bool IsSaveGameLoading => SavingSystem.Self.IsSaveLoading;
 
         public int GameplaySession => gameplaySession.Value;
 
@@ -114,25 +111,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
-        public async UniTask SaveGameAsync(
-            string? filePath = null,
-            CancellationToken cancellationToken = default
-            )
-        {
-            await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
-        }
-
-        public async UniTask LoadSaveGameAsync(
-            string? filePath = null,
-            CancellationToken cancellationToken = default
-            )
-        {
-            await SavingSystem.Self.LoadFromSerializedData(
-                YG2.saves.serializedData,
-                cancellationToken
-                );
-        }
-
         private bool disposed;
         public void Dispose()
         {
@@ -174,9 +152,14 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             return isGameplayModeObservable;
         }
 
-        public Observable<bool> ObserveIsGamePaused()
+        public Observable<bool> ObserveGamePaused()
         {
-            return isGamePaused;
+            return isGamePaused.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveGameUnpaused()
+        {
+            return isGamePaused.Where(static x => !x);
         }
 
         public Observable<bool> ObserveIsGameReady()
@@ -197,16 +180,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public Observable<int> ObserveGameplaySession()
         {
             return gameplaySession;
-        }
-
-        public Observable<bool> ObserveIsGameSaving()
-        {
-            return SavingSystem.Self.ObserveSavingStarted().Merge(SavingSystem.Self.ObserveSavingFinished());
-        }
-
-        public Observable<bool> ObserveIsSaveGameLoading()
-        {
-            return SavingSystem.Self.ObserveSaveLoadingStarted().Merge(SavingSystem.Self.ObserveSaveLoadingFinished());
         }
 
         private void OnPauseGame(bool state)

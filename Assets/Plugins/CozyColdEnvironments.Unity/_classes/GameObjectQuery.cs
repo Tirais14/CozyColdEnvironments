@@ -71,7 +71,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery SetTarget(GameObject gameObject)
         {
-            if (gameObject == null)
+            if (gameObject .IsNull())
             {
                 this.PrintError($"{nameof(gameObject)} is null.");
                 return this;
@@ -85,7 +85,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery SetTarget(Component component)
         {
-            if (component == null)
+            if (component.IsNull())
             {
                 this.PrintError($"{nameof(component)} is null.");
                 return this;
@@ -118,28 +118,6 @@ namespace CCEnvs.Unity
 
             return this;
         }
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public GameObjectQuery CacheResult(TimeSpan lifeTime, bool state = true)
-        //{
-        //    if (state)
-        //        settings |= Settings.CacheResult;
-        //    else
-        //        settings &= ~Settings.CacheResult;
-
-        //    return this;
-        //}
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public GameObjectQuery ByFullName(bool state = true)
-        //{
-        //    if (state)
-        //        stringMatchSettings &= ~StringMatchSettings.Partial;
-        //    else
-        //        stringMatchSettings |= StringMatchSettings.Partial;
-
-        //    return this;
-        //}
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -337,7 +315,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Components(type).FirstOrDefault(), new GameObjectAppealException(
+            return (Components(type).FirstOrDefault(), new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -416,7 +394,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (ViewModels(type).FirstOrDefault(), new GameObjectAppealException(
+            return (ViewModels(type).FirstOrDefault(), new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -479,7 +457,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return (Models(type, includeComponents).FirstOrDefault(), new GameObjectAppealException(
+            return (Models(type, includeComponents).FirstOrDefault(), new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -507,7 +485,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<Transform> Transform()
         {
-            return (Transforms().FirstOrDefault(), new GameObjectAppealException(
+            return (Transforms().FirstOrDefault(), new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -561,7 +539,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<GameObject> GameObject()
         {
-            return (GameObjects().FirstOrDefault(), new GameObjectAppealException(
+            return (GameObjects().FirstOrDefault(), new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -643,12 +621,13 @@ namespace CCEnvs.Unity
             {
                 current = target.transform.parent;
 
-                if (current == null)
+                if (current.IsNull())
                     return Enumerable.Empty<Component>();
             }
 
             var cmps = new List<Component>();
-            while (current != null)
+
+            while (current.IsNotNull())
             {
                 if (!includeInactive
                     &&
@@ -688,7 +667,8 @@ namespace CCEnvs.Unity
 
         protected virtual IEnumerable<Component> CustomBfsChildSearch(
             GameObject target,
-            Type type)
+            Type type
+            )
         {
             bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
             var toProcess = new Queue<Transform>(getNextTransforms(target.transform, includeInactive));
@@ -732,7 +712,7 @@ namespace CCEnvs.Unity
                 Transform tr,
                 bool includeInactive)
             {
-                foreach (var current in tr.ZLinq().Cast<Transform>())
+                foreach (var current in tr.AsValueEnumerable().Cast<Transform>())
                 {
                     if (!includeInactive && !current.gameObject.activeSelf)
                         continue;
@@ -765,7 +745,8 @@ namespace CCEnvs.Unity
         protected virtual IEnumerable<Component> GetComponentsFrom(
             GameObject target,
             Type type,
-            bool anyType)
+            bool anyType
+            )
         {
             bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
             bool excludeSelf = settings.IsFlagSetted(Settings.ExcludeSelf);
@@ -781,7 +762,7 @@ namespace CCEnvs.Unity
                 {
                     Transform targetTransform = target.transform;
                     var cmps = new List<Component>();
-                    var childs = targetTransform.ZLinq().Cast<Transform>();
+                    var childs = targetTransform.AsValueEnumerable().Cast<Transform>();
 
                     if (!excludeSelf)
                         childs.Prepend(targetTransform);
@@ -800,7 +781,10 @@ namespace CCEnvs.Unity
             throw CC.ThrowHelper.InvalidOperationException(findMode, nameof(findMode));
         }
 
-        protected virtual IEnumerable<Component> ComponentsInternal(GameObject target, Type? type)
+        protected virtual IEnumerable<Component> ComponentsInternal(
+            GameObject target,
+            Type? type
+            )
         {
             CC.Guard.IsNotNull(target, nameof(target));
 
@@ -835,9 +819,9 @@ namespace CCEnvs.Unity
             return components;
         }
 
-        protected GameObjectAppealException GetException(string msg, Type? seekingComponentType = null)
+        protected GameObjectQueryException GetException(string msg, Type? seekingComponentType = null)
         {
-            return new GameObjectAppealException(
+            return new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
@@ -883,20 +867,6 @@ namespace CCEnvs.Unity
         {
             return source.QueryTo();
         }
-
-        //[DebuggerStepThrough]
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static GameObjectQuery QPerf(this GameObject source)
-        //{
-        //    return source.QueryToBySingleton();
-        //}
-
-        //[DebuggerStepThrough]
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static GameObjectQuery QPerf(this Component source)
-        //{
-        //    return source.QueryToBySingleton();
-        //}
     }
 }
 

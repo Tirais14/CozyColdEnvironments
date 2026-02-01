@@ -6,9 +6,9 @@ using CCEnvs.Reflection;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public class GameObjectAppealException : CCException
+    public class GameObjectQueryException : CCException
     {
-        public GameObjectAppealException(GameObject? target,
+        public GameObjectQueryException(GameObject? target,
             GameObjectQuery.Settings settings,
             FindMode findMode,
             Type? seekingComponentType = null,

@@ -42,17 +42,17 @@ namespace CCEnvs.Unity.Serialization
             hours = defaultOutput.TotalHours;
             days = defaultOutput.TotalDays;
 
-            Value = defaultOutput;
+            Deserialized = defaultOutput;
         }
 
-        public TimeSpan Value { get; private set; }
+        public TimeSpan Deserialized { get; private set; }
 
         public static implicit operator TimeSpan(SerializedTimeSpan source)
         {
-            return source.Value;
+            return source.Deserialized;
         }
 
-        TimeSpan IMutable<TimeSpan>.MutateType() => Value;
+        TimeSpan IMutable<TimeSpan>.MutateType() => Deserialized;
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
@@ -60,7 +60,7 @@ namespace CCEnvs.Unity.Serialization
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            Value = TimeSpan.FromTicks(ticks)
+            Deserialized = TimeSpan.FromTicks(ticks)
                      +
                      TimeSpan.FromMilliseconds(milliseconds)
                      +

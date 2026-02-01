@@ -27,22 +27,22 @@ namespace CCEnvs.Unity.Storages.UI
             InstallBindings();
         }
 
-        public Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAddContainer()
+        public Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAdd()
         {
             return model.ObserveAddContainer();
         }
 
-        public Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemoveContainer()
+        public Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemove()
         {
             return model.ObserveRemoveContainer();
         }
 
-        public Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplaceContainer()
+        public Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplace()
         {
             return model.ObserveReplaceContainer();
         }
 
-        public Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveResetContainer()
+        public Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveReset()
         {
             return model.ObserveReset();
         }

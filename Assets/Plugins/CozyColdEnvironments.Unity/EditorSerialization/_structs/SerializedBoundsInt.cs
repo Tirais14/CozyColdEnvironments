@@ -12,18 +12,18 @@ namespace CCEnvs.Unity.Serialization
         [SerializeField]
         private Vector3Int size;
 
-        public BoundsInt Value { readonly get; private set; }
+        public BoundsInt Deserialized { readonly get; private set; }
 
         public SerializedBoundsInt(BoundsInt bounds)
             :
             this()
         {
-            Value = bounds;
+            Deserialized = bounds;
         }
 
         public static implicit operator BoundsInt(SerializedBoundsInt source)
         {
-            return source.Value;
+            return source.Deserialized;
         }
 
         readonly void ISerializationCallbackReceiver.OnBeforeSerialize()
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Serialization
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            Value = new BoundsInt(position, size);
+            Deserialized = new BoundsInt(position, size);
         }
     }
 }

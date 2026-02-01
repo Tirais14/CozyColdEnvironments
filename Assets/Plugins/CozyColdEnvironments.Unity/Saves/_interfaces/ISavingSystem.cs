@@ -92,9 +92,9 @@ namespace CCEnvs.Unity.Saves
             SceneInfo byScene = default
             );
 
-        Observable<bool> ObserveSavingStarted();
+        Observable<bool> ObserveSaving();
 
-        Observable<bool> ObserveSavingFinished();
+        Observable<bool> ObserveSaved();
 
         Observable<SaveFileData> ObserveSaveData();
     }

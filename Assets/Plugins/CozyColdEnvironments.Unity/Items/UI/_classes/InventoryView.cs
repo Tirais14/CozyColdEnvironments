@@ -113,7 +113,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             if (this.viewModel.TryGetValue(out var viewModel))
             {
-                viewModel.ObserveAddContainer()
+                viewModel.ObserveAdd()
                      .Subscribe(this,
                      static (cnt, @this) =>
                      {
@@ -129,7 +129,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             viewModel.IfSome(viewModel =>
             {
-                viewModel.ObserveRemoveContainer()
+                viewModel.ObserveRemove()
                      .Subscribe(this,
                      static (cnt, @this) =>
                      {
@@ -144,7 +144,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             viewModel.IfSome(viewModel =>
             {
-                viewModel.ObserveResetContainer()
+                viewModel.ObserveReset()
                 .Subscribe(this,
                     static (_, @this) =>
                     {
