@@ -5,12 +5,11 @@ using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-using static CCEnvs.CC;
-using System.Threading;
 
 #nullable enable
 #pragma warning disable S101

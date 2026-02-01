@@ -37,7 +37,7 @@ namespace CCEnvs.Patterns.Commands
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandBuilder AsSingle(bool state = true)
+        public CommandBuilder SetSingle(bool state = true)
         {
             IsSingle = state;
 

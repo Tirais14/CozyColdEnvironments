@@ -1,5 +1,7 @@
 using CCEnvs.Unity.Serialization;
+using System;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -7,15 +9,19 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.Unity.EditorC
 {
-    [CustomPropertyDrawer(typeof(SerializedDictionary<,>))]
+    //[CustomPropertyDrawer(typeof(SerializedDictionary<,>))]
     public sealed class SerializedDictionaryDrawer : CCPropertyDrawer
     {
+        private ListView itemsView = null!;
+        private PropertyField newItemView = null!;
+        private SerializedPropertyListAdapter items = null!;
+
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var root = base.CreatePropertyGUI(property);
+            base.CreatePropertyGUI(property);
 
-            var newItemProp = property.FindPropertyRelative("New Item");
-            var itemsProp = property.FindPropertyRelative("Items");
+            var newItemProp = property.FindPropertyRelative("newItem");
+            var itemsProp = property.FindPropertyRelative("items");
 
             CreateNewItemView(newItemProp);
             CreateAddButton();
@@ -29,19 +35,21 @@ namespace CCEnvs.Unity.EditorC
             if (newItemProp == null)
                 return;
 
-            var newItemView = new ObjectField
-            {
-                name = "New Item"
-            };
+            newItemView = new PropertyField(newItemProp);
 
             root.Add(newItemView);
         }
 
         private void CreateAddButton()
         {
-            var addBtn = new Button
+            var addBtn = new Button(() =>
             {
-                name = "Add"
+                items.Property.arraySize++;
+                items[items.Property.arraySize - 1] = newItemView;
+            })
+            {
+                name = "Add",
+                text = "Add",
             };
 
             root.Add(addBtn);
@@ -52,30 +60,25 @@ namespace CCEnvs.Unity.EditorC
             if (itemsProp == null || !itemsProp.isArray)
                 return;
 
-            var items = Enumerable.Range(0, itemsProp.arraySize)
-                .Select(i =>
-                {
-                    return itemsProp.GetArrayElementAtIndex(i);
-                })
-                .ToArray();
+            items = new SerializedPropertyListAdapter(itemsProp);
 
-            var itemsView = new ListView
+            itemsView = new ListView
             {
                 itemsSource = items,
-                reorderable = true, // Включаем перетаскивание
-                showAddRemoveFooter = true, // Кнопки +/-
+                reorderable = true,
+                showAddRemoveFooter = false,
                 showFoldoutHeader = true,
                 headerTitle = "Items",
                 showBoundCollectionSize = false,
                 virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
-                makeItem = () => new PropertyField(), // Шаблон для элемента
-                bindItem = (element, index) =>
-                {
-                    var propField = (PropertyField)element;
-                    var elementProp = itemsProp.GetArrayElementAtIndex(index);
-                    propField.BindProperty(elementProp);
-                    propField.label = $"Element {index}";
-                }
+                //makeItem = () => new PropertyField(),
+                //bindItem = (element, index) =>
+                //{
+                //    var propField = (PropertyField)element;
+                //    var elementProp = itemsProp.GetArrayElementAtIndex(index);
+                //    propField.BindProperty(elementProp);
+                //    propField.label = $"Element {index}";
+                //}
             };
 
             root.TrackPropertyValue(itemsProp, (sp) => itemsView.Rebuild());

@@ -40,9 +40,8 @@ namespace CCEnvs
         #region Install
         public static void Install()
         {
-            MainThreadID = Thread.CurrentThread.ManagedThreadId;
-
             CCProjectHelper.Install();
+            MainThreadID = Thread.CurrentThread.ManagedThreadId;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -2,10 +2,9 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using R3;
 using UnityEngine;
-using CCEnvs.Unity.Components;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -22,6 +21,7 @@ namespace CCEnvs.Unity.UI
 
         where TViewModel : IViewModel
     {
+        protected readonly List<IDisposable> viewModelDisposables = new();
         protected Lazy<Maybe<TViewModel>> _viewModel = new(() => default);
 
         [Header("View Settings")]
@@ -38,24 +38,13 @@ namespace CCEnvs.Unity.UI
         protected override void Awake()
         {
             base.Awake();
-            ObserveViewModel();
             ViewModelFactory().IfSome(viewModel => SetViewModel(viewModel));
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            TryDisposeViewModel(_viewModel);
-        }
-
-        protected static void TryDisposeViewModel(Lazy<Maybe<TViewModel>> viewModel)
-        {
-            if (viewModel.IsValueCreated && viewModel.Value.TryGetValue(out var vm)
-                &&
-                vm.Is<IDisposable>(out var disp))
-            {
-                disp.Dispose();
-            }
+            TryDisposeViewModel();
         }
 
         /// <summary>
@@ -65,8 +54,14 @@ namespace CCEnvs.Unity.UI
         public void SetViewModel(TViewModel? viewModel)
         {
             OnViewModelChanging();
-            TryDisposeViewModel(_viewModel);
+            TryDisposeViewModel();
+
             _viewModel = new Lazy<Maybe<TViewModel>>(viewModel.Maybe());
+
+            if (_viewModel.Value.IsSome)
+                Init();
+
+            Init();
             OnViewModelChanged();
         }
 
@@ -77,8 +72,13 @@ namespace CCEnvs.Unity.UI
             Guard.IsNotNull(factory);
 
             OnViewModelChanging();
-            TryDisposeViewModel(_viewModel);
+            TryDisposeViewModel();
+
             _viewModel = new Lazy<Maybe<TViewModel>>(() => factory());
+
+            if (_viewModel.Value.IsSome)
+                Init();
+
             OnViewModelChanged();
         }
 
@@ -118,24 +118,17 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        private void ObserveViewModel()
+        protected void TryDisposeViewModel()
         {
-            Observable.EveryValueChanged(this,
-                static (@this) => @this._viewModel)
-                .Pairwise()
-                .Subscribe(this, static (pair, @this) =>
-                {
-                    TryDisposeViewModel(pair.Previous);
+            if (_viewModel.IsValueCreated && _viewModel.Value.TryGetValue(out var vm)
+                &&
+                vm.Is<IDisposable>(out var disp))
+            {
+                viewModelDisposables.DisposeEach();
+                viewModelDisposables.Clear();
 
-                    if (pair.Current.Value.IsSome)
-                    {
-                        if (pair.Current.Value.Raw is IDisposable disp)
-                            disp.RegisterDisposableTo(@this);
-
-                        @this.Init();
-                    }
-                })
-                .RegisterDisposableTo(this);
+                disp.Dispose();
+            }
         }
     }
 }

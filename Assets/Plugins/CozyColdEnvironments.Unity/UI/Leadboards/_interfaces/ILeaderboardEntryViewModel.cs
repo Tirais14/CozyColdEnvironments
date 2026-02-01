@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 {
     public interface ILeaderboardEntryViewModel : IViewModel
     {
-        ISynchronizedView<KeyValuePair<string, ReadOnlyReactiveProperty<float>>, Observable<string>> Values { get; }
+        ISynchronizedView<KeyValuePair<string, ReactiveProperty<float>>, Observable<string>> Values { get; }
 
         ReadOnlyReactiveProperty<float> Score { get; }
     }

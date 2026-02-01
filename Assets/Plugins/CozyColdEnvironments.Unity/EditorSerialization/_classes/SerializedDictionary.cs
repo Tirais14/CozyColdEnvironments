@@ -17,7 +17,13 @@ namespace CCEnvs.Unity.Serialization
         ISerializationCallbackReceiver
     {
         [SerializeField]
+        [HideInInspector]
+        private SerializedKeyValuePair<TKey, TValue> defaultItem;
+
+        [SerializeField]
         private SerializedKeyValuePair<TKey, TValue>[] items;
+
+        private EqualityComparer<SerializedKeyValuePair<TKey, TValue>> ItemEqualityComparer => EqualityComparer<SerializedKeyValuePair<TKey, TValue>>.Default;
 
         public SerializedDictionary()
         {
@@ -33,7 +39,8 @@ namespace CCEnvs.Unity.Serialization
         {
             var collection = new Dictionary<TKey, TValue>(this.items.Length);
 
-            var items = this.items.Select(pair => pair.Deserialized)
+            var items = this.items.Where(item => !ItemEqualityComparer.Equals(item, defaultItem))
+                .Select(pair => pair.Deserialized)
                 .DistinctBy(pair => pair.Key);
 
             collection.AddRange(items);
@@ -47,6 +54,15 @@ namespace CCEnvs.Unity.Serialization
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
+            if (items is null)
+                return;
+
+            items = items.Where(item =>
+                {
+                    return !EqualityComparer<SerializedKeyValuePair<TKey, TValue>>.Default.Equals(item, defaultItem);
+                })
+                .Prepend(defaultItem)
+                .ToArray();
         }
     }
 }

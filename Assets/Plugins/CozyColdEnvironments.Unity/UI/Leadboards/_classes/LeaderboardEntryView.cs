@@ -1,5 +1,7 @@
 #nullable enable
-using CCEnvs.Unity.Components;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Leaderboards;
+using CCEnvs.Unity.Profiles;
 using CCEnvs.Unity.Serialization;
 using ObservableCollections;
 using R3;
@@ -10,8 +12,7 @@ using UnityEngine;
 
 namespace CCEnvs.Unity.UI.Leaderboards
 {
-    public abstract class LeaderboardEntryView<TViewModel> : View<TViewModel>
-        where TViewModel : ILeaderboardEntryViewModel
+    public class LeaderboardEntryView : View<LeaderboardEntryViewModel>
     {
         [SerializeField]
         protected SerializedDictionary<string, TMP_Text> scoreTextBindings = new();
@@ -21,7 +22,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
         protected override void Init()
         {
             base.Init();
-            BindScoreValueAddRemoveOperations();
+            BindScoreValuesAdd();
+            BindScoreValuesRemove();
+            BindScoreValuesClear();
             BindTextComponents();
         }
 
@@ -33,11 +36,13 @@ namespace CCEnvs.Unity.UI.Leaderboards
             scoreBindings.Clear();
         }
 
+        protected override Maybe<LeaderboardEntryViewModel> ViewModelFactory()
+        {
+            return new LeaderboardEntryViewModel(new LeaderboardEntry(new UserProfile(null)));
+        }
+
         private void BindTextComponent(string key, Observable<string> scoreView)
         {
-            if (!viewModel.TryGetValue(out var vm))
-                return;
-
             if (scoreBindings.ContainsKey(key))
                 throw new InvalidOperationException($"Text component with key: {key} already binded");
 
@@ -60,10 +65,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void BindTextComponents()
         {
-            if (!viewModel.TryGetValue(out var vm))
-                return;
-
-            foreach (var item in vm.Values.Unfiltered)
+            foreach (var item in viewModelUnsafe.Values.Unfiltered)
             {
                 if (scoreBindings.ContainsKey(item.Value.Key))
                     continue;
@@ -72,28 +74,42 @@ namespace CCEnvs.Unity.UI.Leaderboards
             }
         }
 
-        private void BindScoreValueAddRemoveOperations()
+        private void BindScoreValuesAdd()
         {
-            if (!viewModel.TryGetValue(out var vm))
-                return;
-
-            vm.Values.ObserveAdd(destroyCancellationToken)
+            viewModelUnsafe.Values.ObserveAdd(destroyCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (item, @this) =>
                 {
                     @this.BindTextComponent(item.Value.Key, item.View);
                 })
-                .RegisterDisposableTo(this);
+                .AddTo(viewModelDisposables);
+        }
 
-            vm.Values.ObserveRemove(destroyCancellationToken)
+        private void BindScoreValuesRemove()
+        {
+            viewModelUnsafe.Values.ObserveRemove(destroyCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (item, @this) =>
                 {
                     @this.UnbindTextComponent(item.Value.Key);
                 })
-                .RegisterDisposableTo(this);
+                .AddTo(viewModelDisposables);
+        }
+
+        private void BindScoreValuesClear()
+        {
+            viewModelUnsafe.Values.ObserveClear(destroyCancellationToken)
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    foreach (var item in @this.scoreBindings)
+                        item.Value.Dispose();
+
+                    @this.scoreBindings.Clear();
+                })
+                .AddTo(viewModelDisposables);
         }
     }
 }

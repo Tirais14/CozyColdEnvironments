@@ -54,7 +54,8 @@ namespace CCEnvs.Unity.UI
         public Maybe<GUITab> root { get; private set; }
 
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
-        protected CommandScheduler commandScheduler { get; private set; } = new(UnityFrameProvider.Update);
+
+        private CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
 
         protected override void Awake()
         {

@@ -58,7 +58,7 @@ namespace CCEnvs.Unity.EditorC
                 if (!IsSerializedProperty(prop, propUnderlyingField))
                     continue;
 
-                propField = CreatePropertyField(prop, propUnderlyingField);
+                propField = CreatePropertyField(target, prop, propUnderlyingField);
 
                 root.Add(propField);
             }

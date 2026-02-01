@@ -1,22 +1,18 @@
 using CCEnvs.Unity.Leaderboards;
-using CCEnvs.Unity.UI;
-using CCEnvs.Unity.UI.Leaderboards;
 using ObservableCollections;
 
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.UI.Leaderboards
 {
-    public class LeaderBoardViewModel<TModel>
+    public class LeaderboardViewModel
         :
-        ViewModel<TModel>,
+        ViewModel<Leaderboard>,
         ILeaderboardViewModel
-
-        where TModel : ILeaderboard
     {
         private readonly ObservableDictionary<Identifier, ILeaderboardEntry> profiles;
 
         public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => profiles;
 
-        public LeaderBoardViewModel(TModel model) : base(model)
+        public LeaderboardViewModel(Leaderboard model) : base(model)
         {
             profiles = model.Entries;
         }
@@ -34,13 +30,6 @@ namespace CCEnvs.Unity
         public void Clear()
         {
             profiles.Clear();
-        }
-    }
-
-    public class LeaderBoardViewModel : LeaderBoardViewModel<Leaderboard>
-    {
-        public LeaderBoardViewModel(Leaderboard model) : base(model)
-        {
         }
     }
 }

@@ -4,7 +4,7 @@ using R3;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.Unity.Leaderboards
 {
     public interface ILeaderboardEntry
         :

@@ -2,8 +2,11 @@ using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
+using SuperLinq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 #nullable enable
 namespace CCEnvs.Unity.Collections
@@ -12,16 +15,23 @@ namespace CCEnvs.Unity.Collections
         where T : class
     {
         private bool isChildsCollecting;
+        private bool isInternalClear;
 
         public ObservableHashSet<T> Value { get; } = new();
 
         public bool IsDestroyOnRemove { get; private set; }
-        public bool IsDestroyByGameObject { get; private set;  }
+        public bool IsDestroyByGameObject { get; private set; }
+
+        public Type? TypeFilter { get; private set; }
 
         protected override void Start()
         {
             base.Start();
-            BindComponentCollection();
+
+            BindComponentAdd();
+            BindComponentRemove();
+            BindComponentsClear();
+
             CollectChildsAsync().Forget();
         }
 
@@ -44,7 +54,14 @@ namespace CCEnvs.Unity.Collections
             return this;
         }
 
-        private void OnAdd(T item)
+        public ComponentList<T> SetTypeFilter(Type? type)
+        {
+            TypeFilter = type;
+
+            return this;
+        }
+
+        private void OnComponentAdd(T item)
         {
             var cmp = item.To<Component>();
 
@@ -54,7 +71,7 @@ namespace CCEnvs.Unity.Collections
             cmp.transform.SetParent(cTransform.Value);
         }
 
-        private void OnRemove(T item)
+        private void OnComponentRemove(T item)
         {
             var cmp = item.To<Component>();
 
@@ -73,19 +90,58 @@ namespace CCEnvs.Unity.Collections
             cmp.transform.SetParent(null);
         }
 
-        private void BindComponentCollection()
+        private void OnComponentsClear()
+        {
+            GetChilds().ForEach(OnComponentRemove);
+        }
+
+        private void BindComponentAdd()
         {
             Value.ObserveAdd(destroyCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
-                static (item, @this) => @this.OnAdd(item))
+                static (item, @this) => @this.OnComponentAdd(item))
                 .RegisterDisposableTo(this);
+        }
 
+        private void BindComponentRemove()
+        {
             Value.ObserveRemove(destroyCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
-                static (item, @this) => @this.OnRemove(item))
+                static (item, @this) => @this.OnComponentRemove(item))
                 .RegisterDisposableTo(this);
+        }
+
+        private void BindComponentsClear()
+        {
+            Value.ObserveClear(destroyCancellationToken)
+                .Where(this, 
+                static (_, @this) => !@this.isInternalClear)
+                .Subscribe(this,
+                static (_, @this) => @this.OnComponentsClear())
+                .RegisterDisposableTo(this);
+        }
+
+        private IEnumerable<T> GetChilds()
+        {
+            if (TypeFilter is not null)
+            {
+                return this.Q()
+                    .FromChildrens()
+                    .IncludeInactive()
+                    .NotRecursive()
+                    .Models(TypeFilter, includeComponents: true)
+                    .OfType<T>();
+            }
+            else
+            {
+                return this.Q()
+                    .FromChildrens()
+                    .NotRecursive()
+                    .IncludeInactive()
+                    .Models<T>();
+            }
         }
 
         private async UniTaskVoid CollectChildsAsync()
@@ -97,14 +153,21 @@ namespace CCEnvs.Unity.Collections
 
             await UniTask.WaitForEndOfFrame(cancellationToken: destroyCancellationToken);
 
+            isInternalClear = true;
+
             Value.Clear();
 
-            var cmps = this.Q().FromChildrens().IncludeInactive().Models<T>();
+            isInternalClear = false;
 
-            foreach (var cmp in cmps)
+            foreach (var cmp in GetChilds())
                 Value.Add(cmp);
 
             isChildsCollecting = false;
         }
+    }
+
+    public class ComponentList : ComponentList<Component>
+    {
+
     }
 }

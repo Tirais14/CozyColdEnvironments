@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.EditorC
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var root = base.CreatePropertyGUI(property);
+            root = base.CreatePropertyGUI(property);
 
             root ??= new VisualElement();
 

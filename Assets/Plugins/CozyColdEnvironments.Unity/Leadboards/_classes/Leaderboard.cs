@@ -14,7 +14,9 @@ namespace CCEnvs.Unity.Leaderboards
         ILeaderboard
     {
         private readonly Dictionary<Identifier, IDisposable> subbs = new();
+
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
         private readonly List<ILeaderboardEntry> sortedEntries = new();
 
         public ObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; } = new();
@@ -22,7 +24,9 @@ namespace CCEnvs.Unity.Leaderboards
 
         public Leaderboard()
         {
-            BindEntries();
+            BindEntryAdd();
+            BindEntryRemove();
+            BindEntriesClear();
         }
 
         public float GetScore(Identifier userProfileID)
@@ -51,42 +55,56 @@ namespace CCEnvs.Unity.Leaderboards
             disposed = true;
         }
 
-        private void BindEntries()
+        private void OnEntryAdd(KeyValuePair<Identifier, ILeaderboardEntry> entry)
+        {
+            sortedEntries.Add(entry.Value);
+
+            var sub = entry.Value.ObserveScore()
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    @this.sortedEntries.Sort();
+                });
+
+            subbs.Add(entry.Key, sub);
+        }
+
+        private void OnEntryRemove(KeyValuePair<Identifier, ILeaderboardEntry> entry)
+        {
+            sortedEntries.Remove(entry.Value);
+
+            if (subbs.Remove(entry.Key, out var sub))
+                sub.Dispose();
+        }
+
+        private void OnEntriesClear()
+        {
+            sortedEntries.Clear();
+        }
+
+        private void BindEntryAdd()
         {
             Entries.ObserveAdd(disposeCancellationTokenSource.Token)
                 .Select(ev => ev.Value)
                 .Subscribe(this,
-                static (entry, @this) =>
-                {
-                    @this.sortedEntries.Add(entry.Value);
-
-                    var sub = entry.Value.ObserveScore()
-                        .Subscribe(@this,
-                        static (_, @this) =>
-                        {
-                            @this.sortedEntries.Sort();
-                        });
-
-                    @this.subbs.Add(entry.Key, sub);
-                })
+                static (entry, @this) => @this.OnEntryAdd(entry))
                 .RegisterTo(disposeCancellationTokenSource.Token);
+        }
 
+        private void BindEntryRemove()
+        {
             Entries.ObserveRemove(disposeCancellationTokenSource.Token)
                 .Select(ev => ev.Value)
                 .Subscribe(this,
-                static (entry, @this) =>
-                {
-                    @this.sortedEntries.Remove(entry.Value);
-
-                    if (@this.subbs.Remove(entry.Key, out var sub))
-                        sub.Dispose();
-                })
+                static (entry, @this) => @this.OnEntryRemove(entry))
                 .RegisterTo(disposeCancellationTokenSource.Token);
+        }
 
+        private void BindEntriesClear()
+        {
             Entries.ObserveClear(disposeCancellationTokenSource.Token)
-                .Merge(Entries.ObserveReset().AsUnitObservable())
                 .Subscribe(this,
-                static (_, @this) => @this.sortedEntries.Clear())
+                static (_, @this) => @this.OnEntriesClear())
                 .RegisterTo(disposeCancellationTokenSource.Token);
         }
     }

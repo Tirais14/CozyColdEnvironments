@@ -1,6 +1,6 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Unity.Collections;
-using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
@@ -8,151 +8,173 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Threading;
 using UnityEngine;
 using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Leaderboards
 {
-    public abstract class LeaderboardView<TViewModel> : View<TViewModel>
-        where TViewModel : ILeaderboardViewModel
+    public class LeaderboardView : View<LeaderboardViewModel>
     {
-        private readonly List<IDisposable> viewModelDisposables = new();
+        private readonly Dictionary<ILeaderboardEntry, Transform> entries = new();
+
+        private readonly List<ILeaderboardEntry> newEntries = new();
+
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
 
         [SerializeField]
         private GameObject entryPrefab;
 
         [SerializeField]
-        private ComponentList<ILeaderboardEntry> entries = null!;
+        private ComponentList entryViews = null!;
 
-        private int instantiationCount;
+        protected override void Awake()
+        {
+            base.Awake();
+
+            entryViews.SetTypeFilter(typeof(LeaderboardEntryView))
+                .SetDestroyOnRemove(true)
+                .SetDestroyByGameObject(true);
+        }
 
         protected override void Start()
         {
             base.Start();
-            entries.SetDestroyOnRemove(true).SetDestroyByGameObject(true);
+            isMutable = true;
         }
 
         protected override void Init()
         {
             base.Init();
-
-            viewModelDisposables.DisposeEach();
-            viewModelDisposables.Clear();
-
-            BindEntries();
+            BindEntryAdd();
+            BindEntryRemove();
+            BindEntryClear();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            toInstaniateCount.Dispose();
+            commandScheduler.Dispose();
         }
 
-        //private void BindEntries()
-        //{
-        //    if (viewModel.IsNone)
-        //        return;
-
-        //    entries.Value.ObserveAdd(destroyCancellationToken)
-        //        .Select(static ev => ev.Value)
-        //        .Subscribe(this,
-        //        static (entry, @this) =>
-        //        {
-        //            @this.viewModelUnsafe.Add(entry);
-        //        })
-        //        .AddTo(viewModelDisposables);
-
-        //    entries.Value.ObserveRemove(destroyCancellationToken)
-        //        .Select(static ev => ev.Value)
-        //        .Subscribe(this,
-        //        static (entry, @this) =>
-        //        {
-        //            @this.viewModelUnsafe.Remove(entry.Profile.ID);
-        //        })
-        //        .AddTo(viewModelDisposables);
-
-        //    entries.Value.ObserveClear(destroyCancellationToken)
-        //        .Subscribe(this,
-        //        static (_, @this) =>
-        //        {
-        //            @this.viewModelUnsafe.Clear();
-        //        })
-        //        .AddTo(viewModelDisposables);
-        //}
-
-        protected abstract ILeaderboardViewModel CreateEntryViewModel(ILeaderboardEntry entry);
-
-        private async UniTask WaitWhileInstantiationAsync()
+        protected override Maybe<LeaderboardViewModel> ViewModelFactory()
         {
-            await UniTask.WaitWhile(this,
-                static @this => @this.instantiationCount > 0,
-                cancellationToken: destroyCancellationToken
+            return new LeaderboardViewModel(new Leaderboard());
+        }
+
+        private async UniTask InstantiateNewEntriesAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await UniTask.WaitForEndOfFrame(cancellationToken: cancellationToken);
+
+            var instantiatedGOs = await InstantiateAsync(
+                entryPrefab,
+                newEntries.Count,
+                new InstantiateParameters
+                {
+                    parent = entryViews.cTransform.Value
+                },
+                cancellationToken: cancellationToken
                 );
+
+            int i = 0;
+
+            foreach (var (go, entry) in instantiatedGOs.AsValueEnumerable()
+                .Zip(newEntries))
+            {
+                cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref i);
+
+                var entryView = go.Q()
+                        .IncludeInactive()
+                        .Component<LeaderboardEntryView>()
+                        .Strict();
+
+                var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry);
+
+                entryView.SetViewModel(entryViewModel);
+            }
         }
 
-        private void BindEntries()
+        private void OnEntryAdd(ILeaderboardEntry entry)
         {
-            if (!viewModel.TryGetValue(out var vm))
-                return;
+            newEntries.Add(entry);
 
-            vm.Entries.ObserveDictionaryAdd()
+            Command.Builder.SetName(nameof(OnEntryAdd))
+                .SetSingle()
+                .NextStep(this)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (@this, cancellationToken) =>
+                {
+                    await @this.InstantiateNewEntriesAsync(cancellationToken);
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
+        }
+
+        private void OnEntryRemove(ILeaderboardEntry entry)
+        {
+            Command.Builder.SetName(nameof(OnEntryRemove))
+                .NextStep((@this: this, entry))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (args.@this.entries.Remove(args.entry, out var entryTransform))
+                        args.@this.entryViews.Value.Remove(entryTransform);
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
+        }
+
+        private void OnEntryClear()
+        {
+            Command.Builder.SetName(nameof(OnEntryClear))
+                .NextStep(this)
+                .Syncronously()
+                .SetExecuteAction(
+                static @this =>
+                {
+                    @this.entries.Clear();
+                    @this.entryViews.Value.Clear();
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
+        }
+
+        private void BindEntryAdd()
+        {
+            viewModelUnsafe.Entries.ObserveDictionaryAdd()
                 .Select(ev => ev.Value)
                 .Subscribe(this,
-                async (entry, @this) =>
-                {
-                    UniTask.Create((entry, @this),
-                        static async (args) =>
-                        {
-                            args.@this.instantiationCount++;
-
-                            try
-                            {
-                                (await InstantiateAsync(args.@this.entryPrefab))[0].Q()
-                                    .Component<IView>()
-                                    .Strict()
-                                    .SetViewModelUnsafe(args.@this.CreateEntryViewModel(args.entry)
-                                    );
-                            }
-                            finally
-                            {
-                                args.@this.instantiationCount--;
-                            }
-                        })
-                        .Forget();
-                })
+                static (entry, @this) => @this.OnEntryAdd(entry))
                 .AddTo(viewModelDisposables);
+        }
 
-            vm.Entries.ObserveDictionaryRemove()
+        private void BindEntryRemove()
+        {
+            viewModelUnsafe.Entries.ObserveDictionaryRemove()
                 .Select(ev => ev.Value)
                 .Subscribe(this,
-                async (entry, @this) =>
-                {
-                    UniTask.Create((entry, @this),
-                        static async (args) =>
-                        {
-                            await args.@this.WaitWhileInstantiationAsync();
-
-                            args.@this.entries.Value.Remove(args.entry);
-                        })
-                        .Forget();
-                })
+                static (entry, @this) => @this.OnEntryRemove(entry))
                 .AddTo(viewModelDisposables);
+        }
 
-            vm.Entries.ObserveClear()
+        private void BindEntryClear()
+        {
+            viewModelUnsafe.Entries.ObserveClear()
                 .Subscribe(this,
-                static (_, @this) =>
-                {
-                    UniTask.Create(@this,
-                        static async @this =>
-                        {
-                            await @this.WaitWhileInstantiationAsync();
-
-                            @this.entries.Value.Clear();
-                        })
-                        .Forget();
-                })
+                static (_, @this) => @this.OnEntryClear())
                 .AddTo(viewModelDisposables);
         }
     }

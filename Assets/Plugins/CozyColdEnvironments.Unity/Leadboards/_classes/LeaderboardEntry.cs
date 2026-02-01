@@ -1,8 +1,10 @@
 using CCEnvs.Unity.Profiles;
 using ObservableCollections;
 using R3;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Leaderboards
@@ -15,6 +17,8 @@ namespace CCEnvs.Unity.Leaderboards
 
         private readonly List<IDisposable> disposables = new();
 
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
         public IUserProfile Profile { get; }
         public ObservableDictionary<string, ReactiveProperty<float>> ScoreValues { get; } = new();
         public float Score => score.Value;
@@ -23,7 +27,9 @@ namespace CCEnvs.Unity.Leaderboards
         {
             Profile = userProfile;
 
-            BindCollection();
+            BindScoreValueAdd();
+            BindScoreValueRemove();
+            BindScoreValuesClear();
         }
 
         public int CompareTo(ILeaderboardEntry other)
@@ -40,10 +46,13 @@ namespace CCEnvs.Unity.Leaderboards
 
             if (disposing)
             {
-                foreach (var item in ScoreValues)
-                    item.Value.Dispose();
+                disposeCancellationTokenSource.Cancel();
+                disposeCancellationTokenSource.Dispose();
 
-                ScoreValues.Clear();
+                OnScoreValuesClear();
+
+                disposables.DisposeEach();
+                disposables.Clear();
 
                 score.Dispose();
             }
@@ -53,7 +62,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         public Observable<float> ObserveScore() => score;
 
-        private void OnAdd(string key, ReactiveProperty<float> prop)
+        private void OnScoreValueAdd(string key, ReactiveProperty<float> prop)
         {
             var sub = prop.Pairwise()
                 .Select(static pair =>
@@ -69,24 +78,41 @@ namespace CCEnvs.Unity.Leaderboards
             subbs.Add(key, sub);
         }
 
-        private void OnRemove(string key)
+        private void OnScoreValueRemove(string key)
         {
             if (subbs.Remove(key, out var sub))
                 sub.Dispose();
         }
 
-        private void BindCollection()
+        private void OnScoreValuesClear()
         {
-            ScoreValues.ObserveAdd()
-                .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (item, @this) => @this.OnAdd(item.Key, item.Value))
-                .AddTo(disposables);
+            subbs.ForEach(item => item.Value.Dispose());
+            subbs.Clear();
+        }
 
-            ScoreValues.ObserveRemove()
+        private void BindScoreValueAdd()
+        {
+            ScoreValues.ObserveAdd(disposeCancellationTokenSource.Token)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
-                static (item, @this) => @this.OnRemove(item.Key))
+                static (item, @this) => @this.OnScoreValueAdd(item.Key, item.Value))
+                .AddTo(disposables);
+        }
+
+        private void BindScoreValueRemove()
+        {
+            ScoreValues.ObserveRemove(disposeCancellationTokenSource.Token)
+                .Select(static ev => ev.Value)
+                .Subscribe(this,
+                static (item, @this) => @this.OnScoreValueRemove(item.Key))
+                .AddTo(disposables);
+        }
+
+        private void BindScoreValuesClear()
+        {
+            ScoreValues.ObserveClear(disposeCancellationTokenSource.Token)
+                .Subscribe(this,
+                static (_, @this) => @this.OnScoreValuesClear())
                 .AddTo(disposables);
         }
     }
