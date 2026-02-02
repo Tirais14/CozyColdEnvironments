@@ -10,9 +10,9 @@ namespace CCEnvs.Unity.UI
         Maybe<IViewModel> viewModel { get; }
         Maybe<object> model { get; }
 
-        void SetViewModelUnsafe(object viewModel);
+        void SetViewModel(object viewModel);
 
-        void SetViewModelFactoryUnsafe(Func<object> factory);
+        void SetViewModelFactory(Func<object> factory);
 
         Result<T> GetModel<T>();
     }
@@ -27,12 +27,12 @@ namespace CCEnvs.Unity.UI
 
         void SetViewModelFactory(Func<TViewModel> factory);
 
-        void IView.SetViewModelUnsafe(object viewModel)
+        void IView.SetViewModel(object viewModel)
         {
             SetViewModel(viewModel.To<TViewModel>());
         }
 
-        void IView.SetViewModelFactoryUnsafe(Func<object> factory)
+        void IView.SetViewModelFactory(Func<object> factory)
         {
             SetViewModelFactory(() => factory().To<TViewModel>());
         }

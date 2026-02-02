@@ -1,11 +1,11 @@
-using CCEnvs.Collections;
 using System;
+using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Unity.Databases
 {
     public interface IAssetDatabaseRegistry 
-        : ICCDictionary<Identifier, IAssetDatabase>,
+        : IDictionary<Identifier, IAssetDatabase>,
         IDisposable
     {
         AssetDatabaseQuery Query();

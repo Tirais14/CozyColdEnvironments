@@ -28,12 +28,6 @@ namespace CCEnvs.Unity.Storages.UI
         [SerializeField]
         protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Equals | CompareTypes.Bigger);
 
-        protected override void Awake()
-        {
-            base.Awake();
-            isMutable = true;
-        }
-
         protected override void Init()
         {
             base.Init();
@@ -77,7 +71,7 @@ namespace CCEnvs.Unity.Storages.UI
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<IItemContainer>>
     {
-        protected override Maybe<ItemContainerViewModel<IItemContainer>> ViewModelFactory()
+        protected override Maybe<ItemContainerViewModel<IItemContainer>> CreateViewModel()
         {
             var cnt = new ItemContainer();
             return new ItemContainerViewModel<IItemContainer>(cnt);

@@ -55,14 +55,14 @@ namespace CCEnvs.Patterns.Commands
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Intermediate NextStep()
+        public readonly Intermediate WithoutState()
         {
             return new Intermediate(this);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Intermediate<TState> NextStep<TState>(TState state)
+        public readonly Intermediate<TState> WithState<TState>(TState state)
         {
             Guard.IsNotNull(state, nameof(state));
 

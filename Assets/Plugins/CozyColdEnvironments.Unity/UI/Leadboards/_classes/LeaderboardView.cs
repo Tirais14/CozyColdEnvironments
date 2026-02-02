@@ -6,6 +6,7 @@ using CCEnvs.Unity.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,8 +35,6 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             base.Awake();
 
-            isMutable = true;
-
             entryViews.SetTypeFilter(typeof(LeaderboardEntryView))
                 .SetDestroyOnRemove(true)
                 .SetDestroyByGameObject(true);
@@ -55,7 +54,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
             commandScheduler.Dispose();
         }
 
-        protected override Maybe<LeaderboardViewModel> ViewModelFactory()
+        protected override Maybe<LeaderboardViewModel> CreateViewModel()
         {
             return new LeaderboardViewModel(new Leaderboard());
         }
@@ -79,13 +78,14 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 cancellationToken: cancellationToken
                 );
 
-            int i = 0;
-            ILeaderboardEntry entry;
-
-            int newEntriesCount = newEntries.Count;
-
             if (newEntries.Count > instantiatedGOs.Length)
+            {
+                instantiatedGOs.ForEach(static go => Destroy(go));
                 throw new InvalidOperationException("Instantiated count less than to instantaite count");
+            }
+
+            ILeaderboardEntry entry;
+            int i = 0;
 
             while (newEntries.Count > 0)
             {
@@ -110,7 +110,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 entries.Add(entry, entryView.transform);
             }
 
-            int restGOs = newEntriesCount - instantiatedGOs.Length;
+            int restGOs = i + 1 - instantiatedGOs.Length;
 
             for (int j = 0; j < restGOs; j++)
                 Destroy(instantiatedGOs[j]);
@@ -118,13 +118,11 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryAdd(ILeaderboardEntry entry)
         {
-            this.PrintLog($"Adding entry with id: {entry.Profile.ID}");
-
             newEntries.Add(entry);
 
             Command.Builder.SetName(nameof(OnEntryAdd))
                 .SetSingle()
-                .NextStep(this)
+                .WithState(this)
                 .Asyncronously()
                 .SetExecuteAction(
                 static async (@this, cancellationToken) =>
@@ -139,10 +137,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryRemove(ILeaderboardEntry entry)
         {
-            this.PrintLog($"Removing entry with id: {entry.Profile.ID}");
-
             Command.Builder.SetName(nameof(OnEntryRemove))
-                .NextStep((@this: this, entry))
+                .WithState((@this: this, entry))
                 .Asyncronously()
                 .SetExecuteAction(
                 static async (args, cancellationToken) =>
@@ -162,10 +158,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryClear()
         {
-            this.PrintLog($"Clearing entries");
-
             Command.Builder.SetName(nameof(OnEntryClear))
-                .NextStep(this)
+                .WithState(this)
                 .Syncronously()
                 .SetExecuteAction(
                 static @this =>

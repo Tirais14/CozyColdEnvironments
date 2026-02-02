@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
 using ObservableCollections;
 using System;
 
@@ -8,6 +9,6 @@ namespace CCEnvs.Unity.Leaderboards
     {
         ObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
 
-        float GetScore(Identifier userProfileID);
+        bool TryGetScore(Identifier userProfileID, out float score);
     }
 }

@@ -11,6 +11,8 @@ namespace CCEnvs.Unity.Leaderboards
 {
     public class LeaderboardEntry : ILeaderboardEntry
     {
+        public static LeaderboardEntry Empty => new(UserProfile.Empty);
+
         private readonly ReactiveProperty<float> score = new();
 
         private readonly Dictionary<string, IDisposable> subbs = new();
@@ -62,7 +64,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         public Observable<float> ObserveScore() => score;
 
-        private void OnScoreValueAdd(string key, ReactiveProperty<float> prop)
+        protected virtual void OnScoreValueAdd(string key, ReactiveProperty<float> prop)
         {
             var sub = prop.Pairwise()
                 .Select(static pair =>
@@ -78,13 +80,13 @@ namespace CCEnvs.Unity.Leaderboards
             subbs.Add(key, sub);
         }
 
-        private void OnScoreValueRemove(string key)
+        protected virtual void OnScoreValueRemove(string key)
         {
             if (subbs.Remove(key, out var sub))
                 sub.Dispose();
         }
 
-        private void OnScoreValuesClear()
+        protected virtual void OnScoreValuesClear()
         {
             subbs.ForEach(item => item.Value.Dispose());
             subbs.Clear();

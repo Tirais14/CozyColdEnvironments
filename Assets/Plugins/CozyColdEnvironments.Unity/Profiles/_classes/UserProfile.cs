@@ -7,8 +7,9 @@ namespace CCEnvs.Unity.Profiles
 {
     public sealed class UserProfile : IUserProfile, IEquatable<UserProfile>
     {
+        public static UserProfile Empty => new("undefined", "undefined");
+
         private readonly ReactiveProperty<Sprite?> profileIcon = new();
-        private readonly ReactiveProperty<string> profileName = new();
 
         public Identifier ID { get; }
 
@@ -17,14 +18,12 @@ namespace CCEnvs.Unity.Profiles
             set => profileIcon.Value = value;
         }
 
-        public string Name {
-            get => profileName.Value;
-            set => profileName.Value = value ?? string.Empty;
-        }
+        public string Name { get; }
 
-        public UserProfile(Identifier? id)
+        public UserProfile(Identifier? id, string name)
         {
             ID = id ?? Guid.NewGuid().ToString();
+            Name = name ?? string.Empty;
         }
 
         public static bool operator ==(UserProfile left, UserProfile right)
@@ -56,7 +55,7 @@ namespace CCEnvs.Unity.Profiles
 
         public override string ToString()
         {
-            return $"({nameof(ID)}: {ID}; {nameof(Icon)}: {Icon}; {nameof(Name)}: {nameof(Name)})";
+            return $"({nameof(ID)}: {ID}; {nameof(Name)}: {nameof(Name)})";
         }
 
         private bool disposed;
@@ -71,11 +70,6 @@ namespace CCEnvs.Unity.Profiles
         public Observable<Sprite?> ObserveIcon()
         {
             return profileIcon;
-        }
-
-        public Observable<string> ObserveName()
-        {
-            return profileName;
         }
     }
 }

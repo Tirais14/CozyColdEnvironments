@@ -36,9 +36,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
             scoreBindings.Clear();
         }
 
-        protected override Maybe<LeaderboardEntryViewModel> ViewModelFactory()
+        protected override Maybe<LeaderboardEntryViewModel> CreateViewModel()
         {
-            return new LeaderboardEntryViewModel(new LeaderboardEntry(new UserProfile(null)));
+            return new LeaderboardEntryViewModel(LeaderboardEntry.Empty);
         }
 
         private void BindTextComponent(string key, Observable<string> scoreView)

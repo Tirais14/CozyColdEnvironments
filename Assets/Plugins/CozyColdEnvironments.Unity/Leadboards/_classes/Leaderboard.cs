@@ -29,12 +29,16 @@ namespace CCEnvs.Unity.Leaderboards
             BindEntriesClear();
         }
 
-        public float GetScore(Identifier userProfileID)
+        public bool TryGetScore(Identifier userProfileID, out float score)
         {
             if (!Entries.TryGetValue(userProfileID, out var entry))
-                throw new ArgumentException($"Cannot find user profile with id: {userProfileID}");
+            {
+                score = float.MinValue;
+                return false;
+            }
 
-            return entry.Score;
+            score = entry.Score;
+            return true;
         }
 
         private bool disposed;

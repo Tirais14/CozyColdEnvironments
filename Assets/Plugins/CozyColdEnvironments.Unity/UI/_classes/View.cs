@@ -4,17 +4,11 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.Unity.UI
 {
-    /// <summary>
-    /// <see cref="TModel"/> must have empty constructor by default
-    /// </summary>
-    /// <typeparam name="TViewModel"></typeparam>
-    /// <typeparam name="TModel"></typeparam>
     public abstract class View<TViewModel>
         : GUITab,
         IView<TViewModel>
@@ -22,23 +16,23 @@ namespace CCEnvs.Unity.UI
         where TViewModel : IViewModel
     {
         protected readonly List<IDisposable> viewModelDisposables = new();
-        protected Lazy<Maybe<TViewModel>> _viewModel = new(() => default);
 
-        [Header("View Settings")]
-        [Space(8)]
-
-        [SerializeField]
-        protected bool isMutable;
+        protected Lazy<TViewModel?> _viewModel = new(() => default);
 
         public Maybe<TViewModel> viewModel => _viewModel.Value;
-        public Maybe<object> model => viewModel.Map(x => x.model).GetValue();
-        protected TViewModel viewModelUnsafe => viewModel.IfNone(() => throw new InvalidOperationException("View model is not setted.")).GetValueUnsafe();
+
+        public Maybe<object> model => viewModel.Map(static x => x.model).GetValue();
+
+        protected TViewModel viewModelUnsafe => viewModel.GetValueUnsafe(static () => throw new InvalidOperationException("View model is not setted."));
+       
         protected object modelUnsafe => viewModelUnsafe.model;
 
         protected override void Awake()
         {
             base.Awake();
-            ViewModelFactory().IfSome(viewModel => SetViewModel(viewModel));
+
+            if (CreateViewModel().TryGetValue(out var vm))
+                SetViewModel(vm);
         }
 
         protected override void OnDestroy()
@@ -51,47 +45,33 @@ namespace CCEnvs.Unity.UI
         /// Don't use previous <see cref="viewModel"/>, it has been disposed and don't use cached <see cref="viewModel"/> by the same reason.
         /// </summary>
         /// <param name="viewModel"></param>
-        public void SetViewModel(TViewModel? viewModel)
+        public virtual void SetViewModel(TViewModel? viewModel)
         {
-            OnViewModelChanging();
             TryDisposeViewModel();
 
-            _viewModel = new Lazy<Maybe<TViewModel>>(viewModel.Maybe());
+            _viewModel = new Lazy<TViewModel?>(viewModel);
 
-            if (_viewModel.Value.IsSome)
+            if (_viewModel.Value.IsNotNull())
                 Init();
-
-            Init();
-            OnViewModelChanged();
         }
 
         /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
         /// <param name="factory"></param>
-        public void SetViewModelFactory(Func<TViewModel> factory)
+        public virtual void SetViewModelFactory(Func<TViewModel?> factory)
         {
             Guard.IsNotNull(factory);
 
-            OnViewModelChanging();
             TryDisposeViewModel();
 
-            _viewModel = new Lazy<Maybe<TViewModel>>(() => factory());
+            _viewModel = new Lazy<TViewModel?>(() => factory());
 
-            if (_viewModel.Value.IsSome)
+            if (_viewModel.Value.IsNotNull())
                 Init();
-
-            OnViewModelChanged();
         }
 
         public Result<T> GetModel<T>()
         {
-            try
-            {
-                return (modelUnsafe.To<T>(), null);
-            }
-            catch (Exception ex)
-            {
-                return (default, ex);
-            }
+            return (model.As<T>().Raw, CC.ThrowHelper.InvalidCastException(model.Map(static model => model.GetType()).GetValue(static () => typeof(void))));
         }
 
         /// <summary>
@@ -101,28 +81,16 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        protected virtual Maybe<TViewModel> ViewModelFactory()
-        {
-            return Maybe<TViewModel>.None;
-        }
+        protected abstract Maybe<TViewModel> CreateViewModel();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool SelectableDoSelectPredicate() => viewModel.IsSome;
 
-        protected virtual void OnViewModelChanging()
-        {
-
-        }
-
-        protected virtual void OnViewModelChanged()
-        {
-        }
-
         protected void TryDisposeViewModel()
         {
-            if (_viewModel.IsValueCreated && _viewModel.Value.TryGetValue(out var vm)
+            if (_viewModel.IsValueCreated
                 &&
-                vm.Is<IDisposable>(out var disp))
+                _viewModel.Value.Is<IDisposable>(out var disp))
             {
                 viewModelDisposables.DisposeEach();
                 viewModelDisposables.Clear();

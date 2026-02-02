@@ -56,7 +56,7 @@ namespace CCEnvs.Unity.Components
         private async UniTaskVoid OnLocaleChangedAsync()
         {
             Command.Builder.SetName(string.Join('.', nameof(TMP_DropdownLocalizer), nameof(OnLocaleChangedAsync)))
-                .NextStep(this)
+                .WithState(this)
                 .Asyncronously()
                 .SetExecuteAction(async (@this, token) =>
                 {

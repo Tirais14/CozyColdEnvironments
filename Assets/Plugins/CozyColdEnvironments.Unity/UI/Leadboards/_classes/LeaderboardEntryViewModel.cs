@@ -9,14 +9,14 @@ namespace CCEnvs.Unity.UI.Leaderboards
 {
     public class LeaderboardEntryViewModel
         :
-        ViewModel<LeaderboardEntry>,
+        ViewModel<ILeaderboardEntry>,
         ILeaderboardEntryViewModel
     {
         public ISynchronizedView<KeyValuePair<string, ReactiveProperty<float>>, Observable<string>> Values { get; }
 
         public ReadOnlyReactiveProperty<float> Score { get; }
 
-        public LeaderboardEntryViewModel(LeaderboardEntry model) : base(model)
+        public LeaderboardEntryViewModel(ILeaderboardEntry model) : base(model)
         {
             Values = model.ScoreValues.CreateView(
                 item =>

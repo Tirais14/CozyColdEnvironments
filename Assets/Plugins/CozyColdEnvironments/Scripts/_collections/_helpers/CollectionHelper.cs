@@ -1,6 +1,7 @@
 using CCEnvs.Pools;
+using CommunityToolkit.Diagnostics;
+using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -10,8 +11,12 @@ namespace CCEnvs.Collections
 {
     public static class CollectionHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryAdd<T>(this ICollection<T> source, T value)
         {
+            CC.Guard.IsNotNullSource(source);
+            CC.Guard.IsNotNull(value, nameof(value));
+
             if (source.Contains(value))
                 return false;
 
@@ -20,37 +25,49 @@ namespace CCEnvs.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetCountOrZero(this ICollection? collection)
-        {
-            return collection?.Count ?? 0;
-        }
-
         public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> range)
         {
+            CC.Guard.IsNotNull(collection, nameof(collection));
+            Guard.IsNotNull(range, nameof(range));
+
             foreach (var item in range)
                 collection.Add(item);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddRange<T>(this ICollection<T> collection, params T[] range)
         {
+            CC.Guard.IsNotNull(collection, nameof(collection));
+            Guard.IsNotNull(range, nameof(range));
+
             int rangeLength = range.Length;
             for (int i = 0; i < rangeLength; i++)
                 collection.Add(range[i]);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RemoveRange<T>(this ICollection<T> collection, IEnumerable<T> range)
         {
+            CC.Guard.IsNotNull(collection, nameof(collection));
+            Guard.IsNotNull(range, nameof(range));
+
             foreach (var item in range)
                 collection.Remove(item);
         }
 
-        public static void RemoveRange<T>(this ICollection<T> collection, T[] range)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void RemoveRange<T>(this ICollection<T> collection, params T[] range)
         {
+            CC.Guard.IsNotNull(collection, nameof(collection));
+            Guard.IsNotNull(range, nameof(range));
+
             int rangeLength = range.Length;
+
             for (int i = 0; i < rangeLength; i++)
                 collection.Remove(range[i]);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PooledArray<T> ToArrayPooledReadOnly<T>(this IReadOnlyCollection<T> source)
         {
             CC.Guard.IsNotNullSource(source);
@@ -64,6 +81,7 @@ namespace CCEnvs.Collections
             return items;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PooledArray<T> ToArrayPooled<T>(this ICollection<T> source)
         {
             CC.Guard.IsNotNullSource(source);
@@ -75,6 +93,15 @@ namespace CCEnvs.Collections
                 items[i++] = item;
 
             return items;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeEachAndClear(this ICollection<IDisposable> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            source.DisposeEach();
+            source.Clear();
         }
     }
 }

@@ -1,8 +1,11 @@
 using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Unity.Components;
+using SuperLinq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ZLinq;
 
@@ -17,16 +20,16 @@ namespace CCEnvs.Unity.Databases
 
         where TThis : CCBehaviourStatic, IAssetDatabaseRegistry
     {
-        private readonly CCDictionary<Identifier, IAssetDatabase> collection = new();
+        private readonly Dictionary<Identifier, IAssetDatabase> collection = new();
         private readonly AssetDatabaseQuery query = new();
 
-        public Result<IAssetDatabase> this[Identifier key] {
+        public IAssetDatabase this[Identifier key] {
             get => collection[key];
             set => collection[key] = value;
         }
 
-        public IEnumerable<Identifier> Keys => collection.Keys;
-        public IEnumerable<IAssetDatabase> Values => collection.Values;
+        public ICollection<Identifier> Keys => collection.Keys;
+        public ICollection<IAssetDatabase> Values => collection.Values;
         public int Count => collection.Count;
 
         bool ICollection<KeyValuePair<Identifier, IAssetDatabase>>.IsReadOnly => false;
@@ -85,6 +88,11 @@ namespace CCEnvs.Unity.Databases
         public void Clear()
         {
             collection.Clear();
+        }
+
+        public bool TryGetValue(Identifier key, out IAssetDatabase value)
+        {
+            return collection.TryGetValue(key, out value);
         }
 
         private bool disposed;

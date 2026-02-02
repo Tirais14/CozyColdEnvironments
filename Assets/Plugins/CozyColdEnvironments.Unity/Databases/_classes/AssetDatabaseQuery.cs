@@ -127,7 +127,7 @@ namespace CCEnvs.Unity.Databases
                 Text = textIdFilter
             };
 
-            if (reg[id].Lax().TryGetValue(out IAssetDatabase? db)
+            if (reg.GetMaybeValue(id).TryGetValue(out IAssetDatabase? db)
                 &&
                 FilterType(db.GetType(), type)
                 &&

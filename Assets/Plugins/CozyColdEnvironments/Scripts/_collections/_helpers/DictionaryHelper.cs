@@ -3,6 +3,7 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs.Collections
@@ -95,6 +96,28 @@ namespace CCEnvs.Collections
             }
 
             return value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TValue> GetMaybeValue<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (!source.TryGetValue(key, out var result))
+                return Maybe<TValue>.None;
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TValue> GetMaybeValueReadOnly<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> source, TKey key)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (!source.TryGetValue(key, out var result))
+                return Maybe<TValue>.None;
+
+            return result;
         }
     }
 }
