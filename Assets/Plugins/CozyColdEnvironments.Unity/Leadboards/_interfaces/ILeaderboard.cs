@@ -1,13 +1,13 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using ObservableCollections;
 using System;
+using System.Collections.Generic;
 
 namespace CCEnvs.Unity.Leaderboards
 {
-    public interface ILeaderboard : IDisposable
+    public interface ILeaderboard : ICollection<ILeaderboardEntry>, IDisposable
     {
-        ObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
+        IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
 
         bool TryGetScore(Identifier userProfileID, out float score);
     }

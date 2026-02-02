@@ -119,7 +119,7 @@ namespace CCEnvs.FuncLanguage
                    &&
                    comparer.Equals(@default, other.@default)
                    &&
-                   IsSome && other.IsSome;
+                   IsSome == other.IsSome;
         }
         public readonly override bool Equals(object obj)
         {
@@ -136,7 +136,7 @@ namespace CCEnvs.FuncLanguage
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Target '{target}'; Default '{@default}'; IsSome \"{IsSome}\"";
+            return $"({target}; {nameof(IsSome)}: {IsSome})";
         }
 
         public readonly IEnumerator<T> GetEnumerator()

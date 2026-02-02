@@ -1,9 +1,12 @@
+using CCEnvs.Collections;
 using CCEnvs.Linq;
 using ObservableCollections;
 using R3;
 using SuperLinq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 #nullable enable
@@ -15,12 +18,19 @@ namespace CCEnvs.Unity.Leaderboards
     {
         private readonly Dictionary<Identifier, IDisposable> subbs = new();
 
+        private readonly ObservableDictionary<Identifier, ILeaderboardEntry> entries = new();
+
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         private readonly List<ILeaderboardEntry> sortedEntries = new();
 
-        public ObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; } = new();
+        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => entries;
+
         public IList<ILeaderboardEntry> SortedEntries => sortedEntries;
+
+        public int Count => Entries.Count;
+
+        bool ICollection<ILeaderboardEntry>.IsReadOnly => false;
 
         public Leaderboard()
         {
@@ -31,7 +41,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         public bool TryGetScore(Identifier userProfileID, out float score)
         {
-            if (!Entries.TryGetValue(userProfileID, out var entry))
+            if (!entries.TryGetValue(userProfileID, out var entry))
             {
                 score = float.MinValue;
                 return false;
@@ -39,6 +49,47 @@ namespace CCEnvs.Unity.Leaderboards
 
             score = entry.Score;
             return true;
+        }
+
+        public void Add(ILeaderboardEntry entry)
+        {
+            CC.Guard.IsNotNull(entry, nameof(entry));
+
+            entries.Add(entry.Profile.ID, entry);
+        }
+
+        public void Clear()
+        {
+            entries.Clear();
+        }
+
+        public bool Contains(ILeaderboardEntry entry)
+        {
+            CC.Guard.IsNotNull(entry, nameof(entry));
+
+            return entries.ContainsKey(entry.Profile.ID);
+        }
+
+        public void CopyTo(ILeaderboardEntry[] array, int arrayIndex)
+        {
+            GetEnumerator().AsEnumerable().CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(ILeaderboardEntry entry)
+        {
+            CC.Guard.IsNotNull(entry, nameof(entry));
+
+            return entries.Remove(entry.Profile.ID);
+        }
+
+        public IEnumerator<ILeaderboardEntry> GetEnumerator()
+        {
+            return entries.Select(entry => entry.Value).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         private bool disposed;
@@ -50,8 +101,8 @@ namespace CCEnvs.Unity.Leaderboards
             disposeCancellationTokenSource.Cancel();
             disposeCancellationTokenSource.Dispose();
 
-            Entries.ForEach(entry => entry.Value.Dispose());
-            Entries.Clear();
+            entries.ForEach(entry => entry.Value.Dispose());
+            entries.Clear();
 
             subbs.Values.DisposeEach();
             subbs.Clear();
@@ -88,7 +139,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         private void BindEntryAdd()
         {
-            Entries.ObserveAdd(disposeCancellationTokenSource.Token)
+            entries.ObserveAdd(disposeCancellationTokenSource.Token)
                 .Select(ev => ev.Value)
                 .Subscribe(this,
                 static (entry, @this) => @this.OnEntryAdd(entry))
@@ -97,7 +148,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         private void BindEntryRemove()
         {
-            Entries.ObserveRemove(disposeCancellationTokenSource.Token)
+            entries.ObserveRemove(disposeCancellationTokenSource.Token)
                 .Select(ev => ev.Value)
                 .Subscribe(this,
                 static (entry, @this) => @this.OnEntryRemove(entry))
@@ -106,7 +157,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         private void BindEntriesClear()
         {
-            Entries.ObserveClear(disposeCancellationTokenSource.Token)
+            entries.ObserveClear(disposeCancellationTokenSource.Token)
                 .Subscribe(this,
                 static (_, @this) => @this.OnEntriesClear())
                 .RegisterTo(disposeCancellationTokenSource.Token);

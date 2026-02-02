@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Profiles
 
         public string Name { get; }
 
-        public UserProfile(Identifier? id, string name)
+        public UserProfile(string name, Identifier? id = null)
         {
             ID = id ?? Guid.NewGuid().ToString();
             Name = name ?? string.Empty;
@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Profiles
 
         public override string ToString()
         {
-            return $"({nameof(ID)}: {ID}; {nameof(Name)}: {nameof(Name)})";
+            return $"({nameof(ID)}: {ID}; {nameof(Name)}: {Name})";
         }
 
         private bool disposed;

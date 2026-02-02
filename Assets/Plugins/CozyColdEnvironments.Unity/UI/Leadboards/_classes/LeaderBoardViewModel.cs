@@ -5,31 +5,28 @@ namespace CCEnvs.Unity.UI.Leaderboards
 {
     public class LeaderboardViewModel
         :
-        ViewModel<Leaderboard>,
-        ILeaderboardViewModel
+        ViewModel<ILeaderboard>
     {
-        private readonly ObservableDictionary<Identifier, ILeaderboardEntry> profiles;
+        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
 
-        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => profiles;
-
-        public LeaderboardViewModel(Leaderboard model) : base(model)
+        public LeaderboardViewModel(ILeaderboard model) : base(model)
         {
-            profiles = model.Entries;
+            Entries = model.Entries;
         }
 
-        public void Add(ILeaderboardEntry userProfile)
+        public void Add(ILeaderboardEntry entry)
         {
-            profiles.Add(userProfile.Profile.ID, userProfile);
+            model.Add(entry);
         }
 
-        public bool Remove(Identifier userProfileID)
+        public bool Remove(ILeaderboardEntry entry)
         {
-            return profiles.Remove(userProfileID);
+            return model.Remove(entry);
         }
 
         public void Clear()
         {
-            profiles.Clear();
+            model.Clear();
         }
     }
 }

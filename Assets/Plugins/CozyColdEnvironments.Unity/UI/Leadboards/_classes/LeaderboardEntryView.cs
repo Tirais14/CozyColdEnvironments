@@ -1,7 +1,6 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Leaderboards;
-using CCEnvs.Unity.Profiles;
 using CCEnvs.Unity.Serialization;
 using ObservableCollections;
 using R3;
@@ -41,15 +40,22 @@ namespace CCEnvs.Unity.UI.Leaderboards
             return new LeaderboardEntryViewModel(LeaderboardEntry.Empty);
         }
 
-        private void BindTextComponent(string key, Observable<string> scoreView)
+        private void UpdateScoreValueView(string key, string scoreView)
+        {
+            scoreTextBindings.Deserialized[key].text = scoreView;
+        }
+
+        private void BindTextComponent(string key, ReadOnlyReactiveProperty<string> scoreView)
         {
             if (scoreBindings.ContainsKey(key))
                 throw new InvalidOperationException($"Text component with key: {key} already binded");
 
+            UpdateScoreValueView(key, scoreView.CurrentValue);
+
             var sub = scoreView.Subscribe((@this: this, key),
                 static (scoreView, args) =>
                 {
-                    args.@this.scoreTextBindings.Deserialized[args.key].text = scoreView;
+                    args.@this.UpdateScoreValueView(args.key, scoreView);
                 });
 
             scoreBindings.Add(key, sub);

@@ -9,10 +9,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
 {
     public class LeaderboardEntryViewModel
         :
-        ViewModel<ILeaderboardEntry>,
-        ILeaderboardEntryViewModel
+        ViewModel<ILeaderboardEntry>
     {
-        public ISynchronizedView<KeyValuePair<string, ReactiveProperty<float>>, Observable<string>> Values { get; }
+        public ISynchronizedView<KeyValuePair<string, ReactiveProperty<float>>, ReadOnlyReactiveProperty<string>> Values { get; }
 
         public ReadOnlyReactiveProperty<float> Score { get; }
 
@@ -21,8 +20,10 @@ namespace CCEnvs.Unity.UI.Leaderboards
             Values = model.ScoreValues.CreateView(
                 item =>
                 {
-                    return item.Value.Select(static score => score.ToString());
-                });
+                    return item.Value.Select(static score => score.ToString())!
+                        .ToReadOnlyReactiveProperty(item.Value.Value.ToString())
+                        .AddTo(disposables);
+                })!;
 
             Score = model.ObserveScore().ToReadOnlyReactiveProperty();
         }

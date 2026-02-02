@@ -1,4 +1,3 @@
-using CCEnvs;
 using CCEnvs.Collections;
 using SuperLinq;
 using System;
@@ -44,6 +43,9 @@ namespace CCEnvs.Unity.Serialization
                 .DistinctBy(pair => pair.Key);
 
             collection.AddRange(items);
+
+            this.items = null!;
+            defaultItem = default;
 
             return collection;
         }

@@ -62,12 +62,18 @@ namespace CCEnvs.Unity.Leaderboards
             disposed = true;
         }
 
+        public override string ToString()
+        {
+            return $"({nameof(Profile)}: {Profile}; {nameof(Score)}: {Score})";
+        }
+
         public Observable<float> ObserveScore() => score;
 
         protected virtual void OnScoreValueAdd(string key, ReactiveProperty<float> prop)
         {
             var sub = prop.Pairwise()
-                .Select(static pair =>
+                .Select(
+                static pair =>
                 {
                     return pair.Current - pair.Previous;
                 })

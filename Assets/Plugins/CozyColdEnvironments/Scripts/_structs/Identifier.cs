@@ -122,7 +122,10 @@ namespace CCEnvs
 
         public readonly override string ToString()
         {
-            return $"{nameof(Number)}: {Number}; {nameof(Text)}: {Text};";
+            if (this == default)
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"({nameof(Number)}: {Number}; {nameof(Text)}: {Text})";
         }
     }
 }

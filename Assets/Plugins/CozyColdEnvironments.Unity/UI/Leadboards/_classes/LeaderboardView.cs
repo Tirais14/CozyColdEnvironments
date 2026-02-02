@@ -17,7 +17,7 @@ using ZLinq;
 #nullable enable
 namespace CCEnvs.Unity.UI.Leaderboards
 {
-    public class LeaderboardView : View<LeaderboardViewModel>
+    public abstract class LeaderboardView : View<LeaderboardViewModel>
     {
         private readonly Dictionary<ILeaderboardEntry, Transform> entries = new();
 
@@ -86,6 +86,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             ILeaderboardEntry entry;
             int i = 0;
+            int usedGOCount = 0;
 
             while (newEntries.Count > 0)
             {
@@ -96,21 +97,28 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 newEntries.RemoveAt(newEntries.Count - 1);
 
                 if (!viewModelUnsafe.Entries.ContainsKey(entry.Profile.ID))
+                {
+                    this.PrintWarning($"The entry: {entry} doesn't added, because it ID is not contains in the {nameof(viewModel)}.{nameof(Leaderboard.Entries)}");
                     continue;
+                }
 
                 var entryView = instantiatedGOs[i++].Q()
                         .IncludeInactive()
                         .Component<LeaderboardEntryView>()
                         .Strict();
 
+                entryView.Show();
+
                 var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry);
 
                 entryView.SetViewModel(entryViewModel);
 
                 entries.Add(entry, entryView.transform);
+
+                usedGOCount++;
             }
 
-            int restGOs = i + 1 - instantiatedGOs.Length;
+            int restGOs = instantiatedGOs.Length - usedGOCount;
 
             for (int j = 0; j < restGOs; j++)
                 Destroy(instantiatedGOs[j]);
@@ -118,6 +126,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryAdd(ILeaderboardEntry entry)
         {
+            this.PrintLog($"Adding {nameof(entry)}: {entry} to view");
+
             newEntries.Add(entry);
 
             Command.Builder.SetName(nameof(OnEntryAdd))
@@ -137,6 +147,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntryRemove(ILeaderboardEntry entry)
         {
+            this.PrintLog($"Removing {nameof(entry)}: {entry} from view");
+
             Command.Builder.SetName(nameof(OnEntryRemove))
                 .WithState((@this: this, entry))
                 .Asyncronously()
@@ -156,9 +168,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .ScheduleBy(commandScheduler);
         }
 
-        private void OnEntryClear()
+        private void OnEntriesClear()
         {
-            Command.Builder.SetName(nameof(OnEntryClear))
+            Command.Builder.SetName(nameof(OnEntriesClear))
                 .WithState(this)
                 .Syncronously()
                 .SetExecuteAction(
@@ -177,7 +189,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         private void BindEntryAdd()
         {
             viewModelUnsafe.Entries.ObserveDictionaryAdd(destroyCancellationToken)
-                .Select(ev => ev.Value)
+                .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (entry, @this) => @this.OnEntryAdd(entry))
                 .AddTo(viewModelDisposables);
@@ -186,7 +198,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         private void BindEntryRemove()
         {
             viewModelUnsafe.Entries.ObserveDictionaryRemove(destroyCancellationToken)
-                .Select(ev => ev.Value)
+                .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (entry, @this) => @this.OnEntryRemove(entry))
                 .AddTo(viewModelDisposables);
@@ -196,7 +208,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             viewModelUnsafe.Entries.ObserveClear(destroyCancellationToken)
                 .Subscribe(this,
-                static (_, @this) => @this.OnEntryClear())
+                static (_, @this) => @this.OnEntriesClear())
                 .AddTo(viewModelDisposables);
         }
     }
