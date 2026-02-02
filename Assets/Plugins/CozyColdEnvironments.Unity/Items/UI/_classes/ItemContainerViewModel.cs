@@ -2,6 +2,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -20,9 +21,9 @@ namespace CCEnvs.Unity.Storages.UI
         public ReadOnlyReactiveProperty<string> CounterView { get; private set; }
         public Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
 
-        public ItemContainerViewModel(T model)
+        public ItemContainerViewModel(T model, CancellationToken cancellationToken)
             :
-            base(model)
+            base(model, cancellationToken)
         {
             counterView.AddTo(disposables);
 

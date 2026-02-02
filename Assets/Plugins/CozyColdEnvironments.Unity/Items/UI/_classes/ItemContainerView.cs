@@ -74,7 +74,7 @@ namespace CCEnvs.Unity.Storages.UI
         protected override Maybe<ItemContainerViewModel<IItemContainer>> CreateViewModel()
         {
             var cnt = new ItemContainer();
-            return new ItemContainerViewModel<IItemContainer>(cnt);
+            return new ItemContainerViewModel<IItemContainer>(cnt, destroyCancellationToken);
         }
     }
 }

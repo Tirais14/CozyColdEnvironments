@@ -63,11 +63,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         protected override void Awake()
         {
             base.Awake();
-
-            entryViews.SetTypeFilter(typeof(LeaderboardEntryView))
-                .SetDestroyOnRemove(true)
-                .SetDestroyByGameObject(true);
-
+            SetupEntryViewList();
             CreateSortingBuffer();
         }
 
@@ -161,7 +157,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
                 entryView.Show();
 
-                var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry);
+                var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry, entryView.destroyCancellationToken);
 
                 entryView.SetViewModel(entryViewModel);
 
@@ -262,6 +258,13 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .Subscribe(this,
                 static (_, @this) => @this.OnEntriesClear())
                 .AddTo(viewModelDisposables);
+        }
+
+        private void SetupEntryViewList()
+        {
+            entryViews.SetTypeFilter(typeof(LeaderboardEntryView))
+                .SetDestroyOnRemove(true)
+                .SetDestroyByGameObject(true);
         }
 
         private void CreateSortingBuffer()

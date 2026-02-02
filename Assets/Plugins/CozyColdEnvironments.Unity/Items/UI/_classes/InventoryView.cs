@@ -91,7 +91,7 @@ namespace CCEnvs.Unity.Storages.UI
                     .Views()
                     .First(view => view.model.Raw is IItemContainer);
 
-                view.SetViewModel(new ItemContainerViewModel<IItemContainer>(cnt.Value));
+                view.SetViewModel(new ItemContainerViewModel<IItemContainer>(cnt.Value, destroyCancellationToken));
                 instantiatedGameObjects.Add(cnt.Key, go);
                 slots.Add(go);
             }
@@ -181,7 +181,7 @@ namespace CCEnvs.Unity.Storages.UI
         protected override Maybe<InventoryViewModel<IInventory>> CreateViewModel()
         {
             var inv = new Inventory(itemContainerCount);
-            return new InventoryViewModel<IInventory>(inv);
+            return new InventoryViewModel<IInventory>(inv, destroyCancellationToken);
         }
     }
 }

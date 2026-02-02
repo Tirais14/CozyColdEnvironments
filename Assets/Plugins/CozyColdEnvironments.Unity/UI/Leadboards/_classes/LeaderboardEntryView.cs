@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         protected override Maybe<LeaderboardEntryViewModel> CreateViewModel()
         {
-            return new LeaderboardEntryViewModel(LeaderboardEntry.Empty);
+            return new LeaderboardEntryViewModel(LeaderboardEntry.Empty, destroyCancellationToken);
         }
 
         private void UpdateScoreValueView(string key, string scoreView)

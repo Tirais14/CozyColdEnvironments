@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using R3;
 using ObservableCollections;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -20,9 +21,9 @@ namespace CCEnvs.Unity.Storages.UI
         public ReactiveCommand<int> Remove => remove;
         public ReactiveCommand<KeyValuePair<int, IItemContainer>> Replace => replace;
 
-        public InventoryViewModel(TModel model) 
+        public InventoryViewModel(TModel model, CancellationToken cancellationToken) 
             :
-            base(model)
+            base(model, cancellationToken)
         {
             InstallBindings();
         }

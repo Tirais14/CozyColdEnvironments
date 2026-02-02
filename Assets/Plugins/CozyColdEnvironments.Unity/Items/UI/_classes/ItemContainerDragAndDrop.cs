@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.Items.UI
 
             if (!DropPredicate()
                 ||
-                eventData.pointerDrag == cGameObject.Value
+                eventData.pointerDrag == cGameObject
                 )
                 return;
 

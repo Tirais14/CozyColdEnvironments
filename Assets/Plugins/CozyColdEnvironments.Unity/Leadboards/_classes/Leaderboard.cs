@@ -117,8 +117,6 @@ namespace CCEnvs.Unity.Leaderboards
             disposeCancellationTokenSource.Cancel();
             disposeCancellationTokenSource.Dispose();
 
-            SortedEntries.Dispose();
-
             entries.ForEach(entry => entry.Value.Dispose());
             entries.Clear();
 

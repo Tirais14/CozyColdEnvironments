@@ -3,6 +3,7 @@ using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Leaderboards
@@ -15,7 +16,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         public ReadOnlyReactiveProperty<float> Score { get; }
 
-        public LeaderboardEntryViewModel(ILeaderboardEntry model) : base(model)
+        public LeaderboardEntryViewModel(
+            ILeaderboardEntry model,
+            CancellationToken cancellationToken
+            ) 
+            : 
+            base(model, cancellationToken)
         {
             Values = model.ScoreValues.CreateView(
                 item =>

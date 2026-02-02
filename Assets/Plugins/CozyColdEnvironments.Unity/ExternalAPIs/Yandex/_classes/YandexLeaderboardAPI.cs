@@ -27,12 +27,12 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private void BindLeaderboard()
         {
-            var userProfile = 
+            //var userProfile = 
 
-            foreach (var entry in Leaderboard.Entries.Select(entry => entry.Value))
-            {
-                entry.ObserveScore()
-            }
+            //foreach (var entry in Leaderboard.Entries.Select(entry => entry.Value))
+            //{
+            //    entry.ObserveScore()
+            //}
         }
     }
 }
