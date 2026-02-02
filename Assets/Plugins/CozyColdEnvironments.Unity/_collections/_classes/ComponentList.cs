@@ -66,10 +66,10 @@ namespace CCEnvs.Unity.Collections
         {
             var cmp = item.To<Component>();
 
-            if (cmp.transform.parent == cTransform.Value)
+            if (cmp.transform.parent == cTransform)
                 return;
 
-            cmp.transform.SetParent(cTransform.Value);
+            cmp.transform.SetParent(cTransform);
         }
 
         private void OnComponentRemove(T item)

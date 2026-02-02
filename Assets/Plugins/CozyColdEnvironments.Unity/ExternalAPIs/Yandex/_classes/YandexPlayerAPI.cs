@@ -1,5 +1,6 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.FuncLanguage;
 using R3;
 using YG;
 
@@ -12,6 +13,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public static YandexPlayerAPI? Instance { get; private set; }
 
 #if Authorization_yg
+        private Maybe<ImageLoadYG> imageLoadCmp;
+
         private Observable<bool>? isAuthorizedObservable;
 #endif
 
@@ -30,6 +33,12 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
+
+#if Authorization_yg
+            imageLoadCmp = GameObjectQuery.Scene.IncludeInactive()
+                .Component<ImageLoadYG>()
+                .Lax();
+#endif
 
             Instance = this;
         }

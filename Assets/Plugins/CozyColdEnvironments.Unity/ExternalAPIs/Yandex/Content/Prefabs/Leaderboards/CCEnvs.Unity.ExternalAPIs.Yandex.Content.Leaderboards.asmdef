@@ -1,0 +1,16 @@
+{
+    "name": "CCEnvs.Unity.ExternalAPIs.Yandex.Content.Leaderboards",
+    "rootNamespace": "CCEnvs.Unity.ExternalAPIs.Yandex.Content.Leaderboards",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "Leaderboards_yg"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

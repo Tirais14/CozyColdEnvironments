@@ -1,17 +1,37 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Leaderboards;
 using ObservableCollections;
+using R3;
+using System.Threading;
 
+#nullable enable
 namespace CCEnvs.Unity.UI.Leaderboards
 {
     public class LeaderboardViewModel
         :
         ViewModel<ILeaderboard>
     {
-        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries { get; }
+        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => model.Entries;
 
-        public LeaderboardViewModel(ILeaderboard model) : base(model)
+        public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => model.SortedEntries;
+
+        public ReadOnlyReactiveProperty<Maybe<ILeaderboardEntry>> SpecialEntry { get; }
+
+        public LeaderboardViewModel(ILeaderboard model, CancellationToken cancellationToken)
+            :
+            base(model, cancellationToken)
         {
-            Entries = model.Entries;
+            SpecialEntry = model.ObserveSpecialProfile()
+                .Select(this,
+                static (maybeProfile, @this) =>
+                {
+                    if (!maybeProfile.TryGetValue(out var profile))
+                        return Maybe<ILeaderboardEntry>.None;
+
+                    return @this.Entries[profile.ID].Maybe();
+                })
+                .ToReadOnlyReactiveProperty()
+                .AddTo(disposables);
         }
 
         public void Add(ILeaderboardEntry entry)

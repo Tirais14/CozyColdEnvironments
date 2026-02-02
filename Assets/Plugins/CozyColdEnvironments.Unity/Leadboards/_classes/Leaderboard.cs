@@ -1,5 +1,7 @@
 using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
+using CCEnvs.Unity.Profiles;
 using ObservableCollections;
 using R3;
 using SuperLinq;
@@ -22,11 +24,18 @@ namespace CCEnvs.Unity.Leaderboards
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
-        private readonly List<ILeaderboardEntry> sortedEntries = new();
+        private readonly ObservableList<ILeaderboardEntry> sortedEntries = new();
+
+        private readonly ReactiveProperty<Maybe<IUserProfile>> activeProfile = new();
 
         public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => entries;
 
-        public IList<ILeaderboardEntry> SortedEntries => sortedEntries;
+        public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => sortedEntries;
+
+        public Maybe<IUserProfile> SpecialProfile {
+            get => activeProfile.Value;
+            set => activeProfile.Value = value; 
+        }
 
         public int Count => Entries.Count;
 
@@ -51,11 +60,13 @@ namespace CCEnvs.Unity.Leaderboards
             return true;
         }
 
-        public void Add(ILeaderboardEntry entry)
+        public IDisposable Add(ILeaderboardEntry entry)
         {
             CC.Guard.IsNotNull(entry, nameof(entry));
 
             entries.Add(entry.Profile.ID, entry);
+
+            return entry;
         }
 
         public void Clear()
@@ -82,6 +93,11 @@ namespace CCEnvs.Unity.Leaderboards
             return entries.Remove(entry.Profile.ID);
         }
 
+        public Observable<Maybe<IUserProfile>> ObserveSpecialProfile()
+        {
+            return activeProfile;
+        }
+
         public IEnumerator<ILeaderboardEntry> GetEnumerator()
         {
             return entries.Select(entry => entry.Value).GetEnumerator();
@@ -100,6 +116,8 @@ namespace CCEnvs.Unity.Leaderboards
 
             disposeCancellationTokenSource.Cancel();
             disposeCancellationTokenSource.Dispose();
+
+            SortedEntries.Dispose();
 
             entries.ForEach(entry => entry.Value.Dispose());
             entries.Clear();

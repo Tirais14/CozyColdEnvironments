@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.UI
 
         public CancellationToken DisposeCancellationToken { get; }
 
-        protected ViewModel(TModel model, CancellationToken cancellationToken = default)
+        protected ViewModel(TModel model, CancellationToken cancellationToken)
         {
             this.model = model;
 

@@ -15,9 +15,9 @@ namespace CCEnvs.Unity.Components
         private readonly CompositeDisposable disposables = new();
 
         /// <summary>Cached</summary>
-        public Lazy<Transform> cTransform { get; private set; } = null!;
+        public Transform cTransform { get; private set; } = null!;
         /// <summary>Cached</summary>
-        public Lazy<GameObject> cGameObject { get; private set; } = null!;
+        public GameObject cGameObject { get; private set; } = null!;
         /// <summary>
         /// Is true before update and after start
         /// </summary>
@@ -26,8 +26,8 @@ namespace CCEnvs.Unity.Components
 
         protected virtual void Awake()
         {
-            cTransform = new Lazy<Transform>(() => transform);
-            cGameObject = new Lazy<GameObject>(() => gameObject);
+            cTransform = transform;
+            cGameObject = gameObject;
 
             //Sets component fields and props marked by specical attribute
             ComponentInjector.Inject(this);
