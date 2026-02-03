@@ -1,4 +1,5 @@
 #if Leaderboards_yg
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using YG;
+using YG.Utils.LB;
 
 #nullable enable
 namespace CCEnvs.Unity.ExternalAPIs.Yandex
@@ -20,6 +22,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
     public sealed class YandexLeaderboardAdapter : CCBehaviour
     {
         private readonly List<IDisposable> disposables = new();
+
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(YandexLeaderboardAdapter));
 
         [GetBySelf]
         private LeaderboardYG worstLeaderboard = null!;
@@ -31,7 +35,21 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         protected override void Start()
         {
             base.Start();
+
+            YG2.onGetLeaderboard += OnLeaderboardDataChanged;
             InitAsync().ForgetByPrintException(this);
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            YG2.onGetLeaderboard -= OnLeaderboardDataChanged;
+            commandScheduler.Dispose();
+        }
+
+        private void OnLeaderboardDataChanged(LBData data)
+        {
+            FillLeaderboardFromWorst(data.players);
         }
 
         private async UniTask InitAsync()
@@ -60,8 +78,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    @this.worstLeaderboard.gameObject.SetActive(true);
-                    @this.FillLeaderboardFromWorstAsync().ForgetByPrintException();
+                    @this.worstLeaderboard.enabled = true;
+                    //@this.FillLeaderboardFromWorstAsync().ForgetByPrintException();
                 })
                 .RegisterDisposableTo(this);
 
@@ -69,16 +87,15 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    @this.worstLeaderboard.gameObject.SetActive(false);
+                    @this.worstLeaderboard.enabled = false;
                 })
                 .RegisterDisposableTo(this);
         }
 
-        private UserProfile CreateUserProfile(LBPlayerDataYG.Data playerData)
+        private UserProfile CreateUserProfile(LBPlayerData playerData)
         {
             var profile = new UserProfile(playerData.name)
             {
-                Icon = playerData.photoSprite
             };
 
             profile.AddTo(disposables);
@@ -87,7 +104,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         }
 
         private LeaderboardEntry CreateLeaderboardEntry(
-            LBPlayerDataYG.Data playerData,
+            LBPlayerData playerData,
             UserProfile userProfile
             )
         {
@@ -95,41 +112,31 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             entry.AddTo(disposables);
 
-            var score = int.Parse(playerData.score);
-
-            var scoreRX = new ReactiveProperty<float>(score);
-
-            scoreRX.AddTo(disposables);
-
-            entry.ScoreValues.Add("score", scoreRX);
+            entry.AddScore("score", playerData.score);
 
             return entry;
         }
 
-        private async UniTask FillLeaderboardFromWorstAsync()
+        private void FillLeaderboardFromWorst(LBPlayerData[] players)
         {
-            destroyCancellationToken.ThrowIfCancellationRequested();
-
-            await UniTask.NextFrame(cancellationToken: destroyCancellationToken);
-
             leaderboard.Clear();
 
             UserProfile userProfile;
 
             LeaderboardEntry leaderboardEntry;
 
-            var playerDatas = worstLeaderboard.Reflect()
-                .Cache()
-                .IncludeNonPublic()
-                .WithName("players")
-                .GetFieldValue<LBPlayerDataYG[]>()
-                .GetValueUnsafe();
+            //var playerDatas = worstLeaderboard.Reflect()
+            //    .Cache()
+            //    .IncludeNonPublic()
+            //    .WithName("players")
+            //    .GetFieldValue<LBPlayerDataYG[]>()
+            //    .GetValueUnsafe();
 
-            foreach (var playerData in playerDatas)
+            foreach (var playerData in players)
             {
-                userProfile = CreateUserProfile(playerData.data);
+                userProfile = CreateUserProfile(playerData);
 
-                leaderboardEntry = CreateLeaderboardEntry(playerData.data, userProfile);
+                leaderboardEntry = CreateLeaderboardEntry(playerData, userProfile);
 
                 leaderboard.Add(leaderboardEntry).AddTo(disposables);
             }

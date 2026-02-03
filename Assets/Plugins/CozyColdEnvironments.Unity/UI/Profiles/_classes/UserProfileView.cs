@@ -1,14 +1,12 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Profiles;
 using R3;
-using UnityEngine.UI;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Profiles
 {
-    public class UserProfileView<TUserProfile> : View<UserProfileViewModel>
+    public abstract class UserProfileView: View<UserProfileViewModel>
     {
         [SerializeField]
         private Image iconView;
@@ -21,11 +19,6 @@ namespace CCEnvs.Unity.UI.Profiles
             base.Init();
             BindIcon();
             SetName();
-        }
-
-        protected override Maybe<UserProfileViewModel> CreateViewModel()
-        {
-            return new UserProfileViewModel(UserProfile.Empty);
         }
 
         private void BindIcon()
