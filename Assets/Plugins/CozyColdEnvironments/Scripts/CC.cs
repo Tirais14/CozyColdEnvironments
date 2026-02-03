@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Attributes;
+using CCEnvs.Diagnostics;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Patterns.Commands;
@@ -41,6 +42,7 @@ namespace CCEnvs
         public static void Install()
         {
             CCProjectHelper.Install();
+
             MainThreadID = Thread.CurrentThread.ManagedThreadId;
         }
 

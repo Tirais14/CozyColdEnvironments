@@ -70,9 +70,9 @@ namespace CCEnvs.Unity.UI
                 Init();
         }
 
-        public Result<T> GetModel<T>()
+        public T GetModel<T>()
         {
-            return (model.As<T>().Raw, CC.ThrowHelper.InvalidCastException(model.Map(static model => model.GetType()).GetValue(static () => typeof(void))));
+            return modelUnsafe.To<T>();
         }
 
         /// <summary>

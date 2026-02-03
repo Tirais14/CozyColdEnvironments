@@ -90,7 +90,7 @@ namespace CCEnvs.Pools
 #else
             System.Threading.Tasks.ValueTask<T>
 #endif
-            >.Shared.RentHandled(resolvedCount, resolvedCount);
+            >.Shared.Get(resolvedCount);
 
 #if UNITASK_PLUGIN
             Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
@@ -99,7 +99,7 @@ namespace CCEnvs.Pools
 #endif
                 task;
 
-            var handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(resolvedCount, resolvedCount);
+            var handles = ArrayPool<PooledHandle<T>>.Shared.Get(resolvedCount);
 
             int batchCount = (int)MathF.Round((float)resolvedCount / (float)batchSize.Value, MidpointRounding.AwayFromZero);
 

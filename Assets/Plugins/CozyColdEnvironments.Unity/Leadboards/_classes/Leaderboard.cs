@@ -28,6 +28,12 @@ namespace CCEnvs.Unity.Leaderboards
 
         private readonly ReactiveProperty<Maybe<IUserProfile>> activeProfile = new();
 
+        private readonly IComparer<ILeaderboardEntry> reversedComparer = Comparer<ILeaderboardEntry>.Create(
+            static (left, right) =>
+            {
+                return left.CompareTo(right) * -1;
+            });
+
         public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => entries;
 
         public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => sortedEntries;
@@ -134,7 +140,7 @@ namespace CCEnvs.Unity.Leaderboards
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    @this.sortedEntries.Sort();
+                    @this.sortedEntries.Sort(@this.reversedComparer);
                 });
 
             subbs.Add(entry.Key, sub);

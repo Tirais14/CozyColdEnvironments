@@ -1,9 +1,12 @@
+using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 #nullable enable
@@ -199,7 +202,11 @@ namespace CCEnvs.Reflection
         /// <param name="other"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool IsType(this Type source, Type? other, TypeMatchingSettings settings = TypeMatchingSettings.Default)
+        public static bool IsType(
+            this Type source,
+            Type? other,
+            TypeMatchingSettings settings = TypeMatchingSettings.Default
+            )
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -231,10 +238,14 @@ namespace CCEnvs.Reflection
 
                 if (!result)
                 {
-                    result = sourceDef.GetInterfaces()
-                        .Where(iface => iface.IsGenericType)
-                        .Select(iface => iface.GetGenericTypeDefinition())
-                        .Any(iface => otherDef.IsAssignableFrom(iface));
+                    foreach (var iface in sourceDef.GetInterfaces())
+                    {
+                        if (!iface.IsGenericType)
+                            continue;
+
+                        if (otherDef.IsAssignableFrom(iface.GetGenericTypeDefinition()))
+                            result = true;
+                    }
                 }
             }
 
@@ -389,17 +400,38 @@ namespace CCEnvs.Reflection
             return result;
         }
 
-        private static string ConvertGenericArgumentsToString(Type type)
+        private static string ConvertGenericArgumentsToString(
+            Type type, 
+            TypeNameConvertingAttributes typeNameConvertingAttributes = TypeNameConvertingAttributes.Default
+            )
         {
-            Type[] argumentTypes = type.GetGenericArguments();
+            Guard.IsNotNull(type, nameof(type));
 
-            StringBuilder sb = new();
+            var argTypes = type.GetGenericArguments();
 
-            sb.Append('<');
-            sb.AppendJoin(", ", argumentTypes.Select(x => x.GetName()));
-            sb.Append('>');
+            var argTypeNames = ArrayPool<string>.Shared.Get(argTypes.Length);
 
-            return type.Name[..^2] + sb.ToString();
+            try
+            {
+                for (int i = 0; i < argTypes.Length; i++)
+                    argTypeNames[i] = argTypes[i].GetName(typeNameConvertingAttributes);
+
+                StringBuilder sb = new();
+
+                sb.Append('<');
+                sb.AppendJoin(", ", argTypeNames);
+                sb.Append('>');
+
+                var typeNameSpan = type.Name.AsSpan()[..^2];
+
+                sb.Append(typeNameSpan);
+
+                return sb.ToString();
+            }
+            finally
+            {
+                argTypeNames.Dispose();
+            }
         }
 
         private static bool IsPrimitiveNumberValueAssignable(Type to, Type from)

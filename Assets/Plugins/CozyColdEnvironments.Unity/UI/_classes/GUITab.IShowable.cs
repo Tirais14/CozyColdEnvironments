@@ -1,10 +1,7 @@
 using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
-using CCEnvs.Patterns.Factories;
-using CCEnvs.Pools;
 using CCEnvs.Snapshots;
-using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using R3;
@@ -12,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using ZLinq;
 
@@ -21,32 +17,6 @@ namespace CCEnvs.Unity.UI
 {
     public partial class GUITab : IShowable
     {
-        private readonly static Lazy<ObjectPool<HideCommand>> hideCmdPool = new(
-            static () =>
-            {
-                return new ObjectPool<HideCommand>(
-                    factory: Factory.DefaultValueFactory<HideCommand>(),
-                    capacity: 16
-                    );
-            });
-
-        private readonly static Lazy<ObjectPool<ShowCommand>> showCmdPool = new(
-            static () =>
-            {
-                return new ObjectPool<ShowCommand>(
-                    factory: Factory.DefaultValueFactory<ShowCommand>(),
-                    capacity: 16
-                    );
-            });
-
-        private readonly static Lazy<ObjectPool<RedrawCommand>> redrawCmdPool = new(
-            static () =>
-            {
-                return new ObjectPool<RedrawCommand>(
-                    factory: Factory.DefaultValueFactory<RedrawCommand>(),
-                    capacity: 16
-                    );
-            });
 
         [Header("Showable settings")]
         [Space(8)]
@@ -63,8 +33,7 @@ namespace CCEnvs.Unity.UI
         [NonSerialized]
         private readonly Lazy<Dictionary<object, ISnapshot>> snapshots = new(() => new Dictionary<object, ISnapshot>());
 
-        [NonSerialized]
-        private bool stateTransitioning;
+        private bool isLayoutsRebuilding;
 
         public bool ShowOnInited {
             get => m_ShowOnInited;
@@ -86,7 +55,7 @@ namespace CCEnvs.Unity.UI
 
         private void IShowableStart()
         {
-            InitShowableAsync().Forget();
+            InitShowableAsync().ForgetByPrintException();
         }
 
         private void IShowableOnDestroy()
@@ -94,28 +63,139 @@ namespace CCEnvs.Unity.UI
             isShown.Dispose();
         }
 
+        public async UniTask WaitForInitializedAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsInited)
+                return;
+
+            var linkedTokenSource = destroyCancellationToken.LinkTokens(cancellationToken);
+
+            cancellationToken = linkedTokenSource.Token;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                await UniTask.WaitUntil(
+                    this,
+                    static @this => @this.IsInited,
+                    cancellationToken: cancellationToken
+                    );
+            }
+            finally
+            {
+                linkedTokenSource.Dispose();
+            }
+        }
+
         public void Hide()
         {
-            hideCmdPool.Value.Get().Value
-                .SetGUITab(this)
-                .ScheduleBy(commandScheduler)
-                .AttachExternalCancellationToken(destroyCancellationToken);
+            Command.Builder.SetName(nameof(Hide), this)
+                .WithState(this)
+                .Syncronously()
+                .SetExecuteAction(
+                static @this =>
+                {
+                    @this.OnHide();
+                    @this.DoHide();
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
+        }
+
+        public async UniTask HideAsync(CancellationToken cancellationToken = default)
+        {
+            if (!IsShown)
+                return;
+
+            var linkedTokenSource = destroyCancellationToken.LinkTokens(cancellationToken);
+
+            cancellationToken = linkedTokenSource.Token;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                Hide();
+
+                await UniTask.WaitWhile(
+                    this,
+                    static @this => @this.IsShown,
+                    cancellationToken: cancellationToken
+                    );
+            }
+            finally
+            {
+                linkedTokenSource.Dispose();
+            }
         }
 
         public void Show()
         {
-            showCmdPool.Value.Get().Value
-                .SetGUITab(this)
-                .ScheduleBy(commandScheduler)
-                .AttachExternalCancellationToken(destroyCancellationToken);
+            Command.Builder.SetName(nameof(Show), this)
+                .WithState(this)
+                .Syncronously()
+                .SetExecuteAction(
+                static @this =>
+                {
+                    @this.OnShow();
+                    @this.DoShow();
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
+        }
+
+        public async UniTask ShowAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsShown)
+                return;
+
+            var linkedTokenSource = destroyCancellationToken.LinkTokens(cancellationToken);
+
+            cancellationToken = linkedTokenSource.Token;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                Show();
+
+                await UniTask.WaitUntil(
+                    this,
+                    static @this => @this.IsShown,
+                    cancellationToken: cancellationToken
+                    );
+            }
+            finally
+            {
+                linkedTokenSource.Dispose();
+            }
         }
 
         public bool SwitchShownState()
         {
             if (IsShown)
+            {
                 Hide();
+                return false;
+            }
             else
+            {
                 Show();
+                return true;
+            }
+        }
+
+        public async UniTask<bool> SwitchShownStateAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsShown)
+                await HideAsync();
+            else
+                await ShowAsync();
 
             return IsShown;
         }
@@ -124,25 +204,42 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
-            redrawCmdPool.Value.Get().Value
-                .SetGUITab(this)
-                .ScheduleBy(commandScheduler)
-                .AttachExternalCancellationToken(destroyCancellationToken);
+            Command.Builder.SetName(nameof(Redraw), this)
+                .WithState(this)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (@this, cancellationToken) =>
+                {
+                    await @this.RebuildControlledLayouts(cancellationToken);
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
         }
 
-        public Observable<Unit> ObserveShow()
+        public async UniTask RedrawAsync(CancellationToken cancellationToken = default)
         {
-            return isShown.Where(static x => x).AsUnitObservable();
+            
         }
 
-        public Observable<Unit> ObserveHide()
+        public Observable<bool> ObserveShow()
         {
-            return isShown.Where(static x => !x).AsUnitObservable();
+            return isShown.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveHide()
+        {
+            return isShown.Where(static x => !x);
+        }
+
+        public Observable<bool> ObserveIsInited()
+        {
+            throw new NotImplementedException();
         }
 
         protected virtual void OnHide()
         {
-            stateTransitioning = true;
         }
 
         protected virtual void DoHide()
@@ -194,7 +291,6 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnShow()
         {
-            stateTransitioning = true;
         }
 
         protected virtual void DoShow()
@@ -231,7 +327,6 @@ namespace CCEnvs.Unity.UI
 
         private void SetShown()
         {
-            stateTransitioning = false;
             isShown.Value = true;
 
             OnShown();
@@ -239,7 +334,6 @@ namespace CCEnvs.Unity.UI
 
         private void SetHiden()
         {
-            stateTransitioning = false;
             isShown.Value = false;
 
             OnHiden();
@@ -247,24 +341,34 @@ namespace CCEnvs.Unity.UI
 
         private async UniTask InitVisibleStateAsync(bool hasParent)
         {
-            if (!ShowOnInited
-                &&
-                !hasParent)
+            destroyCancellationToken.ThrowIfCancellationRequested();
+
+            if (ShowOnInited)
+            {
+                Show();
+
+                await UniTask.WaitUntil(
+                    this,
+                    static @this => @this.IsShown,
+                    cancellationToken: destroyCancellationToken
+                    );
+            }
+            else if (!hasParent)
             {
                 Hide();
-            }
 
-            await UniTask.WaitWhile(this,
-                predicate: static @this =>
-                {
-                    return @this.stateTransitioning;
-                },
-                cancellationToken: destroyCancellationToken
-                );
+                await UniTask.WaitWhile(
+                    this,
+                    static @this => @this.IsShown,
+                    cancellationToken: destroyCancellationToken
+                    );
+            }
         }
 
         private async UniTask WaitUntilChildrensInitedAsync()
         {
+            destroyCancellationToken.ThrowIfCancellationRequested();
+
             var childs = this.Q()
                 .FromChildrens()
                 .ExcludeSelf()
@@ -293,7 +397,7 @@ namespace CCEnvs.Unity.UI
                 .ToArray();
         }
 
-        private RectTransform[] GetControlledLayouts()
+        private RectTransform[] GetControlledActiveLayouts()
         {
             return this.Q()
                 .FromChildrens()
@@ -302,158 +406,59 @@ namespace CCEnvs.Unity.UI
                 .ToArray();
         }
 
-        private async UniTask RebuildControlledLayouts()
+        private async UniTask RebuildControlledLayouts(CancellationToken cancellationToken)
         {
-            var childs = GetControlledLayouts();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var childs = GetControlledActiveLayouts();
 
             var returnToNormalCanvas = CanvasHelper.MoveToDevCanvas(this.RectTransform());
 
-            if (!IsShown)
-                Show();
+            bool isShown = IsShown;
 
-            await LayoutHelper.ForceRebuildLayoutsAsync(childs);
+            isLayoutsRebuilding = true;
 
-            Hide();
+            try
+            {
+                if (!isShown || !IsInited)
+                    await ShowAsync(cancellationToken);
 
-            returnToNormalCanvas.Dispose();
+                await LayoutHelper.ForceRebuildLayoutsAsync(childs, cancellationToken);
+
+                if (!isShown || !IsInited)
+                    await HideAsync(cancellationToken);
+            }
+            finally
+            {
+                returnToNormalCanvas.Dispose();
+                isLayoutsRebuilding = false;
+            }
         }
 
         private async UniTask InitShowableAsync()
         {
+            destroyCancellationToken.ThrowIfCancellationRequested();
+
             IDisposable returnToNormalCanvas = root.GetValue(this)
                 .RectTransform()
                 .MoveToDevCanvas();
 
-            await WaitUntilChildrensInitedAsync();
-            await RebuildControlledLayouts();
-            await InitVisibleStateAsync(parent.IsSome);
+            var hasParent = parent.IsSome;
 
-            returnToNormalCanvas.Dispose();
+            try
+            {
+                await WaitUntilChildrensInitedAsync();
+
+                await RebuildControlledLayouts(destroyCancellationToken);
+
+                await InitVisibleStateAsync(parent.IsSome);
+            }
+            finally
+            {
+                returnToNormalCanvas.Dispose();
+            }
 
             IsInited = true;
-        }
-
-        private sealed class HideCommand : PoolableCommand
-        {
-            public Maybe<GUITab> Tab { get; set; }
-
-            public override bool IsReadyToExecute {
-                get
-                {
-                    return base.IsReadyToExecute
-                           &&
-                           Tab.Map(target => target.IsInited).GetValue();
-                }
-            }
-
-            public HideCommand()
-                :
-                base()
-            {
-            }
-
-            public override void OnDespawned()
-            {
-                Tab = Maybe<GUITab>.None;
-
-                base.OnDespawned();
-            }
-
-            public HideCommand SetGUITab(GUITab? guiTab)
-            {
-                Tab = guiTab;
-                return this;
-            }
-
-            protected override void OnExecute()
-            {
-                Tab.IfSome(target =>
-                {
-                    target.OnHide();
-                    target.DoHide();
-                });
-            }
-        }
-
-        private sealed class ShowCommand : PoolableCommand, IPoolable
-        {
-            public Maybe<GUITab> Tab { get; set; }
-
-            public override bool IsReadyToExecute {
-                get
-                {
-                    return base.IsReadyToExecute
-                           &&
-                           Tab.Map(target => target.IsInited).GetValue();
-                }
-            }
-
-            public ShowCommand()
-                :
-                base()
-            {
-            }
-
-            public override void OnDespawned()
-            {
-                Tab = Maybe<GUITab>.None;
-                base.OnDespawned();
-            }
-
-            public ShowCommand SetGUITab(GUITab? guiTab)
-            {
-                Tab = guiTab;
-                return this;
-            }
-
-            protected override void OnExecute()
-            {
-                Tab.IfSome(static target =>
-                {
-                    target.OnShow();
-                    target.DoShow();
-                });
-            }
-        }
-
-        private sealed class RedrawCommand : PoolableCommandAsync
-        {
-            public Maybe<GUITab> Tab { get; set; }
-
-            public override bool IsReadyToExecute {
-                get
-                {
-                    return base.IsReadyToExecute
-                           &&
-                           Tab.Map(target => target.IsInited).GetValue();
-                }
-            }
-
-            public RedrawCommand()
-                :
-                base()
-            {
-            }
-
-            public override void OnDespawned()
-            {
-                Tab = Maybe<GUITab>.None;
-                base.OnDespawned();
-            }
-
-            public RedrawCommand SetGUITab(GUITab? guiTab)
-            {
-                Tab = guiTab;
-                return this;
-            }
-
-            protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
-            {
-                if (!Tab.TryGetValue(out var target))
-                    return;
-
-                await target.RebuildControlledLayouts();
-            }
         }
     }
 }

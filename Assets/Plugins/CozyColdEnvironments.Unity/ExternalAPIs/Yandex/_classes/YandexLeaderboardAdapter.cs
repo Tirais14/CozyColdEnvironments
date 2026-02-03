@@ -1,4 +1,5 @@
 #if Leaderboards_yg
+using CCEnvs.Reflection;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
@@ -10,9 +11,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using YG;
-using YG.Example;
 
 #nullable enable
 namespace CCEnvs.Unity.ExternalAPIs.Yandex
@@ -32,10 +31,17 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         protected override void Start()
         {
             base.Start();
+            InitAsync().ForgetByPrintException(this);
+        }
 
-            worstLeaderboard.RectTransform()
-                .MoveToDevCanvas()
-                .RegisterDisposableTo(this);
+        private async UniTask InitAsync()
+        {
+            destroyCancellationToken.ThrowIfCancellationRequested();
+
+            //worstLeaderboard.RectTransform()
+            //    .MoveToDevCanvas();
+
+            //await UniTask.WaitForSeconds(1f, cancellationToken: destroyCancellationToken);
 
             leaderboard = GameObjectQuery.Scene.IncludeInactive()
                 .Model<ILeaderboard>(includeComponents: false)
@@ -54,62 +60,42 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    @this.worstLeaderboard.UpdateLB();
-
+                    @this.worstLeaderboard.gameObject.SetActive(true);
                     @this.FillLeaderboardFromWorstAsync().ForgetByPrintException();
                 })
                 .RegisterDisposableTo(this);
 
-            //leaderboardView.ObserveHide()
-            //    .Subscribe(this,
-            //    static (_, @this) =>
-            //    {
-            //    })
-            //    .RegisterDisposableTo(this);
+            leaderboardView.ObserveHide()
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    @this.worstLeaderboard.gameObject.SetActive(false);
+                })
+                .RegisterDisposableTo(this);
         }
 
-        private UserProfile CreateUserProfile(GetPlayerData playerData)
+        private UserProfile CreateUserProfile(LBPlayerDataYG.Data playerData)
         {
-            var userName = playerData.Q()
-                .FromChildrens()
-                .IncludeInactive()
-                .WithName("Name")
-                .GameObject()
-                .Strict()
-                .Q()
-                .FromChildrens()
-                .IncludeInactive()
-                .Component<Text>()
-                .Strict()
-                .text;
-
-            return new UserProfile(userName, playerData.gameObject.GetInstanceID())
+            var profile = new UserProfile(playerData.name)
             {
-                Icon = playerData.imageLoad.spriteImage.sprite
+                Icon = playerData.photoSprite
             };
+
+            profile.AddTo(disposables);
+
+            return profile;
         }
 
         private LeaderboardEntry CreateLeaderboardEntry(
-            GetPlayerData playerData,
+            LBPlayerDataYG.Data playerData,
             UserProfile userProfile
             )
         {
-            var scoreView = playerData.Q()
-                .FromChildrens()
-                .IncludeInactive()
-                .WithName("Score")
-                .GameObject()
-                .Strict()
-                .Q()
-                .FromChildrens()
-                .IncludeInactive()
-                .Component<Text>()
-                .Strict()
-                .text;
-
-            var score = int.Parse(scoreView);
-
             var entry = new LeaderboardEntry(userProfile);
+
+            entry.AddTo(disposables);
+
+            var score = int.Parse(playerData.score);
 
             var scoreRX = new ReactiveProperty<float>(score);
 
@@ -122,19 +108,28 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private async UniTask FillLeaderboardFromWorstAsync()
         {
-            await UniTask.NextFrame();
+            destroyCancellationToken.ThrowIfCancellationRequested();
+
+            await UniTask.NextFrame(cancellationToken: destroyCancellationToken);
 
             leaderboard.Clear();
 
             UserProfile userProfile;
+
             LeaderboardEntry leaderboardEntry;
 
-            foreach (var playerData in worstLeaderboard.gameObject.Q()
-                .FromChildrens()
-                .Components<GetPlayerData>())
+            var playerDatas = worstLeaderboard.Reflect()
+                .Cache()
+                .IncludeNonPublic()
+                .WithName("players")
+                .GetFieldValue<LBPlayerDataYG[]>()
+                .GetValueUnsafe();
+
+            foreach (var playerData in playerDatas)
             {
-                userProfile = CreateUserProfile(playerData);
-                leaderboardEntry = CreateLeaderboardEntry(playerData, userProfile);
+                userProfile = CreateUserProfile(playerData.data);
+
+                leaderboardEntry = CreateLeaderboardEntry(playerData.data, userProfile);
 
                 leaderboard.Add(leaderboardEntry).AddTo(disposables);
             }

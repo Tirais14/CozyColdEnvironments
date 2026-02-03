@@ -20,7 +20,7 @@ namespace CCEnvs
 
             var results = new T[taskCount];
 
-            var completedTaskFlags = ArrayPool<bool>.Shared.RentHandled(taskCount, taskCount);
+            var completedTaskFlags = ArrayPool<bool>.Shared.Get(taskCount);
 
             try
             {

@@ -84,6 +84,7 @@ namespace CCEnvs.Unity.Collections
                     return;
                 }
 
+                cmp.transform.SetParent(null);
                 Destroy(cmp);
                 return;
             }
@@ -152,18 +153,23 @@ namespace CCEnvs.Unity.Collections
 
             isChildsCollecting = true;
 
-            await UniTask.WaitForEndOfFrame(cancellationToken: destroyCancellationToken);
+            try
+            {
+                await UniTask.Yield(PlayerLoopTiming.PostLateUpdate, cancellationToken: destroyCancellationToken);
 
-            isInternalClear = true;
+                isInternalClear = true;
 
-            Value.Clear();
+                Value.Clear();
 
-            isInternalClear = false;
+                isInternalClear = false;
 
-            foreach (var cmp in GetChilds())
-                Value.Add(cmp);
-
-            isChildsCollecting = false;
+                foreach (var cmp in GetChilds())
+                    Value.Add(cmp);
+            }
+            finally
+            {
+                isChildsCollecting = false;
+            }
         }
     }
 

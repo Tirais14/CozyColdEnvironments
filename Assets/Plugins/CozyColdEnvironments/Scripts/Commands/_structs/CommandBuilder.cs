@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Pools;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
@@ -31,6 +32,15 @@ namespace CCEnvs.Patterns.Commands
         public CommandBuilder SetName(string? name = null)
         {
             Name = name;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CommandBuilder SetName<T>(string? name, T invocationSource)
+        {
+            Name = $"{invocationSource.GetTypeName(TypeNameConvertingAttributes.IncludeGenericArguments)}.{name ?? "???"}";
 
             return this;
         }

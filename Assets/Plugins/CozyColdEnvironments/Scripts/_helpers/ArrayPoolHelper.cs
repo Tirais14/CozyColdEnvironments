@@ -1,5 +1,6 @@
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
+using System;
 using System.Buffers;
 
 #nullable enable
@@ -22,15 +23,14 @@ namespace CCEnvs
             return handle;
         }
 
-        public static PooledArray<T> RentHandled<T>(
+        public static PooledArray<T> Get<T>(
             this ArrayPool<T> source,
-            int minLength,
             int count,
             int offset = 0)
         {
             Guard.IsNotNull(source, nameof(source));
 
-            var handle = source.RentHandled(minLength);
+            var handle = source.RentHandled(count);
             var segmentHandle = new PooledArray<T>(handle, count, offset);
 
             return segmentHandle;

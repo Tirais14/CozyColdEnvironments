@@ -13,10 +13,18 @@ namespace CCEnvs.Unity.Leaderboards
     {
         IUserProfile Profile { get; }
 
-        ObservableDictionary<string, ReactiveProperty<float>> ScoreValues { get; }
+        IReadOnlyObservableDictionary<string, ReactiveProperty<float>> ScoreValues { get; }
 
         float Score { get; }
 
+        IDisposable AddScore(string name, float initialValue = 0f);
+
+        bool RemoveScore(string name);
+
         Observable<float> ObserveScore();
+
+        Observable<(string name, float initialValue)> ObserveAddScore();
+
+        Observable<string> ObserveRemoveScore();
     }
 }

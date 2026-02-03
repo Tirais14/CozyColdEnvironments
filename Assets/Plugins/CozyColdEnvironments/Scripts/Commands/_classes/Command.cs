@@ -44,6 +44,9 @@ namespace CCEnvs.Patterns.Commands
                     case TaskCanceledException:
                         SetCanceled();
                         break;
+                    case OperationCanceledException:
+                        SetCanceled();
+                        break;
                     default:
                         SetFaulted(ex);
                         break;

@@ -17,12 +17,19 @@ namespace CCEnvs.Unity.Leaderboards
 
         private readonly Dictionary<string, IDisposable> subbs = new();
 
+        private readonly ObservableDictionary<string, ReactiveProperty<float>> scoreValues = new();
+
         private readonly List<IDisposable> disposables = new();
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
+        private ReactiveCommand<(string name, float initialValue)>? addScoreCmd;
+        private ReactiveCommand<string>? removeScoreCmd;
+
         public IUserProfile Profile { get; }
-        public ObservableDictionary<string, ReactiveProperty<float>> ScoreValues { get; } = new();
+
+        public IReadOnlyObservableDictionary<string, ReactiveProperty<float>> ScoreValues => scoreValues;
+
         public float Score => score.Value;
 
         public LeaderboardEntry(IUserProfile userProfile)
@@ -32,6 +39,36 @@ namespace CCEnvs.Unity.Leaderboards
             BindScoreValueAdd();
             BindScoreValueRemove();
             BindScoreValuesClear();
+        }
+
+        public IDisposable AddScore(string name, float initialValue = 0f)
+        {
+            if (ScoreValues.ContainsKey(name))
+                throw new ArgumentException($"Score: {name} already exists");
+
+            var prop = new ReactiveProperty<float>(initialValue);
+
+            scoreValues.Add(name, prop);
+
+            addScoreCmd?.Execute((name, initialValue));
+
+            return Disposable.Create((@this: this, name),
+                static (args) =>
+                {
+                    args.@this.RemoveScore(args.name);
+                });
+        }
+
+        public bool RemoveScore(string name)
+        {
+            if (!scoreValues.Remove(name, out var prop))
+                return false;
+
+            prop.Dispose();
+
+            removeScoreCmd?.Execute(name);
+
+            return true;
         }
 
         public int CompareTo(ILeaderboardEntry other)
@@ -57,6 +94,9 @@ namespace CCEnvs.Unity.Leaderboards
                 disposables.Clear();
 
                 score.Dispose();
+
+                addScoreCmd?.Dispose();
+                removeScoreCmd?.Dispose();
             }
 
             disposed = true;
@@ -68,6 +108,20 @@ namespace CCEnvs.Unity.Leaderboards
         }
 
         public Observable<float> ObserveScore() => score;
+
+        public Observable<(string name, float initialValue)> ObserveAddScore()
+        {
+            addScoreCmd ??= new ReactiveCommand<(string name, float initialValue)>();
+
+            return addScoreCmd;
+        }
+
+        public Observable<string> ObserveRemoveScore()
+        {
+            removeScoreCmd ??= new ReactiveCommand<string>();
+
+            return removeScoreCmd;
+        }
 
         protected virtual void OnScoreValueAdd(string key, ReactiveProperty<float> prop)
         {

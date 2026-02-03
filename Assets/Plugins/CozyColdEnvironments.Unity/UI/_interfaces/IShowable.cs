@@ -1,7 +1,7 @@
 #nullable enable
-using System;
+using Cysharp.Threading.Tasks;
 using R3;
-using UnityEngine;
+using System.Threading;
 
 namespace CCEnvs.Unity.UI
 {
@@ -10,18 +10,30 @@ namespace CCEnvs.Unity.UI
         bool IsShown { get; }
         bool IsInited { get; }
 
+        UniTask WaitForInitializedAsync(CancellationToken cancellationToken = default);
+
         void Hide();
+
+        UniTask HideAsync(CancellationToken cancellationToken = default);
  
         void Show();
 
+        UniTask ShowAsync(CancellationToken cancellationToken = default);
+
         void Redraw();
+
+        UniTask RedrawAsync(CancellationToken cancellationToken = default);
 
         bool SwitchShownState();
 
+        UniTask<bool> SwitchShownStateAsync(CancellationToken cancellationToken = default);
+
         void SwitchShownStateVoid();
 
-        Observable<Unit> ObserveShow();
+        Observable<bool> ObserveIsInited();
 
-        Observable<Unit> ObserveHide();
+        Observable<bool> ObserveShow();
+
+        Observable<bool> ObserveHide();
     }
 }

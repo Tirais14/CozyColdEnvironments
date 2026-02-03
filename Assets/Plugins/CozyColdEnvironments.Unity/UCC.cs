@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Unity.Components;
+using CCEnvs.Unity.Components.Specialized;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
@@ -35,6 +36,7 @@ namespace CCEnvs.Unity
 
                 var canvas = Object.Instantiate(canvasPrefab);
 
+                Object.DontDestroyOnLoad(canvasPrefab.gameObject);
                 canvas.transform.position = new Vector3(-25000f, -25000f);
 
                 return canvas;

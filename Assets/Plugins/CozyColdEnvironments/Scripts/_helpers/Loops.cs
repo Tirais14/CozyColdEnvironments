@@ -96,7 +96,7 @@ namespace CCEnvs
 
             return BreadthFirstSearch(first, (x, _) =>
             {
-                var values = ArrayPool<T?>.Shared.RentHandled(1, 1);
+                var values = ArrayPool<T?>.Shared.Get(1);
 
                 values[0] = moveNext(x);
 

@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.UI
 
         void SetViewModelFactory(Func<object> factory);
 
-        Result<T> GetModel<T>();
+        T GetModel<T>();
     }
     public interface IView<TViewModel> : IView
         where TViewModel : IViewModel

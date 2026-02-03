@@ -64,7 +64,7 @@ namespace CCEnvs.Pools
 
             int batchCount = (int)MathF.Ceiling((float)count / batchSize);
 
-            using var handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(count, count);
+            using var handles = ArrayPool<PooledHandle<T>>.Shared.Get(count);
 
             using var tasks = ArrayPool<
 #if UNITASK_PLUGIN
@@ -72,7 +72,7 @@ namespace CCEnvs.Pools
 #else
             System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
-                >.Shared.RentHandled(batchSize, batchSize);
+                >.Shared.Get(batchSize);
 
             //for more readabilty
             var task = tasks.Value.FirstOrDefault();

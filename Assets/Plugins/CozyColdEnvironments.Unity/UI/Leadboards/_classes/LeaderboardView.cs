@@ -1,8 +1,8 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
-using CCEnvs.Unity.Collections;
 using CCEnvs.Unity.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
@@ -11,6 +11,7 @@ using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 using ZLinq;
@@ -20,7 +21,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 {
     public class LeaderboardView : View<LeaderboardViewModel>
     {
-        private readonly Dictionary<ILeaderboardEntry, Transform> entries = new();
+        private readonly Dictionary<ILeaderboardEntry, LeaderboardEntryView> entryViews = new();
 
         private readonly List<ILeaderboardEntry> newEntries = new();
 
@@ -30,7 +31,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         protected GameObject entryPrefab;
 
         [SerializeField]
-        protected ComponentList entryViews = null!;
+        protected Transform entryViewsRoot;
 
         [SerializeField]
         protected bool sortingEnabled = true;
@@ -43,9 +44,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
             set => entryPrefab = value; 
         }
 
-        public ComponentList EntryViews {
-            get => entryViews;
-            set => entryViews = value;
+        public Transform EntryViewsRoot {
+            get => entryViewsRoot;
+            set => entryViewsRoot = value;
         }
 
         public bool SortingEnabled {
@@ -63,7 +64,6 @@ namespace CCEnvs.Unity.UI.Leaderboards
         protected override void Awake()
         {
             base.Awake();
-            SetupEntryViewList();
             CreateSortingBuffer();
         }
 
@@ -89,22 +89,30 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         protected virtual void SortEntries()
         {
-            if (!sortingEnabled)
-            {
-                TrimEntryViews();
-                return;
-            }
+            Command.Builder.SetName(nameof(SortEntries))
+                .SetSingle()
+                .WithState(this)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (@this, cancellationToken) =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-            var entryViews = MoveEntryViewsToSortingBuffer();
+                    await UniTask.WaitForEndOfFrame(cancellationToken: cancellationToken);
 
-            try
-            {
-                ReorderEntryViews(entryViews);
-            }
-            finally
-            {
-                entryViews.Dispose();
-            }
+                    if (!@this.sortingEnabled)
+                    {
+                        @this.TrimEntryViews(cancellationToken);
+                        return;
+                    }
+
+                    @this.MoveEntryViewsToSortingBuffer(cancellationToken);
+                    @this.ReorderEntryViews(cancellationToken);
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken)
+                .ScheduleBy(commandScheduler);
         }
 
         private async UniTask InstantiateNewEntriesAsync(CancellationToken cancellationToken)
@@ -114,17 +122,19 @@ namespace CCEnvs.Unity.UI.Leaderboards
             if (newEntries.IsEmpty())
                 return;
 
+            CC.Guard.IsNotNull(entryViewsRoot, nameof(entryViewsRoot));
+
             await UniTask.WaitForEndOfFrame(cancellationToken: cancellationToken);
 
             var instantiatedGOs = await InstantiateAsync(
-                entryPrefab,
-                newEntries.Count,
-                new InstantiateParameters
-                {
-                    parent = entryViews.cTransform
-                },
-                cancellationToken: cancellationToken
-                );
+                    entryPrefab,
+                    newEntries.Count,
+                    new InstantiateParameters
+                    {
+                        parent = entryViewsRoot
+                    },
+                    cancellationToken: cancellationToken
+                    );
 
             if (newEntries.Count > instantiatedGOs.Length)
             {
@@ -133,43 +143,75 @@ namespace CCEnvs.Unity.UI.Leaderboards
             }
 
             ILeaderboardEntry entry;
+
             int i = 0;
             int usedGOCount = 0;
 
-            while (newEntries.Count > 0)
+            var entryViewInitTasks = ListPool<UniTask>.Shared.Get();
+
+            try
             {
-                cancellationToken.ThrowIfCancellationRequestedByInterval(i);
-
-                entry = newEntries[^1];
-
-                newEntries.RemoveAt(newEntries.Count - 1);
-
-                if (!viewModelUnsafe.Entries.ContainsKey(entry.Profile.ID))
+                while (newEntries.Count > 0)
                 {
-                    this.PrintWarning($"The entry: {entry} doesn't added, because it ID is not contains in the {nameof(viewModel)}.{nameof(Leaderboard.Entries)}");
-                    continue;
+                    cancellationToken.ThrowIfCancellationRequestedByInterval(i);
+
+                    entry = GetEntry(newEntries);
+
+                    if (!viewModelUnsafe.Entries.ContainsKey(entry.Profile.ID))
+                    {
+                        this.PrintWarning($"The entry: {entry} doesn't added, because it ID is not contains in the {nameof(viewModel)}.{nameof(Leaderboard.Entries)}");
+                        continue;
+                    }
+
+                    var entryView = GetEntryView(instantiatedGOs[i++]);
+
+                    SetupEntryView(entryView, entry);
+
+                    entryViews.Add(entry, entryView);
+
+                    entryViewInitTasks.Value.Add(entryView.WaitForInitializedAsync(cancellationToken));
+
+                    usedGOCount++;
                 }
 
-                var entryView = instantiatedGOs[i++].Q()
-                        .IncludeInactive()
-                        .Component<LeaderboardEntryView>()
-                        .Strict();
+                await UniTask.WhenAll(entryViewInitTasks.Value);
+            }
+            finally
+            {
+                entryViewInitTasks.Dispose();
 
-                entryView.Show();
+                int restGOs = instantiatedGOs.Length - usedGOCount;
 
+                for (int j = 0; j < restGOs; j++)
+                    Destroy(instantiatedGOs[j]);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ILeaderboardEntry GetEntry(List<ILeaderboardEntry> entries)
+            {
+                var entry = entries[^1];
+
+                entries.RemoveAt(entries.Count - 1);
+
+                return entry;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static LeaderboardEntryView GetEntryView(GameObject go)
+            {
+                return go.Q()
+                    .IncludeInactive()
+                    .Component<LeaderboardEntryView>()
+                    .Strict();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void SetupEntryView(LeaderboardEntryView entryView, ILeaderboardEntry entry)
+            {
                 var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry, entryView.destroyCancellationToken);
 
                 entryView.SetViewModel(entryViewModel);
-
-                entries.Add(entry, entryView.transform);
-
-                usedGOCount++;
             }
-
-            int restGOs = instantiatedGOs.Length - usedGOCount;
-
-            for (int j = 0; j < restGOs; j++)
-                Destroy(instantiatedGOs[j]);
         }
 
         private void OnEntryAdd(ILeaderboardEntry entry)
@@ -178,7 +220,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             newEntries.Add(entry);
 
-            Command.Builder.SetName(nameof(OnEntryAdd))
+            Command.Builder.SetName(nameof(OnEntryAdd), this)
                 .SetSingle()
                 .WithState(this)
                 .Asyncronously()
@@ -197,7 +239,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             this.PrintLog($"Removing {nameof(entry)}: {entry} from view");
 
-            Command.Builder.SetName(nameof(OnEntryRemove))
+            Command.Builder.SetName(nameof(OnEntryRemove), this)
                 .WithState((@this: this, entry))
                 .Asyncronously()
                 .SetExecuteAction(
@@ -207,8 +249,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
                     args.@this.newEntries.Remove(args.entry);
 
-                    if (args.@this.entries.Remove(args.entry, out var entryTransform))
-                        args.@this.entryViews.Value.Remove(entryTransform);
+                    if (args.@this.entryViews.Remove(args.entry, out var entryTransform))
+                        Destroy(entryTransform.gameObject);
                 })
                 .BuildPooled()
                 .Value
@@ -218,15 +260,14 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         private void OnEntriesClear()
         {
-            Command.Builder.SetName(nameof(OnEntriesClear))
+            Command.Builder.SetName(nameof(OnEntriesClear), this)
                 .WithState(this)
                 .Syncronously()
                 .SetExecuteAction(
                 static @this =>
                 {
                     @this.newEntries.Clear();
-                    @this.entries.Clear();
-                    @this.entryViews.Value.Clear();
+                    @this.entryViews.Clear();
                 })
                 .BuildPooled()
                 .Value
@@ -260,13 +301,6 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .AddTo(viewModelDisposables);
         }
 
-        private void SetupEntryViewList()
-        {
-            entryViews.SetTypeFilter(typeof(LeaderboardEntryView))
-                .SetDestroyOnRemove(true)
-                .SetDestroyByGameObject(true);
-        }
-
         private void CreateSortingBuffer()
         {
             var sortingBufferGO = new GameObject(nameof(sortingBuffer));
@@ -287,29 +321,36 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .AddTo(viewModelDisposables);
         }
 
-        private PooledHandle<Dictionary<Identifier, LeaderboardEntryView>> MoveEntryViewsToSortingBuffer()
+        private void MoveEntryViewsToSortingBuffer(
+            CancellationToken cancellationToken
+            )
         {
-            var entryViews = DictionaryPool<Identifier, LeaderboardEntryView>.Shared.Get();
-            LeaderboardEntryView entryView;
-            ILeaderboardEntry entry;
+            cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var entryViewUntyped in this.entryViews.Value)
+            if (entryViews.IsEmpty())
+                return;
+
+            int i = 0;
+
+            foreach (var entryView in entryViews.Values)
             {
-                entryView = entryViewUntyped.To<LeaderboardEntryView>();
+                cancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref i);
+
                 entryView.cTransform.SetParent(cTransform);
-                entry = entryView.GetModel<ILeaderboardEntry>().Strict();
-
-                entryViews.Value.Add(entry.Profile.ID, entryView);
             }
-
-            return entryViews;
         }
 
         private void ReorderEntryViews(
-            PooledHandle<Dictionary<Identifier, LeaderboardEntryView>> entryViews
+            CancellationToken cancellationToken
             )
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (entryViews.IsEmpty())
+                return;
+
             LeaderboardEntryView entryView;
+
             ILeaderboardEntry entry;
 
             int reorderCount = Math.Min(
@@ -327,6 +368,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             for (int i = 0; i < reorderCount; i++)
             {
+                cancellationToken.ThrowIfCancellationRequestedByInterval(i);
+
                 entry = viewModelUnsafe.SortedEntries[i];
 
                 if (isEntryCountGreaterThanVisibleCount
@@ -345,51 +388,59 @@ namespace CCEnvs.Unity.UI.Leaderboards
                     specialEntryProcessed = true;
                 }
 
-                if (entryViews.Value.Remove(entry.Profile.ID, out entryView))
+                if (entryViews.TryGetValue(entry, out entryView))
                 {
-                    entryView.cTransform.SetParent(this.entryViews.cTransform);
+                    entryView.cTransform.SetParent(entryViewsRoot);
                     entryView.Show();
                 }
             }
 
-            for (int i = reorderCount - 1; i < viewModelUnsafe.SortedEntries.Count; i++)
+            for (int i = reorderCount; i < viewModelUnsafe.SortedEntries.Count; i++)
             {
+                cancellationToken.ThrowIfCancellationRequestedByInterval(i);
+
                 entry = viewModelUnsafe.SortedEntries[i];
-                entryView = entryViews.Value[entry.Profile.ID];
 
-                entryView.cTransform.SetParent(this.entryViews.cTransform);
-                entryView.Hide();
-            }
-        }
-
-        private void TrimEntryViews()
-        {
-            var entryViews = this.entryViews.Value.Cast<LeaderboardEntryView>()
-                .EnumerableToArrayPooled(this.entryViews.Value.Count);
-
-            try
-            {
-                var entryViewsSpan = entryViews.GetSpan();
-                var entryViewsLength = entryViews.Length;
-                var keepCount = Math.Min(entryViewsLength, maxVisibleCount);
-
-                LeaderboardEntryView entryView;
-
-                for (int i = 0; i < keepCount; i++)
+                if (entryViews.TryGetValue(entry, out entryView))
                 {
-                    entryView = entryViewsSpan[i];
-                    entryView.Show();
-                }
-
-                for (int i = keepCount - 1; i < entryViewsLength; i++)
-                {
-                    entryView = entryViewsSpan[i];
+                    entryView.cTransform.SetParent(entryViewsRoot);
                     entryView.Hide();
                 }
             }
-            finally
+        }
+
+        private void TrimEntryViews(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (entryViews.IsEmpty())
+                return;
+
+            int entryViewsCount = entryViews.Count;
+            int keepCount = Math.Min(entryViewsCount, maxVisibleCount);
+
+            var entryViewsEnumerator = entryViews.Values.GetEnumerator();
+
+            LeaderboardEntryView entryView;
+
+            for (int i = 0; i < keepCount; i++)
             {
-                entryViews.Dispose();
+                cancellationToken.ThrowIfCancellationRequestedByInterval(i);
+
+                if (!entryViewsEnumerator.MoveNextStruct(out entryView))
+                    break;
+
+                entryView.Show();
+            }
+
+            for (int i = keepCount; i < entryViewsCount; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequestedByInterval(i);
+
+                if (!entryViewsEnumerator.MoveNextStruct(out entryView))
+                    break;
+
+                entryView.Hide();
             }
         }
     }

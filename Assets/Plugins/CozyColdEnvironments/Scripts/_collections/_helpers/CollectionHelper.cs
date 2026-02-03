@@ -72,7 +72,7 @@ namespace CCEnvs.Collections
         {
             CC.Guard.IsNotNullSource(source);
 
-            var items = ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+            var items = ArrayPool<T>.Shared.Get(source.Count);
             int i = 0;
 
             foreach (var item in source)
@@ -86,7 +86,7 @@ namespace CCEnvs.Collections
         {
             CC.Guard.IsNotNullSource(source);
 
-            var items = ArrayPool<T>.Shared.RentHandled(source.Count, source.Count);
+            var items = ArrayPool<T>.Shared.Get(source.Count);
             int i = 0;
 
             foreach (var item in source)

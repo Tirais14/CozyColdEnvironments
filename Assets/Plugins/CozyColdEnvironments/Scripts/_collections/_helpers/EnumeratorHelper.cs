@@ -1,5 +1,7 @@
 using CCEnvs.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using ZLinq;
 
 #nullable enable
@@ -28,5 +30,36 @@ namespace CCEnvs.Collections
             enumerator.Dispose();
         }
 #endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool MoveNext<T>(this IEnumerator<T> source, out T current)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.MoveNext())
+            {
+                current = source.Current;
+                return true;
+            }
+
+            current = default!;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool MoveNextStruct<TEnumerator, T>(this ref TEnumerator source, out T current)
+            where TEnumerator : struct, IEnumerator<T>
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.MoveNext())
+            {
+                current = source.Current;
+                return true;
+            }
+
+            current = default!;
+            return false;
+        }
     }
 }

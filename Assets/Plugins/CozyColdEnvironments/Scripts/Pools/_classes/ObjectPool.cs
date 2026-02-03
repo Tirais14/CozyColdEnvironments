@@ -159,7 +159,7 @@ namespace CCEnvs.Pools
                 ///for some delay before is disposed and all handles will be freed
                 Progress -= progressPerItem;
 
-                handles = ArrayPool<PooledHandle<T>>.Shared.RentHandled(count, count);
+                handles = ArrayPool<PooledHandle<T>>.Shared.Get(count);
 
                 hasFrameDelayBetweenBatches = frameDelayBetweenBatches > 0;
             }
