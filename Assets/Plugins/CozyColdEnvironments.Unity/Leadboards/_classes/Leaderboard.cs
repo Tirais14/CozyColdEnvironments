@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using static UnityEditor.Progress;
 
 #nullable enable
 namespace CCEnvs.Unity.Leaderboards
@@ -18,40 +19,42 @@ namespace CCEnvs.Unity.Leaderboards
         : 
         ILeaderboard
     {
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
         private readonly Dictionary<Identifier, IDisposable> subbs = new();
 
         private readonly ObservableDictionary<Identifier, ILeaderboardEntry> entries = new();
 
-        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+        private readonly ObservableDictionary<Identifier, int> entryPositions = new();
 
         private readonly ObservableList<ILeaderboardEntry> sortedEntries = new();
 
-        private readonly ReactiveProperty<Maybe<IUserProfile>> activeProfile = new();
-
-        private readonly IComparer<ILeaderboardEntry> reversedComparer = Comparer<ILeaderboardEntry>.Create(
-            static (left, right) =>
-            {
-                return left.CompareTo(right) * -1;
-            });
+        private readonly ReactiveProperty<Maybe<IUserProfile>> specialProfile = new();
 
         public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => entries;
 
         public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => sortedEntries;
 
+        public IReadOnlyObservableDictionary<Identifier, int> EntryPositions => entryPositions;
+
         public Maybe<IUserProfile> SpecialProfile {
-            get => activeProfile.Value;
-            set => activeProfile.Value = value; 
+            get => specialProfile.Value;
+            set => specialProfile.Value = value; 
         }
+
+        public IComparer<ILeaderboardEntry> Comparer { get; set; }
 
         public int Count => Entries.Count;
 
         bool ICollection<ILeaderboardEntry>.IsReadOnly => false;
 
-        public Leaderboard()
+        public Leaderboard(bool reversedEntryComparer = true)
         {
+            SetComparer(reversedEntryComparer);
             BindEntryAdd();
             BindEntryRemove();
             BindEntriesClear();
+            BindEntryMove();
         }
 
         public bool TryGetScore(Identifier userProfileID, out float score)
@@ -101,7 +104,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         public Observable<Maybe<IUserProfile>> ObserveSpecialProfile()
         {
-            return activeProfile;
+            return specialProfile;
         }
 
         public IEnumerator<ILeaderboardEntry> GetEnumerator()
@@ -132,15 +135,33 @@ namespace CCEnvs.Unity.Leaderboards
             disposed = true;
         }
 
+        private void SetComparer(bool reversedEntryComparer)
+        {
+            if (reversedEntryComparer)
+            {
+                Comparer = Comparer<ILeaderboardEntry>.Create(
+                    static (left, right) =>
+                    {
+                        return left.CompareTo(right) * -1;
+                    });
+            }
+            else
+                Comparer = Comparer<ILeaderboardEntry>.Default;
+        }
+
         private void OnEntryAdd(KeyValuePair<Identifier, ILeaderboardEntry> entry)
         {
             sortedEntries.Add(entry.Value);
+            entryPositions.Add(entry.Key, -1000);
 
             var sub = entry.Value.ObserveScore()
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    @this.sortedEntries.Sort(@this.reversedComparer);
+                    if (@this.Comparer is not null)
+                        @this.sortedEntries.Sort(@this.Comparer);
+                    else
+                        @this.sortedEntries.Sort();
                 });
 
             subbs.Add(entry.Key, sub);
@@ -149,6 +170,7 @@ namespace CCEnvs.Unity.Leaderboards
         private void OnEntryRemove(KeyValuePair<Identifier, ILeaderboardEntry> entry)
         {
             sortedEntries.Remove(entry.Value);
+            entryPositions.Remove(entry.Key);
 
             if (subbs.Remove(entry.Key, out var sub))
                 sub.Dispose();
@@ -157,6 +179,13 @@ namespace CCEnvs.Unity.Leaderboards
         private void OnEntriesClear()
         {
             sortedEntries.Clear();
+            entryPositions.Clear();
+        }
+
+        private void OnEntryMove(CollectionMoveEvent<ILeaderboardEntry> entry)
+        {
+            entryPositions[entry.Value.Profile.ID] = entry.NewIndex;
+            entry.Value.Position = entry.NewIndex;
         }
 
         private void BindEntryAdd()
@@ -182,6 +211,14 @@ namespace CCEnvs.Unity.Leaderboards
             entries.ObserveClear(disposeCancellationTokenSource.Token)
                 .Subscribe(this,
                 static (_, @this) => @this.OnEntriesClear())
+                .RegisterTo(disposeCancellationTokenSource.Token);
+        }
+
+        private void BindEntryMove()
+        {
+            sortedEntries.ObserveMove(disposeCancellationTokenSource.Token)
+                .Subscribe(this,
+                static (entry, @this) => @this.OnEntryMove(entry))
                 .RegisterTo(disposeCancellationTokenSource.Token);
         }
     }

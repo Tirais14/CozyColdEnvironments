@@ -30,6 +30,8 @@ namespace CCEnvs.Patterns.Commands
 
         public CancellationToken CancellationToken { get; } = default;
 
+        public CommandSignature Signature { get; }
+
         public static bool operator ==(CompletedCommandAsync? left, CompletedCommandAsync? right)
         {
             return left != null && left.Equals(right);
@@ -49,9 +51,9 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
-        public CommandInfo GetCommandInfo()
+        public CommandSignature GetCommandSignature()
         {
-            return new CommandInfo(typeof(CompletedCommandAsync), Name);
+            return new CommandSignature(typeof(CompletedCommandAsync), Name);
         }
 
         public override string ToString()

@@ -19,6 +19,8 @@ namespace CCEnvs.Patterns.Commands
     {
         private readonly Queue<ICommandBase> commands = new();
 
+        private readonly Dictionary<CommandSignature, HashSet<ICommandBase>> commandSet = new();
+
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
 
@@ -82,10 +84,15 @@ namespace CCEnvs.Patterns.Commands
 
             commands.Enqueue(cmd);
 
-            if (cmd.Name.Contains("Item Cannon"))
+            var cmdSignature = cmd.Signature;
+
+            if (!commandSet.TryGetValue(cmdSignature, out var cmds))
             {
-                _ = 1;
+                cmds = new HashSet<ICommandBase>(2);
+                commandSet.Add(cmdSignature, cmds);
             }
+
+            cmds.Add(cmd);
 
             this.PrintLog($"Command: {cmd} scheduled");
 
@@ -103,6 +110,8 @@ namespace CCEnvs.Patterns.Commands
 
             commands.DisposeEach();
             commands.Clear();
+
+            commandSet.Clear();
         }
 
         public void Dispose()
@@ -113,6 +122,7 @@ namespace CCEnvs.Patterns.Commands
             this.PrintLog("Disposing");
 
             Reset();
+
             addCommandRxCmd?.Dispose();
             isEnabled.Dispose();
             isRunning.Dispose();
@@ -194,6 +204,22 @@ namespace CCEnvs.Patterns.Commands
             return $"({nameof(Name)}: {Name})";
         }
 
+        public bool HasCommand(CommandSignature commandSignature)
+        {
+            if (!commandSet.TryGetValue(commandSignature, out var cmds))
+                return false;
+
+            return cmds.Count > 0;
+        }
+
+        public bool HasCommand(ICommandBase? command)
+        {
+            if (command.IsNull())
+                return false;
+
+            return HasCommand(command.Signature);
+        }
+
         public Observable<ICommandBase> ObserveAddCommand()
         {
             addCommandRxCmd ??= new ReactiveCommand<ICommandBase>();
@@ -226,19 +252,18 @@ namespace CCEnvs.Patterns.Commands
             if (commands.IsEmpty())
                 return;
 
-            CommandInfo newCmdInfo = newCmd.GetCommandInfo();
+            CommandSignature newCmdSignature = newCmd.Signature;
 
-            foreach (var cmd in commands)
+            if (!commandSet.TryGetValue(newCmdSignature, out var equalCmds))
+                return;
+
+            foreach (var cmd in equalCmds)
             {
                 if (!newCmd.IsValid)
                     return;
 
-                if (!cmd.IsValid
-                    ||
-                    cmd.GetCommandInfo() != newCmdInfo)
-                {
+                if (!cmd.IsValid)
                     continue;
-                }
 
                 if (newCmd.IsSingle
                     &&
@@ -293,6 +318,8 @@ namespace CCEnvs.Patterns.Commands
             {
                 this.PrintLog($"Command: {cmd} erasing");
 
+                commandSet[cmd.Signature].Remove(cmd);
+
                 if (cmd.IsValid)
                 {
                     cmd.As<IPoolable>()
@@ -321,6 +348,8 @@ namespace CCEnvs.Patterns.Commands
                     cmdDelayFrameCount = cmd.DelayFrameCount;
                     return true;
                 }
+
+                commandSet[cmd.Signature].Remove(cmd);
             }
 
             return false;

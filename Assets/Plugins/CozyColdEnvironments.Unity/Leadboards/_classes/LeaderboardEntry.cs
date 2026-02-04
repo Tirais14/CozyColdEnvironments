@@ -1,7 +1,7 @@
 using CCEnvs.Unity.Profiles;
+using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using R3;
-using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -14,10 +14,9 @@ namespace CCEnvs.Unity.Leaderboards
         public static LeaderboardEntry Empty => new(UserProfile.Empty);
 
         private readonly ReactiveProperty<float> score = new();
+        private readonly ReactiveProperty<int?> position = new();
 
-        private readonly Dictionary<string, IDisposable> subbs = new();
-
-        private readonly ObservableDictionary<string, ReactiveProperty<float>> scoreValues = new();
+        private readonly ObservableDictionary<string, float> scoreRecords = new();
 
         private readonly List<IDisposable> disposables = new();
 
@@ -28,47 +27,86 @@ namespace CCEnvs.Unity.Leaderboards
 
         public IUserProfile Profile { get; }
 
-        public IReadOnlyObservableDictionary<string, ReactiveProperty<float>> ScoreValues => scoreValues;
+        public IReadOnlyObservableDictionary<string, float> ScoreRecords => scoreRecords;
 
         public float Score => score.Value;
+
+        public int? Position {
+            get => position.Value;
+            set => position.Value = value;
+        }
 
         public LeaderboardEntry(IUserProfile userProfile)
         {
             Profile = userProfile;
 
-            BindScoreValueAdd();
-            BindScoreValueRemove();
-            BindScoreValuesClear();
+            BindScoreRecordReplaced();
         }
 
-        public IDisposable AddScore(string name, float initialValue = 0f)
+        public ILeaderboardEntry AddScoreRecord(string name, float initialValue = 0f)
         {
-            if (ScoreValues.ContainsKey(name))
+            if (ScoreRecords.ContainsKey(name))
                 throw new ArgumentException($"Score: {name} already exists");
 
-            var prop = new ReactiveProperty<float>(initialValue);
-
-            scoreValues.Add(name, prop);
+            scoreRecords.Add(name, initialValue);
 
             addScoreCmd?.Execute((name, initialValue));
 
-            return Disposable.Create((@this: this, name),
-                static (args) =>
-                {
-                    args.@this.RemoveScore(args.name);
-                });
+            return this;
         }
 
-        public bool RemoveScore(string name)
+        public bool RemoveScoreRecord(string name)
         {
-            if (!scoreValues.Remove(name, out var prop))
-                return false;
+            return scoreRecords.Remove(name);
+        }
 
-            prop.Dispose();
+        public ILeaderboardEntry AddScore(string name, float value)
+        {
+            Guard.IsNotNull(name, nameof(name));
 
-            removeScoreCmd?.Execute(name);
+            scoreRecords[name] += value;
 
-            return true;
+            return this;
+        }
+
+        public ILeaderboardEntry AddScore(string name, float value, out float result)
+        {
+            Guard.IsNotNull(name, nameof(name));
+
+            scoreRecords[name] += value;
+
+            result = scoreRecords[name];
+
+            return this;
+        }
+
+        public ILeaderboardEntry SubtractScore(string name, float value)
+        {
+            Guard.IsNotNull(name, nameof(name));
+
+            scoreRecords[name] -= value;
+
+            return this;
+        }
+
+        public ILeaderboardEntry SubtractScore(string name, float value, out float result)
+        {
+            Guard.IsNotNull(name, nameof(name));
+
+            scoreRecords[name] -= value;
+
+            result = scoreRecords[name];
+
+            return this;
+        }
+
+        public ILeaderboardEntry SetScore(string name, float value)
+        {
+            Guard.IsNotNull(name, nameof(name));
+
+            scoreRecords[name] = value;
+
+            return this;
         }
 
         public int CompareTo(ILeaderboardEntry other)
@@ -87,8 +125,6 @@ namespace CCEnvs.Unity.Leaderboards
             {
                 disposeCancellationTokenSource.Cancel();
                 disposeCancellationTokenSource.Dispose();
-
-                OnScoreValuesClear();
 
                 disposables.DisposeEach();
                 disposables.Clear();
@@ -123,58 +159,23 @@ namespace CCEnvs.Unity.Leaderboards
             return removeScoreCmd;
         }
 
-        protected virtual void OnScoreValueAdd(string key, ReactiveProperty<float> prop)
+        public Observable<int?> ObservePosition()
         {
-            var sub = prop.Pairwise()
-                .Select(
-                static pair =>
-                {
-                    return pair.Current - pair.Previous;
-                })
+            return position;
+        }
+
+        protected virtual void OnScoreRecordReplaced(DictionaryReplaceEvent<string, float> item)
+        {
+            var delta = item.NewValue - item.OldValue;
+
+            score.Value += delta;
+        }
+
+        private void BindScoreRecordReplaced()
+        {
+            scoreRecords.ObserveDictionaryReplace(disposeCancellationTokenSource.Token)
                 .Subscribe(this,
-                static (scoreValue, @this) =>
-                {
-                    @this.score.Value += scoreValue;
-                });
-
-            subbs.Add(key, sub);
-        }
-
-        protected virtual void OnScoreValueRemove(string key)
-        {
-            if (subbs.Remove(key, out var sub))
-                sub.Dispose();
-        }
-
-        protected virtual void OnScoreValuesClear()
-        {
-            subbs.ForEach(item => item.Value.Dispose());
-            subbs.Clear();
-        }
-
-        private void BindScoreValueAdd()
-        {
-            ScoreValues.ObserveAdd(disposeCancellationTokenSource.Token)
-                .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (item, @this) => @this.OnScoreValueAdd(item.Key, item.Value))
-                .AddTo(disposables);
-        }
-
-        private void BindScoreValueRemove()
-        {
-            ScoreValues.ObserveRemove(disposeCancellationTokenSource.Token)
-                .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (item, @this) => @this.OnScoreValueRemove(item.Key))
-                .AddTo(disposables);
-        }
-
-        private void BindScoreValuesClear()
-        {
-            ScoreValues.ObserveClear(disposeCancellationTokenSource.Token)
-                .Subscribe(this,
-                static (_, @this) => @this.OnScoreValuesClear())
+                static (item, @this) => @this.OnScoreRecordReplaced(item))
                 .AddTo(disposables);
         }
     }

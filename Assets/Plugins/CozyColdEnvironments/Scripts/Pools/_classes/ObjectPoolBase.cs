@@ -45,15 +45,19 @@ namespace CCEnvs.Pools
             activeItemHandles = new Dictionary<T, PooledHandle<T>>(capacity, new ReferenceEqualityComparer<T>());
 
             Type objType = typeof(T);
+
             IsPoolableObject = objType.IsType<IPoolable>();
 
 #if UNITY_2017_1_OR_NEWER
-            IsUnityGameObject = objType.IsType<UnityEngine.GameObject>();
+            IsUnityObject = objType.IsType<UnityEngine.Object>();
 
-            if (!IsUnityGameObject)
+            if (IsUnityObject)
+            {
                 IsUnityComponent = objType.IsType<UnityEngine.Component>();
 
-            IsUnityObject = IsUnityComponent || IsUnityGameObject;
+                if (!IsUnityComponent)
+                    IsUnityGameObject = objType.IsType<UnityEngine.GameObject>();
+            }
 #endif
         }
 
@@ -118,8 +122,11 @@ namespace CCEnvs.Pools
             TryProcessPoolableObjectOnGet(handledObj);
 
             activeItemHandles.Add(handledObj.Value, handledObj);
+        }
 
-            getCmd?.Execute(obj);
+        protected virtual void OnGet(PooledHandle<T> handledObj)
+        {
+            getCmd?.Execute(handledObj.Value);
         }
 
         protected virtual void ReturnCore(T obj)
@@ -137,8 +144,6 @@ namespace CCEnvs.Pools
                 fastObject = obj;
             else
                 inactiveItems.Push(obj);
-
-            returnCmd?.Execute(obj);
         }
 
         protected virtual void OnReturn(T obj)
@@ -148,6 +153,8 @@ namespace CCEnvs.Pools
                 fastObject = obj;
                 return;
             }
+
+            returnCmd?.Execute(obj);
         }
 
         protected PooledHandle<T> CreateHandle(T obj)

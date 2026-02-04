@@ -33,6 +33,12 @@ namespace CCEnvs.Patterns.Commands
 
             try
             {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    SetCanceled();
+                    return;
+                }
+
                 OnExecute();
 
                 SetCompleted();

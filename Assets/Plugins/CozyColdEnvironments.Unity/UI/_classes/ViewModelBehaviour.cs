@@ -4,21 +4,59 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Unity.Collections.LowLevel.Unsafe;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
-    public abstract class ViewModelBehaviour<TModel> : CCBehaviour,
+    public abstract class ViewModelBehaviour
+        :
+        CCBehaviour, 
+        IViewModel,
+        IDisposable
+    {
+        protected readonly ReactiveProperty<object> m_Model = new();
+
+        public object model => m_Model.Value;
+
+        public virtual CancellationToken DisposeCancellationToken => destroyCancellationToken;
+
+        public ViewModelBehaviour SetModelFluentUntyped(object model)
+        {
+            CC.Guard.IsNotNull(model, nameof(model));
+
+            m_Model.Value = model;
+
+            return this;
+        }
+
+        private bool disposed;
+        public void Dispose()
+        {
+        }
+        protected virtual void Dispose(bool state)
+        {
+            if (disposed)
+                return;
+
+            if (state)
+                Destroy(this);
+
+            disposed = true;
+        }
+
+        protected virtual void Init()
+        {
+        }
+    }
+
+    public abstract class ViewModelBehaviour<TModel> : ViewModelBehaviour,
         IViewModel<TModel>,
         IDisposable
     {
         protected readonly List<IDisposable> modelDisposables = new();
 
-        private readonly ReactiveProperty<TModel> m_Model = new();
-
-        public TModel model => m_Model.Value;
-
-        public CancellationToken DisposeCancellationToken => destroyCancellationToken;
+        new public TModel model => (TModel)m_Model.Value;
 
         protected override void Awake()
         {
@@ -41,9 +79,9 @@ namespace CCEnvs.Unity.UI
             return this;
         }
 
-        protected virtual void Init()
+        protected override void Init()
         {
-
+            base.Init();
         }
 
         private void BindModel()
@@ -59,21 +97,6 @@ namespace CCEnvs.Unity.UI
                 })
                 .RegisterDisposableTo(this);
         }
-
-        private bool disposed;
-        public void Dispose()
-        {
-        }
-        protected virtual void Dispose(bool state)
-        {
-            if (disposed)
-                return;
-
-            if (state)
-                Destroy(this);
-
-            disposed = true;
-        }
     }
 
     public static class ViewModelBehaviourExtensions
@@ -83,6 +106,17 @@ namespace CCEnvs.Unity.UI
             TModel model
             )
             where TViewModel : ViewModelBehaviour<TModel>
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return (TViewModel)source.SetModelFluentUntyped(model);
+        }
+
+        public static TViewModel SetModel<TViewModel>(
+            this TViewModel source,
+            object model
+            )
+            where TViewModel : ViewModelBehaviour
         {
             CC.Guard.IsNotNullSource(source);
 

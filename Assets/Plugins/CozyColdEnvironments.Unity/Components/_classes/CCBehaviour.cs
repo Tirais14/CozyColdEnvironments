@@ -14,10 +14,32 @@ namespace CCEnvs.Unity.Components
     {
         private readonly CompositeDisposable disposables = new();
 
+        private Transform m_CTransform = null!;
+
+        private GameObject m_CGameObject = null!;
+
+        private bool cacheInited;
+
         /// <summary>Cached</summary>
-        public Transform cTransform { get; private set; } = null!;
+        public Transform cTransform {
+            get
+            {
+                if (!cacheInited)
+                    return transform;
+
+                return m_CTransform;
+            }
+        }
         /// <summary>Cached</summary>
-        public GameObject cGameObject { get; private set; } = null!;
+        public GameObject cGameObject {
+            get
+            {
+                if (!cacheInited)
+                    return gameObject;
+
+                return m_CGameObject;
+            }
+        }
         /// <summary>
         /// Is true before update and after start
         /// </summary>
@@ -26,8 +48,10 @@ namespace CCEnvs.Unity.Components
 
         protected virtual void Awake()
         {
-            cTransform = transform;
-            cGameObject = gameObject;
+            m_CTransform = transform;
+            m_CGameObject = gameObject;
+
+            cacheInited = true;
 
             //Sets component fields and props marked by specical attribute
             ComponentInjector.Inject(this);

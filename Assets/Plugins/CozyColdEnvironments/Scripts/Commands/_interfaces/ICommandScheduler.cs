@@ -18,6 +18,10 @@ namespace CCEnvs.Patterns.Commands
 
         void OnFrame();
 
+        bool HasCommand(ICommandBase? command);
+
+        bool HasCommand(CommandSignature commandSignature);
+
         Observable<ICommandBase> ObserveAddCommand();
 
         Observable<bool> ObserveIsRunningFinsihed();

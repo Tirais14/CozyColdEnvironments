@@ -37,6 +37,12 @@ namespace CCEnvs.Patterns.Commands
 
             try
             {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    SetCanceled();
+                    return;
+                }
+
                 await OnExecuteAsync(CancellationToken);
 
                 SetCompleted();

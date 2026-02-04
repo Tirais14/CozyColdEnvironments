@@ -15,9 +15,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
         protected override void Init()
         {
             base.Init();
-            BindEntryAdd();
-            BindEntryRemove();
             BindEntryClear();
+            BindEntryRemove();
+            BindEntryAdd();
             BindSortedEntries();
         }
 
@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .IncludeInactive()
                 .Component<LeaderboardViewModel>()
                 .Lax()
-                .IfSome(static vm => vm.SetModel((ILeaderboard)new Leaderboard()));
+                .IfSome(static vm => vm.SetModel(new Leaderboard()));
         }
 
         private void BindEntryAdd()

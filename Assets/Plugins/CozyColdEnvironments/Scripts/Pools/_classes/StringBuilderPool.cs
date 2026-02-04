@@ -16,5 +16,11 @@ namespace CCEnvs.Pools
         {
 
         }
+
+        protected override void OnReturn(StringBuilder obj)
+        {
+            base.OnReturn(obj);
+            obj.Clear();
+        }
     }
 }

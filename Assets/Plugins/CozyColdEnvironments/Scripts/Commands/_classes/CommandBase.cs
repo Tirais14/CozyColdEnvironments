@@ -44,6 +44,8 @@ namespace CCEnvs.Patterns.Commands
 
         public CancellationToken CancellationToken { get; private set; }
 
+        public CommandSignature Signature => new(GetType(), Name);
+
         protected CommandBase(
             bool isSingle = false,
             string? name = null,
@@ -115,9 +117,9 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandInfo GetCommandInfo()
+        public CommandSignature GetCommandSignature()
         {
-            return new CommandInfo(GetType(), Name);
+            return new CommandSignature(GetType(), Name);
         }
 
         public override string ToString()

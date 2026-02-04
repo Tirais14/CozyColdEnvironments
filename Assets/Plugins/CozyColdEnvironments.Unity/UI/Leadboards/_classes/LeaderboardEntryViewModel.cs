@@ -4,6 +4,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.UI.Leaderboards
@@ -12,9 +13,15 @@ namespace CCEnvs.Unity.UI.Leaderboards
         :
         ViewModel<ILeaderboardEntry>
     {
-        public ISynchronizedView<KeyValuePair<string, ReactiveProperty<float>>, ReadOnlyReactiveProperty<string>> Values { get; }
+        public ISynchronizedView<KeyValuePair<string, float>, string> ScoreRecords { get; }
 
-        public ReadOnlyReactiveProperty<float> Score { get; }
+        public ReadOnlyReactiveProperty<string> Score { get; }
+
+        public ReadOnlyReactiveProperty<Sprite?> ProfileIcon { get; }
+
+        public string ProfileName => model.Profile.Name;
+
+        public ReadOnlyReactiveProperty<string> Position { get; }
 
         public LeaderboardEntryViewModel(
             ILeaderboardEntry model,
@@ -23,15 +30,23 @@ namespace CCEnvs.Unity.UI.Leaderboards
             : 
             base(model, cancellationToken)
         {
-            Values = model.ScoreValues.CreateView(
-                item =>
-                {
-                    return item.Value.Select(static score => score.ToString())!
-                        .ToReadOnlyReactiveProperty(item.Value.Value.ToString())
-                        .AddTo(disposables);
-                })!;
+            ScoreRecords = model.ScoreRecords.CreateView(
+                static item => item.Value.ToString())
+                .AddTo(disposables);
 
-            Score = model.ObserveScore().ToReadOnlyReactiveProperty();
+            Score = model.ObserveScore()
+                .Select(score => score.ToString())
+                .ToReadOnlyReactiveProperty(model.Score.ToString())
+                .AddTo(disposables);
+
+            ProfileIcon = model.Profile.ObserveIcon()
+                .ToReadOnlyReactiveProperty()
+                .AddTo(disposables);
+
+            Position = model.ObservePosition()
+                .Select(static pos => pos?.ToString() ?? "undefined")
+                .ToReadOnlyReactiveProperty(model.Position?.ToString() ?? "undefined")
+                .AddTo(disposables);
         }
     }
 }

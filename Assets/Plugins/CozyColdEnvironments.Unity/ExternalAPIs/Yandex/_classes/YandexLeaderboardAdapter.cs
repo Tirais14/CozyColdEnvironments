@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
             entry.AddTo(disposables);
 
-            entry.AddScore("score", playerData.score);
+            entry.AddScoreRecord("score").AddScore("score", playerData.score);
 
             return entry;
         }

@@ -14,10 +14,14 @@ namespace CCEnvs.Unity.Leaderboards
 
         IReadOnlyObservableList<ILeaderboardEntry> SortedEntries { get; }
 
+        IReadOnlyObservableDictionary<Identifier, int> EntryPositions { get; }
+
         /// <summary>
         /// In general, it is a property that reflects the player's profile.
         /// </summary>
         Maybe<IUserProfile> SpecialProfile { get; set; }
+
+        IComparer<ILeaderboardEntry> Comparer { get; set; }
 
         bool TryGetScore(Identifier userProfileID, out float score);
 

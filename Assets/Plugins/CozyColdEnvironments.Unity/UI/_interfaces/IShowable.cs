@@ -8,7 +8,10 @@ namespace CCEnvs.Unity.UI
     public interface IShowable
     {
         bool IsShown { get; }
+
         bool IsInited { get; }
+
+        bool IsReadyToShow { get; }
 
         UniTask WaitForInitializedAsync(CancellationToken cancellationToken = default);
 

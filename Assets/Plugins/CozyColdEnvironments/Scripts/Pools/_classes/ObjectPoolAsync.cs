@@ -63,6 +63,7 @@ namespace CCEnvs.Pools
 
             var handle = CreateHandle(obj);
             GetCore(handle);
+            OnGet(handle);
 
             return handle;
         }

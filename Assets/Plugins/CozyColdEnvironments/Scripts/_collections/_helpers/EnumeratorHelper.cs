@@ -32,7 +32,7 @@ namespace CCEnvs.Collections
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNext<T>(this IEnumerator<T> source, out T current)
+        public static bool TryMoveNext<T>(this IEnumerator<T> source, out T current)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -47,7 +47,7 @@ namespace CCEnvs.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNextStruct<TEnumerator, T>(this ref TEnumerator source, out T current)
+        public static bool TryMoveNextStruct<TEnumerator, T>(this ref TEnumerator source, out T current)
             where TEnumerator : struct, IEnumerator<T>
         {
             CC.Guard.IsNotNullSource(source);

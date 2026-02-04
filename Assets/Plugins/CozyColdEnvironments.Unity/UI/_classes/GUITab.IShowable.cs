@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
+using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Snapshots.UI;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 using ZLinq;
 
 #nullable enable
@@ -33,7 +35,7 @@ namespace CCEnvs.Unity.UI
         [NonSerialized]
         private readonly Lazy<Dictionary<object, ISnapshot>> snapshots = new(() => new Dictionary<object, ISnapshot>());
 
-        private bool isLayoutsRebuilding;
+        private PooledHandle<List<(Graphic graphic, GraphicSnapshot snapshot)>> initHidenGraphics;
 
         public bool ShowOnInited {
             get => m_ShowOnInited;
@@ -42,9 +44,15 @@ namespace CCEnvs.Unity.UI
 
         public bool IsShown => isShown.Value;
         public bool IsInited { get; private set; }
+        public virtual bool IsReadyToShow => true;
+
+        protected bool isLayoutsRebuilding { get; private set; }
+        protected bool isInitFaulted { get; private set; }
 
         private void IShowableAwake()
         {
+            commandScheduler.Disable();
+
             if (canvasGroup.IsNone
                 &&
                 showableRenderMode == ShowableRenderMode.CanvasGroup)
@@ -68,14 +76,16 @@ namespace CCEnvs.Unity.UI
             if (IsInited)
                 return;
 
+            ValidateInit();
+
             var linkedTokenSource = destroyCancellationToken.LinkTokens(cancellationToken);
 
             cancellationToken = linkedTokenSource.Token;
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await UniTask.WaitUntil(
                     this,
                     static @this => @this.IsInited,
@@ -90,15 +100,13 @@ namespace CCEnvs.Unity.UI
 
         public void Hide()
         {
+            ValidateInit();
+
             Command.Builder.SetName(nameof(Hide), this)
                 .WithState(this)
                 .Syncronously()
                 .SetExecuteAction(
-                static @this =>
-                {
-                    @this.OnHide();
-                    @this.DoHide();
-                })
+                static @this => @this.HideInternal())
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(destroyCancellationToken)
@@ -114,10 +122,10 @@ namespace CCEnvs.Unity.UI
 
             cancellationToken = linkedTokenSource.Token;
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Hide();
 
                 await UniTask.WaitWhile(
@@ -134,15 +142,18 @@ namespace CCEnvs.Unity.UI
 
         public void Show()
         {
+            ValidateInit();
+
             Command.Builder.SetName(nameof(Show), this)
                 .WithState(this)
-                .Syncronously()
-                .SetExecuteAction(
+                .SetExecutePredicate(
                 static @this =>
                 {
-                    @this.OnShow();
-                    @this.DoShow();
+                    return @this.IsReadyToShow;
                 })
+                .Syncronously()
+                .SetExecuteAction(
+                static @this => @this.ShowInternal())
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(destroyCancellationToken)
@@ -158,10 +169,10 @@ namespace CCEnvs.Unity.UI
 
             cancellationToken = linkedTokenSource.Token;
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Show();
 
                 await UniTask.WaitUntil(
@@ -204,13 +215,15 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
+            ValidateInit();
+
             Command.Builder.SetName(nameof(Redraw), this)
                 .WithState(this)
                 .Asyncronously()
                 .SetExecuteAction(
                 static async (@this, cancellationToken) =>
                 {
-                    await @this.RebuildControlledLayouts(cancellationToken);
+                    await @this.RebuildControlledLayouts(cancellationToken, initCall: false);
                 })
                 .BuildPooled()
                 .Value
@@ -220,7 +233,26 @@ namespace CCEnvs.Unity.UI
 
         public async UniTask RedrawAsync(CancellationToken cancellationToken = default)
         {
-            
+            var linkedTokenSource = destroyCancellationToken.LinkTokens(cancellationToken);
+
+            cancellationToken = linkedTokenSource.Token;
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Redraw();
+
+                await UniTask.WaitWhile(
+                    this,
+                    static @this => @this.isLayoutsRebuilding,
+                    cancellationToken: cancellationToken
+                    );
+            }
+            finally
+            {
+                linkedTokenSource.Dispose();
+            }
         }
 
         public Observable<bool> ObserveShow()
@@ -242,7 +274,7 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        protected virtual void DoHide()
+        protected virtual void HideCore()
         {
             switch (showableRenderMode)
             {
@@ -293,14 +325,13 @@ namespace CCEnvs.Unity.UI
         {
         }
 
-        protected virtual void DoShow()
+        protected virtual void ShowCore()
         {
             switch (showableRenderMode)
             {
                 case ShowableRenderMode.GameObject:
                     {
                         gameObject.SetActive(true);
-                        SetShown();
                     }
                     break;
                 case ShowableRenderMode.CanvasGroup:
@@ -313,7 +344,6 @@ namespace CCEnvs.Unity.UI
                             snapshots.Value.Remove(pair.Key);
                         }
 
-                        SetShown();
                     }
                     break;
                 default:
@@ -323,6 +353,34 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnShown()
         {
+        }
+
+        protected InvalidOperationException GetInitFaultedException()
+        {
+            return new InvalidOperationException($"{nameof(GUITab)}: {this} is not correctly initialized");
+        }
+
+        protected void ValidateInit()
+        {
+            if (isInitFaulted)
+                throw GetInitFaultedException();
+        }
+
+
+        protected void ShowInternal()
+        {
+            OnShow();
+            ShowCore();
+            SetShown();
+            OnShown();
+        }
+
+        protected void HideInternal()
+        {
+            OnHide();
+            HideCore();
+            SetHiden();
+            OnHiden();
         }
 
         private void SetShown()
@@ -344,25 +402,9 @@ namespace CCEnvs.Unity.UI
             destroyCancellationToken.ThrowIfCancellationRequested();
 
             if (ShowOnInited)
-            {
-                Show();
-
-                await UniTask.WaitUntil(
-                    this,
-                    static @this => @this.IsShown,
-                    cancellationToken: destroyCancellationToken
-                    );
-            }
-            else if (!hasParent)
-            {
-                Hide();
-
-                await UniTask.WaitWhile(
-                    this,
-                    static @this => @this.IsShown,
-                    cancellationToken: destroyCancellationToken
-                    );
-            }
+                ShowInternal();
+            else
+                HideInternal();
         }
 
         private async UniTask WaitUntilChildrensInitedAsync()
@@ -406,7 +448,7 @@ namespace CCEnvs.Unity.UI
                 .ToArray();
         }
 
-        private async UniTask RebuildControlledLayouts(CancellationToken cancellationToken)
+        private async UniTask RebuildControlledLayouts(CancellationToken cancellationToken, bool initCall)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -420,45 +462,95 @@ namespace CCEnvs.Unity.UI
 
             try
             {
-                if (!isShown || !IsInited)
-                    await ShowAsync(cancellationToken);
+                if (!isShown)
+                {
+                    if (initCall)
+                        ShowInternal();
+                    else
+                        await ShowAsync(cancellationToken);
+                }
 
                 await LayoutHelper.ForceRebuildLayoutsAsync(childs, cancellationToken);
 
-                if (!isShown || !IsInited)
-                    await HideAsync(cancellationToken);
+                if (!isShown)
+                {
+                    if (initCall)
+                        HideInternal();
+                    else
+                        await HideAsync(cancellationToken);
+                }
             }
             finally
             {
-                returnToNormalCanvas.Dispose();
                 isLayoutsRebuilding = false;
+
+                returnToNormalCanvas.Dispose();
             }
+        }
+
+        private PooledHandle<List<(Graphic graphic, GraphicSnapshot snapshot)>> SetGraphicsTransparent()
+        {
+            var graphics = this.Q().FromChildrens().DepthLimiter<IShowable>().Components<Graphic>();
+
+            var results = ListPool<(Graphic graphic, GraphicSnapshot snapshot)>.Shared.Get();
+
+            GraphicSnapshot snapshot;
+
+            foreach (var graphic in graphics)
+            {
+                snapshot = new GraphicSnapshot(graphic);
+
+                graphic.color = graphic.color.WithAlpha(0.001f);
+
+                results.Value.Add((graphic, snapshot));
+            }
+
+            return results;
         }
 
         private async UniTask InitShowableAsync()
         {
+            //foreach (var hidenGraphic in initHidenGraphics.Value)
+            //    hidenGraphic.snapshot.TryRestore(hidenGraphic.graphic, out _);
+
+            //initHidenGraphics.Dispose();
+
             destroyCancellationToken.ThrowIfCancellationRequested();
 
             IDisposable returnToNormalCanvas = root.GetValue(this)
                 .RectTransform()
                 .MoveToDevCanvas();
 
-            var hasParent = parent.IsSome;
+            var layoutGroup = this.Q()
+                .FromParents()
+                .ExcludeSelf()
+                .Component<LayoutGroup>()
+                .Lax()
+                .Where(static layout => layout.enabled);
 
             try
             {
                 await WaitUntilChildrensInitedAsync();
 
-                await RebuildControlledLayouts(destroyCancellationToken);
+                await RebuildControlledLayouts(destroyCancellationToken, initCall: true);
 
                 await InitVisibleStateAsync(parent.IsSome);
             }
+            catch (Exception)
+            {
+                isInitFaulted = true;
+                throw;
+            }
             finally
             {
+                IsInited = true;
+
+                layoutGroup.IfSome(static layout => layout.enabled = true);
+
                 returnToNormalCanvas.Dispose();
             }
 
-            IsInited = true;
+            commandScheduler.Enable();
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace CCEnvs.Pools
 {
-    public class ListPool<T> : ObjectPool<List<T>>
+    public class ListPool<T> : MutableCollectionPool<List<T>, T>
     {
         public static ListPool<T> Shared { get; } = new();
 

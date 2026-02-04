@@ -17,8 +17,8 @@ namespace CCEnvs.Unity.Async
                 source.Forget(
                     static ex =>
                     {
-                        if (ex is TaskCanceledException || ex is OperationCanceledException)
-                            CCDebug.Instance.PrintLog(ex);
+                        if (ex.IsCancellationException())
+                            CCDebug.Instance.PrintExceptionAsLog(ex);
                         else
                             CCDebug.Instance.PrintException(ex);
 
@@ -29,8 +29,8 @@ namespace CCEnvs.Unity.Async
                 source.Forget(
                     ex =>
                     {
-                        if (ex is TaskCanceledException || ex is OperationCanceledException)
-                            context.PrintLog(ex);
+                        if (ex.IsCancellationException())
+                            context.PrintExceptionAsLog(ex);
                         else
                             context.PrintException(ex);
 

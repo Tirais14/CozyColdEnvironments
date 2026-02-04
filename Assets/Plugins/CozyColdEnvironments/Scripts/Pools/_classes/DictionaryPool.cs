@@ -5,7 +5,7 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public class DictionaryPool<TKey, TValue> : ObjectPool<Dictionary<TKey, TValue>>
+    public class DictionaryPool<TKey, TValue> : MutableCollectionPool<Dictionary<TKey, TValue>, KeyValuePair<TKey, TValue>>
     {
         public static DictionaryPool<TKey, TValue> Shared { get; } = new();
 

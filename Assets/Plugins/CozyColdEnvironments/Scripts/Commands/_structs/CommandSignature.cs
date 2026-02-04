@@ -7,23 +7,23 @@ using System.Runtime.CompilerServices;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public readonly struct CommandInfo : IEquatable<CommandInfo>
+    public readonly struct CommandSignature : IEquatable<CommandSignature>
     {
         public Maybe<Type> CommandType { get; }
         public string CommandName { get; }
 
-        public CommandInfo(Type? commandType = null, string? commandName = null)
+        public CommandSignature(Type? commandType = null, string? commandName = null)
         {
             CommandType = commandType;
             CommandName = commandName ?? string.Empty;
         }
 
-        public static bool operator ==(CommandInfo left, CommandInfo right)
+        public static bool operator ==(CommandSignature left, CommandSignature right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(CommandInfo left, CommandInfo right)
+        public static bool operator !=(CommandSignature left, CommandSignature right)
         {
             return !(left == right);
         }
@@ -44,7 +44,7 @@ namespace CCEnvs.Patterns.Commands
             return $"{nameof(CommandType)}: {CommandType}; {CommandName}: {CommandName}.";
         }
 
-        public bool Equals(CommandInfo other)
+        public bool Equals(CommandSignature other)
         {
             return CommandType.Equals(other.CommandType)
                    &&
@@ -53,7 +53,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override bool Equals(object? obj)
         {
-            return obj is CommandInfo info && Equals(info);
+            return obj is CommandSignature info && Equals(info);
         }
 
         public override int GetHashCode()
