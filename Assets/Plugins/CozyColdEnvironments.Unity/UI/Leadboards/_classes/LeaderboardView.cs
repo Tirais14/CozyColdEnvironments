@@ -34,8 +34,14 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             viewModelUnsafe.Entries.ObserveDictionaryAdd(viewModelUnsafe.DisposeCancellationToken)
                 .Select(static ev => ev.Value)
+                .ChunkFrame(1)
                 .Subscribe(this,
-                static (entry, @this) => @this.viewModelUnsafe.OnEntryAdd(entry))
+                static (entries, @this) =>
+                {
+                    for (global::System.Int32 i = 0; i < entries.Length; i++)
+                        @this.viewModelUnsafe.OnEntryAdd(entries[i]);
+
+                })
                 .AddTo(viewModelDisposables);
         }
 
@@ -43,8 +49,13 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             viewModelUnsafe.Entries.ObserveDictionaryRemove(viewModelUnsafe.DisposeCancellationToken)
                 .Select(static ev => ev.Value)
+                .ChunkFrame(1)
                 .Subscribe(this,
-                static (entry, @this) => @this.viewModelUnsafe.OnEntryRemove(entry))
+                static (entries, @this) =>
+                {
+                    for (global::System.Int32 i = 0; i < entries.Length; i++)
+                        @this.viewModelUnsafe.OnEntryRemove(entries[i]);
+                })
                 .AddTo(viewModelDisposables);
         }
 
@@ -59,8 +70,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
         private void BindSortedEntries()
         {
             viewModelUnsafe.SortedEntries.ObserveChanged(viewModelUnsafe.DisposeCancellationToken)
+                .ChunkFrame(1)
                 .Subscribe(this,
-                static (_, @this) => @this.viewModelUnsafe.SortEntries())
+                static (_, @this) =>
+                {
+                    @this.viewModelUnsafe.SortEntries();
+                })
                 .AddTo(viewModelDisposables);
         }
     }

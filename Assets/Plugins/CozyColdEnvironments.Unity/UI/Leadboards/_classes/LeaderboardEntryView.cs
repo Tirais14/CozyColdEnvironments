@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Leaderboards;
 using CCEnvs.Unity.Serialization;
 using ObservableCollections;

@@ -10,7 +10,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using static UnityEditor.Progress;
 
 #nullable enable
 namespace CCEnvs.Unity.Leaderboards
@@ -42,7 +41,7 @@ namespace CCEnvs.Unity.Leaderboards
             set => specialProfile.Value = value; 
         }
 
-        public IComparer<ILeaderboardEntry> Comparer { get; set; }
+        public IComparer<ILeaderboardEntry> Comparer { get; set; } = null!;
 
         public int Count => Entries.Count;
 
@@ -54,7 +53,8 @@ namespace CCEnvs.Unity.Leaderboards
             BindEntryAdd();
             BindEntryRemove();
             BindEntriesClear();
-            BindEntryMove();
+            BindSortedEntryMove();
+            BindSortedEntryAdd();
         }
 
         public bool TryGetScore(Identifier userProfileID, out float score)
@@ -149,19 +149,25 @@ namespace CCEnvs.Unity.Leaderboards
                 Comparer = Comparer<ILeaderboardEntry>.Default;
         }
 
+        private void SortEntries()
+        {
+            if (Comparer is not null)
+                sortedEntries.Sort(Comparer);
+            else
+                sortedEntries.Sort();
+        }
+
         private void OnEntryAdd(KeyValuePair<Identifier, ILeaderboardEntry> entry)
         {
             sortedEntries.Add(entry.Value);
             entryPositions.Add(entry.Key, -1000);
 
             var sub = entry.Value.ObserveScore()
+                .ChunkFrame(1)
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    if (@this.Comparer is not null)
-                        @this.sortedEntries.Sort(@this.Comparer);
-                    else
-                        @this.sortedEntries.Sort();
+                    @this.SortEntries();
                 });
 
             subbs.Add(entry.Key, sub);
@@ -182,27 +188,31 @@ namespace CCEnvs.Unity.Leaderboards
             entryPositions.Clear();
         }
 
-        private void OnEntryMove(CollectionMoveEvent<ILeaderboardEntry> entry)
-        {
-            entryPositions[entry.Value.Profile.ID] = entry.NewIndex;
-            entry.Value.Position = entry.NewIndex;
-        }
-
         private void BindEntryAdd()
         {
             entries.ObserveAdd(disposeCancellationTokenSource.Token)
-                .Select(ev => ev.Value)
+                .Select(static ev => ev.Value)
+                .ChunkFrame(1)
                 .Subscribe(this,
-                static (entry, @this) => @this.OnEntryAdd(entry))
+                static (entries, @this) =>
+                {
+                    for (int i = 0; i < entries.Length; i++)
+                        @this.OnEntryAdd(entries[i]);
+                })
                 .RegisterTo(disposeCancellationTokenSource.Token);
         }
 
         private void BindEntryRemove()
         {
             entries.ObserveRemove(disposeCancellationTokenSource.Token)
-                .Select(ev => ev.Value)
+                .Select(static ev => ev.Value)
+                .ChunkFrame(1)
                 .Subscribe(this,
-                static (entry, @this) => @this.OnEntryRemove(entry))
+                static (entries, @this) =>
+                {
+                    for (int i = 0; i < entries.Length; i++)
+                        @this.OnEntryRemove(entries[i]);
+                })
                 .RegisterTo(disposeCancellationTokenSource.Token);
         }
 
@@ -210,15 +220,47 @@ namespace CCEnvs.Unity.Leaderboards
         {
             entries.ObserveClear(disposeCancellationTokenSource.Token)
                 .Subscribe(this,
-                static (_, @this) => @this.OnEntriesClear())
+                static (_, @this) =>
+                {
+                    @this.OnEntriesClear();
+                })
                 .RegisterTo(disposeCancellationTokenSource.Token);
         }
 
-        private void BindEntryMove()
+        private void OnSortedEntryMove(CollectionMoveEvent<ILeaderboardEntry> entry)
+        {
+            entryPositions[entry.Value.Profile.ID] = entry.NewIndex;
+            entry.Value.Position = entry.NewIndex;
+        }
+
+        private void OnSortedEntryAdd(CollectionAddEvent<ILeaderboardEntry> entry)
+        {
+            OnSortedEntryMove(new CollectionMoveEvent<ILeaderboardEntry>(-1, entry.Index + 1, entry.Value));
+        }
+
+        private void BindSortedEntryMove()
         {
             sortedEntries.ObserveMove(disposeCancellationTokenSource.Token)
+                .ChunkFrame(1)
                 .Subscribe(this,
-                static (entry, @this) => @this.OnEntryMove(entry))
+                static (entries, @this) =>
+                {
+                    foreach (var entry in entries)
+                        @this.OnSortedEntryMove(entry);
+                })
+                .RegisterTo(disposeCancellationTokenSource.Token);
+        }
+
+        private void BindSortedEntryAdd()
+        {
+            sortedEntries.ObserveAdd(disposeCancellationTokenSource.Token)
+                .ChunkFrame(1)
+                .Subscribe(this,
+                static (events, @this) =>
+                {
+                    for (int i = 0; i < events.Length; i++)
+                        @this.OnSortedEntryAdd(events[i]);
+                })
                 .RegisterTo(disposeCancellationTokenSource.Token);
         }
     }

@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Databases
 {
     public class DatabaseNotFoundException : CCException
     {
-        public DatabaseNotFoundException(Identifier id,
+        public DatabaseNotFoundException(Identifier? id,
             IAssetDatabaseRegistry? reg = null,
             Type? assetType = null)
             :

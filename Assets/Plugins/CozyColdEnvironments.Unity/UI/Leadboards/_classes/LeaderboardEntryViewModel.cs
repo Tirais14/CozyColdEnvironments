@@ -19,9 +19,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         public ReadOnlyReactiveProperty<Sprite?> ProfileIcon { get; }
 
-        public string ProfileName => model.Profile.Name;
-
         public ReadOnlyReactiveProperty<string> Position { get; }
+
+        public string ProfileName => model.Profile.Name;
 
         public LeaderboardEntryViewModel(
             ILeaderboardEntry model,
@@ -44,8 +44,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .AddTo(disposables);
 
             Position = model.ObservePosition()
-                .Select(static pos => pos?.ToString() ?? "undefined")
-                .ToReadOnlyReactiveProperty(model.Position?.ToString() ?? "undefined")
+                .Select(
+                static pos =>
+                {
+                    return pos.GetValueOrDefault().ToString();
+                })
+                .ToReadOnlyReactiveProperty(model.Position.GetValueOrDefault().ToString())
                 .AddTo(disposables);
         }
     }

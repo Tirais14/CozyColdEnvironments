@@ -21,7 +21,6 @@ namespace CCEnvs.Unity.Databases
         where TThis : CCBehaviourStatic, IAssetDatabaseRegistry
     {
         private readonly Dictionary<Identifier, IAssetDatabase> collection = new();
-        private readonly AssetDatabaseQuery query = new();
 
         public IAssetDatabase this[Identifier key] {
             get => collection[key];
@@ -36,18 +35,18 @@ namespace CCEnvs.Unity.Databases
 
         public AssetDatabaseQuery Query()
         {
-            return query.Reset().From(this);
+            return new AssetDatabaseQuery().From(this);
         }
 
         public void Add(Identifier key, IAssetDatabase value)
         {
-            if (key.Number.IsNone)
+            if (key.Number is null)
             {
                 key = key.WithNumber(0);
 
                 if (collection.ContainsKey(key))
                 {
-                    int nextNumber = Keys.Where(other => other.Text == key.Text).Max(key => key.Number.Raw) + 1;
+                    int nextNumber = Keys.Where(other => other.Text == key.Text).Max(key => key.Number.GetValueOrDefault()) + 1;
                     key = key.WithNumber(nextNumber);
                 }
             }

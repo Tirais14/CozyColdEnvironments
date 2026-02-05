@@ -12,30 +12,16 @@ namespace CCEnvs
 #if UNITY_2017_1_OR_NEWER
         [field: UnityEngine.SerializeField]
 #endif
-        public Maybe<int> Number { get; init; }
+        public int? Number { get; }
 
 #if UNITY_2017_1_OR_NEWER
         [field: UnityEngine.SerializeField]
 #endif
-        public Maybe<string> Text { get; init; }
+        public string? Text { get; }
 
-        public Identifier(Maybe<int> number, string? text)
+        public Identifier(int? number = null, string? text = null)
         {
             Number = number;
-            Text = text;
-        }
-
-        public Identifier(Maybe<int> number)
-            :
-            this()
-        {
-            Number = number;
-        }
-
-        public Identifier(string text)
-            :
-            this()
-        {
             Text = text;
         }
 
@@ -46,11 +32,15 @@ namespace CCEnvs
             Text = @enum.ToString();
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Identifier left, Identifier right)
         {
             return left.Equals(right);
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Identifier left, Identifier right)
         {
             return !(left == right);
@@ -74,7 +64,7 @@ namespace CCEnvs
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Identifier(string text)
         {
-            return new Identifier(text);
+            return new Identifier(text: text);
         }
 
         [DebuggerStepThrough]
@@ -87,21 +77,21 @@ namespace CCEnvs
         public static Identifier Create<T>(T value)
             where T : struct, Enum
         {
-            return new Identifier(value.ToString());
+            return new Identifier(number: value.GetHashCode(), text: value.ToString());
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Identifier WithText(string? text)
         {
-            return new Identifier(Number.Raw, text);
+            return new Identifier(Number, text);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Identifier WithNumber(Maybe<int> number)
+        public Identifier WithNumber(int? number)
         {
-            return new Identifier(number, Text.Raw);
+            return new Identifier(number ?? default, Text);
         }
 
         public readonly bool Equals(Identifier other)

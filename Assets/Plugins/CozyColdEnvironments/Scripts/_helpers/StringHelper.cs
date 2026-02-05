@@ -70,11 +70,15 @@ namespace CCEnvs
             return left.Raw.Match(right.Raw, settings);
         }
 
-        public static bool EqualsInvariant(this string value,
-                                           string other,
+        public static bool EqualsInvariant(this string? value,
+                                           string? other,
                                            bool ignoreCase = false)
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            if (value is null && other is null)
+                return true;
+
+            if (value is null)
+                return false;
 
             return value.Equals(other, ignoreCase ?
                 StringComparison.InvariantCultureIgnoreCase
@@ -82,13 +86,17 @@ namespace CCEnvs
                 StringComparison.InvariantCulture);
         }
 
-        public static bool EqualsOrdinal(this string value,
-                                         string other,
+        public static bool EqualsOrdinal(this string? value,
+                                         string? other,
                                          bool ignoreCase = false)
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            if (value is null && other is null)
+                return true;
 
-            return value.Contains(other, ignoreCase ?
+            if (value is null)
+                return false;
+
+            return value.Equals(other, ignoreCase ?
                 StringComparison.OrdinalIgnoreCase
                 :
                 StringComparison.Ordinal);

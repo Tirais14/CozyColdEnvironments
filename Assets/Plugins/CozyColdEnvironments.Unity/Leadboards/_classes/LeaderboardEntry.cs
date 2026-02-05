@@ -50,6 +50,8 @@ namespace CCEnvs.Unity.Leaderboards
 
             scoreRecords.Add(name, initialValue);
 
+            OnScoreRecordReplaced(new DictionaryReplaceEvent<string, float>(name, default, initialValue));
+
             addScoreCmd?.Execute((name, initialValue));
 
             return this;
