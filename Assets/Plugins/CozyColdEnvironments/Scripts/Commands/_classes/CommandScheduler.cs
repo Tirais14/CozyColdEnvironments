@@ -1,6 +1,8 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
+using CCEnvs.TypeMatching;
 using Humanizer;
 using R3;
 using System;
@@ -22,15 +24,19 @@ namespace CCEnvs.Patterns.Commands
         private readonly Dictionary<CommandSignature, HashSet<ICommandBase>> commandSet = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
+
         private readonly ReactiveProperty<bool> isRunning = new();
 
         private ICommandBase? cmd;
 
         private bool cmdExecuted;
+
         private bool disposed;
+
         private bool isRunningFinshingDelayed;
 
         private int delayFrameCountBeforeRunningFinished;
+
         private int cmdDelayFrameCount;
 
         private long idleFrameCount;
@@ -40,7 +46,9 @@ namespace CCEnvs.Patterns.Commands
         public FrameProvider? FrameProvider { get; }
 
         public bool HasCommands => cmd is not null || commands.IsNotEmpty();
+
         public bool IsEnabled => isEnabled.Value;
+
         public bool IsRunning => isRunning.Value && idleFrameCount >= DelayFrameCountBeforeRunningFinished;
 
         public int DelayFrameCountBeforeRunningFinished {
@@ -102,13 +110,13 @@ namespace CCEnvs.Patterns.Commands
         [OnInstallMethod]
         public void Reset()
         {
-            this.PrintLog("Reseting");
+            this.PrintLog("Resetting");
 
             cmd?.Dispose();
 
             EraseCommand();
 
-            commands.DisposeEach();
+            commands.UtilizeOrDisposeEach();
             commands.Clear();
 
             commandSet.Clear();
@@ -320,12 +328,7 @@ namespace CCEnvs.Patterns.Commands
 
                 commandSet[cmd.Signature].Remove(cmd);
 
-                if (cmd.IsValid)
-                {
-                    cmd.AsObsolete<IPoolable>()
-                        .Map(poolable => poolable.PoolHandle.Raw)
-                        .IfSome(handle => handle.Dispose());
-                }
+                cmd.UtilizeOrDispose();
 
                 cmd = null;
             }

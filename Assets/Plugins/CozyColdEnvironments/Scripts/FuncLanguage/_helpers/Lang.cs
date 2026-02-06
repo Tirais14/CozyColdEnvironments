@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -209,7 +208,7 @@ namespace CCEnvs.FuncLanguage
             if (input.IsNone)
                 return default!;
 
-            return input.GetValue().AsObsolete<TOutValue>();
+            return input.GetValue().As<TOutValue>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -217,7 +216,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<L>
         {
             L? left = input.GetValue();
-            R? right = left.AsObsolete<R>().Raw;
+            R? right = left.As<R>();
 
             return (left, right);
         }

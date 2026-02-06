@@ -1,17 +1,13 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
-using CCEnvs.Pools;
 
 #nullable enable
 
@@ -74,31 +70,10 @@ namespace CCEnvs.Collections
             return range;
         }
 
-        public static void DisposeEach<T>(this IEnumerable<T>? disposables)
-            where T : IDisposable
+        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T>? source, int sourceCount)
         {
-            if (disposables.IsNull())
-                return;
-
-            using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
-
-            foreach (var item in disposablesPooled.Value)
-            {
-                try
-                {
-                    item.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    item.PrintException(ex);
-                }
-            }
-        }
-
-        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T> source, int sourceCount)
-        {
-            CC.Guard.IsNotNullSource(source);
-            Guard.IsGreaterThan(sourceCount, 0, nameof(sourceCount));
+            if (source.IsNullOrEmpty() || sourceCount < 1)
+                return default;
 
             var arrHandle = ArrayPool<T>.Shared.RentHandled(sourceCount);
             source.CopyTo(arrHandle.Value, 0);
@@ -106,9 +81,13 @@ namespace CCEnvs.Collections
             return new PooledArray<T>(arrHandle, sourceCount, offset: 0);
         }
 
-        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T> source)
+        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T>? source)
         {
-            CC.Guard.IsNotNullSource(source);
+            if (source.IsNullOrEmpty())
+                return default;
+
+            if (source.TryGetNonEnumeratedCount(out var count))
+                return source.EnumerableToArrayPooled(count);
 
             PooledHandle<T[]> items = ArrayPool<T>.Shared.RentHandled(16);
             int itemCount = 0;
@@ -140,6 +119,16 @@ namespace CCEnvs.Collections
                    (source == null
                    ||
                    source.SequenceEqual(other));
+        }
+
+        public static bool IsMutableCollection<T>(this IEnumerable<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source is not ICollection<T> collection || collection.IsReadOnly)
+                return false;
+
+            return true;
         }
     }
 }

@@ -39,6 +39,23 @@ namespace CCEnvs.Patterns.Commands
         {
         }
 
+        public virtual void Utilize()
+        {
+            if (!ReturnToPool())
+                Dispose();
+        }
+
+        public bool ReturnToPool()
+        {
+            return poolHandle.Map(
+                static x =>
+                {
+                    x.Dispose();
+                    return true;
+                })
+                .GetValue(); ;
+        }
+
         public Observable<IPoolable> ObserveDespawn()
         {
             onDespawnCmd ??= new ReactiveCommand<IPoolable>();

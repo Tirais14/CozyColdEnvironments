@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.UI
 
         bool IsEnabled { get; set; }
 
-        bool AlwaysShown { get; set; }
+        bool PreventHide { get; set; }
 
         Graphic? graphic { get; }
 

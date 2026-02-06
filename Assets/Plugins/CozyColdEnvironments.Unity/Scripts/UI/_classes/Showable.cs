@@ -29,10 +29,13 @@ namespace CCEnvs.Unity.UI
         protected ShowableRenderMode renderMode;
 
         [SerializeField]
-        protected bool m_ShowOnInited;
+        protected bool showOnInited;
 
         [SerializeField]
-        protected bool m_AlwaysShown;
+        protected bool preventHide;
+
+        [SerializeField]
+        protected bool isEnabled = true;
 
         private readonly ReactiveProperty<bool> isShown = new(true);
 
@@ -49,8 +52,8 @@ namespace CCEnvs.Unity.UI
         private PooledHandle<List<IDisposable>> transparentGraphics;
 
         public bool ShowOnInited {
-            get => m_ShowOnInited;
-            set => m_ShowOnInited = value;
+            get => showOnInited;
+            set => showOnInited = value;
         }
 
         public bool IsShown => isShown.Value;
@@ -59,11 +62,14 @@ namespace CCEnvs.Unity.UI
 
         public virtual bool IsReadyToShow => IsEnabled;
 
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled {
+            get => isEnabled;
+            set => isEnabled = value;
+        }
 
-        public bool AlwaysShown {
-            get => m_AlwaysShown;
-            set => m_AlwaysShown = value;
+        public bool PreventHide {
+            get => preventHide;
+            set => preventHide = value;
         }
 
         [field: GetBySelf(IsOptional = true)]
@@ -142,7 +148,7 @@ namespace CCEnvs.Unity.UI
         {
             ValidateInit();
 
-            if (!IsEnabled || AlwaysShown)
+            if (!IsEnabled || PreventHide)
                 return;
 
             Command.Builder.SetName(nameof(Hide), this)
@@ -158,7 +164,7 @@ namespace CCEnvs.Unity.UI
 
         public async UniTask HideAsync(CancellationToken cancellationToken = default)
         {
-            if (!IsShown || AlwaysShown)
+            if (!IsShown || PreventHide)
                 return;
 
             ValidateInit();
@@ -238,7 +244,7 @@ namespace CCEnvs.Unity.UI
             if (IsEnabled)
                 return IsShown;
 
-            if (IsShown && !AlwaysShown)
+            if (IsShown && !PreventHide)
             {
                 Hide();
                 return false;

@@ -178,20 +178,21 @@ namespace CCEnvs.Linq
                 yield return (TResult)TypeMutator.MutateType(item, typeof(TResult));
         }
 
-        public static bool TryGetNonEnumeratedCount<T>(this IEnumerable<T> source, out int count)
+        public static bool TryGetNonEnumeratedCount<T>(this IEnumerable<T>? source, out int count)
         {
-            CC.Guard.IsNotNullSource(source);
-
             count = -1;
+
+            if (source.IsNull())
+                return false;
 
             if (source is T[] array)
                 count = array.Length;
 
-            if (source is ICollection<T> collection)
-                count = collection.Count;
-
             if (source is IReadOnlyCollection<T> readOnlyCollection)
                 count = readOnlyCollection.Count;
+
+            if (source is ICollection<T> collection)
+                count = collection.Count;
 
             return count != -1;
         }

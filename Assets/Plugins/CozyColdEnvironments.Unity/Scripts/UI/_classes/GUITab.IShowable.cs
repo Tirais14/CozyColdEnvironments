@@ -24,9 +24,9 @@ namespace CCEnvs.Unity.UI
             set => showable.enabled = value;
         }
 
-        public bool AlwaysShown {
-            get => showable.AlwaysShown;
-            set => showable.AlwaysShown = value;
+        public bool PreventHide {
+            get => showable.PreventHide;
+            set => showable.PreventHide = value;
         }
 
         public Graphic? graphic => showable.graphic;

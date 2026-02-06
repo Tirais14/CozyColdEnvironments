@@ -6,9 +6,11 @@ using CCEnvs.Unity.Leaderboards;
 using CCEnvs.Unity.Profiles;
 using CCEnvs.Unity.UI.Leaderboards;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using YG;
@@ -24,8 +26,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         private readonly List<IDisposable> disposables = new();
 
         private readonly Dictionary<string, ImageLoadYG> profileIconLoaders = new();
-
-        private readonly Dictionary<string, Action> onProfileIconLoadedActions = new();
 
         [GetBySelf]
         private LeaderboardYG worstLeaderboard = null!;
@@ -92,31 +92,40 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (iconUrl is null)
                 return null;
 
-            if (profileIconLoaders.TryGetValue(iconUrl, out var loader))
+            if (!profileIconLoaders.TryGetValue(iconUrl, out var loader))
+            {
+                var loaderGO = new GameObject(iconUrl);
+
+                loader = loaderGO.AddComponent<ImageLoadYG>();
+
+                loader.spriteImage = loaderGO.AddComponent<Image>();
+
+                loader.spriteImage.color = loader.spriteImage.color.WithAlpha(0f);
+
+                loader.urlImage = iconUrl;
+
+                profileIconLoaders.Add(iconUrl, loader);
+
+                loader.Load();
+            }
+
+            if (loader.spriteImage.sprite != null)
                 return loader.spriteImage.sprite;
 
-            var loaderGO = new GameObject(iconUrl);
-
-            loader = loaderGO.AddComponent<ImageLoadYG>();
-
-            loader.spriteImage = loaderGO.AddComponent<Image>();
-
-            loader.spriteImage.color = loader.spriteImage.color.WithAlpha(0f);
-
-            loader.urlImage = iconUrl;
-
-            profileIconLoaders.Add(iconUrl, loader);
-            onProfileIconLoadedActions.Add(iconUrl, onLoaded);
-
-            loader.Load();
+            Observable.EveryValueChanged(loader,
+                static loader =>
+                {
+                    return loader.spriteImage.sprite;
+                })
+                .Timeout(5.Minutes())
+                .Subscribe(profile,
+                static (sprite, profile) =>
+                {
+                    profile.Icon = sprite;
+                })
+                .AddTo(disposables);
 
             return loader.spriteImage.sprite;
-
-            void onLoaded()
-            {
-                profile.Icon = loader.spriteImage.sprite;
-                onProfileIconLoadedActions.Remove(iconUrl);
-            }
         }
 
         private IUserProfile CreateUserProfile(LBPlayerData playerData)

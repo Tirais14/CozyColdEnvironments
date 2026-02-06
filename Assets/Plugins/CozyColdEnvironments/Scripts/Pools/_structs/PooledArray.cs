@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public struct PooledArray<T> : IList<T>, IReadOnlyList<T>, IDisposable
+    public struct PooledArray<T> : IList<T>, IReadOnlyList<T>, IDisposable, IEquatable<PooledArray<T>>
     {
         private readonly IDisposable handle;
 
@@ -19,16 +19,24 @@ namespace CCEnvs.Pools
 
         readonly public ArraySegment<T> Value {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => value;
+            get
+            {
+                if (value == default)
+                    return ArraySegment<T>.Empty;
+
+                return value;
+            }
         }
 
         readonly public int Length {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => value.Count;
+            get => Value.Count;
         }
 
         readonly int ICollection<T>.Count => Length;
+
         readonly int IReadOnlyCollection<T>.Count => Length;
+
         readonly bool ICollection<T>.IsReadOnly => true;
 
         readonly public T this[int index] {
@@ -75,11 +83,25 @@ namespace CCEnvs.Pools
             value = array.GetArraySegment(count);
         }
 
+        public static bool operator ==(PooledArray<T> left, PooledArray<T> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(PooledArray<T> left, PooledArray<T> right)
+        {
+            return !(left == right);
+        }
+
         private bool disposed;
         public void Dispose()
         {
-            if (disposed)
+            if (disposed
+                ||
+                this == default)
+            {
                 return;
+            }
 
             handle.Dispose();
 
@@ -109,6 +131,37 @@ namespace CCEnvs.Pools
         public readonly Memory<T> GetMemory(int start = 0, int? length = null)
         {
             return new Memory<T>(array, start, length ?? value.Count);
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is PooledArray<T> array && Equals(array);
+        }
+
+        public readonly bool Equals(PooledArray<T> other)
+        {
+            return EqualityComparer<IDisposable>.Default.Equals(handle, other.handle)
+                   &&
+                   EqualityComparer<T[]>.Default.Equals(array, other.array)
+                   &&
+                   EqualityComparer<ArraySegment<T>>.Default.Equals(value, other.value)
+                   &&
+                   Length == other.Length
+                   &&
+                   disposed == other.disposed;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(handle, array, value, Length, disposed);
+        }
+
+        public readonly override string ToString()
+        {
+            if (this == default)
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"({nameof(array)}: {array}; {nameof(Length)}: {Length})";
         }
 
         public readonly IEnumerator<T> GetEnumerator() => value.GetEnumerator();

@@ -94,15 +94,5 @@ namespace CCEnvs.Collections
 
             return items;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeEachAndClear(this ICollection<IDisposable>? source)
-        {
-            if (source.IsNull())
-                return;
-
-            source.DisposeEach();
-            source.Clear();
-        }
     }
 }
