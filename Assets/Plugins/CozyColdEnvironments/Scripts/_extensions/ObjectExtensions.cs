@@ -32,88 +32,6 @@ namespace CCEnvs
 
             return source;
         }
-        //public static TOutput IfDefault<TInput, TOutput>(this TInput? source, TOutput output)
-        //{
-        //    if (source.IsDefault())
-        //        return output;
-
-        //    try
-        //    {
-        //        return source.MutateType<TOutput>();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
-        //    }
-
-        //    return source.To<TOutput>();
-        //}
-        //public static TOutput IfDefault<TInput, TOutput>(this TInput? source,
-        //    Func<TOutput> factory)
-        //{
-        //    if (source.IsDefault())
-        //        return factory();
-
-        //    try
-        //    {
-        //        return source.MutateType<TOutput>();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        typeof(ObjectExtensions).PrintExceptionAsLog(ex, DebugArguments.IsAdditive);
-        //    }
-
-        //    return source.To<TOutput>();
-        //}
-
-        //public static TOutput? IfNotDefault<TInput, TOutput>(
-        //    this TInput? source,
-        //    TOutput output,
-        //    TOutput? ifDefault = default)
-        //{
-        //    if (source.IsNotDefault())
-        //        return output;
-
-        //    return ifDefault;
-        //}
-
-        //public static T? IfNotDefault<T>(
-        //    this T? source,
-        //    Action<T> action)
-        //{
-        //    CC.Guard.IsNotNull(action, nameof(action));
-
-        //    if (source.IsNotDefault())
-        //        action(source);
-
-        //    return source;
-        //}
-
-        //public static T? IfNotDefault<T>(
-        //    this T? source,
-        //    Func<T, T> action)
-        //{
-        //    CC.Guard.IsNotNull(action, nameof(action));
-
-        //    if (source.IsNotDefault())
-        //        return action(source);
-
-        //    return source;
-        //}
-
-        //public static TOutput IfNotDefault<TInput, TOutput>(
-        //    this TInput source,
-        //    Func<TInput, TOutput> action,
-        //    Func<TInput, TOutput> ifDefaultAction)
-        //{
-        //    CC.Guard.IsNotNull(action, nameof(action));
-        //    CC.Guard.IsNotNull(ifDefaultAction, nameof(ifDefaultAction));
-
-        //    if (source.IsNotDefault())
-        //        return action(source);
-
-        //    return ifDefaultAction(source);
-        //}
 
         public static bool TrySwitch<T>(this T? source,
             params (Predicate<T?> predicate, Action<T> action)[] conditions)
@@ -234,16 +152,36 @@ namespace CCEnvs
             }
         }
 
+        [Obsolete("Use As instead")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> As<T>(this object? obj)
+        public static Maybe<T> AsObsolete<T>(this object? obj)
         {
             return obj.Is<T>(out var typedObj) ? typedObj : default!;
         }
 
+        [Obsolete("Use As instead")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> As<TObj, TValue>(this TObj? obj)
+        public static Maybe<TValue> AsObsolete<TObj, TValue>(this TObj? obj)
         {
             return obj.Is<TValue>(out var typedObj) ? typedObj : default!;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T? As<T>(this object? obj)
+        {
+            if (!obj.Is<T>(out var casted))
+                return default;
+
+            return casted;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TValue? As<TObj, TValue>(this TObj? obj)
+        {
+            if (!obj.Is<TValue>(out var casted))
+                return default;
+
+            return casted;
         }
 
         public static bool Let<T>(this T? source, [NotNullWhen(true)] out T? local)
@@ -277,13 +215,5 @@ namespace CCEnvs
         {
             return obj.MutateType<T>();
         }
-    }
-}
-
-namespace CCEnvs.Conversations
-{
-    public static class ObjectExtensions
-    {
-
     }
 }

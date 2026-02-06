@@ -65,7 +65,7 @@ namespace CCEnvs.Conversations
 
         private static Maybe<object> ConvertByInterface(object input)
         {
-            return input.As<IMutable>()
+            return input.AsObsolete<IMutable>()
                         .Map(x => x.MutateType())
                         .GetValue();
         }

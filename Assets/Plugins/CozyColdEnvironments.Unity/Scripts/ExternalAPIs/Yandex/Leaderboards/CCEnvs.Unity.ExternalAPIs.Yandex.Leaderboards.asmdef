@@ -1,0 +1,28 @@
+{
+    "name": "CCEnvs.Unity.ExternalAPIs.Yandex.Leaderboards",
+    "rootNamespace": "CCEnvs.Unity.ExternalAPIs.Yandex.Leaderboards",
+    "references": [
+        "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
+        "GUID:1898880136cb79448802a5416e8c3523",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:eec0964c48f6f4e40bc3ec2257ccf8c5",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:5c01796d064528144a599661eaab93a6",
+        "GUID:dc47925d1a5fa2946bdd37746b2b5d48",
+        "GUID:77221876cc6b8244180b96e320b1bcd4",
+        "GUID:f02da9ca564ed54499f6f43d8249d415",
+        "GUID:2ae4bb17f29fc9e4db4c705a8e1efc8a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "Leaderboards_yg"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

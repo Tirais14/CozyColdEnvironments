@@ -227,7 +227,7 @@ namespace CCEnvs.Pools
         private void OnPoolableReturn(IPoolable poolable)
         {
             if (poolable.PoolHandle.IsSome)
-                poolable.PoolHandle.Raw.As<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
+                poolable.PoolHandle.Raw.AsObsolete<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
 
             poolable.PoolHandle = Maybe<IDisposable>.None;
 

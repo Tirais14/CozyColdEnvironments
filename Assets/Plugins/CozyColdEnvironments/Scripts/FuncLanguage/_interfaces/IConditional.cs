@@ -78,7 +78,7 @@ namespace CCEnvs.FuncLanguage
 
         bool IConditional.ItIs(object? value)
         {
-            return Has(value.As<T>().GetValue());
+            return Has(value.AsObsolete<T>().GetValue());
         }
         bool IConditional.ItIs(Predicate<object> predicate)
         {

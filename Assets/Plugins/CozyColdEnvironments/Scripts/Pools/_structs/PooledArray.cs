@@ -1,5 +1,7 @@
 using CCEnvs.Collections;
+using R3;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -9,7 +11,7 @@ namespace CCEnvs.Pools
 {
     public struct PooledArray<T> : IList<T>, IReadOnlyList<T>, IDisposable
     {
-        private readonly IDisposable poolReturnHandle;
+        private readonly IDisposable handle;
 
         private readonly T[] array;
 
@@ -42,7 +44,7 @@ namespace CCEnvs.Pools
             :
             this()
         {
-            poolReturnHandle = pooled;
+            handle = pooled;
 
             value = pooled.Value.GetArraySegment(count, offset);
             array = pooled.Value;
@@ -52,10 +54,25 @@ namespace CCEnvs.Pools
             :
             this()
         {
-            this.poolReturnHandle = poolReturnHandle;
+            this.handle = poolReturnHandle;
 
             value = array.GetArraySegment(count, offset);
             this.array = array;
+        }
+
+        public PooledArray(int count)
+        {
+            disposed = false;
+
+            array = ArrayPool<T>.Shared.Rent(count);
+
+            handle = Disposable.Create(array,
+                static array =>
+                {
+                    ArrayPool<T>.Shared.Return(array);
+                });
+
+            value = array.GetArraySegment(count);
         }
 
         private bool disposed;
@@ -64,7 +81,7 @@ namespace CCEnvs.Pools
             if (disposed)
                 return;
 
-            poolReturnHandle.Dispose();
+            handle.Dispose();
 
             disposed = true;
         }

@@ -6,10 +6,15 @@ namespace CCEnvs
 {
     public static class LazyLight
     {
-        public static LazyLight<T> Create<T>()
+        public static LazyLight<T> CreateByNew<T>()
             where T : new()
         {
             return new LazyLight<T>(() => new T()); 
+        }
+
+        public static LazyLight<T> Create<T>(Func<T> factory)
+        {
+            return new LazyLight<T>(factory);
         }
     }
 

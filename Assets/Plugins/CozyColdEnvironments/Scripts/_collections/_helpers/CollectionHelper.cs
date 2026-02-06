@@ -96,9 +96,10 @@ namespace CCEnvs.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeEachAndClear(this ICollection<IDisposable> source)
+        public static void DisposeEachAndClear(this ICollection<IDisposable>? source)
         {
-            CC.Guard.IsNotNullSource(source);
+            if (source.IsNull())
+                return;
 
             source.DisposeEach();
             source.Clear();

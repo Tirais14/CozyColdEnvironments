@@ -153,12 +153,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
-            {
-                if (@default.IsNull())
-                    throw new ValueIsNoneException();
-
                 return @default;
-            }
 
             return input.GetValueUnsafe();
         }
@@ -167,14 +162,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<TValue>
         {
             if (input.IsNone)
-            {
-                var t = factory();
-
-                if (t.IsNull())
-                    throw new ValueIsNoneException();
-
-                return t;
-            }
+                return factory();
 
             return input.GetValueUnsafe();
         }
@@ -221,7 +209,7 @@ namespace CCEnvs.FuncLanguage
             if (input.IsNone)
                 return default!;
 
-            return input.GetValue().As<TOutValue>();
+            return input.GetValue().AsObsolete<TOutValue>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -229,7 +217,7 @@ namespace CCEnvs.FuncLanguage
             where T : struct, IConditional<L>
         {
             L? left = input.GetValue();
-            R? right = left.As<R>().Raw;
+            R? right = left.AsObsolete<R>().Raw;
 
             return (left, right);
         }

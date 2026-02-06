@@ -322,7 +322,7 @@ namespace CCEnvs.Patterns.Commands
 
                 if (cmd.IsValid)
                 {
-                    cmd.As<IPoolable>()
+                    cmd.AsObsolete<IPoolable>()
                         .Map(poolable => poolable.PoolHandle.Raw)
                         .IfSome(handle => handle.Dispose());
                 }
