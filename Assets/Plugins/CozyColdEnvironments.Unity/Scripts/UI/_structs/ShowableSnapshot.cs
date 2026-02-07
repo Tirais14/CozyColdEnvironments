@@ -1,7 +1,6 @@
 #nullable enable
 using CCEnvs.Snapshots;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Unity.UI
 {
@@ -17,24 +16,17 @@ namespace CCEnvs.Unity.UI
             IsShown = target.IsShown;
         }
 
-        public override bool TryRestore(IShowable? target, [NotNullWhen(true)] out IShowable? restored)
-        {
-            if (!CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
-
-            if (IsShown)
-                target.Show();
-
-            restored = target;
-            return true;
-        }
-
         public override string ToString()
         {
             return $"{nameof(IsShown)} \"{IsShown}\"";
+        }
+
+        protected override void OnRestore(ref IShowable target)
+        {
+            if (IsShown)
+                target.Show();
+            else
+                target.Hide();
         }
     }
 }

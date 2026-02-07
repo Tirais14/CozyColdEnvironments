@@ -1,6 +1,8 @@
 #if Localization_yg
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.Patterns.Commands;
+using Cysharp.Threading.Tasks;
 using R3;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -18,6 +20,10 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         private readonly CancellationTokenSource cancellationTokenSource = new();
 
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
+
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
         private Observable<string>? selectedLocaleObs;
 
         public string SelectedLocale => YG2.lang;
@@ -28,6 +34,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexLocalizationAPI));
 
             BindToLocaleChangedEvent();
+            BindLanguageSwitched();
 
             Instance = this;
         }
@@ -47,6 +54,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             cancellationTokenSource.Dispose();
 
             LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+            YG2.onSwitchLang -= OnLanguageSwitched;
 
             disposed = true;
         }
@@ -74,9 +82,35 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             SetLocale(codeMatch.Groups[1].Value);
         }
 
+        private void OnLanguageSwitched(string code)
+        {
+            Command.Builder.SetName(nameof(OnLanguageSwitched), this)
+                .SetSingle()
+                .WithState((@this: this, code))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await LocalizationSettings.InitializationOperation.Task;
+
+                    var locale = LocalizationSettings.AvailableLocales.GetLocale(new LocaleIdentifier(args.code));
+
+                    LocalizationSettings.SelectedLocale = locale;
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(disposeCancellationTokenSource.Token)
+                .ScheduleBy(commandScheduler);
+        }
+
         private void BindToLocaleChangedEvent()
         {
             LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        }
+
+        private void BindLanguageSwitched()
+        {
+            YG2.onSwitchLang += OnLanguageSwitched;
         }
     }
 }

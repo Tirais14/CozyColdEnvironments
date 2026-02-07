@@ -1,10 +1,12 @@
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
+    [Serializable]
     public class RigidBodySnapshot : ComponentSnapshot<Rigidbody>
     {
         [JsonIgnore]
@@ -34,21 +36,15 @@ namespace CCEnvs.Unity.Snapshots
             AngularVelocity = new Vector3Snapshot(target.angularVelocity);
         }
 
-        public override bool TryRestore(
-            Rigidbody? target,
-            [NotNullWhen(true)] out Rigidbody? restored)
+        protected override void OnRestore(ref Rigidbody target)
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
+            base.OnRestore(ref target);
 
-            if (LinearVelocity is not null && LinearVelocity.TryRestore(default, out var lVelocuty))
-                target!.linearVelocity = lVelocuty;
+            if (linearVelocity is not null && linearVelocity.TryRestore(default, out var lVelocity))
+                target.linearVelocity = lVelocity;
 
-            if (AngularVelocity is not null && AngularVelocity.TryRestore(default, out var aVelocity))
-                target!.angularVelocity = aVelocity;
-
-            restored = target!;
-            return true;
+            if (angularVelocity is not null && angularVelocity.TryRestore(default, out var aVelocity))
+                target.angularVelocity = aVelocity;
         }
     }
 }

@@ -26,16 +26,11 @@ namespace CCEnvs.Unity.Snapshots
             value = target.value;
         }
 
-
-        public override bool TryRestore(TMP_Dropdown? target, [NotNullWhen(true)] out TMP_Dropdown? restored)
+        protected override void OnRestore(ref TMP_Dropdown target)
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
+            base.OnRestore(ref target);
 
-            target!.value = Value;
-
-            restored = target;
-            return true;
+            target.value = value;
         }
     }
 }

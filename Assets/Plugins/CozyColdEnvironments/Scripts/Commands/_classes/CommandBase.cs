@@ -19,6 +19,7 @@ namespace CCEnvs.Patterns.Commands
         private readonly ReactiveProperty<CommandStatus> status = new();
 
         private readonly List<CancellationTokenSource> cancellationTokenSources = new(2);
+
         private readonly List<CancellationTokenRegistration> cancellationTokenRegistrations = new(4);
 
         private bool cancellation;
@@ -26,14 +27,21 @@ namespace CCEnvs.Patterns.Commands
         public string Name { get; } = string.Empty;
 
         public virtual bool IsReadyToExecute => !IsRunning && !IsDone;
+
         public virtual bool IsCancelled => status.Value == CommandStatus.Canceled;
+
         public virtual bool IsFaulted => status.Value == CommandStatus.Faulted;
+
         public virtual bool IsCompleted => status.Value == CommandStatus.Completed;
+
         public virtual bool IsRunning => isExecuted && !IsDone;
 
         public bool IsDone => IsCompleted || IsCancelled || IsFaulted;
+
         public bool IsSingle { get; }
+
         public bool IsResetable { get; }
+
         public bool IsValid => !disposed;
 
         public int DelayFrameCount { get; set; }

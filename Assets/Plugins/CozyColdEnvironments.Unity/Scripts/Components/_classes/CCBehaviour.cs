@@ -44,6 +44,7 @@ namespace CCEnvs.Unity.Components
         /// Is true before update and after start
         /// </summary>
         public bool StartPassed { get; private set; }
+
         public bool IsDestroyed { get; private set; }
 
         protected virtual void Awake()
@@ -62,7 +63,12 @@ namespace CCEnvs.Unity.Components
             UniTask.Create(this,
                 static async @this =>
                 {
-                    await UniTask.Yield(PlayerLoopTiming.PreUpdate, @this.destroyCancellationToken);
+                    @this.destroyCancellationToken.ThrowIfCancellationRequested();
+
+                    await UniTask.Yield(
+                        PlayerLoopTiming.PreUpdate,
+                        @this.destroyCancellationToken
+                        );
 
                     @this.StartPassed = true;
                 })
@@ -83,7 +89,8 @@ namespace CCEnvs.Unity.Components
             IsDestroyed = true;
         }
 
-        public IDisposable RegisterDisposable(IDisposable disposable)
+        public T RegisterDisposable<T>(T disposable)
+            where T : IDisposable
         {
             CC.Guard.IsNotNull(disposable, nameof(disposable));
 
@@ -98,13 +105,9 @@ namespace CCEnvs.Unity.Components
         /// Disposes when <see cref="CCBehaviour"/> destroyed
         /// </summary>
         /// <returns>self</returns>
-        public static IDisposable RegisterDisposableTo(this IDisposable? source, CCBehaviour beh)
+        public static T AddDisposableTo<T>(this T source, CCBehaviour beh)
+            where T : IDisposable
         {
-            if (source.IsNull())
-                return Disposable.Empty;
-
-            CC.Guard.IsNotNull(beh, nameof(beh));
-
             return beh.RegisterDisposable(source);
         }
     }

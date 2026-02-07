@@ -95,7 +95,7 @@ namespace CCEnvs.Unity.UI
                     @this.modelDisposables.DisposeEachAndClear();
                     @this.Init();
                 })
-                .RegisterDisposableTo(this);
+                .AddDisposableTo(this);
         }
     }
 

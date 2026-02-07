@@ -11,6 +11,8 @@ namespace CCEnvs.Pools
 
         bool IsValid { get; }
 
+        //bool IsReady { get; }
+
         void OnDespawned();
 
         void OnSpawned();

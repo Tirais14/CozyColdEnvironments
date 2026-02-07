@@ -87,6 +87,7 @@ namespace CCEnvs
                 return true;
 
             Type type = value.GetType();
+
             if (type.IsClass)
                 return false;
 

@@ -9,6 +9,8 @@ namespace CCEnvs.Unity.ExternalAPIs
     {
         bool IsAuthorized { get; }
 
+        IUserProfile? Profile { get; }
+
         void Authorize();
 
         Observable<bool> ObserveIsAuthorised();

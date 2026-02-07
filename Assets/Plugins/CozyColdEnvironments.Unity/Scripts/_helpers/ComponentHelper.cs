@@ -8,6 +8,7 @@ using System.Linq;
 using CCEnvs.FuncLanguage;
 using UnityEditor;
 using CCEnvs.Collections;
+using Cysharp.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -131,6 +132,20 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNullSource(source);
             return source.transform.MatchHierarchyPath(hierarchyPath);
+        }
+
+        public static async UniTask WaitUntilStartPassed(this MonoBehaviour source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            await UniTask.WaitUntil(source,
+                static source =>
+                {
+                    return source.didStart;
+                },
+                timing: PlayerLoopTiming.EarlyUpdate,
+                cancellationToken: source.destroyCancellationToken
+                );
         }
     }
 }

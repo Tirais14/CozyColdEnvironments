@@ -194,6 +194,9 @@ namespace CCEnvs.Linq
             if (source is ICollection<T> collection)
                 count = collection.Count;
 
+            if (source is ICollection collectionUntyped)
+                count = collectionUntyped.Count;
+
             return count != -1;
         }
 

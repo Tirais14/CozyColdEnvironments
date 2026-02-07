@@ -21,39 +21,28 @@ namespace CCEnvs.Snapshots
             Pairs = target.ToHashSet();
         }
 
-        public override bool CanRestore([NotNull] IDictionary<TKey, TValue>? target)
+        public override bool CanRestore(IDictionary<TKey, TValue>? target)
         {
             return target.IsNotNullOrEmpty() && Pairs.IsNotNullOrEmpty();
         }
 
-        public override bool TryRestore(
-            IDictionary<TKey, TValue>? target, 
-            [NotNullWhen(true)] out IDictionary<TKey, TValue>? restored
-            )
+        protected override IDictionary<TKey, TValue>? CreateValue()
         {
-            if (!CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
+            return new Dictionary<TKey, TValue>(Pairs?.Count ?? 4);
+        }
 
-            if (target is null)
-                restored = new Dictionary<TKey, TValue>(Pairs!.Count);
-            else
-                restored = target;
-
+        protected override void OnRestore(ref IDictionary<TKey, TValue> target)
+        {
             foreach (var pair in Pairs!)
             {
                 if (pair.Key is null)
                     continue;
 
-                if (restored.ContainsKey(pair.Key))
-                    restored[pair.Key] = pair.Value;
+                if (target.ContainsKey(pair.Key))
+                    target[pair.Key] = pair.Value;
                 else
-                    restored.Add(pair.Key, pair.Value);
+                    target.Add(pair.Key, pair.Value);
             }
-            
-            return true;
         }
     }
 }

@@ -241,7 +241,7 @@ namespace CCEnvs.Unity.UI
         {
             ValidateInit();
 
-            if (IsEnabled)
+            if (!IsEnabled)
                 return IsShown;
 
             if (IsShown && !PreventHide)

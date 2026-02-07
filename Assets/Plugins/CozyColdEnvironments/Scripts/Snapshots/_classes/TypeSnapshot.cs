@@ -2,7 +2,6 @@ using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace CCEnvs.Snapshots
@@ -10,17 +9,18 @@ namespace CCEnvs.Snapshots
     [Serializable]
     public sealed class TypeSnapshot : Snapshot<Type>
     {
-        [JsonProperty]
 #if UNITY_2017_1_OR_NEWER
-        [field: UnityEngine.SerializeField]
-#endif
-        public string? Name { get; private set; }
+        [field: UnityEngine.Space(8f)]
+        [field: UnityEngine.Header(nameof(TypeSnapshot))]
 
-        [JsonProperty]
+        [field: UnityEngine.SerializeField]
+#endif
+        public string? Name { get; set; }
+
 #if UNITY_2017_1_OR_NEWER
         [field: UnityEngine.SerializeField]
 #endif
-        public string? AssemblyName { get; private set; }
+        public string? AssemblyName { get; set; }
 
         public TypeSnapshot()
         {
@@ -36,19 +36,15 @@ namespace CCEnvs.Snapshots
             AssemblyName = target.AssemblyQualifiedName;
         }
 
-        /// <returns><paramref name="target"/></returns>
-        public override bool TryRestore(Type? target, [NotNullWhen(true)] out Type? restored)
-        {
-            if (CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
+        public override bool CanRestore(Type? target) => false;
 
-            restored = Type.GetType($"{Name}, {AssemblyName}");
-            return true;
+        protected override Type? CreateValue()
+        {
+            return Type.GetType($"{Name}, {AssemblyName}", throwOnError: false);
         }
 
-        public override bool CanRestore(Type? target) => true;
+        protected override void OnRestore(ref Type target)
+        {
+        }
     }
 }

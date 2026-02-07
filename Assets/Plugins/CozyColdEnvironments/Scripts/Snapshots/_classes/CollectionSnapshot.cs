@@ -25,21 +25,10 @@ namespace CCEnvs.Snapshots
                 });
         }
 
-        public override bool TryRestore(
-            TCollection? target,
-            [NotNullWhen(true)] out TCollection? restored)
+        protected override void OnRestore(ref TCollection target)
         {
-            if (!CanRestore(target))
-            {
-                restored = default;
-                return false;
-            }
-
             foreach (var item in Items)
                 target.Add(item);
-
-            restored = target;
-            return true;
         }
     }
 }

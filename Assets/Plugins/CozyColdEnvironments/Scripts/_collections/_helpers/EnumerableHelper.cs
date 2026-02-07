@@ -4,6 +4,7 @@ using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -125,10 +126,13 @@ namespace CCEnvs.Collections
         {
             CC.Guard.IsNotNullSource(source);
 
-            if (source is not ICollection<T> collection || collection.IsReadOnly)
-                return false;
+            if (source is ICollection<T> collection && !collection.IsReadOnly)
+                return true;
 
-            return true;
+            if (source is IDictionary dic && !dic.IsReadOnly)
+                return true;
+
+            return false;
         }
     }
 }

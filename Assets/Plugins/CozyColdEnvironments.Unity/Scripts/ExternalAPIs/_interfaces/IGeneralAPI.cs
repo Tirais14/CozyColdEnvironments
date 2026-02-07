@@ -10,10 +10,15 @@ namespace CCEnvs.Unity.ExternalAPIs
     public interface IGeneralAPI : IDisposable
     {
         bool IsInitialized { get; }
+
         bool IsGameReady { get; }
+
         bool IsGameplayMode { get; }
+
         bool IsGamePaused { get; }
+
         bool IsGameWindowShown { get; }
+
         bool IsGameWindowFocused { get; }
 
         int GameplaySession { get; }

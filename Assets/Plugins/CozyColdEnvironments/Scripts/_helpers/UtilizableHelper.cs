@@ -30,22 +30,9 @@ namespace CCEnvs
             if (source.IsNullOrEmpty())
                 return;
 
-            if (source.IsMutableCollection())
-            {
-                foreach (var item in source.Cast<IUtilizable>().EnumerableToArrayPooled())
-                {
-                    try
-                    {
-                        item.Utilize();
-                    }
-                    catch (Exception ex)
-                    {
-                        item.PrintException(ex);
-                    }
-                }
-            }
+            using var utilizables = source.Cast<IUtilizable>().EnumerableToArrayPooled();
 
-            foreach (var item in source)
+            foreach (var item in utilizables.GetSpan())
             {
                 try
                 {
@@ -56,6 +43,8 @@ namespace CCEnvs
                     item.PrintException(ex);
                 }
             }
+
+            return;
         }
 
         public static void UtilizeEachAndClear<T>(this ICollection<T>? source)

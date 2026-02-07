@@ -1,5 +1,3 @@
-using CCEnvs.FuncLanguage;
-
 #nullable enable
 namespace CCEnvs.Unity.ExternalAPIs
 {
@@ -7,30 +5,33 @@ namespace CCEnvs.Unity.ExternalAPIs
     {
         public IGeneralAPI GeneralAPI { get; }
 
-        public Maybe<IPlayerAPI> PlayerAPI { get; }
+        public IPlayerAPI? PlayerAPI { get; }
 
-        public Maybe<IAdvertisementAPI> AdvertisementAPI { get; }
+        public IAdvertisementAPI? AdvertisementAPI { get; }
 
-        public Maybe<ISavingAPI> SavingAPI { get; }
+        public ISavingAPI? SavingAPI { get; }
 
-        public Maybe<ILocalizationAPI> LocalizationAPI { get; }
+        public ILocalizationAPI? LocalizationAPI { get; }
+
+        public ILeaderboardAPI? LeaderboardAPI { get; }
 
         public ExternalAPIProvider(
             IGeneralAPI generalAPI,
             IPlayerAPI? playerAPI = null,
             IAdvertisementAPI? advertisementAPI = null,
             ISavingAPI? savingAPI = null,
-            ILocalizationAPI? localizationAPI = null
-            )
+            ILocalizationAPI? localizationAPI = null,
+            ILeaderboardAPI? leaderboardAPI = null)
         {
             CC.Guard.IsNotNull(generalAPI, nameof(generalAPI));
 
             GeneralAPI = generalAPI;
 
-            PlayerAPI = playerAPI.Maybe();
-            AdvertisementAPI = advertisementAPI.Maybe();
-            SavingAPI = savingAPI.Maybe();
-            LocalizationAPI = localizationAPI.Maybe();
+            PlayerAPI = playerAPI;
+            AdvertisementAPI = advertisementAPI;
+            SavingAPI = savingAPI;
+            LocalizationAPI = localizationAPI;
+            LeaderboardAPI = leaderboardAPI;
         }
     }
 }

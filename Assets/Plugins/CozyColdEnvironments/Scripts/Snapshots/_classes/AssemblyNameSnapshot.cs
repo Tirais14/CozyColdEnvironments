@@ -1,7 +1,5 @@
-using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 #nullable enable
@@ -28,22 +26,14 @@ namespace CCEnvs.Snapshots
             Name = target.Name;
         }
 
-        /// <returns><paramref name="target"/></returns>
-        public override bool TryRestore(
-            AssemblyName? target,
-            [NotNullWhen(true)] out AssemblyName? restored)
+        protected override AssemblyName? CreateValue()
         {
-            if (!CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
+            return new AssemblyName();
+        }
 
-            target ??= new AssemblyName();
+        protected override void OnRestore(ref AssemblyName target)
+        {
             target.Name = Name;
-
-            restored = target;
-            return true;
         }
     }
 }

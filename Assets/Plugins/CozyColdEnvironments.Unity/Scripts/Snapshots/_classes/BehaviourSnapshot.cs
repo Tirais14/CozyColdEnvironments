@@ -39,5 +39,12 @@ namespace CCEnvs.Unity.Snapshots
             restored = target;
             return true;
         }
+
+        protected override void OnRestore(ref T target)
+        {
+            base.OnRestore(ref target);
+
+            target.enabled = Enabled;
+        }
     }
 }

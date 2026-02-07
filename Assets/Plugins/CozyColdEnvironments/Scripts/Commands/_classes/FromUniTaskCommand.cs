@@ -1,4 +1,5 @@
 #if UNITASK_PLUGIN
+using CCEnvs.Diagnostics;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,15 +9,24 @@ namespace CCEnvs.Patterns.Commands
 {
     public sealed class FromUniTaskCommand : PoolableCommandAsync
     {
-        public UniTask Task { get; set; }
+        private UniTask task;
 
-        public override bool IsCancelled => Task.Status == UniTaskStatus.Canceled;
-        public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;
-        public override bool IsFaulted => Task.Status == UniTaskStatus.Faulted;
+        public UniTask Task {
+            get => task;
+            set
+            {
+                task = value;
+                //task.Forget(static ex => CCDebug.Instance.PrintException(ex));
+            }
+        }
 
-        protected override ValueTask OnExecuteAsync(CancellationToken cancellationToken)
+        //public override bool IsCancelled => Task.Status == UniTaskStatus.Canceled;
+        //public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;
+        //public override bool IsFaulted => Task.Status == UniTaskStatus.Faulted;
+
+        protected override async ValueTask OnExecuteAsync(CancellationToken cancellationToken)
         {
-            return default;
+            await task;
         }
 
         protected override void OnReset()
@@ -28,7 +38,16 @@ namespace CCEnvs.Patterns.Commands
 
     public class FromUniTaskCommand<T> : PoolableCommandAsync
     {
-        public UniTask<T> Task { get; set; }
+        private UniTask<T> task;
+
+        public UniTask<T> Task {
+            get => task;
+            set
+            {
+                task = value;
+                task.Forget(static ex => CCDebug.Instance.PrintException(ex));
+            }
+        }
 
         public override bool IsCancelled => Task.Status == UniTaskStatus.Canceled;
         public override bool IsCompleted => Task.Status == UniTaskStatus.Succeeded;

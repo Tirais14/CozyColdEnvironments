@@ -1,7 +1,6 @@
 using CCEnvs.Json.Converters;
 using Newtonsoft.Json;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -49,12 +48,9 @@ namespace CCEnvs.Unity.Snapshots
             Rotation = new QuaternionSnapshot(target.rotation);
         }
 
-        public override bool TryRestore(
-            Transform? target,
-            [NotNullWhen(true)] out Transform? restored)
+        protected override void OnRestore(ref Transform target)
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
+            base.OnRestore(ref target);
 
             if (Position is not null && Position.TryRestore(default, out var pos))
                 target!.position = pos;
@@ -64,9 +60,6 @@ namespace CCEnvs.Unity.Snapshots
 
             if (Rotation is not null && Rotation.TryRestore(default, out var rot))
                 target!.rotation = rot;
-
-            restored = target!;
-            return true;
         }
     }
 }

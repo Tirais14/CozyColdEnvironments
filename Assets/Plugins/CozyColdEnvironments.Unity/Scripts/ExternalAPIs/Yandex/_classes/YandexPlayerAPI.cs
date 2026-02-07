@@ -1,7 +1,13 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Async;
+using CCEnvs.Unity.Profiles;
+using Cysharp.Threading.Tasks;
+using NUnit.Framework;
 using R3;
+using System;
+using System.Collections.Generic;
 using YG;
 
 #nullable enable
@@ -12,11 +18,16 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         [field: OnInstallResetable]
         public static YandexPlayerAPI? Instance { get; private set; }
 
+
+        private readonly List<IDisposable> disposables = new();
+
 #if Authorization_yg
         private Maybe<ImageLoadYG> imageLoadCmp;
 
         private Observable<bool>? isAuthorizedObservable;
 #endif
+
+        private IUserProfile? profile;
 
         public bool IsAuthorized {
             get
@@ -25,6 +36,34 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 return YG2.player.auth;
 #else
                 return false;
+#endif
+            }
+        }
+
+        public IUserProfile? Profile {
+            get
+            {
+#if Authorization_yg
+                if (IsAuthorized)
+                {
+                    if (profile.IsNotNull())
+                        return profile;
+
+                    profile = new UserProfile(YG2.player.name, YG2.player.id);
+
+                    YandexPluginHelper.LoadImageAsync(YG2.player.photo).
+                        ContinueWith((img) =>
+                        {
+                            profile.Icon = img;
+                        })
+                        .ForgetByPrintException();
+
+                    return profile;
+                }
+
+                return null;
+#else
+                return null;
 #endif
             }
         }

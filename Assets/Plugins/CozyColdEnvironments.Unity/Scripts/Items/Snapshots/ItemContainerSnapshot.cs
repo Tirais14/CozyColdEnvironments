@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Items.Snapshots
@@ -9,11 +9,39 @@ namespace CCEnvs.Unity.Items.Snapshots
     [Serializable]
     public class ItemContainerSnapshot : Snapshot<ItemContainer>
     {
+        [SerializeField]
+        protected int itemCount;
+
+        [SerializeField]
+        protected int capacity;
+
+        [SerializeField]
+        protected bool isReadOnlyContainer;
+
+        [SerializeField]
+        protected bool unlockCapacity;
+
         public Maybe<IItem> Item { get; set; }
-        public int ItemCount { get; set; }
-        public int Capacity { get; set; }
-        public bool IsReadOnlyContainer { get; set; }
-        public bool UnlockCapacity { get; set; }
+
+        public int ItemCount {
+            get => itemCount;
+            set => itemCount = value;
+        }
+
+        public int Capacity {
+            get => capacity;
+            set => capacity = value;
+        }
+
+        public bool IsReadOnlyContainer {
+            get => isReadOnlyContainer;
+            set => isReadOnlyContainer = value;
+        }
+
+        public bool UnlockCapacity {
+            get => unlockCapacity;
+            set => unlockCapacity = value;  
+        }
 
         public ItemContainerSnapshot()
         {
@@ -42,29 +70,23 @@ namespace CCEnvs.Unity.Items.Snapshots
         {
         }
 
-        public override bool TryRestore(
-            ItemContainer? target, 
-            [NotNullWhen(true)] out ItemContainer? restored)
+        public override bool CanRestore(ItemContainer? target) => false;
+
+
+        protected override ItemContainer? CreateValue()
         {
-            if (!CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
-
-           target = new ItemContainer(
+            return new ItemContainer(
                 item: Item.Raw,
-                count: ItemCount,
-                isReadOnlyContainer: IsReadOnlyContainer)
+                count: itemCount,
+                isReadOnlyContainer: isReadOnlyContainer)
             {
-                UnlockCapacity = UnlockCapacity,
-                Capacity = Capacity,
+                UnlockCapacity = unlockCapacity,
+                Capacity = Capacity
             };
-
-            restored = target;
-            return true;
         }
 
-        public override bool CanRestore(ItemContainer? target) => true;
+        protected override void OnRestore(ref ItemContainer target)
+        {
+        }
     }
 }

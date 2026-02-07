@@ -14,7 +14,9 @@ namespace CCEnvs.Caching
         IEnumerable<TKey> Keys { get; }
         IEnumerable<TValue> Values { get; }
 
-        Maybe<TValue> Get(TKey key);
+        TValue? Get(TKey key);
+
+        bool TryGet(TKey key, [NotNullWhen(true)] out TValue? result);
 
         TValue GetOrCreate(TKey key, Func<ICacheEntry<TValue>, TValue> factory);
 

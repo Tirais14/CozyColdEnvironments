@@ -1,4 +1,5 @@
 using CCEnvs.Caching;
+using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using R3;
@@ -45,8 +46,8 @@ namespace CCEnvs.Unity.Components
                 {
                     UnregisterAudioSource(audioSourceEntry);
                 })
-                .RegisterDisposableTo(entry)
-                .RegisterDisposableTo(self);
+                .AddDisposableTo(entry)
+                .AddDisposableTo(self);
         }
 
         public static bool UnregisterAudioSource(AudioSourceManagerEntry entry)
@@ -54,7 +55,7 @@ namespace CCEnvs.Unity.Components
             CC.Guard.IsNotNull(entry, nameof(entry));
             CC.Guard.IsNotNull(entry.EntryTag, nameof(entry.EntryTag));
 
-            if (!self.items.Get(entry.EntryTag).TryGetValue(out var item))
+            if (!self.items.Get(entry.EntryTag).Maybe().TryGetValue(out var item))
                 return false;
 
             return item.Entries.Remove(entry);
@@ -68,6 +69,7 @@ namespace CCEnvs.Unity.Components
             var entries = tag.IsNullOrWhiteSpace() switch
             {
                 false => self.items.Get(tag)
+                    .Maybe()
                     .Map(static item => (IEnumerable<AudioSourceManagerEntry>)item.Entries)
                     .GetValue(static () => Array.Empty<AudioSourceManagerEntry>()),
 
@@ -111,7 +113,7 @@ namespace CCEnvs.Unity.Components
         {
             NormalizeTag(tag, out tag);
 
-            if (!self.items.Get(tag).TryGetValue(out var item))
+            if (!self.items.Get(tag).Maybe().TryGetValue(out var item))
                 return 1f;
 
             return item.VolumeMultiplier;

@@ -1,8 +1,6 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -14,12 +12,13 @@ namespace CCEnvs.Unity.Snapshots
         [Header(nameof(Material))]
         [Space(8)]
 
+        [JsonIgnore]
         [SerializeField]
         protected Color m_Color;
 
         public Color Color {
             get => m_Color;
-            protected set => m_Color = value;
+            set => m_Color = value;
         }
 
         public MaterialSnapshot()
@@ -33,24 +32,9 @@ namespace CCEnvs.Unity.Snapshots
             Color = target.color;
         }
 
-        [JsonConstructor]
-        public MaterialSnapshot(Color color)
+        protected override void OnRestore(ref Material target)
         {
-            Color = color;
-        }
-
-        public override bool TryRestore(Material? target, [NotNullWhen(true)] out Material? restored)
-        {
-            if (!CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
-
             target.color = Color;
-
-            restored = target;
-            return true;
         }
     }
 }

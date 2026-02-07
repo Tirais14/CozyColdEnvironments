@@ -103,7 +103,7 @@ namespace CCEnvs.Unity.Collections
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (item, @this) => @this.OnComponentAdd(item))
-                .RegisterDisposableTo(this);
+                .AddDisposableTo(this);
         }
 
         private void BindComponentRemove()
@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.Collections
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (item, @this) => @this.OnComponentRemove(item))
-                .RegisterDisposableTo(this);
+                .AddDisposableTo(this);
         }
 
         private void BindComponentsClear()
@@ -122,7 +122,7 @@ namespace CCEnvs.Unity.Collections
                 static (_, @this) => !@this.isInternalClear)
                 .Subscribe(this,
                 static (_, @this) => @this.OnComponentsClear())
-                .RegisterDisposableTo(this);
+                .AddDisposableTo(this);
         }
 
         private IEnumerable<T> GetChilds()

@@ -103,7 +103,7 @@ namespace CCEnvs.Unity.UI
                     {
                         input.button.onClick.RemoveListener(input.onClick);
                     })
-                    .RegisterDisposableTo(this);
+                    .AddDisposableTo(this);
 
                 button.onClick.AddListener(onClick);
             }

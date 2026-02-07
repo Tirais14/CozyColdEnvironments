@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+#nullable enable
 namespace CCEnvs
 {
     public static class DisposableHelper
@@ -14,24 +15,9 @@ namespace CCEnvs
             if (disposables.IsNull())
                 return;
 
-            if (disposables.IsMutableCollection())
-            {
-                using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
+            using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
 
-                foreach (var item in disposablesPooled.Value)
-                {
-                    try
-                    {
-                        item.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        item.PrintException(ex);
-                    }
-                }
-            }
-
-            foreach (var item in disposables)
+            foreach (var item in disposablesPooled.GetSpan())
             {
                 try
                 {

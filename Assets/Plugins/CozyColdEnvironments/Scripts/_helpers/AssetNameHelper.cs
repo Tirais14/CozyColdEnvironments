@@ -1,3 +1,5 @@
+using CCEnvs.Caching;
+using Humanizer;
 using System;
 using System.Text.RegularExpressions;
 
@@ -27,6 +29,12 @@ namespace Game
         }
 
 #if UNITY_2017_1_OR_NEWER
+
+        private readonly static Cache<string, string> decloniszedNameCache = new()
+        {
+            ExpirationScanFrequency = 30.Seconds(),
+        };
+
         /// <summary>
         /// Deletes (Clone) string from instantiated <see cref="UnityEngine.GameObject"/>
         /// </summary>
@@ -37,7 +45,17 @@ namespace Game
             if (assetName is null)
                 throw new ArgumentNullException(assetName);
 
-            return Regex.Match(assetName, @"^(\w+)").Value ?? string.Empty;
+            if (decloniszedNameCache.TryGet(assetName, out var declonizedAssetName))
+                return declonizedAssetName;
+
+            var match = Regex.Match(assetName, @"^(\w+)");
+
+            declonizedAssetName = match.Value ?? assetName;
+
+            if (decloniszedNameCache.TryAdd(assetName, declonizedAssetName, out var entry))
+                entry.ExpirationTimeRelativeToNow = 10.Minutes();
+
+            return declonizedAssetName;
         }
 #endif
     }

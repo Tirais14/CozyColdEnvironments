@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -19,17 +18,11 @@ namespace CCEnvs.Unity.Snapshots
             Volume = target.volume;
         }
 
-        public override bool TryRestore(
-            AudioSource? target, 
-            [NotNullWhen(true)] out AudioSource? restored)
+        protected override void OnRestore(ref AudioSource target)
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
+            base.OnRestore(ref target);
 
             target!.volume = Mathf.Clamp01(Volume);
-
-            restored = target;
-            return true;
         }
     }
 }

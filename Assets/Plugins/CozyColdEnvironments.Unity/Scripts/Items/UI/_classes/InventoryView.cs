@@ -121,7 +121,7 @@ namespace CCEnvs.Unity.Storages.UI
                              .AttachExternalCancellation(@this.destroyCancellationToken)
                              .Forget();
                      })
-                     .RegisterDisposableTo(this);
+                     .AddDisposableTo(this);
             }
         }
 
@@ -136,7 +136,7 @@ namespace CCEnvs.Unity.Storages.UI
                          if (@this.instantiatedGameObjects.Remove(cnt.Key, out GameObject go))
                              @this.slots.Remove(go);
                      })
-                     .RegisterDisposableTo(this);
+                     .AddDisposableTo(this);
             });
         }
 
@@ -151,7 +151,7 @@ namespace CCEnvs.Unity.Storages.UI
                         @this.instantiatedGameObjects.Clear();
                         @this.slots.Clear();
                     })
-                    .RegisterDisposableTo(this);
+                    .AddDisposableTo(this);
             });
         }
 

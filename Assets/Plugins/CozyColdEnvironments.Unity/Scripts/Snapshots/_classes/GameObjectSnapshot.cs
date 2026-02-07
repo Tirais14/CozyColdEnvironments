@@ -40,40 +40,23 @@ namespace CCEnvs.Unity.Snapshots
             Layer = target.layer;
             ActiveSelf = target.activeSelf;
             Transform = new TransformSnapshot(target.transform);
+
             ExtraInfo = target.GetExtraInfo();
         }
 
-        public override bool TryRestore(
-            GameObject? target, 
-            [NotNullWhen(true)] out GameObject? restored)
+        protected override GameObject? CreateValue()
         {
-            if (!CanRestore(target))
-            {
-                restored = null;
-                return false;
-            }
+            return ExtraInfo!.FindGameObject().GetValue();
+        }
 
-            if (target == null
-                && 
-                (ExtraInfo is null || !ExtraInfo.FindGameObject().TryGetValue(out target)))
-            {
-                restored = null;
-                return false;
-            }
-
-            CC.Guard.IsNotNull(Transform, nameof(Transform));
-            Guard.IsNotNullOrWhiteSpace(Name);
-
+        protected override void OnRestore(ref GameObject target)
+        {
             target.name = Name;
             target.tag = Tag;
             target.layer = Layer;
             target.SetActive(ActiveSelf);
 
-            if (Transform is not null)
-                Transform.TryRestore(target.transform, out _);
-
-            restored = target;
-            return true;
+            Transform?.TryRestore(target.transform, out _);
         }
     }
 }

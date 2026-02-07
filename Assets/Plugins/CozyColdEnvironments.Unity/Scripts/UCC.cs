@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
@@ -145,6 +146,42 @@ namespace CCEnvs.Unity
                 static (dropdown) =>
                 {
                     return new TMP_DropdownSnapshot(dropdown);
+                });
+
+            SavingSystem.Self.RegisterType<Toggle>(
+                static toggle =>
+                {
+                    return new ToggleSnapshot(toggle);
+                });
+
+            SavingSystem.Self.RegisterType<Component>(
+                static cmp =>
+                {
+                    return new ComponentSnapshot<Component>(cmp);
+                });
+
+            SavingSystem.Self.RegisterType<Behaviour>(
+                static beh =>
+                {
+                    return new BehaviourSnapshot<Behaviour>();
+                });
+
+            SavingSystem.Self.RegisterType<MonoBehaviour>(
+                static beh =>
+                {
+                    return new MonoBehaviourSnapshot<MonoBehaviour>();
+                });
+
+            SavingSystem.Self.RegisterType<UIBehaviour>(
+                static beh =>
+                {
+                    return new UIBehaviourSnapshot<UIBehaviour>();
+                });
+
+            SavingSystem.Self.RegisterType<Selectable>(
+                static sel =>
+                {
+                    return new SelectableSnapshot<Selectable>();
                 });
         }
         #endregion Install

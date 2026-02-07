@@ -92,7 +92,7 @@ namespace CCEnvs.Caching
             return entry;
         }
 
-        public Maybe<TValue> Get(TKey key)
+        public TValue? Get(TKey key)
         {
             Guard.IsNotNull(key, nameof(key));
 
@@ -102,11 +102,20 @@ namespace CCEnvs.Caching
                     ||
                     !entry.IsValid())
                 {
-                    return Maybe<TValue>.None;
+                    return default;
                 }
 
                 return entry.GetValue();
             }
+        }
+
+        public bool TryGet(TKey key, [NotNullWhen(true)] out TValue? result)
+        {
+            Guard.IsNotNull(key, nameof(key));
+
+            result = Get(key);
+
+            return result.IsNotDefault();
         }
 
         public TValue GetOrCreate(

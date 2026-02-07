@@ -1,4 +1,3 @@
-using CCEnvs.Collections;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
@@ -6,13 +5,10 @@ using CCEnvs.Unity.Leaderboards;
 using CCEnvs.Unity.Profiles;
 using CCEnvs.Unity.UI.Leaderboards;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
 using YG;
 using YG.Utils.LB;
 
@@ -24,8 +20,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
     {
 #if Leaderboards_yg
         private readonly List<IDisposable> disposables = new();
-
-        private readonly Dictionary<string, ImageLoadYG> profileIconLoaders = new();
 
         [GetBySelf]
         private LeaderboardYG worstLeaderboard = null!;
@@ -76,7 +70,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 {
                     @this.worstLeaderboard.enabled = true;
                 })
-                .RegisterDisposableTo(this);
+                .AddDisposableTo(this);
 
             leaderboardView.ObserveHide()
                 .Subscribe(this,
@@ -84,55 +78,20 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 {
                     @this.worstLeaderboard.enabled = false;
                 })
-                .RegisterDisposableTo(this);
-        }
-
-        private Sprite? LoadProfileIcon(string iconUrl, UserProfile profile)
-        {
-            if (iconUrl is null)
-                return null;
-
-            if (!profileIconLoaders.TryGetValue(iconUrl, out var loader))
-            {
-                var loaderGO = new GameObject(iconUrl);
-
-                loader = loaderGO.AddComponent<ImageLoadYG>();
-
-                loader.spriteImage = loaderGO.AddComponent<Image>();
-
-                loader.spriteImage.color = loader.spriteImage.color.WithAlpha(0f);
-
-                loader.urlImage = iconUrl;
-
-                profileIconLoaders.Add(iconUrl, loader);
-
-                loader.Load();
-            }
-
-            if (loader.spriteImage.sprite != null)
-                return loader.spriteImage.sprite;
-
-            Observable.EveryValueChanged(loader,
-                static loader =>
-                {
-                    return loader.spriteImage.sprite;
-                })
-                .Timeout(5.Minutes())
-                .Subscribe(profile,
-                static (sprite, profile) =>
-                {
-                    profile.Icon = sprite;
-                })
-                .AddTo(disposables);
-
-            return loader.spriteImage.sprite;
+                .AddDisposableTo(this);
         }
 
         private IUserProfile CreateUserProfile(LBPlayerData playerData)
         {
             var profile = new UserProfile(playerData.name, playerData.uniqueID);
 
-            profile.Icon = LoadProfileIcon(playerData.photo, profile);
+            YandexPluginHelper.LoadImageAsync(playerData.photo)
+                .ContinueWith(
+                img =>
+                {
+                    profile.Icon = img;
+                })
+                .ForgetByPrintException();
 
             profile.AddTo(disposables);
 

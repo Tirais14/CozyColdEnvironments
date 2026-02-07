@@ -1,4 +1,5 @@
 using CCEnvs.Json.Converters;
+using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -18,7 +19,7 @@ namespace CCEnvs.Snapshots
         protected readonly bool isValueType = typeof(T).IsValueType;
 
         [JsonIgnore]
-        public virtual Type TargetType { get; } = typeof(T);
+        public virtual Type TargetType => CachedTypeof<T>.Type;
 
         protected Snapshot()
         {
@@ -31,14 +32,37 @@ namespace CCEnvs.Snapshots
             CC.Guard.IsNotNullTarget(target);
         }
 
-        public abstract bool TryRestore(T? target, [NotNullWhen(true)] out T? restored);
+        public virtual bool TryRestore(T? target, [NotNullWhen(true)] out T? restored)
+        {
+            restored = default;
 
-        public virtual bool CanRestore([NotNull] T? target)
+            if (!CanRestore(target))
+                return false;
+
+            if (target.IsNull() && !CreateValue().Let(out target))
+                return false;
+
+            var targetNotNull = target.IsNotNull();
+
+            if (targetNotNull)
+                OnRestore(ref target!);
+
+            return targetNotNull;
+        }
+
+        public virtual bool CanRestore(T? target)
         {
             if (!isValueType && target.IsNull())
                 return false;
 
-            return true;
+            return true!;
+        }
+
+        protected abstract void OnRestore(ref T target);
+
+        protected virtual T? CreateValue()
+        {
+            return default;
         }
     }
 }

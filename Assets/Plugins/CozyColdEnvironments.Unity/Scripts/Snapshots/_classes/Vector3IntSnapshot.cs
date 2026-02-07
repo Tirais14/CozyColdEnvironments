@@ -28,16 +28,11 @@ namespace CCEnvs.Unity.Snapshots
             Z = target.z;
         }
 
-        public override bool TryRestore(Vector3Int target, out Vector3Int restored)
+        protected override void OnRestore(ref Vector3Int target)
         {
-            if (!CanRestore(target))
-            {
-                restored = default;
-                return false;
-            }
-
-            restored = new Vector3Int(X, Y, Z);
-            return true;
+            target.x = X;
+            target.y = Y;
+            target.z = Z;
         }
     }
 }
