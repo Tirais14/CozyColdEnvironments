@@ -12,16 +12,5 @@ namespace CCEnvs.Pools
         System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
             GetAsync(CancellationToken cancellationToken = default);
-
-#if UNITASK_PLUGIN
-        Cysharp.Threading.Tasks.UniTask
-#else
-        System.Threading.Tasks.ValueTask
-#endif
-            PreheatAsync(
-            int? count = null, 
-            int? batchSize = null, 
-            CancellationToken cancellationToken = default
-            );
     }
 }

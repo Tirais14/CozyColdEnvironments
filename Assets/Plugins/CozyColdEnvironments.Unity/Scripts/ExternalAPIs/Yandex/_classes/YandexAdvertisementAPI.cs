@@ -23,8 +23,6 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         private ReactiveCommand<AdvertisementTypes>? shownAdvertisementTypeCmd;
         private ReactiveCommand<AdvertisementTypes>? showAdvertisementErrorCmd;
 
-        private bool bannerInitialized;
-
         public bool IsAdvertisementShown => advertisementCount.Value > 0;
         public int AdvertisementCount => advertisementCount.Value;
 
@@ -46,11 +44,13 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         public void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null)
         {
             if (advertisementType == AdvertisementTypes.None)
-                throw new System.ArgumentException(advertisementType.ToString(), nameof(advertisementType));
+                throw new ArgumentException(advertisementType.ToString(), nameof(advertisementType));
 
             if (advertisementType.IsFlagSetted(AdvertisementTypes.Banner))
             {
 #if BannerAdv_yg
+
+#if !YandexGamesPlatform_yg
                 if (!advertisementInfos.TryGetValue(advertisementType, out var adInfo)
                     ||
                     !adInfo.TrySetShown())
@@ -67,9 +67,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
                 YG2.ShowBanner();
                 YG2.LoadBanner();
+#endif //!YandexGamesPlatform_yg
+
 #else
                 throw new System.NotSupportedException(AdvertisementTypes.Banner.ToString());
-#endif
+#endif //BannerAdv_yg
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
             {
@@ -86,10 +88,10 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 YG2.InterstitialAdvShow();
 #else
                 throw new System.NotSupportedException(AdvertisementTypes.Fullscreen.ToString());
-#endif
+#endif //InterstitialAdv_yg
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Rewarding))
-                throw new System.NotSupportedException(AdvertisementTypes.Rewarding.ToString());
+                throw new NotSupportedException(AdvertisementTypes.Rewarding.ToString());
         }
 
         public IAdvertisementAPI SetAdvertisementShowInterval(

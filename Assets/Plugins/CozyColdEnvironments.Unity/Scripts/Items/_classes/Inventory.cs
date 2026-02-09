@@ -36,6 +36,7 @@ namespace CCEnvs.Unity.Items
         public bool IsEmpty => Containers.Any(static cnt => !cnt.IsEmpty);
         public bool IsFull => collectionBase.Values.All(static cnt => cnt.IsFull);
         public bool AutoSize { get; set; }
+
         public int FreeSpace => collectionBase.Values.Count(static x => x.IsEmpty);
         public int ContainerCount => collection.Count;
 
@@ -89,12 +90,10 @@ namespace CCEnvs.Unity.Items
         {
             return collectionBase.Values.AsValueEnumerable().Any(x => x.ContainsItem());
         }
-
         public bool ContainsItem(IItem? item)
         {
             return collectionBase.Values.AsValueEnumerable().Any(x => x.ContainsItem(item));
         }
-
         public bool ContainsItem(IItem? item, int count)
         {
             int containedCount = collectionBase.Values.AsValueEnumerable()
@@ -169,7 +168,6 @@ namespace CCEnvs.Unity.Items
                     .RightTarget
                     .Maybe()!;
         }
-
         [DebuggerStepThrough]
         public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer)
         {
@@ -200,7 +198,6 @@ namespace CCEnvs.Unity.Items
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
             collection.Add(id, itemContainer);
         }
-
         public void AddContainer(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
@@ -273,7 +270,6 @@ namespace CCEnvs.Unity.Items
 
             return false;
         }
-
         public bool CanPut(IItem? item, int count)
         {
             if (!CanPut(item) || (FreeSpace <= 0 && AutoSize))

@@ -11,9 +11,12 @@ namespace CCEnvs.Unity.Items
         IEnumerable<KeyValuePair<int, IItemContainer>>
     {
         bool AutoSize { get; set; }
+
         IEnumerable<int> IDs { get; }
         IEnumerable<IItemContainer> Containers { get; }
+
         int ContainerCount { get; }
+
         Result<IItemContainer> this[int id] { get; }
 
         void ResetContainers();
