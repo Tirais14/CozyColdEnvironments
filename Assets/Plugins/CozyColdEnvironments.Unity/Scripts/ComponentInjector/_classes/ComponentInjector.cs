@@ -78,7 +78,7 @@ namespace CCEnvs.Unity.Injections
             }
             if (field.GetValue(source) is object fieldValue)
             {
-                fieldValue = fieldValue.AsObsolete<IConditional>().Map(x => x.GetValue()).Raw!;
+                fieldValue = fieldValue.AsMaybe<IConditional>().Map(x => x.GetValue()).Raw!;
 
                 if (fieldValue.IsNotNull())
                 {

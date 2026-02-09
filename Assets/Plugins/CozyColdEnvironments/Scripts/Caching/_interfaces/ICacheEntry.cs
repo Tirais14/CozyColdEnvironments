@@ -10,6 +10,7 @@ namespace CCEnvs.Caching
         TimeSpan? ExpirationTimeRelativeToNow { get; set; }
         TimeSpan IdleTime { get; }
         bool HasValue { get; }
+        bool IsValid { get; }
 
         T? GetValue();
 
@@ -18,7 +19,5 @@ namespace CCEnvs.Caching
         void SetValue(T? value);
 
         bool IsExpired();
-
-        bool IsValid();
     }
 }

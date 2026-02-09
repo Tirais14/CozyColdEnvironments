@@ -236,7 +236,7 @@ namespace CCEnvs.FuncLanguage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool TryGetValue<T>([NotNullWhen(true)] out T? result)
         {
-            var x = GetValue().AsObsolete<T>();
+            var x = GetValue().AsMaybe<T>();
             var state = x.IsSome;
             result = x.Raw;
 
@@ -366,8 +366,8 @@ namespace CCEnvs.FuncLanguage
         public readonly Either<LOut, ROut> Cast<LOut, ROut>()
         {
             return new Either<LOut, ROut>(
-                (LOut?)left.AsObsolete<LOut>(),
-                (ROut?)right.AsObsolete<ROut>()
+                (LOut?)left.AsMaybe<LOut>(),
+                (ROut?)right.AsMaybe<ROut>()
                 );
         }
 

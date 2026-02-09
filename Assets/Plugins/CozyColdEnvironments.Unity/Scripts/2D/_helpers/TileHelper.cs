@@ -21,7 +21,7 @@ namespace CCEnvs.Unity._2D.Locations
             if (source == null)
                 return Maybe<Sprite>.None;
 
-            return source.AsObsolete<Tile>().Map(tile => tile.sprite);
+            return source.AsMaybe<Tile>().Map(tile => tile.sprite);
         }
 
         public static Maybe<GameObject> GetTileGameObject(this TileBase? source)
@@ -29,7 +29,7 @@ namespace CCEnvs.Unity._2D.Locations
             if (source == null)
                 return Maybe<GameObject>.None;
 
-            return source.AsObsolete<Tile>().Map(tile => tile.gameObject);
+            return source.AsMaybe<Tile>().Map(tile => tile.gameObject);
         }
     }
 }

@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace CCEnvs.Reflection.Caching
 {
+    public static class TypeCache
+    {
+    }
+
     public static class TypeCache<T>
     {
         #region IL2CPP Type definitions

@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Caching;
 using Humanizer;
 using System;
@@ -30,6 +31,7 @@ namespace Game
 
 #if UNITY_2017_1_OR_NEWER
 
+        [OnInstallResetable]
         private readonly static Cache<string, string> decloniszedNameCache = new()
         {
             ExpirationScanFrequency = 30.Seconds(),

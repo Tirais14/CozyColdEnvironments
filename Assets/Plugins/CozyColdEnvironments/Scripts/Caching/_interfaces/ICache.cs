@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -23,6 +22,8 @@ namespace CCEnvs.Caching
         bool TryAdd(TKey key, TValue value, [NotNullWhen(true)] out ICacheEntry<TValue>? entry);
 
         bool TryRemove(TKey? key, [NotNullWhen(true)] out TValue? value);
+
+        void Clear();
 
         ICacheEntry<TValue> CreateEntry(TKey key);
     }

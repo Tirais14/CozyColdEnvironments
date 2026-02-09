@@ -1,4 +1,3 @@
-using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using R3;
@@ -24,9 +23,11 @@ namespace CCEnvs.Pools
         public int Count => ActiveCount + InactiveCount;
         public int ActiveCount => activeItemHandles.Count;
         public int InactiveCount => inactiveItems.Count + (fastObject is not null ? 1 : 0);
+
         public abstract bool HasFactory { get; }
 
         protected bool IsPoolableObject { get; }
+
         protected int DefaultCapacity { get; }
 
 #if UNITY_2017_1_OR_NEWER
@@ -139,20 +140,14 @@ namespace CCEnvs.Pools
 #endif
 
             TryProcessPoolableObjectOnReturn(obj);
-
-            if (fastObject is null)
-                fastObject = obj;
-            else
-                inactiveItems.Push(obj);
         }
 
         protected virtual void OnReturn(T obj)
         {
             if (fastObject is null)
-            {
                 fastObject = obj;
-                return;
-            }
+            else
+                inactiveItems.Push(obj);
 
             returnCmd?.Execute(obj);
         }
@@ -227,7 +222,7 @@ namespace CCEnvs.Pools
         private void OnPoolableReturn(IPoolable poolable)
         {
             if (poolable.PoolHandle.IsSome)
-                poolable.PoolHandle.Raw.AsObsolete<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
+                poolable.PoolHandle.Raw.AsMaybe<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
 
             poolable.PoolHandle = Maybe<IDisposable>.None;
 

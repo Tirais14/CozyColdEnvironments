@@ -23,6 +23,7 @@ namespace CCEnvs.Caching
         }
 
         public bool HasValue => value.IsNotNull();
+        public bool IsValid => HasValue && !IsExpired();
 
         public CacheEntry(T? value)
         {
@@ -60,11 +61,6 @@ namespace CCEnvs.Caching
                 return false;
 
             return IdleTime > ExpirationTimeRelativeToNow.Value;
-        }
-
-        public bool IsValid()
-        {
-            return HasValue && !IsExpired();
         }
     }
 }

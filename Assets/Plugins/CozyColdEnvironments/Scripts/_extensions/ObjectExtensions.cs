@@ -143,26 +143,20 @@ namespace CCEnvs
             if (obj.IsNull())
                 return default!;
 
-            try
-            {
-                return (T)obj;
-            }
-            catch (InvalidCastException)
-            {
+            if (obj is not T)
                 throw CC.ThrowHelper.InvalidCastException(obj.GetType(), typeof(T));
-            }
+
+            return (T)obj;
         }
 
-        [Obsolete("Use As instead")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> AsObsolete<T>(this object? obj)
+        public static Maybe<T> AsMaybe<T>(this object? obj)
         {
             return obj.Is<T>(out var typedObj) ? typedObj : default!;
         }
 
-        [Obsolete("Use As instead")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> AsObsolete<TObj, TValue>(this TObj? obj)
+        public static Maybe<TValue> AsMaybe<TObj, TValue>(this TObj? obj)
         {
             return obj.Is<TValue>(out var typedObj) ? typedObj : default!;
         }
