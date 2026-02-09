@@ -4,7 +4,6 @@ using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
-using CCEnvs.Utils;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Concurrent;
@@ -39,7 +38,7 @@ namespace CCEnvs.Unity.Initables
                     throw new CCException($"{initableAsync.GetTypeName()} is already inited.");
 
                 UniTask task = initableAsync.InitAsync();
-                task.ToCommand().ScheduleByGlobalScheduler();
+                task.ToCommandPooled().Value.ScheduleByGlobalScheduler();
 
                 await task;
 
@@ -52,27 +51,6 @@ namespace CCEnvs.Unity.Initables
                 CCDebug.Instance.PrintException(ex);
             }
         }
-
-        ///// <exception cref="TirLibException"></exception>
-        //public static void InitObjects<T>()
-        //    where T : IInitable
-        //{
-        //    T[] initables = UnityObjectHelper.FindObjectsByType<T>(
-        //            FindObjectsInactive.Include).Where(x => x.IsNotNull())
-        //                                        .ToArray();
-
-        //    if (initables.CountNotDefault() == 0)
-        //        throw new TirLibException($"Cannot find any {typeof(T).GetName()}.");
-
-        //    for (int i = 0; i < initables.Length; i++)
-        //        InitObject(initables[i]);
-        //}
-
-        //public static void InitObjects(IEnumerable<IInitable> initables)
-        //{
-        //    foreach (var item in initables)
-        //        InitObject(item);
-        //}
 
         public static async UniTask InitAllObjectsAsync(
             FindObjectsInactive findObjectsInactive = FindObjectsInactive.Include)

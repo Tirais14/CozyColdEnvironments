@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using CCEnvs.Pools;
 
 #if UNITASK_PLUGIN
 using Cysharp.Threading.Tasks;
@@ -10,78 +11,133 @@ namespace CCEnvs.Patterns.Commands
     public static class CommandHelper
     {
 #if UNITASK_PLUGIN
-        public static ICommandAsync ToCommand(this UniTask source)
+        public static PooledHandle<AnonymousCommandAsync<UniTask>> ToCommandPooled(
+            this UniTask source
+            )
         {
-            return new FromUniTaskCommand()
-            {
-                Task = source
-            };
+            return Command.Builder.SetName($"{nameof(UniTask)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
-        public static ICommandAsync ToCommand<T>(this UniTask<T> source)
+        public static PooledHandle<AnonymousCommandAsync<UniTask<T>>> ToCommandPooled<T>(
+            this UniTask<T> source
+            )
         {
-
-            return new FromUniTaskCommand()
-            {
-                Task = source
-            };
+            return Command.Builder.SetName($"{nameof(UniTask<T>)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 #endif
 
-        public static ICommandAsync ToCommand(this ValueTask source)
+        public static PooledHandle<AnonymousCommandAsync<ValueTask>> ToCommandPooled(
+            this ValueTask source
+            )
         {
-            return new FromValueTaskCommand()
-            {
-                Task = source
-            };
+            return Command.Builder.SetName($"{nameof(ValueTask)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
-        public static ICommandAsync ToCommand<T>(this ValueTask<T> source)
+        public static PooledHandle<AnonymousCommandAsync<ValueTask<T>>> ToCommandPooled<T>(
+            this ValueTask<T> source
+            )
         {
-            return new FromValueTaskCommand<T>()
-            {
-                Task = source
-            };
+            return Command.Builder.SetName($"{nameof(ValueTask<T>)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
-        public static ICommandAsync ToCommand(this Task source)
+        public static PooledHandle<AnonymousCommandAsync<Task>> ToCommandPooled(
+            this Task source
+            )
         {
             CC.Guard.IsNotNullSource(source);
 
-            return new FromTaskCommand()
-            {
-                Task = source
-            };
+            return Command.Builder.SetName($"{nameof(Task)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
-        public static ICommandAsync ToCommand<T>(this Task<T> source)
+        public static PooledHandle<AnonymousCommandAsync<Task<T>>> ToCommandPooled<T>(
+            this Task<T> source
+            )
         {
             CC.Guard.IsNotNullSource(source);
 
-            return new FromTaskCommand<T>()
-            {
-                Task = source
-            };
+            return Command.Builder.SetName($"{nameof(Task<T>)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
-        public static ICommandAsync ToCommand(this AsyncLazy source)
+        public static PooledHandle<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
+            this AsyncLazy source
+            )
         {
             CC.Guard.IsNotNullSource(source);
 
-            return new FromAsyncLazyCommand()
-            {
-                TaskLazy = source
-            };
+            return Command.Builder.SetName($"{nameof(AsyncLazy)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
-        public static ICommandAsync ToCommand<T>(this AsyncLazy<T> source)
+        public static PooledHandle<AnonymousCommandAsync<AsyncLazy<T>>> ToCommandPooled<T>(
+            this AsyncLazy<T> source
+            )
         {
             CC.Guard.IsNotNullSource(source);
 
-            return new FromAsyncLazyCommand<T>()
-            {
-                TaskLazy = source
-            };
+            return Command.Builder.SetName($"{nameof(AsyncLazy<T>)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
         }
 
         public static ICommandAsync ScheduleByGlobalScheduler(this ICommandAsync source)
