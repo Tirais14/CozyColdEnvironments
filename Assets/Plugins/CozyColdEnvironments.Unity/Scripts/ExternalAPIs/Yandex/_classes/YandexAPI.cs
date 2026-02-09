@@ -1,5 +1,6 @@
 #if YandexGamesPlatform_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -81,7 +82,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             UniTask.Create(this,
                 static async @this =>
                 {
-                    await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
+                    if (YG2.saves.serializedData.IsNotNullOrWhiteSpace())
+                        await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
 
                     //some delay between initialized
                     await UniTask.WaitForSeconds(1f);
@@ -89,7 +91,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                     @this.isInitialized.Value = true;
                     @this.isInitializing = false;
                 })
-                .Forget();
+                .ForgetByPrintException();
         }
 
         public void PauseGame()
