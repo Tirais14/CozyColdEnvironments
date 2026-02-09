@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Serialization
     [Serializable]
     public abstract class Serialized<TOut>
         : IEditorSerialized<TOut>,
-        IMutable<TOut>
+        IMutableType<TOut>
     {
         protected readonly Lazy<TOut> lazy;
 
@@ -35,6 +35,6 @@ namespace CCEnvs.Unity.Serialization
 
         protected abstract TOut ValueFactory();
 
-        TOut IMutable<TOut>.MutateType() => Deserialized;
+        TOut IMutableType<TOut>.MutateType() => Deserialized;
     }
 }

@@ -169,7 +169,7 @@ namespace CCEnvs.Unity.Storages.UI
                 return;
 
             foreach (var ev in modelUnsafe.To<IInventory>()
-                .ZLinq()
+                .AsValueEnumerable()
                 .Select(pair => new DictionaryAddEvent<int, IItemContainer>(pair.Key, pair.Value)))
             {
                 OnAddContainer(ev).AttachExternalCancellation(destroyCancellationToken).Forget();

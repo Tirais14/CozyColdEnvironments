@@ -1,6 +1,5 @@
 #nullable enable
 using CCEnvs.Attributes;
-using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using SuperLinq;
 using System;
@@ -13,25 +12,6 @@ namespace CCEnvs
     public static class CCProjectHelper
     {
         public static bool IsInstalling { get; private set; }
-
-        public static void StaticObsolete()
-        {
-            if (!UnityEditorDomain.IsFirstPlayModeEntrance)
-                return;
-
-            foreach (var installer in from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                                      select assembly.GetTypes() into types
-                                      from type in types
-                                      where type.IsDefined<StaticInstallerAttribute>()
-                                      select type.Reflect().IncludeNonPublic().IncludeStatic().Methods() into methods
-                                      from method in methods
-                                      where method.IsDefined<StaticInstallerMethodAttribute>(inherit: true)
-                                      select method)
-            {
-                installer.Invoke(obj: null, Array.Empty<object>());
-                CCDebug.Instance.PrintLog($"{installer.ReflectedType.GetFullName()} executed.", typeof(CCProjectHelper));
-            }
-        }
 
         public static void Install()
         {

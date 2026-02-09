@@ -16,7 +16,7 @@ namespace CCEnvs.Conversations
         /// Simillar to <see cref="Convert"/>, but supports more variants to convert object.
         /// <br/>Supported and do in next order:
         /// <br/>-<see cref="Convert.ChangeType(object, Type)"/>
-        /// <br/>-<see cref="IMutable"/>
+        /// <br/>-<see cref="IMutableType"/>
         /// <br/>-overloaded operators
         /// <br/>-static methods marked with <see cref="ConverterAttribute"/>
         /// <br/>-<see cref="InstanceFactory.Create(Type, ExplicitArguments, InstanceFactory.Parameters)"/>. Must contain constructor which take input object.
@@ -65,7 +65,7 @@ namespace CCEnvs.Conversations
 
         private static Maybe<object> ConvertByInterface(object input)
         {
-            return input.AsObsolete<IMutable>()
+            return input.AsObsolete<IMutableType>()
                         .Map(x => x.MutateType())
                         .GetValue();
         }
