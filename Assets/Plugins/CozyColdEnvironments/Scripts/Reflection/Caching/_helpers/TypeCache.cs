@@ -1,129 +1,81 @@
-using CCEnvs.Caching;
-using CommunityToolkit.Diagnostics;
-using Humanizer;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-
 #nullable enable
+using System;
+using System.Collections.Generic;
+
 namespace CCEnvs.Reflection.Caching
 {
-    public static class TypeCache
+    public static class TypeCache<T>
     {
-        private readonly static Cache<MemberKey, MemberInfo> members = new()
-        {
-            ExpirationScanFrequency = 1.Minutes()
-        };
+        #region IL2CPP Type definitions
 
-        private readonly static Cache<ParameterKey, ParameterInfo> parameters = new()
-        {
-            ExpirationScanFrequency = 1.Minutes()
-        };
+        private readonly static T[]? m_Array;
 
-        private readonly static Cache<MethodKey, MethodBase> methods = new()
-        {
-            ExpirationScanFrequency = 1.Minutes()
-        };
+        private readonly static List<T>? m_List;
 
-        public static bool TryGetMember(
-            MemberKey key, 
-            [NotNullWhen(true)] out MemberInfo? member
-            )
-        {
-            CC.Guard.IsNotDefault(key, nameof(key));
+        private readonly static HashSet<T>? m_HashSet;
 
-            return members.TryGet(key, out member);
+        private readonly static Queue<T>? m_Queue;
+
+        private readonly static Stack<T>? m_Stack;
+
+        #endregion
+
+        public static string String { get; } = CachedTypeof<T>.Type.ToString();
+
+        public static bool IsUnityObject { get; }
+        public static bool IsCCBheaviour { get; }
+
+        static TypeCache()
+        {
+            ResolveTypeInheritanceFlags(
+                CachedTypeof<T>.Type,
+                out var isUnityObject,
+                out var isCCBehaviour
+                );
+
+            IsUnityObject = isUnityObject;
+            IsCCBheaviour = isCCBehaviour;
         }
 
-        public static bool TryGetParameter(
-            ParameterKey key,
-            [NotNullWhen(true)] out ParameterInfo? param
-            )
+        private static void ResolveTypeInheritanceFlags(Type type, out bool isUnityObject, out bool isCCBehaviour)
         {
-            CC.Guard.IsNotDefault(key, nameof(key));
+            string unityObjectNamepsacePart = "UnityEngine.Object";
+            string ccBehaviourNamespacePart = $"{nameof(CCEnvs)}.Unity.CCBehaviour";
 
-            return parameters.TryGet(key, out param);
-        }
+            var loopFuse = LoopFuse.Create(iterationLimit: 10000);
 
-        public static bool TryGetMethod(
-            MethodKey key,
-            [NotNullWhen(true)] out MethodInfo? method
-            )
-        {
-            CC.Guard.IsNotDefault(key, nameof(key));
-
-            if (!methods.TryGet(key, out var tMethod))
+            while (type is not null
+                   &&
+                   loopFuse.DebugMoveNext()
+                   )
             {
-                method = null;
-                return false;
+                if (type.Namespace.IsNullOrWhiteSpace())
+                {
+                    type = type.BaseType;
+                    continue;
+                }
+
+                if (type.Namespace.StartsWith(ccBehaviourNamespacePart))
+                {
+                    isCCBehaviour = true;
+                    isUnityObject = true;
+
+                    break;
+                }
+
+                if (type.Namespace.StartsWith(unityObjectNamepsacePart))
+                {
+                    isCCBehaviour = false;
+                    isUnityObject = true;
+
+                    break;
+                }
+
+                type = type.BaseType;
             }
 
-            method = (MethodInfo)tMethod;
-            return true;
-        }
-
-        public static bool TryGetConstructor(
-            MethodKey key,
-            [NotNullWhen(true)] out ConstructorInfo? constructor
-            )
-        {
-            CC.Guard.IsNotDefault(key, nameof(key));
-
-            key = key.WithMemberPart(key.MemberPart.WithName(".ctor"));
-
-            if (!methods.TryGet(key, out var tConstructor))
-            {
-                constructor = null;
-                return false;
-            }
-
-            constructor = (ConstructorInfo)tConstructor;
-            return false;
-        }
-
-        public static void AddMember(
-            MemberInfo member, 
-            TimeSpan? expirationTimeRelativeToNow = null
-            )
-        {
-            Guard.IsNotNull(member, nameof(member));
-
-            if (members.TryAdd(member, member, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
-        }
-
-
-        public static void AddParameter(
-            ParameterInfo param,
-            TimeSpan? expirationTimeRelativeToNow = null
-            )
-        {
-            Guard.IsNotNull(param, nameof(param));
-
-            if (parameters.TryAdd(param, param, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
-        }
-
-        public static void AddMethod(
-            MethodInfo method,
-            TimeSpan? expirationTimeRelativeToNow = null
-            )
-        {
-            Guard.IsNotNull(method, nameof(method));
-
-            if (methods.TryAdd(method, method, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
-        }
-
-        public static void AddMethod(
-            ConstructorInfo ctor,
-            TimeSpan? expirationTimeRelativeToNow = null
-            )
-        {
-            Guard.IsNotNull(ctor, nameof(ctor));
-
-            if (methods.TryAdd(ctor, ctor, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            isUnityObject = false;
+            isCCBehaviour = false;
         }
     }
 }

@@ -16,32 +16,28 @@ namespace CCEnvs.Patterns.Commands
     {
         protected bool isExecuted;
 
+        protected string name;
+
         private readonly ReactiveProperty<CommandStatus> status = new();
 
         private readonly List<CancellationTokenSource> cancellationTokenSources = new(2);
-
         private readonly List<CancellationTokenRegistration> cancellationTokenRegistrations = new(4);
 
-        private bool cancellation;
+        private bool isCancellation;
 
-        public string Name { get; } = string.Empty;
+        public string Name {
+            get => name;
+            set => name = value.IsNullOrWhiteSpace() ?  GetType().ToString() : value;
+        }
 
         public virtual bool IsReadyToExecute => !IsRunning && !IsDone;
-
         public virtual bool IsCancelled => status.Value == CommandStatus.Canceled;
-
         public virtual bool IsFaulted => status.Value == CommandStatus.Faulted;
-
         public virtual bool IsCompleted => status.Value == CommandStatus.Completed;
-
         public virtual bool IsRunning => isExecuted && !IsDone;
-
         public bool IsDone => IsCompleted || IsCancelled || IsFaulted;
-
-        public bool IsSingle { get; }
-
+        public bool IsSingle { get; set; }
         public bool IsResetable { get; }
-
         public bool IsValid => !disposed;
 
         public int DelayFrameCount { get; set; }
@@ -54,16 +50,10 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandSignature Signature => new(GetType(), Name);
 
-        protected CommandBase(
-            bool isSingle = false,
-            string? name = null,
-            bool isResetable = true,
-            int delayFrameCount = 0)
+        protected CommandBase(bool isResetable = true)
         {
             Name = name ?? GetType().ToString();
-            IsSingle = isSingle;
             IsResetable = isResetable;
-            DelayFrameCount = delayFrameCount;
 
             CommandType = GetType();
 
@@ -139,13 +129,13 @@ namespace CCEnvs.Patterns.Commands
         {
             ValidateDisposed();
 
-            if (cancellation)
+            if (isCancellation)
                 return;
 
             if (IsDone)
                 return;
 
-            cancellation = true;
+            isCancellation = true;
 
             try
             {
@@ -160,7 +150,7 @@ namespace CCEnvs.Patterns.Commands
             finally
             {
                 SetDefaultCancellationToken();
-                cancellation = false;
+                isCancellation = false;
             }
 
             SetCanceled();
@@ -231,6 +221,12 @@ namespace CCEnvs.Patterns.Commands
 
         protected virtual void OnReset()
         {
+            isExecuted = false;
+            isCancellation = false;
+
+            Name = string.Empty;
+            DelayFrameCount = 0;
+            IsSingle = false;
         }
 
         protected virtual void OnCancel()
@@ -272,7 +268,7 @@ namespace CCEnvs.Patterns.Commands
                 {
                     var typed = @this.To<CommandBase<TThis>>();
 
-                    if (typed.cancellation)
+                    if (typed.isCancellation)
                         return;
 
                     typed.Cancel();

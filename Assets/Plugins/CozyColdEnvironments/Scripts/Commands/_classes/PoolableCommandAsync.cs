@@ -2,8 +2,6 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using R3;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -16,17 +14,9 @@ namespace CCEnvs.Patterns.Commands
 
         Maybe<IDisposable> IPoolable.PoolHandle { get; set; }
 
-        protected PoolableCommandAsync(
-            bool isSingle = false,
-            string? name = null,
-            int delayFrameCount = 0
-            )
+        protected PoolableCommandAsync()
             :
-            base(isSingle: isSingle,
-                name: name,
-                isResetable: true,
-                delayFrameCount: delayFrameCount
-                )
+            base(isResetable: true)
         {
 
         }

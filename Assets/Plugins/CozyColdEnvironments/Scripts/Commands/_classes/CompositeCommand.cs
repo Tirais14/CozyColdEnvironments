@@ -31,10 +31,7 @@ namespace CCEnvs.Patterns.Commands
             int delayFrameCount = 0
             )
             :
-            base(isSingle: isSingle,
-                name: name,
-                isResetable: isResetable,
-                delayFrameCount: delayFrameCount)
+            base(isResetable: isResetable)
         {
             this.commandScheduler = commandScheduler;
             this.isReadyToExecute = isReadyToExecute;

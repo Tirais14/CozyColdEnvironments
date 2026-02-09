@@ -236,11 +236,11 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly AnonymousCommandAsync Build()
             {
-                return new AnonymousCommandAsync(
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount)
+                return new AnonymousCommandAsync()
                 {
+                    Name = builder.Name ?? string.Empty,
+                    IsSingle = builder.IsSingle,
+                    DelayFrameCount = builder.DelayFrameCount,  
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
@@ -262,11 +262,7 @@ namespace CCEnvs.Patterns.Commands
                 }
                 else
                 {
-                    cmd = new AnonymousCommandAsync(
-                        name: builder.Name,
-                        isSingle: builder.IsSingle,
-                        delayFrameCount: builder.DelayFrameCount
-                        );
+                    cmd = new AnonymousCommandAsync();
 
                     pool ??= new ObjectPool<AnonymousCommandAsync>();
 
@@ -274,6 +270,9 @@ namespace CCEnvs.Patterns.Commands
                     pooledCmd = pool.Get();
                 }
 
+                cmd.Name = builder.Name ?? string.Empty;
+                cmd.IsSingle = builder.IsSingle;
+                cmd.DelayFrameCount = 0;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
@@ -314,11 +313,11 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly AnonymousCommandAsync<TState> Build()
             {
-                return new AnonymousCommandAsync<TState>(
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount)
+                return new AnonymousCommandAsync<TState>()
                 {
+                    Name = builder.Name ?? string.Empty,
+                    IsSingle = builder.IsSingle,
+                    DelayFrameCount = builder.DelayFrameCount,
                     State = intermediate.State,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
@@ -341,11 +340,7 @@ namespace CCEnvs.Patterns.Commands
                 }
                 else
                 {
-                    cmd = new AnonymousCommandAsync<TState>(
-                        name: builder.Name,
-                        isSingle: builder.IsSingle,
-                        delayFrameCount: builder.DelayFrameCount
-                        );
+                    cmd = new AnonymousCommandAsync<TState>();
 
                     pool ??= new ObjectPool<AnonymousCommandAsync<TState>>();
 
@@ -353,6 +348,9 @@ namespace CCEnvs.Patterns.Commands
                     pooledCmd = pool.Get();
                 }
 
+                cmd.Name = builder.Name ?? string.Empty;
+                cmd.IsSingle = builder.IsSingle;
+                cmd.DelayFrameCount = 0;
                 cmd.State = intermediate.State;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
@@ -394,11 +392,11 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly AnonymousCommand Build()
             {
-                return new AnonymousCommand(
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount)
+                return new AnonymousCommand()
                 {
+                    Name = builder.Name ?? string.Empty,
+                    IsSingle = builder.IsSingle,
+                    DelayFrameCount = builder.DelayFrameCount,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
@@ -421,9 +419,6 @@ namespace CCEnvs.Patterns.Commands
                 else
                 {
                     cmd = new AnonymousCommand(
-                        name: builder.Name,
-                        isSingle: builder.IsSingle,
-                        delayFrameCount: builder.DelayFrameCount
                         );
 
                     pool ??= new ObjectPool<AnonymousCommand>();
@@ -432,6 +427,9 @@ namespace CCEnvs.Patterns.Commands
                     pooledCmd = pool.Get();
                 }
 
+                cmd.Name = builder.Name ?? string.Empty;
+                cmd.IsSingle = builder.IsSingle;
+                cmd.DelayFrameCount = 0;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
@@ -472,11 +470,11 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly AnonymousCommand<TState> Build()
             {
-                return new AnonymousCommand<TState>(
-                    name: builder.Name,
-                    isSingle: builder.IsSingle,
-                    delayFrameCount: builder.DelayFrameCount)
+                return new AnonymousCommand<TState>()
                 {
+                    Name = builder.Name ?? string.Empty,
+                    IsSingle = builder.IsSingle,
+                    DelayFrameCount = builder.DelayFrameCount,
                     State = intermediate.State,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
@@ -499,11 +497,7 @@ namespace CCEnvs.Patterns.Commands
                 }
                 else
                 {
-                    cmd = new AnonymousCommand<TState>(
-                        name: builder.Name,
-                        isSingle: builder.IsSingle,
-                        delayFrameCount: builder.DelayFrameCount
-                        );
+                    cmd = new AnonymousCommand<TState>();
 
                     pool ??= new ObjectPool<AnonymousCommand<TState>>();
 
@@ -511,6 +505,9 @@ namespace CCEnvs.Patterns.Commands
                     pooledCmd = pool.Get();
                 }
 
+                cmd.Name = builder.Name ?? string.Empty;
+                cmd.IsSingle = builder.IsSingle;
+                cmd.DelayFrameCount = 0;
                 cmd.State = intermediate.State;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;

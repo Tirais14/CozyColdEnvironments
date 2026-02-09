@@ -18,14 +18,9 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
-        public AnonymousCommand(
-            string? name = null,
-            bool isSingle = false,
-            int delayFrameCount = 0)
+        public AnonymousCommand()
             :
-            base(name: name,
-                 isSingle: isSingle,
-                 delayFrameCount: delayFrameCount)
+            base()
         {
         }
 
@@ -76,14 +71,9 @@ namespace CCEnvs.Patterns.Commands
             }
         }
 
-        public AnonymousCommand(
-            string? name = null,
-            bool isSingle = false,
-            int delayFrameCount = 0)
+        public AnonymousCommand()
             :
-            base(name: name,
-                 isSingle: isSingle,
-                 delayFrameCount: delayFrameCount)
+            base()
         {
         }
 

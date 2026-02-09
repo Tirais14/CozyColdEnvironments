@@ -24,19 +24,15 @@ namespace CCEnvs.Patterns.Commands
         private readonly Dictionary<CommandSignature, HashSet<ICommandBase>> commandSet = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
-
         private readonly ReactiveProperty<bool> isRunning = new();
 
         private ICommandBase? cmd;
 
         private bool cmdExecuted;
-
         private bool disposed;
-
         private bool isRunningFinshingDelayed;
 
         private int delayFrameCountBeforeRunningFinished;
-
         private int cmdDelayFrameCount;
 
         private long idleFrameCount;
@@ -46,9 +42,7 @@ namespace CCEnvs.Patterns.Commands
         public FrameProvider? FrameProvider { get; }
 
         public bool HasCommands => cmd is not null || commands.IsNotEmpty();
-
         public bool IsEnabled => isEnabled.Value;
-
         public bool IsRunning => isRunning.Value && idleFrameCount >= DelayFrameCountBeforeRunningFinished;
 
         public int DelayFrameCountBeforeRunningFinished {
@@ -143,11 +137,6 @@ namespace CCEnvs.Patterns.Commands
         {
             if (!IsEnabled)
                 return;
-
-            if (commands.Any(cmd => cmd.Name.Contains("Item Cannon")))
-            {
-                _ = 1;
-            }
 
             if (IsIdleFrame())
             {
@@ -327,6 +316,8 @@ namespace CCEnvs.Patterns.Commands
                 this.PrintLog($"Command: {cmd} erasing");
 
                 commandSet[cmd.Signature].Remove(cmd);
+
+                cmdDelayFrameCount = 0;
 
                 cmd.UtilizeOrDispose();
 

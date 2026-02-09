@@ -14,17 +14,9 @@ namespace CCEnvs.Patterns.Commands
 
         Maybe<IDisposable> IPoolable.PoolHandle { get; set; }
 
-        protected PoolableCommand(
-            bool isSingle = false,
-            string? name = null,
-            int delayFrameCount = 0
-            )
+        protected PoolableCommand()
             :
-            base(isSingle: isSingle,
-                name: name,
-                isResetable: true,
-                delayFrameCount: delayFrameCount
-                )
+            base(isResetable: true)
         {
 
         }

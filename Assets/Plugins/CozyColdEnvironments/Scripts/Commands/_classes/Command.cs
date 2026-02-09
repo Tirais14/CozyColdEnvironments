@@ -9,16 +9,9 @@ namespace CCEnvs.Patterns.Commands
     {
         public static CommandBuilder Builder { get; } = CommandBuilder.Create();
 
-        protected Command(
-            bool isSingle = false,
-            string? name = null,
-            bool isResetable = false,
-            int delayFrameCount = 0)
+        protected Command(bool isResetable = false)
             :
-            base(isSingle: isSingle,
-                name: name,
-                isResetable: isResetable,
-                delayFrameCount: delayFrameCount)
+            base(isResetable: isResetable)
         {
         }
 

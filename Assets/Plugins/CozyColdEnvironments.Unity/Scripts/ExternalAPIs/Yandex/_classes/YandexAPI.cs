@@ -83,7 +83,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 static async @this =>
                 {
                     if (YG2.saves.serializedData.IsNotNullOrWhiteSpace())
+                    {
+                        @this.PrintLog($"Save serialized data;\n {YG2.saves.serializedData}");
+
                         await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
+                    }
 
                     //some delay between initialized
                     await UniTask.WaitForSeconds(1f);

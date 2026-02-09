@@ -11,15 +11,9 @@ namespace CCEnvs.Patterns.Commands
     public abstract partial class CommandAsync : CommandBase<ICommandAsync>, ICommandAsync
     {
         protected CommandAsync(
-            bool isSingle = false,
-            string? name = null,
-            bool isResetable = true,
-            int delayFrameCount = 0)
+            bool isResetable = true)
             :
-            base(isSingle: isSingle,
-                name: name,
-                isResetable: isResetable,
-                delayFrameCount: delayFrameCount)
+            base(isResetable: isResetable)
         {
         }
 

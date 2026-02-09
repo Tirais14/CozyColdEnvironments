@@ -10,7 +10,7 @@ namespace CCEnvs.Patterns.Commands
     {
         bool IsReadyToExecute { get; }
         bool IsCancelled { get; }
-        bool IsSingle { get; }
+        bool IsSingle { get; set; }
         bool IsCompleted { get; }
         bool IsRunning { get; }
         bool IsDone { get; }
@@ -18,7 +18,7 @@ namespace CCEnvs.Patterns.Commands
         bool IsResetable { get; }
         bool IsValid { get; }
 
-        string Name { get; }
+        string Name { get; set; }
 
         int DelayFrameCount { get; set; }
 
