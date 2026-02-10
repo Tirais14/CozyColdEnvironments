@@ -1,16 +1,13 @@
 using CCEnvs.Attributes;
-using CCEnvs.Unity.Saves;
-using Cysharp.Threading.Tasks;
 using R3;
 using System;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.ExternalAPIs
 {
     public class DefaultGeneralAPI : IGeneralAPI
     {
-        [OnInstallResetable]
+        [field: OnInstallResetable]
         public static DefaultGeneralAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<bool> isInitialized = new();

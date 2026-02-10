@@ -1,3 +1,4 @@
+#if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
@@ -128,3 +129,4 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 #endif
     }
 }
+#endif //PLUGIN_YG_2

@@ -1,4 +1,4 @@
-#if Localization_yg
+#if PLUGIN_YG_2 && Localization_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;

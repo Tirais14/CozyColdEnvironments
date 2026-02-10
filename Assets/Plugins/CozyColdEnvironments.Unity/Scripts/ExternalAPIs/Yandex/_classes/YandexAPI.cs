@@ -1,4 +1,4 @@
-#if YandexGamesPlatform_yg && PLATFORM_WEBGL
+#if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Saves;

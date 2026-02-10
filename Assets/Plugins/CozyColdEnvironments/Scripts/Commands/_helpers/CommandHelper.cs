@@ -40,6 +40,40 @@ namespace CCEnvs.Patterns.Commands
                 })
                 .BuildPooled();
         }
+
+                public static PooledHandle<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
+            this AsyncLazy source
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return Command.Builder.SetName($"{nameof(AsyncLazy)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
+        }
+
+        public static PooledHandle<AnonymousCommandAsync<AsyncLazy<T>>> ToCommandPooled<T>(
+            this AsyncLazy<T> source
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return Command.Builder.SetName($"{nameof(AsyncLazy<T>)}")
+                .WithState(source)
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (source, _) =>
+                {
+                    await source;
+                })
+                .BuildPooled();
+        }
 #endif
 
         public static PooledHandle<AnonymousCommandAsync<ValueTask>> ToCommandPooled(
@@ -96,40 +130,6 @@ namespace CCEnvs.Patterns.Commands
             CC.Guard.IsNotNullSource(source);
 
             return Command.Builder.SetName($"{nameof(Task<T>)}")
-                .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
-                static async (source, _) =>
-                {
-                    await source;
-                })
-                .BuildPooled();
-        }
-
-        public static PooledHandle<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
-            this AsyncLazy source
-            )
-        {
-            CC.Guard.IsNotNullSource(source);
-
-            return Command.Builder.SetName($"{nameof(AsyncLazy)}")
-                .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
-                static async (source, _) =>
-                {
-                    await source;
-                })
-                .BuildPooled();
-        }
-
-        public static PooledHandle<AnonymousCommandAsync<AsyncLazy<T>>> ToCommandPooled<T>(
-            this AsyncLazy<T> source
-            )
-        {
-            CC.Guard.IsNotNullSource(source);
-
-            return Command.Builder.SetName($"{nameof(AsyncLazy<T>)}")
                 .WithState(source)
                 .Asyncronously()
                 .SetExecuteAction(

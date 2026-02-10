@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -13,11 +12,13 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return source.transform.To<RectTransform>();
+            return (RectTransform)source.transform;
         }
         public static RectTransform RectTransform(this Component source)
         {
-            return source.gameObject.RectTransform();
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            return (RectTransform)source.transform;
         }
 
         /// <exception cref="System.ArgumentNullException"></exception>

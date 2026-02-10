@@ -1,3 +1,4 @@
+#if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
@@ -73,3 +74,4 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         }
     }
 }
+#endif //PLUGIN_YG_2

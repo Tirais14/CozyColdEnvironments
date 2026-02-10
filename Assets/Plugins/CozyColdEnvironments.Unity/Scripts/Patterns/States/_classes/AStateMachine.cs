@@ -12,12 +12,16 @@ namespace CCEnvs.Patterns.States
     {
         private IState? idleState = null!;
 
+        public bool IsIdle { get; private set; }
+
         protected Maybe<IState> State { get; private set; } = null!;
 
         protected override void Start()
         {
             base.Start();
+
             idleState = InitIdleState();
+
             SetIdle();
         }
 
@@ -78,10 +82,18 @@ namespace CCEnvs.Patterns.States
             if (EqualityComparer<IState?>.Default.Equals(state, State.Raw))
                 return;
 
-            State.IfSome(x => x.Exit());
+            if (State.TryGetValue(out var prevState))
+                prevState.Exit();
 
             State = state.Maybe();
-            State.IfSome(x => x.Enter());
+
+            if (state.IsNotNull())
+            {
+                state.Enter();
+
+                if (state.Equals(idleState))
+                    IsIdle = true;
+            }
         }
 
         protected void SetIdle()

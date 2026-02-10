@@ -1,3 +1,4 @@
+#if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Unity.Leaderboards;
 using Humanizer;
 using R3;
@@ -61,3 +62,4 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         }
     }
 }
+#endif
