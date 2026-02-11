@@ -9,10 +9,17 @@ namespace CCEnvs.Unity
 {
     public static class SceneManagerHelper
     {
+        private readonly static ReactiveCommand<(Scene previous, Scene current)> activeSceneChangesCmd = new();
         private static ReactiveCommand<(Scene scene, LoadSceneMode mode)>? sceneLoadedCmd;
         private static ReactiveCommand<Scene>? sceneUnloadedCmd;
-        private static ReactiveCommand<(Scene froMScene, Scene toScene)>? activeSceneChangesCmd;
+
+        public static Scene ActiveScene { get; private set; }
        
+        static SceneManagerHelper()
+        {
+            BindActiveSceneChangedEvent();
+        }
+
         public static Scene[] GetLoadedScenes()
         {
             int sceneCount = SceneManager.sceneCount;
@@ -72,17 +79,16 @@ namespace CCEnvs.Unity
 
         public static Observable<(Scene froMScene, Scene toScene)> ObserveActiveSceneChanged()
         {
-            if (activeSceneChangesCmd is null)
-            {
-                activeSceneChangesCmd = new ReactiveCommand<(Scene froMScene, Scene toScene)>();
-
-                SceneManager.activeSceneChanged += (fromScene, toScene) =>
-                {
-                    activeSceneChangesCmd.Execute((fromScene, toScene));
-                };
-            }
-
             return activeSceneChangesCmd;
+        }
+
+        private static void BindActiveSceneChangedEvent()
+        {
+            SceneManager.activeSceneChanged += (fromScene, toScene) =>
+            {
+                ActiveScene = toScene;
+                activeSceneChangesCmd.Execute((fromScene, toScene));
+            };
         }
     }
 }

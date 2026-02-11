@@ -89,7 +89,7 @@ namespace CCEnvs.Unity
         {
             return new BoundsInt(
                 bounds.position - bounds.size / 2,
-                bounds.size.SetZ(1)
+                bounds.size.WithZ(1)
                 );
         }
 

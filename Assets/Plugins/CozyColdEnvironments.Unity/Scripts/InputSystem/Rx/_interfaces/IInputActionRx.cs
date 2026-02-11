@@ -13,6 +13,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
     {
         InputAction Action { get; }
         string ActionName { get; }
+
         Observable<CallbackContext> Raw { get; }
         Observable<CallbackContext> Started { get; }
         Observable<CallbackContext> Performed { get; }

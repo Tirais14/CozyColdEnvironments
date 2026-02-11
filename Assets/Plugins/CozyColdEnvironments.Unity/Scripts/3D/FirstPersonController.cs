@@ -162,7 +162,7 @@ namespace CCEnvs.Unity._3D
 
         private void IsOnSufaceObserver()
         {
-            var raycastOrigin = transform.position.SetY(transform.position.y + RAYCAST_SURFACE_OFFSET);
+            var raycastOrigin = transform.position.WithY(transform.position.y + RAYCAST_SURFACE_OFFSET);
 
             if (!Physics.Raycast(raycastOrigin,
                                  Vector3.down,
@@ -184,7 +184,7 @@ namespace CCEnvs.Unity._3D
         private void SnapToSurface()
         {
             float lerpedY = Mathf.Lerp(rigidBody.position.y, surfaceHit.point.y, 0.01f);
-            rigidBody.MovePosition(rigidBody.position.SetY(lerpedY));
+            rigidBody.MovePosition(rigidBody.position.WithY(lerpedY));
         }
     }
 }

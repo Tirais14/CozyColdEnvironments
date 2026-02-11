@@ -133,7 +133,7 @@ namespace CCEnvs.Unity._2D.Locations
         /// </summary>
         public bool Contains(Vector3Int pos)
         {
-            var boundExt = new BoundsInt(CellBounds.position, CellBounds.size.SetZ(1));
+            var boundExt = new BoundsInt(CellBounds.position, CellBounds.size.WithZ(1));
             var t = boundExt.Contains(pos);
             return t;
         }
@@ -280,7 +280,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public virtual Vector3Int ConvertPosition(Vector3 position)
         {
-            return tilemap.WorldToCell(position.SetZ(0f));
+            return tilemap.WorldToCell(position.WithZ(0f));
         }
 
         public override string ToString()

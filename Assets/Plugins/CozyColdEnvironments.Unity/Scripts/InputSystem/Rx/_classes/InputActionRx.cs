@@ -12,13 +12,21 @@ namespace CCEnvs.Unity.InputSystem.Rx
         :
         IInputActionRx
     {
+        protected readonly List<IDisposable> disposables = new();
+
         private readonly ReactiveCommand<CallbackContext> raw = new();
         private readonly ReactiveCommand<CallbackContext> started = new();
         private readonly ReactiveCommand<CallbackContext> performed = new();
         private readonly ReactiveCommand<CallbackContext> canceled = new();
+
         private readonly ReactiveProperty<bool> isEnabled;
 
+        //private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
+        private Observable<Unit>? isButtonPressedObservable;
+
         public InputAction Action { get; }
+
         public Observable<CallbackContext> Raw => raw;
 
         public Observable<CallbackContext> Started {
@@ -34,7 +42,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
         }
 
         public string ActionName => Action.name;
+
         public bool IsEnabled => isEnabled.Value && Action.enabled;
+
+        //protected CancellationToken disposeCancellationToken => disposeCancellationTokenSource.Token;
 
         public InputActionRx(InputAction inputAction)
         {
@@ -74,6 +85,11 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
             if (disposing)
             {
+                //disposeCancellationTokenSource.Cancel();
+                //disposeCancellationTokenSource.Dispose();
+
+                disposables.DisposeEachAndClear();
+
                 Action.started -= OnRaw;
                 Action.performed -= OnRaw;
                 Action.canceled -= OnRaw;
@@ -140,8 +156,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         where T : struct
     {
-        protected readonly List<IDisposable> disposables = new();
-
         public T InputValue { get; private set; }
         public virtual Observable<T> TRaw { get; }
         public virtual Observable<T> TStarted { get; }
@@ -157,9 +171,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
             TPerformed = Performed.Select(x => x.ReadValue<T>());
             TCanceled = Canceled.Select(x => x.ReadValue<T>());
 
-            TStarted.Subscribe(x => InputValue = x).AddTo(disposables);
-            TPerformed.Subscribe(x => InputValue = x).AddTo(disposables);
-            TCanceled.Subscribe(x => InputValue = x).AddTo(disposables);
+            TRaw.Subscribe(x => InputValue = x).AddTo(disposables);
+            //TStarted.Subscribe(x => InputValue = x).AddTo(disposables);
+            //TPerformed.Subscribe(x => InputValue = x).AddTo(disposables);
+            //TCanceled.Subscribe(x => InputValue = x).AddTo(disposables);
         }
     }
 }

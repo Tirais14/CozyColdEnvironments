@@ -32,13 +32,13 @@ namespace CCEnvs.Unity
             return Direction2D.None;
         }
 
-        public static Vector2 SetX(this Vector2 source, float value)
+        public static Vector2 WithX(this Vector2 source, float value)
         {
             source.x = value;
             return source;
         }
 
-        public static Vector2 SetY(this Vector2 source, float value)
+        public static Vector2 WithY(this Vector2 source, float value)
         {
             source.y = value;
             return source;
@@ -119,13 +119,13 @@ namespace CCEnvs.Unity
 
     public static class Vector2IntExtensions
     {
-        public static Vector2Int SetX(this Vector2Int source, int value)
+        public static Vector2Int WithX(this Vector2Int source, int value)
         {
             source.x = value;
             return source;
         }
 
-        public static Vector2Int SetY(this Vector2Int source, int value)
+        public static Vector2Int WithY(this Vector2Int source, int value)
         {
             source.y = value;
             return source;
@@ -170,19 +170,19 @@ namespace CCEnvs.Unity
 
     public static class Vector3Extensions
     {
-        public static Vector3 SetX(this Vector3 source, float value)
+        public static Vector3 WithX(this Vector3 source, float value)
         {
             source.x = value;
             return source;
         }
 
-        public static Vector3 SetY(this Vector3 source, float value)
+        public static Vector3 WithY(this Vector3 source, float value)
         {
             source.y = value;
             return source;
         }
 
-        public static Vector3 SetZ(this Vector3 source, float value)
+        public static Vector3 WithZ(this Vector3 source, float value)
         {
             source.z = value;
             return source;
@@ -229,6 +229,11 @@ namespace CCEnvs.Unity
             return new Vector2(value.x, value.y).ToDirection2D();
         }
 
+        public static Vector2 ToVector2(this Vector3 source)
+        {
+            return source;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetDirectionRelative(this Vector3 position, Vector3 target)
         {
@@ -253,19 +258,19 @@ namespace CCEnvs.Unity
 
     public static class Vector3IntExtensions
     {
-        public static Vector3Int SetX(this Vector3Int source, int value)
+        public static Vector3Int WithX(this Vector3Int source, int value)
         {
             source.x = value;
             return source;
         }
 
-        public static Vector3Int SetY(this Vector3Int source, int value)
+        public static Vector3Int WithY(this Vector3Int source, int value)
         {
             source.y = value;
             return source;
         }
 
-        public static Vector3Int SetZ(this Vector3Int source, int value)
+        public static Vector3Int WithZ(this Vector3Int source, int value)
         {
             source.z = value;
             return source;
