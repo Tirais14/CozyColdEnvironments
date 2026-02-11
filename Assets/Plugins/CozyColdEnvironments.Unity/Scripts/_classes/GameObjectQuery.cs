@@ -571,7 +571,7 @@ namespace CCEnvs.Unity
                     Right: r => r.transform,
                     Left: l => l)
                 .GetValue()
-                .AsMaybe<Transform>()
+                .AsObsolete<Transform>()
                 .GetValue(Target.GetValueUnsafe().transform);
         }
 

@@ -27,10 +27,11 @@ namespace CCEnvs.Unity.UI
             if (sensivity is null)
                 targetPos += direction;
             else
-                targetPos += direction.normalized * sensivity.Value;
+                targetPos += direction * sensivity.Value;
 
             targetPos = targetPos.ClampInRect(rect);
 
+            //source.anchoredPosition = Vector2.Lerp(source.anchoredPosition, targetPos, 1f);
             source.anchoredPosition = targetPos;
 
             return source;

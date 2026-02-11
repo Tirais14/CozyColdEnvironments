@@ -54,7 +54,7 @@ namespace CCEnvs.Unity.UI
                static (slct, inst) =>
                {
                    inst.selection.Value.IfSome(x => x.DoDeselect());
-                   inst.selection.Value = slct.AsMaybe<T>();
+                   inst.selection.Value = slct.AsObsolete<T>();
                })
                .AddTo(inst.disposables);
 

@@ -602,6 +602,8 @@ namespace CCEnvs.Unity.UI
                 isInitedCmd?.Execute(true);
 
                 commandScheduler.Enable();
+
+                devCanvasHandle.Dispose();
             }
             catch (Exception)
             {
@@ -613,8 +615,6 @@ namespace CCEnvs.Unity.UI
                 IsInited = true;
 
                 layoutGroup.IfSome(static layout => layout.enabled = true);
-
-                devCanvasHandle.Dispose();
             }
         }
 

@@ -149,14 +149,16 @@ namespace CCEnvs
             return (T)obj;
         }
 
+        [Obsolete("User simple As instead")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<T> AsMaybe<T>(this object? obj)
+        public static Maybe<T> AsObsolete<T>(this object? obj)
         {
             return obj.Is<T>(out var typedObj) ? typedObj : default!;
         }
 
+        [Obsolete("User simple As instead")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TValue> AsMaybe<TObj, TValue>(this TObj? obj)
+        public static Maybe<TValue> AsObsolete<TObj, TValue>(this TObj? obj)
         {
             return obj.Is<TValue>(out var typedObj) ? typedObj : default!;
         }
@@ -209,6 +211,56 @@ namespace CCEnvs
         public static T MutateType<T>(this object obj)
         {
             return obj.MutateType<T>();
+        }
+
+        public static T? IfNotNull<T>(this T? source, Action<T> action)
+        {
+            CC.Guard.IsNotNull(action, nameof(action));
+
+            if (source.IsNull())
+                return source;
+
+            action(source);
+
+            return source;
+        }
+
+        public static T? IfNotNull<T, TState>(this T? source, TState state, Action<T, TState> action)
+        {
+            CC.Guard.IsNotNull(action, nameof(action));
+
+            if (source.IsNull())
+                return source;
+
+            action(source, state);
+
+            return source;
+        }
+
+        public static T? IfNotNullStruct<T>(this T? source, Action<T> action)
+            where T : struct
+        {
+            CC.Guard.IsNotNull(action, nameof(action));
+
+            if (!source.HasValue)
+                return source;
+
+            action(source.Value);
+
+            return source;
+        }
+
+        public static T? IfNotNullStruct<T, TState>(this T? source, TState state, Action<T, TState> action)
+            where T : struct
+        {
+            CC.Guard.IsNotNull(action, nameof(action));
+
+            if (!source.HasValue)
+                return source;
+
+            action(source.Value, state);
+
+            return source;
         }
     }
 }

@@ -185,5 +185,35 @@ namespace CCEnvs.Unity
                 });
         }
         #endregion Install
+
+        public static class Platform
+        {
+            public static bool IsWebGL {
+                get
+                {
+#if PLATFORM_WEBGL
+                    return true;
+#elif UNITY_EDITOR
+                    return PlatformDependentBehaviourEmulator.IsWebGL;
+#else
+                    return false;
+#endif
+                }
+            }
+
+            public static bool IsMobile {
+                get
+                {
+                    return Application.isMobilePlatform || PlatformDependentBehaviourEmulator.IsMobile;
+                }
+            }
+
+            public static bool IsConsole {
+                get
+                {
+                    return Application.isConsolePlatform || PlatformDependentBehaviourEmulator.IsConsole;
+                }
+            }
+        }
     }
 }

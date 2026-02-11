@@ -207,5 +207,19 @@ namespace CCEnvs
                     throw new ArgumentException($"{paramName} is default");
             }
         }
+
+        public static class Platform
+        {
+            public static bool IsUnityEditor {
+                get
+                {
+#if UNITY_EDITOR
+                    return true;
+#else
+                    return false;
+#endif
+                }
+            }
+        }
     }
 }

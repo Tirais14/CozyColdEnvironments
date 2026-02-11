@@ -17,11 +17,7 @@ namespace CCEnvs.Unity.Async
                 source.Forget(
                     static ex =>
                     {
-                        if (ex.IsCancellationException())
-                            CCDebug.Instance.PrintExceptionAsLog(ex);
-                        else
-                            CCDebug.Instance.PrintException(ex);
-
+                        CCDebug.Instance.PrintException(ex);
                     });
             }
             else
@@ -29,11 +25,7 @@ namespace CCEnvs.Unity.Async
                 source.Forget(
                     ex =>
                     {
-                        if (ex.IsCancellationException())
-                            context.PrintExceptionAsLog(ex);
-                        else
-                            context.PrintException(ex);
-
+                        context.PrintException(ex);
                     });
             }
         }

@@ -20,14 +20,14 @@ namespace CCEnvs.Unity
         {
             base.Awake();
 
-            selection.Select(slct => slct.Raw.AsMaybe<Component>())
+            selection.Select(slct => slct.Raw.AsObsolete<Component>())
                 .Subscribe(this,
                 static (mCmp, @this) =>
                 {
                     if (mCmp.TryGetValue(out Component? cmp))
                         @this.modelSelection.Value = cmp.Q().Model<TModel>().Lax();
                     else
-                        @this.modelSelection.Value = cmp.AsMaybe<TModel>();
+                        @this.modelSelection.Value = cmp.AsObsolete<TModel>();
                 })
                 .AddDisposableTo(this);
         }

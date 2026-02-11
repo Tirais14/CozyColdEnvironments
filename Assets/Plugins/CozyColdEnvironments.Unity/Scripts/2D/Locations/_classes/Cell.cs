@@ -112,7 +112,7 @@ namespace CCEnvs.Unity._2D.Locations
         public Maybe<T> GetTile<T>() where T : TileBase
         {
             Validate();
-            return GetTile().Raw.AsMaybe<T>();
+            return GetTile().Raw.AsObsolete<T>();
         }
 
         public Maybe<GameObject> GetInstantiatedGameObject()
