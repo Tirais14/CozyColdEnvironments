@@ -92,9 +92,26 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectedMethodHandle ForMethods()
+        {
+            return new ReflectedMethodHandle(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MembersKey GetMembersKey(MemberTypes memberType)
         {
             return new MembersKey(Bindings, Type, memberType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly MemberKey GetMemberKey(MemberTypes memberType)
+        {
+            return new MemberKey
+            {
+                DeclaringType = Type,
+                Name = NameFilter,
+                MemberType = memberType
+            };
         }
 
         public readonly MemberInfo[] GetMembers(MemberTypes memberType)

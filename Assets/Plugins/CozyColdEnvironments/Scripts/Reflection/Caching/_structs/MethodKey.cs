@@ -4,37 +4,33 @@ using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace CCEnvs.Reflection.Caching
 {
     [Serializable]
     public struct MethodKey : IEquatable<MethodKey>
     {
-        private int? cachedHashCode;
-
-        private string? cachedString;
+        private int? hashCode;
 
         public MemberKey MemberPart { readonly get; init; }
 
-        public ImmutableArray<ParameterKey> ParameterKeys { readonly get; init; }
+        public StructuralArray<ParameterKey> ParameterKeys { readonly get; init; }
 
         public MethodKey(MethodBase method)
         {
-            cachedHashCode = null;
-            cachedString = null;
+            hashCode = null;
 
             MemberPart = method;
 
-            var paramKeys = ListPool<ParameterKey>.Shared.Get();
+            using var paramKeys = ListPool<ParameterKey>.Shared.Get();
 
             foreach (var param in method.GetParameters())
                 paramKeys.Value.Add(new ParameterKey(param));
 
-            ParameterKeys = paramKeys.Value.ToImmutableArray();
+            ParameterKeys = paramKeys.Value.ToStructuralArray();
         }
 
         public static bool operator ==(MethodKey left, MethodKey right)
@@ -73,7 +69,31 @@ namespace CCEnvs.Reflection.Caching
             return new MethodKey
             {
                 MemberPart = MemberPart,
-                ParameterKeys = parameterKeys.ToImmutableArray()
+                ParameterKeys = parameterKeys.ToStructuralArray()
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly MethodKey WithParameterKeys(IEnumerable<ParameterKey> parameterKeys)
+        {
+            Guard.IsNotNull(parameterKeys, nameof(parameterKeys));
+
+            return new MethodKey
+            {
+                MemberPart = MemberPart,
+                ParameterKeys = parameterKeys.ToStructuralArray()
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly MethodKey WithParameterKeys(StructuralArray<ParameterKey> parameterKeys)
+        {
+            Guard.IsNotNull(parameterKeys, nameof(parameterKeys));
+
+            return new MethodKey
+            {
+                MemberPart = MemberPart,
+                ParameterKeys = parameterKeys,
             };
         }
 
@@ -91,23 +111,17 @@ namespace CCEnvs.Reflection.Caching
 
         public override int GetHashCode()
         {
-            cachedHashCode = HashCode.Combine(MemberPart, ParameterKeys.HashCodeByElements());
+            hashCode ??= HashCode.Combine(MemberPart, ParameterKeys.HashCodeByElements());
 
-            return cachedHashCode.Value;
+            return hashCode.Value;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             if (this == default)
-            {
-                cachedString = StringHelper.EMPTY_OBJECT;
+                return StringHelper.EMPTY_OBJECT;
 
-                return cachedString;
-            }
-
-            cachedString = $"({nameof(MemberPart)}: {MemberPart})";
-
-            return cachedString;
+            return $"({nameof(MemberPart)}: {MemberPart})";
         }
     }
 }

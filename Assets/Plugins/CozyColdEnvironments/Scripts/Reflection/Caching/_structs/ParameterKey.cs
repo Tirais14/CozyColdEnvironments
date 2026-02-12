@@ -1,4 +1,5 @@
 using CCEnvs.Reflection.Caching;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -86,6 +87,11 @@ namespace CCEnvs.Reflection
                 mods[i++] = paramKey.ByRef;
 
             return mods;
+        }
+
+        public static ParameterKey ToParameterKey(this ParameterInfo paramInfo)
+        {
+            return new ParameterKey(paramInfo);
         }
     }
 }
