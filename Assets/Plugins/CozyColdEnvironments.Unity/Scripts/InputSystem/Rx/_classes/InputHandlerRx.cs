@@ -40,6 +40,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public IInputActionRx GetInputAction(string inputName)
         {
             Guard.IsNotNullOrWhiteSpace(inputName, nameof(inputName));
+
             if (!registeredActions.TryGetValue(inputName, out IInputActionRx result))
                 throw new ArgumentException($"Cannot find input action with name {inputName}.");
 
@@ -99,7 +100,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 return;
 
             if (disposing)
-                disposables.DisposeEach();
+                disposables.DisposeEachAndClear();
 
             disposed = true;
         }

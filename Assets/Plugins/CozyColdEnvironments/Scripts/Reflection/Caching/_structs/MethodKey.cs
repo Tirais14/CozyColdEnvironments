@@ -15,7 +15,7 @@ namespace CCEnvs.Reflection.Caching
     {
         private int? hashCode;
 
-        public MemberKey MemberPart { readonly get; init; }
+        public MemberKey Core { readonly get; init; }
 
         public StructuralArray<ParameterKey> ParameterKeys { readonly get; init; }
 
@@ -23,7 +23,7 @@ namespace CCEnvs.Reflection.Caching
         {
             hashCode = null;
 
-            MemberPart = method;
+            Core = method;
 
             using var paramKeys = ListPool<ParameterKey>.Shared.Get();
 
@@ -31,6 +31,12 @@ namespace CCEnvs.Reflection.Caching
                 paramKeys.Value.Add(new ParameterKey(param));
 
             ParameterKeys = paramKeys.Value.ToStructuralArray();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator MethodKey(MethodBase method)
+        {
+            return new MethodKey(method);
         }
 
         public static bool operator ==(MethodKey left, MethodKey right)
@@ -44,19 +50,13 @@ namespace CCEnvs.Reflection.Caching
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator MethodKey(MethodBase method)
-        {
-            return new MethodKey(method); 
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MethodKey WithMemberPart(MemberKey memberPart)
         {
             CC.Guard.IsNotDefault(memberPart, nameof(memberPart));
 
             return new MethodKey
             {
-                MemberPart = memberPart,
+                Core = memberPart,
                 ParameterKeys = ParameterKeys
             };
         }
@@ -68,7 +68,7 @@ namespace CCEnvs.Reflection.Caching
 
             return new MethodKey
             {
-                MemberPart = MemberPart,
+                Core = Core,
                 ParameterKeys = parameterKeys.ToStructuralArray()
             };
         }
@@ -80,7 +80,7 @@ namespace CCEnvs.Reflection.Caching
 
             return new MethodKey
             {
-                MemberPart = MemberPart,
+                Core = Core,
                 ParameterKeys = parameterKeys.ToStructuralArray()
             };
         }
@@ -92,14 +92,14 @@ namespace CCEnvs.Reflection.Caching
 
             return new MethodKey
             {
-                MemberPart = MemberPart,
+                Core = Core,
                 ParameterKeys = parameterKeys,
             };
         }
 
         public readonly bool Equals(MethodKey other)
         {
-            return MemberPart == other.MemberPart
+            return Core == other.Core
                    &&
                    ParameterKeys.EqualsByElements(other.ParameterKeys);
         }
@@ -111,7 +111,7 @@ namespace CCEnvs.Reflection.Caching
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(MemberPart, ParameterKeys.HashCodeByElements());
+            hashCode ??= HashCode.Combine(Core, ParameterKeys.HashCodeByElements());
 
             return hashCode.Value;
         }
@@ -121,7 +121,7 @@ namespace CCEnvs.Reflection.Caching
             if (this == default)
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"({nameof(MemberPart)}: {MemberPart})";
+            return $"({nameof(Core)}: {Core})";
         }
     }
 }

@@ -3,7 +3,6 @@ using CCEnvs.Unity.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
-using System;
 using System.Linq;
 using ZLinq;
 

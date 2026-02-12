@@ -9,59 +9,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using CCEnvs.Linq;
 
 #nullable enable
 namespace CCEnvs.Reflection
 {
-    public struct ReflectedMethodHandle : IEquatable<ReflectedMethodHandle>
+    public struct ReflectionMethodHandle : IEquatable<ReflectionMethodHandle>
     {
-        private readonly static Cache<ReflectedMethodHandle, MethodKey> cachedMethodKeys = new()
+        private readonly static Cache<ReflectionMethodHandle, MethodKey> methodKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes()
         };
 
-        private readonly static Cache<ReflectedMethodHandle, MethodKey> cachedCtorKeys = new()
+        private readonly static Cache<ReflectionMethodHandle, MethodKey> ctorKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes()
         };
 
         private int? hashCode;
 
-        public ReflectedHandle Core { readonly get; init; }
+        public ReflectionHandle Core { readonly get; init; }
 
         public StructuralArray<ParameterKey> ParameterKeys { readonly get; init; }
 
         public Type? ReturnType { readonly get; init; }
 
-        public ReflectedMethodHandle(ReflectedHandle core)
+        public ReflectionMethodHandle(ReflectionHandle core)
             :
             this()
         {
             Core = core;
         }
 
-        public static ReflectedMethodHandle Create()
+        public static ReflectionMethodHandle Create()
         {
-            return new ReflectedMethodHandle
+            return new ReflectionMethodHandle
             {
                 ParameterKeys = StructuralArray<ParameterKey>.Empty
             };
         }
 
-        public static bool operator ==(ReflectedMethodHandle left, ReflectedMethodHandle right)
+        public static bool operator ==(ReflectionMethodHandle left, ReflectionMethodHandle right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ReflectedMethodHandle left, ReflectedMethodHandle right)
+        public static bool operator !=(ReflectionMethodHandle left, ReflectionMethodHandle right)
         {
             return !(left == right);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectedMethodHandle WithCore(ReflectedHandle core)
+        public readonly ReflectionMethodHandle WithCore(ReflectionHandle core)
         {
-            return new ReflectedMethodHandle
+            return new ReflectionMethodHandle
             {
                 Core = core,
                 ParameterKeys = ParameterKeys,
@@ -70,11 +71,11 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectedMethodHandle WithParameterKeys(params ParameterKey[] paramKeys)
+        public readonly ReflectionMethodHandle WithParameterKeys(params ParameterKey[] paramKeys)
         {
             Guard.IsNotNull(paramKeys, nameof(paramKeys));
 
-            return new ReflectedMethodHandle
+            return new ReflectionMethodHandle
             {
                 Core = Core,
                 ParameterKeys = paramKeys.ToStructuralArray(),
@@ -83,11 +84,11 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectedMethodHandle WithParameterKeys(IEnumerable<ParameterKey> paramKeys)
+        public readonly ReflectionMethodHandle WithParameterKeys(IEnumerable<ParameterKey> paramKeys)
         {
             Guard.IsNotNull(paramKeys, nameof(paramKeys));
 
-            return new ReflectedMethodHandle
+            return new ReflectionMethodHandle
             {
                 Core = Core,
                 ParameterKeys = paramKeys.ToStructuralArray(),
@@ -96,11 +97,11 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectedMethodHandle WithParameterKeys(StructuralArray<ParameterKey> paramKeys)
+        public readonly ReflectionMethodHandle WithParameterKeys(StructuralArray<ParameterKey> paramKeys)
         {
             Guard.IsNotNull(paramKeys, nameof(paramKeys));
 
-            return new ReflectedMethodHandle
+            return new ReflectionMethodHandle
             {
                 Core = Core,
                 ParameterKeys = paramKeys,
@@ -109,9 +110,9 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectedMethodHandle WithReturnType(Type? returnType)
+        public readonly ReflectionMethodHandle WithReturnType(Type? returnType)
         {
-            return new ReflectedMethodHandle
+            return new ReflectionMethodHandle
             {
                 Core = Core,
                 ParameterKeys = ParameterKeys,
@@ -141,7 +142,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MethodInfo? GetMethod(bool throwIfNotFound)
         {
-            if (cachedMethodKeys.TryGet(this, out var methodKey)
+            if (methodKeys.TryGet(this, out var methodKey)
                 &&
                 CachedMembers.TryGetMethod(methodKey, out var method))
             {
@@ -151,18 +152,13 @@ namespace CCEnvs.Reflection
             if (!GetMethods().SingleOrDefault().Let(out method))
             {
                 if (throwIfNotFound)
-                    throw new InvalidOperationException($"Handle {this} not found any member");
+                    throw GetCannotFindMethodException();
 
                 return method;
             }
 
             if (Core.CacheResults)
-            {
-                if (cachedMethodKeys.TryAdd(this, GetMethodKey(), out var entry))
-                    entry.ExpirationTimeRelativeToNow = 20.Minutes();
-
-                CachedMembers.TryAddMethod(method);
-            }
+                CacheMethod(method);
 
             return method;
         }
@@ -180,7 +176,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ConstructorInfo? GetConstructor(bool throwIfNotFound)
         {
-            if (cachedCtorKeys.TryGet(this, out var ctorKey)
+            if (ctorKeys.TryGet(this, out var ctorKey)
                 &&
                 CachedMembers.TryGetConstructor(ctorKey, out var ctor))
             {
@@ -190,43 +186,18 @@ namespace CCEnvs.Reflection
             if (!GetConstructors().SingleOrDefault().Let(out ctor))
             {
                 if (throwIfNotFound)
-                    throw new InvalidOperationException($"Handle {this} not found any member");
+                    throw GetCannotFindMethodException();
 
                 return ctor;
             }
 
             if (Core.CacheResults)
-            {
-                if (cachedMethodKeys.TryAdd(this, GetConstructorKey(), out var entry))
-                    entry.ExpirationTimeRelativeToNow = 20.Minutes();
-
-                CachedMembers.TryAddMethod(ctor);
-            }
+                CacheConstructor(ctor);
 
             return ctor;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MethodKey GetMethodKey()
-        {
-            return new MethodKey
-            {
-                MemberPart = Core.GetMemberKey(MemberTypes.Method),
-                ParameterKeys = ParameterKeys
-            };
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MethodKey GetConstructorKey()
-        {
-            return new MethodKey
-            {
-                MemberPart = Core.GetMemberKey(MemberTypes.Constructor),
-                ParameterKeys = ParameterKeys
-            };
-        }
-
-        public readonly bool Equals(ReflectedMethodHandle other)
+        public readonly bool Equals(ReflectionMethodHandle other)
         {
             return Core == other.Core
                    &&
@@ -237,7 +208,7 @@ namespace CCEnvs.Reflection
 
         public readonly override bool Equals(object obj)
         {
-            return obj is ReflectedMethodHandle typed && Equals(typed);
+            return obj is ReflectionMethodHandle typed && Equals(typed);
         }
 
         public readonly override string ToString()
@@ -255,9 +226,30 @@ namespace CCEnvs.Reflection
             return hashCode.Value;
         }
 
+        private readonly InvalidOperationException GetCannotFindMethodException()
+        {
+            return new InvalidOperationException($"Cannot find any method by {this}");
+        }
+
+        private readonly void CacheMethod(MethodInfo method)
+        {
+            if (methodKeys.TryAdd(this, new MethodKey(method), out var entry))
+                entry.ExpirationTimeRelativeToNow = 20.Minutes();
+
+            CachedMembers.TryAddMethod(method);
+        }
+
+        private readonly void CacheConstructor(ConstructorInfo ctor)
+        {
+            if (ctorKeys.TryAdd(this, new MethodKey(ctor), out var entry))
+                entry.ExpirationTimeRelativeToNow = 20.Minutes();
+
+            CachedMembers.TryAddConstructor(ctor);
+        }
+
         public struct MethodsEnumerator : IEnumerator<MethodBase?>, IEnumerable<MethodBase>
         {
-            private readonly ReflectedMethodHandle reflectedHandle;
+            private readonly ReflectionMethodHandle reflectedHandle;
 
             private readonly IEnumerator<MethodBase> sourceEnumerator;
 
@@ -266,7 +258,7 @@ namespace CCEnvs.Reflection
             readonly object? IEnumerator.Current => Current;
 
             public MethodsEnumerator(
-                ReflectedMethodHandle handle,
+                ReflectionMethodHandle handle,
                 IEnumerable<MethodBase> source
                 )
                 :

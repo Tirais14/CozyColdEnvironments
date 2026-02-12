@@ -91,11 +91,9 @@ namespace CCEnvs
             if (type.IsClass)
                 return false;
 
-            if (!TypeCache.DefaultValues.TryGetValue(type, out object? defaultValue))
-            {
-                defaultValue = Activator.CreateInstance(type, nonPublic: true);
-                TypeCache.TryCacheDefaultValue(type, defaultValue);
-            }
+            //TODO: Cahing
+
+            var defaultValue = Activator.CreateInstance(type, nonPublic: true);
 
             if (value.Equals(defaultValue))
                 return true;

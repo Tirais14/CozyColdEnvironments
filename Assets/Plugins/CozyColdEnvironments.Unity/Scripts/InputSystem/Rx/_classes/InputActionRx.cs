@@ -21,10 +21,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private readonly ReactiveProperty<bool> isEnabled;
 
-        //private readonly CancellationTokenSource disposeCancellationTokenSource = new();
-
-        private Observable<Unit>? isButtonPressedObservable;
-
         public InputAction Action { get; }
 
         public Observable<CallbackContext> Raw => raw;
@@ -45,8 +41,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public bool IsEnabled => isEnabled.Value && Action.enabled;
 
-        //protected CancellationToken disposeCancellationToken => disposeCancellationTokenSource.Token;
-
         public InputActionRx(InputAction inputAction)
         {
             CC.Guard.IsNotNull(inputAction, nameof(inputAction));
@@ -66,17 +60,36 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public void Enable()
         {
+            ValidateDisposed();
+
             Action.Enable();
             isEnabled.Value = true;
         }
 
         public void Disable()
         {
+            ValidateDisposed();
+
             Action.Disable();
             isEnabled.Value = false;
         }
 
+        public Observable<bool> ObserveEnabled()
+        {
+            ValidateDisposed();
+
+            return isEnabled.Where(static x => x);
+        }
+
+        public Observable<bool> ObserveDisabled()
+        {
+            ValidateDisposed();
+
+            return isEnabled.Where(static x => !x);
+        }
+
         private bool disposed;
+
         public void Dispose() => Dispose(disposing: true);
         protected virtual void Dispose(bool disposing)
         {
@@ -85,9 +98,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
             if (disposing)
             {
-                //disposeCancellationTokenSource.Cancel();
-                //disposeCancellationTokenSource.Dispose();
-
                 disposables.DisposeEachAndClear();
 
                 Action.started -= OnRaw;
@@ -106,6 +116,12 @@ namespace CCEnvs.Unity.InputSystem.Rx
             }
 
             disposed = true;
+        }
+
+        protected void ValidateDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().ToString());
         }
 
         private void Setup()
@@ -138,16 +154,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
         {
             canceled.Execute(context);
         }
-
-        public Observable<bool> ObserveEnabled()
-        {
-            return isEnabled.Where(static x => x);
-        }
-
-        public Observable<bool> ObserveDisabled()
-        {
-            return isEnabled.Where(static x => !x);
-        }
     }
     public class InputActionRx<T> 
         :
@@ -157,6 +163,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         where T : struct
     {
         public T InputValue { get; private set; }
+
         public virtual Observable<T> TRaw { get; }
         public virtual Observable<T> TStarted { get; }
         public virtual Observable<T> TPerformed { get; }
@@ -166,15 +173,12 @@ namespace CCEnvs.Unity.InputSystem.Rx
             :
             base(inputAction)
         {
-            TRaw = Raw.Select(x => x.ReadValue<T>());
-            TStarted = Started.Select(x => x.ReadValue<T>());
-            TPerformed = Performed.Select(x => x.ReadValue<T>());
-            TCanceled = Canceled.Select(x => x.ReadValue<T>());
+            TRaw = Raw.Select(static x => x.ReadValue<T>());
+            TStarted = Started.Select(static x => x.ReadValue<T>());
+            TPerformed = Performed.Select(static x => x.ReadValue<T>());
+            TCanceled = Canceled.Select(static x => x.ReadValue<T>());
 
             TRaw.Subscribe(x => InputValue = x).AddTo(disposables);
-            //TStarted.Subscribe(x => InputValue = x).AddTo(disposables);
-            //TPerformed.Subscribe(x => InputValue = x).AddTo(disposables);
-            //TCanceled.Subscribe(x => InputValue = x).AddTo(disposables);
         }
     }
 }

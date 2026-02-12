@@ -1,15 +1,13 @@
 using CCEnvs.Reflection.Caching;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using UnityEngine.SocialPlatforms.Impl;
 
 #nullable enable
 namespace CCEnvs.Reflection
 {
-    public struct ReflectedHandle : IEquatable<ReflectedHandle>
+    public struct ReflectionHandle : IEquatable<ReflectionHandle>
     {
         private int? hashCode;
 
@@ -23,19 +21,19 @@ namespace CCEnvs.Reflection
 
         public bool CacheResults { get; set; }
 
-        public static bool operator ==(ReflectedHandle left, ReflectedHandle right)
+        public static bool operator ==(ReflectionHandle left, ReflectionHandle right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ReflectedHandle left, ReflectedHandle right)
+        public static bool operator !=(ReflectionHandle left, ReflectionHandle right)
         {
             return !(left == right);
         }
 
-        public static ReflectedHandle Create()
+        public static ReflectionHandle Create()
         {
-            return new ReflectedHandle
+            return new ReflectionHandle
             {
                 Bindings = BindingFlags.Default,
                 StringMatchSettings = StringMatchSettings.Default,
@@ -43,7 +41,7 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectedHandle WithType(Type? type = null)
+        public ReflectionHandle WithType(Type? type = null)
         {
             Type = type;
 
@@ -51,7 +49,7 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectedHandle WithBindings(BindingFlags bindings = BindingFlags.Default)
+        public ReflectionHandle WithBindings(BindingFlags bindings = BindingFlags.Default)
         {
             Bindings = bindings;
 
@@ -59,7 +57,7 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectedHandle WithBindings(StringMatchSettings stringMatchSettings = StringMatchSettings.Default)
+        public ReflectionHandle WithBindings(StringMatchSettings stringMatchSettings = StringMatchSettings.Default)
         {
             StringMatchSettings = stringMatchSettings;
 
@@ -67,7 +65,7 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectedHandle WithNameFilter(string? name)
+        public ReflectionHandle WithNameFilter(string? name)
         {
             NameFilter = name;
 
@@ -75,7 +73,7 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReflectedHandle WithCacheResults(bool state = true)
+        public ReflectionHandle WithCacheResults(bool state = true)
         {
             CacheResults = state;
 
@@ -92,9 +90,9 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectedMethodHandle ForMethods()
+        public readonly ReflectionMethodHandle ForMethods()
         {
-            return new ReflectedMethodHandle(this);
+            return new ReflectionMethodHandle(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,7 +141,7 @@ namespace CCEnvs.Reflection
             return members;
         }
 
-        public readonly bool Equals(ReflectedHandle other)
+        public readonly bool Equals(ReflectionHandle other)
         {
             return Type == other.Type
                    &&
@@ -158,7 +156,7 @@ namespace CCEnvs.Reflection
 
         public readonly override bool Equals(object obj)
         {
-            return obj is ReflectedMethodHandle typed && Equals(typed);
+            return obj is ReflectionMethodHandle typed && Equals(typed);
         }
 
         public readonly override string ToString()

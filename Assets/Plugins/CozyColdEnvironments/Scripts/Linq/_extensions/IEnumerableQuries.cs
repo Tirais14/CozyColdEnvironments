@@ -1,6 +1,5 @@
-using CCEnvs.Collections;
 using CCEnvs.Conversations;
-using CCEnvs.FuncLanguage;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -239,6 +238,252 @@ namespace CCEnvs.Linq
         {
             foreach (var item in source)
                 yield return item.To<TResult>();
+        }
+
+        public static T Single<T>(
+            this IEnumerable<T> source,
+            Func<Exception> notFoundExceptionFactory,
+            Func<Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(notFoundExceptionFactory, nameof(notFoundExceptionFactory));
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first  = default;
+
+            foreach (var item in source)
+            {
+                if (i++ > 0)
+                    throw notSingleExceptionFactory();
+
+                first = item;
+            }
+
+            if (i == 0)
+                throw notFoundExceptionFactory();
+
+            return first!;
+        }
+
+        public static T Single<T, TState>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<TState, Exception> notFoundExceptionFactory,
+            Func<TState, Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(notFoundExceptionFactory, nameof(notFoundExceptionFactory));
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (i++ > 0)
+                    throw notSingleExceptionFactory(state);
+
+                first = item;
+            }
+
+            if (i == 0)
+                throw notFoundExceptionFactory(state);
+
+            return first!;
+        }
+
+        public static T Single<T>(
+            this IEnumerable<T> source,
+            Func<T, bool> predicate,
+            Func<Exception> notFoundExceptionFactory,
+            Func<Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(predicate, nameof(predicate));
+            Guard.IsNotNull(notFoundExceptionFactory, nameof(notFoundExceptionFactory));
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (!predicate(item))
+                    continue;
+
+                if (i++ > 0)
+                    throw notSingleExceptionFactory();
+
+                first = item;
+            }
+
+            if (i == 0)
+                throw notFoundExceptionFactory();
+
+            return first!;
+        }
+
+        public static T Single<T, TState>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<T, TState, bool> predicate,
+            Func<TState, Exception> notFoundExceptionFactory,
+            Func<TState, Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(predicate, nameof(predicate));
+            Guard.IsNotNull(notFoundExceptionFactory, nameof(notFoundExceptionFactory));
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (!predicate(item, state))
+                    continue;
+
+                if (i++ > 0)
+                    throw notSingleExceptionFactory(state);
+
+                first = item;
+            }
+
+            if (i == 0)
+                throw notFoundExceptionFactory(state);
+
+            return first!;
+        }
+
+        public static T? SingleOrDefault<T>(
+            this IEnumerable<T> source,
+            Func<Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (i++ > 0)
+                    throw notSingleExceptionFactory();
+
+                first = item;
+            }
+
+            return first;
+        }
+
+        public static T? SingleOrDefault<T, TState>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<TState, Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (i++ > 0)
+                    throw notSingleExceptionFactory(state);
+
+                first = item;
+            }
+
+            return first;
+        }
+
+        public static T? SingleOrDefault<T>(
+            this IEnumerable<T> source,
+            Func<T, bool> predicate,
+            Func<Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(predicate, nameof(predicate));
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (!predicate(item))
+                    continue;
+
+                if (i++ > 0)
+                    throw notSingleExceptionFactory();
+
+                first = item;
+            }
+
+            return first;
+        }
+
+        public static T? SingleOrDefault<T, TState>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<T, TState, bool> predicate,
+            Func<TState, Exception> notSingleExceptionFactory
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(predicate, nameof(predicate));
+            Guard.IsNotNull(notSingleExceptionFactory, nameof(notSingleExceptionFactory));
+
+            int i = 0;
+
+            T? first = default;
+
+            foreach (var item in source)
+            {
+                if (!predicate(item, state))
+                    continue;
+
+                if (i++ > 0)
+                    throw notSingleExceptionFactory(state);
+
+                first = item;
+            }
+
+            return first;
+        }
+
+        public static IEnumerable<TOut> Select<T, TState, TOut>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<T, TState, TOut> selector
+            )
+        {
+            return new SelectStatedEnumerator<T, TState, TOut>(source, state, selector);
+        }
+
+        public static IEnumerable<T> Where<T, TState>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<T, TState, bool> predicate
+            )
+        {
+            return new WhereStatedEnumerator<T, TState>(source, state, predicate);
         }
     }
 }

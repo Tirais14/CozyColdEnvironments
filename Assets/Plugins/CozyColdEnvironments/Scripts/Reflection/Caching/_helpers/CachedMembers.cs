@@ -17,6 +17,8 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
+        private readonly static Cache<(MemberInfo member, bool prop, bool setter)> 
+
         private readonly static Cache<ParameterKey, ParameterInfo> parameters = new()
         {
             ExpirationScanFrequency = 1.Minutes()
@@ -27,7 +29,10 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
-        private readonly static Cache<MethodBase, Delegate> methodDelegates = new();
+        private readonly static Cache<MethodBase, Delegate> methodDelegates = new()
+        {
+            ExpirationScanFrequency = 1.Minutes()
+        };
 
         private readonly static Cache<MembersKey, MemberInfo[]> typeMembers = new()
         {
@@ -78,7 +83,7 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out ConstructorInfo? constructor
             )
         {
-            key = key.WithMemberPart(key.MemberPart.WithName(".ctor"));
+            key = key.WithMemberPart(key.Core.WithName(".ctor"));
 
             if (!methods.TryGet(key, out var tConstructor))
             {
@@ -141,7 +146,7 @@ namespace CCEnvs.Reflection.Caching
             return true;
         }
 
-        public static bool TryAddMethod(
+        public static bool TryAddConstructor(
             ConstructorInfo ctor,
             TimeSpan? expirationTimeRelativeToNow = null
             )

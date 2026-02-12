@@ -149,7 +149,7 @@ namespace CCEnvs.Reflection
 
             var result = Activator.CreateInstance(value);
 
-            TypeCache.TryCacheDefaultValue(value, result);
+            //TODO: Caching
 
             return result;
         }
