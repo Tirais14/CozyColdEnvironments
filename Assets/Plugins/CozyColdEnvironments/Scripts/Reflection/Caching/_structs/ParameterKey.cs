@@ -1,5 +1,6 @@
 using CCEnvs.Reflection.Caching;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -11,8 +12,6 @@ namespace CCEnvs.Reflection
     {
         private int? cachedHashCode;
 
-        private string? cachedString;
-
         public MemberKey MemberPart { readonly get; init; }
 
         public bool ByRef { readonly get; init; }
@@ -20,7 +19,6 @@ namespace CCEnvs.Reflection
         public ParameterKey(ParameterInfo param)
         {
             cachedHashCode = null;
-            cachedString = null;
 
             MemberPart = new MemberKey(param.Member);
 
@@ -63,18 +61,31 @@ namespace CCEnvs.Reflection
         }
 
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             if (this == default)
-            {
-                cachedString = StringHelper.EMPTY_OBJECT;
+                return StringHelper.EMPTY_OBJECT;
 
-                return cachedString;
-            }
+            return $"({nameof(MemberPart)}: {MemberPart}; {nameof(ByRef)}: {ByRef})";
+        }
+    }
 
-            cachedString = $"({nameof(MemberPart)}: {MemberPart}; {nameof(ByRef)}: {ByRef})";
+    public static class ParameterKeyExtensions
+    {
+        public static ParameterModifier ToParameterModifiers(
+            this ICollection<ParameterKey> source
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
 
-            return cachedString;
+            var mods = new ParameterModifier(source.Count);
+
+            int i = 0;
+
+            foreach (var paramKey in source)
+                mods[i++] = paramKey.ByRef;
+
+            return mods;
         }
     }
 }

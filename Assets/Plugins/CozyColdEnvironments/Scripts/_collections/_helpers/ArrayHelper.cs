@@ -203,5 +203,13 @@ namespace CCEnvs.Collections
         {
             return array is not null && array.IsNotEmpty();
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static StructuralArray<T> ToStructuralArray<T>(this IEnumerable<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return new StructuralArray<T>(source);
+        }
     }
 }

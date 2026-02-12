@@ -14,7 +14,7 @@ using UnityEditor;
 #pragma warning disable S3267
 namespace CCEnvs.Caching
 {
-    public sealed class Cache<TKey, TValue> : ICache<TKey, TValue>
+    public sealed class Cache<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     {
         private readonly ConcurrentDictionary<TKey, ICacheEntry<TValue>> entries = new();
 
@@ -178,6 +178,11 @@ namespace CCEnvs.Caching
             entry.SetValue(value);
 
             return true;
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            return entries.ContainsKey(key);
         }
 
         public void Clear()

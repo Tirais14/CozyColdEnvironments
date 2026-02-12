@@ -11,11 +11,9 @@ namespace CCEnvs.Reflection.Caching
     {
         private int? cachedHashCode;
 
-        private string? cachedString;
-
-        public string Name { readonly get; init; }
+        public string? Name { readonly get; init; }
         
-        public Type DeclaringType { readonly get; init; }
+        public Type? DeclaringType { readonly get; init; }
 
         public Type? UnderlyingType { readonly get; init; }
 
@@ -24,7 +22,6 @@ namespace CCEnvs.Reflection.Caching
         public MemberKey(MemberInfo member)
         {
             cachedHashCode = null;
-            cachedString = null;
 
             Name = member.Name;
             DeclaringType = member.DeclaringType;
@@ -75,10 +72,8 @@ namespace CCEnvs.Reflection.Caching
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MemberKey WithName(string name)
+        public readonly MemberKey WithName(string? name)
         {
-            Guard.IsNotNull(name, nameof(name));
-
             return new MemberKey
             {
                 Name = name,
@@ -89,7 +84,7 @@ namespace CCEnvs.Reflection.Caching
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MemberKey WithDeclaringType(Type declaringType)
+        public readonly MemberKey WithDeclaringType(Type? declaringType)
         {
             Guard.IsNotNull(declaringType, nameof(declaringType));
 
@@ -154,15 +149,9 @@ namespace CCEnvs.Reflection.Caching
         public override string ToString()
         {
             if (this == default)
-            {
-                cachedString = StringHelper.EMPTY_OBJECT;
+                return StringHelper.EMPTY_OBJECT;
 
-                return cachedString;
-            }
-
-            cachedString = $"({nameof(Name)}: {Name}; {nameof(MemberType)}: {MemberType}; {nameof(DeclaringType)}: {DeclaringType})";
-
-            return cachedString;
+            return $"({nameof(Name)}: {Name}; {nameof(MemberType)}: {MemberType}; {nameof(DeclaringType)}: {DeclaringType})";
         }
     }
 }

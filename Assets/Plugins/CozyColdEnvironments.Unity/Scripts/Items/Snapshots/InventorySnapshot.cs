@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.Items.Snapshots
         [Space(8f)]
 
         [SerializeField]
-        protected ItemContainerSnapshot[] itemContainers = new Arr<ItemContainerSnapshot>();
+        protected ItemContainerSnapshot[] itemContainers = new arr<ItemContainerSnapshot>();
 
         [SerializeField]
         protected bool autoSize;

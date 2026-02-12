@@ -2,7 +2,9 @@ using CCEnvs.Caching;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 
 #nullable enable
@@ -25,13 +27,16 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
+        private readonly static Cache<MembersKey, MemberInfo[]> typeMembers = new()
+        {
+            ExpirationScanFrequency = 1.Minutes()
+        };
+
         public static bool TryGetMember(
             MemberKey key, 
             [NotNullWhen(true)] out MemberInfo? member
             )
         {
-            CC.Guard.IsNotDefault(key, nameof(key));
-
             return members.TryGet(key, out member);
         }
 
@@ -40,8 +45,6 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out ParameterInfo? param
             )
         {
-            CC.Guard.IsNotDefault(key, nameof(key));
-
             return parameters.TryGet(key, out param);
         }
 
@@ -50,8 +53,6 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out MethodInfo? method
             )
         {
-            CC.Guard.IsNotDefault(key, nameof(key));
-
             if (!methods.TryGet(key, out var tMethod))
             {
                 method = null;
@@ -67,8 +68,6 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out ConstructorInfo? constructor
             )
         {
-            CC.Guard.IsNotDefault(key, nameof(key));
-
             key = key.WithMemberPart(key.MemberPart.WithName(".ctor"));
 
             if (!methods.TryGet(key, out var tConstructor))
@@ -79,6 +78,14 @@ namespace CCEnvs.Reflection.Caching
 
             constructor = (ConstructorInfo)tConstructor;
             return false;
+        }
+
+        public static bool TryGetTypeMembers(
+            MembersKey key,
+            [NotNullWhen(true)] out MemberInfo[]? members
+            )
+        {
+            return typeMembers.TryGet(key, out members);
         }
 
         public static void AddMember(
@@ -124,6 +131,23 @@ namespace CCEnvs.Reflection.Caching
 
             if (methods.TryAdd(ctor, ctor, out var entry))
                 entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+        }
+
+        public static void AddTypeMembers(
+            MembersKey key, 
+            IEnumerable<MemberInfo> members,
+            TimeSpan? expirationTimeRelativeToNow = null)
+        {
+            CC.Guard.IsNotNull(members, nameof(members));
+
+            if (typeMembers.ContainsKey(key))
+                return;
+
+            var entry = typeMembers.CreateEntry(key);
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+
+            entry.SetValue(members.ToArray());
         }
     }
 }

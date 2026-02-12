@@ -152,6 +152,11 @@ namespace CCEnvs
             {
                 return CannotCreateInstance(type.ToString(), msg);
             }
+
+            public static NotSupportedException ReadOnlyCollection<T>(T collection)
+            {
+                return new NotSupportedException($"Collection {collection} is read only");
+            }
         }
 
 

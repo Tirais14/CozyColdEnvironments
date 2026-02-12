@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Collections
 {
-    public readonly struct Arr<T> : IEquatable<Arr<T>>
+    public readonly struct arr<T> : IEquatable<arr<T>>
     {
         private readonly T[] value;
 
@@ -21,34 +21,34 @@ namespace CCEnvs.Collections
 
         public bool IsDefault { get; }
 
-        public Arr(int size)
+        public arr(int size)
         {
             value = new T[size];
             IsDefault = false;
         }
 
-        public static bool operator ==(Arr<T> left, Arr<T> right)
+        public static bool operator ==(arr<T> left, arr<T> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Arr<T> left, Arr<T> right)
+        public static bool operator !=(arr<T> left, arr<T> right)
         {
             return !(left == right);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator T[](Arr<T> arr)
+        public static implicit operator T[](arr<T> arr)
         {
             return arr.value;
         }
 
         public override bool Equals(object? obj)
         {
-            return obj is Arr<T> arr && Equals(arr);
+            return obj is arr<T> arr && Equals(arr);
         }
 
-        public bool Equals(Arr<T> other)
+        public bool Equals(arr<T> other)
         {
             return value == other.Value
                    &&
