@@ -88,52 +88,64 @@ namespace CCEnvs.Reflection.Caching
             return typeMembers.TryGet(key, out members);
         }
 
-        public static void AddMember(
+        public static bool TryAddMember(
             MemberInfo member, 
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(member, nameof(member));
 
-            if (members.TryAdd(member, member, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            if (!members.TryAdd(member, member, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
         }
 
 
-        public static void AddParameter(
+        public static bool TRyAddParameter(
             ParameterInfo param,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(param, nameof(param));
 
-            if (parameters.TryAdd(param, param, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            if (!parameters.TryAdd(param, param, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
         }
 
-        public static void AddMethod(
+        public static bool TryAddMethod(
             MethodInfo method,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(method, nameof(method));
 
-            if (methods.TryAdd(method, method, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            if (!methods.TryAdd(method, method, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
         }
 
-        public static void AddMethod(
+        public static bool TryAddMethod(
             ConstructorInfo ctor,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(ctor, nameof(ctor));
 
-            if (methods.TryAdd(ctor, ctor, out var entry))
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            if (!methods.TryAdd(ctor, ctor, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
         }
 
-        public static void AddTypeMembers(
+        public static bool TryAddTypeMembers(
             MembersKey key, 
             IEnumerable<MemberInfo> members,
             TimeSpan? expirationTimeRelativeToNow = null)
@@ -141,13 +153,15 @@ namespace CCEnvs.Reflection.Caching
             CC.Guard.IsNotNull(members, nameof(members));
 
             if (typeMembers.ContainsKey(key))
-                return;
+                return false;
 
             var entry = typeMembers.CreateEntry(key);
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
 
             entry.SetValue(members.ToArray());
+
+            return true;
         }
     }
 }
