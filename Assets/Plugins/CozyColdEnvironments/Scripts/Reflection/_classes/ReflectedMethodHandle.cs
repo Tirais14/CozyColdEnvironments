@@ -9,19 +9,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using UnityEngine.Analytics;
 
 #nullable enable
 namespace CCEnvs.Reflection
 {
     public struct ReflectedMethodHandle : IEquatable<ReflectedMethodHandle>
     {
-        private static Cache<ReflectedMethodHandle, MethodKey> cachedMethodKeys = new()
+        private readonly static Cache<ReflectedMethodHandle, MethodKey> cachedMethodKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes()
         };
 
-        private static Cache<ReflectedMethodHandle, MethodKey> cachedCtorKeys = new()
+        private readonly static Cache<ReflectedMethodHandle, MethodKey> cachedCtorKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes()
         };

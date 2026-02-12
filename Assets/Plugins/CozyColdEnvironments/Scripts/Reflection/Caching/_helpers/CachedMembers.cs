@@ -27,6 +27,8 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
+        private readonly static Cache<MethodBase, Delegate> methodDelegates = new();
+
         private readonly static Cache<MembersKey, MemberInfo[]> typeMembers = new()
         {
             ExpirationScanFrequency = 1.Minutes()
@@ -61,6 +63,14 @@ namespace CCEnvs.Reflection.Caching
 
             method = (MethodInfo)tMethod;
             return true;
+        }
+
+        public static bool TryGetMethodDelegate(
+            MethodBase method,
+            [NotNullWhen(true)] out Delegate? dlg
+            )
+        {
+            return methodDelegates.TryGet(method, out dlg);
         }
 
         public static bool TryGetConstructor(
@@ -139,6 +149,21 @@ namespace CCEnvs.Reflection.Caching
             Guard.IsNotNull(ctor, nameof(ctor));
 
             if (!methods.TryAdd(ctor, ctor, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
+        }
+
+        public static bool TryAddMethodDelegate(
+            MethodBase method,
+            Delegate dlg,
+            TimeSpan? expirationTimeRelativeToNow = null
+            )
+        {
+            Guard.IsNotNull(method, nameof(method));
+
+            if (!methodDelegates.TryAdd(method, dlg, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
