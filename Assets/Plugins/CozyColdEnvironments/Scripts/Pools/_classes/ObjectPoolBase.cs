@@ -2,8 +2,9 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using R3;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 #nullable enable
 #pragma warning disable S3267
@@ -12,8 +13,9 @@ namespace CCEnvs.Pools
     public abstract class ObjectPoolBase<T> : IObjectPoolBase<T>
         where T : class
     {
-        protected readonly Stack<T> inactiveItems;
-        protected readonly Dictionary<T, PooledHandle<T>> activeItemHandles;
+        protected readonly ConcurrentStack<T> inactiveItems;
+
+        private readonly ConcurrentDictionary<T, PooledHandle<T>> activeItems;
 
         protected ReactiveCommand<T>? getCmd;
         protected ReactiveCommand<T>? returnCmd;
@@ -21,7 +23,7 @@ namespace CCEnvs.Pools
         protected T? fastObject;
 
         public int Count => ActiveCount + InactiveCount;
-        public int ActiveCount => activeItemHandles.Count;
+        public int ActiveCount => activeItems.Count;
         public int InactiveCount => inactiveItems.Count + (fastObject is not null ? 1 : 0);
 
         public abstract bool HasFactory { get; }
@@ -42,8 +44,10 @@ namespace CCEnvs.Pools
             _ = maxSize;
 
             DefaultCapacity = capacity;
-            inactiveItems = new Stack<T>(capacity);
-            activeItemHandles = new Dictionary<T, PooledHandle<T>>(capacity, new ReferenceEqualityComparer<T>());
+
+            inactiveItems = new ConcurrentStack<T>();
+
+            activeItems = new ConcurrentDictionary<T, PooledHandle<T>>();
 
             Type objType = typeof(T);
 
@@ -101,12 +105,22 @@ namespace CCEnvs.Pools
             {
                 DisposeInactiveItems();
 
-                activeItemHandles.Values.DisposeEach();
-                activeItemHandles.Clear();
+                activeItems.Values.DisposeEach();
+                activeItems.Clear();
 
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
-                fastObject = null;
+
+                if (fastObject != null)
+                {
+                    T? exchanged;
+
+                    do
+                    {
+                        exchanged = Interlocked.Exchange(ref fastObject, null);
+                    }
+                    while (exchanged != null);
+                }
             }
 
             disposed = true;
@@ -122,7 +136,7 @@ namespace CCEnvs.Pools
 
             TryProcessPoolableObjectOnGet(handledObj);
 
-            activeItemHandles.Add(handledObj.Value, handledObj);
+            activeItems.TryAdd(obj, handledObj);
         }
 
         protected virtual void OnGet(PooledHandle<T> handledObj)
@@ -132,7 +146,7 @@ namespace CCEnvs.Pools
 
         protected virtual void ReturnCore(T obj)
         {
-            activeItemHandles.Remove(obj);
+            activeItems.TryRemove(obj, out _);
 
 #if UNITY_2017_1_OR_NEWER
 
@@ -144,9 +158,9 @@ namespace CCEnvs.Pools
 
         protected virtual void OnReturn(T obj)
         {
-            if (fastObject is null)
-                fastObject = obj;
-            else
+            var tFastObject = fastObject;
+
+            if (Interlocked.CompareExchange(ref fastObject, obj, tFastObject) != tFastObject)
                 inactiveItems.Push(obj);
 
             returnCmd?.Execute(obj);
@@ -180,17 +194,11 @@ namespace CCEnvs.Pools
                 OnPoolableReturn((IPoolable)obj);
         }
 
-        protected T GetFromInactive()
+        protected bool TryGetFromInactive([NotNullWhen(true)] out T? result)
         {
-            if (fastObject is not null)
-            {
-                var t = fastObject;
-                fastObject = null;
-
-                return t;
-            }
-
-            return inactiveItems.Pop();
+            return Interlocked.CompareExchange(ref fastObject, null, fastObject).Let(out result)
+                   ||
+                   inactiveItems.TryPop(out result);
         }
 
         protected bool IsObjectValid([NotNullWhen(true)] T? obj)
@@ -202,11 +210,6 @@ namespace CCEnvs.Pools
                 return true;
 
             return ((IPoolable)obj).IsValid;
-        }
-
-        private void RemoveFromActive(T obj)
-        {
-            activeItemHandles.Remove(obj);
         }
 
         private void OnPoolableGet(IPoolable poolable, PooledHandle<T> handledObj)
@@ -222,7 +225,7 @@ namespace CCEnvs.Pools
         private void OnPoolableReturn(IPoolable poolable)
         {
             if (poolable.PoolHandle.IsSome)
-                poolable.PoolHandle.Raw.AsObsolete<PooledHandle<T>>().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
+                poolable.PoolHandle.Raw.As<PooledHandle<T>>().Maybe().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
 
             poolable.PoolHandle = Maybe<IDisposable>.None;
 

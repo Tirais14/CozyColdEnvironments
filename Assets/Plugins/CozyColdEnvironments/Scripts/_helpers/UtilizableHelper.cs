@@ -10,69 +10,77 @@ namespace CCEnvs
 {
     public static class UtilizableHelper
     {
-        public static void UtilizeOrDispose(this object source)
+        public static void TryUtilizeOrDispose(this object source)
         {
             if (source.IsNull())
                 return;
 
             if (source.Is<IUtilizable>(out var utilizable))
-            {
                 utilizable.Utilize();
-                return;
-            }
             else if (source.Is<IDisposable>(out var disposable))
                 disposable.Dispose();
         }
 
-        public static void UtilizeEach<T>(this IEnumerable<T>? source)
+        public static void UtilizeEach<T>(this IEnumerable<T>? source, bool bufferized = true)
             where T : IUtilizable
         {
             if (source.IsNullOrEmpty())
                 return;
 
-            using var utilizables = source.Cast<IUtilizable>().EnumerableToArrayPooled();
-
-            foreach (var item in utilizables.GetSpan())
+            if (bufferized)
             {
-                try
+                using var utilizables = source.Cast<IUtilizable>().EnumerableToArrayPooled();
+
+                foreach (var item in utilizables.GetSpan())
                 {
-                    item.Utilize();
-                }
-                catch (Exception ex)
-                {
-                    item.PrintException(ex);
+                    try
+                    {
+                        item.Utilize();
+                    }
+                    catch (Exception ex)
+                    {
+                        item.PrintException(ex);
+                    }
                 }
             }
-
-            return;
+            else
+            {
+                foreach (var item in source)
+                {
+                    try
+                    {
+                        item.Utilize();
+                    }
+                    catch (Exception ex)
+                    {
+                        item.PrintException(ex);
+                    }
+                }
+            }
         }
 
-        public static void UtilizeEachAndClear<T>(this ICollection<T>? source)
+        public static void UtilizeEachAndClear<T>(this ICollection<T>? source, bool bufferized = true)
             where T : IUtilizable
         {
             if (source.IsNullOrEmpty())
                 return;
 
-            source.UtilizeEach();
-
-            if (source.IsMutableCollection())
-                source.Clear();
+            source.UtilizeEach(bufferized);
+            source.Clear();
         }
 
-        public static void UtilizeOrDisposeEach<T>(this IEnumerable<T>? source)
+        public static void UtilizeOrDisposeEach<T>(this IEnumerable<T>? source, bool bufferized = true)
         {
             if (CachedTypeof<T>.Type.IsType<IUtilizable>())
-                source.Cast<IUtilizable>().UtilizeEach();
+                source.Cast<IUtilizable>().UtilizeEach(bufferized);
             else if (CachedTypeof<T>.Type.IsType<IDisposable>())
-                source.Cast<IDisposable>().DisposeEach();
+                source.Cast<IDisposable>().DisposeEach(bufferized);
         }
 
-        public static void UtilizeOrDisposeAndClear<T>(this ICollection<T> source)
+        public static void UtilizeOrDisposeAndClear<T>(this ICollection<T> source, bool bufferized = true)
         {
-            source.UtilizeOrDisposeEach();
-
-            if (source.IsMutableCollection())
-                source.Clear();
+            source.UtilizeOrDisposeEach(bufferized);
+            source.Clear();
         }
     }
 }

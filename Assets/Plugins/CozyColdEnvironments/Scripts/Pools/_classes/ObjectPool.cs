@@ -36,7 +36,7 @@ namespace CCEnvs.Pools
                     Return(obj);
                 }
 
-                obj = GetFromInactive();
+                TryGetFromInactive(out obj);
             }
 
             var handle = CreateHandle(obj);

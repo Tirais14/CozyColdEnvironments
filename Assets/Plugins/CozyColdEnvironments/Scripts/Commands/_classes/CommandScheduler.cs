@@ -319,7 +319,7 @@ namespace CCEnvs.Patterns.Commands
 
                 cmdDelayFrameCount = 0;
 
-                cmd.UtilizeOrDispose();
+                cmd.TryUtilizeOrDispose();
 
                 cmd = null;
             }

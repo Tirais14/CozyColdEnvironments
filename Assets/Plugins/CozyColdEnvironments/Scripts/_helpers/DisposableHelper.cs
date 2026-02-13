@@ -9,34 +9,51 @@ namespace CCEnvs
 {
     public static class DisposableHelper
     {
-        public static void DisposeEach<T>(this IEnumerable<T>? disposables)
+        public static void DisposeEach<T>(this IEnumerable<T>? disposables, bool bufferized = true)
             where T : IDisposable
         {
             if (disposables.IsNull())
                 return;
 
-            using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
-
-            foreach (var item in disposablesPooled.GetSpan())
+            if (bufferized)
             {
-                try
+                using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
+
+                foreach (var item in disposablesPooled.GetSpan())
                 {
-                    item.Dispose();
+                    try
+                    {
+                        item.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        item.PrintException(ex);
+                    }
                 }
-                catch (Exception ex)
+            }
+            else
+            {
+                foreach (var item in disposables)
                 {
-                    item.PrintException(ex);
+                    try
+                    {
+                        item.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        item.PrintException(ex);
+                    }
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeEachAndClear(this ICollection<IDisposable>? source)
+        public static void DisposeEachAndClear(this ICollection<IDisposable>? source, bool bufferized = true)
         {
             if (source.IsNull())
                 return;
 
-            source.DisposeEach();
+            source.DisposeEach(bufferized);
             source.Clear();
         }
     }

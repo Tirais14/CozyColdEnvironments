@@ -1,9 +1,8 @@
 using CCEnvs.Collections;
-using System;
 using System.Threading;
 
 #nullable enable
-namespace CCEnvs
+namespace CCEnvs.Threading
 {
     public static class CancellationTokenHelper
     {
