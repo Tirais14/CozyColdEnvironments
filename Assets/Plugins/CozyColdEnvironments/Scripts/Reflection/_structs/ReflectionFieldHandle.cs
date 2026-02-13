@@ -103,7 +103,7 @@ namespace CCEnvs.Reflection
 
         }
 
-        public readonly bool IsPropertyTypeMatch(Type fieldType)
+        public readonly bool IsFieldTypeMatch(Type fieldType)
         {
             if (FieldTypeFilter is null)
                 return true;

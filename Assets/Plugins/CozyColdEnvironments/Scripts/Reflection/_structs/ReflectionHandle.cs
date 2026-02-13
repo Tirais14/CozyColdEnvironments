@@ -257,7 +257,7 @@ namespace CCEnvs.Reflection
             if (cachedMemberKeys.TryAdd(this, new MemberKey(member), out var entry))
                 entry.ExpirationTimeRelativeToNow = GetCacheExpirationTimeRelativeToNowOrDefault();
 
-            CachedMembers.TryAddMemberUntyped(member, GetCacheExpirationTimeRelativeToNowOrDefault())
+            CachedMembers.TryAddMemberUntyped(member, GetCacheExpirationTimeRelativeToNowOrDefault());
         }
 
         private readonly void CacheMembers(MemberInfo[] members)
