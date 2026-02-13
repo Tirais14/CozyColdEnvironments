@@ -2,9 +2,7 @@ using CCEnvs.Caching;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 
 #nullable enable
@@ -17,7 +15,15 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
-        private readonly static Cache<(MemberInfo member, bool prop, bool setter)> 
+        private readonly static Cache<FieldKey, FieldInfo> fields = new()
+        {
+            ExpirationScanFrequency = 1.Minutes()
+        };
+
+        private readonly static Cache<PropertyKey, PropertyInfo> props = new()
+        {
+            ExpirationScanFrequency = 1.Minutes()
+        };
 
         private readonly static Cache<ParameterKey, ParameterInfo> parameters = new()
         {
@@ -29,15 +35,7 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
-        private readonly static Cache<MethodBase, Delegate> methodDelegates = new()
-        {
-            ExpirationScanFrequency = 1.Minutes()
-        };
-
-        private readonly static Cache<MembersKey, MemberInfo[]> typeMembers = new()
-        {
-            ExpirationScanFrequency = 1.Minutes()
-        };
+        #region Getters
 
         public static bool TryGetMember(
             MemberKey key, 
@@ -45,6 +43,22 @@ namespace CCEnvs.Reflection.Caching
             )
         {
             return members.TryGet(key, out member);
+        }
+
+        public static bool TryGetField(
+            FieldKey key,
+            [NotNullWhen(true)] out FieldInfo? field
+            )
+        {
+            return fields.TryGet(key, out field);
+        }
+
+        public static bool TryGetProperty(
+            PropertyKey key,
+            [NotNullWhen(true)] out PropertyInfo? prop
+            )
+        {
+            return props.TryGet(key, out prop);
         }
 
         public static bool TryGetParameter(
@@ -70,14 +84,6 @@ namespace CCEnvs.Reflection.Caching
             return true;
         }
 
-        public static bool TryGetMethodDelegate(
-            MethodBase method,
-            [NotNullWhen(true)] out Delegate? dlg
-            )
-        {
-            return methodDelegates.TryGet(method, out dlg);
-        }
-
         public static bool TryGetConstructor(
             MethodKey key,
             [NotNullWhen(true)] out ConstructorInfo? constructor
@@ -95,13 +101,76 @@ namespace CCEnvs.Reflection.Caching
             return false;
         }
 
-        public static bool TryGetTypeMembers(
-            MembersKey key,
-            [NotNullWhen(true)] out MemberInfo[]? members
+        public static bool TryGetMemberUntyped(
+            object key,
+            MemberTypes memberType,
+            [NotNullWhen(true)] out MemberInfo? member
             )
         {
-            return typeMembers.TryGet(key, out members);
+            switch (memberType)
+            {
+                case MemberTypes.All:
+                    throw new NotImplementedException();
+                case MemberTypes.Constructor:
+                    {
+                        if (!methods.TryGet((MethodKey)key, out var ctor))
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        member = ctor;
+                        return true;
+                    }
+                case MemberTypes.Custom:
+                    throw new NotImplementedException();
+                case MemberTypes.Event:
+                    throw new NotImplementedException();
+                case MemberTypes.Field:
+                    {
+                        if (!fields.TryGet((FieldKey)key, out var field))
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        member = field;
+                        return true;
+                    }
+                case MemberTypes.Method:
+                    {
+                        if (!methods.TryGet((MethodKey)key, out var method))
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        member = method;
+                        return true;
+                    }
+                case MemberTypes.NestedType:
+                    throw new NotImplementedException();
+                case MemberTypes.Property:
+                    {
+                        if (!props.TryGet((PropertyKey)key, out var prop))
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        member = prop;
+                        return true;
+                    }
+                case MemberTypes.TypeInfo:
+                    throw new NotImplementedException();
+                default:
+                    throw new InvalidOperationException(memberType.ToString());
+            }
         }
+
+        #endregion Getters
+
+        #region AddMethods
 
         public static bool TryAddMember(
             MemberInfo member, 
@@ -117,6 +186,33 @@ namespace CCEnvs.Reflection.Caching
             return true;
         }
 
+        public static bool TryAddField(
+            FieldInfo field,
+            TimeSpan? expirationTimeRelativeToNow = null
+            )
+        {
+            Guard.IsNotNull(field, nameof(field));
+
+            if (!fields.TryAdd(field, field, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
+        }
+
+        public static bool TryAddProperty(
+            PropertyInfo prop,
+            TimeSpan? expirationTimeRelativeToNow = null
+            )
+        {
+            Guard.IsNotNull(prop, nameof(prop));
+
+            if (!props.TryAdd(prop, prop, out var entry))
+                return false;
+
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            return true;
+        }
 
         public static bool TRyAddParameter(
             ParameterInfo param,
@@ -160,38 +256,28 @@ namespace CCEnvs.Reflection.Caching
             return true;
         }
 
-        public static bool TryAddMethodDelegate(
-            MethodBase method,
-            Delegate dlg,
+        public static bool TryAddMemberUntyped(
+            MemberInfo member,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
-            Guard.IsNotNull(method, nameof(method));
+            Guard.IsNotNull(member, nameof(member));
 
-            if (!methodDelegates.TryAdd(method, dlg, out var entry))
-                return false;
+            expirationTimeRelativeToNow ??= 20.Minutes();
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
-            return true;
+            switch (member)
+            {
+                case MethodInfo method:
+                    return TryAddMethod(method, expirationTimeRelativeToNow);
+                case FieldInfo field:
+                    return TryAddField(field, expirationTimeRelativeToNow);
+                    case PropertyInfo prop:
+                        return TryAddProperty()
+                default:
+                    throw new InvalidOperationException(member.GetType().Name);
+            }
         }
 
-        public static bool TryAddTypeMembers(
-            MembersKey key, 
-            IEnumerable<MemberInfo> members,
-            TimeSpan? expirationTimeRelativeToNow = null)
-        {
-            CC.Guard.IsNotNull(members, nameof(members));
-
-            if (typeMembers.ContainsKey(key))
-                return false;
-
-            var entry = typeMembers.CreateEntry(key);
-
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
-
-            entry.SetValue(members.ToArray());
-
-            return true;
-        }
+        #endregion AddMethods
     }
 }

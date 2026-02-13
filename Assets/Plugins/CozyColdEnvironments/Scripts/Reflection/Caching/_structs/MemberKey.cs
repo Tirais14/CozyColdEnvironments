@@ -15,8 +15,6 @@ namespace CCEnvs.Reflection.Caching
         
         public Type? DeclaringType { readonly get; init; }
 
-        public Type? UnderlyingType { readonly get; init; }
-
         public MemberTypes MemberType { readonly get; init; }
 
         public MemberKey(MemberInfo member)
@@ -25,22 +23,7 @@ namespace CCEnvs.Reflection.Caching
 
             Name = member.Name;
             DeclaringType = member.DeclaringType;
-            UnderlyingType = null;
             MemberType = member.MemberType;
-        }
-
-        public MemberKey(FieldInfo field)
-            :
-            this((MemberInfo)field)
-        {
-            UnderlyingType = field.FieldType;
-        }
-
-        public MemberKey(PropertyInfo prop)
-            :
-            this((MemberInfo)prop)
-        {
-            UnderlyingType = prop.PropertyType;
         }
 
         public static bool operator ==(MemberKey left, MemberKey right)
@@ -60,25 +43,12 @@ namespace CCEnvs.Reflection.Caching
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator MemberKey(FieldInfo field)
-        {
-            return new MemberKey(field);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator MemberKey(PropertyInfo prop)
-        {
-            return new MemberKey(prop);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MemberKey WithName(string? name)
         {
             return new MemberKey
             {
                 Name = name,
                 DeclaringType = DeclaringType,
-                UnderlyingType = UnderlyingType,
                 MemberType = MemberType
             };
         }
@@ -92,21 +62,6 @@ namespace CCEnvs.Reflection.Caching
             {
                 Name = Name,
                 DeclaringType = declaringType,
-                UnderlyingType = UnderlyingType,
-                MemberType = MemberType
-            };
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly MemberKey WithUnderlyingType(Type? underlyingType)
-        {
-            Guard.IsNotNull(underlyingType, nameof(underlyingType));
-
-            return new MemberKey
-            {
-                Name = Name,
-                DeclaringType = DeclaringType,
-                UnderlyingType = underlyingType,
                 MemberType = MemberType
             };
         }
@@ -118,7 +73,6 @@ namespace CCEnvs.Reflection.Caching
             {
                 Name = Name,
                 DeclaringType = DeclaringType,
-                UnderlyingType = UnderlyingType,
                 MemberType = memberType
             };
         }
@@ -128,8 +82,6 @@ namespace CCEnvs.Reflection.Caching
             return Name == other.Name
                    &&
                    DeclaringType == other.DeclaringType
-                   &&
-                   UnderlyingType == other.UnderlyingType
                    &&
                    MemberType == other.MemberType;
         }
@@ -141,7 +93,7 @@ namespace CCEnvs.Reflection.Caching
 
         public override int GetHashCode()
         {
-            cachedHashCode ??= HashCode.Combine(Name, DeclaringType, UnderlyingType, MemberType);
+            cachedHashCode ??= HashCode.Combine(Name, DeclaringType, MemberType);
 
             return cachedHashCode.Value;
         }

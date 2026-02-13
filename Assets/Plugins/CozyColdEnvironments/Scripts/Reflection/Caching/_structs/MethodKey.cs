@@ -24,13 +24,9 @@ namespace CCEnvs.Reflection.Caching
             hashCode = null;
 
             Core = method;
-
-            using var paramKeys = ListPool<ParameterKey>.Shared.Get();
-
-            foreach (var param in method.GetParameters())
-                paramKeys.Value.Add(new ParameterKey(param));
-
-            ParameterKeys = paramKeys.Value.ToStructuralArray();
+            ParameterKeys = method.GetParameters()
+                .ToParamteterKeys()
+                .ToStructuralArray();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,7 +107,7 @@ namespace CCEnvs.Reflection.Caching
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Core, ParameterKeys.HashCodeByElements());
+            hashCode ??= HashCode.Combine(Core, ParameterKeys);
 
             return hashCode.Value;
         }

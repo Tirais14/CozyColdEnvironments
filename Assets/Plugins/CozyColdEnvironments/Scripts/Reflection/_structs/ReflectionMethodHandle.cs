@@ -16,12 +16,12 @@ namespace CCEnvs.Reflection
 {
     public struct ReflectionMethodHandle : IEquatable<ReflectionMethodHandle>
     {
-        private readonly static Cache<ReflectionMethodHandle, MethodKey> methodKeys = new()
+        private readonly static Cache<ReflectionMethodHandle, MethodKey> cachedMethodKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes()
         };
 
-        private readonly static Cache<ReflectionMethodHandle, MethodKey> ctorKeys = new()
+        private readonly static Cache<ReflectionMethodHandle, MethodKey> cachedCtorKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes()
         };
@@ -134,15 +134,14 @@ namespace CCEnvs.Reflection
         {
             return new MethodsEnumerator(
                 this,
-                Core.GetMembers(MemberTypes.Method).Cast<MethodBase>()
-                )
-                .Cast<MethodInfo>();
+                Core.GetMembers(MemberTypes.Method)
+                );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MethodInfo? GetMethod(bool throwIfNotFound)
         {
-            if (methodKeys.TryGet(this, out var methodKey)
+            if (cachedMethodKeys.TryGet(this, out var methodKey)
                 &&
                 CachedMembers.TryGetMethod(methodKey, out var method))
             {
@@ -152,7 +151,7 @@ namespace CCEnvs.Reflection
             if (!GetMethods().SingleOrDefault().Let(out method))
             {
                 if (throwIfNotFound)
-                    throw GetCannotFindMethodException();
+                    throw new InvalidOperationException($"Cannot find any method by {nameof(ReflectionMethodHandle)}: {this}");
 
                 return method;
             }
@@ -166,17 +165,16 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IEnumerable<ConstructorInfo> GetConstructors()
         {
-            return new MethodsEnumerator(
+            return new ConstructorEnumerator(
                 this,
-                Core.GetMembers(MemberTypes.Constructor).Cast<MethodBase>()
-                )
-                .Cast<ConstructorInfo>();
+                Core.GetMembers(MemberTypes.Constructor)
+                );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ConstructorInfo? GetConstructor(bool throwIfNotFound)
         {
-            if (ctorKeys.TryGet(this, out var ctorKey)
+            if (cachedCtorKeys.TryGet(this, out var ctorKey)
                 &&
                 CachedMembers.TryGetConstructor(ctorKey, out var ctor))
             {
@@ -186,7 +184,7 @@ namespace CCEnvs.Reflection
             if (!GetConstructors().SingleOrDefault().Let(out ctor))
             {
                 if (throwIfNotFound)
-                    throw GetCannotFindMethodException();
+                    throw new InvalidOperationException($"Cannot find any constructor by {nameof(ReflectionMethodHandle)}: {this}");
 
                 return ctor;
             }
@@ -226,14 +224,9 @@ namespace CCEnvs.Reflection
             return hashCode.Value;
         }
 
-        private readonly InvalidOperationException GetCannotFindMethodException()
-        {
-            return new InvalidOperationException($"Cannot find any method by {this}");
-        }
-
         private readonly void CacheMethod(MethodInfo method)
         {
-            if (methodKeys.TryAdd(this, new MethodKey(method), out var entry))
+            if (cachedMethodKeys.TryAdd(this, new MethodKey(method), out var entry))
                 entry.ExpirationTimeRelativeToNow = 20.Minutes();
 
             CachedMembers.TryAddMethod(method);
@@ -241,32 +234,32 @@ namespace CCEnvs.Reflection
 
         private readonly void CacheConstructor(ConstructorInfo ctor)
         {
-            if (ctorKeys.TryAdd(this, new MethodKey(ctor), out var entry))
+            if (cachedCtorKeys.TryAdd(this, new MethodKey(ctor), out var entry))
                 entry.ExpirationTimeRelativeToNow = 20.Minutes();
 
             CachedMembers.TryAddConstructor(ctor);
         }
 
-        public struct MethodsEnumerator : IEnumerator<MethodBase?>, IEnumerable<MethodBase>
+        public struct MethodsEnumerator : IEnumerator<MethodInfo?>, IEnumerable<MethodInfo>
         {
-            private readonly ReflectionMethodHandle reflectedHandle;
+            private readonly ReflectionMethodHandle reflectionHandle;
 
-            private readonly IEnumerator<MethodBase> sourceEnumerator;
+            private readonly IEnumerator<MemberInfo> sourceEnumerator;
 
-            public MethodBase? Current { get; private set; }
+            public MethodInfo? Current { get; private set; }
 
             readonly object? IEnumerator.Current => Current;
 
             public MethodsEnumerator(
-                ReflectionMethodHandle handle,
-                IEnumerable<MethodBase> source
+                ReflectionMethodHandle reflectionHandle,
+                IEnumerable<MemberInfo> source
                 )
                 :
                 this()
             {
                 CC.Guard.IsNotNull(source, nameof(source));
 
-                this.reflectedHandle = handle;
+                this.reflectionHandle = reflectionHandle;
                 sourceEnumerator = source.GetEnumerator();
             }
 
@@ -274,23 +267,73 @@ namespace CCEnvs.Reflection
             {
                 while (sourceEnumerator.TryMoveNext(out var tCurrent))
                 {
-                    if (!reflectedHandle.Core.IsNameMatch(tCurrent.Name))
+                    if (tCurrent is not MethodInfo method)
                         continue;
 
-                    if (!tCurrent.IsConstructor)
-                    {
-                        if (!reflectedHandle.IsReturnTypeMatch(((MethodInfo)tCurrent).ReturnType))
-                            continue;
-                    }
+                    if (!reflectionHandle.IsReturnTypeMatch(((MethodInfo)tCurrent).ReturnType))
+                        continue;
 
-                    Current = tCurrent;
+                    Current = method;
+
                     return true;
                 }
 
                 return false;
             }
 
-            public readonly IEnumerator<MethodBase> GetEnumerator() => this;
+            public readonly IEnumerator<MethodInfo> GetEnumerator() => this;
+
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            readonly void IEnumerator.Reset()
+            {
+                throw new NotSupportedException("Not resetable");
+            }
+
+            readonly void IDisposable.Dispose()
+            {
+            }
+        }
+
+        public struct ConstructorEnumerator : IEnumerator<ConstructorInfo?>, IEnumerable<ConstructorInfo>
+        {
+            private readonly ReflectionMethodHandle reflectionHandle;
+
+            private readonly IEnumerator<MemberInfo> sourceEnumerator;
+
+            public ConstructorInfo? Current { get; private set; }
+
+            readonly object? IEnumerator.Current => Current;
+
+            public ConstructorEnumerator(
+                ReflectionMethodHandle reflectionHandle,
+                IEnumerable<MemberInfo> source
+                )
+                :
+                this()
+            {
+                CC.Guard.IsNotNull(source, nameof(source));
+
+                this.reflectionHandle = reflectionHandle;
+                sourceEnumerator = source.GetEnumerator();
+            }
+
+            public bool MoveNext()
+            {
+                while (sourceEnumerator.TryMoveNext(out var tCurrent))
+                {
+                    if (tCurrent is not ConstructorInfo ctor)
+                        continue;
+
+                    Current = ctor;
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            public readonly IEnumerator<ConstructorInfo> GetEnumerator() => this;
 
             readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

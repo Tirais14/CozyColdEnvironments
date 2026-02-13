@@ -1,0 +1,232 @@
+using CCEnvs.Caching;
+using CCEnvs.Linq;
+using CCEnvs.Reflection.Caching;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+#nullable enable
+namespace CCEnvs.Reflection
+{
+    public struct ReflectionHandle : IEquatable<ReflectionHandle>
+    {
+        private static readonly Cache<ReflectionHandle, MemberKey> cachedMemberKeys = new()
+        {
+            ExpirationScanFrequency = 1.Minutes()
+        };
+
+        private static readonly Cache<ReflectionHandle, MemberInfo[]> cachedMembers = new()
+        {
+            ExpirationScanFrequency = 1.Minutes()
+        };
+
+        private int? hashCode;
+
+        public Type? Type { readonly get; init; }
+
+        public BindingFlags Bindings { readonly get; init; }
+
+        public StringMatchSettings StringMatchOptions { readonly get; init; }
+
+        public string? NameFilter { readonly get; init; }
+
+        public bool CacheResults { readonly get; init; }
+
+        public static bool operator ==(ReflectionHandle left, ReflectionHandle right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ReflectionHandle left, ReflectionHandle right)
+        {
+            return !(left == right);
+        }
+
+        public static ReflectionHandle Create()
+        {
+            return new ReflectionHandle
+            {
+                Bindings = BindingFlags.Default,
+                StringMatchOptions = StringMatchSettings.Default,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle WithType(Type? type = null)
+        {
+            return new ReflectionHandle
+            {
+                Type = type,
+                Bindings = Bindings,
+                StringMatchOptions = StringMatchOptions,
+                NameFilter = NameFilter,
+                CacheResults = CacheResults,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle WithBindings(BindingFlags bindings = BindingFlags.Default)
+        {
+            return new ReflectionHandle
+            {
+                Type = Type,
+                Bindings = bindings,
+                StringMatchOptions = StringMatchOptions,
+                NameFilter = NameFilter,
+                CacheResults = CacheResults,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle WithStringMatchSettings(StringMatchSettings stringMatchSettings = StringMatchSettings.Default)
+        {
+            return new ReflectionHandle
+            {
+                Type = Type,
+                Bindings = Bindings,
+                StringMatchOptions = stringMatchSettings,
+                NameFilter = NameFilter,
+                CacheResults = CacheResults,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle WithNameFilter(string? name)
+        {
+            return new ReflectionHandle
+            {
+                Type = Type,
+                Bindings = Bindings,
+                StringMatchOptions = StringMatchOptions,
+                NameFilter = name,
+                CacheResults = CacheResults,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle WithCacheResults(bool state = true)
+        {
+            return new ReflectionHandle
+            {
+                Type = Type,
+                Bindings = Bindings,
+                StringMatchOptions = StringMatchOptions,
+                NameFilter = NameFilter,
+                CacheResults = state,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool IsNameMatch(string name)
+        {
+            if (NameFilter.IsNullOrWhiteSpace())
+                return true;
+
+            return NameFilter.Match(name, StringMatchOptions);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionMethodHandle ContinueWithMethods()
+        {
+            return new ReflectionMethodHandle(this);
+        }
+
+        public readonly MemberInfo[] GetMembers(MemberTypes memberType)
+        {
+            Guard.IsNotNull(Type, nameof(Type));
+
+            if (this.cachedMembers.TryGet(this, out var members)
+                &&
+                )
+            {
+                return members;
+            }
+
+            members = Type.FindMembers(memberType, Bindings,
+                static (member, state) =>
+                {
+                    var stateTyped = (ReflectionHandle)state;
+
+                    if (!stateTyped.IsNameMatch(member.Name))
+                        return false;
+
+                    return true;
+                },
+                this
+                );
+
+            if (CacheResults)
+                CachedMembers.TryAddTypeMembers(membersKey, members);
+
+            return members;
+        }
+
+        public readonly MemberInfo? GetMember(
+            MemberTypes memberType,
+            bool throwIfNotFound = false
+            )
+        {
+            if (cachedMemberKeys.TryGet(this, out var memberKey)
+                &&
+                CachedMembers.TryGetMember(memberKey, out var member))
+            {
+                return member;
+            }
+
+            if (!GetMembers(memberType).SingleOrDefault().Let(out member))
+            {
+                if (throwIfNotFound)
+                    throw new InvalidOperationException($"Cannot find any member by {this}");
+
+                return null;
+            }
+
+            if (CacheResults)
+                CachedMembers.TryAddMember(member);
+
+            return member;
+        }
+
+        public readonly bool Equals(ReflectionHandle other)
+        {
+            return Type == other.Type
+                   &&
+                   Bindings == other.Bindings
+                   &&
+                   StringMatchOptions == other.StringMatchOptions
+                   &&
+                   NameFilter == other.NameFilter
+                   &&
+                   CacheResults == other.CacheResults;
+        }
+
+        public readonly override bool Equals(object obj)
+        {
+            return obj is ReflectionMethodHandle typed && Equals(typed);
+        }
+
+        public readonly override string ToString()
+        {
+            if (this == default)
+                return StringHelper.EMPTY_OBJECT;
+
+            return $"({nameof(Type)}: {Type}; {nameof(Bindings)}: {Bindings}; {nameof(StringMatchOptions)}: {StringMatchOptions}; {nameof(NameFilter)}: {NameFilter}; {nameof(CacheResults)}: {CacheResults})";
+        }
+
+        public override int GetHashCode()
+        {
+            hashCode ??= HashCode.Combine(
+                Type,
+                Bindings,
+                StringMatchOptions,
+                NameFilter,
+                CacheResults
+                );
+
+            return hashCode.Value;
+        }
+    }
+}
