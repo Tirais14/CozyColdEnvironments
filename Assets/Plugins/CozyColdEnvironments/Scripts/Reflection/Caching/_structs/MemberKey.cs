@@ -98,7 +98,7 @@ namespace CCEnvs.Reflection.Caching
             return cachedHashCode.Value;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             if (this == default)
                 return StringHelper.EMPTY_OBJECT;

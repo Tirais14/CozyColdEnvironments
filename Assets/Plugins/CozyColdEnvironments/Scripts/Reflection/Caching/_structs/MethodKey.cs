@@ -21,6 +21,8 @@ namespace CCEnvs.Reflection.Caching
 
         public MethodKey(MethodBase method)
         {
+            Guard.IsNotNull(method, nameof(method));
+
             hashCode = null;
 
             Core = method;
@@ -117,7 +119,7 @@ namespace CCEnvs.Reflection.Caching
             if (this == default)
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"({nameof(Core)}: {Core})";
+            return $"({nameof(Core)}: {Core}; {nameof(ParameterKeys)}: {ParameterKeys})";
         }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable S2743
 namespace CCEnvs.Reflection.Caching
 {
     public static class TypeCache
@@ -12,6 +13,8 @@ namespace CCEnvs.Reflection.Caching
     {
         #region IL2CPP Type definitions
 
+#pragma warning disable S1144
+
         private readonly static T[]? m_Array;
 
         private readonly static List<T>? m_List;
@@ -21,6 +24,8 @@ namespace CCEnvs.Reflection.Caching
         private readonly static Queue<T>? m_Queue;
 
         private readonly static Stack<T>? m_Stack;
+
+#pragma warning restore S1144
 
         #endregion
 

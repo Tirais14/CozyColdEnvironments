@@ -35,6 +35,8 @@ namespace CCEnvs.Reflection
 
         public bool CacheResults { readonly get; init; }
 
+        public TimeSpan? CacheExpiratiomTimeRelativeToNow { readonly get; init; }
+
         public static bool operator ==(ReflectionHandle left, ReflectionHandle right)
         {
             return left.Equals(right);
@@ -64,6 +66,7 @@ namespace CCEnvs.Reflection
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = NameFilter,
                 CacheResults = CacheResults,
+                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
             };
         }
 
@@ -77,6 +80,7 @@ namespace CCEnvs.Reflection
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = NameFilter,
                 CacheResults = CacheResults,
+                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
             };
         }
 
@@ -90,6 +94,7 @@ namespace CCEnvs.Reflection
                 StringMatchOptions = stringMatchSettings,
                 NameFilter = NameFilter,
                 CacheResults = CacheResults,
+                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
             };
         }
 
@@ -103,6 +108,7 @@ namespace CCEnvs.Reflection
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = name,
                 CacheResults = CacheResults,
+                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
             };
         }
 
@@ -116,6 +122,21 @@ namespace CCEnvs.Reflection
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = NameFilter,
                 CacheResults = state,
+                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle WithCacheExpirationTimeRelativeToNoew(TimeSpan? cacheExpiratiomTimeRelativeToNow)
+        {
+            return new ReflectionHandle
+            {
+                Type = Type,
+                Bindings = Bindings,
+                StringMatchOptions = StringMatchOptions,
+                NameFilter = NameFilter,
+                CacheResults = CacheResults,
+                CacheExpiratiomTimeRelativeToNow = cacheExpiratiomTimeRelativeToNow ?? 20.Minutes(),
             };
         }
 
@@ -138,12 +159,8 @@ namespace CCEnvs.Reflection
         {
             Guard.IsNotNull(Type, nameof(Type));
 
-            if (this.cachedMembers.TryGet(this, out var members)
-                &&
-                )
-            {
+            if (cachedMembers.TryGet(this, out var members))
                 return members;
-            }
 
             members = Type.FindMembers(memberType, Bindings,
                 static (member, state) =>
@@ -159,7 +176,7 @@ namespace CCEnvs.Reflection
                 );
 
             if (CacheResults)
-                CachedMembers.TryAddTypeMembers(membersKey, members);
+                CacheMembers(members);
 
             return members;
         }
@@ -171,7 +188,7 @@ namespace CCEnvs.Reflection
         {
             if (cachedMemberKeys.TryGet(this, out var memberKey)
                 &&
-                CachedMembers.TryGetMember(memberKey, out var member))
+                CachedMembers.TryGetMemberUntyped(memberKey, memberType, out var member))
             {
                 return member;
             }
@@ -185,9 +202,15 @@ namespace CCEnvs.Reflection
             }
 
             if (CacheResults)
-                CachedMembers.TryAddMember(member);
+                CacheMember(member);
 
             return member;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly TimeSpan GetCacheExpirationTimeRelativeToNowOrDefault()
+        {
+            return CacheExpiratiomTimeRelativeToNow ?? 20.Minutes();
         }
 
         public readonly bool Equals(ReflectionHandle other)
@@ -227,6 +250,23 @@ namespace CCEnvs.Reflection
                 );
 
             return hashCode.Value;
+        }
+
+        private readonly void CacheMember(MemberInfo member)
+        {
+            if (cachedMemberKeys.TryAdd(this, new MemberKey(member), out var entry))
+                entry.ExpirationTimeRelativeToNow = GetCacheExpirationTimeRelativeToNowOrDefault();
+
+            CachedMembers.TryAddMemberUntyped(member, GetCacheExpirationTimeRelativeToNowOrDefault())
+        }
+
+        private readonly void CacheMembers(MemberInfo[] members)
+        {
+            if (cachedMembers.TryAdd(this, members, out var entry))
+                entry.ExpirationTimeRelativeToNow = GetCacheExpirationTimeRelativeToNowOrDefault();
+
+            for (int i = 0; i < members.Length; i++)
+                CachedMembers.TryAddMemberUntyped(members[i], GetCacheExpirationTimeRelativeToNowOrDefault());
         }
     }
 }

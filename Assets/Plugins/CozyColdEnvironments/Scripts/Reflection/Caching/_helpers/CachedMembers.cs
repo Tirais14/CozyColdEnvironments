@@ -35,6 +35,8 @@ namespace CCEnvs.Reflection.Caching
             ExpirationScanFrequency = 1.Minutes()
         };
 
+        public static TimeSpan DefaultExpirationTimeRelativeToNow { get; set; } = 20.Minutes();
+
         #region Getters
 
         public static bool TryGetMember(
@@ -113,7 +115,13 @@ namespace CCEnvs.Reflection.Caching
                     throw new NotImplementedException();
                 case MemberTypes.Constructor:
                     {
-                        if (!methods.TryGet((MethodKey)key, out var ctor))
+                        if (key is not MethodKey ctorKey)
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        if (!methods.TryGet(ctorKey, out var ctor))
                         {
                             member = null;
                             return false;
@@ -128,7 +136,13 @@ namespace CCEnvs.Reflection.Caching
                     throw new NotImplementedException();
                 case MemberTypes.Field:
                     {
-                        if (!fields.TryGet((FieldKey)key, out var field))
+                        if (key is not FieldKey fieldKey)
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        if (!fields.TryGet(fieldKey, out var field))
                         {
                             member = null;
                             return false;
@@ -139,7 +153,13 @@ namespace CCEnvs.Reflection.Caching
                     }
                 case MemberTypes.Method:
                     {
-                        if (!methods.TryGet((MethodKey)key, out var method))
+                        if (key is not MethodKey methodKey)
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        if (!methods.TryGet(methodKey, out var method))
                         {
                             member = null;
                             return false;
@@ -152,7 +172,13 @@ namespace CCEnvs.Reflection.Caching
                     throw new NotImplementedException();
                 case MemberTypes.Property:
                     {
-                        if (!props.TryGet((PropertyKey)key, out var prop))
+                        if (key is not PropertyKey propKey)
+                        {
+                            member = null;
+                            return false;
+                        }
+
+                        if (!props.TryGet(propKey, out var prop))
                         {
                             member = null;
                             return false;
@@ -182,7 +208,7 @@ namespace CCEnvs.Reflection.Caching
             if (!members.TryAdd(member, member, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -196,7 +222,7 @@ namespace CCEnvs.Reflection.Caching
             if (!fields.TryAdd(field, field, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -210,7 +236,7 @@ namespace CCEnvs.Reflection.Caching
             if (!props.TryAdd(prop, prop, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -224,7 +250,7 @@ namespace CCEnvs.Reflection.Caching
             if (!parameters.TryAdd(param, param, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -238,7 +264,7 @@ namespace CCEnvs.Reflection.Caching
             if (!methods.TryAdd(method, method, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -252,7 +278,7 @@ namespace CCEnvs.Reflection.Caching
             if (!methods.TryAdd(ctor, ctor, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? 20.Minutes();
+            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -265,17 +291,15 @@ namespace CCEnvs.Reflection.Caching
 
             expirationTimeRelativeToNow ??= 20.Minutes();
 
-            switch (member)
+            return member switch
             {
-                case MethodInfo method:
-                    return TryAddMethod(method, expirationTimeRelativeToNow);
-                case FieldInfo field:
-                    return TryAddField(field, expirationTimeRelativeToNow);
-                    case PropertyInfo prop:
-                        return TryAddProperty()
-                default:
-                    throw new InvalidOperationException(member.GetType().Name);
-            }
+                MethodInfo method => TryAddMethod(method, expirationTimeRelativeToNow),
+                ConstructorInfo ctor => TryAddConstructor(ctor, expirationTimeRelativeToNow),
+                FieldInfo field => TryAddField(field, expirationTimeRelativeToNow),
+                PropertyInfo prop => TryAddProperty(prop, expirationTimeRelativeToNow),
+                MemberInfo => TryAddMember(member, expirationTimeRelativeToNow),
+                _ => throw new InvalidOperationException(member.GetType().Name),
+            };
         }
 
         #endregion AddMethods

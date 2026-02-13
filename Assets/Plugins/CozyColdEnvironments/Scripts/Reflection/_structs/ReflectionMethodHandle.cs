@@ -28,17 +28,17 @@ namespace CCEnvs.Reflection
 
         private int? hashCode;
 
-        public ReflectionHandle Core { readonly get; init; }
+        public ReflectionHandle BaseReflectionHandle { readonly get; init; }
 
         public StructuralArray<ParameterKey> ParameterKeys { readonly get; init; }
 
-        public Type? ReturnType { readonly get; init; }
+        public Type? ReturnTypeFilter { readonly get; init; }
 
-        public ReflectionMethodHandle(ReflectionHandle core)
+        public ReflectionMethodHandle(ReflectionHandle baseReflectionHandle)
             :
             this()
         {
-            Core = core;
+            BaseReflectionHandle = baseReflectionHandle;
         }
 
         public static ReflectionMethodHandle Create()
@@ -60,13 +60,13 @@ namespace CCEnvs.Reflection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectionMethodHandle WithCore(ReflectionHandle core)
+        public readonly ReflectionMethodHandle WithBaseReflectionHandle(ReflectionHandle baseReflectionHandle)
         {
             return new ReflectionMethodHandle
             {
-                Core = core,
+                BaseReflectionHandle = baseReflectionHandle,
                 ParameterKeys = ParameterKeys,
-                ReturnType = ReturnType
+                ReturnTypeFilter = ReturnTypeFilter
             };
         }
 
@@ -77,9 +77,9 @@ namespace CCEnvs.Reflection
 
             return new ReflectionMethodHandle
             {
-                Core = Core,
+                BaseReflectionHandle = BaseReflectionHandle,
                 ParameterKeys = paramKeys.ToStructuralArray(),
-                ReturnType = ReturnType
+                ReturnTypeFilter = ReturnTypeFilter
             };
         }
 
@@ -90,9 +90,9 @@ namespace CCEnvs.Reflection
 
             return new ReflectionMethodHandle
             {
-                Core = Core,
+                BaseReflectionHandle = BaseReflectionHandle,
                 ParameterKeys = paramKeys.ToStructuralArray(),
-                ReturnType = ReturnType
+                ReturnTypeFilter = ReturnTypeFilter
             };
         }
 
@@ -103,30 +103,36 @@ namespace CCEnvs.Reflection
 
             return new ReflectionMethodHandle
             {
-                Core = Core,
+                BaseReflectionHandle = BaseReflectionHandle,
                 ParameterKeys = paramKeys,
-                ReturnType = ReturnType
+                ReturnTypeFilter = ReturnTypeFilter
             };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectionMethodHandle WithReturnType(Type? returnType)
+        public readonly ReflectionMethodHandle WithReturnTypeFilter(Type? returnTypeFilter)
         {
             return new ReflectionMethodHandle
             {
-                Core = Core,
+                BaseReflectionHandle = BaseReflectionHandle,
                 ParameterKeys = ParameterKeys,
-                ReturnType = returnType
+                ReturnTypeFilter = returnTypeFilter
             };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionMethodHandle WithReturnTypeFilter<T>()
+        {
+            return WithReturnTypeFilter(typeof(T));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool IsReturnTypeMatch(Type? returnType)
         {
-            if (ReturnType is null)
+            if (ReturnTypeFilter is null)
                 return true;
 
-            return ReturnType.IsType(returnType);
+            return returnType.IsType(ReturnTypeFilter);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -134,7 +140,7 @@ namespace CCEnvs.Reflection
         {
             return new MethodsEnumerator(
                 this,
-                Core.GetMembers(MemberTypes.Method)
+                BaseReflectionHandle.GetMembers(MemberTypes.Method)
                 );
         }
 
@@ -156,7 +162,7 @@ namespace CCEnvs.Reflection
                 return method;
             }
 
-            if (Core.CacheResults)
+            if (BaseReflectionHandle.CacheResults)
                 CacheMethod(method);
 
             return method;
@@ -167,7 +173,7 @@ namespace CCEnvs.Reflection
         {
             return new ConstructorEnumerator(
                 this,
-                Core.GetMembers(MemberTypes.Constructor)
+                BaseReflectionHandle.GetMembers(MemberTypes.Constructor)
                 );
         }
 
@@ -189,7 +195,7 @@ namespace CCEnvs.Reflection
                 return ctor;
             }
 
-            if (Core.CacheResults)
+            if (BaseReflectionHandle.CacheResults)
                 CacheConstructor(ctor);
 
             return ctor;
@@ -197,11 +203,11 @@ namespace CCEnvs.Reflection
 
         public readonly bool Equals(ReflectionMethodHandle other)
         {
-            return Core == other.Core
+            return BaseReflectionHandle == other.BaseReflectionHandle
                    &&
                    ParameterKeys == other.ParameterKeys
                    &&
-                   ReturnType == other.ReturnType;
+                   ReturnTypeFilter == other.ReturnTypeFilter;
         }
 
         public readonly override bool Equals(object obj)
@@ -214,12 +220,12 @@ namespace CCEnvs.Reflection
             if (this == default)
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"({nameof(Core)}: {Core}; {nameof(ParameterKeys)}: {ParameterKeys}; {nameof(ReturnType)}: {ReturnType})";
+            return $"({nameof(BaseReflectionHandle)}: {BaseReflectionHandle}; {nameof(ParameterKeys)}: {ParameterKeys}; {nameof(ReturnTypeFilter)}: {ReturnTypeFilter})";
         }
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Core, ParameterKeys, ReturnType);
+            hashCode ??= HashCode.Combine(BaseReflectionHandle, ParameterKeys, ReturnTypeFilter);
 
             return hashCode.Value;
         }
@@ -227,7 +233,7 @@ namespace CCEnvs.Reflection
         private readonly void CacheMethod(MethodInfo method)
         {
             if (cachedMethodKeys.TryAdd(this, new MethodKey(method), out var entry))
-                entry.ExpirationTimeRelativeToNow = 20.Minutes();
+                entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
             CachedMembers.TryAddMethod(method);
         }
@@ -235,7 +241,7 @@ namespace CCEnvs.Reflection
         private readonly void CacheConstructor(ConstructorInfo ctor)
         {
             if (cachedCtorKeys.TryAdd(this, new MethodKey(ctor), out var entry))
-                entry.ExpirationTimeRelativeToNow = 20.Minutes();
+                entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
             CachedMembers.TryAddConstructor(ctor);
         }
@@ -270,7 +276,7 @@ namespace CCEnvs.Reflection
                     if (tCurrent is not MethodInfo method)
                         continue;
 
-                    if (!reflectionHandle.IsReturnTypeMatch(((MethodInfo)tCurrent).ReturnType))
+                    if (!reflectionHandle.IsReturnTypeMatch(method.ReturnType))
                         continue;
 
                     Current = method;
