@@ -15,7 +15,7 @@ namespace CCEnvs.Pools
     public abstract class ObjectPoolBase<T> : IObjectPoolBase<T>
         where T : class
     {
-        protected static Action<T, IObjectPoolBase<T>> ReturnAction { get; } = static (obj, pool) =>
+        protected static Action<T, object> ReturnAction { get; } = static (obj, pool) =>
         {
             ((ObjectPoolBase<T>)pool).Return(obj);
         };

@@ -1,3 +1,4 @@
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace CCEnvs.Pools
 
         private readonly bool isActionTyped;
 
-        public readonly IObjectPoolBase? Pool { get; }
+        public readonly object? Pool { get; }
         public readonly object Value { get; }
 
         public readonly bool IsValid {
@@ -31,8 +32,8 @@ namespace CCEnvs.Pools
 
         public PooledObject(
             object value,
-            IObjectPoolBase state, 
-            Action<object, IObjectPoolBase> disposeAction
+            object state, 
+            Action<object, object> disposeAction
             )
             :
             this(value, state, disposeAction, isActionTyped: false)
@@ -42,7 +43,7 @@ namespace CCEnvs.Pools
 
         internal PooledObject(
             object value,
-            IObjectPoolBase state,
+            object pool,
             Delegate disposeAction,
             bool isActionTyped
             )
@@ -50,10 +51,10 @@ namespace CCEnvs.Pools
             this()
         {
             CC.Guard.IsNotNull(value, nameof(value));
-            CC.Guard.IsNotNullState(state);
+            CC.Guard.IsNotNullState(pool);
             Guard.IsNotNull(disposeAction, nameof(disposeAction));
 
-            Pool = state;
+            Pool = pool;
             Value = value;
             this.returnAction = disposeAction;
             this.isActionTyped = isActionTyped;
@@ -67,14 +68,14 @@ namespace CCEnvs.Pools
 
         public static PooledObject<T> Create<T>(
             T value,
-            IObjectPoolBase<T> pool,
-            Action<T, IObjectPoolBase<T>> disposeAction
+            object pool,
+            Action<T, object> disposeAction
             )
             where T : class
         {
             Guard.IsNotNull(disposeAction, nameof(disposeAction));
 
-            return new PooledObject<T>(value, pool!, (value, state) => disposeAction.Invoke(value, (TPool)state));
+            return new PooledObject<T>(value, pool!, (value, state) => disposeAction.Invoke(value, state));
         }
 
         public static bool operator ==(PooledObject left, PooledObject right)
@@ -100,15 +101,15 @@ namespace CCEnvs.Pools
             {
                 return new PooledObject<T>(
                     (T)Value,
-                    (IObjectPoolBase<T>)Pool,
-                    (Action<T, IObjectPoolBase<T>>)returnAction
+                    Pool,
+                    (Action<T, object>)returnAction
                     );
             }
 
             return new PooledObject<T>(
                 (T)Value,
-                (IObjectPoolBase<T>)Pool,
-                (Action<object, IObjectPoolBase<T>>)returnAction
+                Pool,
+                (Action<object, object>)returnAction
                 );
         }
 
@@ -126,8 +127,10 @@ namespace CCEnvs.Pools
                         &&
                         returnAction is not null
                         &&
-                        Pool.IsActiveObject(Value)
-                        )
+                        (Pool.IsNot<IObjectPoolBase>(out var poolBase)
+                        ||
+                        poolBase.IsActiveObject(Value)
+                        ))
                     {
                         returnAction.DynamicInvoke(Value, Pool);
                     }
@@ -145,7 +148,7 @@ namespace CCEnvs.Pools
         {
             return returnAction == other.returnAction
                    &&
-                   EqualityComparer<IObjectPoolBase?>.Default.Equals(Pool, other.Pool)
+                   EqualityComparer<object?>.Default.Equals(Pool, other.Pool)
                    &&
                    EqualityComparer<object?>.Default.Equals(Value, other.Value);
         }
@@ -174,9 +177,9 @@ namespace CCEnvs.Pools
     {
         public static PooledObject<T> Default { get; } = new();
 
-        private readonly Action<T, IObjectPoolBase<T>>? returnAction;
+        private readonly Action<T, object>? returnAction;
 
-        public readonly IObjectPoolBase<T>? Pool { get; }
+        public readonly object? Pool { get; }
 
         public readonly T Value { get; }
 
@@ -193,7 +196,7 @@ namespace CCEnvs.Pools
             Value = value;
         }
 
-        public PooledObject(T value, IObjectPoolBase<T> pool, Action<T, IObjectPoolBase<T>> returnAction)
+        public PooledObject(T value, object pool, Action<T, object> returnAction)
             :
             this()
         {
@@ -246,8 +249,10 @@ namespace CCEnvs.Pools
                         &&
                         returnAction is not null
                         &&
-                        Pool.IsActiveObject(Value)
-                        )
+                        (Pool.IsNot<IObjectPoolBase>(out var poolBase)
+                        ||
+                        poolBase.IsActiveObject(Value)
+                        ))
                     {
                         returnAction(Value, Pool);
                     }
@@ -265,7 +270,7 @@ namespace CCEnvs.Pools
         {
             return returnAction == other.returnAction
                    &&
-                   EqualityComparer<IObjectPoolBase<T>?>.Default.Equals(Pool, other.Pool)
+                   EqualityComparer<object?>.Default.Equals(Pool, other.Pool)
                    &&
                    EqualityComparer<T>.Default.Equals(Value, other.Value);
         }
