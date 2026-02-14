@@ -9,11 +9,11 @@ namespace CCEnvs.Pools
     {
         public static PooledObject Default { get; } = new();
 
-        private readonly Delegate? disposeAction;
+        private readonly Delegate? returnAction;
 
         private readonly bool isActionTyped;
 
-        public readonly object? State { get; }
+        public readonly IObjectPoolBase? Pool { get; }
         public readonly object Value { get; }
 
         public readonly bool IsValid {
@@ -31,8 +31,8 @@ namespace CCEnvs.Pools
 
         public PooledObject(
             object value,
-            object state, 
-            Action<object, object> disposeAction
+            IObjectPoolBase state, 
+            Action<object, IObjectPoolBase> disposeAction
             )
             :
             this(value, state, disposeAction, isActionTyped: false)
@@ -42,7 +42,7 @@ namespace CCEnvs.Pools
 
         internal PooledObject(
             object value,
-            object state,
+            IObjectPoolBase state,
             Delegate disposeAction,
             bool isActionTyped
             )
@@ -53,9 +53,9 @@ namespace CCEnvs.Pools
             CC.Guard.IsNotNullState(state);
             Guard.IsNotNull(disposeAction, nameof(disposeAction));
 
-            State = state;
+            Pool = state;
             Value = value;
-            this.disposeAction = disposeAction;
+            this.returnAction = disposeAction;
             this.isActionTyped = isActionTyped;
         }
 
@@ -65,16 +65,16 @@ namespace CCEnvs.Pools
             return new PooledObject<T>(value);
         }
 
-        public static PooledObject<T> Create<T, TState>(
+        public static PooledObject<T> Create<T>(
             T value,
-            TState state,
-            Action<T, TState> disposeAction
+            IObjectPoolBase<T> pool,
+            Action<T, IObjectPoolBase<T>> disposeAction
             )
             where T : class
         {
             Guard.IsNotNull(disposeAction, nameof(disposeAction));
 
-            return new PooledObject<T>(value, state!, (value, state) => disposeAction.Invoke(value, (TState)state));
+            return new PooledObject<T>(value, pool!, (value, state) => disposeAction.Invoke(value, (TPool)state));
         }
 
         public static bool operator ==(PooledObject left, PooledObject right)
@@ -93,22 +93,22 @@ namespace CCEnvs.Pools
             if (this == Default)
                 return PooledObject<T>.Default;
 
-            if (disposeAction is null || State.IsNull())
+            if (returnAction is null || Pool.IsNull())
                 return new PooledObject<T>((T)Value);
 
             if (isActionTyped)
             {
                 return new PooledObject<T>(
                     (T)Value,
-                    State,
-                    (Action<T, object>)disposeAction
+                    (IObjectPoolBase<T>)Pool,
+                    (Action<T, IObjectPoolBase<T>>)returnAction
                     );
             }
 
             return new PooledObject<T>(
                 (T)Value,
-                State,
-                (Action<object, object>)disposeAction
+                (IObjectPoolBase<T>)Pool,
+                (Action<object, IObjectPoolBase<T>>)returnAction
                 );
         }
 
@@ -118,12 +118,19 @@ namespace CCEnvs.Pools
             if (disposed)
                 return;
 
-            if (this != default)
+            if (this != Default)
             {
                 try
                 {
-                    if (State.IsNotNull() && disposeAction is not null)
-                        disposeAction.DynamicInvoke(Value, State);
+                    if (Pool.IsNotNull()
+                        &&
+                        returnAction is not null
+                        &&
+                        Pool.IsActiveObject(Value)
+                        )
+                    {
+                        returnAction.DynamicInvoke(Value, Pool);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -136,9 +143,9 @@ namespace CCEnvs.Pools
 
         public readonly bool Equals(PooledObject other)
         {
-            return disposeAction == other.disposeAction
+            return returnAction == other.returnAction
                    &&
-                   EqualityComparer<object?>.Default.Equals(State, other.State)
+                   EqualityComparer<IObjectPoolBase?>.Default.Equals(Pool, other.Pool)
                    &&
                    EqualityComparer<object?>.Default.Equals(Value, other.Value);
         }
@@ -150,7 +157,7 @@ namespace CCEnvs.Pools
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(disposeAction, State, Value);
+            return HashCode.Combine(returnAction, Pool, Value);
         }
 
         public readonly override string ToString()
@@ -158,7 +165,7 @@ namespace CCEnvs.Pools
             if (this == Default)
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"({nameof(State)}: {State}; {nameof(Value)}: {Value})";
+            return $"({nameof(Pool)}: {Pool}; {nameof(Value)}: {Value})";
         }
     }
 
@@ -167,9 +174,9 @@ namespace CCEnvs.Pools
     {
         public static PooledObject<T> Default { get; } = new();
 
-        private readonly Action<T, object>? disposeAction;
+        private readonly Action<T, IObjectPoolBase<T>>? returnAction;
 
-        public readonly object? State { get; }
+        public readonly IObjectPoolBase<T>? Pool { get; }
 
         public readonly T Value { get; }
 
@@ -186,17 +193,17 @@ namespace CCEnvs.Pools
             Value = value;
         }
 
-        public PooledObject(T value, object state, Action<T, object> disposeAction)
+        public PooledObject(T value, IObjectPoolBase<T> pool, Action<T, IObjectPoolBase<T>> returnAction)
             :
             this()
         {
             CC.Guard.IsNotNull(value, nameof(value));
-            CC.Guard.IsNotNullState(state);
-            Guard.IsNotNull(disposeAction, nameof(disposeAction));
+            CC.Guard.IsNotNullState(pool);
+            Guard.IsNotNull(returnAction, nameof(returnAction));
 
-            State = state;
+            Pool = pool;
             Value = value;
-            this.disposeAction = disposeAction;
+            this.returnAction = returnAction;
         }
 
         public static implicit operator PooledObject(PooledObject<T> instance)
@@ -204,13 +211,13 @@ namespace CCEnvs.Pools
             if (instance == Default)
                 return PooledObject.Default;
 
-            if (instance.disposeAction is null || instance.State.IsNull())
+            if (instance.returnAction is null || instance.Pool.IsNull())
                 return new PooledObject(instance.Value);
 
             return new PooledObject(
                 instance.Value,
-                instance.State,
-                instance.disposeAction,
+                instance.Pool,
+                instance.returnAction,
                 isActionTyped: true
                 );
         }
@@ -235,8 +242,15 @@ namespace CCEnvs.Pools
             {
                 try
                 {
-                    if (State.IsNotNull() && disposeAction is not null)
-                        disposeAction(Value, State);
+                    if (Pool.IsNotNull()
+                        &&
+                        returnAction is not null
+                        &&
+                        Pool.IsActiveObject(Value)
+                        )
+                    {
+                        returnAction(Value, Pool);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -249,9 +263,9 @@ namespace CCEnvs.Pools
 
         public readonly bool Equals(PooledObject<T> other)
         {
-            return disposeAction == other.disposeAction
+            return returnAction == other.returnAction
                    &&
-                   EqualityComparer<object?>.Default.Equals(State, other.State)
+                   EqualityComparer<IObjectPoolBase<T>?>.Default.Equals(Pool, other.Pool)
                    &&
                    EqualityComparer<T>.Default.Equals(Value, other.Value);
         }
@@ -263,7 +277,7 @@ namespace CCEnvs.Pools
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(disposeAction, State, Value);
+            return HashCode.Combine(returnAction, Pool, Value);
         }
 
         public readonly override string ToString()
@@ -271,7 +285,7 @@ namespace CCEnvs.Pools
             if (this == Default)
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"({nameof(State)}: {State}; {nameof(Value)}: {Value})";
+            return $"({nameof(Pool)}: {Pool}; {nameof(Value)}: {Value})";
         }
     }
 }

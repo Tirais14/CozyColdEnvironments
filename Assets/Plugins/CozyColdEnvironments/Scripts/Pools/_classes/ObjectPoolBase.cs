@@ -15,7 +15,7 @@ namespace CCEnvs.Pools
     public abstract class ObjectPoolBase<T> : IObjectPoolBase<T>
         where T : class
     {
-        protected static Action<T, object> ReturnAction { get; } = static (obj, pool) =>
+        protected static Action<T, IObjectPoolBase<T>> ReturnAction { get; } = static (obj, pool) =>
         {
             ((ObjectPoolBase<T>)pool).Return(obj);
         };
@@ -80,6 +80,14 @@ namespace CCEnvs.Pools
 
             ReturnCore(obj);
             OnReturn(obj);
+        }
+
+        public bool IsActiveObject(T obj)
+        {
+            if (IsPoolableObject)
+                return ((IPoolable)obj).PoolHandle.IsSome;
+
+            return activeItems.ContainsKey(obj);
         }
 
         public Observable<T> ObserveReturn()
@@ -201,14 +209,6 @@ namespace CCEnvs.Pools
 
             return ((IPoolable)obj).IsValid;
         }
-
-        //protected bool IsActiveObject(T obj)
-        //{
-        //    if (IsPoolableObject)
-        //        return ((IPoolable)obj).PoolHandle.IsSome;
-
-        //    return activeItems.ContainsKey(obj);
-        //}
 
         private void OnPoolableGet(IPoolable poolable, PooledObject<T> handledObj)
         {

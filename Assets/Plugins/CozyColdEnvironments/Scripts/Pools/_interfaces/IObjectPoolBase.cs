@@ -1,5 +1,6 @@
 using R3;
 using System;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -12,6 +13,8 @@ namespace CCEnvs.Pools
         bool HasFactory { get; }
 
         void Clear();
+
+        bool IsActiveObject(object obj);
     }
 
     public interface IObjectPoolBase<T> : IObjectPoolBase
@@ -19,8 +22,16 @@ namespace CCEnvs.Pools
     {
         void Return(T? obj);
 
+        bool IsActiveObject(T obj);
+
         Observable<T> ObserveReturn();
 
         Observable<T> ObserveGet();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IObjectPoolBase.IsActiveObject(object obj)
+        {
+            return IsActiveObject((T)obj);
+        }
     }
 }
