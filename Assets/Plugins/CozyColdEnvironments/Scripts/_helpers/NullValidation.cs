@@ -30,7 +30,7 @@ namespace CCEnvs
             if (source is null)
                 return true;
 
-            if (CachedTypeof<T>.Type.IsValueType)
+            if (TypeofCache<T>.Type.IsValueType)
                 return false;
 
             if (overrided is null)

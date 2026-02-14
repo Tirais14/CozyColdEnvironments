@@ -71,9 +71,9 @@ namespace CCEnvs
 
         public static void UtilizeOrDisposeEach<T>(this IEnumerable<T>? source, bool bufferized = true)
         {
-            if (CachedTypeof<T>.Type.IsType<IUtilizable>())
+            if (TypeofCache<T>.Type.IsType<IUtilizable>())
                 source.Cast<IUtilizable>().UtilizeEach(bufferized);
-            else if (CachedTypeof<T>.Type.IsType<IDisposable>())
+            else if (TypeofCache<T>.Type.IsType<IDisposable>())
                 source.Cast<IDisposable>().DisposeEach(bufferized);
         }
 

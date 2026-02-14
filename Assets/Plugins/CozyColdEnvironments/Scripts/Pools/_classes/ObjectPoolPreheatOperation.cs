@@ -1,9 +1,7 @@
-using CCEnvs.Collections;
 using CCEnvs.Threading;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Buffers;
-using System.Linq;
 using System.Threading;
 
 #nullable enable
@@ -27,8 +25,7 @@ namespace CCEnvs.Pools
             IObjectPoolBase<T> pool,
             int count,
             int batchSize = 1,
-            int delayFrameCountBetweenBatches = 0
-            )
+            int delayFrameCountBetweenBatches = 0)
             :
             this()
         {
@@ -75,8 +72,8 @@ namespace CCEnvs.Pools
 #endif
                 >.Shared.Get(batchSize);
 
-            //for more readabilty
-            var task = tasks.Value.FirstOrDefault();
+            UniTask<PooledHandle<T>> task;
+
             int processedCount = 0;
 
             try
@@ -91,7 +88,7 @@ namespace CCEnvs.Pools
                     {
                         cancellationToken.ThrowIfCancellationRequestedByInterval(i, iterationCount / 2);
 
-                        task = GetFromPoolAsync();
+                        task = GetFromPoolAsync(cancellationToken);
 
                         tasks[i] = task;
                     }
@@ -129,10 +126,10 @@ namespace CCEnvs.Pools
 #else
             System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
-            GetFromPoolAsync()
+            GetFromPoolAsync(CancellationToken cancellationToken)
         {
             if (isAsync)
-                await asyncPool!.GetAsync();
+                await asyncPool!.GetAsync(cancellationToken);
 
             return syncPool!.Get();
         }
@@ -142,7 +139,7 @@ namespace CCEnvs.Pools
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"{nameof(pool)}: {pool}";
+            return $"({nameof(pool)}: {pool}; {nameof(batchSize)}: {batchSize}; {nameof(delayFrameCountBetweenBatches)}: {delayFrameCountBetweenBatches})";
         }
     }
 }

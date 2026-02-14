@@ -1,90 +1,98 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 #pragma warning disable S2743
 namespace CCEnvs.Reflection.Caching
 {
-    public static class TypeCache
-    {
-    }
-
     public static class TypeCache<T>
     {
         #region IL2CPP Type definitions
 
 #pragma warning disable S1144
 
-        private readonly static T[]? m_Array;
+        //private readonly static T[]? m_Array;
 
-        private readonly static List<T>? m_List;
+        //private readonly static List<T>? m_List;
 
-        private readonly static HashSet<T>? m_HashSet;
+        //private readonly static HashSet<T>? m_HashSet;
 
-        private readonly static Queue<T>? m_Queue;
+        //private readonly static Queue<T>? m_Queue;
 
-        private readonly static Stack<T>? m_Stack;
+        //private readonly static Stack<T>? m_Stack;
 
 #pragma warning restore S1144
 
         #endregion
 
-        public static string String { get; } = CachedTypeof<T>.Type.ToString();
+        public static string String { get; } = TypeofCache<T>.Type.ToString();
 
         public static bool IsUnityObject { get; }
+
+        public static bool IsUnityComponent { get; }
+
+        public static bool IsUnityGameObject { get; }
+
         public static bool IsCCBheaviour { get; }
 
         static TypeCache()
         {
-            ResolveTypeInheritanceFlags(
-                CachedTypeof<T>.Type,
-                out var isUnityObject,
-                out var isCCBehaviour
-                );
+#if UNITY_2017_1_OR_NEWER
 
-            IsUnityObject = isUnityObject;
-            IsCCBheaviour = isCCBehaviour;
-        }
+            Type type = TypeofCache<T>.Type;
 
-        private static void ResolveTypeInheritanceFlags(Type type, out bool isUnityObject, out bool isCCBehaviour)
-        {
-            string unityObjectNamepsacePart = "UnityEngine.Object";
-            string ccBehaviourNamespacePart = $"{nameof(CCEnvs)}.Unity.CCBehaviour";
-
-            var loopFuse = LoopFuse.Create(iterationLimit: 10000);
-
-            while (type is not null
-                   &&
-                   loopFuse.DebugMoveNext()
-                   )
+            if (type.IsType<UnityEngine.Object>())
             {
-                if (type.Namespace.IsNullOrWhiteSpace())
+                IsUnityObject = true;
+                IsUnityComponent = IsUnityComponentType(type);
+                IsUnityGameObject = IsUnityGameObjectType(type);
+
+                if (IsUnityComponent)
                 {
-                    type = type.BaseType;
-                    continue;
+                    while (type is not null)
+                    {
+                        if (type.Namespace is null
+                            ||
+                            type.Name is null)
+                        {
+                            continue;
+                        }
+
+                        if (!IsCCBheaviour)
+                        {
+                            IsCCBheaviour = IsCCBehaviourType(type);
+                            break;
+                        }
+
+                        type = type.BaseType;
+                    }
                 }
-
-                if (type.Namespace.StartsWith(ccBehaviourNamespacePart))
-                {
-                    isCCBehaviour = true;
-                    isUnityObject = true;
-
-                    break;
-                }
-
-                if (type.Namespace.StartsWith(unityObjectNamepsacePart))
-                {
-                    isCCBehaviour = false;
-                    isUnityObject = true;
-
-                    break;
-                }
-
-                type = type.BaseType;
             }
 
-            isUnityObject = false;
-            isCCBehaviour = false;
+#endif
+        }
+
+#if UNITY_2017_1_OR_NEWER
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsUnityComponentType(Type type)
+        {
+            return !IsUnityGameObject && type.IsType<UnityEngine.Component>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsUnityGameObjectType(Type type)
+        {
+            return !IsUnityComponent && type.IsType<UnityEngine.GameObject>();
+        }
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsCCBehaviourType(Type type)
+        {
+            return type.Namespace.ContainsOrdinal(NamepsaceHelper.NAMESPACE_CCENVS_UNITY_COMPONENTS)
+                   &&
+                   type.Name.Contains("CCBehaviour");
         }
     }
 }

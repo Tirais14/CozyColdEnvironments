@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
 using R3;
 using System;
 using System.Collections.Concurrent;
@@ -35,7 +36,7 @@ namespace CCEnvs.Pools
 #if UNITY_2017_1_OR_NEWER
         protected bool IsUnityGameObject { get; }
         protected bool IsUnityComponent { get; }
-        protected bool IsUnityObject { get; }
+        protected bool IsUnityObject => TypeCache<T>.IsUnityObject;
 #endif
 
         protected ObjectPoolBase(int capacity, int? maxSize)
@@ -110,17 +111,17 @@ namespace CCEnvs.Pools
 
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
+                fastObject = null;
+                //if (fastObject != null)
+                //{
+                //    T? exchanged;
 
-                if (fastObject != null)
-                {
-                    T? exchanged;
-
-                    do
-                    {
-                        exchanged = Interlocked.Exchange(ref fastObject, null);
-                    }
-                    while (exchanged != null);
-                }
+                //    do
+                //    {
+                //        exchanged = Interlocked.Exchange(ref fastObject, null);
+                //    }
+                //    while (exchanged != null);
+                //}
             }
 
             disposed = true;
@@ -158,9 +159,7 @@ namespace CCEnvs.Pools
 
         protected virtual void OnReturn(T obj)
         {
-            var tFastObject = fastObject;
-
-            if (Interlocked.CompareExchange(ref fastObject, obj, tFastObject) != tFastObject)
+            if (Interlocked.CompareExchange(ref fastObject, obj, null) is not null)
                 inactiveItems.Push(obj);
 
             returnCmd?.Execute(obj);
@@ -196,9 +195,14 @@ namespace CCEnvs.Pools
 
         protected bool TryGetFromInactive([NotNullWhen(true)] out T? result)
         {
-            return Interlocked.CompareExchange(ref fastObject, null, fastObject).Let(out result)
-                   ||
-                   inactiveItems.TryPop(out result);
+            var succes = Interlocked.CompareExchange(ref fastObject, null, fastObject).Let(out result)
+                         ||
+                         inactiveItems.TryPop(out result);
+
+            if (!succes)
+                return false;
+
+            return IsPoolalbeValid(result);
         }
 
         protected bool IsObjectValid([NotNullWhen(true)] T? obj)
@@ -206,6 +210,11 @@ namespace CCEnvs.Pools
             if (obj.IsNull())
                 return false;
 
+            return IsPoolalbeValid(obj);
+        }
+
+        protected bool IsPoolalbeValid(T obj)
+        {
             if (!IsPoolableObject)
                 return true;
 

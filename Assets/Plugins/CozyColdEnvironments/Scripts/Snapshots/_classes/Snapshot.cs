@@ -19,7 +19,7 @@ namespace CCEnvs.Snapshots
         protected readonly bool isValueType = typeof(T).IsValueType;
 
         [JsonIgnore]
-        public virtual Type TargetType => CachedTypeof<T>.Type;
+        public virtual Type TargetType => TypeofCache<T>.Type;
 
         protected Snapshot()
         {
