@@ -250,9 +250,9 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly PooledHandle<AnonymousCommandAsync> BuildPooled()
+            public readonly PooledObject<AnonymousCommandAsync> BuildPooled()
             {
-                PooledHandle<AnonymousCommandAsync> pooledCmd;
+                PooledObject<AnonymousCommandAsync> pooledCmd;
                 AnonymousCommandAsync cmd;
 
                 if (pool is not null && pool.InactiveCount > 0)
@@ -328,9 +328,9 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly PooledHandle<AnonymousCommandAsync<TState>> BuildPooled()
+            public readonly PooledObject<AnonymousCommandAsync<TState>> BuildPooled()
             {
-                PooledHandle<AnonymousCommandAsync<TState>> pooledCmd;
+                PooledObject<AnonymousCommandAsync<TState>> pooledCmd;
                 AnonymousCommandAsync<TState> cmd;
 
                 if (pool is not null && pool.InactiveCount > 0)
@@ -406,9 +406,9 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly PooledHandle<AnonymousCommand> BuildPooled()
+            public readonly PooledObject<AnonymousCommand> BuildPooled()
             {
-                PooledHandle<AnonymousCommand> pooledCmd;
+                PooledObject<AnonymousCommand> pooledCmd;
                 AnonymousCommand cmd;
 
                 if (pool is not null && pool.InactiveCount > 0)
@@ -485,9 +485,9 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly PooledHandle<AnonymousCommand<TState>> BuildPooled()
+            public readonly PooledObject<AnonymousCommand<TState>> BuildPooled()
             {
-                PooledHandle<AnonymousCommand<TState>> pooledCmd;
+                PooledObject<AnonymousCommand<TState>> pooledCmd;
                 AnonymousCommand<TState> cmd;
 
                 if (pool is not null && pool.InactiveCount > 0)

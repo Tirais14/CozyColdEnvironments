@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.UI
 
         private MonoBehaviour? _parent;
 
-        private PooledHandle<List<IDisposable>> transparentGraphics;
+        private PooledObject<List<IDisposable>> transparentGraphics;
 
         public bool ShowOnInited {
             get => showOnInited;

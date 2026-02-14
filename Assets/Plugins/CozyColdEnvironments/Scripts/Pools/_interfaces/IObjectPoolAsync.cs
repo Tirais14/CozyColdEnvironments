@@ -7,7 +7,7 @@ namespace CCEnvs.Pools
         where T : class
     {
 #if UNITASK_PLUGIN
-        Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+        Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
         System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif

@@ -117,7 +117,7 @@ namespace CCEnvs
         /// </summary>
         public bool DebugMoveNext()
         {
-#if CC_DEBUG
+#if CC_DEBUG_ENABLED
             return MoveNext();
 #else
             return true;

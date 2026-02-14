@@ -48,7 +48,7 @@ namespace CCEnvs.Pools
             set => this.value[index] = value;
         }
 
-        public PooledArray(PooledHandle<T[]> pooled, int count, int offset = 0)
+        public PooledArray(PooledObject<T[]> pooled, int count, int offset = 0)
             :
             this()
         {

@@ -1,5 +1,6 @@
 using CCEnvs.Threading;
 using Cysharp.Threading.Tasks;
+using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Buffers;
 using System.Threading;
@@ -62,74 +63,68 @@ namespace CCEnvs.Pools
 
             int batchCount = (int)MathF.Ceiling((float)count / batchSize);
 
-            using var handles = ArrayPool<PooledHandle<T>>.Shared.Get(count);
+            using var handles = ArrayPool<PooledObject<T>>.Shared.Get(count);
 
             using var tasks = ArrayPool<
 #if UNITASK_PLUGIN
-            Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+            Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
             System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
                 >.Shared.Get(batchSize);
 
-            UniTask<PooledHandle<T>> task;
+            UniTask<PooledObject<T>> task;
 
             int processedCount = 0;
 
-            try
+            for (int batch = 0; batch < batchCount; batch++)
             {
-                for (int batch = 0; batch < batchCount; batch++)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                int iterationCount = Math.Min(batchSize, count - processedCount);
+
+                for (int i = 0; i < iterationCount; i++)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequestedByInterval(i, iterationCount / 2);
 
-                    int iterationCount = Math.Min(batchSize, count - processedCount);
+                    task = GetFromPoolAsync(cancellationToken);
 
-                    for (int i = 0; i < iterationCount; i++)
-                    {
-                        cancellationToken.ThrowIfCancellationRequestedByInterval(i, iterationCount / 2);
+                    tasks[i] = task;
+                }
 
-                        task = GetFromPoolAsync(cancellationToken);
-
-                        tasks[i] = task;
-                    }
-
-                    var tHandles = await
+                var tHandles = await
 #if UNITASK_PLUGIN
-                        UniTask.WhenAll(tasks.Value.Array);
+                    UniTask.WhenAll(tasks.Value.Array);
 #else
-                        ValueTaskHelper.WhenAll(tasks.Value.Array);
+                    ValueTaskHelper.WhenAll(tasks.Value.Array);
 #endif
 
-                    for (int i = 0; i < iterationCount; i++)
-                        handles[batch * batchSize + i] = tHandles[i];
+                for (int i = 0; i < iterationCount; i++)
+                    handles[batch * batchSize + i] = tHandles[i];
 
-                    if (delayFrameCountBetweenBatches > 0)
-                    {
+                if (delayFrameCountBetweenBatches > 0)
+                {
 #if UNITASK_PLUGIN
-                        await UniTask.DelayFrame(delayFrameCountBetweenBatches);
+                    await UniTask.DelayFrame(delayFrameCountBetweenBatches);
 #else
-                        await ValueTaskHelper.DelayFrame(delayFrameCountBetweenBatches);
+                    await ValueTaskHelper.DelayFrame(delayFrameCountBetweenBatches);
 #endif
-                    }
                 }
             }
-            finally
-            {
-                handles.DisposeEach();
-                handles.Dispose();
-            }
+
+            handles.DisposeEach(bufferized: false);
         }
 
         private async
 #if UNITASK_PLUGIN
-            Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+            Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
             System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
             GetFromPoolAsync(CancellationToken cancellationToken)
         {
             if (isAsync)
-                await asyncPool!.GetAsync(cancellationToken);
+                return await asyncPool!.GetAsync(cancellationToken);
 
             return syncPool!.Get();
         }

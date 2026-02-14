@@ -19,11 +19,11 @@ namespace CCEnvs.Pools
         }
 
 #if UNITY_2017_1_OR_NEWER
-        public override PooledHandle<HashSet<T>> Get()
+        public override PooledObject<HashSet<T>> Get()
         {
             var listHandle = UnityEngine.Pool.HashSetPool<T>.Get(out var list);
 
-            return PooledHandle.Create(list, listHandle,
+            return PooledObject.Create(list, listHandle,
                 static (_, handle) =>
                 {
                     ((IDisposable)handle).Dispose();

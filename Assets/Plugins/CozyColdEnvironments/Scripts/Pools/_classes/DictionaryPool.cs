@@ -20,11 +20,11 @@ namespace CCEnvs.Pools
         }
 
 #if UNITY_2017_1_OR_NEWER
-        public override PooledHandle<Dictionary<TKey, TValue>> Get()
+        public override PooledObject<Dictionary<TKey, TValue>> Get()
         {
             var uHandle = UnityEngine.Pool.DictionaryPool<TKey, TValue>.Get(out var dictionary);
 
-            return new PooledHandle<Dictionary<TKey, TValue>>(dictionary, uHandle,
+            return new PooledObject<Dictionary<TKey, TValue>>(dictionary, uHandle,
                 static (list, uHandle) =>
                 {
                     ((IDisposable)uHandle).Dispose();

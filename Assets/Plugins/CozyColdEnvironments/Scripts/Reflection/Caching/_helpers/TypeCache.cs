@@ -25,8 +25,6 @@ namespace CCEnvs.Reflection.Caching
 
         #endregion
 
-        public static string String { get; } = TypeofCache<T>.Type.ToString();
-
         public static bool IsUnityObject { get; }
 
         public static bool IsUnityComponent { get; }

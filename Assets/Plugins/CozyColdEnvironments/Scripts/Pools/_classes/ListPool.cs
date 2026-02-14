@@ -21,11 +21,11 @@ namespace CCEnvs.Pools
         }
 
 #if UNITY_2017_1_OR_NEWER
-        public override PooledHandle<List<T>> Get()
+        public override PooledObject<List<T>> Get()
         {
             var uHandle = UnityEngine.Pool.ListPool<T>.Get(out var list);
 
-            return new PooledHandle<List<T>>(list, uHandle,
+            return new PooledObject<List<T>>(list, uHandle,
                 static (list, uHandle) =>
                 {
                     ((IDisposable)uHandle).Dispose();

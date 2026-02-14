@@ -5,6 +5,7 @@ using R3;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 
 #nullable enable
@@ -14,9 +15,16 @@ namespace CCEnvs.Pools
     public abstract class ObjectPoolBase<T> : IObjectPoolBase<T>
         where T : class
     {
+        protected static Action<T, object> ReturnAction { get; } = static (obj, pool) =>
+        {
+            ((ObjectPoolBase<T>)pool).Return(obj);
+        };
+
+        protected static InvalidOperationException PoolEmptyException { get; } = new("Pool is empty and a factory not found");
+
         protected readonly ConcurrentStack<T> inactiveItems;
 
-        private readonly ConcurrentDictionary<T, PooledHandle<T>> activeItems;
+        protected readonly ConcurrentDictionary<T, PooledObject<T>> activeItems;
 
         protected ReactiveCommand<T>? getCmd;
         protected ReactiveCommand<T>? returnCmd;
@@ -25,46 +33,32 @@ namespace CCEnvs.Pools
 
         public int Count => ActiveCount + InactiveCount;
         public int ActiveCount => activeItems.Count;
-        public int InactiveCount => inactiveItems.Count + (fastObject is not null ? 1 : 0);
+        public int InactiveCount {
+            get
+            {
+                if (fastObject is not null)
+                    return inactiveItems.Count + 1;
+
+                return inactiveItems.Count;
+            }
+        }
 
         public abstract bool HasFactory { get; }
 
         protected bool IsPoolableObject { get; }
-
-        protected int DefaultCapacity { get; }
-
-#if UNITY_2017_1_OR_NEWER
-        protected bool IsUnityGameObject { get; }
-        protected bool IsUnityComponent { get; }
-        protected bool IsUnityObject => TypeCache<T>.IsUnityObject;
-#endif
 
         protected ObjectPoolBase(int capacity, int? maxSize)
         {
             //TODO: Realize max size
             _ = maxSize;
 
-            DefaultCapacity = capacity;
-
             inactiveItems = new ConcurrentStack<T>();
 
-            activeItems = new ConcurrentDictionary<T, PooledHandle<T>>();
+            activeItems = new ConcurrentDictionary<T, PooledObject<T>>();
 
             Type objType = typeof(T);
 
             IsPoolableObject = objType.IsType<IPoolable>();
-
-#if UNITY_2017_1_OR_NEWER
-            IsUnityObject = objType.IsType<UnityEngine.Object>();
-
-            if (IsUnityObject)
-            {
-                IsUnityComponent = objType.IsType<UnityEngine.Component>();
-
-                if (!IsUnityComponent)
-                    IsUnityGameObject = objType.IsType<UnityEngine.GameObject>();
-            }
-#endif
         }
 
         public void Clear()
@@ -76,6 +70,13 @@ namespace CCEnvs.Pools
         {
             if (!IsObjectValid(obj))
                 return;
+
+#if CC_DEBUG_ENABLED
+
+            if (inactiveItems.Where(static x => x.IsNotNull()).Contains(obj))
+                throw new InvalidOperationException($"Object: {obj} is already pooled");
+
+#endif
 
             ReturnCore(obj);
             OnReturn(obj);
@@ -112,22 +113,12 @@ namespace CCEnvs.Pools
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
                 fastObject = null;
-                //if (fastObject != null)
-                //{
-                //    T? exchanged;
-
-                //    do
-                //    {
-                //        exchanged = Interlocked.Exchange(ref fastObject, null);
-                //    }
-                //    while (exchanged != null);
-                //}
             }
 
             disposed = true;
         }
 
-        protected virtual void GetCore(PooledHandle<T> handledObj)
+        protected virtual void GetCore(PooledObject<T> handledObj)
         {
             T obj = handledObj.Value;
 
@@ -140,7 +131,7 @@ namespace CCEnvs.Pools
             activeItems.TryAdd(obj, handledObj);
         }
 
-        protected virtual void OnGet(PooledHandle<T> handledObj)
+        protected virtual void OnGet(PooledObject<T> handledObj)
         {
             getCmd?.Execute(handledObj.Value);
         }
@@ -165,23 +156,16 @@ namespace CCEnvs.Pools
             returnCmd?.Execute(obj);
         }
 
-        protected PooledHandle<T> CreateHandle(T obj)
+        protected PooledObject<T> CreateHandle(T obj)
         {
-            return PooledHandle.Create(
+            return PooledObject.Create(
                 obj,
                 this,
-                static (obj, @this) =>
-                {
-                    @this.Return(obj);
-                });
+                ReturnAction
+                );
         }
 
-        protected InvalidOperationException IsEmptyException()
-        {
-            return new System.InvalidOperationException("Pool is empty and a factory not found");
-        }
-
-        protected void TryProcessPoolableObjectOnGet(PooledHandle<T> obj)
+        protected void TryProcessPoolableObjectOnGet(PooledObject<T> obj)
         {
             if (IsPoolableObject)
                 OnPoolableGet((IPoolable)obj.Value, obj);
@@ -199,10 +183,7 @@ namespace CCEnvs.Pools
                          ||
                          inactiveItems.TryPop(out result);
 
-            if (!succes)
-                return false;
-
-            return IsPoolalbeValid(result);
+            return succes && IsPoolableValid(result);
         }
 
         protected bool IsObjectValid([NotNullWhen(true)] T? obj)
@@ -210,10 +191,10 @@ namespace CCEnvs.Pools
             if (obj.IsNull())
                 return false;
 
-            return IsPoolalbeValid(obj);
+            return IsPoolableValid(obj);
         }
 
-        protected bool IsPoolalbeValid(T obj)
+        protected bool IsPoolableValid(T obj)
         {
             if (!IsPoolableObject)
                 return true;
@@ -221,22 +202,30 @@ namespace CCEnvs.Pools
             return ((IPoolable)obj).IsValid;
         }
 
-        private void OnPoolableGet(IPoolable poolable, PooledHandle<T> handledObj)
+        //protected bool IsActiveObject(T obj)
+        //{
+        //    if (IsPoolableObject)
+        //        return ((IPoolable)obj).PoolHandle.IsSome;
+
+        //    return activeItems.ContainsKey(obj);
+        //}
+
+        private void OnPoolableGet(IPoolable poolable, PooledObject<T> handledObj)
         {
             if (poolable.PoolHandle.IsSome)
                 throw new InvalidOperationException($"Object: {handledObj.Value} already has pool handle");
 
-            poolable.PoolHandle = handledObj;
+            poolable.PoolHandle = (PooledObject)handledObj;
 
             poolable.OnSpawned();
         }
 
         private void OnPoolableReturn(IPoolable poolable)
         {
-            if (poolable.PoolHandle.IsSome)
-                poolable.PoolHandle.Raw.As<PooledHandle<T>>().Maybe().GetValueUnsafe(static () => throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool."));
+            //if (poolable.PoolHandle.IsSome)
+            //    throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool.");
 
-            poolable.PoolHandle = Maybe<IDisposable>.None;
+            poolable.PoolHandle = Maybe<PooledObject>.None;
 
             poolable.OnDespawned();
         }
@@ -261,7 +250,7 @@ namespace CCEnvs.Pools
 
         protected void TryProcessUnityObjectOnGet(T obj)
         {
-            if (IsUnityObject
+            if (TypeCache<T>.IsUnityObject
                 &&
                 TryGetGameObject(obj, out var go))
             {
@@ -271,7 +260,7 @@ namespace CCEnvs.Pools
 
         protected void TryProcessUnityObjectOnReturn(T obj)
         {
-            if (IsUnityObject
+            if (TypeCache<T>.IsUnityObject
                 &&
                 TryGetGameObject(obj, out var go))
             {
@@ -295,9 +284,9 @@ namespace CCEnvs.Pools
         {
             go = null;
 
-            if (IsUnityGameObject)
+            if (TypeCache<T>.IsUnityGameObject)
                 go = obj.To<UnityEngine.GameObject>();
-            else if (IsUnityComponent)
+            else if (TypeCache<T>.IsUnityComponent)
                 go = obj.To<UnityEngine.Component>().gameObject;
 
             return go != null;

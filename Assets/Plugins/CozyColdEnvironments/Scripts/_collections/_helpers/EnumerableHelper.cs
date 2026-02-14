@@ -90,7 +90,7 @@ namespace CCEnvs.Collections
             if (source.TryGetNonEnumeratedCount(out var count))
                 return source.EnumerableToArrayPooled(count);
 
-            PooledHandle<T[]> items = ArrayPool<T>.Shared.RentHandled(16);
+            PooledObject<T[]> items = ArrayPool<T>.Shared.RentHandled(16);
             int itemCount = 0;
 
             foreach (var item in source)

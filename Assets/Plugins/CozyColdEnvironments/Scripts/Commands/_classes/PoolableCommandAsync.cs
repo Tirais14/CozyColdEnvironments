@@ -10,9 +10,9 @@ namespace CCEnvs.Patterns.Commands
     {
         private ReactiveCommand<IPoolable>? onDespawnCmd;
 
-        protected Maybe<IDisposable> poolHandle => this.To<IPoolable>().PoolHandle;
+        protected Maybe<PooledObject> poolHandle => this.To<IPoolable>().PoolHandle;
 
-        Maybe<IDisposable> IPoolable.PoolHandle { get; set; }
+        Maybe<PooledObject> IPoolable.PoolHandle { get; set; }
 
         protected PoolableCommandAsync()
             :

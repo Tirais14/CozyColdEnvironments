@@ -9,7 +9,9 @@ namespace CCEnvs.Pools
     {
         private readonly IFactory<T>? factory;
 
-        public override bool HasFactory => factory is not null;
+        private readonly bool hasFactory;
+
+        public override bool HasFactory => hasFactory;
 
         public ObjectPool(
             IFactory<T>? factory = null,
@@ -19,25 +21,25 @@ namespace CCEnvs.Pools
             base(capacity, maxSize)
         {
             this.factory = factory;
+            hasFactory = factory.IsNotNull();
+
         }
 
-        public virtual PooledHandle<T> Get()
+        public virtual PooledObject<T> Get()
         {
-            T? obj = null;
+            T? obj;
 
-            while (!IsObjectValid(obj))
+            while (!TryGetFromInactive(out obj))
             {
-                if (InactiveCount < 1)
-                {
-                    if (factory is null)
-                        throw IsEmptyException();
+                if (InactiveCount > 0)
+                    continue;
 
-                    obj = factory.Create();
-                    Return(obj);
-                }
+                if (!hasFactory)
+                    throw PoolEmptyException;
 
-                if (TryGetFromInactive(out obj))
-                    break;
+                obj = factory!.Create();
+
+                Return(obj);   
             }
 
             var handle = CreateHandle(obj);

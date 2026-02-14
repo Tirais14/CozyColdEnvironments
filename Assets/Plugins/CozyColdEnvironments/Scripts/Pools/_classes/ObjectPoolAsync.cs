@@ -15,7 +15,9 @@ namespace CCEnvs.Pools
 #endif
             >? factory;
 
-        public override bool HasFactory => factory is not null;
+        private readonly bool hasFactory;
+
+        public override bool HasFactory => hasFactory;
 
         public ObjectPoolAsync(
 
@@ -33,31 +35,30 @@ namespace CCEnvs.Pools
             base(capacity, maxSize)
         {
             this.factory = factory;
+            hasFactory = factory.IsNotNull();
         }
 
         public async
 #if UNITASK_PLUGIN
-        Cysharp.Threading.Tasks.UniTask<PooledHandle<T>>
+        Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
         System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
             GetAsync(CancellationToken cancellationToken = default)
         {
-            T? obj = null;
+            T? obj;
 
-            while (!IsObjectValid(obj))
+            while (!TryGetFromInactive(out obj))
             {
-                if (InactiveCount < 1)
-                {
-                    if (factory is null)
-                        throw IsEmptyException();
+                if (InactiveCount > 0)
+                    continue;
 
-                    obj = await factory.Create(cancellationToken);
-                    Return(obj);
-                }
+                if (!HasFactory)
+                    throw PoolEmptyException;
 
-                if (TryGetFromInactive(out obj))
-                    break;
+                obj = await factory!.Create(cancellationToken);
+
+                Return(obj);
             }
 
             var handle = CreateHandle(obj);

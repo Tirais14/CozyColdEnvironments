@@ -11,7 +11,7 @@ namespace CCEnvs.Patterns.Commands
     public static class CommandHelper
     {
 #if UNITASK_PLUGIN
-        public static PooledHandle<AnonymousCommandAsync<UniTask>> ToCommandPooled(
+        public static PooledObject<AnonymousCommandAsync<UniTask>> ToCommandPooled(
             this UniTask source
             )
         {
@@ -26,7 +26,7 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-        public static PooledHandle<AnonymousCommandAsync<UniTask<T>>> ToCommandPooled<T>(
+        public static PooledObject<AnonymousCommandAsync<UniTask<T>>> ToCommandPooled<T>(
             this UniTask<T> source
             )
         {
@@ -41,7 +41,7 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-                public static PooledHandle<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
+                public static PooledObject<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
             this AsyncLazy source
             )
         {
@@ -58,7 +58,7 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-        public static PooledHandle<AnonymousCommandAsync<AsyncLazy<T>>> ToCommandPooled<T>(
+        public static PooledObject<AnonymousCommandAsync<AsyncLazy<T>>> ToCommandPooled<T>(
             this AsyncLazy<T> source
             )
         {
@@ -76,7 +76,7 @@ namespace CCEnvs.Patterns.Commands
         }
 #endif
 
-        public static PooledHandle<AnonymousCommandAsync<ValueTask>> ToCommandPooled(
+        public static PooledObject<AnonymousCommandAsync<ValueTask>> ToCommandPooled(
             this ValueTask source
             )
         {
@@ -91,7 +91,7 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-        public static PooledHandle<AnonymousCommandAsync<ValueTask<T>>> ToCommandPooled<T>(
+        public static PooledObject<AnonymousCommandAsync<ValueTask<T>>> ToCommandPooled<T>(
             this ValueTask<T> source
             )
         {
@@ -106,7 +106,7 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-        public static PooledHandle<AnonymousCommandAsync<Task>> ToCommandPooled(
+        public static PooledObject<AnonymousCommandAsync<Task>> ToCommandPooled(
             this Task source
             )
         {
@@ -123,7 +123,7 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-        public static PooledHandle<AnonymousCommandAsync<Task<T>>> ToCommandPooled<T>(
+        public static PooledObject<AnonymousCommandAsync<Task<T>>> ToCommandPooled<T>(
             this Task<T> source
             )
         {
