@@ -1,8 +1,6 @@
 using CCEnvs.Diagnostics;
 using Cysharp.Threading.Tasks;
-using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Unity.Async
@@ -10,88 +8,142 @@ namespace CCEnvs.Unity.Async
     public static class UniTaskExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForgetByPrintException(this UniTask source, object? context = null)
+        public static void ForgetByPrintException(
+            this UniTask source,
+            object? context = null,
+            bool logCancellationException = true
+            )
         {
             if (context.IsNull())
             {
-                source.Forget(
-                    static ex =>
+                if (logCancellationException)
+                {
+                    source.Forget(static ex =>
                     {
-                        CCDebug.Instance.PrintException(ex);
-                    });
-            }
-            else
-            {
-                source.Forget(
-                    ex =>
-                    {
-                        context.PrintException(ex);
-                    });
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForgetByPrintException<T>(this UniTask<T> source, object? context = null)
-        {
-            if (context.IsNull())
-            {
-                source.Forget(
-                    static ex =>
-                    {
-                        if (ex is TaskCanceledException || ex is OperationCanceledException)
-                            CCDebug.Instance.PrintLog(ex);
+                        if (ex.IsCancellationException())
+                            CCDebug.Instance.PrintExceptionAsLog(ex);
                         else
                             CCDebug.Instance.PrintException(ex);
-
                     });
+
+                    return;
+                }
+
+                source.Forget(
+                        static ex =>
+                        {
+                            CCDebug.Instance.PrintException(ex);
+                        });
+
+                return;
             }
-            else
+
+            if (logCancellationException)
             {
                 source.Forget(
                     ex =>
                     {
-                        if (ex is TaskCanceledException || ex is OperationCanceledException)
-                            context.PrintLog(ex);
+                        if (ex.IsCancellationException())
+                            context.PrintExceptionAsLog(ex);
                         else
                             context.PrintException(ex);
-
                     });
+
+                return;
             }
+
+            source.Forget(
+                ex =>
+                {
+                    context.PrintException(ex);
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForgetByThrow(this UniTask source, object? context = null)
+        public static void ForgetByPrintException<T>(
+            this UniTask<T> source,
+            object? context = null,
+            bool logCancellationException = true
+            )
         {
             if (context.IsNull())
             {
-                source.Forget(
-                    static ex =>
+                if (logCancellationException)
+                {
+                    source.Forget(static ex =>
                     {
-                        if (ex is TaskCanceledException || ex is OperationCanceledException)
-                            CCDebug.Instance.PrintLog(ex);
+                        if (ex.IsCancellationException())
+                            CCDebug.Instance.PrintExceptionAsLog(ex);
                         else
-                            throw ex;
-
+                            CCDebug.Instance.PrintException(ex);
                     });
+
+                    return;
+                }
+
+                source.Forget(
+                        static ex =>
+                        {
+                            CCDebug.Instance.PrintException(ex);
+                        });
+
+                return;
             }
-            else
+
+            if (logCancellationException)
             {
                 source.Forget(
                     ex =>
                     {
-                        if (ex is TaskCanceledException || ex is OperationCanceledException)
-                            context.PrintLog(ex);
+                        if (ex.IsCancellationException())
+                            context.PrintExceptionAsLog(ex);
                         else
-                            throw ex;
-
+                            context.PrintException(ex);
                     });
+
+                return;
             }
+
+            source.Forget(
+                ex =>
+                {
+                    context.PrintException(ex);
+                });
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForgetByThrow<T>(this UniTask<T> source, object? context = null)
-        {
-            source.Forget(static ex => throw ex);
-        }
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static void ForgetByThrow(this UniTask source, object? context = null)
+        //{
+        //    if (context.IsNull())
+        //    {
+        //        source.Forget(
+        //            static ex =>
+        //            {
+        //                if (ex is TaskCanceledException || ex is OperationCanceledException)
+        //                    CCDebug.Instance.PrintLog(ex);
+        //                else
+        //                    throw ex;
+
+        //            });
+        //    }
+        //    else
+        //    {
+        //        source.Forget(
+        //            ex =>
+        //            {
+        //                if (ex is TaskCanceledException || ex is OperationCanceledException)
+        //                    context.PrintLog(ex);
+        //                else
+        //                    throw ex;
+
+        //            });
+        //    }
+        //}
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static void ForgetByThrow<T>(this UniTask<T> source, object? context = null)
+        //{
+        //    source.Forget(static ex => throw ex);
+        //}
     }
 }

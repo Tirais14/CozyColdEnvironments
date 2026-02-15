@@ -26,6 +26,8 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         protected bool switchSelectable = true;
 
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
+
         [field: GetBySelf(IsOptional = true)]
         public Maybe<Button> button { get; private set; }
 
@@ -35,11 +37,7 @@ namespace CCEnvs.Unity.UI
         [field: GetBySelf(IsOptional = true)]
         public Maybe<DragAndDropTarget> dragAndDropTarget { get; private set; }
 
-        public Image? image => showable.graphic.As<Image>();
-
         protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
-
-        private CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
 
         protected override void Awake()
         {

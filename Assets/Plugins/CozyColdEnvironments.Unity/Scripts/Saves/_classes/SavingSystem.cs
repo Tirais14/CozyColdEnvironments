@@ -1,6 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
+using CCEnvs.Reflection;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Components;
@@ -22,16 +23,14 @@ using UnityEngine.SceneManagement;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public sealed partial class SavingSystem : CCBehaviourStaticPublic<SavingSystem>, ISavingSystem
+    public sealed partial class SavingSystem : CCBehaviourStaticPublic<SavingSystem>
     {
-        private readonly Type gameObjectType = typeof(GameObject);
-
         private readonly Dictionary<Type, HashSet<RegisteredObject>> objectSets = new();
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
-
         private readonly Dictionary<RegisteredObject, object> objectKeys = new();
-        private readonly ConcurrentDictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
         private readonly Dictionary<SceneInfo, CompositeDisposable> sceneDisposables = new();
+
+        private readonly ConcurrentDictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
         private readonly ConcurrentDictionary<RegisteredObjectInfo, CancellationTokenSource> restoreInstanceTokenSources = new(); 
 
         private readonly ReactiveProperty<bool> isSaving = new();
@@ -152,7 +151,7 @@ namespace CCEnvs.Unity.Saves
 
             return RegisterObjectInternal(
                 gameObject,
-                gameObjectType,
+                TypeofCache<GameObject>.Type,
                 keyOrFactory,
                 sceneInfo
                 );

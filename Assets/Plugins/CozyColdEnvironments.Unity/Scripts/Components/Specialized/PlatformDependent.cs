@@ -7,7 +7,10 @@ namespace CCEnvs.Unity.Components.Specialized
 {
     public sealed class PlatformDependent : CCBehaviour
     {
-        public bool destroyOnNotTargetPlatform = true;
+        [Header("Platforms Settings")]
+        [Space(8f)]
+
+        public bool destroyGameObjectOnExcluded = true;
         public bool excludePlatforms;
 
         [Header("Platforms")]
@@ -23,14 +26,17 @@ namespace CCEnvs.Unity.Components.Specialized
 
             if (!IsTargetPlatform())
             {
-                if (!destroyOnNotTargetPlatform)
-                {
+                if (!destroyGameObjectOnExcluded)
                     gameObject.SetActive(false);
-                    Destroy(this);
-                }
                 else
                     Destroy(gameObject);
             }
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            Destroy(this);
         }
 
         private bool IsTargetPlatform()

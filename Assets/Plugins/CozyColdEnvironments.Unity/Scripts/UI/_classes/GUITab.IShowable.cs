@@ -14,9 +14,7 @@ namespace CCEnvs.Unity.UI
         protected Showable showable { get; private set; } = null!;
 
         public bool IsShown => showable.IsShown;
-
         public bool IsInited => showable.IsInited;
-
         public bool IsReadyToShow => showable.IsReadyToShow;
 
         public bool IsEnabled {
@@ -31,12 +29,13 @@ namespace CCEnvs.Unity.UI
 
         public Graphic? graphic => showable.graphic;
 
+        public Image? image => showable.image;
+
         public CanvasGroup? canvasGroup => showable.canvasGroup;
 
         public Canvas canvas => showable.canvas;
 
         public IShowable? root => showable.root;
-
         public IShowable? parent => showable.parent;
 
         public ICanvasController? canvasController => showable.canvasController;

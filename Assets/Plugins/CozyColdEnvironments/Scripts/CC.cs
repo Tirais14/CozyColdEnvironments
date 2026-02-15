@@ -26,9 +26,12 @@ namespace CCEnvs
         public const string COPYRIGHT_STAMP = "@Tirais: " + FULL_NAME;
 
         public static object EmptyObject { get; } = new object();
+
         public static object[] EmptyArguments { get; } = Array.Empty<object>();
+
         public static Func<bool> TrueFactory { get; } = static () => true;
         public static Func<bool> FalseFactory { get; } = static () => false;
+
         public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
         public static JsonSerializerSettings DebugJsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault().AddConverters(new DebugJsonConverter());
 
@@ -37,6 +40,17 @@ namespace CCEnvs
 
         [field: OnInstallResetable]
         public static int MainThreadID { get; private set; }
+
+        public static bool IsDebugMode {
+            get
+            {
+#if CC_DEBUG_ENABLED || UNITY_EDITOR || DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
 
         #region Install
         public static void Install()

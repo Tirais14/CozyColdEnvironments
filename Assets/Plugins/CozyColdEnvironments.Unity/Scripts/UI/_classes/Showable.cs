@@ -47,7 +47,6 @@ namespace CCEnvs.Unity.UI
         private ReactiveCommand<bool>? isInitedCmd;
 
         private MonoBehaviour? _root;
-
         private MonoBehaviour? _parent;
 
         private PooledObject<List<IDisposable>> transparentGraphics;
@@ -58,9 +57,7 @@ namespace CCEnvs.Unity.UI
         }
 
         public bool IsShown => isShown.Value;
-
         public bool IsInited { get; private set; }
-
         public virtual bool IsReadyToShow => IsEnabled;
 
         public bool IsEnabled {
@@ -77,13 +74,15 @@ namespace CCEnvs.Unity.UI
         public Graphic? graphic { get; private set; } = null!;
 
         [field: GetBySelf(IsOptional = true)]
+        public Image? image { get; private set; } = null!;
+
+        [field: GetBySelf(IsOptional = true)]
         public CanvasGroup? canvasGroup { get; private set; }
 
         [field: GetByParent]
         public Canvas canvas { get; private set; } = null!;
 
         public IShowable? root => (IShowable?)_root;
-
         public IShowable? parent => (IShowable?)_parent;
 
         [field: GetByParent(IsOptional = true)]
@@ -95,7 +94,6 @@ namespace CCEnvs.Unity.UI
         }
 
         protected bool isLayoutsRebuilding { get; private set; }
-
         protected bool isInitFaulted { get; private set; }
 
         protected override void Awake()
@@ -245,16 +243,12 @@ namespace CCEnvs.Unity.UI
             if (!IsEnabled)
                 return IsShown;
 
-            if (IsShown && !PreventHide)
-            {
+            if (IsShown)
                 Hide();
-                return false;
-            }
             else
-            {
                 Show();
-                return true;
-            }
+
+            return IsShown;
         }
 
         public async UniTask<bool> SwitchShownStateAsync(CancellationToken cancellationToken = default)

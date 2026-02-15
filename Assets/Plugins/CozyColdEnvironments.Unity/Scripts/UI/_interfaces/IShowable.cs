@@ -21,6 +21,8 @@ namespace CCEnvs.Unity.UI
 
         Graphic? graphic { get; }
 
+        Image? image { get; }
+
         CanvasGroup? canvasGroup { get; }
 
         Canvas canvas { get; }

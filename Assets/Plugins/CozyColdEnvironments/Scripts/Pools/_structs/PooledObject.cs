@@ -33,10 +33,10 @@ namespace CCEnvs.Pools
         public PooledObject(
             object value,
             object state, 
-            Action<object, object> disposeAction
+            Action<object, object> returnAction
             )
             :
-            this(value, state, disposeAction, isActionTyped: false)
+            this(value, state, returnAction, isActionTyped: false)
         {
 
         }
@@ -44,7 +44,7 @@ namespace CCEnvs.Pools
         internal PooledObject(
             object value,
             object pool,
-            Delegate disposeAction,
+            Delegate returnAction,
             bool isActionTyped
             )
             :
@@ -52,11 +52,11 @@ namespace CCEnvs.Pools
         {
             CC.Guard.IsNotNull(value, nameof(value));
             CC.Guard.IsNotNullState(pool);
-            Guard.IsNotNull(disposeAction, nameof(disposeAction));
+            Guard.IsNotNull(returnAction, nameof(returnAction));
 
             Pool = pool;
             Value = value;
-            this.returnAction = disposeAction;
+            this.returnAction = returnAction;
             this.isActionTyped = isActionTyped;
         }
 
@@ -69,13 +69,13 @@ namespace CCEnvs.Pools
         public static PooledObject<T> Create<T>(
             T value,
             object pool,
-            Action<T, object> disposeAction
+            Action<T, object> returnAction
             )
             where T : class
         {
-            Guard.IsNotNull(disposeAction, nameof(disposeAction));
+            Guard.IsNotNull(returnAction, nameof(returnAction));
 
-            return new PooledObject<T>(value, pool!, (value, state) => disposeAction.Invoke(value, state));
+            return new PooledObject<T>(value, pool!, (value, state) => returnAction.Invoke(value, state));
         }
 
         public static bool operator ==(PooledObject left, PooledObject right)
