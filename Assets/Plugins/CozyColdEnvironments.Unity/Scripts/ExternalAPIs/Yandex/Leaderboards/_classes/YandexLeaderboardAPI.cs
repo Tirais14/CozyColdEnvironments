@@ -1,8 +1,9 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
+using CCEnvs.Attributes;
+using CCEnvs.Dependencies;
 using CCEnvs.Unity.Leaderboards;
 using Humanizer;
 using R3;
-using System;
 using System.Threading;
 using UnityEngine;
 using YG;
@@ -12,6 +13,9 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 {
     public sealed class YandexLeaderboardAPI : ILeaderboardAPI
     {
+        [field: OnInstallResetable]
+        public static YandexLeaderboardAPI? Instance { get; private set; }
+
         private readonly ILeaderboard lboard;
 
         private readonly CancellationTokenSource disposeCancellationTokenSource;
@@ -20,6 +24,9 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 
         public YandexLeaderboardAPI(ILeaderboard lboard, string lboardname)
         {
+            if (Instance is not null)
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexLeaderboardAPI));
+
             CC.Guard.IsNotNull(lboard, nameof(lboard));
 
             this.lboard = lboard;
@@ -28,6 +35,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             disposeCancellationTokenSource = new CancellationTokenSource();
 
             BindLeaderboardSpecialProfile();
+
+            Instance = this;
+
+            BuiltInDependecyContainer.BindTo<ILeaderboardAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         private void BindLeaderboardSpecialProfile()

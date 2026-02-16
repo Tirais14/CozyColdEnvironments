@@ -1,5 +1,6 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.Dependencies;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Profiles;
 using Cysharp.Threading.Tasks;
@@ -53,6 +54,9 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
 
             Instance = this;
+
+            BuiltInDependecyContainer.BindTo<IPlayerAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public void Authorize()

@@ -1,6 +1,7 @@
 #if PLUGIN_YG_2 && Localization_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.Dependencies;
 using CCEnvs.Patterns.Commands;
 using Cysharp.Threading.Tasks;
 using R3;
@@ -37,6 +38,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             BindLanguageSwitched();
 
             Instance = this;
+            BuiltInDependecyContainer.BindTo<ILocalizationAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public void SetLocale(string code)

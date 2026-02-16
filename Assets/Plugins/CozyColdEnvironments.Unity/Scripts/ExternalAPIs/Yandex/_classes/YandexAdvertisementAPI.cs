@@ -1,6 +1,7 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.Dependencies;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -39,6 +40,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             SetupAdvertisementInfos();
 
             Instance = this;
+            BuiltInDependecyContainer.BindTo<IAdvertisementAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null)

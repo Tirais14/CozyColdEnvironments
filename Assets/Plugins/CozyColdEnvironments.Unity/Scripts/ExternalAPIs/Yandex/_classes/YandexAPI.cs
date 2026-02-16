@@ -1,5 +1,6 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.Dependencies;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
@@ -54,6 +55,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             BindSavingSystem();
 
             Instance = this;
+            BuiltInDependecyContainer.BindTo<IGeneralAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public void GameplayStart()

@@ -1,5 +1,6 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.Dependencies;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using R3;
@@ -23,6 +24,8 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexSavingAPI));
 
             Instance = this;
+            BuiltInDependecyContainer.BindTo<ISavingAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public async UniTask SaveGameAsync(

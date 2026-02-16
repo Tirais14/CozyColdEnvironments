@@ -1,4 +1,5 @@
 using CCEnvs.Attributes;
+using CCEnvs.Dependencies;
 using R3;
 using System;
 
@@ -38,6 +39,9 @@ namespace CCEnvs.Unity.ExternalAPIs
             TimeProvider = timeProvider ?? UnityTimeProvider.Update;
 
             Instance = this;
+
+            BuiltInDependecyContainer.BindTo<IGeneralAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public void GameplayStart()

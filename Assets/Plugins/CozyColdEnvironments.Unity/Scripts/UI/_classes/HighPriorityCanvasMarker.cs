@@ -16,8 +16,12 @@ namespace CCEnvs.Unity
         {
             base.Awake();
 
-            BuiltInDependecyContainer.Bind(GetComponent<Canvas>(),
-                UnityDependecyID.HighPriorityCanvas);
+            BuiltInDependecyContainer.BindTo(
+                GetComponent<Canvas>(),
+                UnityDependecyID.HighPriorityCanvas
+                );
+
+            BuiltInDependecyContainer.BindTo(this);
         }
     }
 }

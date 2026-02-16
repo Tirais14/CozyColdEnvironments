@@ -1,7 +1,7 @@
 using CCEnvs.Attributes;
+using CCEnvs.Dependencies;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
-using ObservableCollections;
 using R3;
 using System.Threading;
 
@@ -22,6 +22,9 @@ namespace CCEnvs.Unity.ExternalAPIs
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(DefaultGeneralAPI));
 
             Instance = this;
+
+            BuiltInDependecyContainer.BindTo<ISavingAPI>(this);
+            BuiltInDependecyContainer.BindTo(this);
         }
 
         public async UniTask SaveGameAsync(
