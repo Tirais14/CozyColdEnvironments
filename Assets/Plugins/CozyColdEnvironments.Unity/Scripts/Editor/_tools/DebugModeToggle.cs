@@ -1,4 +1,5 @@
 using CCEnvs.UnityEditor;
+using CCEnvs.Utils;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
@@ -8,44 +9,85 @@ namespace CCEnvs.Unity.EditorC
 {
     public static class DebugModeToggle
     {
-        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Enabled Debug Mode")]
+        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Enable Debug Mode")]
         public static void EnableDebugMode()
         {
-            var targetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+            var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(
+                static targetGroup =>
+                {
+                    try
+                    {
+                        return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+                    }
+                    catch (System.Exception)
+                    {
+                        return NamedBuildTarget.Unknown;
+                    }
+                })
+                .Where(targetGroup =>
+                {
+                    return targetGroup != NamedBuildTarget.Unknown;
+                });
 
-            string defines = PlayerSettings.GetScriptingDefineSymbols(
-                NamedBuildTarget.FromBuildTargetGroup(targetGroup)
-                );
+            foreach (var targetGroup in targetGroups)
+            {
+                try
+                {
+                    string defines = PlayerSettings.GetScriptingDefineSymbols(targetGroup);
 
-            if (defines.ContainsOrdinal("CC_DEBUG_ENABLED"))
-                return;
+                    if (defines.ContainsOrdinal("CC_DEBUG_ENABLED"))
+                        continue;
 
-            defines += ";CC_DEBUG_ENABLED";
+                    defines += ";CC_DEBUG_ENABLED";
 
-            PlayerSettings.SetScriptingDefineSymbols(
-                NamedBuildTarget.FromBuildTargetGroup(targetGroup), 
-                defines
-                );
+                    PlayerSettings.SetScriptingDefineSymbols(targetGroup, defines);
+                }
+                catch (System.Exception ex)
+                {
+                    typeof(DebugModeToggle).PrintExceptionAsLog(ex);
+                }
+            }
+
         }
 
-        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Disabled Debug Mode")]
+        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Disable Debug Mode")]
         public static void DisableDebugMode()
         {
-            var targetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+            var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(
+                static targetGroup =>
+                {
+                    try
+                    {
+                        return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+                    }
+                    catch (System.Exception)
+                    {
+                        return NamedBuildTarget.Unknown;
+                    }
+                })
+                .Where(targetGroup =>
+                {
+                    return targetGroup != NamedBuildTarget.Unknown;
+                });
 
-            string defines = PlayerSettings.GetScriptingDefineSymbols(
-                NamedBuildTarget.FromBuildTargetGroup(targetGroup)
-                );
+            foreach (var targetGroup in targetGroups)
+            {
+                try
+                {
+                    string defines = PlayerSettings.GetScriptingDefineSymbols(targetGroup);
 
-            if (!defines.ContainsOrdinal("CC_DEBUG_ENABLED"))
-                return;
+                    if (!defines.ContainsOrdinal("CC_DEBUG_ENABLED"))
+                        continue;
 
-            defines = string.Join(';', defines.Split(';').Except(Range.From("CC_DEBUG_ENABLED")));
+                    defines = string.Join(';', defines.Split(';').Except(Range.From("CC_DEBUG_ENABLED")));
 
-            PlayerSettings.SetScriptingDefineSymbols(
-                NamedBuildTarget.FromBuildTargetGroup(targetGroup),
-                defines
-                );
+                    PlayerSettings.SetScriptingDefineSymbols(targetGroup, defines);
+                }
+                catch (System.Exception ex)
+                {
+                    typeof(DebugModeToggle).PrintExceptionAsLog(ex);
+                }
+            }
         }
     }
 }
