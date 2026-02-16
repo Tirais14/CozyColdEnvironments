@@ -1,10 +1,8 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Files;
+using CCEnvs.UnityEditor;
 using SuperLinq;
-using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,7 +11,7 @@ namespace CCEnvs.Unity.EditorC
 {
     public static class VisualStudioClearCacheTool
     {
-        [MenuItem("Editor/IDE/Visual Studio/Clear Cache")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.IDE_TAB_NAME + "/Visual Studio/Clear Cache")]
         public static void Execute()
         {
             try

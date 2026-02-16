@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.UnityEditor;
 using Cysharp.Threading.Tasks;
 using SuperLinq;
 using System;
@@ -10,11 +11,11 @@ using UnityEngine.SceneManagement;
 
 namespace CCEnvs.Unity.EditorC
 {
-    public class RestartGameTool
+    public static class RestartGameTool
     {
         public static bool IsRestarted { get; }
 
-        [MenuItem("Editor/Restart Game")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Restart Scene")]
         public static void Execute()
         {
             if (!Application.isPlaying)

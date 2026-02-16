@@ -2,7 +2,6 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -14,10 +13,21 @@ namespace CCEnvs.UnityEditor
 {
     public static class EditorHelper
     {
+        public const string MAIN_TAB_NAME = "CC";
+        public const string EDITOR_TAB_NAME = "Editor";
+        public const string TOOLS_TAB_NAME = "Tools";
+        public const string COMPILING_TAB_NAME = "Compiling";
+        public const string IDE_TAB_NAME = "IDE";
+        public const string WINDOWS_TAB_NAME = "Window";
+        public const string BUILD_TAB_NAME = "Build";
+
         [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>
-        public static void AddUIElementsByReflection(Type type, object editorInstance,
-            VisualElement root)
+        public static void AddUIElementsByReflection(
+            Type type, 
+            object editorInstance,
+            VisualElement root
+            )
         {
             Guard.IsNotNull(type);
             Guard.IsNotNull(editorInstance);

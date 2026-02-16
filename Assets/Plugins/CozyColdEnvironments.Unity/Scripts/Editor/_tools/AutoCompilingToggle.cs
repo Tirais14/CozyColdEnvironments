@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.UnityEditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,13 +23,13 @@ namespace CCEnvs.Unity.Editor
                 EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem("Editor/Compiling/Enable &e")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
         public static void EnableAutoCompiling()
         {
             EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem("Editor/Compiling/Disable &d")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
         public static void DisableAutoCompiling()
         {
             DisableAutoCompiling(isInternal: false);

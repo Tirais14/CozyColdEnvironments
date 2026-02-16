@@ -6,6 +6,8 @@ namespace CCEnvs.Pools
 {
     public class StringBuilderPool : ObjectPool<StringBuilder>
     {
+        public static StringBuilderPool Shared { get; } = new();
+
         public StringBuilderPool(
             int capacity = 4,
             int? maxSize = null)

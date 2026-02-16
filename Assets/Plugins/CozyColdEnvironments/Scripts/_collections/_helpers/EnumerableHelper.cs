@@ -134,5 +134,21 @@ namespace CCEnvs.Collections
 
             return false;
         }
+
+        public static string ElementsToString<T>(this IEnumerable<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.IsEmpty())
+                return StringHelper.EMPTY_ARRAY;
+
+            using var sb = StringBuilderPool.Shared.Get();
+
+            sb.Value.Append($"[{Environment.NewLine}");
+            sb.Value.AppendJoin($",{Environment.NewLine}", source);
+            sb.Value.Append($"{Environment.NewLine}]");
+
+            return sb.Value.ToString();
+        }
     }
 }

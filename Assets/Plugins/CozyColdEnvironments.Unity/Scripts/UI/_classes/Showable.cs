@@ -571,10 +571,6 @@ namespace CCEnvs.Unity.UI
         {
             destroyCancellationToken.ThrowIfCancellationRequested();
 
-            IDisposable devCanvasHandle = _root.Maybe().GetValue(this)
-                .RectTransform()
-                .MoveToDevCanvas();
-
             var layoutGroup = this.Q()
                 .FromParents()
                 .ExcludeSelf()
@@ -588,8 +584,6 @@ namespace CCEnvs.Unity.UI
 
                 UnsetGraphicsTransparent();
 
-                await RebuildControlledLayouts(destroyCancellationToken, initCall: true);
-
                 await InitVisibleStateAsync();
 
                 OnInited();
@@ -597,8 +591,6 @@ namespace CCEnvs.Unity.UI
                 isInitedCmd?.Execute(true);
 
                 commandScheduler.Enable();
-
-                devCanvasHandle.Dispose();
             }
             catch (Exception)
             {
