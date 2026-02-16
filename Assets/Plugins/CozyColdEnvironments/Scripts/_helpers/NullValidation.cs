@@ -45,9 +45,31 @@ namespace CCEnvs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNull<T>(
+            [NotNullWhen(false)] this T? source,
+            [NotNullWhen(false)] out T? result
+            )
+        {
+            result = source;
+
+            return result.IsNull();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNotNull<T>([NotNullWhen(true)] this T? source)
         {
             return !source.IsNull();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNotNull<T>(
+            [NotNullWhen(true)] this T? source,
+            [NotNullWhen(true)] out T? result
+            )
+        {
+            result = source;
+
+            return result.IsNotNull();
         }
     }
 }

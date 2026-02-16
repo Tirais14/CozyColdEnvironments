@@ -51,8 +51,8 @@ namespace CCEnvs.Unity.Components.Specialized
         [SerializeField]
         private bool isEnabled;
 
-        [Space(8f)]
         [Header("Platforms")]
+        [Space(8f)]
 
         [SerializeField]
         private bool webGL;
