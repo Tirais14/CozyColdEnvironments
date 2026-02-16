@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.ExternalAPIs
     {
         bool IsAuthorized { get; }
 
-        IUserProfile? Profile { get; }
+        IUserProfile? PlayerPofile { get; }
 
         void Authorize();
 

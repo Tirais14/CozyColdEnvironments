@@ -1,4 +1,4 @@
-#if PLUGIN_YG_2 && PLATFORM_WEBGL
+#if PLUGIN_YG_2 && Leaderboards_yg && PLATFORM_WEBGL
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;

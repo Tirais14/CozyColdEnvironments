@@ -49,28 +49,7 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (advertisementType.IsFlagSetted(AdvertisementTypes.Banner))
             {
 #if BannerAdv_yg
-
-#if !YandexGamesPlatform_yg
-                if (!advertisementInfos.TryGetValue(advertisementType, out var adInfo)
-                    ||
-                    !adInfo.TrySetShown())
-                {
-                    return;
-                }
-
-                if (!bannerInitialized)
-                {
-                    YG2.LoadBanner();
-                    bannerInitialized = true;
-                    YG2.SetBannerPosition(YG2.BannerPosition.Bottom);
-                }
-
-                YG2.ShowBanner();
-                YG2.LoadBanner();
-#endif //!YandexGamesPlatform_yg
-
-#else
-                throw new System.NotSupportedException(AdvertisementTypes.Banner.ToString());
+                throw new NotImplementedException();
 #endif //BannerAdv_yg
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Fullscreen))
@@ -86,12 +65,12 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
                 }
 
                 YG2.InterstitialAdvShow();
-#else
-                throw new System.NotSupportedException(AdvertisementTypes.Fullscreen.ToString());
 #endif //InterstitialAdv_yg
             }
             else if (advertisementType.IsFlagSetted(AdvertisementTypes.Rewarding))
                 throw new NotSupportedException(AdvertisementTypes.Rewarding.ToString());
+
+            throw new NotSupportedException(advertisementType.ToString());
         }
 
         public IAdvertisementAPI SetAdvertisementShowInterval(

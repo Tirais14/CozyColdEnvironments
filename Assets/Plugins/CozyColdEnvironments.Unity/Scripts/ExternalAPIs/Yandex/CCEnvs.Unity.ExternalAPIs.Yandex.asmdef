@@ -52,7 +52,7 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [
-        "YandexGamesPlatform_yg"
+        "PLUGIN_YG_2"
     ],
     "versionDefines": [],
     "noEngineReferences": false

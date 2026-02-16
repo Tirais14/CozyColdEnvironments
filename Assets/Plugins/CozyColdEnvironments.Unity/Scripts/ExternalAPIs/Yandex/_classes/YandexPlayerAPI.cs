@@ -1,13 +1,9 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Profiles;
 using Cysharp.Threading.Tasks;
-using NUnit.Framework;
 using R3;
-using System;
-using System.Collections.Generic;
 using YG;
 
 #nullable enable
@@ -18,16 +14,16 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
         [field: OnInstallResetable]
         public static YandexPlayerAPI? Instance { get; private set; }
 
+        private readonly IUserProfile unauthorizedProfile = new UserProfile(YG2.player.name, YG2.player.id)
+        {
+            Icon = UCC.AnonymousProfileImage
+        };
 
-        private readonly List<IDisposable> disposables = new();
+        private IUserProfile? authorizedProfile;
 
 #if Authorization_yg
-        private Maybe<ImageLoadYG> imageLoadCmp;
-
         private Observable<bool>? isAuthorizedObservable;
 #endif
-
-        private IUserProfile? profile;
 
         public bool IsAuthorized {
             get
@@ -40,28 +36,11 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             }
         }
 
-        public IUserProfile? Profile {
+        public IUserProfile? PlayerPofile {
             get
             {
 #if Authorization_yg
-                if (IsAuthorized)
-                {
-                    if (profile.IsNotNull())
-                        return profile;
-
-                    profile = new UserProfile(YG2.player.name, YG2.player.id);
-
-                    YandexPluginHelper.LoadImageAsync(YG2.player.photo).
-                        ContinueWith((img) =>
-                        {
-                            profile.Icon = img;
-                        })
-                        .ForgetByPrintException();
-
-                    return profile;
-                }
-
-                return null;
+                return GetOrCreateUserProfile();
 #else
                 return null;
 #endif
@@ -73,17 +52,14 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
 
-#if Authorization_yg
-            imageLoadCmp = GameObjectQuery.Scene.IncludeInactive()
-                .Component<ImageLoadYG>()
-                .Lax();
-#endif
-
             Instance = this;
         }
 
         public void Authorize()
         {
+            if (IsAuthorized)
+                return;
+
 #if Authorization_yg
             YG2.OpenAuthDialog();
 #endif
@@ -111,6 +87,28 @@ namespace CCEnvs.Unity.ExternalAPIs.Yandex
 #else
             return Observable.Empty<bool>();
 #endif
+        }
+
+        private IUserProfile GetOrCreateUserProfile()
+        {
+            if (IsAuthorized)
+            {
+                if (authorizedProfile is null)
+                {
+                    authorizedProfile = new UserProfile(YG2.player.name, YG2.player.id);
+
+                    YandexPluginHelper.LoadImageAsync(YG2.player.photo).
+                        ContinueWith((img) =>
+                        {
+                            authorizedProfile.Icon = img;
+                        })
+                        .ForgetByPrintException();
+                }
+
+                return authorizedProfile;
+            }
+
+            return unauthorizedProfile;
         }
     }
 }

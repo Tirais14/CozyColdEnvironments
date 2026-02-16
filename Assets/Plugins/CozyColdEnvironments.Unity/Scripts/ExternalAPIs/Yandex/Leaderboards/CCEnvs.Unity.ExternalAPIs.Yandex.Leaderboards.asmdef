@@ -22,6 +22,7 @@
     "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [
+        "PLUGIN_YG_2",
         "Leaderboards_yg"
     ],
     "versionDefines": [],
