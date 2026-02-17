@@ -41,10 +41,17 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             CancellationToken cancellationToken = default
             )
         {
-            await SavingSystem.Self.LoadFromSerializedData(
-                YG2.saves.serializedData,
-                cancellationToken
-                );
+            try
+            {
+                await SavingSystem.Self.LoadFromSerializedData(
+                    YG2.saves.serializedData,
+                    cancellationToken
+                    );
+            }
+            catch (System.Exception ex)
+            {
+                this.PrintException(ex);
+            }
         }
 
         private bool disposed;

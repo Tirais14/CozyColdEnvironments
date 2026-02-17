@@ -305,6 +305,10 @@ namespace CCEnvs.Unity.Saves
 
                 this.saveData.Value = saveData;
             }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
             finally
             {
                 isSaveLoading.Value = false;
@@ -778,17 +782,24 @@ namespace CCEnvs.Unity.Saves
 
         private async UniTask<(SaveFileData fileData, string fileDataRaw)> LoadSaveFileAsync(string path, CancellationToken cancellationToken)
         {
-            if (!File.Exists(path))
-                return default;
+            try
+            {
+                if (!File.Exists(path))
+                    return default;
 
-            string serialized = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(true);
+                string serialized = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(true);
 
-            if (serialized.IsNullOrWhiteSpace())
-                return default;
+                if (serialized.IsNullOrWhiteSpace())
+                    return default;
 
-            var fileData = JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
+                var fileData = JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
 
-            return (fileData, serialized);
+                return (fileData, serialized);
+            }
+            catch (Exception)
+            {
+                return (default, string.Empty);
+            }
         }
 
         private async UniTask RegisterSnapshotsAsync(

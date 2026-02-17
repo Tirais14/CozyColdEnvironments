@@ -61,6 +61,11 @@ namespace CCEnvs.Unity
 
             return Maybe<GameObject>.None;
         }
+
+        public override string ToString()
+        {
+            return $"({nameof(PersistenGuid)}: {PersistenGuid}; {nameof(RuntimeId)}: {RuntimeId}; {nameof(HierarchyPath)}: {HierarchyPath})";
+        }
     }
 
     public static class GameObjectExtraInfoExtensions
