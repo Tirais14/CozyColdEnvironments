@@ -55,8 +55,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             Instance = this;
 
-            BuiltInDependecyContainer.BindTo<IPlayerAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<IPlayerAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         public void Authorize()

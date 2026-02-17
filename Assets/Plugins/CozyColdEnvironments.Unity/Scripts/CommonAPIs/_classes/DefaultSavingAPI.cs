@@ -23,8 +23,8 @@ namespace CCEnvs.Unity.CommonAPIs
 
             Instance = this;
 
-            BuiltInDependecyContainer.BindTo<ISavingAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<ISavingAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         public async UniTask SaveGameAsync(

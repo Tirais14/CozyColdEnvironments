@@ -40,8 +40,8 @@ namespace CCEnvs.Unity.CommonAPIs
 
             Instance = this;
 
-            BuiltInDependecyContainer.BindTo<IGeneralAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<IGeneralAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         public void GameplayStart()

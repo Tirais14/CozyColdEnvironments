@@ -41,8 +41,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             Instance = this;
 
-            BuiltInDependecyContainer.BindTo<IAdvertisementAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<IAdvertisementAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         public void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null)

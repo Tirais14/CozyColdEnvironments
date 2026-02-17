@@ -25,9 +25,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         [OnInstallResetable]
         private static readonly Dictionary<string, ImageLoadYG> imageLoaders = new();
 
-        public static async UniTask<Sprite> LoadImageAsync(string imageUrl, CancellationToken cancellationToken = default)
+        public static async UniTask<Sprite?> LoadImageAsync(string imageUrl, CancellationToken cancellationToken = default)
         {
-            Guard.IsNotNullOrWhiteSpace(imageUrl, nameof(imageUrl));
+            if (imageUrl.IsNullOrWhiteSpace())
+                return null;
 
             if (!imageLoaders.TryGetValue(imageUrl, out var loader))
             {

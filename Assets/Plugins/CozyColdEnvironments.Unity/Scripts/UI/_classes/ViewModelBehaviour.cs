@@ -51,8 +51,7 @@ namespace CCEnvs.Unity.UI
     }
 
     public abstract class ViewModelBehaviour<TModel> : ViewModelBehaviour,
-        IViewModel<TModel>,
-        IDisposable
+        IViewModel<TModel>
     {
         protected readonly List<IDisposable> modelDisposables = new();
 

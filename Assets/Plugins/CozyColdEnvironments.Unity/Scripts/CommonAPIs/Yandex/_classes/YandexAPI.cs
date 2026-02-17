@@ -55,8 +55,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             BindSavingSystem();
 
             Instance = this;
-            BuiltInDependecyContainer.BindTo<IGeneralAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<IGeneralAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         public void GameplayStart()

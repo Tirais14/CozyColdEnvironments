@@ -1,14 +1,10 @@
 #nullable enable
-using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 
 namespace CCEnvs.Unity.CommonAPIs
 {
     public class CommonAPIProvider : ICommonAPIProvider
     {
-        [field: OnInstallResetable]
-        public CommonAPIProvider? Instance { get; private set; }
-
         public IGeneralAPI GeneralAPI { get; }
 
         public IPlayerAPI? PlayerAPI { get; }
@@ -30,9 +26,6 @@ namespace CCEnvs.Unity.CommonAPIs
             ILeaderboardAPI? leaderboardAPI = null
             )
         {
-            if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(CommonAPIProvider));
-
             CC.Guard.IsNotNull(generalAPI, nameof(generalAPI));
 
             GeneralAPI = generalAPI;
@@ -42,11 +35,18 @@ namespace CCEnvs.Unity.CommonAPIs
             SavingAPI = savingAPI;
             LocalizationAPI = localizationAPI;
             LeaderboardAPI = leaderboardAPI;
+        }
 
-            Instance = this;
-
-            BuiltInDependecyContainer.BindTo<ICommonAPIProvider>(this);
-            BuiltInDependecyContainer.BindTo(this);
+        public static CommonAPIProvider CreateFromBuiltInDependecyContainer()
+        {
+            return new CommonAPIProvider(
+                BuiltInDependecyContainer.Resolve<IGeneralAPI>(),
+                BuiltInDependecyContainer.TryResolve<IPlayerAPI>(),
+                BuiltInDependecyContainer.TryResolve<IAdvertisementAPI>(),
+                BuiltInDependecyContainer.TryResolve<ISavingAPI>(),
+                BuiltInDependecyContainer.TryResolve<ILocalizationAPI>(),
+                BuiltInDependecyContainer.TryResolve<ILeaderboardAPI>()
+                );
         }
     }
 }

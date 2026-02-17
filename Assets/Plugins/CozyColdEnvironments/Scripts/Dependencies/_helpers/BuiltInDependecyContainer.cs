@@ -13,7 +13,7 @@ namespace CCEnvs.Dependencies
         [OnInstallResetable]
         private static readonly Dictionary<(Type type, object? id), object> bindings = new();
 
-        public static void BindTo(
+        public static void Bind(
             Type? contractType,
             object obj,
             object? id = null
@@ -29,9 +29,9 @@ namespace CCEnvs.Dependencies
             bindings.Add((contractType, id), obj);
         }
 
-        public static void BindTo<TContract>(TContract obj, object? id = null)
+        public static void Bind<TContract>(TContract obj, object? id = null)
         {
-            BindTo(typeof(TContract), obj, id);
+            Bind(typeof(TContract), obj!, id);
         }
 
         public static object Resolve(Type type, object? id = null)

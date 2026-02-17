@@ -24,8 +24,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexSavingAPI));
 
             Instance = this;
-            BuiltInDependecyContainer.BindTo<ISavingAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<ISavingAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         public async UniTask SaveGameAsync(

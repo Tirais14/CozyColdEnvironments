@@ -4,7 +4,6 @@ using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -69,6 +68,14 @@ namespace CCEnvs.Unity.UI
             if (_viewModel.Value.IsNotNull())
                 Init();
         }
+
+        //public virtual void SetModel(object model)
+        //{
+        //    CC.Guard.IsNotNull(model, nameof(model));
+        //    CC.Guard.IsNotNull(viewModel.Raw, nameof(viewModel));
+
+        //    viewModelUnsafe.Set
+        //}
 
         public T GetModel<T>()
         {

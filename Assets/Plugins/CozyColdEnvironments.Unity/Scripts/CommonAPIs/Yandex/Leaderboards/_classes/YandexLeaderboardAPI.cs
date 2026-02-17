@@ -4,7 +4,8 @@ using CCEnvs.Dependencies;
 using CCEnvs.Unity.Leaderboards;
 using Humanizer;
 using R3;
-using System.Threading;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using YG;
 
@@ -16,9 +17,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         [field: OnInstallResetable]
         public static YandexLeaderboardAPI? Instance { get; private set; }
 
-        private readonly ILeaderboard lboard;
+        private readonly List<IDisposable> disposables = new();
 
-        private readonly CancellationTokenSource disposeCancellationTokenSource;
+        private readonly ILeaderboard lboard;
 
         private readonly string lboardname;
 
@@ -32,14 +33,12 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             this.lboard = lboard;
             this.lboardname = lboardname;
 
-            disposeCancellationTokenSource = new CancellationTokenSource();
-
             BindLeaderboardSpecialProfile();
 
             Instance = this;
 
-            BuiltInDependecyContainer.BindTo<ILeaderboardAPI>(this);
-            BuiltInDependecyContainer.BindTo(this);
+            BuiltInDependecyContainer.Bind<ILeaderboardAPI>(this);
+            BuiltInDependecyContainer.Bind(this);
         }
 
         private void BindLeaderboardSpecialProfile()
@@ -53,7 +52,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 {
                     YG2.SetLeaderboard(@this.lboardname, Mathf.RoundToInt(score));
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
 
         private bool disposed;
@@ -62,13 +61,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
-            if (lboard.SpecialEntry.IsNull())
-                this.PrintError($"{nameof(lboard.SpecialEntry)} of leaderboard is null");
-            else
+            if (lboard.SpecialEntry.IsNotNull())
                 YG2.SetLeaderboard(lboardname, Mathf.RoundToInt(lboard.SpecialEntry.Score));
-
-            disposeCancellationTokenSource.Cancel();
-            disposeCancellationTokenSource.Dispose();
 
             disposed = true;
         }
