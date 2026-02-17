@@ -8,7 +8,8 @@ namespace CCEnvs.Unity.Saves
     public static class SaveDataFactory
     {
         public static SaveData Create(
-            IEnumerable<(KeyValuePair<string, object> obj, Func<object, ISnapshot> converter)> pairs)
+            IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> pairs
+            )
         {
             CC.Guard.IsNotNull(pairs, nameof(pairs));
 
@@ -18,11 +19,11 @@ namespace CCEnvs.Unity.Saves
 
             ISnapshot snapshot;
 
-            foreach (var (obj, converter) in pairs)
+            foreach (var (obj, key, converter) in pairs)
             {
-                snapshot = converter(obj.Value);
+                snapshot = converter(obj);
 
-                saveUnit = new SaveUnit(snapshot, obj.Key);
+                saveUnit = new SaveUnit(snapshot, key);
 
                 saveUnits.Add(saveUnit);
             }

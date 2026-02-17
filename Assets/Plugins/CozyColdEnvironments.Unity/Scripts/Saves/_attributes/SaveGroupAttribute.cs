@@ -5,12 +5,12 @@ using System;
 namespace CCEnvs.Unity.Saves
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-    public sealed class SavingGroupAttribute : Attribute, ICCAttribute
+    public sealed class SaveGroupAttribute : Attribute, ICCAttribute
     {
         public string Name { get; }
         public string? ID { get; }
 
-        public SavingGroupAttribute(string name, string? id = null)
+        public SaveGroupAttribute(string name, string? id = null)
         {
             Name = name;
             ID = id;

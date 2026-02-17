@@ -18,7 +18,7 @@ namespace CCEnvs
         }
     }
 
-    public ref struct LazyLight<T>
+    public struct LazyLight<T>
     {
         private readonly Func<T> factory;
         private T value;
@@ -71,7 +71,7 @@ namespace CCEnvs
         private T GetValue()
         {
             if (HasValue)
-                return Value;
+                return value;
 
             value = factory(state);
             HasValue = true;

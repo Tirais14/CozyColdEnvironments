@@ -1,16 +1,19 @@
-﻿using SuperLinq;
+﻿using CCEnvs.Linq;
+using CCEnvs.Snapshots;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    [Serializable]
-    public class SaveGroup
+    public readonly struct SaveGroup : IEquatable<SaveGroup>
     {
-        private readonly ConcurrentDictionary<string, object> observableObjects = new();
+        private readonly LazyLight<ConcurrentDictionary<string, object>> observableObjects;
 
         public string Name { get; }
         public string? ID { get; }
@@ -20,11 +23,25 @@ namespace CCEnvs.Unity.Saves
             string? id = null
             )
         {
+            observableObjects = new LazyLight<ConcurrentDictionary<string, object>>(
+                static () => new ConcurrentDictionary<string, object>()
+                );
+
             Name = name;
             ID = id;
         }
 
-        public void RegisterObject(object obj, string? key = null)
+        public static bool operator ==(SaveGroup left, SaveGroup right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(SaveGroup left, SaveGroup right)
+        {
+            return !(left == right);
+        }
+
+        public readonly void RegisterObject(object obj, string? key = null)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
@@ -37,7 +54,38 @@ namespace CCEnvs.Unity.Saves
             observableObjects.TryAdd(key, obj);
         }
 
-        public bool TryResolveKey(
+        public readonly bool UnregisterObject(object obj)
+        {
+            if (!TryResolveKey(obj, out var key))
+                key = string.Empty;
+
+            return observableObjects.TryRemove(key, out _);
+        }
+
+        public readonly bool UnregisterObject(string key)
+        {
+            Guard.IsNotNull(key, nameof(key));
+
+            return observableObjects.TryRemove(key, out _);
+        }
+
+        public readonly bool IsObjectRegistered(object obj)
+        {
+            if (!TryResolveKey(obj, out var key))
+                key = string.Empty;
+
+            return observableObjects.ContainsKey(key);
+        }
+
+        public readonly bool IsObjectRegistered(string? key)
+        {
+            if (key is null)
+                return false;
+
+            return observableObjects.ContainsKey(key);
+        }
+
+        public readonly bool TryResolveKey(
             object obj, 
             [NotNullWhen(true)] out string? key
             )
@@ -54,19 +102,60 @@ namespace CCEnvs.Unity.Saves
             return key is not null;
         }
 
-        public SaveData GetSaveData()
+        public readonly SaveData GetSaveData()
         {
-            return SaveDataFactory.Create()
+            try
+            {
+                var objConverterPairs = GetObjectConverterPairs();
+
+                return SaveDataFactory.Create(objConverterPairs);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+
+                return default;
+            }
         }
 
-        private string ResolveGameObjectKey(GameObject go)
+        private readonly string ResolveGameObjectKey(GameObject go)
         {
             return go.GetExtraInfo().ToString();
         }
 
-        private string ResolveComponentKey(Component cmp)
+        private readonly string ResolveComponentKey(Component cmp)
         {
             return cmp.GetExtraInfo().ToString();
+        }
+
+        private IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> GetObjectConverterPairs()
+        {
+            return observableObjects.Select(
+                static pair =>
+                {
+                    var objType = pair.Value.GetType();
+
+                    return (pair.Value, pair.Key, SaveSystem.GetSnapshotConverter(objType));
+                });
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is SaveGroup group && Equals(group);
+        }
+
+        public readonly bool Equals(SaveGroup other)
+        {
+            return EqualityComparer<ConcurrentDictionary<string, object>>.Default.Equals(observableObjects, other.observableObjects)
+                   &&
+                   Name == other.Name
+                   &&
+                   ID == other.ID;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(observableObjects, Name, ID);
         }
     }
 }
