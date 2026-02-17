@@ -48,10 +48,17 @@ namespace CCEnvs.Unity.Saves
             if (key is null && !TryResolveKey(obj, out key))
                 key = string.Empty;
 
-            if (observableObjects.ContainsKey(key))
+            if (!observableObjects.HasValue || observableObjects.Value.ContainsKey(key))
                 throw new ArgumentException($"Object: {obj} with key: {key} already registered");
 
-            observableObjects.TryAdd(key, obj);
+            observableObjects.Value.TryAdd(key, obj);
+        }
+
+        public readonly bool UnregisterObject(string key)
+        {
+            Guard.IsNotNull(key, nameof(key));
+
+            return observableObjects.HasValue && observableObjects.Value.TryRemove(key, out _);
         }
 
         public readonly bool UnregisterObject(object obj)
@@ -59,22 +66,7 @@ namespace CCEnvs.Unity.Saves
             if (!TryResolveKey(obj, out var key))
                 key = string.Empty;
 
-            return observableObjects.TryRemove(key, out _);
-        }
-
-        public readonly bool UnregisterObject(string key)
-        {
-            Guard.IsNotNull(key, nameof(key));
-
-            return observableObjects.TryRemove(key, out _);
-        }
-
-        public readonly bool IsObjectRegistered(object obj)
-        {
-            if (!TryResolveKey(obj, out var key))
-                key = string.Empty;
-
-            return observableObjects.ContainsKey(key);
+            return UnregisterObject(key);
         }
 
         public readonly bool IsObjectRegistered(string? key)
@@ -82,7 +74,15 @@ namespace CCEnvs.Unity.Saves
             if (key is null)
                 return false;
 
-            return observableObjects.ContainsKey(key);
+            return observableObjects.HasValue && observableObjects.Value.ContainsKey(key);
+        }
+
+        public readonly bool IsObjectRegistered(object obj)
+        {
+            if (!TryResolveKey(obj, out var key))
+                key = string.Empty;
+
+            return IsObjectRegistered(key);
         }
 
         public readonly bool TryResolveKey(
@@ -130,7 +130,10 @@ namespace CCEnvs.Unity.Saves
 
         private IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> GetObjectConverterPairs()
         {
-            return observableObjects.Select(
+            if (!observableObjects.HasValue)
+                return Array.Empty<(object obj, string key, Func<object, ISnapshot> converter)>();
+
+            return observableObjects.Value.Select(
                 static pair =>
                 {
                     var objType = pair.Value.GetType();
@@ -146,7 +149,7 @@ namespace CCEnvs.Unity.Saves
 
         public readonly bool Equals(SaveGroup other)
         {
-            return EqualityComparer<ConcurrentDictionary<string, object>>.Default.Equals(observableObjects, other.observableObjects)
+            return observableObjects.Equals(other.observableObjects)
                    &&
                    Name == other.Name
                    &&

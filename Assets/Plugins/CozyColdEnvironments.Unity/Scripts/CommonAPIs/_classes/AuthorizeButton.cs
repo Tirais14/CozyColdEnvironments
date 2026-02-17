@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.CommonAPIs
 
             if (BuiltInDependecyContainer.TryResolve<IPlayerAPI>().IsNull(out var playerAPI))
             {
-                OnAuthorized();
+                Destroy(GetRootOrSelfGameObject());
                 return;
             }
 
@@ -68,14 +68,14 @@ namespace CCEnvs.Unity.CommonAPIs
 
         private void OnAuthorized()
         {
-            if (DisableAfterAuthorize)
-            {
-                GetRootOrSelfGameObject().SetActive(false);
-                return;
-            }
-            else if (DestroyAfterAuthorize)
+            if (DestroyAfterAuthorize)
             {
                 Destroy(GetRootOrSelfGameObject());
+                return;
+            }
+            else if (DisableAfterAuthorize)
+            {
+                GetRootOrSelfGameObject().SetActive(false);
                 return;
             }
 
