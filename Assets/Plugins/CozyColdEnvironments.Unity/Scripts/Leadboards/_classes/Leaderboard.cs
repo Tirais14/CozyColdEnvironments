@@ -17,17 +17,19 @@ namespace CCEnvs.Unity.Leaderboards
         : 
         ILeaderboard
     {
+        private readonly List<IDisposable> disposables = new();
+
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         private readonly Dictionary<Identifier, IDisposable> subbs = new();
 
         private readonly ObservableDictionary<Identifier, ILeaderboardEntry> entries = new();
-
         private readonly ObservableDictionary<Identifier, int> entryPositions = new();
 
         private readonly ObservableList<ILeaderboardEntry> sortedEntries = new();
 
         private readonly ReactiveProperty<IUserProfile?> specialProfile = new();
+        private readonly ReactiveProperty<ILeaderboardEntry?> specialEntry = new();
 
         public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => entries;
 
@@ -40,7 +42,7 @@ namespace CCEnvs.Unity.Leaderboards
             set => specialProfile.Value = value; 
         }
 
-        public ILeaderboardEntry? SpecialEntry { get; private set; }
+        public ILeaderboardEntry? SpecialEntry => specialEntry.Value;   
 
         public IComparer<ILeaderboardEntry> Comparer { get; set; } = null!;
 
@@ -111,17 +113,7 @@ namespace CCEnvs.Unity.Leaderboards
 
         public Observable<ILeaderboardEntry?> ObserveSpecialEntry()
         {
-            return specialProfile.Select(this,
-                static (profile, @this) =>
-                {
-                    if (profile.IsNull())
-                        return null;
-
-                    if (!@this.entries.TryGetValue(profile.ID, out var entry))
-                        return null;
-
-                    return entry;
-                });
+            return specialEntry;
         }
 
         public IEnumerator<ILeaderboardEntry> GetEnumerator()
@@ -139,6 +131,8 @@ namespace CCEnvs.Unity.Leaderboards
         {
             if (disposed)
                 return;
+
+            disposables.DisposeEachAndClear();
 
             disposeCancellationTokenSource.Cancel();
             disposeCancellationTokenSource.Dispose();
@@ -174,10 +168,25 @@ namespace CCEnvs.Unity.Leaderboards
                 sortedEntries.Sort();
         }
 
+        private void ResolveSpecialEntry()
+        {
+            if (SpecialProfile.IsNull()
+                ||
+                !Entries.TryGetValue(SpecialProfile.ID, out var specialEntry))
+            {
+                this.specialEntry.Value = null;
+                return;
+            }
+
+            this.specialEntry.Value = specialEntry;
+        }
+
         private void OnEntryAdd(KeyValuePair<Identifier, ILeaderboardEntry> entry)
         {
             sortedEntries.Add(entry.Value);
             entryPositions.Add(entry.Key, -1000);
+
+            ResolveSpecialEntry();
 
             var sub = entry.Value.ObserveScore()
                 .ChunkFrame(1)
@@ -195,6 +204,8 @@ namespace CCEnvs.Unity.Leaderboards
             sortedEntries.Remove(entry.Value);
             entryPositions.Remove(entry.Key);
 
+            ResolveSpecialEntry();
+
             if (subbs.Remove(entry.Key, out var sub))
                 sub.Dispose();
         }
@@ -203,6 +214,7 @@ namespace CCEnvs.Unity.Leaderboards
         {
             sortedEntries.Clear();
             entryPositions.Clear();
+            specialEntry.Value = null;
 
             subbs.Values.DisposeEach();
             subbs.Clear();
@@ -217,7 +229,7 @@ namespace CCEnvs.Unity.Leaderboards
                 {
                     @this.OnEntryAdd(entry);
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
 
         private void BindEntryRemove()
@@ -229,7 +241,7 @@ namespace CCEnvs.Unity.Leaderboards
                 {
                     @this.OnEntryRemove(entry);
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
 
         private void BindEntriesClear()
@@ -240,7 +252,7 @@ namespace CCEnvs.Unity.Leaderboards
                 {
                     @this.OnEntriesClear();
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
 
         private void OnSortedEntryMove(CollectionMoveEvent<ILeaderboardEntry> entry)
@@ -262,7 +274,7 @@ namespace CCEnvs.Unity.Leaderboards
                 {
                     @this.OnSortedEntryMove(entry);
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
 
         private void BindSortedEntryAdd()
@@ -275,24 +287,23 @@ namespace CCEnvs.Unity.Leaderboards
                     for (int i = 0; i < events.Length; i++)
                         @this.OnSortedEntryAdd(events[i]);
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
 
         private void BindSpecialProfile()
         {
-            specialProfile.Where(static profile => profile.IsNotNull())
-                .Subscribe(this,
+            specialProfile.Subscribe(this,
                 static (profile, @this) =>
                 {
-                    if (!@this.Entries.TryGetValue(profile!.ID, out var entry))
+                    if (profile.IsNull() || !@this.Entries.TryGetValue(profile.ID, out var entry))
                     {
-                        @this.SpecialEntry = null;
+                        @this.specialEntry.Value = null;
                         return;
                     }
 
-                    @this.SpecialEntry = entry;
+                    @this.specialEntry.Value = entry;
                 })
-                .RegisterTo(disposeCancellationTokenSource.Token);
+                .AddTo(disposables);
         }
     }
 }

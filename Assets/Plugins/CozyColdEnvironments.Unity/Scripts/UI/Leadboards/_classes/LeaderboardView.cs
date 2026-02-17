@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .IncludeInactive()
                 .Component<LeaderboardViewModel>()
                 .Lax()
-                .IfSome(static vm => vm.SetModel(new Leaderboard()));
+                .IfSome(vm => ViewModelBehaviourExtensions.SetModel(vm, new Leaderboard()));
         }
 
         private void BindEntryAdd()

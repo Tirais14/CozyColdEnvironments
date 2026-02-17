@@ -29,7 +29,7 @@ namespace CCEnvs.Unity.Profiles
 
         public override string ToString()
         {
-            return $"({nameof(ID)}: {ID}; {nameof(Name)}: {Name})";
+            return $"({nameof(Name)}: {Name}; {nameof(ID)}: {ID})";
         }
 
         private bool disposed;

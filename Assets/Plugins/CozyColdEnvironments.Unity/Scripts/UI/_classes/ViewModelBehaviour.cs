@@ -1,10 +1,8 @@
-using CCEnvs.Collections;
 using CCEnvs.Unity.Components;
 using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Unity.Collections.LowLevel.Unsafe;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -15,37 +13,43 @@ namespace CCEnvs.Unity.UI
         IViewModel,
         IDisposable
     {
-        protected readonly ReactiveProperty<object> m_Model = new();
+        protected readonly ReactiveProperty<object> _model = new();
 
-        public object model => m_Model.Value;
+        protected readonly List<IDisposable> modelDisposables = new();
+
+        public object model => _model.Value;
 
         public virtual CancellationToken DisposeCancellationToken => destroyCancellationToken;
 
-        public ViewModelBehaviour SetModelFluentUntyped(object model)
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            _model.Dispose();
+        }
+
+        public ViewModelBehaviour SetModelUntyped(object model)
         {
             CC.Guard.IsNotNull(model, nameof(model));
 
-            m_Model.Value = model;
+            modelDisposables.DisposeEachAndClear();
+
+            _model.Value = model;
+
+            Init();
 
             return this;
         }
 
-        private bool disposed;
-        public void Dispose()
+        public Observable<object> ObserveModel()
         {
-        }
-        protected virtual void Dispose(bool state)
-        {
-            if (disposed)
-                return;
-
-            if (state)
-                Destroy(this);
-
-            disposed = true;
+            return _model;
         }
 
         protected virtual void Init()
+        {
+        }
+
+        void IDisposable.Dispose()
         {
         }
     }
@@ -53,48 +57,16 @@ namespace CCEnvs.Unity.UI
     public abstract class ViewModelBehaviour<TModel> : ViewModelBehaviour,
         IViewModel<TModel>
     {
-        protected readonly List<IDisposable> modelDisposables = new();
+        new public TModel model => (TModel)_model.Value;
 
-        new public TModel model => (TModel)m_Model.Value;
-
-        protected override void Awake()
+        public ViewModelBehaviour<TModel> SetModelUntyped(TModel model)
         {
-            base.Awake();
-            BindModel();
+            return (ViewModelBehaviour<TModel>)SetModelUntyped((object)model!);
         }
 
-        protected override void OnDestroy()
+        new public Observable<TModel> ObserveModel()
         {
-            base.OnDestroy();
-            m_Model.Dispose();
-        }
-
-        public ViewModelBehaviour<TModel> SetModelFluentUntyped(TModel model)
-        {
-            CC.Guard.IsNotNull(model, nameof(model));
-
-            m_Model.Value = model;
-
-            return this;
-        }
-
-        protected override void Init()
-        {
-            base.Init();
-        }
-
-        private void BindModel()
-        {
-            m_Model.Subscribe(this,
-                static (model, @this) =>
-                {
-                    if (model.IsNull())
-                        return;
-
-                    @this.modelDisposables.DisposeEachAndClear();
-                    @this.Init();
-                })
-                .AddDisposableTo(this);
+            return _model.Cast<object, TModel>();
         }
     }
 
@@ -108,7 +80,7 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNullSource(source);
 
-            return (TViewModel)source.SetModelFluentUntyped(model);
+            return (TViewModel)source.SetModelUntyped(model);
         }
 
         public static TViewModel SetModel<TViewModel>(
@@ -119,7 +91,7 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNullSource(source);
 
-            return (TViewModel)source.SetModelFluentUntyped(model);
+            return (TViewModel)source.SetModelUntyped(model);
         }
     }
 }

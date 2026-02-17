@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             base.Init();
 
-            if (viewModel.TryGetValue(out var vm))
+            if (viewModel.IsNotNull(out var vm))
                 vm.ShowCounterTextPredicate = ShowCounterTextPredicate;
 
             BindItemIcon();
@@ -44,7 +44,9 @@ namespace CCEnvs.Unity.Storages.UI
         {
             return base.SelectableDoSelectPredicate()
                    &&
-                   viewModel.Map(vm => vm.model).Cast<IItemContainer>().TryGetRightValue(out var cnt)
+                   viewModel.IsNotNull()
+                   &&
+                   viewModel.model.As<IItemContainer>().IsNotNull(out var cnt)
                    &&
                    cnt.ContainsItem();
         }

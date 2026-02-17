@@ -113,6 +113,7 @@ namespace CCEnvs.Reflection.Caching
             {
                 case MemberTypes.All:
                     throw new NotImplementedException();
+
                 case MemberTypes.Constructor:
                     {
                         if (key is not MethodKey ctorKey)
@@ -132,8 +133,10 @@ namespace CCEnvs.Reflection.Caching
                     }
                 case MemberTypes.Custom:
                     throw new NotImplementedException();
+
                 case MemberTypes.Event:
                     throw new NotImplementedException();
+
                 case MemberTypes.Field:
                     {
                         if (key is not FieldKey fieldKey)
@@ -151,6 +154,7 @@ namespace CCEnvs.Reflection.Caching
                         member = field;
                         return true;
                     }
+
                 case MemberTypes.Method:
                     {
                         if (key is not MethodKey methodKey)
@@ -168,8 +172,10 @@ namespace CCEnvs.Reflection.Caching
                         member = method;
                         return true;
                     }
+
                 case MemberTypes.NestedType:
                     throw new NotImplementedException();
+
                 case MemberTypes.Property:
                     {
                         if (key is not PropertyKey propKey)
@@ -189,6 +195,7 @@ namespace CCEnvs.Reflection.Caching
                     }
                 case MemberTypes.TypeInfo:
                     throw new NotImplementedException();
+
                 default:
                     throw new InvalidOperationException(memberType.ToString());
             }

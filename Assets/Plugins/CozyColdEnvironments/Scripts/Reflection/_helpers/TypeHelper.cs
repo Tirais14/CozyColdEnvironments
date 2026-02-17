@@ -1,4 +1,5 @@
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -95,18 +96,6 @@ namespace CCEnvs.Reflection
             return $"{source.FullName}, {source.Assembly.GetName().Name}";
         }
 
-        public static Maybe<object> GetMemberValue(MemberInfo member, object? target)
-        {
-            Guard.IsNotNull(member);
-
-            return member switch
-            {
-                FieldInfo field => field.GetValue(target),
-                PropertyInfo prop => prop.GetValue(target),
-                _ => Maybe<object>.None
-            };
-        }
-
         public static Type[] GetPrimitiveTypes()
         {
             return basicTypes.ToArray();
@@ -137,21 +126,6 @@ namespace CCEnvs.Reflection
                 return "null";
 
             return obj.GetType().GetName(attributes);
-        }
-
-        public static object? GetDefaultValue(this Type value)
-        {
-            if (value is null)
-                throw new ArgumentNullException(nameof(value));
-
-            if (value.IsClass)
-                return null;
-
-            var result = Activator.CreateInstance(value);
-
-            //TODO: Caching
-
-            return result;
         }
 
         /// <summary>
@@ -398,6 +372,28 @@ namespace CCEnvs.Reflection
             TrySwitchType(source, out TResult result, conditions);
 
             return result;
+        }
+
+        private static readonly Lazy<Dictionary<Type, object>> defaultValues = new(static () => new Dictionary<Type, object>());
+        public static object? GetDefaultValue(Type type)
+        {
+            Guard.IsNotNull(type, nameof(type));
+
+            if (!type.IsValueType)
+                return null;
+
+            if (defaultValues.IsValueCreated
+                &&
+                defaultValues.Value.TryGetValue(type, out var defaultValue))
+            {
+                return default;
+            }
+
+            defaultValue = Activator.CreateInstance(type);
+
+            defaultValues.Value.Add(type, defaultValue);
+
+            return defaultValue;
         }
 
         private static string ConvertGenericArgumentsToString(

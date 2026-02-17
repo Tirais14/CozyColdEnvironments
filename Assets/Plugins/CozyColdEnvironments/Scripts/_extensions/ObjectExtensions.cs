@@ -1,38 +1,19 @@
 using CCEnvs.Collections;
 using CCEnvs.Conversations;
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs
 {
     public static class ObjectExtensions
     {
-        public static T IfDefault<T>(this T? source, T value)
-        {
-            if (source.IsDefault())
-                return value;
-
-            return source;
-        }
-        public static T IfDefault<T>(this T? source, Func<T> factory)
-        {
-            CC.Guard.IsNotNull(factory, nameof(factory));
-
-            if (source.IsDefault())
-                return factory();
-
-            return source;
-        }
-
+        [Obsolete("Usless and heavy")]
         public static bool TrySwitch<T>(this T? source,
             params (Predicate<T?> predicate, Action<T> action)[] conditions)
         {
@@ -52,6 +33,7 @@ namespace CCEnvs
             return false;
         }
 
+        [Obsolete("Usless and heavy")]
         public static bool TrySwitch<T, TResult>(this T? source,
             out TResult result,
             params (Predicate<T?> predicate, Func<T, TResult> func)[] conditions)
@@ -80,59 +62,24 @@ namespace CCEnvs
         /// Also checks for unity null
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDefault([NotNullWhen(false)] this object? value,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
+        public static bool IsDefault([NotNullWhen(false)] this object? value)
         {
             if (value.IsNull())
                 return true;
 
             Type type = value.GetType();
 
-            if (type.IsClass)
+            if (!type.IsValueType)
                 return false;
 
-            //TODO: Cahing
+            var defaultValue = TypeHelper.GetDefaultValue(type);
 
-            var defaultValue = Activator.CreateInstance(type, nonPublic: true);
-
-            if (value.Equals(defaultValue))
-                return true;
-
-            if (value is string str)
-            {
-                return option switch
-                {
-                    EqualsDefaultOption.IncludeNullOrEmptyString => str.IsNullOrEmpty(),
-                    EqualsDefaultOption.IncludeWhitespaceOrEmptyString => str.IsNullOrWhiteSpace(),
-                    _ => throw new InvalidOperationException(),
-                };
-            }
-
-            return false;
+            return value.Equals(defaultValue);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDefault([NotNullWhen(false)] this object? obj,
-            object[] customDefaultValues,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
+        public static bool IsNotDefault([NotNullWhen(true)] this object? obj)
         {
-            if (obj.IsDefault(option) || customDefaultValues.Contains(obj))
-                return true;
-
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            return !obj.IsDefault(option);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNotDefault([NotNullWhen(true)] this object? obj,
-            object[] customDefaultValues,
-            EqualsDefaultOption option = EqualsDefaultOption.None)
-        {
-            return !obj.IsDefault(customDefaultValues, option);
+            return !obj.IsDefault();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -235,7 +182,7 @@ namespace CCEnvs
             return source;
         }
 
-        public static T? IfNotNullStruct<T>(this T? source, Action<T> action)
+        public static T? IfNotNullNullable<T>(this T? source, Action<T> action)
             where T : struct
         {
             CC.Guard.IsNotNull(action, nameof(action));
@@ -248,7 +195,7 @@ namespace CCEnvs
             return source;
         }
 
-        public static T? IfNotNullStruct<T, TState>(this T? source, TState state, Action<T, TState> action)
+        public static T? IfNotNullNullable<T, TState>(this T? source, TState state, Action<T, TState> action)
             where T : struct
         {
             CC.Guard.IsNotNull(action, nameof(action));
@@ -257,6 +204,30 @@ namespace CCEnvs
                 return source;
 
             action(source.Value, state);
+
+            return source;
+        }
+
+        public static T? IfNotDefault<T>(this T? source, Action<T> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            if (source.IsDefault())
+                return default;
+
+            action(source);
+
+            return source;
+        }
+
+        public static T? IfNotDefault<T, TState>(this T? source, TState state, Action<T, TState> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            if (source.IsDefault())
+                return default;
+
+            action(source, state);
 
             return source;
         }

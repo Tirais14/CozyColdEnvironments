@@ -1,6 +1,8 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
+using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -17,13 +19,21 @@ namespace CCEnvs.Unity.UI
     {
         protected readonly List<IDisposable> viewModelDisposables = new();
 
-        protected Lazy<TViewModel?> _viewModel = new(() => default);
+        protected Lazy<TViewModel?> _viewModel = new(static () => default);
 
-        public Maybe<TViewModel> viewModel => _viewModel.Value;
+        public TViewModel? viewModel => _viewModel.Value;
 
-        public Maybe<object> model => viewModel.Map(static x => x.model).GetValue();
+        public object model => viewModelUnsafe.model;
 
-        protected TViewModel viewModelUnsafe => viewModel.GetValueUnsafe(static () => throw new InvalidOperationException("View model is not setted."));
+        protected TViewModel viewModelUnsafe {
+            get
+            {
+                if (viewModel.IsNull())
+                    throw new InvalidOperationException("View model is not setted.");
+
+                return viewModel;
+            }
+        }
        
         protected object modelUnsafe => viewModelUnsafe.model;
 
@@ -45,7 +55,7 @@ namespace CCEnvs.Unity.UI
         /// Don't use previous <see cref="viewModel"/>, it has been disposed and don't use cached <see cref="viewModel"/> by the same reason.
         /// </summary>
         /// <param name="viewModel"></param>
-        public virtual void SetViewModel(TViewModel? viewModel)
+        public void SetViewModel(TViewModel? viewModel)
         {
             TryDisposeViewModel();
 
@@ -57,7 +67,7 @@ namespace CCEnvs.Unity.UI
 
         /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
         /// <param name="factory"></param>
-        public virtual void SetViewModelFactory(Func<TViewModel?> factory)
+        public void SetViewModelFactory(Func<TViewModel?> factory)
         {
             Guard.IsNotNull(factory);
 
@@ -69,17 +79,15 @@ namespace CCEnvs.Unity.UI
                 Init();
         }
 
-        //public virtual void SetModel(object model)
-        //{
-        //    CC.Guard.IsNotNull(model, nameof(model));
-        //    CC.Guard.IsNotNull(viewModel.Raw, nameof(viewModel));
-
-        //    viewModelUnsafe.Set
-        //}
-
         public T GetModel<T>()
         {
             return modelUnsafe.To<T>();
+        }
+
+        public T GetViewModel<T>()
+            where T : IViewModel
+        {
+            return viewModelUnsafe.To<T>();
         }
 
         /// <summary>
@@ -87,12 +95,25 @@ namespace CCEnvs.Unity.UI
         /// </summary>
         protected virtual void Init()
         {
+            if (viewModelUnsafe is not ViewModelBehaviour viewModelBehaviour)
+                return;
+
+            viewModelBehaviour.ObserveModel()
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    var vm = @this.viewModelUnsafe;
+
+                    @this.SetViewModel(default);
+                    @this.SetViewModel(vm);
+                })
+                .AddDisposableTo(this);
         }
 
         protected abstract Maybe<TViewModel> CreateViewModel();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override bool SelectableDoSelectPredicate() => viewModel.IsSome;
+        protected override bool SelectableDoSelectPredicate() => viewModel.IsNotNull();
 
         protected void TryDisposeViewModel()
         {
@@ -100,8 +121,7 @@ namespace CCEnvs.Unity.UI
                 &&
                 _viewModel.Value.Is<IDisposable>(out var disp))
             {
-                viewModelDisposables.DisposeEach();
-                viewModelDisposables.Clear();
+                viewModelDisposables.DisposeEachAndClear();
 
                 disp.Dispose();
             }

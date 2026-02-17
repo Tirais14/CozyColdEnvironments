@@ -7,21 +7,23 @@ namespace CCEnvs.Unity.UI
 {
     public interface IView : IShowable
     {
-        Maybe<IViewModel> viewModel { get; }
-        Maybe<object> model { get; }
+        IViewModel? viewModel { get; }
+        object? model { get; }
 
         void SetViewModel(object viewModel);
 
         void SetViewModelFactory(Func<object> factory);
 
         T GetModel<T>();
+
+        T GetViewModel<T>() where T : IViewModel;
     }
     public interface IView<TViewModel> : IView
         where TViewModel : IViewModel
     {
-        new Maybe<TViewModel> viewModel { get; }
+        new TViewModel? viewModel { get; }
 
-        Maybe<IViewModel> IView.viewModel => viewModel.Raw;
+        IViewModel? IView.viewModel => viewModel;
 
         void SetViewModel(TViewModel viewModel);
 

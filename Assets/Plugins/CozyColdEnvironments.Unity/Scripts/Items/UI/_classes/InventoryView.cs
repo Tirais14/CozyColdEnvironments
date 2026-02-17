@@ -64,7 +64,7 @@ namespace CCEnvs.Unity.Storages.UI
         {
             base.Init();
 
-            if (this.model.Cast<IInventory>().TryGetRightValue(out var model))
+            if (this.model.As<IInventory>().IsNotNull(out var model))
                 model.AutoSize = inventoryAutoSize;
 
             InitItemContainers();
@@ -89,7 +89,7 @@ namespace CCEnvs.Unity.Storages.UI
                     .FromChildrens()
                     .IncludeInactive()
                     .Views()
-                    .First(view => view.model.Raw is IItemContainer);
+                    .First(view => view.model is IItemContainer);
 
                 view.SetViewModel(new ItemContainerViewModel<IItemContainer>(cnt.Value, destroyCancellationToken));
                 instantiatedGameObjects.Add(cnt.Key, go);
@@ -111,7 +111,7 @@ namespace CCEnvs.Unity.Storages.UI
 
         private void BindAddContainer()
         {
-            if (this.viewModel.TryGetValue(out var viewModel))
+            if (this.viewModel.IsNotNull(out var viewModel))
             {
                 viewModel.ObserveAdd()
                      .Subscribe(this,
@@ -127,7 +127,7 @@ namespace CCEnvs.Unity.Storages.UI
 
         private void BindRemoveContainer()
         {
-            viewModel.IfSome(viewModel =>
+            viewModel.IfNotNull(viewModel =>
             {
                 viewModel.ObserveRemove()
                      .Subscribe(this,
@@ -142,7 +142,7 @@ namespace CCEnvs.Unity.Storages.UI
 
         private void BindResetInventory()
         {
-            viewModel.IfSome(viewModel =>
+            viewModel.IfNotNull(viewModel =>
             {
                 viewModel.ObserveReset()
                 .Subscribe(this,
