@@ -117,6 +117,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                .ScheduleBy(commandScheduler);
         }
 
+        //FIXME: Separate a method
         private async UniTask InstantiateNewEntriesAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -132,13 +133,15 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             GameObject entryViewGO;
 
+            var instantiateParameters = new InstantiateParameters
+            {
+                parent = entryViewsRoot
+            };
+
             GameObject[] instantiatedGOs = await InstantiateAsync(
                     entryPrefab,
                     newEntries.Count,
-                    new InstantiateParameters
-                    {
-                        parent = entryViewsRoot
-                    },
+                    instantiateParameters,
                     cancellationToken: cancellationToken
                     );
 
@@ -162,9 +165,24 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
                     entryViewGO = instantiatedGOs[i];
 
-                    var entryView = GetEntryView(entryViewGO);
+                    if (EqualityComparer<ILeaderboardEntry?>.Default.Equals(entry, SpecialEntry.CurrentValue)
+                        &&
+                        specialEntryPrefab != null)
+                    {
+                        Destroy(entryViewGO);
 
-                    SetupEntryView(entryView, entry);
+                        instantiatedGOs[i] = (await InstantiateAsync(
+                            specialEntryPrefab,
+                            instantiateParameters,
+                            cancellationToken
+                            ))[0];
+
+                        entryViewGO = instantiatedGOs[i];
+                    }
+
+                    var entryView = getEntryView(entryViewGO);
+
+                    setupEntryView(entryView, entry);
 
                     entryViews.Add(entry, entryView);
 
@@ -192,7 +210,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static LeaderboardEntryView GetEntryView(GameObject go)
+            static LeaderboardEntryView getEntryView(GameObject go)
             {
                 return go.Q()
                     .IncludeInactive()
@@ -201,7 +219,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static void SetupEntryView(LeaderboardEntryView entryView, ILeaderboardEntry entry)
+            static void setupEntryView(LeaderboardEntryView entryView, ILeaderboardEntry entry)
             {
                 var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry, entryView.destroyCancellationToken);
 
@@ -308,31 +326,28 @@ namespace CCEnvs.Unity.UI.Leaderboards
             bool hasSpecialEntry = SpecialEntry.CurrentValue.IsNotNull();
             bool specialEntryProcessed = false;
 
-            bool isEntryCountGreaterThanVisibleCount =
-                    hasSpecialEntry
-                    &&
-                    reorderCount > SortedEntries.Count;
+            bool isEntryCountGreaterThanVisibleCount = SortedEntries.Count > reorderCount;
 
             for (int i = 0; i < reorderCount; i++)
             {
                 cancellationToken.ThrowIfCancellationRequestedByInterval(i);
 
-                entry = SortedEntries[i];
-
                 if (hasSpecialEntry
+                    &&
+                    !specialEntryProcessed
                     &&
                     isEntryCountGreaterThanVisibleCount
                     &&
-                    i == reorderCount - 1
-                    &&
-                    !specialEntryProcessed)
+                    i == reorderCount - 1)
                 {
                     entry = SpecialEntry.CurrentValue!;
                 }
+                else
+                    entry = SortedEntries[i];
 
                 if (hasSpecialEntry
                     &&
-                    SpecialEntry == entry)
+                    EqualityComparer<ILeaderboardEntry?>.Default.Equals(entry, SpecialEntry.CurrentValue))
                 {
                     specialEntryProcessed = true;
                 }
@@ -350,11 +365,15 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
                 entry = SortedEntries[i];
 
-                if (entryViews.TryGetValue(entry, out entryView))
+                if (!entryViews.TryGetValue(entry, out entryView)
+                    ||
+                    entryView.cTransform.parent == entryViewsRoot)
                 {
-                    entryView.cTransform.SetParent(entryViewsRoot);
-                    entryView.Hide();
+                    continue;
                 }
+
+                entryView.cTransform.SetParent(entryViewsRoot);
+                entryView.Hide();
             }
         }
 

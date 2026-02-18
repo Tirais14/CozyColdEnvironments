@@ -1,9 +1,11 @@
+using CCEnvs.Threading;
 using CCEnvs.Unity.Profiles;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 
 #nullable enable
@@ -164,6 +166,31 @@ namespace CCEnvs.Unity.Leaderboards
         public Observable<int?> ObservePosition()
         {
             return position;
+        }
+
+        public Observable<float> ObserveScoreRecord(string recordName,
+            CancellationToken cancellationToken = default
+            )
+        {
+            Guard.IsNotNull(recordName, nameof(recordName));
+
+            if (disposeCancellationTokenSource.Token.TryLinkTokens(cancellationToken, out cancellationToken)
+                .IsNotNull(out var linkedTokenSource))
+            {
+                linkedTokenSource.AddTo(disposables);
+            }
+
+            return scoreRecords.ObserveDictionaryReplace(cancellationToken)
+                .Where(recordName,
+                static (record, recordName) =>
+                {
+                    return record.Key == recordName;
+                })
+                .Select(
+                static record =>
+                {
+                    return record.NewValue;
+                });
         }
 
         protected virtual void OnScoreRecordReplaced(DictionaryReplaceEvent<string, float> item)

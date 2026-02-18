@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Saves
     public readonly struct SaveFileData : IEquatable<SaveFileData>
     {
         public string Version { get; }
-        public IList<SaveFileSceneData> SceneDatas { get;}
+        public IList<SaveFileSceneData> SceneDatas { get; }
 
         [JsonConstructor]
         public SaveFileData(string version, IList<SaveFileSceneData> sceneDatas)

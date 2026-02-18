@@ -221,13 +221,21 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         private void BindSavingSystem()
         {
+            YG2.onDefaultSaves += () => YG2.saves.serializedData = string.Empty;
+
             SavingSystem.Self.ObserveSaveData()
                 .Where(this, static (_, @this) => @this.isInitialized.Value)
                 .Subscribe(this,
                 static (saveData, @this) =>
                 {
-                    var serializedSaveData = JsonConvert.SerializeObject(saveData, CC.JsonSettings);
+                    var jSettings = CC.JsonSettings;
+
+                    jSettings.Formatting = Formatting.None;
+
+                    var serializedSaveData = JsonConvert.SerializeObject(saveData, jSettings);
+                    
                     YG2.saves.serializedData = serializedSaveData;
+
                     YG2.SaveProgress();
                 })
                 .AddTo(disposables);

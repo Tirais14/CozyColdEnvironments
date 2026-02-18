@@ -459,6 +459,12 @@ namespace CCEnvs.Unity.Saves
             return IsInstanceRegisteredInternal(regObj);
         }
 
+        public void UnregisterAll()
+        {
+            foreach (var item in objectSets.Values.SelectMany(x => x).ToArray())
+                UnregisterObject(item.Object, item.SceneInfo);
+        }
+
         public Observable<bool> ObserveSaving()
         {
             return isSaving.Where(static x => x);
@@ -807,6 +813,9 @@ namespace CCEnvs.Unity.Saves
             CancellationToken cancellationToken)
         {
             loadedSnapshots.Clear();
+
+            if (snapshots.IsNullOrEmpty())
+                return;
 
             RegisteredObjectInfo regObjInfo;
 

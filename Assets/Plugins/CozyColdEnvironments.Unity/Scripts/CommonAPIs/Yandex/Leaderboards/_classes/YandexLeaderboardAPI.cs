@@ -1,6 +1,9 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
+using CCEnvs.Collections;
 using CCEnvs.Dependencies;
+using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Leaderboards;
@@ -10,8 +13,10 @@ using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using R3;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using YG;
 using YG.Utils.LB;
@@ -75,6 +80,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 );
 
             lboardView.ObserveShow()
+                .ThrottleFirst(1.5.Seconds()) //Delay duration taken from docs
                 .Subscribe(this,
                 static (_, @this) =>
                 {
@@ -85,13 +91,15 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         private void OnLeaderboardSpecialEntryChanged(ILeaderboardEntry? specialEntry)
         {
+            this.PrintLog($"Now Player leaderboard entry is {specialEntry}");
+
             specialEntryScoreSubb?.Dispose();
 
             if (specialEntry.IsNull())
                 return;
 
             specialEntryScoreSubb = specialEntry.ObserveScore()
-                .Delay(1.1.Seconds())
+                .ThrottleLast(1.5.Seconds()) //Delay duration taken from docs
                 .Subscribe(this,
                 static (score, @this) =>
                 {
@@ -103,13 +111,21 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             disposeCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
+            this.PrintLog($"{nameof(LeaderboardView)} loading");
+
             await UniTask.WaitUntil(
                 lboardView,
                 lboardView => lboardView.StartPassed && lboardView.model.IsNotDefault(),
                 cancellationToken: disposeCancellationTokenSource.Token
                 );
 
+            this.PrintLog($"{nameof(LeaderboardView)} loaded");
+
             lboard = lboardView.GetModel<ILeaderboard>();
+
+            YG2.GetLeaderboard(lboardname);
+
+            this.PrintLog($"Setted player profile: {playerAPI.PlayerPofile}");
 
             lboard.SpecialProfile = playerAPI.PlayerPofile;
 
@@ -120,13 +136,15 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (!playerAPI.IsAuthorized)
             {
                 playerAPI.ObserveIsAuthorised()
+                    .Where(this,
+                    static(_, @this) =>
+                    {
+                        return @this.lboard.IsNotNull();
+                    })
                     .Subscribe(this,
                     static (_, @this) =>
                     {
-                        if (@this.lboard.IsNull())
-                            return;
-
-                        @this.lboard.SpecialProfile = @this.playerAPI.PlayerPofile;
+                        @this.lboard!.SpecialProfile = @this.playerAPI.PlayerPofile;
                     })
                     .AddTo(disposables);
             }
@@ -155,8 +173,47 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             disposed = true;
         }
 
-        private void OnLeaderboardDataChanged(LBData data)
+        private void OnLeaderboardDataChanged(LBData? data)
         {
+            this.PrintLog($"Recieved {nameof(LBData)}: {(data is not null ? data.players.Select(static player => (player.name, player.score)).ElementsToString() : "null")}");
+
+            if (data is null
+                ||
+                data.technoName != lboardname)
+            {
+                return;
+            }
+
+            if (data.currentPlayer is null)
+            {
+                YG2.SetLeaderboard(
+                    lboardname, 
+                    lboard.Maybe()
+                        .Map(lboard => lboard.SpecialEntry)
+                        .Map(specialEntry => Mathf.RoundToInt(specialEntry.Score))
+                        .GetValue()
+                        );
+
+                YG2.GetLeaderboard(lboardname);
+
+                return;
+            }
+
+            this.PrintLog($"Player entry: (name: {YG2.player.name}; score: {data.currentPlayer!.score})");
+
+            //var currentPlayerData = new LBPlayerData()
+            //{
+            //    name = YG2.player.name,
+            //    photo = YG2.player.photo,
+            //    uniqueID = YG2.player.id,
+            //    rank = data.currentPlayer is not null ? data.currentPlayer.rank : 0,
+            //    score = data.currentPlayer is not null ? data.currentPlayer.score : 0,
+            //};
+
+            //var players = data.players.Prepend(currentPlayerData)
+            //    .DistinctBy(player => (player.name, player.uniqueID))
+            //    .ToArray();
+
             PopulateLeaderboardFromWorst(data.players);
         }
 
@@ -167,11 +224,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             var profile = new UserProfile(playerData.name, playerData.uniqueID).AddTo(lboardPopulationDisposable);
 
             YandexPluginHelper.LoadImageAsync(playerData.photo)
-                .ContinueWith(
-                img =>
-                {
-                    profile.Icon = img;
-                })
+                .ContinueWith(img => profile.Icon = img)
                 .ForgetByPrintException();
 
             return profile;

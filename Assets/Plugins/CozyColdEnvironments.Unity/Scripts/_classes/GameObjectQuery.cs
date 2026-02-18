@@ -427,6 +427,7 @@ namespace CCEnvs.Unity
             var cmps = Components();
 
             var models = from view in cmps.OfType<IView>()
+                         where view.viewModel.IsNotNull()
                          select view.model into model
                          where model.IsNotNull()
                          where anyType || model.IsInstanceOfType(type)

@@ -2,6 +2,7 @@ using CCEnvs.Unity.Profiles;
 using ObservableCollections;
 using R3;
 using System;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Leaderboards
@@ -40,5 +41,10 @@ namespace CCEnvs.Unity.Leaderboards
         Observable<string> ObserveRemoveScore();
 
         Observable<int?> ObservePosition();
+
+        Observable<float> ObserveScoreRecord(
+            string recordName,
+            CancellationToken cancellationToken = default
+            );
     }
 }

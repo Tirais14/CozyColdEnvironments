@@ -189,7 +189,7 @@ namespace CCEnvs.Unity.Leaderboards
             ResolveSpecialEntry();
 
             var sub = entry.Value.ObserveScore()
-                .ChunkFrame(1)
+                .ThrottleLastFrame(1)
                 .Subscribe(this,
                 static (_, @this) =>
                 {
@@ -255,24 +255,37 @@ namespace CCEnvs.Unity.Leaderboards
                 .AddTo(disposables);
         }
 
-        private void OnSortedEntryMove(CollectionMoveEvent<ILeaderboardEntry> entry)
+        private void OnSortedEntriesSort()
         {
-            entryPositions[entry.Value.Profile.ID] = entry.NewIndex;
-            entry.Value.Position = entry.NewIndex;
+            entryPositions.Clear();
+
+            ILeaderboardEntry entry;
+
+            int pos;
+
+            for (int i = 0; i < sortedEntries.Count; i++)
+            {
+                entry = sortedEntries[i];
+
+                pos = i + 1;
+
+                entryPositions.Add(entry.Profile.ID, pos);
+                entry.Position = pos;
+            }
         }
 
         private void OnSortedEntryAdd(CollectionAddEvent<ILeaderboardEntry> entry)
         {
-            OnSortedEntryMove(new CollectionMoveEvent<ILeaderboardEntry>(-1, entry.Index + 1, entry.Value));
+            //OnSortedEntryMove(entry.Value, entry.Index);
         }
 
         private void BindSortedEntryMove()
         {
-            sortedEntries.ObserveMove(disposeCancellationTokenSource.Token)
+            sortedEntries.ObserveSort(disposeCancellationTokenSource.Token)
                 .Subscribe(this,
                 static (entry, @this) =>
                 {
-                    @this.OnSortedEntryMove(entry);
+                    @this.OnSortedEntriesSort();
                 })
                 .AddTo(disposables);
         }

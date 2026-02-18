@@ -37,7 +37,6 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 static (entry, @this) =>
                 {
                     @this.viewModelUnsafe.OnEntryAdd(entry);
-
                 })
                 .AddTo(viewModelDisposables);
         }
@@ -65,7 +64,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         private void BindSortedEntries()
         {
             viewModelUnsafe.SortedEntries.ObserveChanged(viewModelUnsafe.DisposeCancellationToken)
-                .ChunkFrame(1)
+                .ThrottleLastFrame(1)
                 .Subscribe(this,
                 static (_, @this) =>
                 {

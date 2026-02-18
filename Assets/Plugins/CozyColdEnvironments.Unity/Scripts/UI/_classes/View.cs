@@ -1,18 +1,16 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.Unity.UI
 {
     public abstract class View<TViewModel>
-        : GUITab,
+        : Showable,
         IView<TViewModel>
 
         where TViewModel : IViewModel
@@ -99,6 +97,11 @@ namespace CCEnvs.Unity.UI
                 return;
 
             viewModelBehaviour.ObserveModel()
+                .Where(this,
+                static (model, @this) =>
+                {
+                    return @this.model != model;
+                })
                 .Subscribe(this,
                 static (_, @this) =>
                 {
@@ -107,13 +110,10 @@ namespace CCEnvs.Unity.UI
                     @this.SetViewModel(default);
                     @this.SetViewModel(vm);
                 })
-                .AddDisposableTo(this);
+                .AddTo(viewModelDisposables);
         }
 
         protected abstract Maybe<TViewModel> CreateViewModel();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override bool SelectableDoSelectPredicate() => viewModel.IsNotNull();
 
         protected void TryDisposeViewModel()
         {

@@ -88,6 +88,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 427125380090051075, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}
+      propertyPath: nameLB
+      value: lboard
+      objectReference: {fileID: 0}
+    - target: {fileID: 427125380090051075, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}
       propertyPath: entriesText
       value: 
       objectReference: {fileID: 5878962122969608981}
@@ -181,28 +185,8 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1705290334665254439, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6132145996708568501}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1705290334077199572, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1546697186645008898}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}
---- !u!1 &3882590388840870338 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1705290334077199572, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}
-  m_PrefabInstance: {fileID: 2471301802631402774}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1546697186645008898
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3882590388840870338}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4ce3f5723141a348b9788aad1922f78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CCEnvs.Unity.ExternalAPIs.Yandex.Leaderboards::CCEnvs.Unity.ExternalAPIs.Yandex.YandexLeaderboardAdapter
 --- !u!224 &3882590389290513201 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1705290334665254439, guid: f40a236569a66c344b68a9feb3f86a18, type: 3}

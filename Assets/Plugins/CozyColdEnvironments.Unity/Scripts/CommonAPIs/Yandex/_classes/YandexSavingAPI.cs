@@ -3,7 +3,9 @@ using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using R3;
+using System;
 using System.Threading;
 using YG;
 
@@ -24,6 +26,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexSavingAPI));
 
             Instance = this;
+
             BuiltInDependecyContainer.Bind<ISavingAPI>(this);
             BuiltInDependecyContainer.Bind(this);
         }

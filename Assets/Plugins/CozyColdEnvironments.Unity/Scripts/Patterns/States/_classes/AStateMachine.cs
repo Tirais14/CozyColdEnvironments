@@ -20,7 +20,7 @@ namespace CCEnvs.Patterns.States
         {
             base.Start();
 
-            idleState = InitIdleState();
+            idleState = CreateIdleState();
 
             SetIdle();
         }
@@ -101,6 +101,6 @@ namespace CCEnvs.Patterns.States
             SetState(idleState);
         }
 
-        protected abstract IState? InitIdleState();
+        protected abstract IState? CreateIdleState();
     }
 }

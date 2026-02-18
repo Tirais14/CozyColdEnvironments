@@ -39,18 +39,6 @@ namespace CCEnvs.Unity.Storages.UI
             BindItemCount();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override bool SelectableDoSelectPredicate()
-        {
-            return base.SelectableDoSelectPredicate()
-                   &&
-                   viewModel.IsNotNull()
-                   &&
-                   viewModel.model.As<IItemContainer>().IsNotNull(out var cnt)
-                   &&
-                   cnt.ContainsItem();
-        }
-
         private void BindItemIcon()
         {
             image.Maybe().IfSome(img =>
