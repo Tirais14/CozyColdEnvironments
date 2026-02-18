@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 #nullable enable
@@ -6,7 +7,7 @@ namespace CCEnvs.Unity.Saves
 {
     public class SaveGroupCatalog
     {
-        private readonly Dictionary<(string groupName, string? groupID), SaveGroup> saveGroups = new(0);
+        private readonly ConcurrentDictionary<(string groupName, string? groupID), SaveGroup> saveGroups = new();
 
         public string Path { get; }
 
@@ -21,11 +22,14 @@ namespace CCEnvs.Unity.Saves
         {
             Guard.IsNotNull(groupName, nameof(groupName));
 
-            if (!saveGroups.TryGetValue((groupName, groupID), out var group))
+            var groupKey = (groupName, groupID);
+
+            if (!saveGroups.TryGetValue(groupKey, out var group))
             {
                 group = new SaveGroup(groupName, groupID);
 
-                saveGroups.Add((groupName, groupID), group);
+                if (!saveGroups.TryAdd(groupKey, group))
+                    group = saveGroups[groupKey];
             }
 
             return group;

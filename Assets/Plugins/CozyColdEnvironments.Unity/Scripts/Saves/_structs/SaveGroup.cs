@@ -11,9 +11,9 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public readonly struct SaveGroup : IEquatable<SaveGroup>
+    public class SaveGroup
     {
-        private readonly LazyLight<ConcurrentDictionary<string, object>> observableObjects;
+        private readonly ConcurrentDictionary<string, object> observableObjects = new();
 
         public string Name { get; }
         public string? ID { get; }
@@ -23,61 +23,52 @@ namespace CCEnvs.Unity.Saves
             string? id = null
             )
         {
-            observableObjects = new LazyLight<ConcurrentDictionary<string, object>>(
-                static () => new ConcurrentDictionary<string, object>()
-                );
-
             Name = name;
             ID = id;
         }
 
-        public static bool operator ==(SaveGroup left, SaveGroup right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(SaveGroup left, SaveGroup right)
-        {
-            return !(left == right);
-        }
-
-        public readonly void RegisterObject(object obj, string? key = null)
+        public bool TryRegisterObject(object obj, string? key = null)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
             if (key is null && !TryResolveKey(obj, out key))
                 key = string.Empty;
 
-            if (!observableObjects.HasValue || observableObjects.Value.ContainsKey(key))
-                throw new ArgumentException($"Object: {obj} with key: {key} already registered");
+            if (!observableObjects.TryAdd(key, obj))
+            {
+#if CC_DEBUG_ENABLED
+                this.PrintWarning($"Object: {obj} with key: {key} already registered");
+#endif
+                return false;
+            }
 
-            observableObjects.Value.TryAdd(key, obj);
+            return true;
         }
 
-        public readonly bool UnregisterObject(string key)
+        public bool TryUnregisterObject(string key)
         {
             Guard.IsNotNull(key, nameof(key));
 
-            return observableObjects.HasValue && observableObjects.Value.TryRemove(key, out _);
+            return observableObjects.TryRemove(key, out _);
         }
 
-        public readonly bool UnregisterObject(object obj)
+        public bool TryUnregisterObject(object obj)
         {
             if (!TryResolveKey(obj, out var key))
                 key = string.Empty;
 
-            return UnregisterObject(key);
+            return TryUnregisterObject(key);
         }
 
-        public readonly bool IsObjectRegistered(string? key)
+        public bool IsObjectRegistered(string? key)
         {
             if (key is null)
                 return false;
 
-            return observableObjects.HasValue && observableObjects.Value.ContainsKey(key);
+            return observableObjects.ContainsKey(key);
         }
 
-        public readonly bool IsObjectRegistered(object obj)
+        public bool IsObjectRegistered(object obj)
         {
             if (!TryResolveKey(obj, out var key))
                 key = string.Empty;
@@ -85,7 +76,7 @@ namespace CCEnvs.Unity.Saves
             return IsObjectRegistered(key);
         }
 
-        public readonly bool TryResolveKey(
+        public bool TryResolveKey(
             object obj, 
             [NotNullWhen(true)] out string? key
             )
@@ -102,7 +93,7 @@ namespace CCEnvs.Unity.Saves
             return key is not null;
         }
 
-        public readonly SaveData GetSaveData()
+        public SaveData GetSaveData()
         {
             try
             {
@@ -118,47 +109,33 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private readonly string ResolveGameObjectKey(GameObject go)
+        public override string ToString()
+        {
+            return $"({nameof(Name)}: {Name}; {nameof(ID)}: {ID})";
+        }
+
+        private string ResolveGameObjectKey(GameObject go)
         {
             return go.GetExtraInfo().ToString();
         }
 
-        private readonly string ResolveComponentKey(Component cmp)
+        private string ResolveComponentKey(Component cmp)
         {
             return cmp.GetExtraInfo().ToString();
         }
 
         private IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> GetObjectConverterPairs()
         {
-            if (!observableObjects.HasValue)
+            if (!observableObjects.IsEmpty)
                 return Array.Empty<(object obj, string key, Func<object, ISnapshot> converter)>();
 
-            return observableObjects.Value.Select(
+            return observableObjects.Select(
                 static pair =>
                 {
                     var objType = pair.Value.GetType();
 
                     return (pair.Value, pair.Key, SaveSystem.GetSnapshotConverter(objType));
                 });
-        }
-
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is SaveGroup group && Equals(group);
-        }
-
-        public readonly bool Equals(SaveGroup other)
-        {
-            return observableObjects.Equals(other.observableObjects)
-                   &&
-                   Name == other.Name
-                   &&
-                   ID == other.ID;
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(observableObjects, Name, ID);
         }
     }
 }

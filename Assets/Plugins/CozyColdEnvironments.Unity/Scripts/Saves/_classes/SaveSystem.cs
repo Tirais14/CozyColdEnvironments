@@ -2,8 +2,8 @@ using CCEnvs.Snapshots;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -12,8 +12,11 @@ namespace CCEnvs.Unity.Saves
     {
         public static IReadOnlyDictionary<Type, Func<object, ISnapshot>> Converters => self.converters;
 
+        public static IReadOnlyDictionary<string, SaveGroupCatalog> SaveGroupCatalogs => self.saveGroupCatalogs;
+
         private readonly Dictionary<Type, Func<object, ISnapshot>> converters = new();
-        private readonly Dictionary<(string groupName, string? groupID), SaveGroup> saveGroups = new();
+
+        private readonly ConcurrentDictionary<string, SaveGroupCatalog> saveGroupCatalogs = new();
 
         public static Func<object, ISnapshot> GetSnapshotConverter(Type type)
         {
@@ -22,13 +25,19 @@ namespace CCEnvs.Unity.Saves
             return self.converters[type];
         }
 
-        public static void RegisterObject(
-            object obj,
-            string? key = null,
-            (string groupName, string? groupID) toSaveGroup = default
-            )
+        public static SaveGroupCatalog GetOrCreateSaveGroupCatalog(string path)
         {
+            Guard.IsNotNull(path, nameof(path));
 
+            if (!self.saveGroupCatalogs.TryGetValue(path, out var catalog))
+            {
+                catalog = new SaveGroupCatalog(path);
+
+                if (!self.saveGroupCatalogs.TryAdd(path, catalog))
+                    catalog = self.saveGroupCatalogs[path];
+            }
+
+            return catalog;
         }
 
         public static void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -37,10 +46,6 @@ namespace CCEnvs.Unity.Saves
             Guard.IsNotNull(converter, nameof(converter));
 
             self.converters.Add(type, converter);
-
-            var defaultSaveGroup = ResolveDefaultSaveGroup(type);
-
-            self.saveGroups.Add((defaultSaveGroup.Name, defaultSaveGroup.ID), defaultSaveGroup);
         }
         public static void RegisterType<T>(Func<object, ISnapshot> converter)
         {
@@ -51,28 +56,12 @@ namespace CCEnvs.Unity.Saves
         {
             Guard.IsNotNull(type, nameof(type));
 
-            var defaultSaveGroup = ResolveDefaultSaveGroup(type);
-
-            self.saveGroups.Remove((defaultSaveGroup.Name, defaultSaveGroup.ID));
-
             return self.converters.Remove(type);   
         }
 
         public static bool UnregisterType<T>()
         {
             return UnregisterType(typeof(T));
-        }
-
-        private static SaveGroup ResolveDefaultSaveGroup(Type type)
-        {
-            if (type.GetCustomAttribute<SaveGroupAttribute>(inherit: false)
-                .IsNull(out var saveGroupAttribute)
-                )
-            {
-                return default;
-            }
-
-            return new SaveGroup(saveGroupAttribute.Name, saveGroupAttribute.ID);
         }
     }
 }
