@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Attributes;
+using CCEnvs.Collections;
 using CCEnvs.Reflection;
 using SuperLinq;
 using System;
@@ -12,9 +13,32 @@ namespace CCEnvs
     public static class CCProjectHelper
     {
         public static bool IsInstalling { get; private set; }
+        public static bool IsInstalled { get; private set; } 
 
-        public static void Install()
+        public static MemberInfo[] GetDomainMembers(MemberTypes memberTypes)
         {
+            memberTypes &= ~MemberTypes.NestedType;
+
+            return (from assembly in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
+                    where OnInstallAssemblyFilter(assembly)
+                    select assembly.GetTypes() into types
+                    from type in types
+                    where OnInstallTypeFilter(type)
+                    select Loops.BreadthFirstSearch(type, type => type.GetNestedTypes()) into types
+                    from type in types
+                    select type.FindMembers(memberTypes, BindingFlagsDefault.All, (_, _) => true, null) into members
+                    from member in members
+                    select member
+                    )
+                    .Distinct()
+                    .ToArray();
+        }
+
+        public static void Install(MemberInfo[] domainMembers)
+        {
+            if (IsInstalled)
+                throw new InvalidOperationException("Already installed");
+
             if (IsInstalling)
                 throw new InvalidOperationException("Installing process already started");
 
@@ -22,32 +46,14 @@ namespace CCEnvs
 
             try
             {
-                var assemblyTypes =
-                    (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                     where OnInstallAssemblyFilter(assembly)
-                     select assembly.GetTypes() into tps
-                     from type in tps
-                     where OnInstallTypeFilter(type)
-                     select type
-                     )
-                     .ToArray();
-
-                IEnumerable<Type> types = assemblyTypes;
-
-                foreach (var assemblyType in assemblyTypes)
-                {
-                    types = types.Concat(Loops.BreadthFirstSearch(assemblyType,
-                        static assemblyType =>
-                        {
-                            return assemblyType.GetNestedTypes(BindingFlagsDefault.All);
-                        })
-                        .Skip(1)); //Excludes assemblyType from collection
-                }
+                IEnumerable<Type> types = domainMembers.AsParallel().OfType<Type>();
 
                 var members = GetMembers(BindingFlagsDefault.StaticAll, types.ToArray());
 
                 OnInstallProcessFields(null, members);
-                OnInstallExecuteMethods(null, members);
+                OnInstallExecuteMethods(null, members, domainMembers);
+
+                IsInstalled = true;
             }
             finally
             {
@@ -60,22 +66,37 @@ namespace CCEnvs
             return types.SelectMany(type => type.GetMembers(bindingFlags));
         }
 
-        private static void OnInstallExecuteMethods(object? target, IEnumerable<MemberInfo> members)
+        private static void OnInstallExecuteMethods(
+            object? target, 
+            IEnumerable<MemberInfo> members,
+            MemberInfo[]? domainMembers
+            )
         {
-            var methods = from member in members
-                          where member.MemberType == MemberTypes.Method
-                          select (MethodInfo)member into method
-                          where method.IsDefined<OnInstallMethodAttribute>(inherit: true)
-                          where method.GetGenericArguments().Length == 0
-                                &&
-                                method.GetParameters().Count(param => !param.HasDefaultValue) == 0
+            var methodInfos =
+                from member in members
+                where member.MemberType == MemberTypes.Method
+                select (MethodInfo)member into method
+                where method.IsDefined<OnInstallMethodAttribute>(inherit: true)
+                select (method, prms: method.GetParameters(), genericArgs: method.GetGenericArguments()) into methodInfo
+                where methodInfo.genericArgs.IsNullOrEmpty()
+                where methodInfo.prms.IsNullOrEmpty()
+                      ||
+                      (methodInfo.prms.Length == 1
+                      &&
+                      methodInfo.prms[0].ParameterType.IsType<IEnumerable<MemberInfo>>())
 
-                          select method;
+                select methodInfo;
 
-            foreach (var method in methods)
+            foreach (var (method, prms, _) in methodInfos)
             {
                 try
                 {
+                    if (prms.IsNotNullOrEmpty() && domainMembers.IsNotNullOrEmpty())
+                    {
+                        method.Invoke(target, domainMembers);
+                        continue;
+                    }
+
                     method.Invoke(target, CC.EmptyArguments);
                 }
                 catch (Exception ex)
@@ -174,7 +195,7 @@ namespace CCEnvs
                 try
                 {
                     var members = GetMembers(BindingFlagsDefault.InstanceAll, field.FieldType);
-                    OnInstallExecuteMethods(fieldValue, members);
+                    OnInstallExecuteMethods(fieldValue, members, null);
                 }
                 catch (Exception ex)
                 {

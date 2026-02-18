@@ -5,6 +5,7 @@ using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
+using CCEnvs.Serialization;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
@@ -55,7 +56,18 @@ namespace CCEnvs
         #region Install
         public static void Install()
         {
-            CCProjectHelper.Install();
+            var domainMembers = CCProjectHelper.GetDomainMembers(
+                MemberTypes.NestedType
+                |
+                MemberTypes.Field
+                |
+                MemberTypes.Property
+                |
+                MemberTypes.Method
+                );
+
+            CCProjectHelper.Install(domainMembers);
+            TypeSerializationHelper.Install(domainMembers);
 
             MainThreadID = Thread.CurrentThread.ManagedThreadId;
         }

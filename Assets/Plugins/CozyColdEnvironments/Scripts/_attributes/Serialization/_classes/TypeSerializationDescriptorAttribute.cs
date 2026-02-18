@@ -2,15 +2,15 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.Attributes
+namespace CCEnvs.Attributes.Serialization
 {
     [AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class TypeDescriptorAttribute : Attribute, ICCAttribute
+    public sealed class TypeSerializationDescriptorAttribute : Attribute, ICCAttribute
     {
         public string Name { get; }
         public string? ID { get; }
 
-        public TypeDescriptorAttribute(string name, string? id = null)
+        public TypeSerializationDescriptorAttribute(string name, string? id = null)
         {
             Name = name;
             ID = id;
