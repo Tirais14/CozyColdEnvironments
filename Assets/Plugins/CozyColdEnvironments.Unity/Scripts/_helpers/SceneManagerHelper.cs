@@ -14,8 +14,10 @@ namespace CCEnvs.Unity
         private static ReactiveCommand<(Scene scene, LoadSceneMode mode)>? sceneLoadedCmd;
         private static ReactiveCommand<Scene>? sceneUnloadedCmd;
 
-        public static Scene ActiveScene { get; private set; }
-       
+        private readonly static ReactiveProperty<Scene> activeScene = new(SceneManager.GetActiveScene());
+
+        public static Scene ActiveScene => activeScene.Value;
+
         static SceneManagerHelper()
         {
             BindActiveSceneChangedEvent();
@@ -80,15 +82,19 @@ namespace CCEnvs.Unity
 
         public static Observable<(Scene previous, Scene current)> ObserveActiveSceneChanged()
         {
-            return Observable.Return((previous: default(Scene), current: ActiveScene))
-                .Concat(activeSceneChangesCmd);
+            return activeSceneChangesCmd;
+        }
+
+        public static Observable<Scene> ObserveActiveScene()
+        {
+            return activeScene;
         }
 
         private static void BindActiveSceneChangedEvent()
         {
             SceneManager.activeSceneChanged += (fromScene, toScene) =>
             {
-                ActiveScene = toScene;
+                activeScene.Value = toScene;
                 activeSceneChangesCmd.Execute((fromScene, toScene));
             };
         }

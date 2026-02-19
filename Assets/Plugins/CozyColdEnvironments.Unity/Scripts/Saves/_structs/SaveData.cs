@@ -1,4 +1,5 @@
 using CCEnvs.Attributes.Serialization;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -6,13 +7,12 @@ using System.Collections.Generic;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [TypeSerializationDescriptor("SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
-    public struct SaveData : IEquatable<SaveData>
+    [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
+    public readonly struct SaveData : IEquatable<SaveData>
     {
-        public IReadOnlyList<SaveUnit> SaveUnits { readonly get; private set; }
+        public IReadOnlyList<SaveUnit> SaveUnits { get; }
 
-        public string? Version { readonly get; set; }
-
+        [JsonConstructor]
         public SaveData(IReadOnlyList<SaveUnit> saveUnits)
             :
             this()
@@ -37,14 +37,12 @@ namespace CCEnvs.Unity.Saves
 
         public readonly bool Equals(SaveData other)
         {
-            return EqualityComparer<IReadOnlyList<SaveUnit>>.Default.Equals(SaveUnits, other.SaveUnits)
-                   &&
-                   Version == other.Version;
+            return EqualityComparer<IReadOnlyList<SaveUnit>>.Default.Equals(SaveUnits, other.SaveUnits);
         }
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(SaveUnits, Version);
+            return HashCode.Combine(SaveUnits);
         }
     }
 }

@@ -38,8 +38,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             BindLanguageSwitched();
 
             Instance = this;
-            BuiltInDependecyContainer.Bind<ILocalizationAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+
+            CCDependecyContainer.Bind<ILocalizationAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public void SetLocale(string code)
@@ -52,6 +53,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             if (disposed)
                 return;
+
+            CCDependecyContainer.Unbind<ILocalizationAPI>();
+            CCDependecyContainer.Unbind(GetType());
 
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();

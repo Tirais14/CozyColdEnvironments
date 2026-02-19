@@ -40,8 +40,8 @@ namespace CCEnvs.Unity.CommonAPIs
 
             Instance = this;
 
-            BuiltInDependecyContainer.Bind<IGeneralAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            CCDependecyContainer.Bind<IGeneralAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public void GameplayStart()
@@ -80,6 +80,9 @@ namespace CCEnvs.Unity.CommonAPIs
         {
             if (disposed)
                 return;
+
+            CCDependecyContainer.Unbind<IGeneralAPI>();
+            CCDependecyContainer.Unbind(GetType());
 
             isInitialized.Dispose();
             isGameReady.Dispose();

@@ -55,8 +55,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             Instance = this;
 
-            BuiltInDependecyContainer.Bind<IPlayerAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            CCDependecyContainer.Bind<IPlayerAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public void Authorize()
@@ -74,6 +74,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             if (disposed)
                 return;
+
+            CCDependecyContainer.Unbind<IPlayerAPI>();
+            CCDependecyContainer.Unbind(GetType());
 
             unauthorizedProfile.Dispose();
             authorizedProfile?.Dispose();

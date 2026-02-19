@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.CommonAPIs
         {
             base.Awake();
 
-            if (BuiltInDependecyContainer.TryResolve<IPlayerAPI>().IsNull(out var playerAPI))
+            if (CCDependecyContainer.TryResolve<IPlayerAPI>().IsNull(out var playerAPI))
             {
                 Destroy(GetRootOrSelfGameObject());
                 return;

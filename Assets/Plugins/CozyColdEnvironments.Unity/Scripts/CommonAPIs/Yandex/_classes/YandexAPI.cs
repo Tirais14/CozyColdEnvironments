@@ -45,8 +45,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             BindEvents();
 
             Instance = this;
-            BuiltInDependecyContainer.Bind<IGeneralAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            CCDependecyContainer.Bind<IGeneralAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public void GameplayStart()
@@ -110,6 +110,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             if (disposed)
                 return;
+
+            CCDependecyContainer.Unbind<IGeneralAPI>();
+            CCDependecyContainer.Unbind(GetType());
 
             UnbindEvents();
 

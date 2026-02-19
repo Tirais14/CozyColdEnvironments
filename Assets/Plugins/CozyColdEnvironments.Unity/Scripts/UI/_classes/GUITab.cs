@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.UI
             pointerInput = new Lazy<InputActionRx<Vector2>>(
                 static () =>
                 {
-                    return BuiltInDependecyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput);
+                    return CCDependecyContainer.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput);
                 });
         }
     }

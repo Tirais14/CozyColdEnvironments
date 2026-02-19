@@ -41,8 +41,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             Instance = this;
 
-            BuiltInDependecyContainer.Bind<IAdvertisementAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            CCDependecyContainer.Bind<IAdvertisementAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null)
@@ -97,6 +97,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             if (disposed)
                 return;
+
+            CCDependecyContainer.Unbind<IAdvertisementAPI>();
+            CCDependecyContainer.Unbind(GetType());
 
             UnbindEvents();
 

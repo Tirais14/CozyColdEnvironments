@@ -23,8 +23,8 @@ namespace CCEnvs.Unity.CommonAPIs
 
             Instance = this;
 
-            BuiltInDependecyContainer.Bind<ISavingAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            CCDependecyContainer.Bind<ISavingAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public async UniTask SaveGameAsync(
@@ -52,8 +52,16 @@ namespace CCEnvs.Unity.CommonAPIs
             await SavingSystem.Self.LoadFromFileAsync(filePath, cancellationToken);
         }
 
+        private bool disposed;
         public void Dispose()
         {
+            if (disposed)
+                return;
+
+            CCDependecyContainer.Unbind<ISavingAPI>();
+            CCDependecyContainer.Unbind(GetType());
+
+            disposed = true;
         }
 
         public Observable<bool> ObserveGameSaving()

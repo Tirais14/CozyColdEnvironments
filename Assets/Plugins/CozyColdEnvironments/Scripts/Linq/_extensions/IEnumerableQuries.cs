@@ -485,5 +485,41 @@ namespace CCEnvs.Linq
         {
             return new WhereStatedEnumerator<T, TState>(source, state, predicate);
         }
+
+        public static T First<T, TState>(
+            this IEnumerable<T> source,
+            TState state, 
+            Func<T, TState, bool> predicate
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            foreach (var item in source)
+            {
+                if (predicate(item, state))
+                    return item;
+            }
+
+            throw new InvalidOperationException($"Enumerable {source} doesn't containt any items");
+        }
+
+        public static T? FirstOrDefault<T, TState>(
+            this IEnumerable<T> source,
+            TState state,
+            Func<T, TState, bool> predicate
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(predicate, nameof(predicate));
+
+            foreach (var item in source)
+            {
+                if (predicate(item, state))
+                    return item;
+            }
+
+            return default;
+        }
     }
 }

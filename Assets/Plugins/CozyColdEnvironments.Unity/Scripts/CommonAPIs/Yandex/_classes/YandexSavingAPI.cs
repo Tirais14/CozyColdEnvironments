@@ -42,8 +42,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             Instance = this;
 
-            BuiltInDependecyContainer.Bind<ISavingAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            CCDependecyContainer.Bind<ISavingAPI>(this);
+            CCDependecyContainer.Bind(this);
         }
 
         public async UniTask SaveGameAsync(

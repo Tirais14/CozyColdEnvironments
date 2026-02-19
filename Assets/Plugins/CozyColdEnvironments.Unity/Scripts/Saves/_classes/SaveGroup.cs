@@ -1,8 +1,10 @@
-﻿using CCEnvs.Linq;
+﻿using CCEnvs.Collections;
+using CCEnvs.Linq;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
+using ObservableCollections;
 using System;
-using System.Collections.Concurrent;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,53 +13,50 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public class SaveGroup
+    public class SaveGroup : IEnumerable<KeyValuePair<string, object>>
     {
-        private readonly ConcurrentDictionary<string, object> observableObjects = new();
+        private readonly ObservableDictionary<string, object> observableObjects = new();
+
+        public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
         public string Name { get; }
-        public string? ID { get; }
+
+        public SaveGroupCatalog Catalog { get; }
 
         public SaveGroup(
-            string name,
-            string? id = null
+            SaveGroupCatalog catalog,
+            string? name = null
             )
         {
-            Name = name;
-            ID = id;
+            Guard.IsNotNull(catalog, nameof(catalog));
+
+            Name = name ?? string.Empty;
+            Catalog = catalog;
         }
 
-        public bool TryRegisterObject(object obj, string? key = null)
+        public void RegisterObject(object obj, string? key = null)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
             if (key is null && !TryResolveKey(obj, out key))
                 key = string.Empty;
 
-            if (!observableObjects.TryAdd(key, obj))
-            {
-#if CC_DEBUG_ENABLED
-                this.PrintWarning($"Object: {obj} with key: {key} already registered");
-#endif
-                return false;
-            }
-
-            return true;
+            observableObjects.Add(key, obj);
         }
 
-        public bool TryUnregisterObject(string key)
+        public bool UnregisterObject(string key)
         {
             Guard.IsNotNull(key, nameof(key));
 
-            return observableObjects.TryRemove(key, out _);
+            return observableObjects.Remove(key);
         }
 
-        public bool TryUnregisterObject(object obj)
+        public bool UnregisterObject(object obj)
         {
             if (!TryResolveKey(obj, out var key))
                 key = string.Empty;
 
-            return TryUnregisterObject(key);
+            return UnregisterObject(key);
         }
 
         public bool IsObjectRegistered(string? key)
@@ -109,9 +108,16 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return observableObjects.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
         public override string ToString()
         {
-            return $"({nameof(Name)}: {Name}; {nameof(ID)}: {ID})";
+            return $"({nameof(Name)}: {Name})";
         }
 
         private string ResolveGameObjectKey(GameObject go)
@@ -126,16 +132,13 @@ namespace CCEnvs.Unity.Saves
 
         private IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> GetObjectConverterPairs()
         {
-            if (!observableObjects.IsEmpty)
+            if (!observableObjects.IsEmpty())
                 return Array.Empty<(object obj, string key, Func<object, ISnapshot> converter)>();
 
-            return observableObjects.Select(
-                static pair =>
-                {
-                    var objType = pair.Value.GetType();
-
-                    return (pair.Value, pair.Key, SaveSystem.GetSnapshotConverter(objType));
-                });
+            return from obj in observableObjects
+                   select (obj, objType: obj.GetType()) into objInfo
+                   where SaveSystem.Converters.ContainsKey(objInfo.objType)
+                   select (objInfo.obj.Value, objInfo.obj.Key, SaveSystem.Converters[objInfo.objType]);
         }
     }
 }

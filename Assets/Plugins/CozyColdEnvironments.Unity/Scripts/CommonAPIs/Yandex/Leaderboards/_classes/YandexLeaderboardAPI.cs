@@ -1,13 +1,13 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
-using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Dependencies;
-using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Leaderboards;
 using CCEnvs.Unity.Profiles;
+using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.UI.Leaderboards;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
@@ -40,8 +40,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         private ILeaderboard? lboard;
 
-        private IDisposable? specialEntryScoreSubb;
-
         public YandexLeaderboardAPI(
             LeaderboardView lboardView, 
             string lboardname,
@@ -58,21 +56,40 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             YG2.onGetLeaderboard += OnLeaderboardDataChanged;
 
-            BindLeaderboardViewAsync().ForgetByPrintException();
-            BindLeaderboardSpecialProfileAsync().ForgetByPrintException();
+            BindLeaderboardView();
+            BindSavingSystem();
 
-            BuiltInDependecyContainer.Bind<ILeaderboardAPI>(this, lboardname);
-            BuiltInDependecyContainer.Bind(this, lboardname);
+            CCDependecyContainer.Bind<ILeaderboardAPI>(this, lboardname);
+            CCDependecyContainer.Bind(this, lboardname);
         }
 
-        private async UniTask BindLeaderboardViewAsync()
+        private void OnLeaderboardViewInited()
         {
-            await UniTask.WaitUntil(lboardView,
-                lboardView => lboardView.StartPassed,
-                cancellationToken: disposeCancellationTokenSource.Token
-                );
+            lboard = lboardView.GetModel<ILeaderboard>();
+
+            if (playerAPI.IsAuthorized)
+                lboard.SpecialProfile = playerAPI.PlayerPofile;
+            else
+                BindPlayerAPI();
+        }
+
+        private void BindLeaderboardView()
+        {
+            lboardView.ObserveIsInited()
+                .Where(static x => x)
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    @this.OnLeaderboardViewInited();
+                })
+                .AddTo(disposables);
 
             lboardView.ObserveShow()
+                .Where(this,
+                static (_, @this) =>
+                {
+                    return @this.lboard.IsNotNull();
+                })
                 .ThrottleFirst(1.5.Seconds()) //Delay duration taken from docs
                 .Subscribe(this,
                 static (_, @this) =>
@@ -82,67 +99,20 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 .AddTo(disposables);
         }
 
-        private void OnLeaderboardSpecialEntryChanged(ILeaderboardEntry? specialEntry)
+        private void BindPlayerAPI()
         {
-            this.PrintLog($"Now Player leaderboard entry is {specialEntry}");
-
-            specialEntryScoreSubb?.Dispose();
-
-            if (specialEntry.IsNull())
-                return;
-
-            specialEntryScoreSubb = specialEntry.ObserveScore()
-                .ThrottleLast(1.5.Seconds()) //Delay duration taken from docs
-                .Subscribe(this,
-                static (score, @this) =>
+            playerAPI.ObserveIsAuthorised()
+                .Where(this,
+                static (_, @this) =>
                 {
-                    YG2.SetLeaderboard(@this.lboardname, Mathf.RoundToInt(score));
-                });
-        }
-
-        private async UniTask BindLeaderboardSpecialProfileAsync()
-        {
-            disposeCancellationTokenSource.Token.ThrowIfCancellationRequested();
-
-            this.PrintLog($"{nameof(LeaderboardView)} loading");
-
-            await UniTask.WaitUntil(
-                lboardView,
-                lboardView => lboardView.StartPassed && lboardView.model.IsNotDefault(),
-                cancellationToken: disposeCancellationTokenSource.Token
-                );
-
-            this.PrintLog($"{nameof(LeaderboardView)} loaded");
-
-            lboard = lboardView.GetModel<ILeaderboard>();
-
-            YG2.GetLeaderboard(lboardname);
-
-            this.PrintLog($"Setted player profile: {playerAPI.PlayerPofile}");
-
-            lboard.SpecialProfile = playerAPI.PlayerPofile;
-
-            lboard.ObserveSpecialEntry()
-                .Subscribe(OnLeaderboardSpecialEntryChanged)
+                    return @this.lboard.IsNotNull();
+                })
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    @this.lboard!.SpecialProfile = @this.playerAPI.PlayerPofile;
+                })
                 .AddTo(disposables);
-
-            if (!playerAPI.IsAuthorized)
-            {
-                playerAPI.ObserveIsAuthorised()
-                    .Where(this,
-                    static(_, @this) =>
-                    {
-                        return @this.lboard.IsNotNull();
-                    })
-                    .Subscribe(this,
-                    static (_, @this) =>
-                    {
-                        @this.lboard!.SpecialProfile = @this.playerAPI.PlayerPofile;
-                    })
-                    .AddTo(disposables);
-            }
-
-            OnLeaderboardSpecialEntryChanged(lboard.SpecialEntry);
         }
 
         private bool disposed;
@@ -151,6 +121,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
+            CCDependecyContainer.Unbind<ILeaderboardAPI>(lboardname);
+            CCDependecyContainer.Unbind(GetType(), lboardname);
+
             disposeCancellationTokenSource.CancelAndDispose();
 
             YG2.onGetLeaderboard -= OnLeaderboardDataChanged;
@@ -158,17 +131,14 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             lboardPopulationDisposable.DisposeEachAndClear();
             disposables.DisposeEachAndClear();
 
-            specialEntryScoreSubb?.Dispose();
-
-            if (lboard.IsNotNull() && lboard.SpecialEntry.IsNotNull())
-                YG2.SetLeaderboard(lboardname, Mathf.RoundToInt(lboard.SpecialEntry.Score));
-
             disposed = true;
         }
 
         private void OnLeaderboardDataChanged(LBData? data)
         {
+#if CC_DEBUG_ENABLED
             this.PrintLog($"Recieved {nameof(LBData)}: {(data is not null ? data.players.Select(static player => (player.name, player.score)).ElementsToString() : "null")}");
+#endif
 
             if (data is null
                 ||
@@ -182,30 +152,39 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 YG2.SetLeaderboard(
                     lboardname, 
                     lboard.Maybe()
-                        .Map(lboard => lboard.SpecialEntry)
-                        .Map(specialEntry => Mathf.RoundToInt(specialEntry.Score))
+                        .Map(static lboard => lboard.SpecialEntry)
+                        .Map(static specialEntry => Mathf.RoundToInt(specialEntry.Score))
                         .GetValue()
                         );
 
-                YG2.GetLeaderboard(lboardname);
-
                 return;
             }
+#if UNITY_EDITOR
+            else
+            {
+                var currentPlayerRecord = data.players.Index()
+                    .FirstOrDefault(
+                    static (player) =>
+                    {
+                        return player.Item.name == YG2.player.name
+                               &&
+                               player.Item.uniqueID == YG2.player.id;
+                    });
+
+                if (currentPlayerRecord.Item is not null
+                    &&
+                    lboard.Maybe().Map(lboard => lboard.SpecialEntry).TryGetValue(out var specialEntry))
+                {
+                    currentPlayerRecord.Item.score = Mathf.RoundToInt(specialEntry.Score);
+
+                    data.players[currentPlayerRecord.Index] = currentPlayerRecord.Item;
+                }
+
+
+            }
+#endif
 
             this.PrintLog($"Player entry: (name: {YG2.player.name}; score: {data.currentPlayer!.score})");
-
-            //var currentPlayerData = new LBPlayerData()
-            //{
-            //    name = YG2.player.name,
-            //    photo = YG2.player.photo,
-            //    uniqueID = YG2.player.id,
-            //    rank = data.currentPlayer is not null ? data.currentPlayer.rank : 0,
-            //    score = data.currentPlayer is not null ? data.currentPlayer.score : 0,
-            //};
-
-            //var players = data.players.Prepend(currentPlayerData)
-            //    .DistinctBy(player => (player.name, player.uniqueID))
-            //    .ToArray();
 
             PopulateLeaderboardFromWorst(data.players);
         }
@@ -254,6 +233,23 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
                 lboard.Add(leaderboardEntry).AddTo(lboardPopulationDisposable);
             }
+        }
+
+        private void BindSavingSystem()
+        {
+            SavingSystem.Self.ObserveSaving()
+                .Where(static x => x)
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    var score = @this.lboard.Maybe()
+                        .Map(static lboard => lboard.SpecialEntry)
+                        .Map(static entry => Mathf.RoundToInt(entry.Score))
+                        .GetValue();
+
+                    YG2.SetLeaderboard(@this.lboardname, score);
+                })
+                .AddTo(disposables);
         }
     }
 }

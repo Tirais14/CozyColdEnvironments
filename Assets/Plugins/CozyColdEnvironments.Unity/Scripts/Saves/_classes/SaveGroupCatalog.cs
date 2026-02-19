@@ -1,45 +1,73 @@
 using CommunityToolkit.Diagnostics;
-using System.Collections.Concurrent;
+using Cysharp.Threading.Tasks.Triggers;
+using ObservableCollections;
+using System.Collections;
 using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public class SaveGroupCatalog
+    public class SaveGroupCatalog : IEnumerable<KeyValuePair<string, SaveGroup>>
     {
-        private readonly ConcurrentDictionary<(string groupName, string? groupID), SaveGroup> saveGroups = new();
+        private readonly ObservableDictionary<string, SaveGroup> groups = new();
+
+        public IReadOnlyObservableDictionary<string, SaveGroup> Groups => groups;
 
         public string Path { get; }
 
-        public IReadOnlyDictionary<(string groupName, string? groupID), SaveGroup> SaveGroups => saveGroups;
+        public SaveArchive Archive { get; }
 
-        public SaveGroupCatalog(string path)
+        public SaveGroupCatalog(
+            SaveArchive archive,
+            string? path = null
+            )
         {
-            Path = path;
+            Guard.IsNotNull(archive, nameof(archive));
+
+            Path = path ?? string.Empty;
+            Archive = archive;
         }
 
-        public SaveGroup GetOrCreateSaveGroup(string groupName, string? groupID = null)
+        //public void AddGroup(SaveGroup group)
+        //{
+        //    Guard.IsNotNull(group, nameof(group));
+
+        //    groups.Add(group.Name, group);
+        //}
+
+        public bool RemoveGroup(string groupName, out SaveGroup? removed)
         {
             Guard.IsNotNull(groupName, nameof(groupName));
 
-            var groupKey = (groupName, groupID);
+            return groups.Remove(groupName, out removed);
+        }
 
-            if (!saveGroups.TryGetValue(groupKey, out var group))
+        public SaveGroup GetOrCreateGroup(string groupName)
+        {
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            if (!groups.TryGetValue(groupName, out var group))
             {
-                group = new SaveGroup(groupName, groupID);
+                group = new SaveGroup(this, groupName);
 
-                if (!saveGroups.TryAdd(groupKey, group))
-                    group = saveGroups[groupKey];
+                groups.Add(groupName, group);
             }
 
             return group;
         }
 
-        public bool ContainsSaveGroup(string groupName, string? groupID = null)
+        public bool ContainsSaveGroup(string groupName)
         {
             Guard.IsNotNull(groupName, nameof(groupName));
 
-            return saveGroups.ContainsKey((groupName, groupID));
+            return groups.ContainsKey(groupName);
         }
+
+        public IEnumerator<KeyValuePair<string, SaveGroup>> GetEnumerator()
+        {
+            return groups.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

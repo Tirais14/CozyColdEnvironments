@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 #nullable enable
 namespace CCEnvs.Dependencies
 {
-    public static class BuiltInDependecyContainer
+    public static class CCDependecyContainer
     {
         [OnInstallResetable]
         private static readonly Dictionary<(Type type, object? id), object> bindings = new();

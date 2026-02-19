@@ -322,9 +322,12 @@ namespace CCEnvs.Unity.UI
 
         public Observable<bool> ObserveIsInited()
         {
+            if (IsInited)
+                return Observable.Return(true);
+
             isInitedCmd ??= new ReactiveCommand<bool>();
 
-            return isInitedCmd;
+            return isInitedCmd.Prepend(IsInited);
         }
 
         public IShowable[] GetDirectChilds()
