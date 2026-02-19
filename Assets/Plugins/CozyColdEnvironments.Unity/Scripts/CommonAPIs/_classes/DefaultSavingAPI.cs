@@ -61,19 +61,9 @@ namespace CCEnvs.Unity.CommonAPIs
             return SavingSystem.Self.ObserveSaving();
         }
 
-        public Observable<bool> ObserveGameSaved()
-        {
-            return SavingSystem.Self.ObserveSaved();
-        }
-
         public Observable<bool> ObserveSaveGameLoading()
         {
             return SavingSystem.Self.ObserveSaveLoading();
-        }
-
-        public Observable<bool> ObserveSaveGameLoaded()
-        {
-            return SavingSystem.Self.ObserveSaveLoaded();
         }
     }
 }
