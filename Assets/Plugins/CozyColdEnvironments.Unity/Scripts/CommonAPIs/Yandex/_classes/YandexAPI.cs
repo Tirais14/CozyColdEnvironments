@@ -1,10 +1,6 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
-using CCEnvs.Unity.Async;
-using CCEnvs.Unity.Saves;
-using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using R3;
 using System;
 using YG;
@@ -33,7 +29,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         private bool isInitializing;
 
         public bool IsGameplayMode => YG2.isGameplaying;
-
         public bool IsInitialized => isInitialized.Value;
         public bool IsGameReady => isGameReady.Value;
         public bool IsGamePaused => isGamePaused.Value;
@@ -42,17 +37,12 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         public int GameplaySession => gameplaySession.Value;
 
-        public TimeProvider TimeProvider { get; }
-
-        public YandexAPI(TimeProvider? timeProvider = null)
+        public YandexAPI()
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
 
-            TimeProvider = timeProvider ?? UnityTimeProvider.Update;
-
             BindEvents();
-            BindSavingSystem();
 
             Instance = this;
             BuiltInDependecyContainer.Bind<IGeneralAPI>(this);
@@ -72,33 +62,28 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         public void Initialize()
         {
-            if (IsInitialized)
-                throw new InvalidOperationException("Already initialized");
-
-            if (isInitializing)
-                throw new InvalidOperationException("Already initializing");
+            if (IsInitialized || isInitializing)
+                return;
 
             isInitializing = true;
 
-            YG2.StartInit();
+            try
+            {
+                YG2.StartInit();
 
-            UniTask.Create(this,
-                static async @this =>
-                {
-                    if (YG2.saves.serializedData.IsNotNullOrWhiteSpace())
-                    {
-                        @this.PrintLog($"Save serialized data;\n {YG2.saves.serializedData}");
+                isInitialized.Value = true;
+            }
+            catch (Exception)
+            {
+                isInitialized.Value = false;
 
-                        await SavingSystem.Self.LoadFromSerializedData(YG2.saves.serializedData);
-                    }
+                throw;
+            }
+            finally
+            {
+                isInitializing = false;
+            }
 
-                    //some delay between initialized
-                    await UniTask.WaitForSeconds(1f);
-
-                    @this.isInitialized.Value = true;
-                    @this.isInitializing = false;
-                })
-                .ForgetByPrintException();
         }
 
         public void PauseGame()
@@ -126,10 +111,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
-            YG2.onPauseGame -= OnPauseGame;
-            YG2.onHideWindowGame -= OnHideWindowGame;
-            YG2.onShowWindowGame -= OnShowWindowGame;
-            YG2.onFocusWindowGame -= OnFocusWindowGame;
+            UnbindEvents();
 
             isInitialized.Dispose();
             isGameReady.Dispose();
@@ -139,8 +121,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             gameplaySession.Dispose();
 
-            disposables.Dispose();
-            disposables.Clear();
+            disposables.DisposeEachAndClear(bufferized: false);
 
             disposed = true;
         }
@@ -158,17 +139,12 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                     return YG2.isGameplaying;
                 });
 
-            return isGameplayModeObservable;
+            return Observable.Return(IsGameplayMode).Concat(isGameplayModeObservable);
         }
 
         public Observable<bool> ObserveGamePaused()
         {
-            return isGamePaused.Where(static x => x);
-        }
-
-        public Observable<bool> ObserveGameUnpaused()
-        {
-            return isGamePaused.Where(static x => !x);
+            return isGamePaused;
         }
 
         public Observable<bool> ObserveIsGameReady()
@@ -219,26 +195,12 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             YG2.onFocusWindowGame += OnFocusWindowGame;
         }
 
-        private void BindSavingSystem()
+        private void UnbindEvents()
         {
-            YG2.onDefaultSaves += () => YG2.saves.serializedData = string.Empty;
-
-            SavingSystem.Self.ObserveSaveData()
-                .Where(this, static (_, @this) => @this.isInitialized.Value)
-                .Subscribe(this,
-                static (saveData, @this) =>
-                {
-                    var jSettings = CC.JsonSettings;
-
-                    jSettings.Formatting = Formatting.None;
-
-                    var serializedSaveData = JsonConvert.SerializeObject(saveData, jSettings);
-                    
-                    YG2.saves.serializedData = serializedSaveData;
-
-                    YG2.SaveProgress();
-                })
-                .AddTo(disposables);
+            YG2.onPauseGame -= OnPauseGame;
+            YG2.onHideWindowGame -= OnHideWindowGame;
+            YG2.onShowWindowGame -= OnShowWindowGame;
+            YG2.onFocusWindowGame -= OnFocusWindowGame;
         }
     }
 }

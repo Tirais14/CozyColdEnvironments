@@ -467,22 +467,12 @@ namespace CCEnvs.Unity.Saves
 
         public Observable<bool> ObserveSaving()
         {
-            return isSaving.Where(static x => x);
-        }
-
-        public Observable<bool> ObserveSaved()
-        {
-            return isSaving.Where(static x => !x);
+            return isSaving;
         }
 
         public Observable<bool> ObserveSaveLoading()
         {
-            return isSaveLoading.Where(static x => x);
-        }
-
-        public Observable<bool> ObserveSaveLoaded()
-        {
-            return isSaveLoading.Where(static x => !x);
+            return isSaveLoading;
         }
 
         public Observable<SaveFileData> ObserveSaveData()

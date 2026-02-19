@@ -80,7 +80,7 @@ namespace CCEnvs
             return thread.ManagedThreadId == MainThreadID;
         }
 
-        [OnInstallMethod]
+        [OnInstallExecutable]
         private static void CreateCommandScheduler()
         {
             CommandScheduler = CommandScheduler.CreateDefaultRegistered();

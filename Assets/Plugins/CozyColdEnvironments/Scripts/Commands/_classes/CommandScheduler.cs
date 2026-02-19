@@ -101,7 +101,7 @@ namespace CCEnvs.Patterns.Commands
             addCommandRxCmd?.Execute(cmd);
         }
 
-        [OnInstallMethod]
+        [OnInstallExecutable]
         public void Reset()
         {
             this.PrintLog("Resetting");

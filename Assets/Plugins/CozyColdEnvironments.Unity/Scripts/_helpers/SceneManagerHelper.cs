@@ -10,6 +10,7 @@ namespace CCEnvs.Unity
     public static class SceneManagerHelper
     {
         private readonly static ReactiveCommand<(Scene prevScene, Scene currentScene)> activeSceneChangesCmd = new();
+        
         private static ReactiveCommand<(Scene scene, LoadSceneMode mode)>? sceneLoadedCmd;
         private static ReactiveCommand<Scene>? sceneUnloadedCmd;
 
@@ -79,7 +80,8 @@ namespace CCEnvs.Unity
 
         public static Observable<(Scene previous, Scene current)> ObserveActiveSceneChanged()
         {
-            return activeSceneChangesCmd.Merge(Observable.Return((previous: default(Scene), current: ActiveScene)));
+            return Observable.Return((previous: default(Scene), current: ActiveScene))
+                .Concat(activeSceneChangesCmd);
         }
 
         private static void BindActiveSceneChangedEvent()

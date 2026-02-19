@@ -1,15 +1,19 @@
 #if PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
+using CCEnvs.Threading;
+using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using YG;
 
 #nullable enable
+#pragma warning disable S2930
 namespace CCEnvs.Unity.CommonAPIs.Yandex
 {
     public class YandexSavingAPI : ISavingAPI
@@ -17,13 +21,24 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         [field: OnInstallResetable]
         public static YandexSavingAPI? Instance { get; private set; }
 
+        private readonly IGeneralAPI generalAPI;
+
+        private readonly List<IDisposable> disposables = new(2);
+
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
         public bool IsGameSaving => SavingSystem.Self.IsSaving;
         public bool IsSaveGameLoading => SavingSystem.Self.IsSaveLoading;
 
-        public YandexSavingAPI()
+        public YandexSavingAPI(IGeneralAPI generalAPI)
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexSavingAPI));
+
+            this.generalAPI = generalAPI;
+
+            BindSavingSystem();
+            BindGeneralAPI();
 
             Instance = this;
 
@@ -36,6 +51,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             CancellationToken cancellationToken = default
             )
         {
+            using var _ = disposeCancellationTokenSource.Token.TryLinkTokens(cancellationToken, out cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
         }
 
@@ -44,6 +63,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             CancellationToken cancellationToken = default
             )
         {
+            using var _ = disposeCancellationTokenSource.Token.TryLinkTokens(cancellationToken, out cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 await SavingSystem.Self.LoadFromSerializedData(
@@ -63,6 +86,11 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
+            YG2.onDefaultSaves -= OnSetDefaultSaves;
+
+            disposeCancellationTokenSource.CancelAndDispose();
+            disposables.DisposeEachAndClear(bufferized: false);
+
             disposed = true;
         }
 
@@ -71,19 +99,49 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             return SavingSystem.Self.ObserveSaving();
         }
 
-        public Observable<bool> ObserveGameSaved()
-        {
-            return SavingSystem.Self.ObserveSaved();
-        }
-
         public Observable<bool> ObserveSaveGameLoading()
         {
             return SavingSystem.Self.ObserveSaveLoading();
         }
 
-        public Observable<bool> ObserveSaveGameLoaded()
+        private void OnSetDefaultSaves()
         {
-            return SavingSystem.Self.ObserveSaveLoaded();
+            YG2.saves.serializedData = string.Empty;
+        }
+
+        private void BindSavingSystem()
+        {
+            YG2.onDefaultSaves += OnSetDefaultSaves;
+
+            SavingSystem.Self.ObserveSaveData()
+                .Where(this, static (_, @this) => @this.generalAPI.IsInitialized)
+                .Subscribe(this,
+                static (saveData, @this) =>
+                {
+                    var jSettings = CC.JsonSettings;
+
+                    jSettings.Formatting = Formatting.None;
+
+                    var serializedSaveData = JsonConvert.SerializeObject(saveData, jSettings);
+
+                    YG2.saves.serializedData = serializedSaveData;
+
+                    YG2.SaveProgress();
+                })
+                .AddTo(disposables);
+        }
+
+        private void BindGeneralAPI()
+        {
+            generalAPI.ObserveIsInitialized()
+                .Where(static state => state)
+                .Subscribe(this,
+                static (_, @this) =>
+                {
+                    @this.LoadSaveGameAsync(cancellationToken: @this.disposeCancellationTokenSource.Token)
+                        .ForgetByPrintException();
+                })
+                .AddTo(disposables);
         }
     }
 }

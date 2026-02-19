@@ -25,7 +25,7 @@ namespace CCEnvs
                     where OnInstallTypeFilter(type)
                     select Loops.BreadthFirstSearch(type, type => type.GetNestedTypes()) into types
                     from type in types
-                    select type.FindMembers(memberTypes, BindingFlagsDefault.All, (_, _) => true, null) into members
+                    select type.FindMembers(memberTypes, BindingFlagsDefault.All, (_, _) => true, null).Append(type) into members
                     from member in members
                     select member
                     )
@@ -42,9 +42,9 @@ namespace CCEnvs
 
             try
             {
-                IEnumerable<Type> types = domainMembers.AsParallel().OfType<Type>();
+                var types = domainMembers.AsParallel().OfType<Type>().ToArray();
 
-                var members = GetMembers(BindingFlagsDefault.StaticAll, types.ToArray());
+                var members = GetMembers(BindingFlagsDefault.StaticAll, types);
 
                 OnInstallProcessFields(null, members);
                 OnInstallExecuteMethods(null, members, domainMembers);
@@ -70,7 +70,7 @@ namespace CCEnvs
                 from member in members
                 where member.MemberType == MemberTypes.Method
                 select (MethodInfo)member into method
-                where method.IsDefined<OnInstallMethodAttribute>(inherit: true)
+                where method.IsDefined<OnInstallExecutableAttribute>(inherit: true)
                 select (method, prms: method.GetParameters(), genericArgs: method.GetGenericArguments()) into methodInfo
                 where methodInfo.genericArgs.IsNullOrEmpty()
                 where methodInfo.prms.IsNullOrEmpty()
@@ -87,7 +87,7 @@ namespace CCEnvs
                 {
                     if (prms.IsNotNullOrEmpty() && domainMembers.IsNotNullOrEmpty())
                     {
-                        method.Invoke(target, domainMembers);
+                        method.Invoke(target, new object[] { domainMembers});
                         continue;
                     }
 

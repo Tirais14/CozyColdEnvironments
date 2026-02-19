@@ -68,13 +68,20 @@ namespace CCEnvs.Unity.UI.Components
             UnityFrameProvider.PostLateUpdate.Register(this);
         }
 
-#if UNITY_EDITOR
-        private void OnValidate()
+        protected override void OnEnable()
         {
+            base.OnEnable();
+
             if (_target == null)
                 return;
 
             OnTargetSizeDeltaChanged();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            OnEnable();
         }
 #endif
 
@@ -96,7 +103,7 @@ namespace CCEnvs.Unity.UI.Components
             if (IsDestroyed)
                 return false;
 
-            if (frameCount % 3 != 0 || _target == null)
+            if (!isActiveAndEnabled || frameCount % 3 != 0 || _target == null)
                 return true;
 
             if (targetSizeDeltaSnapshot != Target.sizeDelta)

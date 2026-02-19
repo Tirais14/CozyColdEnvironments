@@ -8,7 +8,7 @@ namespace CCEnvs.Attributes
         AllowMultiple = false, 
         Inherited = true
         )]
-    public class OnInstallMethodAttribute : OnInstallAttribute, ICCAttribute
+    public class OnInstallExecutableAttribute : OnInstallAttribute, ICCAttribute
     {
     }
 }

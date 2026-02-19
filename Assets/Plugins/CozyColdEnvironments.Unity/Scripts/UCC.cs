@@ -108,7 +108,7 @@ namespace CCEnvs.Unity
         }
 
         #region Install
-        [OnInstallMethod]
+        [OnInstallExecutable]
         private static void SetupNullValidation()
         {
             NullValidation.SetOverride(static
@@ -127,7 +127,7 @@ namespace CCEnvs.Unity
                 });
         }
 
-        [OnInstallMethod]
+        [OnInstallExecutable]
         private static void InstallSavingSystem()
         {
             SavingSystem.Self.RegisterType<GameObject>(

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -24,6 +26,21 @@ namespace CCEnvs.Collections
         public arr(int size)
         {
             value = new T[size];
+            IsDefault = false;
+        }
+
+        public arr(IEnumerable<T> items)
+            :
+            this()
+        {
+            if (items is T[] array)
+            {
+                value = array;
+                return;
+            }
+
+            value = items.ToArray();
+
             IsDefault = false;
         }
 

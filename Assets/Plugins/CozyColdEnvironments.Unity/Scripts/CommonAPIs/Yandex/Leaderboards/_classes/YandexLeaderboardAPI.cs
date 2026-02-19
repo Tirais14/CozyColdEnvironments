@@ -17,6 +17,7 @@ using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using YG;
 using YG.Utils.LB;
@@ -26,9 +27,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 {
     public sealed class YandexLeaderboardAPI : ILeaderboardAPI
     {
-        [field: OnInstallResetable]
-        public static YandexLeaderboardAPI? Instance { get; private set; }
-
         private readonly List<IDisposable> lboardPopulationDisposable = new();
         private readonly List<IDisposable> disposables = new(); 
 
@@ -36,7 +34,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         private readonly string lboardname;
 
-        private readonly DisposeCancellationTokenSource disposeCancellationTokenSource = new();
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         private readonly IPlayerAPI playerAPI;
 
@@ -50,9 +48,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             IPlayerAPI playerAPI
             )
         {
-            if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexLeaderboardAPI));
-
             CC.Guard.IsNotNull(lboardView, nameof(lboardView));
             Guard.IsNotNullOrWhiteSpace(lboardname, nameof(lboardname));
             CC.Guard.IsNotNull(playerAPI, nameof(playerAPI));
@@ -66,10 +61,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             BindLeaderboardViewAsync().ForgetByPrintException();
             BindLeaderboardSpecialProfileAsync().ForgetByPrintException();
 
-            Instance = this;
-
-            BuiltInDependecyContainer.Bind<ILeaderboardAPI>(this);
-            BuiltInDependecyContainer.Bind(this);
+            BuiltInDependecyContainer.Bind<ILeaderboardAPI>(this, lboardname);
+            BuiltInDependecyContainer.Bind(this, lboardname);
         }
 
         private async UniTask BindLeaderboardViewAsync()
@@ -158,7 +151,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
-            disposeCancellationTokenSource.Dispose();
+            disposeCancellationTokenSource.CancelAndDispose();
 
             YG2.onGetLeaderboard -= OnLeaderboardDataChanged;
 

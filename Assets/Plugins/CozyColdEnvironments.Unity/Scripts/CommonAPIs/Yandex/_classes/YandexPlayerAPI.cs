@@ -75,6 +75,9 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
+            unauthorizedProfile.Dispose();
+            authorizedProfile?.Dispose();
+
             disposed = true;
         }
 
@@ -87,7 +90,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                     return YG2.player.auth;
                 });
 
-            return isAuthorizedObservable;
+            return Observable.Return(IsAuthorized).Concat(isAuthorizedObservable);
 #else
             return Observable.Empty<bool>();
 #endif

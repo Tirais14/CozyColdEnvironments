@@ -17,10 +17,6 @@ namespace CCEnvs.Unity.CommonAPIs
 
         Observable<bool> ObserveGameSaving();
 
-        Observable<bool> ObserveGameSaved();
-
         Observable<bool> ObserveSaveGameLoading();
-
-        Observable<bool> ObserveSaveGameLoaded();
     }
 }

@@ -98,6 +98,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             if (disposed)
                 return;
 
+            UnbindEvents();
+
             advertisementCount.Dispose();
             shownAdvertisementTypeCmd?.Dispose();
             showAdvertisementErrorCmd?.Dispose();
@@ -139,44 +141,73 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             return showAdvertisementErrorCmd;
         }
 
-        private void BindEvents()
+        private void OnOpendAnyAdv()
         {
-            YG2.onOpenAnyAdv += () =>
-            {
-                advertisementCount.Value++;
-                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Any);
-            };
+            advertisementCount.Value++;
+            shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Any);
+        }
 
-            YG2.onCloseAnyAdv += () =>
-            {
-                advertisementCount.Value--;
+        private void OnCloseAnyAdv()
+        {
+            advertisementCount.Value--;
 
-                if (advertisementCount.Value < 0)
-                    advertisementCount.Value = 0;
-            };
+            if (advertisementCount.Value < 0)
+                advertisementCount.Value = 0;
+        }
 
-            YG2.onErrorAnyAdv += () =>
-            {
-                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
-            };
+        private void OnErrorAnyAdv()
+        {
+            showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
+        }
 
 #if BannerAdv_yg
-            YG2.onBannerError += () =>
-            {
-                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Banner);
-            };
+        private void OnBannerError()
+        {
+            showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Banner);
+        }
 #endif
 
 #if InterstitialAdv_yg
-            YG2.onOpenInterAdv += () =>
-            {
-                shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Fullscreen);
-            };
+        private void OnOpenInterAdv()
+        {
+            shownAdvertisementTypeCmd?.Execute(AdvertisementTypes.Fullscreen);
+        }
 
-            YG2.onErrorInterAdv += () =>
-            {
-                showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Fullscreen);
-            };
+        private void OnErrorInterAdv()
+        {
+            showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Fullscreen);
+        }
+#endif
+
+        private void BindEvents()
+        {
+            YG2.onOpenAnyAdv += OnOpendAnyAdv;
+            YG2.onCloseAnyAdv += OnCloseAnyAdv;
+            YG2.onErrorAnyAdv += OnErrorAnyAdv;
+
+#if BannerAdv_yg
+            YG2.onBannerError += OnBannerError;
+#endif
+
+#if InterstitialAdv_yg
+            YG2.onOpenInterAdv += OnOpenInterAdv;
+            YG2.onErrorInterAdv += OnErrorInterAdv;
+#endif
+        }
+
+        private void UnbindEvents()
+        {
+            YG2.onOpenAnyAdv -= OnOpendAnyAdv;
+            YG2.onCloseAnyAdv -= OnCloseAnyAdv;
+            YG2.onErrorAnyAdv -= OnErrorAnyAdv;
+
+#if BannerAdv_yg
+            YG2.onBannerError -= OnBannerError;
+#endif
+
+#if InterstitialAdv_yg
+            YG2.onOpenInterAdv -= OnOpenInterAdv;
+            YG2.onErrorInterAdv -= OnErrorInterAdv;
 #endif
         }
 
