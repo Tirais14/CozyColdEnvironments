@@ -13,7 +13,6 @@ namespace CCEnvs
     public static class CCProjectHelper
     {
         public static bool IsInstalling { get; private set; }
-        public static bool IsInstalled { get; private set; } 
 
         public static MemberInfo[] GetDomainMembers(MemberTypes memberTypes)
         {
@@ -36,9 +35,6 @@ namespace CCEnvs
 
         public static void Install(MemberInfo[] domainMembers)
         {
-            if (IsInstalled)
-                throw new InvalidOperationException("Already installed");
-
             if (IsInstalling)
                 throw new InvalidOperationException("Installing process already started");
 
@@ -52,8 +48,6 @@ namespace CCEnvs
 
                 OnInstallProcessFields(null, members);
                 OnInstallExecuteMethods(null, members, domainMembers);
-
-                IsInstalled = true;
             }
             finally
             {

@@ -1,4 +1,4 @@
-using CCEnvs.Unity.Attributes;
+using CCEnvs.Attributes.Serialization;
 using System;
 using System.Collections.Generic;
 
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [TypeDescriptor("SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
+    [TypeSerializationDescriptor("SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public struct SaveData : IEquatable<SaveData>
     {
         public IReadOnlyList<SaveUnit> SaveUnits { readonly get; private set; }
