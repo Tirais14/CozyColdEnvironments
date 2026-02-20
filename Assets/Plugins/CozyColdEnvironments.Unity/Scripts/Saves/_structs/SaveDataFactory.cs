@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Saves
         {
             CC.Guard.IsNotNull(pairs, nameof(pairs));
 
-            var saveUnits = new List<SaveUnit>();
+            var saveUnits = new Dictionary<string, SaveUnit>();
 
             SaveUnit saveUnit;
 
@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.Saves
 
                 saveUnit = new SaveUnit(snapshot, key);
 
-                saveUnits.Add(saveUnit);
+                saveUnits.Add(saveUnit.Key, saveUnit);
             }
 
             return new SaveData(saveUnits);
