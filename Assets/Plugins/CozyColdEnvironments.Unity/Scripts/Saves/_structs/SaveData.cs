@@ -10,10 +10,10 @@ namespace CCEnvs.Unity.Saves
     [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public readonly struct SaveData : IEquatable<SaveData>
     {
-        public IReadOnlyList<SaveUnit> SaveUnits { get; }
+        public IReadOnlyDictionary<string, SaveUnit> SaveUnits { get; }
 
         [JsonConstructor]
-        public SaveData(IReadOnlyList<SaveUnit> saveUnits)
+        public SaveData(IReadOnlyDictionary<string, SaveUnit> saveUnits)
             :
             this()
         {
@@ -37,7 +37,7 @@ namespace CCEnvs.Unity.Saves
 
         public readonly bool Equals(SaveData other)
         {
-            return EqualityComparer<IReadOnlyList<SaveUnit>>.Default.Equals(SaveUnits, other.SaveUnits);
+            return EqualityComparer<IReadOnlyDictionary<string, SaveUnit>?>.Default.Equals(SaveUnits, other.SaveUnits);
         }
 
         public readonly override int GetHashCode()

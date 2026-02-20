@@ -14,23 +14,68 @@ namespace CCEnvs
     {
         public static bool IsInstalling { get; private set; }
 
-        public static MemberInfo[] GetDomainMembers(MemberTypes memberTypes)
+        public static MemberInfo[] GetDomainMembers(
+            MemberTypes memberTypes,
+            string[]? additionalAssemblyNames = null
+            )
         {
             memberTypes &= ~MemberTypes.NestedType;
 
+            var assemblyNames = GetDefaultAssemnlyNames().ConcatToArray(additionalAssemblyNames ?? new arr<string>());
+
+            var assemblyNamesPartial = processAssemblyNames(assemblyNames);
+
             return (from assembly in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
-                    where OnInstallAssemblyFilter(assembly)
+                    where assemblyFilter(assembly)
                     select assembly.GetTypes() into types
                     from type in types
-                    where OnInstallTypeFilter(type)
                     select Loops.BreadthFirstSearch(type, type => type.GetNestedTypes()) into types
                     from type in types
-                    select type.FindMembers(memberTypes, BindingFlagsDefault.All, (_, _) => true, null).Append(type) into members
+                    select type.FindMembers(memberTypes, BindingFlagsDefault.All, (_, _) => true, null).Prepend(type) into members
                     from member in members
                     select member
                     )
                     .Distinct()
                     .ToArray();
+
+            static bool[] processAssemblyNames(string[] assemblyNames)
+            {
+                var assemblyNamesPartial = new bool[assemblyNames.Length];
+
+                string assemblyName;
+
+                for (int i = 0; i < assemblyNames.Length; i++)
+                {
+                    assemblyName = assemblyNames[i];
+
+                    assemblyNamesPartial[i] = assemblyName.EndsWith('*');
+
+                    assemblyNames[i] = assemblyName.TrimEnd('*');
+                }
+
+                return assemblyNamesPartial;
+            }
+
+            bool assemblyFilter(Assembly assembly)
+            {
+                string assemblyName;
+
+                for (int i = 0; i < assemblyNames.Length; i++)
+                {
+                    assemblyName = assemblyNames[i];
+
+                    if (assemblyNamesPartial[i]
+                        &&
+                        assembly.FullName.Contains(assemblyName))
+                    {
+                        return true;
+                    }
+                    else if (assembly.FullName == assemblyName)
+                        return true;
+                }
+
+                return false;
+            }
         }
 
         public static void Install(MemberInfo[] domainMembers)
@@ -198,63 +243,12 @@ namespace CCEnvs
             }
         }
 
-        private static string[] GetOnInstallFilters()
+        private static string[] GetDefaultAssemnlyNames()
         {
             return new string[]
             {
-                "System",
-                "Microsoft",
-                "Unity",
-                "UniTask",
-                "Cysharp",
-                "mscorlib",
-                "Mono",
-                "R3",
-                "MessagePipe",
-                "Newtonsoft",
-                "Codice.",
-                "DG.",
-                "Zenject"
+                "CCEnvs*"
             };
         }
-
-        private static bool OnInstallAssemblyFilter(Assembly assembly)
-        {
-            var assemblyName = assembly.GetName();
-
-            if (assemblyName is null)
-                return false;
-
-            return !GetOnInstallFilters().Any(filter =>
-            {
-                var t = assemblyName.Name.StartsWith(filter);
-
-                return t;
-            });
-        }
-
-        private static bool OnInstallTypeFilter(Type type)
-        {
-            if (type.Namespace is null)
-                return true;
-
-            return !GetOnInstallFilters().Any(filter =>
-            {
-                var t = type.Namespace.StartsWith(filter);
-
-                return t;
-            });
-        }
-
-        //private static void OnInstallProcessProperties(
-        //    MemberInfo[] members
-        //    )
-        //{
-        //    var props = from member in members
-        //                where member.MemberType == MemberTypes.Property
-        //                where member.IsDefined<OnInstallAttribute>()
-        //                select ((PropertyInfo)member).
-
-        //}
     }
 }

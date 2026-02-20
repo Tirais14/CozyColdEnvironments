@@ -54,7 +54,7 @@ namespace CCEnvs
         }
 
         #region Install
-        public static void Install()
+        public static void Install(string[]? additionalAssemblyNames = null)
         {
             var domainMembers = CCProjectHelper.GetDomainMembers(
                 MemberTypes.NestedType
@@ -64,6 +64,7 @@ namespace CCEnvs
                 MemberTypes.Property
                 |
                 MemberTypes.Method
+                ,additionalAssemblyNames
                 );
 
             CCProjectHelper.Install(domainMembers);

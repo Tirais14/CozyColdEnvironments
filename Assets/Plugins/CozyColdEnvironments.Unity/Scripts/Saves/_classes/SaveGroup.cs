@@ -108,6 +108,19 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
+        public ISnapshot GetObjectSnapshot(string? key)
+        {
+            key ??= string.Empty;
+
+            var obj = observableObjects[key];
+
+            var objType = obj.GetType();
+
+            var converter = SaveSystem.Converters[objType];
+
+            return converter(obj);
+        }
+
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             return observableObjects.GetEnumerator();

@@ -6,27 +6,30 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Collections
 {
-    public readonly struct arr<T> : IEquatable<arr<T>>
+    public struct arr<T> : IEquatable<arr<T>>
     {
-        private readonly T[] value;
+        private T[]? value;
 
-        public readonly T[] Value {
+        private bool hasValue;
+
+        public T[] Value {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (IsDefault)
-                    return Array.Empty<T>();
+                if (!hasValue && value is null)
+                {
+                    value = Array.Empty<T>();
+                    hasValue = true;
+                }
 
-                return value;
+                return value!;
             }
         }
-
-        public bool IsDefault { get; }
 
         public arr(int size)
         {
             value = new T[size];
-            IsDefault = false;
+            hasValue = true;
         }
 
         public arr(IEnumerable<T> items)
@@ -34,14 +37,12 @@ namespace CCEnvs.Collections
             this()
         {
             if (items is T[] array)
-            {
                 value = array;
-                return;
-            }
+            else
+                value = items.ToArray();
 
-            value = items.ToArray();
 
-            IsDefault = false;
+            hasValue = true;
         }
 
         public static bool operator ==(arr<T> left, arr<T> right)
@@ -57,7 +58,7 @@ namespace CCEnvs.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator T[](arr<T> arr)
         {
-            return arr.value;
+            return arr.Value;
         }
 
         public override bool Equals(object? obj)
@@ -69,12 +70,12 @@ namespace CCEnvs.Collections
         {
             return value == other.Value
                    &&
-                   IsDefault == other.IsDefault;
+                   hasValue == other.hasValue;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(value, IsDefault);
+            return HashCode.Combine(value, hasValue);
         }
     }
 }

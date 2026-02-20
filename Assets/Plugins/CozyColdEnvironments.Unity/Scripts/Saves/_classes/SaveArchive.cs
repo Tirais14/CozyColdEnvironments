@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Saves
     [TypeSerializationDescriptor("SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
     public class SaveArchive : IEnumerable<KeyValuePair<string, SaveGroupCatalog>>
     {
-        private readonly ObservableDictionary<string, SaveGroupCatalog> catalogs = new(0);
+        private readonly ObservableDictionary<string, SaveGroupCatalog> catalogs = new();
 
         public IReadOnlyObservableDictionary<string, SaveGroupCatalog> Catalogs => catalogs;
 

@@ -239,6 +239,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             SavingSystem.Self.ObserveSaving()
                 .Where(static x => x)
+                .ThrottleLast(1.5.Seconds())
                 .Subscribe(this,
                 static (_, @this) =>
                 {
