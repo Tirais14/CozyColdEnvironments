@@ -153,14 +153,15 @@ namespace CCEnvs.Unity.Saves
             MonoBehaviour mono, 
             string key, 
             SaveGroup group,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+            )
         {
             
 
             if (mono.didStart)
                 return TryRestoreObjectCore(mono, key, group);
 
-            await UniTask.SwitchToThreadPool();
+            //TODO: Create queue with Mono-s and separate loop, which indicates is Mono.didStart
 
             var waitingSucces = await UniTask.WaitUntil(
                 mono,
@@ -172,8 +173,6 @@ namespace CCEnvs.Unity.Saves
                 cancellationToken: cancellationToken
                 )
                 .SuppressCancellationThrow();
-
-            await UniTask.SwitchToMainThread();
 
             if (!waitingSucces)
                 return false;

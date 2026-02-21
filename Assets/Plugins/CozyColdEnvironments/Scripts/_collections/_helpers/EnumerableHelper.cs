@@ -150,5 +150,19 @@ namespace CCEnvs.Collections
 
             return sb.Value.ToString();
         }
+
+        public static PooledObject<Dictionary<TKey, TValue>> ToDictionaryPooled<TKey, TValue>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            var dic = DictionaryPool<TKey, TValue>.Shared.Get();
+
+            foreach (var item in source)
+                dic.Value.Add(item);
+
+            return dic;
+        }
     }
 }

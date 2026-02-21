@@ -24,6 +24,7 @@ namespace CCEnvs.Collections
             where TEnumerator : struct, IValueEnumerator<T>
         {
             var enumerator = source.Enumerator;
+
             while (enumerator.TryGetNext(out T item))
                 yield return item;
 
