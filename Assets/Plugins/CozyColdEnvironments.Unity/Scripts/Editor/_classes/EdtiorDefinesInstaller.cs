@@ -141,7 +141,8 @@ namespace CCEnvs.Unity.EditorC
                 .Where(targetGroup =>
                 {
                     return targetGroup != NamedBuildTarget.Unknown;
-                });
+                })
+                .Distinct();
 
             return (from targetGroup in targetGroups
                     select (targetGroup, symbolsString: PlayerSettings.GetScriptingDefineSymbols(targetGroup)) into defineSymbolsInfo
