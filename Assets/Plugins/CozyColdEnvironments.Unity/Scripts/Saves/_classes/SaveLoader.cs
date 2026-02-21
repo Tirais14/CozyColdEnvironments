@@ -2,9 +2,11 @@ using CCEnvs.Collections;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Async;
+using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -23,50 +25,67 @@ namespace CCEnvs.Unity.Saves
         private readonly Dictionary<SaveArchive, CompositeDisposable> archiveDisposables = new();
         private readonly Dictionary<SaveGroupCatalog, CompositeDisposable> catalogDisposables = new();
         private readonly Dictionary<SaveGroup, CompositeDisposable> groupDisposables = new();
-        private readonly Dictionary<(SaveGroup saveGroup, string objectKey), CancellationTokenSource> objectRestoreTaskTokens = new();
         private readonly Dictionary<SaveGroup, SaveData> groupSaveDatas = new();
+
+        private readonly SaveLoaderLazyObjectRestorer lazyObjectRestorer;
 
         public IReadOnlyObservableDictionary<string, SaveArchive> Archives => archives;
 
         public SaveLoader()
         {
+            lazyObjectRestorer = new SaveLoaderLazyObjectRestorer(this);
+
             BindArchiveAdd();
             BindArchiveRemove();
         }
 
-        public async UniTask<bool> TryRestoreObjectAsync(
+        public void TryRestoreObject(
             object obj,
             string key,
             SaveGroup group,
-            CancellationToken cancellationToken = default
+            object? callbackState = null,
+            Action<object?, bool>? callback = null
             )
         {
+            Guard.IsNotNull(callback, nameof(callback));
+
             if (obj.IsNull())
-                return false;
-
-            if (objectRestoreTaskTokens.Remove((group, key), out var previousTaskCancellationTokenSource))
-                previousTaskCancellationTokenSource.CancelAndDispose();
-
-            var cancellationTokenSource = disposeCancellationTokenSource.Token.TryLinkTokens(cancellationToken, out cancellationToken);
-
-            if (cancellationTokenSource is not null)
-                objectRestoreTaskTokens.Add((group, key), cancellationTokenSource);
-
-            try
             {
-                return obj switch
-                {
-                    MonoBehaviour mono => await TryRestoreMonoBehaviourAsync(mono, key, group, cancellationToken),
-                    _ => TryRestoreObjectCore(obj, key, group),
-                };
+                callback?.Invoke(callbackState, false);
+                return;
             }
-            finally
+
+            switch (obj)
             {
-                cancellationTokenSource?.CancelAndDispose();
+                case MonoBehaviour monoBeh:
+                    {
+                        lazyObjectRestorer.Enqueue(
+                            monoBeh,
+                            key,
+                            group,
+                            callbackState,
+                            callback
+                            );
+                    }
+                    break;
+                default:
+                    {
+                        var isRestored = TryRestoreObjectCore(obj, key, group);
+
+                        try
+                        {
+                            callback?.Invoke(callbackState, isRestored);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.PrintException(ex);
+                        }
+                    }
+                    break;
             }
         }
 
-        private bool TryRestoreObjectCore(object obj, string objKey, SaveGroup saveGroup)
+        internal bool TryRestoreObjectCore(object obj, string objKey, SaveGroup saveGroup)
         {
             if (!groupSaveDatas.TryGetValue(saveGroup, out var saveData)
                 ||
@@ -153,14 +172,15 @@ namespace CCEnvs.Unity.Saves
             MonoBehaviour mono, 
             string key, 
             SaveGroup group,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+            )
         {
             
 
             if (mono.didStart)
                 return TryRestoreObjectCore(mono, key, group);
 
-            await UniTask.SwitchToThreadPool();
+            //TODO: Create queue with Mono-s and separate loop, which indicates is Mono.didStart
 
             var waitingSucces = await UniTask.WaitUntil(
                 mono,
@@ -173,8 +193,6 @@ namespace CCEnvs.Unity.Saves
                 )
                 .SuppressCancellationThrow();
 
-            await UniTask.SwitchToMainThread();
-
             if (!waitingSucces)
                 return false;
 
@@ -186,7 +204,7 @@ namespace CCEnvs.Unity.Saves
             SaveGroup group
             )
         {
-            TryRestoreObjectAsync(objEv.Value, objEv.Key, group).ForgetByPrintException();
+            TryRestoreObject(objEv.Value, objEv.Key, group);
         }
 
         private void BindGroupObjectAdd(SaveGroup group)
