@@ -51,6 +51,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             CancellationToken cancellationToken = default
             )
         {
+            using var _ = disposeCancellationTokenSource.Token.TryLinkTokens(cancellationToken, out cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             await SavingSystem.Self.SaveInMemoryAsync(cancellationToken);
         }
 
@@ -59,6 +63,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             CancellationToken cancellationToken = default
             )
         {
+            using var _ = disposeCancellationTokenSource.Token.TryLinkTokens(cancellationToken, out cancellationToken);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try

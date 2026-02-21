@@ -1,143 +1,48 @@
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
-using CCEnvs.Pools;
-using CCEnvs.Snapshots;
-using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using SuperLinq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
-    public class SaveData
+    public readonly struct SaveData : IEquatable<SaveData>
     {
-        public Dictionary<string, SaveUnit> SaveUnits { get; }
-
-        public SaveData()
-        {
-            SaveUnits = new Dictionary<string, SaveUnit>();
-        }
+        public IReadOnlyDictionary<string, SaveUnit> SaveUnits { get; }
 
         [JsonConstructor]
-        public SaveData(IEnumerable<KeyValuePair<string, SaveUnit>> saveUnits)
+        public SaveData(IReadOnlyDictionary<string, SaveUnit> saveUnits)
+            :
+            this()
         {
-            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
-
-            SaveUnits = saveUnits.ToDictionary();
+            SaveUnits = saveUnits;
         }
 
-        public SaveData(IEnumerable<SaveUnit> saveUnits)
+        public static bool operator ==(SaveData left, SaveData right)
         {
-            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
-
-            SaveUnits = saveUnits.ToDictionary(unit => unit.Key);
+            return left.Equals(right);
         }
 
-        public SaveData Clear()
+        public static bool operator !=(SaveData left, SaveData right)
         {
-            SaveUnits.Clear();
-
-            return this;
+            return !(left == right);
         }
 
-        public SaveData Fill(SaveGroup saveGroup)
+        public readonly override bool Equals(object? obj)
         {
-            Guard.IsNotNull(saveGroup, nameof(saveGroup));
-
-            using var saveUnits = ListPool<SaveUnit>.Shared.Get();
-
-            Type objType;
-
-            Func<object, ISnapshot>? converter;
-
-            SaveUnit saveUnit;
-
-            ISnapshot snapshot;
-
-            foreach (var item in saveGroup.ObservableObjects)
-            {
-                objType = item.Value.GetType();
-
-                converter = getConverter(objType);
-
-                if (converter is null)
-                    continue;
-
-                snapshot = converter(item.Value);
-
-                saveUnit = new SaveUnit(snapshot, item.Key);
-
-                saveUnits.Value.Add(saveUnit);
-            }
-
-            return Merge(saveUnits.Value);
-
-            static Func<object, ISnapshot>? getConverter(Type objType)
-            {
-                if (!SaveSystem.Converters.TryGetValue(objType, out var converter))
-                {
-                    typeof(SaveDataFactory).PrintLog($"Selected default snapshot converter by: {objType}");
-
-                    return null;
-                }
-
-                return converter;
-            }
+            return obj is SaveData data && Equals(data);
         }
 
-        public SaveData Merge(IEnumerable<SaveUnit> otherSaveUnits)
+        public readonly bool Equals(SaveData other)
         {
-            CC.Guard.IsNotNull(otherSaveUnits, nameof(otherSaveUnits));
-
-            if (otherSaveUnits.IsEmpty())
-                return this;
-
-            foreach (var saveUnit in otherSaveUnits)
-            {
-                if (SaveUnits.ContainsKey(saveUnit.Key))
-                {
-                    SaveUnits[saveUnit.Key] = saveUnit;
-                    continue;
-                }
-
-                SaveUnits.Add(saveUnit.Key, saveUnit);
-            }
-
-            return this;
+            return EqualityComparer<IReadOnlyDictionary<string, SaveUnit>?>.Default.Equals(SaveUnits, other.SaveUnits);
         }
 
-        public SaveData Merge(IEnumerable<KeyValuePair<string, SaveUnit>> otherSaveUnits)
+        public readonly override int GetHashCode()
         {
-            CC.Guard.IsNotNull(otherSaveUnits, nameof(otherSaveUnits));
-
-            if (otherSaveUnits.IsEmpty())
-                return this;
-
-            foreach (var saveUnit in otherSaveUnits)
-            {
-                if (SaveUnits.ContainsKey(saveUnit.Key))
-                {
-                    SaveUnits[saveUnit.Key] = saveUnit.Value;
-                    continue;
-                }
-
-                SaveUnits.Add(saveUnit.Key, saveUnit.Value);
-            }
-
-            return this;
-        }
-
-        public SaveData Merge(SaveData other)
-        {
-            Guard.IsNotNull(other, nameof(other));
-
-            return Merge(other.SaveUnits);
+            return HashCode.Combine(SaveUnits);
         }
     }
 }

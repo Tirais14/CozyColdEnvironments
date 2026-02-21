@@ -103,33 +103,16 @@ namespace CCEnvs.Unity.UI
             InitCanvasGroup();
             ObserveTransformParent();
             SetGraphicsTransparent();
-
-            UniTask.Create(this,
-                static async @this =>
-                {
-                    @this.destroyCancellationToken.ThrowIfCancellationRequested();
-
-                    await UniTask.NextFrame(
-                        PlayerLoopTiming.PreUpdate,
-                        cancellationToken: @this.destroyCancellationToken
-                        );
-
-                    @this.SetRoot();
-                    @this.SetParent();
-                    @this.SetCanvasController();
-                    await @this.InitShowableAsync();
-                })
-                .ForgetByPrintException();
         }
 
-        //protected override void Start()
-        //{
-        //    base.Start();
-        //    SetRoot();
-        //    SetParent();
-        //    SetCanvasController();
-        //    InitShowableAsync().ForgetByPrintException();
-        //}
+        protected override void Start()
+        {
+            base.Start();
+            SetRoot();
+            SetParent();
+            SetCanvasController();
+            InitShowableAsync().ForgetByPrintException();
+        }
 
         protected override void OnDestroy()
         {

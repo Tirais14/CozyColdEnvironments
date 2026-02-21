@@ -18,13 +18,12 @@ namespace CCEnvs.Collections
             return new EnumeratorEnumerable<T>(value);
         }
 
-#if ZLINQ_PLUGIN
+#if Z_LINQ
         public static IEnumerable<T> AsEnumerable<TEnumerator, T>(
             this ValueEnumerable<TEnumerator, T> source)
             where TEnumerator : struct, IValueEnumerator<T>
         {
             var enumerator = source.Enumerator;
-
             while (enumerator.TryGetNext(out T item))
                 yield return item;
 

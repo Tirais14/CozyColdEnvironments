@@ -189,17 +189,6 @@ namespace CCEnvs.Unity.UI.Leaderboards
                     processegGOs.Value.Add(entryViewGO);
                 }
             }
-            catch (Exception ex)
-            {
-                //FIXME: Find a reason of the exception thrown
-                if (ex is ObjectDisposedException)
-                {
-                    this.PrintExceptionAsLog(ex);
-                    return;
-                }
-
-                throw;
-            }
             finally
             {
                 int instantiatedGOsCount = instantiatedGOs.Length;

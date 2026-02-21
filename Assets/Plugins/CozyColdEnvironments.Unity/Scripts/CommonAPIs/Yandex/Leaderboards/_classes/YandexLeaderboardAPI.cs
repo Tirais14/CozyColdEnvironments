@@ -3,7 +3,6 @@ using CCEnvs.Collections;
 using CCEnvs.Dependencies;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
-using CCEnvs.Patterns.Commands;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Leaderboards;
@@ -28,10 +27,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 {
     public sealed class YandexLeaderboardAPI : ILeaderboardAPI
     {
-        private static readonly TimeSpan leaderboardAPIInvokeInterval = 1.5.Seconds();
-
-        private static long? lastLeaderboardAPIInvokeTimestamp;
-
         private readonly List<IDisposable> lboardPopulationDisposable = new();
         private readonly List<IDisposable> disposables = new(); 
 
@@ -42,8 +37,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         private readonly IPlayerAPI playerAPI;
-
-        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(YandexLeaderboardAPI));
 
         private ILeaderboard? lboard;
 
@@ -70,93 +63,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             CCDependecyContainer.Bind(this, lboardname);
         }
 
-        public void PullLeaderboard()
-        {
-            Command.Builder.SetName(nameof(PullLeaderboard), this)
-                .SetSingle()
-                .WithState(this)
-                .SetExecutePredicate(
-                static @this => @this.IsLeaderboardAPIReadyToInvoke())
-                .Syncronously()
-                .SetExecuteAction(
-                static @this =>
-                {
-                    lastLeaderboardAPIInvokeTimestamp = TimeProvider.System.GetTimestamp();
-
-                    YG2.GetLeaderboard(@this.lboardname);
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(disposeCancellationTokenSource.Token)
-                .ScheduleBy(commandScheduler);
-        }
-
-        public void PostLeaderboard(bool force = false)
-        {
-            if (force)
-            {
-                setLeaderboard(this);
-                return;
-            }
-
-            Command.Builder.SetName(nameof(PostLeaderboard), this)
-                .SetSingle()
-                .WithState(this)
-                .SetExecutePredicate(
-                static @this => @this.IsLeaderboardAPIReadyToInvoke())
-                .Syncronously()
-                .SetExecuteAction(setLeaderboard)
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(disposeCancellationTokenSource.Token)
-                .ScheduleBy(commandScheduler);
-
-            static void setLeaderboard(YandexLeaderboardAPI @this)
-            {
-                lastLeaderboardAPIInvokeTimestamp = TimeProvider.System.GetTimestamp();
-
-                if (!@this.lboard.Maybe()
-                        .Map(lboard => lboard.SpecialEntry)
-                        .Map(specialEntry => Mathf.RoundToInt(specialEntry.Score))
-                        .TryGetValue(out var score)
-                        )
-                {
-#if CC_DEBUG_ENABLED
-                    @this.PrintLog($"Leaderboard: {@this.lboardname} writing nothing");
-#endif
-
-                    return;
-                }
-
-#if CC_DEBUG_ENABLED
-                @this.PrintLog($"Leaderboard: {@this.lboardname} writing new score value: {score}");
-#endif
-
-                YG2.SetLeaderboard(@this.lboardname, score);
-            }
-        }
-
-        private bool disposed;
-        public void Dispose()
-        {
-            if (disposed)
-                return;
-
-            CCDependecyContainer.Unbind<ILeaderboardAPI>(lboardname);
-            CCDependecyContainer.Unbind(GetType(), lboardname);
-
-            disposeCancellationTokenSource.CancelAndDispose();
-
-            YG2.onGetLeaderboard -= OnLeaderboardDataChanged;
-
-            lboardPopulationDisposable.DisposeEachAndClear();
-            disposables.DisposeEachAndClear();
-
-            commandScheduler.Dispose();
-
-            disposed = true;
-        }
-
         private void OnLeaderboardViewInited()
         {
             lboard = lboardView.GetModel<ILeaderboard>();
@@ -165,18 +71,6 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 lboard.SpecialProfile = playerAPI.PlayerPofile;
             else
                 BindPlayerAPI();
-
-            PullLeaderboard();
-        }
-
-        private bool IsLeaderboardAPIReadyToInvoke()
-        {
-            if (lastLeaderboardAPIInvokeTimestamp is null)
-                return true;
-
-            var timeAgo = TimeProvider.System.GetElapsedTime(lastLeaderboardAPIInvokeTimestamp.Value);
-
-            return timeAgo >= leaderboardAPIInvokeInterval;
         }
 
         private void BindLeaderboardView()
@@ -196,11 +90,11 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 {
                     return @this.lboard.IsNotNull();
                 })
-                //.ThrottleFirst(1.5.Seconds()) //Delay duration taken from docs
+                .ThrottleFirst(1.5.Seconds()) //Delay duration taken from docs
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    @this.PullLeaderboard();
+                    YG2.GetLeaderboard(@this.lboardname);
                 })
                 .AddTo(disposables);
         }
@@ -221,6 +115,25 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 .AddTo(disposables);
         }
 
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            CCDependecyContainer.Unbind<ILeaderboardAPI>(lboardname);
+            CCDependecyContainer.Unbind(GetType(), lboardname);
+
+            disposeCancellationTokenSource.CancelAndDispose();
+
+            YG2.onGetLeaderboard -= OnLeaderboardDataChanged;
+
+            lboardPopulationDisposable.DisposeEachAndClear();
+            disposables.DisposeEachAndClear();
+
+            disposed = true;
+        }
+
         private void OnLeaderboardDataChanged(LBData? data)
         {
 #if CC_DEBUG_ENABLED
@@ -236,7 +149,14 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             if (data.currentPlayer is null)
             {
-                PostLeaderboard();
+                YG2.SetLeaderboard(
+                    lboardname, 
+                    lboard.Maybe()
+                        .Map(static lboard => lboard.SpecialEntry)
+                        .Map(static specialEntry => Mathf.RoundToInt(specialEntry.Score))
+                        .GetValue()
+                        );
+
                 return;
             }
 #if UNITY_EDITOR
@@ -259,6 +179,8 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
                     data.players[currentPlayerRecord.Index] = currentPlayerRecord.Item;
                 }
+
+
             }
 #endif
 
@@ -317,15 +239,16 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             SavingSystem.Self.ObserveSaving()
                 .Where(static x => x)
-                //.ThrottleLast(1.5.Seconds())
+                .ThrottleLast(1.5.Seconds())
                 .Subscribe(this,
-                onNext: static (_, @this) =>
+                static (_, @this) =>
                 {
-                    @this.PostLeaderboard();
-                },
-                onCompleted: static (_, @this) =>
-                {
-                    @this.PostLeaderboard(force: true);
+                    var score = @this.lboard.Maybe()
+                        .Map(static lboard => lboard.SpecialEntry)
+                        .Map(static entry => Mathf.RoundToInt(entry.Score))
+                        .GetValue();
+
+                    YG2.SetLeaderboard(@this.lboardname, score);
                 })
                 .AddTo(disposables);
         }
