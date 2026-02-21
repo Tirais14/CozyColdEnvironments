@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using CCEnvs.Reflection;
 using CCEnvs.UnityEditor;
 using CCEnvs.Utils;
 using SuperLinq;
@@ -17,7 +16,7 @@ namespace CCEnvs.Unity.EditorC
     {
         private const string UNITASK = "UniTask";
         private const string ZLINQ = "ZLinq";
-        private const string ADDRESSABLES = "Addressables";
+        private const string ADDRESSABLES = "AddressableAssets";
 
         private const string UNITASK_SYMBOL = "UNITASK_PLUGIN";
         private const string UNITASK_SYMBOL_ALT = "UNITASK_PLUGIN";
@@ -28,9 +27,9 @@ namespace CCEnvs.Unity.EditorC
 
         private readonly static Dictionary<string, string[]> nspaceDefineSymbols = new()
         {
-            { UNITASK, Range.From(UNITASK_SYMBOL, UNITASK_SYMBOL_ALT) },
-            { ZLINQ, Range.From(ZLINQ_SYMBOL, ZLINQ_SYMBOL_ALT) },
-            { ADDRESSABLES_SYMBOL, Range.From(ADDRESSABLES_SYMBOL, ADDRESSABLES_SYMBOL_ALT) }
+            { UNITASK, Range.From(UNITASK_SYMBOL) },
+            { ZLINQ, Range.From(ZLINQ_SYMBOL) },
+            { ADDRESSABLES, Range.From(ADDRESSABLES_SYMBOL) }
         };
 
         [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Add Defines")]

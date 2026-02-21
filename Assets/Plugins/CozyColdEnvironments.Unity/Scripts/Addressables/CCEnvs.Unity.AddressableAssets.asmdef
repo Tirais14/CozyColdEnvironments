@@ -41,7 +41,7 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [
-        "ADDRESSABLES"
+        "ADDRESSABLES_PLUGIN"
     ],
     "versionDefines": [],
     "noEngineReferences": false
