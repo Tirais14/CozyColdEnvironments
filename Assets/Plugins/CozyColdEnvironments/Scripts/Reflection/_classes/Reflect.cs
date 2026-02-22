@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
@@ -827,7 +828,8 @@ namespace CCEnvs.Reflection
 
         private void PrintMethodInvoked(MethodBase methodBase)
         {
-            this.PrintLog($"{(methodBase is ConstructorInfo ? "Constructor" : "Method")} invoked: {methodBase}, argumentsTypes: {argumentTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma())}, genericArguments: {genericTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma()).GetValue(string.Empty)}.");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"{(methodBase is ConstructorInfo ? "Constructor" : "Method")} invoked: {methodBase}, argumentsTypes: {argumentTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma())}, genericArguments: {genericTypes.Map(types => types.Select(x => x.GetFullName()).JoinStringsByComma()).GetValue(string.Empty)}.");
         }
 
         private IReadOnlyCollection<Type> GetBaseTypes()

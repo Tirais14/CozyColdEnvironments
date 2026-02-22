@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Scripting;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Rx
@@ -11,6 +12,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         /// </summary>
         public Vector2 WorldPoint => Camera.main.ScreenToWorldPoint(InputValue);
 
+        [Preserve]
         public PointerInputActionRx(InputAction inputAction) : base(inputAction)
         {
         }

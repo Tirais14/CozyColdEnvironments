@@ -17,6 +17,7 @@ namespace CCEnvs.Unity.Saves
     [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public class SaveData
     {
+        [JsonProperty]
         public Dictionary<string, SaveUnit> SaveUnits { get; }
 
         public SaveData()
@@ -76,7 +77,7 @@ namespace CCEnvs.Unity.Saves
                 saveUnits.Value.Add(saveUnit);
             }
 
-            return Merge(saveUnits.Value);
+            return Merge(saveUnits.Value.Select(saveUnit => (saveUnit.Key, saveUnit)));
 
             static Func<object, ISnapshot>? getConverter(Type objType)
             {
@@ -91,28 +92,7 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        public SaveData Merge(IEnumerable<SaveUnit> otherSaveUnits)
-        {
-            CC.Guard.IsNotNull(otherSaveUnits, nameof(otherSaveUnits));
-
-            if (otherSaveUnits.IsEmpty())
-                return this;
-
-            foreach (var saveUnit in otherSaveUnits)
-            {
-                if (SaveUnits.ContainsKey(saveUnit.Key))
-                {
-                    SaveUnits[saveUnit.Key] = saveUnit;
-                    continue;
-                }
-
-                SaveUnits.Add(saveUnit.Key, saveUnit);
-            }
-
-            return this;
-        }
-
-        public SaveData Merge(IEnumerable<KeyValuePair<string, SaveUnit>> otherSaveUnits)
+        public SaveData Merge(IEnumerable<(string Key, SaveUnit Value)> otherSaveUnits)
         {
             CC.Guard.IsNotNull(otherSaveUnits, nameof(otherSaveUnits));
 
@@ -133,11 +113,20 @@ namespace CCEnvs.Unity.Saves
             return this;
         }
 
-        public SaveData Merge(SaveData other)
+        public SaveData Override(IEnumerable<(string Key, SaveUnit Value)> saveUnits)
         {
-            Guard.IsNotNull(other, nameof(other));
+            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
 
-            return Merge(other.SaveUnits);
+            if (saveUnits.IsEmpty())
+                return this;
+
+            foreach (var (key, value) in saveUnits)
+            {
+                if (!SaveUnits.TryAdd(key, value))
+                    SaveUnits[key] = value;
+            }
+
+            return this;
         }
     }
 }

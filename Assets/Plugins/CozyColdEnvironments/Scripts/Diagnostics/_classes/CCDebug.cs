@@ -16,7 +16,10 @@ namespace CCEnvs.Diagnostics
         private readonly HashSet<Type> disabled = new(0);
         private readonly HashSet<Type> disabledAdditive = new(0);
 
-        public bool IsEnabled { get; set; } = true;
+        public bool IsEnabled { get; set; }
+#if CC_DEBUG_ENABLED
+         = true;
+#endif
 
         public static void SetLogger(IDebugLogger logger)
         {

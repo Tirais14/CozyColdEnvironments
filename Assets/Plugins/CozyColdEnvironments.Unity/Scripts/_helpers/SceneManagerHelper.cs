@@ -18,6 +18,11 @@ namespace CCEnvs.Unity
 
         public static Scene ActiveScene => activeScene.Value;
 
+        /// <summary>
+        /// Use it instead Scene to avoid memory allocations
+        /// </summary>
+        public static SceneInfo ActiveSceneInfo { get; private set; }
+
         static SceneManagerHelper()
         {
             BindActiveSceneChangedEvent();
@@ -95,6 +100,7 @@ namespace CCEnvs.Unity
             SceneManager.activeSceneChanged += (fromScene, toScene) =>
             {
                 activeScene.Value = toScene;
+                ActiveSceneInfo = toScene.GetSceneInfo();
                 activeSceneChangesCmd.Execute((fromScene, toScene));
             };
         }

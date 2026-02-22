@@ -52,7 +52,16 @@ namespace CCEnvs.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsEmpty<T>(this IEnumerable<T> enumerable) => !enumerable.Any();
+        public static bool IsEmpty<T>(this IEnumerable<T> enumerable)
+        {
+            if (enumerable.TryGetNonEnumeratedCount(out var count))
+                return count < 1;
+
+            foreach (var _ in enumerable)
+                return false;
+
+            return true;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNotEmpty<T>(this IEnumerable<T> enumerable) => !enumerable.IsEmpty();
@@ -62,6 +71,7 @@ namespace CCEnvs.Collections
             var range = Enumerable.Range(start, count).ToArray();
 
             var r = new System.Random();
+
             for (int i = range.Length - 1; i > 0; i--)
             {
                 int j = r.Next(0, i);

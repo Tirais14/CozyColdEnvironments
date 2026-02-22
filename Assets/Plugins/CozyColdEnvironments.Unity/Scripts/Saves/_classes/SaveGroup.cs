@@ -1,7 +1,10 @@
-﻿using CCEnvs.Collections;
+﻿using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 using ObservableCollections;
 using System;
 using System.Collections;
@@ -13,18 +16,26 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public class SaveGroup : IEnumerable<KeyValuePair<string, object>>
+    [Serializable]
+    [TypeSerializationDescriptor("Saves.SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
+    public sealed class SaveGroup : IEquatable<SaveGroup?>, IEnumerable<KeyValuePair<string, object>>
     {
         private readonly ObservableDictionary<string, object> observableObjects = new();
 
+        private int? hashCode;
+
+        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
+        [JsonProperty("name")]
         public string Name { get; }
 
-        public SaveGroupCatalog Catalog { get; }
+        [JsonProperty("catalog")]
+        public SaveCatalog Catalog { get; }
 
+        [JsonConstructor]
         public SaveGroup(
-            SaveGroupCatalog catalog,
+            SaveCatalog catalog,
             string? name = null
             )
         {
@@ -32,6 +43,24 @@ namespace CCEnvs.Unity.Saves
 
             Name = name ?? string.Empty;
             Catalog = catalog;
+        }
+
+        public static bool operator ==(SaveGroup? left, SaveGroup? right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (left is null || right is null)
+                return false;
+
+            return left.Name == right.Name
+                    &&
+                    left.Catalog == right.Catalog;
+        }
+
+        public static bool operator !=(SaveGroup? left, SaveGroup? right)
+        {
+            return !(left == right);
         }
 
         public void RegisterObject(object obj, string? key = null)
@@ -131,6 +160,23 @@ namespace CCEnvs.Unity.Saves
         public override string ToString()
         {
             return $"({nameof(Name)}: {Name})";
+        }
+
+        public bool Equals(SaveGroup? other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SaveGroup typed && Equals(typed);
+        }
+
+        public override int GetHashCode()
+        {
+            hashCode ??= HashCode.Combine(Name, Catalog);
+
+            return hashCode.Value;
         }
 
         private string ResolveGameObjectKey(GameObject go)

@@ -46,7 +46,7 @@ namespace CCEnvs.Unity
         private readonly static WeakLazy<GameObject> _pooledObjectsParent = new(
             static () =>
             {
-                return new GameObject("___Pooled");
+                return new GameObject($"[{nameof(CCEnvs)} - PoolObjects]");
             });
 
         private readonly static Lazy<Sprite> anonymousProfileImage = new(
@@ -57,6 +57,16 @@ namespace CCEnvs.Unity
                 return Resources.Load<Sprite>(PATH)
                     .Maybe()
                     .GetValueUnsafe(static () => throw new InvalidOperationException($"Cannot load by path: {PATH}"));
+            });
+
+        private readonly static Lazy<Transform> devOjbect = new(
+            static () =>
+            {
+                var go = new GameObject($"[{nameof(CCEnvs)} - Other]").transform;
+
+                Object.DontDestroyOnLoad(go);
+
+                return go;
             });
 
         public static Lazy<Sprite> ColorSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/ColorSprite"));
@@ -73,7 +83,9 @@ namespace CCEnvs.Unity
        
         public static GameObject PooledObjectsParent => _pooledObjectsParent.Value;
 
-        public static Sprite AnonymousProfileImage => anonymousProfileImage.Value;  
+        public static Sprite AnonymousProfileImage => anonymousProfileImage.Value;
+
+        public static Transform DevObject => devOjbect.Value;
 
         /// <summary>
         /// If !(<see cref="Application.isPlaying"/>) returns -1

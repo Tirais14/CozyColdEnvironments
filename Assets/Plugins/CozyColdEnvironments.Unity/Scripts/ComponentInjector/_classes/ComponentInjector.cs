@@ -3,6 +3,7 @@ using CCEnvs.Conversations;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Diagnostics;
 using CommunityToolkit.Diagnostics;
@@ -50,8 +51,8 @@ namespace CCEnvs.Unity.Injections
                                        .Fields()
                                        .ToArray();
 
-            return fields.Where(x => x.IsDefined<GetComponentAttribute>())
-                         .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>()));
+            return fields.Where(x => x.IsDefined<GetComponentAttribute>(inherit: true))
+                         .Select(x => (x, x.GetCustomAttribute<GetComponentAttribute>(inherit: true)));
         }
 
         /// <exception cref="GameObjectNotFoundException"></exception>
@@ -76,13 +77,14 @@ namespace CCEnvs.Unity.Injections
                 typeof(ComponentInjector).PrintError($"Unsupported inject type: {injectType.GetFullName()}.");
                 return;
             }
+
             if (field.GetValue(source) is object fieldValue)
             {
-                fieldValue = fieldValue.AsObsolete<IConditional>().Map(x => x.GetValue()).Raw!;
-
-                if (fieldValue.IsNotNull())
+                if (fieldValue.Is<IConditional>(out var cond) && cond.IsSome)
                 {
-                    CCDebug.Instance.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
+                    if (CCDebug.Instance.IsEnabled)
+                        CCDebug.Instance.PrintLog($"Field {field.FieldType.GetName()} is {field.ReflectedType.GetName()} already setted.");
+
                     return;
                 }
             }
@@ -152,11 +154,13 @@ namespace CCEnvs.Unity.Injections
             else
                 field.SetValue(source, foundComponent);
 
-            typeof(ComponentInjector).PrintLog($"Injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}.");
+            if (CCDebug.Instance.IsEnabled)
+                typeof(ComponentInjector).PrintLog($"Injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}.");
 
             void printNotInjectedLog()
             {
-                typeof(ComponentInjector).PrintLog($"Not injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}. Is optional and not found.");
+                if (CCDebug.Instance.IsEnabled)
+                    typeof(ComponentInjector).PrintLog($"Not injected in component: {source.GetType().GetFullName()}; field: {BackingField.HumanizeName(field)}; fieldType: {field.FieldType.GetFullName()}; type: {injectType.GetFullName()}. Is optional and not found.");
             }
         }
 

@@ -179,22 +179,20 @@ namespace CCEnvs.Linq
 
         public static bool TryGetNonEnumeratedCount<T>(this IEnumerable<T>? source, out int count)
         {
-            count = -1;
-
             if (source.IsNull())
+            {
+                count = -1;
                 return false;
+            }
 
-            if (source is T[] array)
-                count = array.Length;
-
-            if (source is IReadOnlyCollection<T> readOnlyCollection)
-                count = readOnlyCollection.Count;
-
-            if (source is ICollection<T> collection)
-                count = collection.Count;
-
-            if (source is ICollection collectionUntyped)
-                count = collectionUntyped.Count;
+            count = source switch
+            {
+                T[] arr => arr.Length,
+                IReadOnlyCollection<T> col => col.Count,
+                ICollection<T> col => col.Count,
+                ICollection col => col.Count,
+                _ => -1
+            };
 
             return count != -1;
         }

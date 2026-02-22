@@ -1,23 +1,33 @@
+using CCEnvs.Attributes.Serialization;
 using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks.Triggers;
+using Newtonsoft.Json;
 using ObservableCollections;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public class SaveGroupCatalog : IEnumerable<KeyValuePair<string, SaveGroup>>
+    [Serializable]
+    [TypeSerializationDescriptor("Saves.SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
+    public class SaveCatalog : IEquatable<SaveCatalog>, IEnumerable<KeyValuePair<string, SaveGroup>>
     {
         private readonly ObservableDictionary<string, SaveGroup> groups = new();
 
+        private int? hashCode;
+
+        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveGroup> Groups => groups;
 
+        [JsonProperty("path")]
         public string Path { get; }
 
+        [JsonProperty("archive")]
         public SaveArchive Archive { get; }
 
-        public SaveGroupCatalog(
+        [JsonConstructor]
+        public SaveCatalog(
             SaveArchive archive,
             string? path = null
             )
@@ -28,12 +38,23 @@ namespace CCEnvs.Unity.Saves
             Archive = archive;
         }
 
-        //public void AddGroup(SaveGroup group)
-        //{
-        //    Guard.IsNotNull(group, nameof(group));
+        public static bool operator ==(SaveCatalog? left, SaveCatalog? right)
+        {
+            if (ReferenceEquals(left, right)) 
+                return true;
 
-        //    groups.Add(group.Name, group);
-        //}
+            if (left is null || right is null)
+                return false;
+
+            return left.Path == right.Path
+                   &&
+                   left.Archive ==right.Archive;
+        }
+
+        public static bool operator !=(SaveCatalog? left, SaveCatalog? right)
+        {
+            return !(left == right);
+        }
 
         public bool RemoveGroup(string groupName, out SaveGroup? removed)
         {
@@ -61,6 +82,28 @@ namespace CCEnvs.Unity.Saves
             Guard.IsNotNull(groupName, nameof(groupName));
 
             return groups.ContainsKey(groupName);
+        }
+
+        public bool Equals(SaveCatalog other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SaveCatalog typed && Equals(typed);
+        }
+
+        public override int GetHashCode()
+        {
+            hashCode ??= HashCode.Combine(Path, Archive);
+
+            return hashCode.Value;
+        }
+
+        public override string ToString()
+        {
+            return $"({nameof(Path)}: {Path}; {nameof(Archive)}: {Archive})";
         }
 
         public IEnumerator<KeyValuePair<string, SaveGroup>> GetEnumerator()

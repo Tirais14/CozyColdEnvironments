@@ -1,6 +1,6 @@
-using System;
 using R3;
 using UnityEngine.InputSystem;
+using UnityEngine.Scripting;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem.Rx
@@ -12,6 +12,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public override Observable<bool> TPerformed => Performed.Select(ctx => ctx.ReadValueAsButton());
         public override Observable<bool> TCanceled => Canceled.Select(ctx => ctx.ReadValueAsButton());
 
+        [Preserve]
         public ButtonActionRx(InputAction inputAction) : base(inputAction)
         {
         }

@@ -17,12 +17,24 @@ namespace CCEnvs.Unity.InputSystem.Rx
         :
         IInputHandlerRx
     {
+        //#region IL2CPP Defines
+
+        //[Preserve]
+        //private static InputActionRx<Vector2>? _vectorActiion;
+
+        //[Preserve]
+        //private static InputActionRx<bool>? boolAction;
+
+        //#endregion IL2CPP Defines
+
         protected readonly List<IDisposable> disposables = new();
 
         private readonly Dictionary<string, IInputActionRx> registeredActions = new(0);
+
         private readonly ReactiveProperty<bool> isEnabled;
 
         public InputActionMap ActionMap { get; }
+
         public bool IsEnabled => isEnabled.Value && ActionMap.enabled;
 
         protected InputHandlerRx(InputActionMap actionMap, bool autoSetProps)
@@ -55,7 +67,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
                     item.Enable();
 
                 isEnabled.Value = true;
-                CCDebug.Instance.PrintLog("Enabled", new DebugContext(GetType()));
+
+                if (CCDebug.Instance.IsEnabled)
+                    CCDebug.Instance.PrintLog("Enabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {
@@ -73,7 +87,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
                 isEnabled.Value = false;
 
-                CCDebug.Instance.PrintLog("Disabled", new DebugContext(GetType()));
+                if (CCDebug.Instance.IsEnabled)
+                    CCDebug.Instance.PrintLog("Disabled", new DebugContext(GetType()));
             }
             catch (Exception ex)
             {

@@ -23,6 +23,9 @@ namespace CCEnvs.Unity.UI
                 (graphic, color),
                 static args =>
                 {
+                    if (args.graphic == null)
+                        return;
+
                     args.graphic.color = args.color;
                 });
         }

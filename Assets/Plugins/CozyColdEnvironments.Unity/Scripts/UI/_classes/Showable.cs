@@ -566,6 +566,13 @@ namespace CCEnvs.Unity.UI
 
         private void UnsetGraphicsTransparent()
         {
+            if (transparentGraphics == default
+                ||
+                transparentGraphics.Value is null)
+            {
+                return;
+            }
+
             transparentGraphics.Value.DisposeEachAndClear();
             transparentGraphics.Dispose();
         }

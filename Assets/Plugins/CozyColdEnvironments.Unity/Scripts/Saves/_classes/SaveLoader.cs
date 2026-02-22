@@ -1,9 +1,8 @@
 using CCEnvs.Collections;
-using CCEnvs.Snapshots;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Async;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
 using System;
@@ -14,22 +13,20 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public class SaveLoader
+    public sealed class SaveLoader : IDisposable
     {
-        private readonly ObservableDictionary<string, SaveArchive> archives = new();
-
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         private readonly CompositeDisposable disposables = new();
 
-        private readonly Dictionary<SaveArchive, CompositeDisposable> archiveDisposables = new();
-        private readonly Dictionary<SaveGroupCatalog, CompositeDisposable> catalogDisposables = new();
-        private readonly Dictionary<SaveGroup, CompositeDisposable> groupDisposables = new();
-        private readonly Dictionary<SaveGroup, SaveData> groupSaveDatas = new();
+        private readonly Dictionary<SaveArchive, CompositeDisposable> archiveDisposables = new(SaveArchive.PathEqualityComparer.Instance);
+        private readonly Dictionary<SaveCatalog, CompositeDisposable> catalogDisposables = new(SaveCatalog.PathArchiveEqualityComparer.Instance);
+        private readonly Dictionary<SaveGroup, CompositeDisposable> groupDisposables = new(SaveGroup.NameCatalogEqualityComparer.Instance);
+        private readonly Dictionary<SaveGroup, SaveData> groupSaveDatas = new(SaveGroup.NameCatalogEqualityComparer.Instance);
 
         private readonly SaveLoaderLazyObjectRestorer lazyObjectRestorer;
 
-        public IReadOnlyObservableDictionary<string, SaveArchive> Archives => archives;
+        public ObservableDictionary<string, SaveArchive> Archives { get; } = new();
 
         public SaveLoader()
         {
@@ -47,13 +44,11 @@ namespace CCEnvs.Unity.Saves
             Action<object?, bool>? callback = null
             )
         {
-            Guard.IsNotNull(callback, nameof(callback));
+            ThrowIfDisposed();
 
-            if (obj.IsNull())
-            {
-                callback?.Invoke(callbackState, false);
-                return;
-            }
+            CC.Guard.IsNotNull(obj, nameof(obj));
+            Guard.IsNotNull(key, nameof(key));
+            Guard.IsNotNull(group, nameof(group));
 
             switch (obj)
             {
@@ -85,6 +80,64 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
+        public void OverrideSaveDatas(IEnumerable<(SaveGroup Group, SaveData Value)> saveDatas)
+        {
+            CC.Guard.IsNotNull(saveDatas, nameof(saveDatas));
+
+            if (saveDatas.IsEmpty())
+                return;
+
+            foreach (var (group, saveData) in saveDatas)
+            {
+                if (!groupSaveDatas.TryAdd(group, saveData))
+                    groupSaveDatas[group] = saveData;    
+            }
+        }
+
+        public (SaveGroup Group, SaveData SaveData)[] DeserializeSaveData(string serialized)
+        {
+            CC.Guard.IsNotNull(serialized, nameof(serialized));
+
+            if (serialized.IsNullOrWhiteSpace())
+                return new arr<(SaveGroup Group, SaveData SaveData)>();
+
+            JsonConvert.DeserializeObject<(SaveGroup Group, SaveData SaveData)[]>(serialized);
+        }
+
+        public void LoadSaveDatas()
+        {
+
+        }
+
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposeCancellationTokenSource.CancelAndDispose();
+
+            disposables.Dispose();
+
+            archiveDisposables.Values.DisposeEach();
+            archiveDisposables.Clear();
+            archiveDisposables.TrimExcess();
+
+            catalogDisposables.Values.DisposeEach();
+            catalogDisposables.Clear();
+            catalogDisposables.TrimExcess();
+
+            groupDisposables.Values.DisposeEach();
+            groupDisposables.Clear();
+            groupDisposables.TrimExcess();
+
+            lazyObjectRestorer.Dispose();
+
+            Archives.Clear();
+
+            disposed = true;
+        }
+
         internal bool TryRestoreObjectCore(object obj, string objKey, SaveGroup saveGroup)
         {
             if (!groupSaveDatas.TryGetValue(saveGroup, out var saveData)
@@ -103,8 +156,17 @@ namespace CCEnvs.Unity.Saves
 
             TryCallOnSaveRestoringCallback(obj);
 
-            if (!saveUnit.Snapshot.TryRestore(obj, out _))
+            try
+            {
+                if (!saveUnit.Snapshot.TryRestore(obj, out _))
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+
                 return false;
+            }
 
             TryCallOnSaveRestoredCallback(obj);
 
@@ -122,7 +184,7 @@ namespace CCEnvs.Unity.Saves
 
                 return true;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 this.PrintException(ex);
 
@@ -130,73 +192,34 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private bool TryCallOnSaveRestoringCallback(object obj)
+        private void TryCallOnSaveRestoringCallback(object obj)
         {
             if (obj is not ISaveRestoringCallbackReciever restoringCallbackReciever)
-                return false; ;
+                return;
 
             try
             {
                 restoringCallbackReciever.OnSaveRestoring();
-
-                return true;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 this.PrintException(ex);
-
-                return false;
             }
         }
 
-        private bool TryCallOnSaveRestoredCallback(object obj)
+        private void TryCallOnSaveRestoredCallback(object obj)
         {
             if (obj is not ISaveRestoredCallbackReciever restoreCallbackReciever)
-                return false;
+                return;
 
             try
             {
                 restoreCallbackReciever.OnSaveRestored();
-
-                return true;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 this.PrintException(ex);
-
-                return false;
             }
-        }
-
-        private async UniTask<bool> TryRestoreMonoBehaviourAsync(
-            MonoBehaviour mono, 
-            string key, 
-            SaveGroup group,
-            CancellationToken cancellationToken
-            )
-        {
-            
-
-            if (mono.didStart)
-                return TryRestoreObjectCore(mono, key, group);
-
-            //TODO: Create queue with Mono-s and separate loop, which indicates is Mono.didStart
-
-            var waitingSucces = await UniTask.WaitUntil(
-                mono,
-                static mono =>
-                {
-                    return mono.didStart;
-                },
-                timing: PlayerLoopTiming.EarlyUpdate,
-                cancellationToken: cancellationToken
-                )
-                .SuppressCancellationThrow();
-
-            if (!waitingSucces)
-                return false;
-
-            return TryRestoreObjectCore(mono, key, group);
         }
 
         private void OnGroupObjectAdd(
@@ -221,7 +244,7 @@ namespace CCEnvs.Unity.Saves
             BindGroupObjectAdd(groupEv.Value);
         }
 
-        private void BindCatalogGroupAdd(SaveGroupCatalog catalog)
+        private void BindCatalogGroupAdd(SaveCatalog catalog)
         {
             var disposables = catalogDisposables.GetOrCreateNew(catalog);
 
@@ -230,9 +253,18 @@ namespace CCEnvs.Unity.Saves
                 .AddTo(disposables);
         }
 
-        private void OnArchiveCatalogAdd(DictionaryAddEvent<string, SaveGroupCatalog> catalogEv)
+        private void OnArchiveCatalogAdd(DictionaryAddEvent<string, SaveCatalog> catalogEv)
         {
             BindCatalogGroupAdd(catalogEv.Value);
+
+            DictionaryAddEvent<string, SaveGroup> groupAddEv;
+
+            foreach (var group in catalogEv.Value.Groups)
+            {
+                groupAddEv = new DictionaryAddEvent<string, SaveGroup>(group.Key, group.Value);
+
+                OnCatalogGroupAdd(groupAddEv);
+            }
         }
 
         private void BindArchiveCatalogAdd(SaveArchive archive)
@@ -247,25 +279,53 @@ namespace CCEnvs.Unity.Saves
         private void OnArchiveAdd(DictionaryAddEvent<string, SaveArchive> addEv)
         {
             BindArchiveCatalogAdd(addEv.Value);
+
+            DictionaryAddEvent<string, SaveCatalog> catalogAddEv;
+
+            foreach (var catalog in addEv.Value.Catalogs)
+            {
+                catalogAddEv = new DictionaryAddEvent<string, SaveCatalog>(catalog.Key, catalog.Value);
+
+                OnArchiveCatalogAdd(catalogAddEv);
+            }
         }
 
         private void BindArchiveAdd()
         {
-            archives.ObserveDictionaryAdd(disposeCancellationTokenSource.Token)
+            Archives.ObserveDictionaryAdd(disposeCancellationTokenSource.Token)
                 .Subscribe(OnArchiveAdd)
                 .AddTo(disposables);
         }
 
         private void OnArchiveRemove(DictionaryRemoveEvent<string, SaveArchive> removeEv)
         {
+            if (this.archiveDisposables.Remove(removeEv.Value, out var archiveDisposables))
+                archiveDisposables.Dispose();
 
+            foreach (var catalog in removeEv.Value.Catalogs.Values)
+            {
+                if (this.catalogDisposables.Remove(catalog, out var catalogDisposables))
+                    catalogDisposables.Dispose();
+
+                foreach (var group in catalog.Groups.Values)
+                {
+                    if (this.groupDisposables.Remove(group, out var groupDisposables))
+                        groupDisposables.Dispose();
+                }
+            }
         }
 
         private void BindArchiveRemove()
         {
-            archives.ObserveDictionaryRemove(disposeCancellationTokenSource.Token)
+            Archives.ObserveDictionaryRemove(disposeCancellationTokenSource.Token)
                 .Subscribe(OnArchiveRemove)
                 .AddTo(disposables);
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().FullName);
         }
     }
 }

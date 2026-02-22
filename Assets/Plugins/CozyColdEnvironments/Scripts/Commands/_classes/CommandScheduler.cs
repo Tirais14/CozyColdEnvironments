@@ -1,8 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Pools;
-using CCEnvs.TypeMatching;
+using CCEnvs.Diagnostics;
 using Humanizer;
 using R3;
 using System;
@@ -96,7 +94,8 @@ namespace CCEnvs.Patterns.Commands
 
             cmds.Add(cmd);
 
-            this.PrintLog($"Command: {cmd} scheduled");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Command: {cmd} scheduled");
 
             addCommandRxCmd?.Execute(cmd);
         }
@@ -104,7 +103,8 @@ namespace CCEnvs.Patterns.Commands
         [OnInstallExecutable]
         public void Reset()
         {
-            this.PrintLog("Resetting");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Resetting");
 
             cmd?.Dispose();
 
@@ -121,7 +121,8 @@ namespace CCEnvs.Patterns.Commands
             if (disposed)
                 return;
 
-            this.PrintLog("Disposing");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Disposing");
 
             Reset();
 
@@ -352,7 +353,8 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExecuteCommand()
         {
-            this.PrintLog($"Command: {cmd} will be executed");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Command: {cmd} will be executed");
 
             switch (cmd)
             {

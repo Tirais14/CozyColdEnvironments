@@ -2,6 +2,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using UnityEngine.Scripting;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
@@ -41,6 +42,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public bool IsEnabled => isEnabled.Value && Action.enabled;
 
+        [Preserve]
         public InputActionRx(InputAction inputAction)
         {
             CC.Guard.IsNotNull(inputAction, nameof(inputAction));
@@ -169,6 +171,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public virtual Observable<T> TPerformed { get; }
         public virtual Observable<T> TCanceled { get; }
 
+        [Preserve]
         public InputActionRx(InputAction inputAction) 
             :
             base(inputAction)

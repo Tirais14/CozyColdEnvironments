@@ -105,7 +105,7 @@ namespace CCEnvs.Unity.Saves
 
                 if (monoBeh.IsNull())
                 {
-                    toProcessCount = Mathf.Clamp(toProcessCount++, 0, monoBehs.Count);
+                    toProcessCount = Mathf.Clamp(toProcessCount + 1, 0, monoBehs.Count);
                     continue;
                 }
 
@@ -133,6 +133,8 @@ namespace CCEnvs.Unity.Saves
             if (frameCount % EveryFrame != 0)
                 return true;
 
+            OnFrame();
+
             return true;
         }
 
@@ -153,7 +155,7 @@ namespace CCEnvs.Unity.Saves
                 string key,
                 SaveGroup saveGroup,
                 object? callbackState = null,
-                Action<object, bool>? callback = null
+                Action<object?, bool>? callback = null
                 )
             {
                 Value = value;
@@ -171,6 +173,26 @@ namespace CCEnvs.Unity.Saves
             public static bool operator !=(MonoBehaviourInfo left, MonoBehaviourInfo right)
             {
                 return !(left == right);
+            }
+
+            public static bool operator <(MonoBehaviourInfo left, MonoBehaviourInfo right)
+            {
+                return left.CompareTo(right) < 0;
+            }
+
+            public static bool operator <=(MonoBehaviourInfo left, MonoBehaviourInfo right)
+            {
+                return left.CompareTo(right) <= 0;
+            }
+
+            public static bool operator >(MonoBehaviourInfo left, MonoBehaviourInfo right)
+            {
+                return left.CompareTo(right) > 0;
+            }
+
+            public static bool operator >=(MonoBehaviourInfo left, MonoBehaviourInfo right)
+            {
+                return left.CompareTo(right) >= 0;
             }
 
             public readonly void TryInvokeCallback(bool state)
