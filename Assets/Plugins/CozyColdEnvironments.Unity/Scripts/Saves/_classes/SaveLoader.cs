@@ -7,6 +7,7 @@ using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -19,10 +20,10 @@ namespace CCEnvs.Unity.Saves
 
         private readonly CompositeDisposable disposables = new();
 
-        private readonly Dictionary<SaveArchive, CompositeDisposable> archiveDisposables = new(SaveArchive.PathEqualityComparer.Instance);
-        private readonly Dictionary<SaveCatalog, CompositeDisposable> catalogDisposables = new(SaveCatalog.PathArchiveEqualityComparer.Instance);
-        private readonly Dictionary<SaveGroup, CompositeDisposable> groupDisposables = new(SaveGroup.NameCatalogEqualityComparer.Instance);
-        private readonly Dictionary<SaveGroup, SaveData> groupSaveDatas = new(SaveGroup.NameCatalogEqualityComparer.Instance);
+        private readonly Dictionary<SaveArchive, CompositeDisposable> archiveDisposables = new();
+        private readonly Dictionary<SaveCatalog, CompositeDisposable> catalogDisposables = new();
+        private readonly Dictionary<SaveGroup, CompositeDisposable> groupDisposables = new();
+        private readonly Dictionary<SaveGroup, SaveData> groupSaveDatas = new();
 
         private readonly SaveLoaderLazyObjectRestorer lazyObjectRestorer;
 
@@ -101,7 +102,18 @@ namespace CCEnvs.Unity.Saves
             if (serialized.IsNullOrWhiteSpace())
                 return new arr<(SaveGroup Group, SaveData SaveData)>();
 
-            JsonConvert.DeserializeObject<(SaveGroup Group, SaveData SaveData)[]>(serialized);
+            try
+            {
+                var saveGroupDataPairs = JsonConvert.DeserializeObject<SaveGroupDataPair[]>(serialized);
+
+                return saveGroupDataPairs.Select(pair => (pair.Group, pair.Data)).ToArray();
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+
+                return new arr<(SaveGroup Group, SaveData SaveData)>();
+            }
         }
 
         public void LoadSaveDatas()

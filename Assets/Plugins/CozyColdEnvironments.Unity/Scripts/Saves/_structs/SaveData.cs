@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Saves
     [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public class SaveData
     {
-        [JsonProperty]
+        [JsonProperty("saveUnits")]
         public Dictionary<string, SaveUnit> SaveUnits { get; }
 
         public SaveData()

@@ -1,8 +1,6 @@
 ﻿using CCEnvs.Attributes.Serialization;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -34,7 +32,9 @@ namespace CCEnvs.Unity.Saves
 
         public readonly bool Equals(SaveGroupDataPair other)
         {
-            return SaveGroup.NameCatalogEqualityComparer.Instance()
+            return Group == other.Group
+                   &&
+                   Data == other.Data;
         }
 
         public readonly override int GetHashCode()
