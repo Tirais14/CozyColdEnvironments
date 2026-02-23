@@ -20,6 +20,9 @@ namespace CCEnvs.UnityEditor
         public const string IDE_TAB_NAME = "IDE";
         public const string WINDOWS_TAB_NAME = "Window";
         public const string BUILD_TAB_NAME = "Build";
+        public const string CONTEXT_MENU_TAB = "Assets";
+        public const string CONTEXT_MENU_CREATE_TAB = "Create";
+        public const string CONTEXT_MENU_CREATE_PATH = CONTEXT_MENU_TAB + "/" + CONTEXT_MENU_CREATE_TAB;
 
         [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>

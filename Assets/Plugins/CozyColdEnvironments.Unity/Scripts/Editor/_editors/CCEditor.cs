@@ -21,18 +21,6 @@ namespace CCEnvs.Unity.EditorC
                    !targetField.IsDefined(typeof(SerializeField));
         }
 
-        private static bool IsScriptProperty(string propertyName)
-        {
-            return propertyName == "m_Script";
-        }
-
-        private void SetupScriptProperty(SerializedProperty prop)
-        {
-            PropertyField scriptField = new(prop);
-            scriptField.SetEnabled(false);
-            root.Add(scriptField);
-        }
-
         public override VisualElement CreateInspectorGUI()
         {
             root ??= new VisualElement();
@@ -41,9 +29,14 @@ namespace CCEnvs.Unity.EditorC
                 return root;
 
             SerializedObject serializedObject = new(target);
+
             SerializedProperty prop = serializedObject.GetIterator();
-            PropertyField propField;
+
+            VisualElement propField;
+
             bool enterChildren = true;
+
+            int i = 0;
 
             while (prop.NextVisible(enterChildren))
             {
@@ -58,7 +51,12 @@ namespace CCEnvs.Unity.EditorC
                 if (!IsSerializedProperty(prop, propUnderlyingField))
                     continue;
 
-                propField = CreatePropertyField(target, prop, propUnderlyingField);
+                propField = CreateElement(
+                    target,
+                    prop,
+                    propUnderlyingField,
+                    i++
+                    );
 
                 root.Add(propField);
             }
@@ -71,10 +69,11 @@ namespace CCEnvs.Unity.EditorC
             return root;
         }
 
-        protected virtual PropertyField CreatePropertyField(
+        protected virtual VisualElement CreateElement(
             Object target,
             SerializedProperty prop,
-            FieldInfo propUnderlyingField
+            FieldInfo propUnderlyingField,
+            int pointer
             )
         {
             return new PropertyField(prop.Copy())
@@ -95,6 +94,18 @@ namespace CCEnvs.Unity.EditorC
         {
             return target.GetType().
                 GetField(fieldName, BindingFlagsDefault.InstanceAll);
+        }
+
+        private static bool IsScriptProperty(string propertyName)
+        {
+            return propertyName == "m_Script";
+        }
+
+        private void SetupScriptProperty(SerializedProperty prop)
+        {
+            PropertyField scriptField = new(prop);
+            scriptField.SetEnabled(false);
+            root.Add(scriptField);
         }
     }
 }
