@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
     public struct SerializedBoundsInt : IEditorSerialized<BoundsInt>, ISerializationCallbackReceiver

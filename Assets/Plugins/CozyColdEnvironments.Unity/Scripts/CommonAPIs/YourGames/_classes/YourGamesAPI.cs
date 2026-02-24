@@ -1,4 +1,4 @@
-#if PLUGIN_YG_2 && PLATFORM_WEBGL
+#if YOUR_GAMES_PLUGIN_ENABLED && PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using R3;
@@ -7,12 +7,12 @@ using YG;
 
 #nullable enable
 #pragma warning disable IDE0060
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public sealed class YandexAPI : IGeneralAPI
+    public sealed class YourGamesAPI : IGeneralAPI
     {
         [field: OnInstallResetable]
-        public static YandexAPI? Instance { get; private set; }
+        public static YourGamesAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<bool> isInitialized = new();
         private readonly ReactiveProperty<bool> isGameReady = new();
@@ -37,10 +37,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         public int GameplaySession => gameplaySession.Value;
 
-        public YandexAPI()
+        public YourGamesAPI()
         {
             if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YourGamesAPI));
 
             BindEvents();
 
@@ -124,7 +124,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
             gameplaySession.Dispose();
 
-            disposables.DisposeEachAndClear(bufferized: false);
+            disposables.Dispose();
 
             disposed = true;
         }

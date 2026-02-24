@@ -1,4 +1,4 @@
-#if PLUGIN_YG_2 && PLATFORM_WEBGL
+#if YOUR_GAMES_PLUGIN_ENABLED && PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using CCEnvs.Threading;
@@ -14,12 +14,12 @@ using YG;
 
 #nullable enable
 #pragma warning disable S2930
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public class YandexSavingAPI : ISavingAPI
+    public class YourGamesSavingAPI : ISavingAPI
     {
         [field: OnInstallResetable]
-        public static YandexSavingAPI? Instance { get; private set; }
+        public static YourGamesSavingAPI? Instance { get; private set; }
 
         private readonly IGeneralAPI generalAPI;
 
@@ -30,10 +30,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         public bool IsGameSaving => SavingSystem.Self.IsSaving;
         public bool IsSaveGameLoading => SavingSystem.Self.IsSaveLoading;
 
-        public YandexSavingAPI(IGeneralAPI generalAPI)
+        public YourGamesSavingAPI(IGeneralAPI generalAPI)
         {
             if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexSavingAPI));
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YourGamesSavingAPI));
 
             this.generalAPI = generalAPI;
 

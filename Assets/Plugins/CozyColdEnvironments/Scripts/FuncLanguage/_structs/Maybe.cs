@@ -1,3 +1,5 @@
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Json.Converters;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
@@ -12,6 +14,7 @@ using static CCEnvs.FuncLanguage.LangOperator;
 namespace CCEnvs.FuncLanguage
 {
     [Serializable]
+    [TypeSerializationDescriptor("FuncLanguage.Maybe<>", "5e3a47b4-5306-4c87-b8dd-41da28cbdd13")]
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly
@@ -22,42 +25,40 @@ namespace CCEnvs.FuncLanguage
         //private static readonly Lazy<bool> targetIsStruct = new((() => typeof(T).IsValueType));
 
 #if UNITY_2017_1_OR_NEWER
-        [JsonProperty]
+        [JsonProperty("target")]
         [UnityEngine.SerializeField]
         private T? target;
 
-        [JsonProperty]
+        [JsonProperty("default")]
         [UnityEngine.SerializeField]
         [UnityEngine.Tooltip("If target == default value marked as none.")]
         private T? @default;
 
+        [JsonProperty("isSome")]
         public bool IsSome { get; private set; }
 #else
-        [JsonProperty]
+        [JsonProperty("target")]
         private readonly T? target;
 
-        [JsonProperty]
+        [JsonProperty("target")]
         private readonly T? @default;
 
         public readonly bool IsSome { get; }
 #endif
 
         public readonly bool IsNone => !IsSome;
+
         public readonly T? Raw => target;
 
         public Maybe(T? value)
-            :
-            this()
         {
             target = value;
+            @default = default;
 
             IsSome = IsSome(value);
         }
 
-        [JsonConstructor]
         public Maybe(T? value, T? @default)
-            :
-            this()
         {
             target = value;
             this.@default = @default;
@@ -73,6 +74,15 @@ namespace CCEnvs.FuncLanguage
 
             target = value;
             IsSome = isSome(value);
+        }
+
+        [JsonConstructor]
+        private Maybe(T? value, T? @default = default, bool? isSome = null)
+        {
+            target = value;
+            this.@default = @default;
+
+            IsSome = isSome ?? IsSome(value, @default);
         }
 
         [DebuggerStepThrough]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
     public struct SerializedKeyValuePair<TKey, TValue>

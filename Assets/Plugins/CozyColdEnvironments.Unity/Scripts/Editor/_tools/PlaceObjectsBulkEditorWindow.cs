@@ -24,7 +24,7 @@ namespace CCEnvs.Unity.EditorC
 
         //private ListView objectsListView = null!;
 
-        [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Place Objects Bulk")]
+        [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Place Objects Bulk")]
         public static EditorWindow Open()
         {
             return GetWindow<PlaceObjectsBulkEditorWindow>("Place Objects Bulk");

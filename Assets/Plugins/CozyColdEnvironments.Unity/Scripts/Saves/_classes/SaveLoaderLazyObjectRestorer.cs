@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Saves
     {
         private readonly C5.IntervalHeap<MonoBehaviourInfo> monoBehs = new();
 
-        private readonly SaveLoader saveLoader;
+        private readonly SaveObjectRestorer saveLoader;
 
         private long everyFrame = 0L;
 
@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.Saves
         }
 
         public SaveLoaderLazyObjectRestorer(
-            SaveLoader saveLoader,
+            SaveObjectRestorer saveLoader,
             FrameProvider? frameProvider = null
             )
         {

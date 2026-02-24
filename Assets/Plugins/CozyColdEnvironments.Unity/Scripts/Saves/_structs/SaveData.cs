@@ -1,14 +1,9 @@
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
-using CCEnvs.Pools;
-using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using SuperLinq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -17,27 +12,31 @@ namespace CCEnvs.Unity.Saves
     [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public class SaveData
     {
+        [JsonProperty("group")]
+        public SaveGroup Group { get; }
+
         [JsonProperty("saveUnits")]
         public Dictionary<string, SaveUnit> SaveUnits { get; }
 
-        public SaveData()
+        public SaveData(SaveGroup group)
         {
+            Guard.IsNotNull(group, nameof(group));
+
             SaveUnits = new Dictionary<string, SaveUnit>();
+
+            Group = group;
         }
 
         [JsonConstructor]
-        public SaveData(IEnumerable<KeyValuePair<string, SaveUnit>> saveUnits)
+        public SaveData(
+            SaveGroup group,
+            IEnumerable<KeyValuePair<string, SaveUnit>>? saveUnits
+            )
+            :
+            this(group)
         {
-            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
-
-            SaveUnits = saveUnits.ToDictionary();
-        }
-
-        public SaveData(IEnumerable<SaveUnit> saveUnits)
-        {
-            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
-
-            SaveUnits = saveUnits.ToDictionary(unit => unit.Key);
+            if (saveUnits.IsNotNullOrEmpty())
+                SaveUnits.AddRange(saveUnits);
         }
 
         public SaveData Clear()
@@ -47,49 +46,17 @@ namespace CCEnvs.Unity.Saves
             return this;
         }
 
-        public SaveData Fill(SaveGroup saveGroup)
+        public SaveData Fill(IEnumerable<(string Key, SaveUnit Value)> saveUnits)
         {
-            Guard.IsNotNull(saveGroup, nameof(saveGroup));
+            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
 
-            using var saveUnits = ListPool<SaveUnit>.Shared.Get();
+            if (saveUnits.IsEmpty())
+                return this;
 
-            Type objType;
+            foreach (var (key, value) in saveUnits)
+                SaveUnits.TryAdd(key, value);
 
-            Func<object, ISnapshot>? converter;
-
-            SaveUnit saveUnit;
-
-            ISnapshot snapshot;
-
-            foreach (var item in saveGroup.ObservableObjects)
-            {
-                objType = item.Value.GetType();
-
-                converter = getConverter(objType);
-
-                if (converter is null)
-                    continue;
-
-                snapshot = converter(item.Value);
-
-                saveUnit = new SaveUnit(snapshot, item.Key);
-
-                saveUnits.Value.Add(saveUnit);
-            }
-
-            return Merge(saveUnits.Value.Select(saveUnit => (saveUnit.Key, saveUnit)));
-
-            static Func<object, ISnapshot>? getConverter(Type objType)
-            {
-                if (!SaveSystem.Converters.TryGetValue(objType, out var converter))
-                {
-                    typeof(SaveDataFactory).PrintLog($"Selected default snapshot converter by: {objType}");
-
-                    return null;
-                }
-
-                return converter;
-            }
+            return this;
         }
 
         public SaveData Merge(IEnumerable<(string Key, SaveUnit Value)> otherSaveUnits)
@@ -99,15 +66,15 @@ namespace CCEnvs.Unity.Saves
             if (otherSaveUnits.IsEmpty())
                 return this;
 
-            foreach (var saveUnit in otherSaveUnits)
+            foreach (var (key, value) in otherSaveUnits)
             {
-                if (SaveUnits.ContainsKey(saveUnit.Key))
+                if (SaveUnits.ContainsKey(key))
                 {
-                    SaveUnits[saveUnit.Key] = saveUnit.Value;
+                    SaveUnits[key] = value;
                     continue;
                 }
 
-                SaveUnits.Add(saveUnit.Key, saveUnit.Value);
+                SaveUnits.Add(key, value);
             }
 
             return this;

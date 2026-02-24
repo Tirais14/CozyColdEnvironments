@@ -1,6 +1,6 @@
 {
-    "name": "CCEnvs.Unity.CommonAPIs.Yandex.Leaderboards",
-    "rootNamespace": "CCEnvs.Unity.CommonAPIs.Yandex.Leaderboards",
+    "name": "CCEnvs.Unity.CommonAPIs.YourGames.Leaderboards",
+    "rootNamespace": "CCEnvs.Unity.CommonAPIs.YourGames.Leaderboards",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
         "GUID:1898880136cb79448802a5416e8c3523",
@@ -23,7 +23,8 @@
     "autoReferenced": false,
     "defineConstraints": [
         "PLUGIN_YG_2",
-        "Leaderboards_yg"
+        "Leaderboards_yg",
+        "YOUR_GAMES_PLUGIN_ENABLED"
     ],
     "versionDefines": [],
     "noEngineReferences": false

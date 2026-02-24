@@ -8,9 +8,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using YG;
 
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public static class YandexPluginHelper
+    public static class YourGamesPluginHelper
     {
         private readonly static WeakLazy<GameObject> devGo = new(
             static () =>

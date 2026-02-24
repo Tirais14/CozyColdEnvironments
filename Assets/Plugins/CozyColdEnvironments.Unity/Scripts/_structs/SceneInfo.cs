@@ -1,3 +1,6 @@
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.EditorSerialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -8,24 +11,28 @@ using UnityEngine.SceneManagement;
 namespace CCEnvs.Unity
 {
     [Serializable]
+    [TypeSerializationDescriptor("SceneInfo", "2c534bb6-ba5c-4eae-a359-abc635b00b8b")]
     public struct SceneInfo : IEquatable<SceneInfo>
     {
-        [JsonProperty]
-        [field: SerializeField]
-        public int BuildIndex { get; private set; }
+        private int? hashCode;
 
-        [JsonProperty]
+        [JsonProperty("buildIndex")]
+        [field: SerializeField]
+        public SerializedNullable<int> BuildIndex { get; private set; }
+
+        [JsonProperty("path")]
         [field: SerializeField]
         public string Path { get; private set; }
 
-        [JsonProperty]
+        [JsonProperty("name")]
         [field: SerializeField]
         public string Name { get; private set; }
 
-        [JsonConstructor]
-        public SceneInfo(int buildIndex, string path, string name)
+        public SceneInfo(int? buildIndex, string path, string name)
         {
-            BuildIndex = buildIndex;
+            hashCode = null;
+
+            BuildIndex = new SerializedNullable<int>(buildIndex);
             Path = path;
             Name = name;
         }
@@ -50,10 +57,19 @@ namespace CCEnvs.Unity
 
         public readonly bool IsMatch(SceneInfo other)
         {
-            if (BuildIndex > -1 && BuildIndex == other.BuildIndex)
+            if (Equals(other))
                 return true;
 
-            return Name == other.Name && Path == other.Path;
+            if (BuildIndex.Deserialized.HasValue || other.BuildIndex.Deserialized.HasValue)
+                return BuildIndex == other.BuildIndex;
+
+            if (Path.IsNotNullOrWhiteSpace() || other.Path.IsNotNullOrWhiteSpace())
+                return Path == other.Path;
+
+            if (Name.IsNotNullOrWhiteSpace() || other.Name.IsNotNullOrWhiteSpace())
+                return Name == other.Name;
+
+            return false;
         }
 
         public readonly bool Equals(SceneInfo other)
@@ -70,9 +86,11 @@ namespace CCEnvs.Unity
             return obj is SceneInfo typed && Equals(typed);
         }
 
-        public readonly override int GetHashCode()
+        public override int GetHashCode()
         {
-            return HashCode.Combine(BuildIndex, Path, Name);
+            hashCode ??= HashCode.Combine(BuildIndex, Path, Name);
+
+            return hashCode.Value;
         }
 
         public readonly override string ToString()
@@ -80,7 +98,7 @@ namespace CCEnvs.Unity
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;
 
-            return $"Build index '{BuildIndex}'; name \"{Name}\"";
+            return $"({nameof(BuildIndex)}: {BuildIndex}; {nameof(Name)}: {Name}; {nameof(Path)}: {Path})";
         }
     }
 

@@ -28,11 +28,7 @@ namespace CCEnvs.Json
 
             settings.NullValueHandling = NullValueHandling.Include;
 
-#if UNITY_2017_1_OR_NEWER
             settings.Error = (sender, args) => args.CurrentObject.PrintException(args.ErrorContext.Error);
-#else
-            settings.Error = (sender, args) => throw args.ErrorContext.Error;
-#endif
 
             settings.TypeNameHandling = TypeNameHandling.Objects;
             settings.Formatting = Formatting.Indented;

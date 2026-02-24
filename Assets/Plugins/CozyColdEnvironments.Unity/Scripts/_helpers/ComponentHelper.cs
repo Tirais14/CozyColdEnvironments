@@ -116,12 +116,6 @@ namespace CCEnvs.Unity
             return source.gameObject.GetPersistentGuid();
         }
 
-        public static Maybe<string> GetRuntimeId(this Component source)
-        {
-            CC.Guard.IsNotNullSource(source);
-            return source.gameObject.GetRuntimeId();    
-        }
-
         public static HierarchyPath GetHierarchyPath(this Component source)
         {
             CC.Guard.IsNotNullSource(source);

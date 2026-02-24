@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using CCEnvs.UnityEditor;
-using CCEnvs.Utils;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
@@ -14,45 +13,28 @@ namespace CCEnvs.Unity.EditorC
 {
     public static class EdtiorDefinesInstaller
     {
-        private const string UNITASK = "UniTask";
+        private const string UNITASK = "Cysharp.Threading";
         private const string ZLINQ = "ZLinq";
         private const string ADDRESSABLES = "AddressableAssets";
+        private const string ZENJECT = "Zenject";
 
         private const string UNITASK_SYMBOL = "UNITASK_PLUGIN";
-        private const string UNITASK_SYMBOL_ALT = "UNITASK_PLUGIN";
         private const string ZLINQ_SYMBOL = "ZLINQ_PLUGIN";
-        private const string ZLINQ_SYMBOL_ALT = "ZLINQ";
         private const string ADDRESSABLES_SYMBOL = "ADDRESSABLES_PLUGIN";
-        private const string ADDRESSABLES_SYMBOL_ALT = "ADDRESSABLES_PLUGIN";
+        private const string ZENJECT_SYMBOL = "ZENJECT_PLUGIN";
 
         private readonly static Dictionary<string, string[]> nspaceDefineSymbols = new()
         {
             { UNITASK, Range.From(UNITASK_SYMBOL) },
             { ZLINQ, Range.From(ZLINQ_SYMBOL) },
-            { ADDRESSABLES, Range.From(ADDRESSABLES_SYMBOL) }
+            { ADDRESSABLES, Range.From(ADDRESSABLES_SYMBOL) },
+            { ZENJECT, Range.From(ZENJECT_SYMBOL) }
         };
 
-        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Add Defines")]
+        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Add Define Symbols", priority = -1)]
         public static void AddDefines()
         {
             var nspaces = GetInstalledPluginNamespaces();
-
-            var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(
-                static targetGroup =>
-                {
-                    try
-                    {
-                        return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
-                    }
-                    catch (System.Exception)
-                    {
-                        return NamedBuildTarget.Unknown;
-                    }
-                })
-                .Where(targetGroup =>
-                {
-                    return targetGroup != NamedBuildTarget.Unknown;
-                });
 
             var groupDefineSymbols = GetTargetGroupDefineSymbols();
 
@@ -60,7 +42,7 @@ namespace CCEnvs.Unity.EditorC
 
             foreach (var nspace in nspaces)
             {
-                foreach (var targetGroup in targetGroups)
+                foreach (var targetGroup in groupDefineSymbols.Keys)
                 {
                     var symbols = groupDefineSymbols[targetGroup];
 
@@ -72,9 +54,12 @@ namespace CCEnvs.Unity.EditorC
                     PlayerSettings.SetScriptingDefineSymbols(targetGroup, symbols.JoinStrings(';'));
                 }
             }
+
+            foreach (var (bTarget, symbol) in GetPlatformDefineSymbols())
+                PlayerSettingsHelper.AddScriptingDefineSymbols(Range.From(bTarget), symbol);
         }
 
-        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Remove Defines")]
+        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Remove Define Symbols", priority = -1)]
         public static void RemoveDefines()
         {
             foreach (var targetGroup in GetTargetGroupDefineSymbols())
@@ -84,6 +69,19 @@ namespace CCEnvs.Unity.EditorC
                     targetGroup.Value.Remove(defineSymbol);
                 }
             }
+
+            foreach (var (bTarget, symbol) in GetPlatformDefineSymbols())
+                PlayerSettingsHelper.RemoveScriptingDefineSymbols(Range.From(bTarget), symbol);
+        }
+
+        private static (NamedBuildTarget bTarget, string symbol)[] GetPlatformDefineSymbols()
+        {
+            return new (NamedBuildTarget bTarget, string symbol)[]
+            {
+                (NamedBuildTarget.Android, "ANDROID_PLATFORM"),
+                (NamedBuildTarget.iOS, "IOS_PLATFORM"),
+                (NamedBuildTarget.Standalone, "STANDALONE_PLATFORM"),
+            };
         }
 
         private static Type[] GetAssemblyTypes()
@@ -109,14 +107,16 @@ namespace CCEnvs.Unity.EditorC
                     if (type.Namespace is null)
                         return;
 
-                    if (type.Namespace.Contains(UNITASK))
+                    if (type.Namespace.StartsWith(UNITASK))
                         results.Add(UNITASK);
-                    else if (type.Namespace.Contains(ZLINQ))
+                    else if (type.Namespace.StartsWith(ZLINQ))
                         results.Add(ZLINQ);
-                    else if (type.Namespace.Contains(ADDRESSABLES))
+                    else if (type.Namespace.StartsWith(ADDRESSABLES))
                         results.Add(ADDRESSABLES);
+                    else if (type.Namespace.StartsWith(ZENJECT))
+                        results.Add(ZENJECT);
 
-                    if (results.Count == 3)
+                    if (results.Count == 4)
                         loopState.Break();
                 });
 
@@ -125,30 +125,9 @@ namespace CCEnvs.Unity.EditorC
 
         private static Dictionary<NamedBuildTarget, HashSet<string>> GetTargetGroupDefineSymbols()
         {
-            var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(
-                static targetGroup =>
-                {
-                    try
-                    {
-                        return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
-                    }
-                    catch (System.Exception)
-                    {
-                        return NamedBuildTarget.Unknown;
-                    }
-                })
-                .Where(targetGroup =>
-                {
-                    return targetGroup != NamedBuildTarget.Unknown;
-                })
-                .Distinct();
-
-            return (from targetGroup in targetGroups
-                    select (targetGroup, symbolsString: PlayerSettings.GetScriptingDefineSymbols(targetGroup)) into defineSymbolsInfo
-                    select (defineSymbolsInfo.targetGroup, symbols: defineSymbolsInfo.symbolsString.Split(';').ToHashSet()) into defineSymbolsInfo
-                    select KeyValuePair.Create(defineSymbolsInfo.targetGroup, defineSymbolsInfo.symbols)
-                    )
-                    .ToDictionary();
+            return PlayerSettingsHelper.GetNamedBuildTargets()
+                .Select(bTarget => (bTarget, PlayerSettingsHelper.GetScriptingDefineSymbols(bTarget)))
+                .ToDictionary();
         }
     }
 }

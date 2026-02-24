@@ -13,7 +13,7 @@ namespace CCEnvs.UnityEditor
 {
     public static class EditorHelper
     {
-        public const string MAIN_TAB_NAME = "CC";
+        public const string CC_TAB = "CC";
         public const string EDITOR_TAB_NAME = "Editor";
         public const string TOOLS_TAB_NAME = "Tools";
         public const string COMPILING_TAB_NAME = "Compiling";
@@ -23,6 +23,7 @@ namespace CCEnvs.UnityEditor
         public const string CONTEXT_MENU_TAB = "Assets";
         public const string CONTEXT_MENU_CREATE_TAB = "Create";
         public const string CONTEXT_MENU_CREATE_PATH = CONTEXT_MENU_TAB + "/" + CONTEXT_MENU_CREATE_TAB;
+        public const string DEBUG_TAB = "Debug";
 
         [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>

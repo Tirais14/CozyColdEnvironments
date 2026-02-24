@@ -1,20 +1,17 @@
 using CCEnvs.Collections;
 using CCEnvs.Threading;
-using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public sealed class SaveLoader : IDisposable
+    public sealed class SaveObjectRestorer : IDisposable
     {
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
@@ -29,7 +26,7 @@ namespace CCEnvs.Unity.Saves
 
         public ObservableDictionary<string, SaveArchive> Archives { get; } = new();
 
-        public SaveLoader()
+        public SaveObjectRestorer()
         {
             lazyObjectRestorer = new SaveLoaderLazyObjectRestorer(this);
 
@@ -47,9 +44,32 @@ namespace CCEnvs.Unity.Saves
         {
             ThrowIfDisposed();
 
-            CC.Guard.IsNotNull(obj, nameof(obj));
-            Guard.IsNotNull(key, nameof(key));
-            Guard.IsNotNull(group, nameof(group));
+            if (obj.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(obj)} is null");
+
+                callback?.Invoke(callbackState, false);
+
+                return;
+            }
+
+            if (key.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(key)} is null");
+
+                callback?.Invoke(callbackState, false);
+
+                return;
+            }
+
+            if (group.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(group)} is null");
+
+                callback?.Invoke(callbackState, false);
+
+                return;
+            }
 
             switch (obj)
             {
@@ -83,6 +103,8 @@ namespace CCEnvs.Unity.Saves
 
         public void OverrideSaveDatas(IEnumerable<(SaveGroup Group, SaveData Value)> saveDatas)
         {
+            ThrowIfDisposed();
+
             CC.Guard.IsNotNull(saveDatas, nameof(saveDatas));
 
             if (saveDatas.IsEmpty())
@@ -93,32 +115,6 @@ namespace CCEnvs.Unity.Saves
                 if (!groupSaveDatas.TryAdd(group, saveData))
                     groupSaveDatas[group] = saveData;    
             }
-        }
-
-        public (SaveGroup Group, SaveData SaveData)[] DeserializeSaveData(string serialized)
-        {
-            CC.Guard.IsNotNull(serialized, nameof(serialized));
-
-            if (serialized.IsNullOrWhiteSpace())
-                return new arr<(SaveGroup Group, SaveData SaveData)>();
-
-            try
-            {
-                var saveGroupDataPairs = JsonConvert.DeserializeObject<SaveGroupDataPair[]>(serialized);
-
-                return saveGroupDataPairs.Select(pair => (pair.Group, pair.Data)).ToArray();
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-
-                return new arr<(SaveGroup Group, SaveData SaveData)>();
-            }
-        }
-
-        public void LoadSaveDatas()
-        {
-
         }
 
         private bool disposed;

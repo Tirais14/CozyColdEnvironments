@@ -1,4 +1,4 @@
-#if PLUGIN_YG_2 && PLATFORM_WEBGL
+#if YOUR_GAMES_PLUGIN_ENABLED && PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Dependencies;
@@ -10,12 +10,12 @@ using UnityEditor;
 using YG;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public sealed class YandexAdvertisementAPI : IAdvertisementAPI
+    public sealed class YourGamesAdvertisementAPI : IAdvertisementAPI
     {
         [field: OnInstallResetable]
-        public static YandexAdvertisementAPI? Instance { get; private set; }
+        public static YourGamesAdvertisementAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<int> advertisementCount = new();
 
@@ -29,10 +29,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         public TimeProvider TimeProvider { get; }
 
-        public YandexAdvertisementAPI(TimeProvider? timeProvider = null)
+        public YourGamesAdvertisementAPI(TimeProvider? timeProvider = null)
         {
             if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAdvertisementAPI));
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YourGamesAdvertisementAPI));
 
             TimeProvider = timeProvider ?? UnityTimeProvider.Update;
 

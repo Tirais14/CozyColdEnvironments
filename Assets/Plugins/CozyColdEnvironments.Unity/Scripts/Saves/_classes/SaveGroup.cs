@@ -1,7 +1,6 @@
 ﻿using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Linq;
+using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
@@ -10,9 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem.LowLevel;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -25,6 +22,9 @@ namespace CCEnvs.Unity.Saves
 
         private int? hashCode;
 
+        [JsonProperty("saveData")]
+        private SaveData? _saveData;
+
         [JsonIgnore]
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
@@ -33,6 +33,16 @@ namespace CCEnvs.Unity.Saves
 
         [JsonProperty("catalog")]
         public SaveCatalog Catalog { get; }
+
+        [JsonIgnore]
+        private SaveData saveData {
+            get
+            {
+                _saveData ??= new SaveData(this);
+
+                return _saveData;
+            }
+        }
 
         [JsonConstructor]
         public SaveGroup(
@@ -64,7 +74,7 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
-        public void RegisterObject(object obj, string? key = null)
+        public SaveGroup RegisterObject(object obj, string? key = null)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
@@ -72,6 +82,8 @@ namespace CCEnvs.Unity.Saves
                 key = string.Empty;
 
             observableObjects.Add(key, obj);
+
+            return this;
         }
 
         public bool UnregisterObject(string key)
@@ -122,21 +134,6 @@ namespace CCEnvs.Unity.Saves
             return key is not null;
         }
 
-        public SaveData GetSaveData()
-        {
-            try
-            {
-                var objConverterPairs = GetObjectConverterPairs();
-
-                return SaveDataFactory.Create(objConverterPairs);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-
-                return default;
-            }
-        }
 
         public ISnapshot GetObjectSnapshot(string? key)
         {
@@ -146,9 +143,72 @@ namespace CCEnvs.Unity.Saves
 
             var objType = obj.GetType();
 
-            var converter = SaveSystem.Converters[objType];
+            var converter = SaveSystem.ResolveConverter(objType);
 
             return converter(obj);
+        }
+
+        public PooledArray<SaveUnit> CreateSaveUnitsPooled()
+        {
+            var saveUnits = new PooledArray<SaveUnit>(observableObjects.Count);
+
+            SaveUnit saveUnit;
+
+            ISnapshot snapshot;
+
+            Func<object, ISnapshot> objConverter;
+
+            int i = 0;
+
+            foreach (var (key, obj) in observableObjects)
+            {
+                objConverter = SaveSystem.ResolveConverter(obj.GetType());
+
+                snapshot = objConverter(obj);
+
+                saveUnit = new SaveUnit(key, snapshot);
+
+                saveUnits[i++] = saveUnit;
+            }
+
+            return saveUnits;
+        }
+
+        public SaveGroup WriteSaveData()
+        {
+            using var saveUnits = CreateSaveUnitsPooled();
+
+            using var keyedSaveUnitPairs = ListPool<(string Key, SaveUnit Value)>.Shared.Get();
+
+            foreach (var saveUnit in saveUnits)
+                keyedSaveUnitPairs.Value.Add((saveUnit.Key, saveUnit));
+
+            saveData.Override(keyedSaveUnitPairs.Value);
+
+            return this;
+        }
+
+        public string GetFullPath()
+        {
+            using var sb = StringBuilderPool.Shared.Get();
+
+            using var pathParts = PooledArray<string>.FromRange(
+                Catalog.Archive.Path,
+                Catalog.Path,
+                Name
+                );
+
+            sb.Value.AppendJoin('/', pathParts.Value);
+
+            return sb.Value.ToString();
+        }
+
+        public PooledArray<SaveUnit> ReadSaveDataPooled()
+        {
+            if (_saveData is null)
+                return PooledArray<SaveUnit>.Empty;
+
+            return saveData.SaveUnits.Values.ToArrayPooled();
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -188,17 +248,6 @@ namespace CCEnvs.Unity.Saves
         private string ResolveComponentKey(Component cmp)
         {
             return cmp.GetExtraInfo().ToString();
-        }
-
-        private IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> GetObjectConverterPairs()
-        {
-            if (!observableObjects.IsEmpty())
-                return Array.Empty<(object obj, string key, Func<object, ISnapshot> converter)>();
-
-            return from obj in observableObjects
-                   select (obj, objType: obj.GetType()) into objInfo
-                   where SaveSystem.Converters.ContainsKey(objInfo.objType)
-                   select (objInfo.obj.Value, objInfo.obj.Key, SaveSystem.Converters[objInfo.objType]);
         }
     }
 }

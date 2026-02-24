@@ -1,9 +1,8 @@
-#if PLUGIN_YG_2 && Localization_yg && PLATFORM_WEBGL
+#if YOUR_GAMES_PLUGIN_ENABLED && PLUGIN_YG_2 && Localization_yg && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Dependencies;
 using CCEnvs.Patterns.Commands;
-using Cysharp.Threading.Tasks;
 using R3;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -12,12 +11,12 @@ using UnityEngine.Localization.Settings;
 using YG;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public class YandexLocalizationAPI : ILocalizationAPI
+    public class YourGamesLocalizationAPI : ILocalizationAPI
     {
         [field: OnInstallResetable]
-        public static YandexLocalizationAPI? Instance { get; private set; }
+        public static YourGamesLocalizationAPI? Instance { get; private set; }
 
         private readonly CancellationTokenSource cancellationTokenSource = new();
 
@@ -29,10 +28,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         public string SelectedLocale => YG2.lang;
 
-        public YandexLocalizationAPI()
+        public YourGamesLocalizationAPI()
         {
             if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexLocalizationAPI));
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YourGamesLocalizationAPI));
 
             BindToLocaleChangedEvent();
             BindLanguageSwitched();

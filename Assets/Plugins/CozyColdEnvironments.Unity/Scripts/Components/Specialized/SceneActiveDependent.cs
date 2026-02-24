@@ -1,5 +1,5 @@
+using CCEnvs.Unity.EditorSerialization;
 using R3;
-using System.Linq;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Components.Specialized
         public bool destroyGameObjectOnExcluded;
         public bool excludeScenes;
 
-        public SceneInfo[] activeScenes;
+        public SerializedHashSet<SceneInfo> activeScenes;
 
         protected override void Start()
         {
@@ -44,15 +44,31 @@ namespace CCEnvs.Unity.Components.Specialized
 
         private bool IsTargetScene(Scene scene)
         {
-            return ScenePredciate(activeScenes.Contains(scene.GetSceneInfo()));
+            var sceneInfo = scene.GetSceneInfo();
+
+            var isContains = activeScenes.Deserialized.Contains(sceneInfo);
+
+            if (!isContains)
+            {
+                foreach (var activeScene in activeScenes.Deserialized)
+                {
+                    if (sceneInfo.IsMatch(activeScene))
+                    {
+                        isContains = true;
+                        break;
+                    }
+                }
+            }
+
+            return ScenePredciate(isContains);
         }
 
         private bool ScenePredciate(bool state)
         {
             if (excludeScenes)
-                return state;
+                return !state;
 
-            return !state;
+            return state;
         }
     }
 }

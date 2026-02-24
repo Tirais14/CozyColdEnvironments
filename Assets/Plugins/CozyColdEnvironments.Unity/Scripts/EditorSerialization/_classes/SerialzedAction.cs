@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 
 #nullable enable
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     //[Serializable]
     //public class SerialzedAction : Serialized<Action>

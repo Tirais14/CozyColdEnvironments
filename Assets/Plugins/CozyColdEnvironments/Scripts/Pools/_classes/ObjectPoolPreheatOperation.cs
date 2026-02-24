@@ -63,15 +63,15 @@ namespace CCEnvs.Pools
 
             int batchCount = (int)MathF.Ceiling((float)count / batchSize);
 
-            using var handles = ArrayPool<PooledObject<T>>.Shared.Get(count);
+            using var handles = new PooledArray<PooledObject<T>>(count);
 
-            using var tasks = ArrayPool<
+            using var tasks = new PooledArray<
 #if UNITASK_PLUGIN
             Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
             System.Threading.Tasks.ValueTask<PooledHandle<T>>
 #endif
-                >.Shared.Get(batchSize);
+                >(batchSize);
 
             UniTask<PooledObject<T>> task;
 
@@ -81,11 +81,11 @@ namespace CCEnvs.Pools
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                int iterationCount = Math.Min(batchSize, count - processedCount);
+                int processCount = Math.Min(batchSize, count - processedCount);
 
-                for (int i = 0; i < iterationCount; i++)
+                for (int i = 0; i < processCount; i++)
                 {
-                    cancellationToken.ThrowIfCancellationRequestedByInterval(i, iterationCount / 2);
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     task = GetFromPoolAsync(cancellationToken);
 
@@ -99,7 +99,7 @@ namespace CCEnvs.Pools
                     ValueTaskHelper.WhenAll(tasks.Value.Array);
 #endif
 
-                for (int i = 0; i < iterationCount; i++)
+                for (int i = 0; i < processCount; i++)
                     handles[batch * batchSize + i] = tHandles[i];
 
                 if (delayFrameCountBetweenBatches > 0)
@@ -110,6 +110,8 @@ namespace CCEnvs.Pools
                     await ValueTaskHelper.DelayFrame(delayFrameCountBetweenBatches);
 #endif
                 }
+
+                processedCount += processCount;
             }
 
             handles.DisposeEach(bufferized: false);

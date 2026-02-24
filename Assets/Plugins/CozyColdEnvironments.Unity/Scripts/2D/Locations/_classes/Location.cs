@@ -1,7 +1,7 @@
 using CCEnvs.Unity._2D;
 using CCEnvs.Unity._2D.Locations;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Serialization;
+using CCEnvs.Unity.EditorSerialization;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;

@@ -1,5 +1,4 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Unity.Serialization;
+using CCEnvs.Unity.EditorSerialization;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,6 +13,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         [SerializeField]
         private InputActionReference inputAction = null!;
+
         [SerializeField]
         private SerializedType inputValueType;
 

@@ -45,6 +45,13 @@ namespace CCEnvs.Collections
             hasValue = true;
         }
 
+        public arr(params T[] items)
+        {
+            value = items ?? Array.Empty<T>();
+
+            hasValue = true;
+        }
+
         public static bool operator ==(arr<T> left, arr<T> right)
         {
             return left.Equals(right);

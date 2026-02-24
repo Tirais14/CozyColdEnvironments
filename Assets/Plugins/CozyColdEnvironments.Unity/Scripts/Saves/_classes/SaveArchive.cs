@@ -1,32 +1,45 @@
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
-    public class SaveArchive : IEquatable<SaveArchive>, IEnumerable<KeyValuePair<string, SaveCatalog>>
+    public class SaveArchive : IEquatable<SaveArchive>, IEnumerable<SaveCatalog>
     {
         private readonly ObservableDictionary<string, SaveCatalog> catalogs = new();
 
         private int? hashCode;
 
-        [JsonIgnore]
+        [JsonProperty("catalogs")]
         public IReadOnlyObservableDictionary<string, SaveCatalog> Catalogs => catalogs;
 
         [JsonProperty("path")]
         public string Path { get; }
 
-        [JsonConstructor]
         public SaveArchive(string? path = null)
         {
             Path = path ?? string.Empty;
+        }
+
+        [JsonConstructor]
+        public SaveArchive(string? path, IEnumerable<SaveCatalog>? catalogs)
+            :
+            this(path)
+        {
+            if (catalogs.IsNotNullOrEmpty())
+            {
+                var keyedCatalogs = catalogs.Select(static catalog => KeyValuePair.Create(catalog.Path, catalog));
+                this.catalogs.AddRange(keyedCatalogs);
+            }
         }
 
         public static bool operator ==(SaveArchive? left, SaveArchive? right)
@@ -88,9 +101,9 @@ namespace CCEnvs.Unity.Saves
             return $"({nameof(Path)}: {Path})";
         }
 
-        public IEnumerator<KeyValuePair<string, SaveCatalog>> GetEnumerator()
+        public IEnumerator<SaveCatalog> GetEnumerator()
         {
-            return catalogs.GetEnumerator();
+            return catalogs.To<IDictionary<string, SaveCatalog>>().Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

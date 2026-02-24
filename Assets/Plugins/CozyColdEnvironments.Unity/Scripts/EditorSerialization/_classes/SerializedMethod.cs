@@ -3,7 +3,7 @@ using System.Reflection;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     //[Serializable]
     //public class SerializedMethod<T> : SerializedTypeMember<T>

@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.EditorC
 {
     public static class VisualStudioClearCacheTool
     {
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.IDE_TAB_NAME + "/Visual Studio/Clear Cache")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.IDE_TAB_NAME + "/Visual Studio/Clear Cache")]
         public static void Execute()
         {
             try

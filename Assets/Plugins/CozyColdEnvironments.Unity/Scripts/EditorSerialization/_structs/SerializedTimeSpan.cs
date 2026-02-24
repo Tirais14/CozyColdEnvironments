@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
     public class SerializedTimeSpan

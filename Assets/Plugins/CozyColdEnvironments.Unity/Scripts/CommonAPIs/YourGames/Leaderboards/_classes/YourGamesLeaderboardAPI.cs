@@ -24,9 +24,9 @@ using YG;
 using YG.Utils.LB;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public sealed class YandexLeaderboardAPI : ILeaderboardAPI
+    public sealed class YourGamesLeaderboardAPI : ILeaderboardAPI
     {
         private static readonly TimeSpan leaderboardAPIInvokeInterval = 1.5.Seconds();
 
@@ -43,11 +43,11 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
 
         private readonly IPlayerAPI playerAPI;
 
-        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(YandexLeaderboardAPI));
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(YourGamesLeaderboardAPI));
 
         private ILeaderboard? lboard;
 
-        public YandexLeaderboardAPI(
+        public YourGamesLeaderboardAPI(
             LeaderboardView lboardView, 
             string lboardname,
             IPlayerAPI playerAPI
@@ -111,7 +111,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 .AttachExternalCancellationToken(disposeCancellationTokenSource.Token)
                 .ScheduleBy(commandScheduler);
 
-            static void setLeaderboard(YandexLeaderboardAPI @this)
+            static void setLeaderboard(YourGamesLeaderboardAPI @this)
             {
                 lastLeaderboardAPIInvokeTimestamp = TimeProvider.System.GetTimestamp();
 
@@ -273,7 +273,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
         {
             var profile = new UserProfile(playerData.name, playerData.uniqueID).AddTo(lboardPopulationDisposable);
 
-            YandexPluginHelper.LoadImageAsync(playerData.photo)
+            YourGamesPluginHelper.LoadImageAsync(playerData.photo)
                 .ContinueWith(img => profile.Icon = img)
                 .ForgetByPrintException();
 

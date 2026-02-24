@@ -4,7 +4,7 @@ using System;
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable S3459
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
     public abstract class Serialized<TOut>

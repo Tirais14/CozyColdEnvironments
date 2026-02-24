@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.EditorC
 {
     public static class DebugModeToggle
     {
-        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Enable Debug Mode")]
+        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.DEBUG_TAB + "/Enable")]
         public static void EnableDebugMode()
         {
             var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.EditorC
 
         }
 
-        [MenuItem(EditorHelper.BUILD_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Disable Debug Mode")]
+        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.DEBUG_TAB +  "/Disable")]
         public static void DisableDebugMode()
         {
             var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(

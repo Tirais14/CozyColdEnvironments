@@ -1,5 +1,6 @@
 ﻿using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
+using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
 
@@ -10,15 +11,24 @@ namespace CCEnvs.Unity.Saves
     [TypeSerializationDescriptor("Saves.SaveUnit", "77478f05-ab2b-4cb0-b420-39baf8fd8452")]
     public readonly struct SaveUnit : IEquatable<SaveUnit>
     {
-        public ISnapshot Snapshot { get; }
-
         public string Key { get; }
 
+        public ISnapshot Snapshot { get; }
+
         [JsonConstructor]
-        public SaveUnit(ISnapshot snapshot, string key)
+        public SaveUnit(string key, ISnapshot snapshot)
         {
-            Snapshot = snapshot;
+            Guard.IsNotNull(key, nameof(key));
+            CC.Guard.IsNotNull(snapshot, nameof(snapshot));
+
             Key = key;
+            Snapshot = snapshot;
+        }
+
+        public void Deconstruct(out string key, out ISnapshot snapshot)
+        {
+            key = Key;
+            snapshot = Snapshot;
         }
 
         public static bool operator ==(SaveUnit left, SaveUnit right)

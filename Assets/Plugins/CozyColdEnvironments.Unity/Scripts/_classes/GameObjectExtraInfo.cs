@@ -1,5 +1,5 @@
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
 using Newtonsoft.Json;
 using System;
 using UnityEngine;
@@ -8,51 +8,42 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    public sealed class GameObjectExtraInfo : IGameObjectExtraInfo
+    [TypeSerializationDescriptor("GameObjectExtraInfo", "3a2f26f8-31d8-4f71-831f-af7446d37f30")]
+    public sealed class GameObjectExtraInfo
     {
         [field: SerializeField]
+        [JsonProperty("persistentGUID")]
         public string? PersistenGuid { get; private set; }
 
         [field: SerializeField]
-        public string? RuntimeId { get; private set; }
-
-        [field: SerializeField]
+        [JsonProperty("hierarchyPath")]
         public HierarchyPath HierarchyPath { get; private set; }
 
         public GameObjectExtraInfo(GameObject gameObject)
         {
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
-            PersistenGuid = gameObject.GetPersistentGuid().Raw;
-            RuntimeId = gameObject.GetRuntimeId().Raw;
+            PersistenGuid = gameObject.GetPersistentGuid();
             HierarchyPath = gameObject.GetHierarchyPath();
         }
 
         [JsonConstructor]
-        public GameObjectExtraInfo(string? persistenGuid, string? runtimeId, HierarchyPath hierarchyPath)
+        public GameObjectExtraInfo(string? persistenGuid, HierarchyPath hierarchyPath)
         {
             PersistenGuid = persistenGuid;
-            RuntimeId = runtimeId;
             HierarchyPath = hierarchyPath;
         }
 
         public Maybe<GameObject> FindGameObject(bool includeInactive = false)
         {
-            if (PersistenGuid.IsNotNullOrWhiteSpace()
+            if (PersistenGuid.IsNotNullOrEmpty()
                 &&
                 GameObjectHelper.FindByPersistenGuid(PersistenGuid, includeInactive).TryGetValue(out var go))
             {
                 return go;
             }
 
-            if (RuntimeId.IsNotNullOrWhiteSpace()
-                &&
-                GameObjectHelper.FindByRuntimeId(RuntimeId, includeInactive).TryGetValue(out go))
-            {
-                return go;
-            }
-
-            if (HierarchyPath.IsNotDefault()
+            if (HierarchyPath != default
                 &&
                 GameObjectHelper.FindByHierarchyPath(HierarchyPath, includeInactive).TryGetValue(out go))
             {
@@ -64,7 +55,7 @@ namespace CCEnvs.Unity
 
         public override string ToString()
         {
-            return $"({nameof(PersistenGuid)}: {PersistenGuid}; {nameof(RuntimeId)}: {RuntimeId}; {nameof(HierarchyPath)}: {HierarchyPath})";
+            return $"({nameof(PersistenGuid)}: {PersistenGuid}; {nameof(HierarchyPath)}: {HierarchyPath})";
         }
     }
 

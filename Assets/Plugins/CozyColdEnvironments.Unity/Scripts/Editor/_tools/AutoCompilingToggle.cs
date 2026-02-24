@@ -23,13 +23,13 @@ namespace CCEnvs.Unity.Editor
                 EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
         public static void EnableAutoCompiling()
         {
             EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
         public static void DisableAutoCompiling()
         {
             DisableAutoCompiling(isInternal: false);

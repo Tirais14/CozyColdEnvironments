@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Editor
 {
     public static class ForceReloadDomain
     {
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/" + EditorHelper.COMPILING_TAB_NAME + "/ Relaod Domain &r")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/ Relaod Domain &r")]
         public static void Main()
         {
             if (EditorApplication.isPlaying || EditorApplication.isCompiling)

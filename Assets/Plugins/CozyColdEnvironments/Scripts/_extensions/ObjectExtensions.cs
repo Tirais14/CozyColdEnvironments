@@ -77,9 +77,23 @@ namespace CCEnvs
             return value.Equals(defaultValue);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsDefault<T>(this T source)
+            where T : struct, IEquatable<T>
+        {
+            return source.Equals(default);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNotDefault([NotNullWhen(true)] this object? obj)
         {
             return !obj.IsDefault();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public static bool IsNotDefault<T>(this T source)
+            where T : struct, IEquatable<T>
+        {
+            return !source.IsDefault();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

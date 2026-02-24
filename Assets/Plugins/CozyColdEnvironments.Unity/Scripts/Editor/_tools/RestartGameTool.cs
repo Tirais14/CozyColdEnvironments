@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.EditorC
     {
         public static bool IsRestarted { get; }
 
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.MAIN_TAB_NAME + "/Restart Scene")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Restart Scene")]
         public static void Execute()
         {
             if (!Application.isPlaying)

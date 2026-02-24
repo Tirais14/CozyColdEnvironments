@@ -1,3 +1,4 @@
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using Newtonsoft.Json;
 using System;
@@ -7,9 +8,16 @@ using System.Text.RegularExpressions;
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public readonly struct HierarchyPath : IEquatable<HierarchyPath>
+    [Serializable]
+    [TypeSerializationDescriptor("HierarchyPath", "77427b05-d52c-4cb1-8c64-4bcd8bead81f")]
+    public struct HierarchyPath : IEquatable<HierarchyPath>
     {
+        private int? hashCode;
+
+        [JsonProperty("rawPath")]
         public readonly string RawPath { get; }
+
+        [JsonProperty("position")]
         public readonly int Position { get; }
 
         [JsonIgnore]
@@ -18,6 +26,8 @@ namespace CCEnvs.Unity
         [JsonConstructor]
         public HierarchyPath(string rawPath, int position)
         {
+            hashCode = null;
+
             RawPath = rawPath;
             Position = position;
 
@@ -78,7 +88,7 @@ namespace CCEnvs.Unity
             return new HierarchyPath(combinedPath, Position);
         }
 
-        public bool Equals(HierarchyPath other)
+        public readonly bool Equals(HierarchyPath other)
         {
             return RawPath == other.RawPath
                    &&
@@ -87,17 +97,19 @@ namespace CCEnvs.Unity
                    Path == other.Path;
         }
 
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is HierarchyPath path && Equals(path);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(RawPath, Position, Path);
+            hashCode ??= HashCode.Combine(RawPath, Position, Path);
+
+            return hashCode.Value;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             if (this.IsDefault())
                 return StringHelper.EMPTY_OBJECT;

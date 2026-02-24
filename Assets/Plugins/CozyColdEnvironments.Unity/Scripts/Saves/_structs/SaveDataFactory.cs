@@ -7,30 +7,30 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public static class SaveDataFactory
-    {
-        public static SaveData Create(
-            IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> pairs
-            )
-        {
-            CC.Guard.IsNotNull(pairs, nameof(pairs));
+    //public static class SaveDataFactory
+    //{
+    //    public static SaveData Create(
+    //        IEnumerable<(object obj, string key, Func<object, ISnapshot> converter)> pairs
+    //        )
+    //    {
+    //        CC.Guard.IsNotNull(pairs, nameof(pairs));
 
-            var saveUnits = new Dictionary<string, SaveUnit>();
+    //        var saveUnits = new Dictionary<string, SaveUnit>();
 
-            SaveUnit saveUnit;
+    //        SaveUnit saveUnit;
 
-            ISnapshot snapshot;
+    //        ISnapshot snapshot;
 
-            foreach (var (obj, key, converter) in pairs)
-            {
-                snapshot = converter(obj);
+    //        foreach (var (obj, key, converter) in pairs)
+    //        {
+    //            snapshot = converter(obj);
 
-                saveUnit = new SaveUnit(snapshot, key);
+    //            saveUnit = new SaveUnit(key, snapshot);
 
-                saveUnits.Add(saveUnit.Key, saveUnit);
-            }
+    //            saveUnits.Add(saveUnit.Key, saveUnit);
+    //        }
 
-            return new SaveData(saveUnits);
-        }
-    }
+    //        return new SaveData(saveUnits);
+    //    }
+    //}
 }

@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     public abstract class SerializedTypeMember<T> : Serialized<T>
         where T : MemberInfo

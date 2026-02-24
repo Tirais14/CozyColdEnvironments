@@ -31,7 +31,7 @@ namespace CCEnvs
             {
                 using var utilizables = source.Cast<IUtilizable>().EnumerableToArrayPooled();
 
-                foreach (var item in utilizables.GetSpan())
+                foreach (var item in utilizables.AsSpan())
                 {
                     try
                     {

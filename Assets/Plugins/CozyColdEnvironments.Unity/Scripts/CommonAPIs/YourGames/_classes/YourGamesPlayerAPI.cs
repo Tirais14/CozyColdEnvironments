@@ -1,4 +1,4 @@
-#if PLUGIN_YG_2 && PLATFORM_WEBGL
+#if YOUR_GAMES_PLUGIN_ENABLED && PLUGIN_YG_2 && PLATFORM_WEBGL
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using CCEnvs.Unity.Async;
@@ -8,12 +8,12 @@ using R3;
 using YG;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs.Yandex
+namespace CCEnvs.Unity.CommonAPIs.YourGames
 {
-    public sealed class YandexPlayerAPI : IPlayerAPI
+    public sealed class YourGamesPlayerAPI : IPlayerAPI
     {
         [field: OnInstallResetable]
-        public static YandexPlayerAPI? Instance { get; private set; }
+        public static YourGamesPlayerAPI? Instance { get; private set; }
 
         private readonly IUserProfile unauthorizedProfile = new UserProfile(YG2.player.name, YG2.player.id)
         {
@@ -48,10 +48,10 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
             }
         }
 
-        public YandexPlayerAPI()
+        public YourGamesPlayerAPI()
         {
             if (Instance is not null)
-                throw CC.ThrowHelper.CannotCreateInstance(nameof(YandexAPI));
+                throw CC.ThrowHelper.CannotCreateInstance(nameof(YourGamesAPI));
 
             Instance = this;
 
@@ -107,7 +107,7 @@ namespace CCEnvs.Unity.CommonAPIs.Yandex
                 {
                     authorizedProfile = new UserProfile(YG2.player.name, YG2.player.id);
 
-                    YandexPluginHelper.LoadImageAsync(YG2.player.photo).
+                    YourGamesPluginHelper.LoadImageAsync(YG2.player.photo).
                         ContinueWith((img) =>
                         {
                             authorizedProfile.Icon = img;

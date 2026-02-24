@@ -19,7 +19,7 @@ namespace CCEnvs
             {
                 using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
 
-                foreach (var item in disposablesPooled.GetSpan())
+                foreach (var item in disposablesPooled.AsSpan())
                 {
                     try
                     {

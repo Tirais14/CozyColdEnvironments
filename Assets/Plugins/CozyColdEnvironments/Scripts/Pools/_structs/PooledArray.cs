@@ -11,6 +11,8 @@ namespace CCEnvs.Pools
 {
     public struct PooledArray<T> : IList<T>, IReadOnlyList<T>, IDisposable, IEquatable<PooledArray<T>>
     {
+        public static PooledArray<T> Empty = new(0);
+
         private readonly IDisposable handle;
 
         private readonly T[] array;
@@ -72,6 +74,15 @@ namespace CCEnvs.Pools
         {
             disposed = false;
 
+            if (count <= 0)
+            {
+                array = new arr<T>();
+                handle = Disposable.Empty;
+                value = ArraySegment<T>.Empty;
+
+                return;
+            }
+
             array = ArrayPool<T>.Shared.Rent(count);
 
             handle = Disposable.Create(array,
@@ -81,6 +92,201 @@ namespace CCEnvs.Pools
                 });
 
             value = array.GetArraySegment(count);
+        }
+
+        public static PooledArray<T> FromRange(T item)
+        {
+            var array = new PooledArray<T>(1);
+
+            array[0] = item;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(T item, T item1)
+        {
+            var array = new PooledArray<T>(2);
+
+            array[0] = item;
+            array[1] = item1;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2
+            )
+        {
+            var array = new PooledArray<T>(3);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3
+            )
+        {
+            var array = new PooledArray<T>();
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3,
+            T item4
+            )
+        {
+            var array = new PooledArray<T>(5);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+            array[4] = item4;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3,
+            T item4,
+            T item5
+            )
+        {
+            var array = new PooledArray<T>(6);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+            array[4] = item4;
+            array[5] = item5;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3,
+            T item4,
+            T item5,
+            T item6
+            )
+        {
+            var array = new PooledArray<T>(7);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+            array[4] = item4;
+            array[5] = item5;
+            array[6] = item6;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3,
+            T item4,
+            T item5,
+            T item6,
+            T item7
+            )
+        {
+            var array = new PooledArray<T>(8);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+            array[4] = item4;
+            array[5] = item5;
+            array[6] = item6;
+            array[7] = item7;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3,
+            T item4,
+            T item5,
+            T item6,
+            T item7,
+            T item8
+            )
+        {
+            var array = new PooledArray<T>(9);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+            array[4] = item4;
+            array[5] = item5;
+            array[6] = item6;
+            array[7] = item7;
+            array[8] = item8;
+
+            return array;
+        }
+
+        public static PooledArray<T> FromRange(
+            T item,
+            T item1,
+            T item2,
+            T item3,
+            T item4,
+            T item5,
+            T item6,
+            T item7,
+            T item8,
+            T item9
+            )
+        {
+            var array = new PooledArray<T>(10);
+
+            array[0] = item;
+            array[1] = item1;
+            array[2] = item2;
+            array[3] = item3;
+            array[4] = item4;
+            array[5] = item5;
+            array[6] = item6;
+            array[7] = item7;
+            array[8] = item8;
+            array[9] = item9;
+
+            return array;
         }
 
         public static bool operator ==(PooledArray<T> left, PooledArray<T> right)
@@ -120,15 +326,15 @@ namespace CCEnvs.Pools
 
         public readonly void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            array.CopyTo(array, arrayIndex);
         }
 
-        public readonly Span<T> GetSpan(int start = 0, int? length = null)
+        public readonly Span<T> AsSpan(int start = 0, int? length = null)
         {
             return new Span<T>(array, start, length ?? value.Count);
         }
 
-        public readonly Memory<T> GetMemory(int start = 0, int? length = null)
+        public readonly Memory<T> AsMemory(int start = 0, int? length = null)
         {
             return new Memory<T>(array, start, length ?? value.Count);
         }

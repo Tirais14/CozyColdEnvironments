@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.Unity.EditorSerialization
 {
     public static class SerializedTuple
     {

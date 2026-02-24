@@ -156,26 +156,26 @@ namespace CCEnvs.Unity
 
             Component[] components = gameObject.GetComponents<Component>();
 
-            Dictionary<Type, Type[]> allDeps = GetAllDependencies();
-            IEnumerable<Component> toStack = GetComponentsWithoutDependencies();
+            Dictionary<Type, Type[]> allDeps = getAllDependencies();
+            IEnumerable<Component> toStack = getComponentsWithoutDependencies();
 
             var results = new Stack<Component>(components.Length);
             var addedComponentTypes = new HashSet<Type>(components.Length);
 
-            AddToResults();
+            addToResults();
 
             var loopFuse = LoopFuse.Create();
 
             while (loopFuse.MoveNext() && results.Count < components.Length)
             {
-                toStack = GetComponentsByDependencies();
-                AddToResults();
+                toStack = getComponentsByDependencies();
+                addToResults();
             }
 
             return results;
 
             //Defines
-            Dictionary<Type, Type[]> GetAllDependencies()
+            Dictionary<Type, Type[]> getAllDependencies()
             {
                 return (from x in components
                         group x by x.GetType() into groups //same as distinct, but for components
@@ -185,7 +185,7 @@ namespace CCEnvs.Unity
                         .ToDictionary(x => x, x => ComponentHelper.CollectHardDependencyTypes(x));
             }
 
-            IEnumerable<Component> GetComponentsByDependencies()
+            IEnumerable<Component> getComponentsByDependencies()
             {
                 return from x in components.Where(x => !results.Contains(x))
                        let deps = allDeps[x.GetType()]
@@ -193,7 +193,7 @@ namespace CCEnvs.Unity
                        select x;
             }
 
-            IEnumerable<Component> GetComponentsWithoutDependencies()
+            IEnumerable<Component> getComponentsWithoutDependencies()
             {
                 return from x in components
                        let t = x.GetType()
@@ -201,7 +201,7 @@ namespace CCEnvs.Unity
                        select x;
             }
 
-            void AddToResults()
+            void addToResults()
             {
                 foreach (Component item in toStack)
                 {
@@ -211,7 +211,7 @@ namespace CCEnvs.Unity
             }
         }
 
-        public static Maybe<string> GetPersistentGuid(this GameObject source)
+        public static string? GetPersistentGuid(this GameObject source)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -219,7 +219,8 @@ namespace CCEnvs.Unity
                 .Component<PersistentGuid>()
                 .Lax()
                 .Map(x => x.Guid)
-                .Where(x => x.IsNotNullOrWhiteSpace());
+                .Where(x => x.IsNotNullOrWhiteSpace())
+                .GetValue();
         }
 
         public static Maybe<GameObject> FindByPersistenGuid(string guid, bool includeInactive = false)
@@ -238,52 +239,10 @@ namespace CCEnvs.Unity
             return Maybe<GameObject>.None;
         }
 
-        public static Maybe<string> GetRuntimeId(this GameObject source)
-        {
-            CC.Guard.IsNotNullSource(source);
-
-            return source.Q()
-                .Component<RuntimeId>()
-                .Lax()
-                .Map(x => x.Id)
-                .Where(x => x.IsNotNullOrWhiteSpace());
-        }
-
-        public static Maybe<GameObject> FindByRuntimeId(string id, bool includeInactive = false)
-        {
-            Guard.IsNotNullOrWhiteSpace(id);
-
-            foreach (var cmp in GameObjectQuery.Scene.IncludeInactive(includeInactive).Components<RuntimeId>())
-            {
-                if (cmp.Id.EqualsOrdinal(id, ignoreCase: false))
-                    return cmp.gameObject;
-            }
-
-            return Maybe<GameObject>.None;
-        }
-
         public static HierarchyPath GetHierarchyPath(this GameObject source)
         {
             CC.Guard.IsNotNullSource(source);
             return source.transform.GetHierarchyPath();
-        }
-
-        public static RuntimeId AddRuntimeIdComponent(this GameObject source, string id)
-        {
-            CC.Guard.IsNotNullSource(source);
-
-            if (source.TryGetComponent<RuntimeId>(out var idCmp))
-                throw new InvalidOperationException($"{nameof(RuntimeId).Humanize()} already exists.");
-
-            idCmp = source.AddComponent<RuntimeId>();
-
-            idCmp.Reflect()
-                 .Cache()
-                 .WithName(nameof(RuntimeId.Id))
-                 .WithArguments(id)
-                 .SetPropertyValue();
-
-            return idCmp;
         }
 
         /// <summary>
