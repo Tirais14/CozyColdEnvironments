@@ -1,5 +1,4 @@
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
@@ -7,28 +6,32 @@ using ObservableCollections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
 
 #nullable enable
+#pragma warning disable IDE0044
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
-    public class SaveCatalog : IEquatable<SaveCatalog>, IEnumerable<SaveGroup>
+    public class SaveCatalog 
+        : 
+        IEquatable<SaveCatalog>,
+        IEnumerable<SaveGroup>
     {
-        private readonly ObservableDictionary<string, SaveGroup> groups = new();
+        [JsonProperty("groups")]
+        private ObservableDictionary<string, SaveGroup> groups = new();
 
         private int? hashCode;
 
-        [JsonProperty("groups")]
+        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveGroup> Groups => groups;
 
         [JsonProperty("path")]
-        public string Path { get; }
+        public string Path { get; init; }
 
         [JsonProperty("archive")]
-        public SaveArchive Archive { get; }
+        public SaveArchive Archive { get; init; }
 
         public SaveCatalog(
             SaveArchive archive,
@@ -39,22 +42,6 @@ namespace CCEnvs.Unity.Saves
 
             Path = path ?? string.Empty;
             Archive = archive;
-        }
-
-        [JsonConstructor]
-        public SaveCatalog(
-            SaveArchive archive,
-            string? path,
-            IEnumerable<SaveGroup>? groups
-            )
-            :
-            this(archive, path)
-        {
-            if (groups.IsNotNullOrEmpty())
-            {
-                var keyedGroups = groups.Select(static group => KeyValuePair.Create(group.Name, group));
-                this.groups.AddRange(keyedGroups);
-            }
         }
 
         public static bool operator ==(SaveCatalog? left, SaveCatalog? right)
@@ -96,11 +83,11 @@ namespace CCEnvs.Unity.Saves
             return group;
         }
 
-        public bool ContainsSaveGroup(string groupName)
+        public SaveCatalog Clear()
         {
-            Guard.IsNotNull(groupName, nameof(groupName));
+            groups.Clear();
 
-            return groups.ContainsKey(groupName);
+            return this;
         }
 
         public string GetFullPath()

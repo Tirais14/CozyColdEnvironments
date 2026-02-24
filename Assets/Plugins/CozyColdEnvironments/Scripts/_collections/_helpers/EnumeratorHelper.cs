@@ -18,7 +18,7 @@ namespace CCEnvs.Collections
             return new EnumeratorEnumerable<T>(value);
         }
 
-#if Z_LINQ
+#if ZLINQ_PLUGIN
         public static IEnumerable<T> AsEnumerable<TEnumerator, T>(
             this ValueEnumerable<TEnumerator, T> source)
             where TEnumerator : struct, IValueEnumerator<T>

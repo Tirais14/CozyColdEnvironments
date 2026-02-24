@@ -1,4 +1,4 @@
-#if Z_LINQ
+#if ZLINQ_PLUGIN
 using CCEnvs.Diagnostics.Benchmarks;
 using System.Collections.Generic;
 using ZLinq;    
@@ -23,4 +23,4 @@ namespace CCEnvs.Unity.Diagnostics.EditorC.Benchmarks
         }
     }
 }
-#endif //Z_LINQ
+#endif //ZLINQ_PLUGIN

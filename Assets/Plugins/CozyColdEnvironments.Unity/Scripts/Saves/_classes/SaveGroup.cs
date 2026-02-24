@@ -16,7 +16,10 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
-    public sealed class SaveGroup : IEquatable<SaveGroup?>, IEnumerable<KeyValuePair<string, object>>
+    public sealed class SaveGroup
+        :
+        IEquatable<SaveGroup?>,
+        IEnumerable<KeyValuePair<string, object>>
     {
         private readonly ObservableDictionary<string, object> observableObjects = new();
 
@@ -29,13 +32,13 @@ namespace CCEnvs.Unity.Saves
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
         [JsonProperty("name")]
-        public string Name { get; }
+        public string Name { get; init; }
 
         [JsonProperty("catalog")]
-        public SaveCatalog Catalog { get; }
+        public SaveCatalog Catalog { get; init; }
 
         [JsonIgnore]
-        private SaveData saveData {
+        public SaveData SaveData {
             get
             {
                 _saveData ??= new SaveData(this);
@@ -44,7 +47,6 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        [JsonConstructor]
         public SaveGroup(
             SaveCatalog catalog,
             string? name = null
@@ -65,8 +67,10 @@ namespace CCEnvs.Unity.Saves
                 return false;
 
             return left.Name == right.Name
-                    &&
-                    left.Catalog == right.Catalog;
+                   &&
+                   left.Catalog == right.Catalog
+                   &&
+                   left._saveData == right._saveData;
         }
 
         public static bool operator !=(SaveGroup? left, SaveGroup? right)
@@ -134,7 +138,6 @@ namespace CCEnvs.Unity.Saves
             return key is not null;
         }
 
-
         public ISnapshot GetObjectSnapshot(string? key)
         {
             key ??= string.Empty;
@@ -178,12 +181,7 @@ namespace CCEnvs.Unity.Saves
         {
             using var saveUnits = CreateSaveUnitsPooled();
 
-            using var keyedSaveUnitPairs = ListPool<(string Key, SaveUnit Value)>.Shared.Get();
-
-            foreach (var saveUnit in saveUnits)
-                keyedSaveUnitPairs.Value.Add((saveUnit.Key, saveUnit));
-
-            saveData.Override(keyedSaveUnitPairs.Value);
+            SaveData.Override(saveUnits);
 
             return this;
         }
@@ -203,12 +201,11 @@ namespace CCEnvs.Unity.Saves
             return sb.Value.ToString();
         }
 
-        public PooledArray<SaveUnit> ReadSaveDataPooled()
+        public SaveGroup Clear()
         {
-            if (_saveData is null)
-                return PooledArray<SaveUnit>.Empty;
+            observableObjects.Clear();
 
-            return saveData.SaveUnits.Values.ToArrayPooled();
+            return this;
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -220,7 +217,7 @@ namespace CCEnvs.Unity.Saves
 
         public override string ToString()
         {
-            return $"({nameof(Name)}: {Name})";
+            return $"({nameof(Name)}: {Name}; {nameof(Catalog)}: {Catalog})";
         }
 
         public bool Equals(SaveGroup? other)
@@ -235,7 +232,7 @@ namespace CCEnvs.Unity.Saves
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Name, Catalog);
+            hashCode ??= HashCode.Combine(Name, Catalog, _saveData);
 
             return hashCode.Value;
         }

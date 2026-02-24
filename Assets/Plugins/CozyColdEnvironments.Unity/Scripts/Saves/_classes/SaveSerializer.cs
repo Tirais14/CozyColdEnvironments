@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Saves
 {
     public static class SaveSerializer
     {
-        public static SaveData[] Deserialize(string serialized)
+        public static SaveData[] TryDeserialize(string serialized)
         {
             if (serialized.IsNullOrWhiteSpace())
             {
@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        public static string Serialize(SaveData[] saveDatas)
+        public static string TrySerialize(SaveData[] saveDatas)
         {
             if (saveDatas.IsNull())
             {

@@ -7,6 +7,7 @@ using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.ObjectModel;
 using System.Threading;
 using TMPro;
 using UnityEngine;

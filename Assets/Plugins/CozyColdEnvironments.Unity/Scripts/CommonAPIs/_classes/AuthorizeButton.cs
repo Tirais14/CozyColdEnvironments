@@ -1,4 +1,3 @@
-#if PLUGIN_YG_2 && Authorization_yg
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using CCEnvs.Unity.Components;
@@ -83,5 +82,3 @@ namespace CCEnvs.Unity.CommonAPIs
         }
     }
 }
-
-#endif //LUGIN_YG_2 && Authorization_yg

@@ -1,4 +1,6 @@
 ﻿using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -10,7 +12,9 @@ namespace CCEnvs.Unity.Saves
 {
     public sealed class SaveLoaderLazyObjectRestorer : IDisposable, IFrameRunnerWorkItem
     {
-        private readonly C5.IntervalHeap<MonoBehaviourInfo> monoBehs = new();
+        private readonly Queue<MonoBehaviourInfo> monoBehs = new();
+
+        private readonly HashSet<MonoBehaviour> enquedMonoBehs = new();
 
         private readonly SaveObjectRestorer saveLoader;
 
@@ -45,7 +49,7 @@ namespace CCEnvs.Unity.Saves
             (frameProvider ?? UnityFrameProvider.PostLateUpdate).Register(this);
         }
 
-        public void Enqueue(
+        public void TryEnqueue(
             MonoBehaviour monoBeh,
             string key,
             SaveGroup saveGroup,
@@ -59,6 +63,14 @@ namespace CCEnvs.Unity.Saves
             Guard.IsNotNull(key, nameof(key));
             Guard.IsNotNull(saveGroup, nameof(saveGroup));
 
+            if (enquedMonoBehs.Contains(monoBeh))
+            {
+                if (CCDebug.Instance.IsEnabled)
+                    this.PrintLog($"Mono Behaviour is already enqueued");
+
+                return;
+            }
+
             var monoBehInfo = new MonoBehaviourInfo(
                 monoBeh, 
                 key,
@@ -67,7 +79,8 @@ namespace CCEnvs.Unity.Saves
                 callback
                 );
 
-            monoBehs.Add(monoBehInfo);
+            monoBehs.Enqueue(monoBehInfo);
+            enquedMonoBehs.Add(monoBeh);
         }
 
         private bool disposed;
@@ -76,8 +89,8 @@ namespace CCEnvs.Unity.Saves
             if (disposed)
                 return;
 
-            while (monoBehs.Count > 0)
-                monoBehs.DeleteMin();
+            monoBehs.Clear();
+            monoBehs.TrimExcess();
 
             disposed = true;
         }
@@ -93,17 +106,28 @@ namespace CCEnvs.Unity.Saves
             if (monoBehs.IsEmpty())
                 return;
 
-            MonoBehaviourInfo monoBeh;
-
             var toProcessCount = Mathf.Clamp(monoBehs.Count, 0, BatchSize);
 
             bool isMonoBehRestored;
 
-            for (int i = 0; i < toProcessCount; i++)
-            {
-                monoBeh = monoBehs.DeleteMin();
+            int processedCount = 0;
 
-                if (monoBeh.IsNull())
+            using var notReadyMonoBehs = ListPool<MonoBehaviourInfo>.Shared.Get();
+
+#if CC_DEBUG_ENABLED
+            var loopFuse = LoopFuse.Create();
+#endif
+
+            while (processedCount++ < toProcessCount
+                   &&
+                   monoBehs.TryDequeue(out var monoBeh)
+#if CC_DEBUG_ENABLED
+                   &&
+                   loopFuse.MoveNext()
+#endif
+                   )
+            {
+                if (monoBeh.Value.IsNull())
                 {
                     toProcessCount = Mathf.Clamp(toProcessCount + 1, 0, monoBehs.Count);
                     continue;
@@ -111,18 +135,24 @@ namespace CCEnvs.Unity.Saves
 
                 if (!monoBeh.Value.didStart)
                 {
-                    monoBehs.Add(monoBeh);
-                    return;
+                    notReadyMonoBehs.Value.Add(monoBeh);
+                    continue;
                 }
 
-                isMonoBehRestored =  saveLoader.TryRestoreObjectCore(
+                isMonoBehRestored = saveLoader.TryRestoreObjectCore(
                     monoBeh.Value,
                     monoBeh.Key,
                     monoBeh.SaveGroup
                     );
 
                 monoBeh.TryInvokeCallback(isMonoBehRestored);
+                enquedMonoBehs.Remove(monoBeh.Value);
             }
+
+            int notReadyCount = notReadyMonoBehs.Value.Count;
+
+            for (int i = 0; i < notReadyCount; i++)
+                monoBehs.Enqueue(notReadyMonoBehs.Value[i]);
         }
 
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)
@@ -214,14 +244,20 @@ namespace CCEnvs.Unity.Saves
 
             public bool Equals(MonoBehaviourInfo other)
             {
-                return Key == other.Key &&
-                       EqualityComparer<MonoBehaviour>.Default.Equals(Value, other.Value) &&
-                       EqualityComparer<SaveGroup>.Default.Equals(SaveGroup, other.SaveGroup);
+                return Key == other.Key
+                       &&
+                       EqualityComparer<MonoBehaviour>.Default.Equals(Value, other.Value)
+                       &&
+                       EqualityComparer<SaveGroup>.Default.Equals(SaveGroup, other.SaveGroup)
+                       &&
+                       EqualityComparer<object?>.Default.Equals(CallbackState, other.CallbackState)
+                       &&
+                       EqualityComparer<object?>.Default.Equals(Callback, other.Callback);
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Key, Value, SaveGroup);
+                return HashCode.Combine(Key, Value, SaveGroup, CallbackState, Callback);
             }
 
             public int CompareTo(MonoBehaviourInfo other)

@@ -1,45 +1,33 @@
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 #nullable enable
+#pragma warning disable IDE0044
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
     public class SaveArchive : IEquatable<SaveArchive>, IEnumerable<SaveCatalog>
     {
-        private readonly ObservableDictionary<string, SaveCatalog> catalogs = new();
+        [JsonProperty("catalogs")]
+        private ObservableDictionary<string, SaveCatalog> catalogs = new();
 
         private int? hashCode;
 
-        [JsonProperty("catalogs")]
+        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveCatalog> Catalogs => catalogs;
 
         [JsonProperty("path")]
-        public string Path { get; }
+        public string Path { get; init; }
 
         public SaveArchive(string? path = null)
         {
             Path = path ?? string.Empty;
-        }
-
-        [JsonConstructor]
-        public SaveArchive(string? path, IEnumerable<SaveCatalog>? catalogs)
-            :
-            this(path)
-        {
-            if (catalogs.IsNotNullOrEmpty())
-            {
-                var keyedCatalogs = catalogs.Select(static catalog => KeyValuePair.Create(catalog.Path, catalog));
-                this.catalogs.AddRange(keyedCatalogs);
-            }
         }
 
         public static bool operator ==(SaveArchive? left, SaveArchive? right)
@@ -77,6 +65,13 @@ namespace CCEnvs.Unity.Saves
             }
 
             return catalog;
+        }
+
+        public SaveArchive Clear()
+        {
+            catalogs.Clear();
+
+            return this;
         }
 
         public bool Equals(SaveArchive other)

@@ -1,10 +1,12 @@
 using CCEnvs.Collections;
 using CCEnvs.Threading;
+using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UnityEngine;
 
@@ -75,7 +77,7 @@ namespace CCEnvs.Unity.Saves
             {
                 case MonoBehaviour monoBeh:
                     {
-                        lazyObjectRestorer.Enqueue(
+                        lazyObjectRestorer.TryEnqueue(
                             monoBeh,
                             key,
                             group,
@@ -101,20 +103,67 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        public void OverrideSaveDatas(IEnumerable<(SaveGroup Group, SaveData Value)> saveDatas)
+        public bool TryAddSaveData(SaveData saveData)
+        {
+            Guard.IsNotNull(saveData, nameof(saveData));
+
+            return groupSaveDatas.TryAdd(saveData.Group, saveData);
+        }
+
+        public bool RemoveSaveData(SaveGroup group, [NotNullWhen(true)] out SaveData? saveData)
+        {
+            Guard.IsNotNull(group, nameof(group));
+
+            return groupSaveDatas.Remove(group, out saveData);
+        }
+
+        public bool RemoveSaveData(SaveGroup group)
+        {
+            Guard.IsNotNull(group, nameof(group));
+
+            return groupSaveDatas.Remove(group);
+        }
+
+        public SaveObjectRestorer ClearSaveDatas()
+        {
+            groupSaveDatas.Clear();
+
+            return this;
+        }
+
+        public SaveObjectRestorer MergeSaveDatas(IEnumerable<SaveData> saveDatas)
         {
             ThrowIfDisposed();
 
             CC.Guard.IsNotNull(saveDatas, nameof(saveDatas));
 
             if (saveDatas.IsEmpty())
-                return;
+                return this;
 
-            foreach (var (group, saveData) in saveDatas)
+            foreach (var saveData in saveDatas)
             {
-                if (!groupSaveDatas.TryAdd(group, saveData))
-                    groupSaveDatas[group] = saveData;    
+                if (groupSaveDatas.TryAdd(saveData.Group, saveData))
+                    groupSaveDatas[saveData.Group] = saveData;
             }
+
+            return this;
+        }
+
+        public SaveObjectRestorer OverrideSaveDatas(IEnumerable<SaveData> saveDatas)
+        {
+            ThrowIfDisposed();
+
+            CC.Guard.IsNotNull(saveDatas, nameof(saveDatas));
+
+            groupSaveDatas.Clear();
+
+            if (saveDatas.IsEmpty())
+                return this;
+
+            foreach (var saveData in saveDatas)
+                groupSaveDatas.Add(saveData.Group, saveData);
+
+            return this;
         }
 
         private bool disposed;
@@ -138,6 +187,9 @@ namespace CCEnvs.Unity.Saves
             groupDisposables.Values.DisposeEach();
             groupDisposables.Clear();
             groupDisposables.TrimExcess();
+
+            groupSaveDatas.Clear();
+            groupSaveDatas.TrimExcess();
 
             lazyObjectRestorer.Dispose();
 
@@ -250,6 +302,7 @@ namespace CCEnvs.Unity.Saves
         private void OnCatalogGroupAdd(DictionaryAddEvent<string, SaveGroup> groupEv)
         {
             BindGroupObjectAdd(groupEv.Value);
+            groupSaveDatas.TryAdd(groupEv.Value, groupEv.Value.SaveData);
         }
 
         private void BindCatalogGroupAdd(SaveCatalog catalog)

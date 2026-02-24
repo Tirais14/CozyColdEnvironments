@@ -1,3 +1,7 @@
+using CCEnvs.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 using Emulator = CCEnvs.Unity.Components.Specialized.PlatformDependentBehaviourEmulator;
@@ -13,10 +17,13 @@ namespace CCEnvs.Unity.Components.Specialized
         public bool destroyGameObjectOnExcluded = true;
         public bool excludePlatforms;
 
+        [Tooltip("Valid if all platforms completes predicate")]
+        public bool andInsteadOr;
+
         [Header("Platforms")]
         [Space(8f)]
 
-        public bool webGL = true;
+        public bool webGL;
         public bool mobile;
         public bool console;
 
@@ -44,22 +51,31 @@ namespace CCEnvs.Unity.Components.Specialized
             if (!Emulator.IsEnabled && Application.isEditor)
                 return true;
 
-            if (PlatformPredicate(UCC.Platform.IsWebGL) && webGL)
-                return false;
-            else if (PlatformPredicate(UCC.Platform.IsMobile) && mobile)
-                return false;
-            else if (PlatformPredicate(UCC.Platform.IsConsole) && console)
-                return false;
+            if (andInsteadOr)
+            {
+                return (!webGL || PlatformPredicate(UCC.Platform.IsWebGL))
+                        &&
+                        (!mobile || PlatformPredicate(UCC.Platform.IsMobile))
+                        &&
+                        (!console || PlatformPredicate(UCC.Platform.IsConsole));
+            }
 
-            return true;
+            if (webGL && PlatformPredicate(UCC.Platform.IsWebGL))
+                return true;
+            else if (mobile && PlatformPredicate(UCC.Platform.IsMobile))
+                return true;
+            else if (console && PlatformPredicate(UCC.Platform.IsConsole))
+                return true;
+
+            return false;
         }
 
         private bool PlatformPredicate(bool platformState)
         {
             if (excludePlatforms)
-                return platformState;
+                return !platformState;
 
-            return !platformState;
+            return platformState;
         }
     }
 }
