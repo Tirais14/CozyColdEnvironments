@@ -1,7 +1,9 @@
 #nullable enable
 
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace CCEnvs.Patterns.Commands
@@ -30,6 +32,8 @@ namespace CCEnvs.Patterns.Commands
 
         CommandSignature Signature { get; }
 
+        Identifier ID { get; }
+
         void Undo();
 
         void Cancel();
@@ -42,6 +46,8 @@ namespace CCEnvs.Patterns.Commands
         IDisposable GetCancellationHandle();
 
         Observable<CommandStatus> ObserveIsDone();
+
+        Observable<CommandStatus> ObserveStatus();
     }
 
     public interface ICommandBase<TThis> : ICommandBase

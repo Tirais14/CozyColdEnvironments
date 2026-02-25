@@ -51,6 +51,8 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandSignature Signature => new(GetType(), Name);
 
+        public Identifier ID { get; set; }
+
         protected CommandBase(bool isResetable = true)
         {
             Name = name ?? GetType().ToString();
@@ -63,7 +65,7 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual void Undo()
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             try
             {
@@ -82,7 +84,7 @@ namespace CCEnvs.Patterns.Commands
 
         public bool TryReset()
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             if (!IsResetable)
                 return false;
@@ -118,7 +120,7 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CommandSignature GetCommandSignature()
         {
-            return new CommandSignature(GetType(), Name);
+            return new CommandSignature(GetType(), Name, ID);
         }
 
         public override string ToString()
@@ -128,7 +130,7 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual void Cancel()
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             if (isCancellation)
                 return;
@@ -166,17 +168,19 @@ namespace CCEnvs.Patterns.Commands
                 });
         }
 
+
         public TThis AttachExternalCancellationToken(CancellationToken cancellationToken)
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
-            Guard.IsTrue(cancellationToken.CanBeCanceled, nameof(cancellationToken), "Invalid Token");
+            var linkedTokenSource = CancellationToken.TryLinkTokens(cancellationToken, out cancellationToken);
 
-            var linkedTokenSource = cancellationToken.LinkTokens(CancellationToken);
+            if (linkedTokenSource is null)
+                return this.To<TThis>();
 
             cancellationTokenSources.Add(linkedTokenSource);
 
-            CancellationToken = linkedTokenSource.Token;
+            CancellationToken = cancellationToken;
 
             RegisterCancellationTokenToCancel(CancellationToken);
 
@@ -185,7 +189,7 @@ namespace CCEnvs.Patterns.Commands
 
         public Observable<CommandStatus> ObserveIsDone()
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             return status.Where(
                 static status =>
@@ -196,6 +200,11 @@ namespace CCEnvs.Patterns.Commands
                            ||
                            status == CommandStatus.Faulted;
                 });
+        }
+
+        public Observable<CommandStatus> ObserveStatus()
+        {
+            return status;
         }
 
         private bool disposed;
@@ -310,7 +319,7 @@ namespace CCEnvs.Patterns.Commands
             DisposeCancellationTokenSources();
         }
 
-        protected void ValidateDisposed()
+        protected void ThrowIfDisposed()
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().ToString());

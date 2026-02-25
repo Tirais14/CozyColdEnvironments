@@ -2,7 +2,9 @@ using CCEnvs.Collections.Unsafe;
 using CCEnvs.FuncLanguage;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using UnityEditor.Toolbars;
 
 #nullable enable
 
@@ -62,6 +64,61 @@ namespace CCEnvs.Collections
                 return Maybe<T>.None;
 
             return source[index];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryRemoveAt<T>(
+            this IList<T> source,
+            int index,
+            [NotNullWhen(true)] out T? removed
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (index >= source.Count
+                ||
+                source.IsReadOnly)
+            {
+                removed = default;
+                return false;
+            }
+
+            removed = source[index]!;
+            source.RemoveAt(index);
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool RemoveLast<T>(this IList<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.IsReadOnly || source.IsEmpty())
+                return false;
+
+            source.RemoveAt(source.Count - 1);
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool RemoveLast<T>(
+            this IList<T> source,
+            [NotNullWhen(true)] out T? removed
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.IsReadOnly || source.IsEmpty())
+            {
+                removed = default;
+                return false;
+            }
+
+            removed = source[^1]!;
+            source.RemoveAt(source.Count - 1);
+
+            return true;
         }
     }
 }

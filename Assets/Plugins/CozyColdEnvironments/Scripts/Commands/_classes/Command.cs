@@ -17,7 +17,7 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual void Execute()
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             Guard.IsFalse(IsRunning, nameof(IsRunning), "Is already running");
             Guard.IsFalse(IsDone, nameof(IsDone), "Already done");

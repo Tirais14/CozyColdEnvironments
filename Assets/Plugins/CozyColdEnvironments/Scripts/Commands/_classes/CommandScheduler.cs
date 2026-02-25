@@ -1,6 +1,7 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Pools;
 using Humanizer;
 using R3;
 using System;
@@ -17,9 +18,9 @@ namespace CCEnvs.Patterns.Commands
         IDisposable, 
         IFrameRunnerWorkItem
     {
-        private readonly Queue<ICommandBase> commands = new();
+        private readonly List<ICommandBase> commands = new();
 
-        private readonly Dictionary<CommandSignature, HashSet<ICommandBase>> commandSet = new();
+        private readonly Dictionary<CommandSignature, HashSet<ICommandBase>> commandSets = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
@@ -49,6 +50,8 @@ namespace CCEnvs.Patterns.Commands
         }
 
         public string Name { get; }
+
+        public object SyncRoot { get; } = new();
 
         public CommandScheduler(FrameProvider? frameProvider = null, string? name = null)
         {
@@ -82,17 +85,23 @@ namespace CCEnvs.Patterns.Commands
 
             ProcessCommandsBy(cmd);
 
-            commands.Enqueue(cmd);
+            int cmdIndex;
+
+            lock (SyncRoot)
+            {
+                cmdIndex = commands.Count;
+                commands.Add(cmd);
+            }
 
             var cmdSignature = cmd.Signature;
 
-            if (!commandSet.TryGetValue(cmdSignature, out var cmds))
+            if (!commandSets.TryGetValue(cmdSignature, out var commandSet))
             {
-                cmds = new HashSet<ICommandBase>(2);
-                commandSet.Add(cmdSignature, cmds);
+                commandSet = new HashSet<ICommandBase>(2);
+                commandSets.Add(cmdSignature, commandSet);
             }
 
-            cmds.Add(cmd);
+            commandSet.Add(cmd);
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Command: {cmd} scheduled");
@@ -113,7 +122,7 @@ namespace CCEnvs.Patterns.Commands
             commands.UtilizeOrDisposeEach();
             commands.Clear();
 
-            commandSet.Clear();
+            commandSets.Clear();
         }
 
         public void Dispose()
@@ -204,7 +213,7 @@ namespace CCEnvs.Patterns.Commands
 
         public bool HasCommand(CommandSignature commandSignature)
         {
-            if (!commandSet.TryGetValue(commandSignature, out var cmds))
+            if (!commandSets.TryGetValue(commandSignature, out var cmds))
                 return false;
 
             return cmds.Count > 0;
@@ -247,13 +256,18 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessCommandsBy(ICommandBase newCmd)
         {
+            if (!newCmd.IsValid)
+                return;
+
             if (commands.IsEmpty())
                 return;
 
             CommandSignature newCmdSignature = newCmd.Signature;
 
-            if (!commandSet.TryGetValue(newCmdSignature, out var equalCmds))
+            if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds))
                 return;
+
+            using var toDequeueCommands = ListPool<ICommandBase>.Shared.Get();
 
             foreach (var cmd in equalCmds)
             {
@@ -265,12 +279,26 @@ namespace CCEnvs.Patterns.Commands
 
                 if (newCmd.IsSingle
                     &&
-                    !cmd.IsDone
-                    &&
-                    !cmd.IsCancelled)
+                    !cmd.IsDone)
                 {
-                    this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
-                    cmd.Undo();
+                    if (CCDebug.Instance.IsEnabled)
+                        this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
+
+                    cmd.Cancel();
+
+                    toDequeueCommands.Value.Add(cmd);
+                }
+            }
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Dequeue commands: {toDequeueCommands.Value.ElementsToString()}");
+
+            if (toDequeueCommands.Value.IsNotEmpty())
+            {
+                foreach (var toDequeueCmd in toDequeueCommands.Value)
+                {
+                    commands.Remove(toDequeueCmd);
+                    OnCommandDequeue(toDequeueCmd);
                 }
             }
         }
@@ -310,18 +338,28 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OnCommandDequeue(ICommandBase cmd)
+        {
+            this.PrintLog($"Command: {cmd} erasing");
+
+            var commandSet = commandSets[cmd.Signature];
+
+            commandSet.Remove(cmd);
+
+            if (commandSets.IsEmpty())
+                commandSets.Remove(cmd.Signature);
+
+            cmdDelayFrameCount = 0;
+
+            cmd.TryUtilizeOrDispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EraseCommand()
         {
             if (cmd is not null)
             {
-                this.PrintLog($"Command: {cmd} erasing");
-
-                commandSet[cmd.Signature].Remove(cmd);
-
-                cmdDelayFrameCount = 0;
-
-                cmd.TryUtilizeOrDispose();
-
+                OnCommandDequeue(cmd);
                 cmd = null;
             }
 
@@ -336,7 +374,7 @@ namespace CCEnvs.Patterns.Commands
 
             EraseCommand();
 
-            while (commands.TryDequeue(out cmd))
+            while (commands.RemoveLast(out cmd))
             {
                 if (HasUndoneCommand())
                 {
@@ -344,7 +382,7 @@ namespace CCEnvs.Patterns.Commands
                     return true;
                 }
 
-                commandSet[cmd.Signature].Remove(cmd);
+                commandSets[cmd.Signature].Remove(cmd);
             }
 
             return false;

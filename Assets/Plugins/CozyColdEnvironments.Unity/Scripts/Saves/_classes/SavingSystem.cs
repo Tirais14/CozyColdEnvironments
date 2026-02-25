@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.Snapshots;
@@ -7,6 +8,7 @@ using CCEnvs.Threading;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using DG.Tweening.Plugins.Core.PathCore;
 using Newtonsoft.Json;
 using R3;
 using System;
@@ -16,6 +18,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -36,6 +39,8 @@ namespace CCEnvs.Unity.Saves
         private readonly ReactiveProperty<bool> isSaving = new();
         private readonly ReactiveProperty<bool> isSaveLoading = new();
         private readonly ReactiveProperty<SaveFileData> saveData = new();
+
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(SavingSystem));
 
         private UnityAction<Scene> onSceneUnloaded;
 
@@ -60,6 +65,7 @@ namespace CCEnvs.Unity.Saves
 
             isSaving.Dispose();
             isSaveLoading.Dispose();
+            commandScheduler.Dispose();
         }
 
         private static string InstanceRegisterdMessage(object obj)
@@ -318,77 +324,44 @@ namespace CCEnvs.Unity.Saves
 
         public async UniTask SaveInFileAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (IsSaving)
-                throw new InvalidOperationException("Already in saving process");
-
-            if (IsSaveLoading)
-                throw new InvalidOperationException("Cannot save game while save loading");
-
-            isSaving.Value = true;
-            var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
-
-            try
-            {
-                SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
-
-                await RegisterSnapshotsAsync(
-                    saveFileData.SceneDatas,
-                    cancellationToken
-                    );
-
-                saveData.Value = saveFileData;
-
-                string serializedsaveFileData = JsonConvert.SerializeObject(
-                    saveFileData,
-                    CC.JsonSettings
-                    );
-
-                await File.WriteAllTextAsync(
-                    path,
-                    serializedsaveFileData,
-                    cancellationToken: cTokenSource.Token
-                    )
-                    .ConfigureAwait(true);
-            }
-            finally
-            {
-                isSaving.Value = false;
-                cTokenSource.Dispose();
-            }
+            await Command.Builder.SetName(nameof(SaveInFileAsync), this)
+                .SetSingle()
+                .WithState((@this: this, path))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await args.@this.SaveInFileAsyncCore(args.path, cancellationToken);
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync();
         }
 
         public async UniTask<string> SaveInMemoryAsync(CancellationToken cancellationToken = default)
         {
-            if (IsSaving)
-                throw new InvalidOperationException("Already in saving process");
+            string serialized = string.Empty;
 
-            if (IsSaveLoading)
-                throw new InvalidOperationException("Cannot save game while save loading");
+            await Command.Builder.SetName(nameof(SaveInFileAsync), this)
+                .SetSingle()
+                .WithoutState()
+                .Asyncronously()
+                .SetExecuteAction(
+                async (cancellationToken) =>
+                {
+                    serialized = await SaveInMemoryAsync(cancellationToken);
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync();
 
-            isSaving.Value = true;
-            var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
-
-            try
-            {
-                SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
-
-                await RegisterSnapshotsAsync(
-                    saveFileData.SceneDatas,
-                    cancellationToken
-                    );
-
-                saveData.Value = saveFileData;
-
-                return JsonConvert.SerializeObject(
-                    saveFileData,
-                    CC.JsonSettings
-                    );
-            }
-            finally
-            {
-                isSaving.Value = false;
-                cTokenSource.Dispose();
-            }
+            return serialized;
         }
 
         public void RegisterType(Type type, Func<object, ISnapshot> converter)
@@ -478,6 +451,65 @@ namespace CCEnvs.Unity.Saves
         public Observable<SaveFileData> ObserveSaveData()
         {
             return saveData;
+        }
+
+        private async UniTask SaveInFileAsyncCore(string path, CancellationToken cancellationToken = default)
+        {
+            if (IsSaveLoading)
+                throw new InvalidOperationException("Cannot save game while save loading");
+
+            isSaving.Value = true;
+            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+
+            try
+            {
+                SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+
+                await RegisterSnapshotsAsync(
+                    saveFileData.SceneDatas,
+                    cancellationToken
+                    );
+
+                saveData.Value = saveFileData;
+
+                string serializedsaveFileData = JsonConvert.SerializeObject(
+                    saveFileData,
+                    CC.JsonSettings
+                    );
+
+                await File.WriteAllTextAsync(
+                    path,
+                    serializedsaveFileData,
+                    cancellationToken: cTokenSource.Token
+                    )
+                    .ConfigureAwait(true);
+            }
+            finally
+            {
+                isSaving.Value = false;
+            }
+        }
+
+        private async UniTask<string> SaveInMemoryAsyncCore(CancellationToken cancellationToken = default)
+        {
+            if (IsSaveLoading)
+                throw new InvalidOperationException("Cannot save game while save loading");
+
+            using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
+
+            SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+
+            await RegisterSnapshotsAsync(
+                saveFileData.SceneDatas,
+                cancellationToken
+                );
+
+            saveData.Value = saveFileData;
+
+            return JsonConvert.SerializeObject(
+                saveFileData,
+                CC.JsonSettings
+                );
         }
 
         private bool IsInstanceRegisteredInternal(RegisteredObject regObj)

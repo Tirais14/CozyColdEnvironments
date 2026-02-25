@@ -41,6 +41,8 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandSignature Signature { get; }
 
+        public Identifier ID { get; } = "Completed";
+
         public static bool operator ==(CompletedCommandAsync? left, CompletedCommandAsync? right)
         {
             return left != null && left.Equals(right);
@@ -104,6 +106,11 @@ namespace CCEnvs.Patterns.Commands
         public Observable<CommandStatus> ObserveIsDone()
         {
             return Observable.Return(CommandStatus.Completed);
+        }
+
+        public Observable<CommandStatus> ObserveStatus()
+        {
+            throw new NotImplementedException();
         }
     }
 }
