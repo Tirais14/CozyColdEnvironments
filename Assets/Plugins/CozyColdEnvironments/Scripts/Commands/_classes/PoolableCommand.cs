@@ -1,7 +1,6 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using R3;
-using System;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -10,7 +9,10 @@ namespace CCEnvs.Patterns.Commands
     {
         private ReactiveCommand<IPoolable>? onDespawnCmd;
 
-        protected Maybe<PooledObject> poolHandle => this.To<IPoolable>().PoolHandle;
+        protected Maybe<PooledObject> poolHandle {
+            get => this.To<IPoolable>().PoolHandle;
+            set => this.To<IPoolable>().PoolHandle = value;
+        }
 
         Maybe<PooledObject> IPoolable.PoolHandle { get; set; }
 
@@ -53,6 +55,11 @@ namespace CCEnvs.Patterns.Commands
             onDespawnCmd ??= new ReactiveCommand<IPoolable>();
 
             return onDespawnCmd;
+        }
+
+        protected override void OnReset()
+        {
+            poolHandle = default;
         }
 
         private bool disposed;

@@ -45,7 +45,8 @@
         "R3.dll",
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "ICSharpCode.SharpZipLib.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

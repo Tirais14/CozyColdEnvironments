@@ -1,14 +1,19 @@
 ﻿using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
+using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -23,7 +28,11 @@ namespace CCEnvs.Unity.Saves
     {
         private readonly ObservableDictionary<string, object> observableObjects = new();
 
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(SaveGroup));
+
         private int? hashCode;
+
+        private bool isSaveDataLoaded;
 
         [JsonProperty("saveData")]
         private SaveData? _saveData;
@@ -207,6 +216,40 @@ namespace CCEnvs.Unity.Saves
 
             return this;
         }
+
+        //private async UniTask<SaveData> LoadSaveFromFileAsyncCore(
+        //    Func<string, string>? decompressor = null,
+        //    CancellationToken cancellationToken = default
+        //    )
+        //{
+        //    if (isSaveDataLoaded)
+        //        return SaveData;
+
+        //    string path = GetFullPath();
+
+        //    if (!File.Exists(path))
+        //        return SaveData;
+
+        //    string fileText;
+
+        //    try
+        //    {
+        //        fileText = await File.ReadAllTextAsync(path, cancellationToken);
+
+        //        string decompressedText;
+
+        //        if (decompressor is not null)
+        //            decompressedText = decompressor(fileText);
+        //        else
+        //            decompressedText = fileText;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.PrintException(ex);
+
+        //        return SaveData;
+        //    }
+        //}
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {

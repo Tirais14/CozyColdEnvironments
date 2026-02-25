@@ -97,7 +97,7 @@ namespace CCEnvs.Patterns.Commands
             }
             finally
             {
-                State = default;
+                State = default!;
                 ExecuteAction = null;
                 ExecutePredicate = null;
                 ResetAction = null;

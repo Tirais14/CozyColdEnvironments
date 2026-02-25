@@ -237,6 +237,7 @@ namespace CCEnvs.Patterns.Commands
             Name = string.Empty;
             DelayFrameCount = 0;
             IsSingle = false;
+            status.Value = CommandStatus.None;
         }
 
         protected virtual void OnCancel()

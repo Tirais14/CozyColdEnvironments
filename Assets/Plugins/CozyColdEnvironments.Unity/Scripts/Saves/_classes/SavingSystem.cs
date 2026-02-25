@@ -338,28 +338,28 @@ namespace CCEnvs.Unity.Saves
                 .AttachExternalCancellationToken(cancellationToken)
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
-                .FirstAsync();
+                .FirstAsync(cancellationToken);
         }
 
         public async UniTask<string> SaveInMemoryAsync(CancellationToken cancellationToken = default)
         {
             string serialized = string.Empty;
 
-            await Command.Builder.SetName(nameof(SaveInFileAsync), this)
+            await Command.Builder.SetName(nameof(SaveInMemoryAsync), this)
                 .SetSingle()
                 .WithoutState()
                 .Asyncronously()
                 .SetExecuteAction(
                 async (cancellationToken) =>
                 {
-                    serialized = await SaveInMemoryAsync(cancellationToken);
+                    serialized = await SaveInMemoryAsyncCore(cancellationToken);
                 })
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
-                .FirstAsync();
+                .FirstAsync(cancellationToken);
 
             return serialized;
         }

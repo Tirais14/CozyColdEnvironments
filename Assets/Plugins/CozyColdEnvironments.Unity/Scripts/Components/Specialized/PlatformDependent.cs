@@ -1,7 +1,3 @@
-using CCEnvs.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 using Emulator = CCEnvs.Unity.Components.Specialized.PlatformDependentBehaviourEmulator;
@@ -54,10 +50,10 @@ namespace CCEnvs.Unity.Components.Specialized
             if (andInsteadOr)
             {
                 return (!webGL || PlatformPredicate(UCC.Platform.IsWebGL))
-                        &&
-                        (!mobile || PlatformPredicate(UCC.Platform.IsMobile))
-                        &&
-                        (!console || PlatformPredicate(UCC.Platform.IsConsole));
+                       &&
+                       (!mobile || PlatformPredicate(UCC.Platform.IsMobile))
+                       &&
+                       (!console || PlatformPredicate(UCC.Platform.IsConsole));
             }
 
             if (webGL && PlatformPredicate(UCC.Platform.IsWebGL))
@@ -73,7 +69,7 @@ namespace CCEnvs.Unity.Components.Specialized
         private bool PlatformPredicate(bool platformState)
         {
             if (excludePlatforms)
-                return !platformState;
+                return false;
 
             return platformState;
         }

@@ -18,9 +18,11 @@ namespace CCEnvs.Patterns.Commands
         IDisposable, 
         IFrameRunnerWorkItem
     {
-        private readonly List<ICommandBase> commands = new();
+        private readonly Queue<ICommandBase> commands = new();
 
         private readonly Dictionary<CommandSignature, HashSet<ICommandBase>> commandSets = new();
+
+        private readonly HashSet<ICommandBase> garbageCommands = new(16);
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
@@ -33,6 +35,7 @@ namespace CCEnvs.Patterns.Commands
 
         private int delayFrameCountBeforeRunningFinished;
         private int cmdDelayFrameCount;
+        private int garbageCmdCount;
 
         private long idleFrameCount;
 
@@ -75,7 +78,7 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNull(cmd, nameof(cmd));
 
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             if (!cmd.IsValid)
                 throw new ArgumentException($"Command: {cmd} is not valid", nameof(cmd));
@@ -85,23 +88,12 @@ namespace CCEnvs.Patterns.Commands
 
             ProcessCommandsBy(cmd);
 
-            int cmdIndex;
-
             lock (SyncRoot)
             {
-                cmdIndex = commands.Count;
-                commands.Add(cmd);
+                commands.Enqueue(cmd);
             }
 
-            var cmdSignature = cmd.Signature;
-
-            if (!commandSets.TryGetValue(cmdSignature, out var commandSet))
-            {
-                commandSet = new HashSet<ICommandBase>(2);
-                commandSets.Add(cmdSignature, commandSet);
-            }
-
-            commandSet.Add(cmd);
+            commandSets.GetOrCreateNew(cmd.Signature).Add(cmd);
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Command: {cmd} scheduled");
@@ -117,12 +109,14 @@ namespace CCEnvs.Patterns.Commands
 
             cmd?.Dispose();
 
-            EraseCommand();
+            EraseCurrentCommand();
 
-            commands.UtilizeOrDisposeEach();
+            commands.UtilizeOrDisposeEach(bufferized: false);
             commands.Clear();
+            commands.TrimExcess();
 
             commandSets.Clear();
+            commandSets.TrimExcess();
         }
 
         public void Dispose()
@@ -154,7 +148,7 @@ namespace CCEnvs.Patterns.Commands
                 return;
             }
 
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             if (IsFrameDelayedByCommand())
             {
@@ -164,11 +158,16 @@ namespace CCEnvs.Patterns.Commands
 
             StartRunningFrame();
 
+#if CC_DEBUG_ENABLED
             var loopFuse = LoopFuse.Create();
+#endif
 
             while (!disposed
+#if CC_DEBUG_ENABLED
                    &&
-                   loopFuse.MoveNext())
+                   loopFuse.MoveNext()
+#endif
+                   )
             {
                 if (!TryResolveCommand())
                     break;
@@ -190,7 +189,7 @@ namespace CCEnvs.Patterns.Commands
 
         public void Enable()
         {
-            ValidateDisposed();
+            ThrowIfDisposed();
 
             if (isEnabled.Value)
                 return;
@@ -267,8 +266,6 @@ namespace CCEnvs.Patterns.Commands
             if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds))
                 return;
 
-            using var toDequeueCommands = ListPool<ICommandBase>.Shared.Get();
-
             foreach (var cmd in equalCmds)
             {
                 if (!newCmd.IsValid)
@@ -284,23 +281,38 @@ namespace CCEnvs.Patterns.Commands
                     if (CCDebug.Instance.IsEnabled)
                         this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
 
+                    garbageCommands.Add(cmd);
+
                     cmd.Cancel();
-
-                    toDequeueCommands.Value.Add(cmd);
                 }
             }
 
-            if (CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Dequeue commands: {toDequeueCommands.Value.ElementsToString()}");
+            if (garbageCommands.Count > 32)
+                ClearGarbageCommands();
+        }
 
-            if (toDequeueCommands.Value.IsNotEmpty())
+        private void ClearGarbageCommands()
+        {
+            using var filteredCmds = ListPool<ICommandBase>.Shared.Get();
+
+            if (filteredCmds.Value.Capacity < garbageCmdCount)
+                filteredCmds.Value.Capacity = garbageCmdCount;
+
+            foreach (var cmd in commands)
             {
-                foreach (var toDequeueCmd in toDequeueCommands.Value)
+                if (cmd.IsValid && !cmd.IsDone)
                 {
-                    commands.Remove(toDequeueCmd);
-                    OnCommandDequeue(toDequeueCmd);
+                    filteredCmds.Value.Add(cmd);
+                    OnCommandDone(cmd);
                 }
             }
+
+            commands.Clear();
+
+            for (int i = 0; i < filteredCmds.Value.Count; i++)
+                commands.Enqueue(filteredCmds.Value[i]);
+
+            garbageCmdCount = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,7 +324,7 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsFrameDelayedByCommand()
         {
-            if (!HasUndoneCommand()
+            if (!IsCurrentCommandUndone()
                 ||
                 cmdDelayFrameCount < 1)
             {
@@ -331,58 +343,59 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCommandReadyToExecute()
         {
-            if (!HasUndoneCommand())
+            if (!IsCurrentCommandUndone())
                 return false;
 
             return cmd!.IsReadyToExecute;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnCommandDequeue(ICommandBase cmd)
+        private void OnCommandDone(ICommandBase cmd)
         {
-            this.PrintLog($"Command: {cmd} erasing");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Command: {cmd} completing");
 
             var commandSet = commandSets[cmd.Signature];
 
             commandSet.Remove(cmd);
+            garbageCommands.Remove(cmd);
 
-            if (commandSets.IsEmpty())
+            if (commandSet.IsEmpty())
                 commandSets.Remove(cmd.Signature);
-
-            cmdDelayFrameCount = 0;
 
             cmd.TryUtilizeOrDispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EraseCommand()
+        private void EraseCurrentCommand()
         {
             if (cmd is not null)
             {
-                OnCommandDequeue(cmd);
+                OnCommandDone(cmd);
                 cmd = null;
             }
 
+            cmdDelayFrameCount = 0;
             cmdExecuted = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryResolveCommand()
         {
-            if (HasUndoneCommand())
+            if (IsCurrentCommandUndone())
                 return true;
 
-            EraseCommand();
+            EraseCurrentCommand();
 
-            while (commands.RemoveLast(out cmd))
+            while (commands.TryDequeue(out cmd))
             {
-                if (HasUndoneCommand())
+                if (IsCurrentCommandUndone())
                 {
                     cmdDelayFrameCount = cmd.DelayFrameCount;
                     return true;
                 }
 
-                commandSets[cmd.Signature].Remove(cmd);
+                OnCommandDone(cmd);
             }
 
             return false;
@@ -410,7 +423,7 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateDisposed()
+        private void ThrowIfDisposed()
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().ToString());
@@ -465,7 +478,7 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HasUndoneCommand()
+        private bool IsCurrentCommandUndone()
         {
             return cmd is not null && cmd.IsValid && !cmd!.IsDone && !IsCommandReseted(cmd!);
         }

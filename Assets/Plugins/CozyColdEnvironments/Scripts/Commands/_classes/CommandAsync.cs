@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading;
@@ -47,9 +48,11 @@ namespace CCEnvs.Patterns.Commands
                 {
                     case TaskCanceledException:
                         SetCanceled();
+                        this.PrintExceptionAsLog(ex);
                         break;
                     case OperationCanceledException:
                         SetCanceled();
+                        this.PrintExceptionAsLog(ex);
                         break;
                     default:
                         SetFaulted(ex);
