@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -6,7 +7,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Collections
 {
-    public struct arr<T> : IEquatable<arr<T>>
+    public struct arr<T> : IEquatable<arr<T>>, IEnumerable<T>
     {
         private T[]? value;
 
@@ -68,21 +69,31 @@ namespace CCEnvs.Collections
             return arr.Value;
         }
 
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is arr<T> arr && Equals(arr);
         }
 
-        public bool Equals(arr<T> other)
+        public readonly bool Equals(arr<T> other)
         {
             return value == other.Value
                    &&
                    hasValue == other.hasValue;
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(value, hasValue);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Value.GetEnumeratorT();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

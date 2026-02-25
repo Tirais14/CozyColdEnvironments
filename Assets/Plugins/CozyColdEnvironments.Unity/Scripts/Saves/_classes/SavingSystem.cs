@@ -495,21 +495,29 @@ namespace CCEnvs.Unity.Saves
             if (IsSaveLoading)
                 throw new InvalidOperationException("Cannot save game while save loading");
 
+            isSaving.Value = true;
             using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
-            SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
+            try
+            {
+                SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
 
-            await RegisterSnapshotsAsync(
-                saveFileData.SceneDatas,
-                cancellationToken
-                );
+                await RegisterSnapshotsAsync(
+                    saveFileData.SceneDatas,
+                    cancellationToken
+                    );
 
-            saveData.Value = saveFileData;
+                saveData.Value = saveFileData;
 
-            return JsonConvert.SerializeObject(
-                saveFileData,
-                CC.JsonSettings
-                );
+                return JsonConvert.SerializeObject(
+                    saveFileData,
+                    CC.JsonSettings
+                    );
+            }
+            finally
+            {
+                isSaving.Value = false;
+            }
         }
 
         private bool IsInstanceRegisteredInternal(RegisteredObject regObj)

@@ -73,6 +73,32 @@ namespace CCEnvs.Unity.Saves
             return this;
         }
 
+        public SaveData Write(
+            IEnumerable<SaveUnit> saveUnits,
+            WriteSaveDataMode writeSaveDataMode = default
+            )
+        {
+            if (saveUnits.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(saveUnits)} is null");
+                return this;
+            }
+
+            switch (writeSaveDataMode)
+            {
+                case WriteSaveDataMode.Override:
+                    Override(saveUnits);
+                    break;
+                case WriteSaveDataMode.Merge:
+                    Merge(saveUnits);
+                    break;
+                default:
+                    throw new InvalidOperationException(writeSaveDataMode.ToString());
+            }
+
+            return this;
+        }
+
         public SaveData Merge(IEnumerable<SaveUnit> otherSaveUnits)
         {
             CC.Guard.IsNotNull(otherSaveUnits, nameof(otherSaveUnits));
@@ -92,9 +118,6 @@ namespace CCEnvs.Unity.Saves
         public SaveData Override(IEnumerable<SaveUnit> saveUnits)
         {
             CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
-
-            if (saveUnits.IsEmpty())
-                return this;
 
             this.saveUnits.Clear();
 

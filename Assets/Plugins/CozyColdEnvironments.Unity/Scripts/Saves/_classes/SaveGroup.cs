@@ -1,5 +1,6 @@
 ﻿using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
@@ -186,11 +187,13 @@ namespace CCEnvs.Unity.Saves
             return saveUnits;
         }
 
-        public SaveGroup WriteSaveData()
+        public SaveGroup WriteSaveData(
+            WriteSaveDataMode writeSaveDataMode = WriteSaveDataMode.Override
+            )
         {
             using var saveUnits = CreateSaveUnitsPooled();
 
-            SaveData.Override(saveUnits);
+            SaveData.Write(saveUnits, writeSaveDataMode);
 
             return this;
         }
@@ -216,40 +219,6 @@ namespace CCEnvs.Unity.Saves
 
             return this;
         }
-
-        //private async UniTask<SaveData> LoadSaveFromFileAsyncCore(
-        //    Func<string, string>? decompressor = null,
-        //    CancellationToken cancellationToken = default
-        //    )
-        //{
-        //    if (isSaveDataLoaded)
-        //        return SaveData;
-
-        //    string path = GetFullPath();
-
-        //    if (!File.Exists(path))
-        //        return SaveData;
-
-        //    string fileText;
-
-        //    try
-        //    {
-        //        fileText = await File.ReadAllTextAsync(path, cancellationToken);
-
-        //        string decompressedText;
-
-        //        if (decompressor is not null)
-        //            decompressedText = decompressor(fileText);
-        //        else
-        //            decompressedText = fileText;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.PrintException(ex);
-
-        //        return SaveData;
-        //    }
-        //}
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
@@ -288,6 +257,60 @@ namespace CCEnvs.Unity.Saves
         private string ResolveComponentKey(Component cmp)
         {
             return cmp.GetExtraInfo().ToString();
+        }
+
+        private async UniTask<SaveData?> LoadSaveDataFromFileCoreAsync(
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            var filePath = GetFullPath();
+
+            try
+            {
+                var loadedSaveData = await SaveLoad.SaveDataFromFileAsync(
+                    filePath,
+                    configureAwait: false,
+                    cancellationToken
+                    );
+
+                return loadedSaveData;
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+
+                return null;
+            }
+            finally
+            {
+                if (configureAwait)
+                    await UniTask.SwitchToMainThread();
+            }
+        }
+
+        private async UniTask WriteSaveDataFromFileAsyncCore(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            var loadedSaveData = await LoadSaveDataFromFileCoreAsync(
+                configureAwait: false,
+                cancellationToken
+                );
+
+            if (loadedSaveData is null)
+            {
+                SaveData.Write(Array.Empty<SaveUnit>(), writeSaveDataMode);
+
+                return;
+            }
+
+            SaveData.Write(loadedSaveData.SaveUnits.Values, writeSaveDataMode);
+
+            if (configureAwait)
+                await UniTask.SwitchToMainThread();
         }
     }
 }

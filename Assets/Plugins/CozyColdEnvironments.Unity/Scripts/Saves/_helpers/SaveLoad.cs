@@ -2,96 +2,127 @@
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading;
-using ICSharpCode;
-using CCEnvs.Files;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
     public static class SaveLoad
     {
-        //public static async UniTask<string> ReadFromFile(
-        //    string filePath,
-        //    bool compressed = true,
-        //    CancellationToken cancellationToken = default
-        //    )
-        //{
-        //    Guard.IsNotNull(filePath, nameof(filePath));
+        public static async UniTask<string> FromFileAsync(
+            string filePath,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
-        //    var fileInfo = new FileInfo(filePath);  
+            Guard.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
 
-        //    if (!fileInfo.Exists)
-        //    {
-        //        if (CCDebug.Instance.IsEnabled)
-        //            typeof(SaveLoad).PrintLog($"File: {filePath} not found");
+            await UniTask.SwitchToThreadPool();
 
-        //        return string.Empty;
-        //    }
+            var file = new FileInfo(filePath);
 
-        //    FileInfo tempFileInfo = null!;
+            if (!file.Exists)
+            {
+                if (CCDebug.Instance.IsEnabled)
+                    typeof(SaveLoad).PrintLog($"File: {filePath} not found");
 
-        //    try
-        //    {
-        //        tempFileInfo = createTempFile(fileInfo);
+                return string.Empty;
+            }
 
-        //        using var tempFileStream = tempFileInfo.Open(FileMode.Open);
+            try
+            {
+                using var fileStream = file.OpenRead();
 
-        //        if (tempFileStream.Length == 0)
-        //            return string.Empty;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        typeof(SaveLoad).PrintException(ex);
+                if (fileStream.Length == 0)
+                return string.Empty;
 
+                var decompressed = await TryDecompressAsync(fileStream);
 
+                return decompressed;
+            }
+            catch (Exception ex)
+            {
+                typeof(SaveLoad).PrintException(ex);
 
-        //        return string.Empty;
-        //    }
+                return string.Empty;
+            }
+            finally
+            {
+                if (configureAwait)
+                    await UniTask.SwitchToMainThread();
+            }
+        }
 
-        //    static FileInfo createTempFile(FileInfo fileInfo)
-        //    {
-        //        var path = Path.Combine(fileInfo.DirectoryName, fileInfo.Name, ".temp");
+        public static async UniTask<SaveData?> SaveDataFromFileAsync(
+            string filePath,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default)
+        {
+            var saveDataRaw = await FromFileAsync(
+                filePath,
+                configureAwait,
+                cancellationToken
+                );
 
-        //        return fileInfo.CopyTo(path);
-        //    }
-        //}
+            var saveData = JsonConvert.DeserializeObject<SaveData>(saveDataRaw);
 
-        //private static void TryDeleteFile(FileInfo? fileInfo)
-        //{
-        //    if (fileInfo is null)
-        //        return;
+            return saveData;
+        }
 
-        //    try
-        //    {
-        //        fileInfo.Delete();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        typeof(SaveLoad).PrintException(ex);
-        //    }
-        //}
+        private static bool IsFileCompressed(FileStream fileStream)
+        {
+            if (fileStream.Length < 2)
+                return false;
 
-        //private static string Decompress(FileStream tempFileStream)
-        //{
-        //    using var gZipStream = new GZipStream(tempFileStream, CompressionMode.Decompress);
+            Span<byte> buffer = stackalloc byte[2];
 
-        //    gZipStream.Position = 0;
+            fileStream.Position = 0;
 
-        //    using var streamReader = new StreamReader(gZipStream);
+            fileStream.Read(buffer);
 
-        //    var content = streamReader.ReadToEnd();
+            fileStream.Position = 0;
 
-        //    tempFileStream.Position = 0;
+            return buffer[0] == 0x1F && buffer[1] == 0x8B; //Magic bytes from GZip
+        }
 
-        //    return content;
-        //}
+        private static async UniTask<string> TryDecompressAsync(
+            FileStream tempFileStream
+            )
+        {
+            StreamReader? streamReader = null!;
+
+            try
+            {
+                if (IsFileCompressed(tempFileStream))
+                {
+                    using var gZipStream = new GZipStream(tempFileStream, CompressionMode.Decompress);
+
+                    streamReader = new StreamReader(gZipStream);
+                }
+                else
+                    streamReader = new StreamReader(tempFileStream);
+
+                var content = await streamReader.ReadToEndAsync();
+
+                tempFileStream.Position = 0;
+
+                return content;
+            }
+            catch (Exception ex)
+            {
+                typeof(SaveLoad).PrintException(ex);
+
+                return string.Empty;
+            }
+            finally
+            {
+                streamReader?.Dispose();
+            }
+        }
     }
 }
