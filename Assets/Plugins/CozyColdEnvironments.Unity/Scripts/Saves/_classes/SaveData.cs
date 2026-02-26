@@ -2,6 +2,7 @@ using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
+using ObservableCollections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,13 +18,13 @@ namespace CCEnvs.Unity.Saves
         IEnumerable<SaveUnit>
     {
         [JsonProperty("saveUnits")]
-        private Dictionary<string, SaveUnit> saveUnits = new();
+        private ObservableDictionary<string, SaveUnit> saveUnits = new();
 
         [JsonProperty("group")]
         public SaveGroup Group { get; init; }
 
         [JsonIgnore]
-        public IReadOnlyDictionary<string, SaveUnit> SaveUnits {
+        public IReadOnlyObservableDictionary<string, SaveUnit> SaveUnits {
             get => saveUnits;
         }
 
@@ -129,7 +130,7 @@ namespace CCEnvs.Unity.Saves
 
         public IEnumerator<SaveUnit> GetEnumerator()
         {
-            return saveUnits.Values.GetEnumerator();
+            return saveUnits.To<IDictionary<string, SaveUnit>>().Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

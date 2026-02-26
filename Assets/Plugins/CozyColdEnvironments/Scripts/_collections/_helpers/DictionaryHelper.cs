@@ -119,5 +119,55 @@ namespace CCEnvs.Collections
 
             return result;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IDictionary<TKey, TValue> Merge<TKey, TValue>(
+            this IDictionary<TKey, TValue> left,
+            IEnumerable<KeyValuePair<TKey, TValue>> right
+            )
+        {
+            CC.Guard.IsNotNull(left, nameof(left));
+
+            if (left.IsReadOnly)
+                throw CC.ThrowHelper.CollectionIsReadOnly();
+
+            CC.Guard.IsNotNull(right, nameof(right));
+
+            if (right.IsEmpty())
+                return left;
+
+            if (left.IsEmpty())
+            {
+                left.AddRange(right);
+                return left;
+            }
+
+            foreach (var (rightKey, rightValue) in right)
+            {
+                if (!left.TryAdd(rightKey, rightValue))
+                    left[rightKey] = rightValue;
+            }
+
+            return left;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IDictionary<TKey, TValue> Override<TKey, TValue>(
+            this IDictionary<TKey, TValue> left,
+            IEnumerable<KeyValuePair<TKey, TValue>> right
+            )
+        {
+            CC.Guard.IsNotNull(left, nameof(left));
+
+            if (left.IsReadOnly)
+                throw CC.ThrowHelper.CollectionIsReadOnly();
+
+            CC.Guard.IsNotNull(right, nameof(right));
+
+            left.Clear();
+            left.AddRange(right);
+
+            return left;
+        }
     }
 }

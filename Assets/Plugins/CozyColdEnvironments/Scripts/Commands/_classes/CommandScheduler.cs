@@ -88,12 +88,15 @@ namespace CCEnvs.Patterns.Commands
 
             ProcessCommandsBy(cmd);
 
+            HashSet<ICommandBase> commandSet;
+
             lock (SyncRoot)
             {
                 commands.Enqueue(cmd);
+                commandSet = commandSets.GetOrCreateNew(cmd.Signature);
             }
 
-            commandSets.GetOrCreateNew(cmd.Signature).Add(cmd);
+            commandSet.Add(cmd);
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Command: {cmd} scheduled");
@@ -263,8 +266,13 @@ namespace CCEnvs.Patterns.Commands
 
             CommandSignature newCmdSignature = newCmd.Signature;
 
-            if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds))
-                return;
+            HashSet<ICommandBase> equalCmds;
+
+            lock (SyncRoot)
+            {
+                if (!commandSets.TryGetValue(newCmdSignature, out equalCmds))
+                    return;
+            }
 
             foreach (var cmd in equalCmds)
             {
@@ -293,26 +301,29 @@ namespace CCEnvs.Patterns.Commands
 
         private void ClearGarbageCommands()
         {
-            using var filteredCmds = ListPool<ICommandBase>.Shared.Get();
-
-            if (filteredCmds.Value.Capacity < garbageCmdCount)
-                filteredCmds.Value.Capacity = garbageCmdCount;
-
-            foreach (var cmd in commands)
+            lock (SyncRoot)
             {
-                if (cmd.IsValid && !cmd.IsDone)
+                using var filteredCmds = ListPool<ICommandBase>.Shared.Get();
+
+                if (filteredCmds.Value.Capacity < garbageCmdCount)
+                    filteredCmds.Value.Capacity = garbageCmdCount;
+
+                foreach (var cmd in commands)
                 {
-                    filteredCmds.Value.Add(cmd);
-                    OnCommandDone(cmd);
+                    if (cmd.IsValid && !cmd.IsDone)
+                    {
+                        filteredCmds.Value.Add(cmd);
+                        OnCommandDone(cmd);
+                    }
                 }
+
+                commands.Clear();
+
+                for (int i = 0; i < filteredCmds.Value.Count; i++)
+                    commands.Enqueue(filteredCmds.Value[i]);
+
+                garbageCmdCount = 0;
             }
-
-            commands.Clear();
-
-            for (int i = 0; i < filteredCmds.Value.Count; i++)
-                commands.Enqueue(filteredCmds.Value[i]);
-
-            garbageCmdCount = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

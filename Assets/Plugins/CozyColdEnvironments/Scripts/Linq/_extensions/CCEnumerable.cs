@@ -1,5 +1,8 @@
+using CCEnvs.Collections;
 using CCEnvs.Conversations;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -10,7 +13,7 @@ using System.Linq;
 #nullable enable
 namespace CCEnvs.Linq
 {
-    public static class IEnumerableQuries
+    public static class CCEnumerable
     {
         public static IEnumerable<KeyValuePair<TKey, TValue>> AsKeyValuePairs<TKey, TValue>(
             this IEnumerable<(TKey, TValue)> source)
@@ -519,5 +522,37 @@ namespace CCEnvs.Linq
 
             return default;
         }
+
+        //public static IEnumerable<T> MergeBy<T, TKey>(
+        //    this IEnumerable<T> left,
+        //    IEnumerable<T> right,
+        //    Func<T, TKey> keySelector
+        //    )
+        //{
+        //    CC.Guard.IsNotNull(left, nameof(left));
+        //    CC.Guard.IsNotNull(right, nameof(right));
+        //    Guard.IsNotNull(keySelector, nameof(keySelector));
+
+        //    using var leftSet = HashSetPool<TKey>.Shared.Get();
+
+        //    TKey leftKey;
+
+        //    foreach (var leftItem in left)
+        //    {
+        //        leftKey = keySelector(leftItem);
+
+        //        leftSet.Value.Add(leftKey);
+        //    }
+
+        //    TKey rightKey;
+
+        //    foreach (var rightItem in right)
+        //    {
+        //        rightKey = keySelector(rightItem);
+
+        //        if (leftSet.Value.Contains(rightKey))
+        //            yield return rightItem;
+        //    }
+        //}
     }
 }

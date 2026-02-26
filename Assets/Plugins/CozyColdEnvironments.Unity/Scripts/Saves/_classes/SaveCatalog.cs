@@ -1,11 +1,17 @@
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
+using R3;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Xml.Linq;
 
 #nullable enable
@@ -21,6 +27,8 @@ namespace CCEnvs.Unity.Saves
     {
         [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
+
+        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(SaveCatalog));
 
         private int? hashCode;
 
@@ -104,6 +112,47 @@ namespace CCEnvs.Unity.Saves
             return sb.Value.ToString();
         }
 
+        private async UniTask LoadGroupsFromFileAsync(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            bool force = false,
+            CancellationToken cancellationToken = default
+            )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (groups.IsEmpty())
+                return;
+
+            await UniTask.SwitchToThreadPool();
+
+            string cmdName = MethodNameBuilder.From(
+                this,
+                nameof(LoadGroupsFromFileAsync),
+                "d1a32322-d33f-4d5a-8e0b-6df43bfdc184"
+                );
+
+            await Command.Builder.SetName(cmdName)
+                .WithState((@this: this, writeSaveDataMode, configureAwait, force))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await args.@this.LoadGroupsFromFileAsyncCore(
+                        args.writeSaveDataMode,
+                        args.configureAwait,
+                        args.force,
+                        cancellationToken
+                        );
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+        }
+
         public bool Equals(SaveCatalog other)
         {
             return this == other;
@@ -132,5 +181,41 @@ namespace CCEnvs.Unity.Saves
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private async UniTask LoadGroupsFromFileAsyncCore(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true, 
+            bool force = false,
+            CancellationToken cancellationToken = default
+            )
+        {
+            using var tasks = new PooledArray<UniTask>(groups.Count);
+
+            UniTask task;
+
+            int i = 0;
+
+            try
+            {
+                foreach (var group in groups.To<IDictionary<string, SaveGroup>>().Values)
+                {
+                    task = group.LoadSaveDataFromFileAsync(
+                        writeSaveDataMode,
+                        configureAwait: false,
+                        force,
+                        cancellationToken: cancellationToken
+                        );
+
+                    tasks[i++] = task;
+                }
+
+                await UniTask.WhenAll(tasks.Raw);
+            }
+            finally
+            {
+                if (configureAwait)
+                    await UniTask.SwitchToMainThread();
+            }
+        }
     }
 }

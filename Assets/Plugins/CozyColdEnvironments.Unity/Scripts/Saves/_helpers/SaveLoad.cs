@@ -36,6 +36,8 @@ namespace CCEnvs.Unity.Saves
 
             try
             {
+                await SaveSystem.readWriteSemaphore.WaitAsync(cancellationToken);
+
                 using var fileStream = file.OpenRead();
 
                 if (fileStream.Length == 0)
@@ -53,6 +55,8 @@ namespace CCEnvs.Unity.Saves
             }
             finally
             {
+                SaveSystem.readWriteSemaphore.Release();
+
                 if (configureAwait)
                     await UniTask.SwitchToMainThread();
             }

@@ -219,7 +219,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             var pairs = new KeyValuePair<AdvertisementTypes, AdvertisementInfo>[]
             {
                 new(AdvertisementTypes.None, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(float.PositiveInfinity)),
-                new(AdvertisementTypes.Fullscreen, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
+                new(AdvertisementTypes.Fullscreen, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(45f)),
                 new(AdvertisementTypes.Sticker, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
                 new(AdvertisementTypes.Other, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),
                 new(AdvertisementTypes.Any, new AdvertisementInfo() { TimeProvider = TimeProvider }.SetShowInterval(0f)),

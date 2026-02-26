@@ -19,7 +19,7 @@ namespace CCEnvs.Pools
 
         private readonly ArraySegment<T> value;
 
-        readonly public ArraySegment<T> Value {
+        public readonly ArraySegment<T> Value {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -30,10 +30,12 @@ namespace CCEnvs.Pools
             }
         }
 
-        readonly public int Length {
+        public readonly int Length {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Value.Count;
         }
+
+        public readonly T[] Raw => array;
 
         readonly int ICollection<T>.Count => Length;
 

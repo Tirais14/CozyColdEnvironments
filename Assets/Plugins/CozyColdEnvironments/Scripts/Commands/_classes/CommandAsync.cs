@@ -27,8 +27,7 @@ namespace CCEnvs.Patterns.Commands
 
             isExecuted = true;
 
-            if (cancellationToken.CanBeCanceled)
-                AttachExternalCancellationToken(cancellationToken);
+            AttachExternalCancellationToken(cancellationToken);
 
             try
             {
@@ -46,11 +45,7 @@ namespace CCEnvs.Patterns.Commands
             {
                 switch (ex)
                 {
-                    case TaskCanceledException:
-                        SetCanceled();
-                        this.PrintExceptionAsLog(ex);
-                        break;
-                    case OperationCanceledException:
+                    case TaskCanceledException or OperationCanceledException:
                         SetCanceled();
                         this.PrintExceptionAsLog(ex);
                         break;

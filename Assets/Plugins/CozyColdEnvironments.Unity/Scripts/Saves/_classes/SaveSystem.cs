@@ -3,6 +3,7 @@ using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -12,6 +13,20 @@ namespace CCEnvs.Unity.Saves
         public static IReadOnlyDictionary<Type, Func<object, ISnapshot>> Converters => converters;
 
         public static Func<object, ISnapshot> DefaultConverter { get; } = (obj) => new ValueSnapshot(obj);
+
+        internal static SemaphoreSlim readWriteSemaphore {
+            get
+            {
+                _readWriteSemaphore ??= new SemaphoreSlim(
+                    Environment.ProcessorCount * 2,
+                    Environment.ProcessorCount * 2
+                    );
+
+                return _readWriteSemaphore;
+            }
+        }
+
+        private static SemaphoreSlim? _readWriteSemaphore;
 
         private readonly static Dictionary<Type, Func<object, ISnapshot>> converters = new();
 

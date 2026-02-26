@@ -1,6 +1,4 @@
 ﻿using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
@@ -13,7 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 
@@ -32,8 +30,6 @@ namespace CCEnvs.Unity.Saves
         private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(SaveGroup));
 
         private int? hashCode;
-
-        private bool isSaveDataLoaded;
 
         [JsonProperty("saveData")]
         private SaveData? _saveData;
@@ -56,6 +52,9 @@ namespace CCEnvs.Unity.Saves
                 return _saveData;
             }
         }
+
+        [JsonIgnore]
+        public bool IsSaveLoadedFromFile { get; private set; }
 
         public SaveGroup(
             SaveCatalog catalog,
@@ -187,7 +186,7 @@ namespace CCEnvs.Unity.Saves
             return saveUnits;
         }
 
-        public SaveGroup WriteSaveData(
+        public SaveGroup CaptureAndWriteSaveData(
             WriteSaveDataMode writeSaveDataMode = WriteSaveDataMode.Override
             )
         {
@@ -213,11 +212,101 @@ namespace CCEnvs.Unity.Saves
             return sb.Value.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SaveGroup Clear()
         {
             observableObjects.Clear();
 
             return this;
+        }
+
+        public async UniTask<SaveData?> GetSaveDataFromFileAsync(
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            string cmdName = MethodNameBuilder.From(
+                this,
+                nameof(GetSaveDataFromFileAsync),
+                "49ef05c3-50c3-4479-8690-527d7b6010ed"
+                );
+
+            var result = new ValueReference<SaveData?>();
+
+            await Command.Builder.SetName(cmdName)
+                .WithState((@this: this, configureAwait, result))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    args.result = await args.@this.GetSaveDataFromFileAsyncCore(
+                        args.configureAwait,
+                        cancellationToken
+                        );
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+
+            return result;
+        }
+
+        public async UniTask LoadSaveDataFromFileAsync(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            bool force = false,
+            CancellationToken cancellationToken = default
+            )
+        {
+            if (!force && IsSaveLoadedFromFile)
+                return;
+
+            string cmdName = MethodNameBuilder.From(
+                this,
+                nameof(LoadSaveDataFromFileAsync),
+                "11c20ffe-642d-4114-b8fb-555d87f229d0"
+                );
+
+            await Command.Builder.SetName(cmdName)
+                .WithState((@this: this, configureAwait, writeSaveDataMode))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await args.@this.LoadSaveDataFromFileAsyncCore(
+                        args.writeSaveDataMode,
+                        args.configureAwait,
+                        cancellationToken
+                        );
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+        }
+
+        public async UniTask<SaveData> GetOrLoadSaveDataFromFileAsync(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default,
+            bool forceGet = false
+            )
+        {
+            if (forceGet || IsSaveLoadedFromFile)
+                return SaveData;
+
+            await LoadSaveDataFromFileAsync(
+                writeSaveDataMode,
+                configureAwait,
+                cancellationToken
+                );
+
+            return SaveData;
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -249,21 +338,25 @@ namespace CCEnvs.Unity.Saves
             return hashCode.Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string ResolveGameObjectKey(GameObject go)
         {
             return go.GetExtraInfo().ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string ResolveComponentKey(Component cmp)
         {
             return cmp.GetExtraInfo().ToString();
         }
 
-        private async UniTask<SaveData?> LoadSaveDataFromFileCoreAsync(
+        private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var filePath = GetFullPath();
 
             try
@@ -289,13 +382,13 @@ namespace CCEnvs.Unity.Saves
             }
         }
 
-        private async UniTask WriteSaveDataFromFileAsyncCore(
+        private async UniTask LoadSaveDataFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            var loadedSaveData = await LoadSaveDataFromFileCoreAsync(
+            var loadedSaveData = await GetSaveDataFromFileAsyncCore(
                 configureAwait: false,
                 cancellationToken
                 );
@@ -304,13 +397,33 @@ namespace CCEnvs.Unity.Saves
             {
                 SaveData.Write(Array.Empty<SaveUnit>(), writeSaveDataMode);
 
+                IsSaveLoadedFromFile = true;
+
                 return;
             }
 
             SaveData.Write(loadedSaveData.SaveUnits.Values, writeSaveDataMode);
 
+            IsSaveLoadedFromFile = true;
+
             if (configureAwait)
                 await UniTask.SwitchToMainThread();
+        }
+
+        private async UniTask<SaveData> GetOrLoadSaveDataFromFileAsyncCore(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default,
+            bool forceGet = false
+            )
+        {
+            await LoadSaveDataFromFileAsyncCore(
+                writeSaveDataMode,
+                configureAwait,
+                cancellationToken
+                );
+
+            return SaveData;
         }
     }
 }

@@ -13,8 +13,10 @@ namespace CCEnvs
         private readonly AnonymousEqualityComparer.Comparison<T> comparison;
         private readonly AnonymousEqualityComparer.HashCodeGenerator<T> hashCodeGenerator;
 
-        public AnonymousEqualityComparer(AnonymousEqualityComparer.Comparison<T> comparison,
-            AnonymousEqualityComparer.HashCodeGenerator<T> hashCodeGenerator)
+        public AnonymousEqualityComparer(
+            AnonymousEqualityComparer.Comparison<T> comparison,
+            AnonymousEqualityComparer.HashCodeGenerator<T> hashCodeGenerator
+            )
         {
             CC.Guard.IsNotNull(comparison, nameof(comparison));
             CC.Guard.IsNotNull(hashCodeGenerator, nameof(hashCodeGenerator));

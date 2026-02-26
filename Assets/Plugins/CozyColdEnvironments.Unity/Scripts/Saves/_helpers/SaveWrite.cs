@@ -15,6 +15,7 @@ namespace CCEnvs.Unity.Saves
             string fileContent,
             bool backupEnabled = true,
             bool compressionEnabled = true,
+            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
@@ -26,23 +27,33 @@ namespace CCEnvs.Unity.Saves
 
             var file = new FileInfo(filePath);
 
-            if (backupEnabled)
-                TryBackupFile(file);
+            try
+            {
+                await SaveSystem.readWriteSemaphore.WaitAsync(cancellationToken);
 
-            var tempFile = CreateTempFile(file);
+                if (backupEnabled)
+                    TryBackupFile(file);
 
-            using var tempFileStream = tempFile.Open(FileMode.OpenOrCreate);
+                var tempFile = CreateTempFile(file);
 
-            WriteToFile(tempFileStream, fileContent);
+                using var tempFileStream = tempFile.Open(FileMode.OpenOrCreate);
 
-            if (compressionEnabled)
-                TryCompressFile(tempFileStream);
+                WriteToFile(tempFileStream, fileContent);
 
-            await tempFileStream.DisposeAsync();
+                if (compressionEnabled)
+                    TryCompressFile(tempFileStream);
 
-            ReplaceTempFileToFile(tempFile, file);
+                await tempFileStream.DisposeAsync();
 
-            await UniTask.SwitchToMainThread();
+                ReplaceTempFileToFile(tempFile, file);
+            }
+            finally
+            {
+                SaveSystem.readWriteSemaphore.Release();
+
+                if (configureAwait)
+                    await UniTask.SwitchToMainThread();
+            }
         }
 
         private static void WriteToFile(FileStream fileStream, string fileContent)

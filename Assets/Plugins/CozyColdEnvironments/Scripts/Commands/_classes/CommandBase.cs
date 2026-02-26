@@ -1,7 +1,6 @@
 #nullable enable
 using CCEnvs.Collections;
 using CCEnvs.Threading;
-using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -173,7 +172,10 @@ namespace CCEnvs.Patterns.Commands
         {
             ThrowIfDisposed();
 
-            var linkedTokenSource = CancellationToken.TryLinkTokens(cancellationToken, out cancellationToken);
+            var linkedTokenSource = CancellationToken.TryLinkTokens(
+                cancellationToken,
+                out cancellationToken
+                );
 
             if (linkedTokenSource is null)
                 return this.To<TThis>();

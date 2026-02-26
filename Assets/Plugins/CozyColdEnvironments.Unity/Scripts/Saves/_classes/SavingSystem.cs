@@ -8,9 +8,9 @@ using CCEnvs.Threading;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using DG.Tweening.Plugins.Core.PathCore;
 using Newtonsoft.Json;
 using R3;
+using SuperLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,9 +18,9 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Localization.SmartFormat.Utilities;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -453,6 +453,72 @@ namespace CCEnvs.Unity.Saves
             return saveData;
         }
 
+        private SaveFileData MergeSaveFileDatas(SaveFileData left, SaveFileData right)
+        {
+            if (left == default)
+                return right;
+
+            //TODO: Is mock and all of the saving system is a big mistake
+
+            var leftSceneDatas = left.SceneDatas.Select(sceneData => (sceneData, snapshots: sceneData.Snapshots));
+            var rightSceneDatas = right.SceneDatas.Select(sceneData => (sceneData, snapshots: sceneData.Snapshots));
+
+            var interSceneDatas = new Dictionary<SaveFileSceneData, Dictionary<object?, ISnapshot>>(
+                new AnonymousEqualityComparer<SaveFileSceneData>(
+                    static (left, right) =>
+                    {
+                        return left.SceneInfo == right.SceneInfo;   
+                    },
+                    static (obj) =>
+                    {
+                        return obj.SceneInfo.GetHashCode();
+                    })
+                );
+
+            foreach (var (leftSceneData, leftSnapshots) in leftSceneDatas)
+            {
+                var leftSnapshotsPairs = leftSnapshots.Select(leftSnapshot => (leftSnapshot.Key!, leftSnapshot.Snapshot))
+                    .ToDictionary();
+
+                interSceneDatas.Add(leftSceneData, leftSnapshotsPairs!);
+            }
+
+            foreach (var (rightSceneData, rightSnapshots) in rightSceneDatas)
+            {
+                var rightSnapshotsPairs = rightSnapshots.Select(rightSnapshot => (rightSnapshot.Key!, rightSnapshot.Snapshot))
+                    .ToDictionary();
+
+                if (!interSceneDatas.TryAdd(rightSceneData, rightSnapshotsPairs!))
+                {
+                    var leftSnapshots = interSceneDatas[rightSceneData];
+
+                    foreach (var (rightSnapshotKey, righSnapshot) in rightSnapshotsPairs)
+                    {
+                        if (!leftSnapshots.TryAdd(rightSnapshotKey, righSnapshot))
+                            leftSnapshots[rightSnapshotKey] = righSnapshot;
+                    }
+                }
+            }
+
+            var mergedSceneDatas = ListPool<SaveFileSceneData>.Shared.Get();
+
+            foreach (var (sceneData, snapshotPairs) in interSceneDatas)
+            {
+                var snapshots = snapshotPairs.Select(x => new KeyedSnapshot<ISnapshot>(x.Value, x.Key)).ToArray();
+
+                var newSceneData = new SaveFileSceneData(
+                    sceneData.SceneInfo,
+                    snapshots
+                    );
+
+                mergedSceneDatas.Value.Add(newSceneData);
+            }
+
+            var mergedSaveData = new SaveFileData(right.Version, mergedSceneDatas.Value);
+
+            return mergedSaveData;
+        }
+
         private async UniTask SaveInFileAsyncCore(string path, CancellationToken cancellationToken = default)
         {
             if (IsSaveLoading)
@@ -465,15 +531,17 @@ namespace CCEnvs.Unity.Saves
             {
                 SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
 
+                var mergedSaveDate = MergeSaveFileDatas(SaveData, saveFileData);
+
                 await RegisterSnapshotsAsync(
-                    saveFileData.SceneDatas,
+                    mergedSaveDate.SceneDatas,
                     cancellationToken
                     );
 
-                saveData.Value = saveFileData;
+                saveData.Value = mergedSaveDate;
 
                 string serializedsaveFileData = JsonConvert.SerializeObject(
-                    saveFileData,
+                    mergedSaveDate,
                     CC.JsonSettings
                     );
 
@@ -483,6 +551,11 @@ namespace CCEnvs.Unity.Saves
                     cancellationToken: cTokenSource.Token
                     )
                     .ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+                throw;
             }
             finally
             {
@@ -502,17 +575,24 @@ namespace CCEnvs.Unity.Saves
             {
                 SaveFileData saveFileData = await CaptureSaveDataAsync(cancellationToken: cTokenSource.Token);
 
+                var mergedSaveDate = MergeSaveFileDatas(SaveData, saveFileData);
+
                 await RegisterSnapshotsAsync(
-                    saveFileData.SceneDatas,
+                    mergedSaveDate.SceneDatas,
                     cancellationToken
                     );
 
-                saveData.Value = saveFileData;
+                saveData.Value = mergedSaveDate;
 
                 return JsonConvert.SerializeObject(
-                    saveFileData,
+                    mergedSaveDate,
                     CC.JsonSettings
                     );
+            }
+            catch(Exception ex)
+            {
+                this.PrintException(ex);
+                throw;
             }
             finally
             {
@@ -842,8 +922,6 @@ namespace CCEnvs.Unity.Saves
             IList<SaveFileSceneData> snapshots, 
             CancellationToken cancellationToken)
         {
-            loadedSnapshots.Clear();
-
             if (snapshots.IsNullOrEmpty())
                 return;
 
@@ -874,8 +952,14 @@ namespace CCEnvs.Unity.Saves
                             continue;
                         }
 
-                        regObjInfo = new RegisteredObjectInfo(snapshotKey, snapshot.TargetType, sceneData.SceneInfo);
-                        loadedSnapshots.TryAdd(regObjInfo, snapshot);
+                        regObjInfo = new RegisteredObjectInfo(
+                            snapshotKey, 
+                            snapshot.TargetType,
+                            sceneData.SceneInfo
+                            );
+
+                        if (!loadedSnapshots.TryAdd(regObjInfo, snapshot))
+                            loadedSnapshots[regObjInfo] = snapshot;
                     }
                 }
             }

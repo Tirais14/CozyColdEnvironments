@@ -40,11 +40,9 @@ namespace CCEnvs.Patterns.Commands
             {
                 switch (ex)
                 {
-                    case TaskCanceledException:
+                    case TaskCanceledException or OperationCanceledException:
                         SetCanceled();
-                        break;
-                    case OperationCanceledException:
-                        SetCanceled();
+                        this.PrintExceptionAsLog(ex);
                         break;
                     default:
                         SetFaulted(ex);
