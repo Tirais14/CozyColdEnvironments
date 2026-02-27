@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Diagnostics;
+﻿using CCEnvs.Threading.Tasks;
+using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using System;
 using System.IO;
@@ -23,7 +24,7 @@ namespace CCEnvs.Unity.Saves
 
             Guard.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
 
-            await UniTask.SwitchToThreadPool();
+            await UniTaskHelper.TrySwitchToThreadPool();
 
             var file = new FileInfo(filePath);
 
@@ -51,8 +52,7 @@ namespace CCEnvs.Unity.Saves
             {
                 SaveSystem.readWriteSemaphore.Release();
 
-                if (configureAwait)
-                    await UniTask.SwitchToMainThread();
+                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
             }
         }
 

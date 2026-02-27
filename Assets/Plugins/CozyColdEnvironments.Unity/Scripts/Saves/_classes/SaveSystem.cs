@@ -1,6 +1,8 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,6 +15,8 @@ namespace CCEnvs.Unity.Saves
         public static IReadOnlyDictionary<Type, Func<object, ISnapshot>> Converters => converters;
 
         public static Func<object, ISnapshot> DefaultConverter { get; } = (obj) => new ValueSnapshot(obj);
+
+        public static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
 
         internal static SemaphoreSlim readWriteSemaphore {
             get

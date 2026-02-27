@@ -2,6 +2,7 @@ using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
+using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -27,8 +28,6 @@ namespace CCEnvs.Unity.Saves
     {
         [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
-
-        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(SaveCatalog));
 
         private int? hashCode;
 
@@ -124,12 +123,11 @@ namespace CCEnvs.Unity.Saves
             if (groups.IsEmpty())
                 return;
 
-            await UniTask.SwitchToThreadPool();
+            await UniTaskHelper.TrySwitchToThreadPool();
 
-            string cmdName = MethodNameBuilder.From(
+            string cmdName = InvokableNameFactory.Create(
                 this,
-                nameof(LoadGroupsFromFileAsync),
-                "d1a32322-d33f-4d5a-8e0b-6df43bfdc184"
+                nameof(LoadGroupsFromFileAsync)
                 );
 
             await Command.Builder.SetName(cmdName)
@@ -148,9 +146,11 @@ namespace CCEnvs.Unity.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
+                .ScheduleBy(SaveSystem.CommandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
+
+            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
         }
 
         public bool Equals(SaveCatalog other)
@@ -189,6 +189,8 @@ namespace CCEnvs.Unity.Saves
             CancellationToken cancellationToken = default
             )
         {
+            await UniTaskHelper.TrySwitchToThreadPool();
+
             using var tasks = new PooledArray<UniTask>(groups.Count);
 
             UniTask task;
@@ -213,8 +215,7 @@ namespace CCEnvs.Unity.Saves
             }
             finally
             {
-                if (configureAwait)
-                    await UniTask.SwitchToMainThread();
+                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
             }
         }
     }
