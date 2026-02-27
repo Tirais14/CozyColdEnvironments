@@ -6,7 +6,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace CCEnvs.Unity.UI.Profiles
 {
-    public abstract class UserProfileView: View<UserProfileViewModel>
+    public abstract class UserProfileView : View<UserProfileViewModel>
     {
         [SerializeField]
         private Image iconView;

@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.Items
         {
             base.Start();
             damageable.ObserveOnMinDurability()
-                .Subscribe(this, 
+                .Subscribe(this,
                 static (_, @this) =>
                 {
                     @this.OnDurablityOut();

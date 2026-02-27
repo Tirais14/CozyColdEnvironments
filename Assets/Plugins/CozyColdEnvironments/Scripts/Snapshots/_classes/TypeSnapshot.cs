@@ -1,7 +1,5 @@
-using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Snapshots

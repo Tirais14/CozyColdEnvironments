@@ -6,7 +6,7 @@ namespace CCEnvs.Unity.Storages.UI
 {
     public interface IInventoryViewModel
         :
-        IViewModel, 
+        IViewModel,
         IReactiveDictionaryViewModel<int, IItemContainer>
     {
     }

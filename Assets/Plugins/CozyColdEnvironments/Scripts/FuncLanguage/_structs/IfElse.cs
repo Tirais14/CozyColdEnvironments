@@ -1,10 +1,9 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using static UnityEngine.GraphicsBuffer;
+using CommunityToolkit.Diagnostics;
 
 
 #nullable enable
@@ -194,7 +193,7 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator IfElse<T>((T? value, Predicate<T>? predicate) input) 
+        public static implicit operator IfElse<T>((T? value, Predicate<T>? predicate) input)
         {
             return new IfElse<T>(input.value, input.predicate);
         }
@@ -286,7 +285,7 @@ namespace CCEnvs.FuncLanguage
             return IfElse<TOut>.None;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<L ,R> Match<L, R>(Func<T, R> If,
+        public readonly Either<L, R> Match<L, R>(Func<T, R> If,
             Func<L> Else,
             Predicate<T>? ifPredicate = null,
             Func<bool>? elsePredciate = null)

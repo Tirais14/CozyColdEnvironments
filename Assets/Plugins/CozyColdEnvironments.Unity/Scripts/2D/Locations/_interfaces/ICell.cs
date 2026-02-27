@@ -1,6 +1,5 @@
-using CCEnvs.FuncLanguage;
-using System;
 using System.Diagnostics.CodeAnalysis;
+using CCEnvs.FuncLanguage;
 using R3;
 using UnityEngine;
 using UnityEngine.Tilemaps;

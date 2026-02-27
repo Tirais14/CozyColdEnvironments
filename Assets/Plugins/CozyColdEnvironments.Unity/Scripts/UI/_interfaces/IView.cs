@@ -1,6 +1,5 @@
 #nullable enable
 #pragma warning disable IDE1006
-using CCEnvs.FuncLanguage;
 using System;
 
 namespace CCEnvs.Unity.UI

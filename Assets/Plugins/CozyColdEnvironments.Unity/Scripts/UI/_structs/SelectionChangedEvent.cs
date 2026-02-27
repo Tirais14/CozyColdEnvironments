@@ -1,7 +1,6 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using System.Collections.Generic;
-using UnityEngine.InputSystem;
+using CCEnvs.FuncLanguage;
 
 namespace CCEnvs.Unity.UI
 {
@@ -49,7 +48,7 @@ namespace CCEnvs.Unity.UI
         public readonly Maybe<TValue> newValue;
 
         public KeyValuePair<TKey, Maybe<TValue>> PreviousSelection => new(previousKey.GetValue()!, previousValue);
-        public KeyValuePair<TKey, Maybe<TValue>> NewSelection => new(newKey.GetValue()!, newValue); 
+        public KeyValuePair<TKey, Maybe<TValue>> NewSelection => new(newKey.GetValue()!, newValue);
 
         public SelectionChangedEvent(
             TKey? previousKey,

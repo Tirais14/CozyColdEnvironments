@@ -1,14 +1,12 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
-using Cysharp.Threading.Tasks;
-using System.Runtime.CompilerServices;
-using TMPro;
 using R3;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using CCEnvs.Unity.Components;
 
 #nullable enable
 #pragma warning disable IDE0044

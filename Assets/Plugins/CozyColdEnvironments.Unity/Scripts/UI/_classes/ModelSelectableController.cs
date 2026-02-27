@@ -1,11 +1,10 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.UI;
-using System;
 using System.Linq;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Unity.Components;
+using CCEnvs.Unity.UI;
 using R3;
 using UnityEngine;
 using ZLinq;
-using CCEnvs.Unity.Components;
 
 #nullable enable
 namespace CCEnvs.Unity

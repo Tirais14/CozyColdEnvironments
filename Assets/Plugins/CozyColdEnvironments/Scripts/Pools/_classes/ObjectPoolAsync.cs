@@ -1,8 +1,8 @@
 #nullable enable
-using CCEnvs.Patterns.Factories;
 using System.Threading;
+using CCEnvs.Patterns.Factories;
 
-namespace CCEnvs.Pools  
+namespace CCEnvs.Pools
 {
     public class ObjectPoolAsync<T> : ObjectPoolBase<T>, IObjectPoolAsync<T>
         where T : class
@@ -42,7 +42,7 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
-        System.Threading.Tasks.ValueTask<PooledHandle<T>>
+        System.Threading.Tasks.ValueTask<PooledObject<T>>
 #endif
             GetAsync(CancellationToken cancellationToken = default)
         {

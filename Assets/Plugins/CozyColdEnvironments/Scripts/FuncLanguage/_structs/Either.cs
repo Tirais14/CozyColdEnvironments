@@ -1,10 +1,10 @@
-using CCEnvs.TypeMatching;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using CCEnvs.TypeMatching;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3236
@@ -423,7 +423,7 @@ namespace CCEnvs.FuncLanguage
         public readonly bool Equals(Either<L, R> other)
         {
             return IsLeft
-                   && 
+                   &&
                    IsRight
                    &&
                    EqualityComparer<L?>.Default.Equals(left, other.left)

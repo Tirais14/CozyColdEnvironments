@@ -37,9 +37,9 @@ namespace CCEnvs.Unity.Components
         private void Update()
         {
             if (!didStart
-                || 
-                !didAwake 
-                || 
+                ||
+                !didAwake
+                ||
                 updateFrameCount > 0
                 )
                 return;
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Components
 
         private void FixedUpdate()
         {
-            if (!didStart 
+            if (!didStart
                 ||
                 !didAwake
                 ||
@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.Components
             if (!didStart
                 ||
                 !didAwake
-                || 
+                ||
                 lateUpdateFrameCount > 0
                 )
                 return;

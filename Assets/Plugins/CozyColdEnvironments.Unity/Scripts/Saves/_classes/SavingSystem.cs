@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
@@ -11,16 +18,8 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using SuperLinq;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Localization.SmartFormat.Utilities;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -34,7 +33,7 @@ namespace CCEnvs.Unity.Saves
         private readonly Dictionary<SceneInfo, CompositeDisposable> sceneDisposables = new();
 
         private readonly ConcurrentDictionary<RegisteredObjectInfo, ISnapshot> loadedSnapshots = new();
-        private readonly ConcurrentDictionary<RegisteredObjectInfo, CancellationTokenSource> restoreInstanceTokenSources = new(); 
+        private readonly ConcurrentDictionary<RegisteredObjectInfo, CancellationTokenSource> restoreInstanceTokenSources = new();
 
         private readonly ReactiveProperty<bool> isSaving = new();
         private readonly ReactiveProperty<bool> isSaveLoading = new();
@@ -44,7 +43,7 @@ namespace CCEnvs.Unity.Saves
 
         private UnityAction<Scene> onSceneUnloaded;
 
-        public SaveFileData SaveData => saveData.Value; 
+        public SaveFileData SaveData => saveData.Value;
 
         public bool IsSaving => isSaving.Value;
         public bool IsSaveLoading => isSaveLoading.Value;
@@ -76,16 +75,16 @@ namespace CCEnvs.Unity.Saves
         public IDisposable RegisterObject<TObject>(
             TObject obj,
             string key,
-            SceneInfo sceneInfo = default) 
+            SceneInfo sceneInfo = default)
             where TObject : class
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
             Guard.IsNotNullOrWhiteSpace(key, nameof(key));
 
             return RegisterObjectInternal(
-                obj, 
+                obj,
                 obj.GetType(),
-                key, 
+                key,
                 sceneInfo
                 );
         }
@@ -103,8 +102,8 @@ namespace CCEnvs.Unity.Saves
 
             return RegisterObjectInternal(
                 obj,
-                obj.GetType(), 
-                keyFactory, 
+                obj.GetType(),
+                keyFactory,
                 sceneInfo
                 );
         }
@@ -408,7 +407,7 @@ namespace CCEnvs.Unity.Saves
 
         public bool TryRestoreInstanceFromMemoryAsync(
             object obj,
-            string key, 
+            string key,
             SceneInfo byScene = default
             )
         {
@@ -467,7 +466,7 @@ namespace CCEnvs.Unity.Saves
                 new AnonymousEqualityComparer<SaveFileSceneData>(
                     static (left, right) =>
                     {
-                        return left.SceneInfo == right.SceneInfo;   
+                        return left.SceneInfo == right.SceneInfo;
                     },
                     static (obj) =>
                     {
@@ -589,7 +588,7 @@ namespace CCEnvs.Unity.Saves
                     CC.JsonSettings
                     );
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.PrintException(ex);
                 throw;
@@ -845,7 +844,7 @@ namespace CCEnvs.Unity.Saves
 
             if (TryRestoreInstanceFromMemoryAsyncCore(
                 obj,
-                objType, 
+                objType,
                 keyOrFactory,
                 sceneInfo))
             {
@@ -919,7 +918,7 @@ namespace CCEnvs.Unity.Saves
         }
 
         private async UniTask RegisterSnapshotsAsync(
-            IList<SaveFileSceneData> snapshots, 
+            IList<SaveFileSceneData> snapshots,
             CancellationToken cancellationToken)
         {
             if (snapshots.IsNullOrEmpty())
@@ -928,7 +927,7 @@ namespace CCEnvs.Unity.Saves
             RegisteredObjectInfo regObjInfo;
 
 #if !PLATFORM_WEBGL
-                await UniTask.SwitchToThreadPool();
+            await UniTask.SwitchToThreadPool();
             try
 #endif
             {
@@ -953,7 +952,7 @@ namespace CCEnvs.Unity.Saves
                         }
 
                         regObjInfo = new RegisteredObjectInfo(
-                            snapshotKey, 
+                            snapshotKey,
                             snapshot.TargetType,
                             sceneData.SceneInfo
                             );

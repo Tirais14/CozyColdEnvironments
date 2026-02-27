@@ -27,9 +27,9 @@ namespace CCEnvs
 
             const Direction2D BOTTOM = Direction2D.Left | Direction2D.Right | Direction2D.Up;
 
-            const Direction2D LEFT =  Direction2D.Right | Direction2D.Down | Direction2D.Up;
-            const Direction2D LEFT_TOP =  Direction2D.Right | Direction2D.Down;
-            const Direction2D LEFT_BOTTOM =  Direction2D.Right | Direction2D.Up;
+            const Direction2D LEFT = Direction2D.Right | Direction2D.Down | Direction2D.Up;
+            const Direction2D LEFT_TOP = Direction2D.Right | Direction2D.Down;
+            const Direction2D LEFT_BOTTOM = Direction2D.Right | Direction2D.Up;
 
             const Direction2D RIGHT = Direction2D.Left | Direction2D.Down | Direction2D.Up;
             const Direction2D RIGHT_TOP = Direction2D.Left | Direction2D.Down;
@@ -59,7 +59,8 @@ namespace CCEnvs
         }
 
         public static bool IsDiagonal(this Direction2D direction) =>
-            direction switch {
+            direction switch
+            {
                 Direction2D.LeftUp => true,
                 Direction2D.LeftDown => true,
                 Direction2D.RightUp => true,

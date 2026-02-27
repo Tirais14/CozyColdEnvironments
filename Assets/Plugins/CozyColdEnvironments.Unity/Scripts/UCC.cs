@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
@@ -6,9 +8,6 @@ using CCEnvs.Unity.Items;
 using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
 using Cysharp.Threading.Tasks;
-using System;
-using System.Collections.ObjectModel;
-using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -71,17 +70,17 @@ namespace CCEnvs.Unity
             });
 
         public static Lazy<Sprite> ColorSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/ColorSprite"));
-       
+
         public static Lazy<Sprite> Transparent { get; } = new(static () => Resources.Load<Sprite>("Textures/DummySprite"));
-       
+
         public static Lazy<Sprite> RedCrossSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/RedCross"));
-        
+
         public static Lazy<IInventory> WorldInventory { get; } = new(static () => new Inventory());
-        
+
         public static Lazy<Material> MockMaterial { get; } = new(static () => Resources.Load<Material>("CC/Mock_Material"));
-        
+
         public static Canvas DevCanvas => _devCanvas.Value;
-       
+
         public static GameObject PooledObjectsParent => _pooledObjectsParent.Value;
 
         public static Sprite AnonymousProfileImage => anonymousProfileImage.Value;

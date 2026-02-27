@@ -11,7 +11,7 @@ namespace CCEnvs
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IntBitMask(int value)
         {
-            Value = value; 
+            Value = value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -3,7 +3,7 @@ namespace CCEnvs.Diagnostics
     public enum LogType
     {
         None,
-        Log, 
+        Log,
         Warning,
         Error,
         Exception,

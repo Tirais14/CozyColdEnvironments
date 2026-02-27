@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Attributes
@@ -11,6 +10,6 @@ namespace CCEnvs.Attributes
         )]
     public class OnInstallAttribute : Attribute, ICCAttribute
     {
-    
+
     }
 }

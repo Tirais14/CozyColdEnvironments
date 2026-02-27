@@ -1,4 +1,10 @@
-﻿using CCEnvs.Attributes.Serialization;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
@@ -8,12 +14,6 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -130,7 +130,7 @@ namespace CCEnvs.Unity.Saves
         }
 
         public bool TryResolveKey(
-            object obj, 
+            object obj,
             [NotNullWhen(true)] out string? key
             )
         {
@@ -226,9 +226,10 @@ namespace CCEnvs.Unity.Saves
         {
             await UniTaskHelper.TrySwitchToThreadPool();
 
-            string cmdName = InvokableNameFactory.Create(
+            string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(GetSaveDataFromFileAsync)
+                nameof(GetSaveDataFromFileAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
             var result = new ValueReference<SaveData?>();
@@ -269,9 +270,10 @@ namespace CCEnvs.Unity.Saves
 
             await UniTaskHelper.TrySwitchToThreadPool();
 
-            string cmdName = InvokableNameFactory.Create(
+            string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(LoadSaveDataFromFileAsync)
+                nameof(LoadSaveDataFromFileAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
             await Command.Builder.SetName(cmdName)

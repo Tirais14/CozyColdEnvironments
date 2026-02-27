@@ -1,12 +1,12 @@
 #nullable enable
-using CCEnvs.Attributes;
-using CCEnvs.Collections;
-using CCEnvs.Reflection;
-using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.Attributes;
+using CCEnvs.Collections;
+using CCEnvs.Reflection;
+using SuperLinq;
 
 namespace CCEnvs
 {
@@ -106,7 +106,7 @@ namespace CCEnvs
         }
 
         private static void OnInstallExecuteMethods(
-            object? target, 
+            object? target,
             IEnumerable<MemberInfo> members,
             MemberInfo[]? domainMembers
             )
@@ -132,7 +132,7 @@ namespace CCEnvs
                 {
                     if (prms.IsNotNullOrEmpty() && domainMembers.IsNotNullOrEmpty())
                     {
-                        method.Invoke(target, new object[] { domainMembers});
+                        method.Invoke(target, new object[] { domainMembers });
                         continue;
                     }
 

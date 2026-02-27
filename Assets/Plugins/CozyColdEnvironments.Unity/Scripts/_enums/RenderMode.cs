@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace CCEnvs.Unity
 {
     public enum RenderMode

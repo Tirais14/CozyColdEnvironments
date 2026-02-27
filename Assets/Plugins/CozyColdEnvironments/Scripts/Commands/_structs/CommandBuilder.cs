@@ -1,12 +1,12 @@
-using CCEnvs.Attributes;
-using CCEnvs.Pools;
-using CCEnvs.Reflection;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CCEnvs.Attributes;
+using CCEnvs.Pools;
+using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3218
@@ -92,7 +92,7 @@ namespace CCEnvs.Patterns.Commands
             return this;
         }
 
-        public struct Intermediate 
+        public struct Intermediate
         {
             private readonly CommandBuilder builder;
 
@@ -240,7 +240,7 @@ namespace CCEnvs.Patterns.Commands
                 {
                     Name = builder.Name ?? string.Empty,
                     IsSingle = builder.IsSingle,
-                    DelayFrameCount = builder.DelayFrameCount,  
+                    DelayFrameCount = builder.DelayFrameCount,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,

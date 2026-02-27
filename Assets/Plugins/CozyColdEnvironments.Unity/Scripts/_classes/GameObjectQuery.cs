@@ -1,15 +1,14 @@
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Linq;
-using CCEnvs.Reflection;
-using CCEnvs.Unity.UI;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
+using CCEnvs.Reflection;
+using CCEnvs.Unity.UI;
+using CommunityToolkit.Diagnostics;
 using UnityEngine;
 using ZLinq;
 using Object = UnityEngine.Object;
@@ -71,7 +70,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery SetTarget(GameObject gameObject)
         {
-            if (gameObject .IsNull())
+            if (gameObject.IsNull())
             {
                 this.PrintError($"{nameof(gameObject)} is null.");
                 return this;
@@ -596,7 +595,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Component AddComponent<T>() where T : Component
         {
-            return AddComponent(typeof(T)); 
+            return AddComponent(typeof(T));
         }
 
         [DebuggerStepThrough]
@@ -607,7 +606,7 @@ namespace CCEnvs.Unity
         }
 
         protected virtual IEnumerable<Component> CustomParentSearch(
-            GameObject target, 
+            GameObject target,
             Type type)
         {
             bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
@@ -691,7 +690,7 @@ namespace CCEnvs.Unity
             {
                 child = toProcess.Dequeue();
 
-                if (hasDepthLimiter 
+                if (hasDepthLimiter
                     &&
                     !FilterByDepthLimiter(child, depthLimiter.GetValueUnsafe(), includeInactive)
                     )

@@ -1,12 +1,12 @@
-﻿using CCEnvs.Diagnostics;
+﻿using System;
+using System.IO;
+using System.IO.Compression;
+using System.Threading;
+using CCEnvs.Diagnostics;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.Saves
                 using var fileStream = file.OpenRead();
 
                 if (fileStream.Length == 0)
-                return string.Empty;
+                    return string.Empty;
 
                 var decompressed = await TryDecompressAsync(fileStream);
 

@@ -1,9 +1,8 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
-using CCEnvs.Json.Converters;
-using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using CCEnvs.Json.Converters;
+using Newtonsoft.Json;
 
 namespace CCEnvs.Snapshots
 {
@@ -25,7 +24,7 @@ namespace CCEnvs.Snapshots
 
         bool CanRestore(T? target);
 
-       bool ISnapshot.TryRestore(object? target, [NotNullWhen(true)] out object? restored)
+        bool ISnapshot.TryRestore(object? target, [NotNullWhen(true)] out object? restored)
         {
             var isRestored = TryRestore((T)target!, out var restoredTyped);
             restored = restoredTyped;

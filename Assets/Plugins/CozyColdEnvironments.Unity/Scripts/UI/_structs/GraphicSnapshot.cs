@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Snapshots.UI
             :
             base(target)
         {
-            Color =  target.color;
+            Color = target.color;
             RaycastTarget = target.raycastTarget;
         }
 

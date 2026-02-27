@@ -1,8 +1,8 @@
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Linq
@@ -25,10 +25,10 @@ namespace CCEnvs.Linq
         readonly object IEnumerator.Current => Current!;
 
         public SelectStatedEnumerator(
-            IEnumerable<T> source, 
+            IEnumerable<T> source,
             TState state,
             Func<T, TState, TOut> converter
-            ) 
+            )
             :
             this()
         {

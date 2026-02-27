@@ -1,5 +1,5 @@
-using CommunityToolkit.Diagnostics;
 using System;
+using CommunityToolkit.Diagnostics;
 using UnityEngine;
 
 #nullable enable

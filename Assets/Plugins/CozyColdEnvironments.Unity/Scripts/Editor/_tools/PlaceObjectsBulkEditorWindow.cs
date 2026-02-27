@@ -1,13 +1,8 @@
-using CCEnvs.UnityEditor;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
+using CCEnvs.UnityEditor;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 
 #nullable enable
 namespace CCEnvs.Unity.EditorC

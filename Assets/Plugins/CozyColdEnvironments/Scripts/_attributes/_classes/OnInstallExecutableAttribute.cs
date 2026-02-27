@@ -5,7 +5,7 @@ namespace CCEnvs.Attributes
 {
     [AttributeUsage(
         AttributeTargets.Method | AttributeTargets.Field,
-        AllowMultiple = false, 
+        AllowMultiple = false,
         Inherited = true
         )]
     public class OnInstallExecutableAttribute : OnInstallAttribute, ICCAttribute

@@ -1,8 +1,4 @@
 #nullable enable
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
-using Humanizer;
-using R3;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -10,6 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Timers;
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 using UnityEditor;
 
 #pragma warning disable S3267
@@ -31,7 +30,7 @@ namespace CCEnvs.Caching
             {
                 _expirationScanFrequency = value;
                 timer.Interval = _expirationScanFrequency.TotalMilliseconds;
-            } 
+            }
         }
         public int? SizeLimit {
             get => _sizeLimit;
@@ -164,7 +163,7 @@ namespace CCEnvs.Caching
 
         public bool TryAdd(
             TKey key,
-            TValue value, 
+            TValue value,
             [NotNullWhen(true)] out ICacheEntry<TValue>? entry)
         {
             Guard.IsNotNull(value, nameof(value));

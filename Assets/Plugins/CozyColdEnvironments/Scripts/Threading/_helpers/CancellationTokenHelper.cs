@@ -1,5 +1,5 @@
-using CCEnvs.Collections;
 using System.Threading;
+using CCEnvs.Collections;
 
 #nullable enable
 namespace CCEnvs.Threading
@@ -53,7 +53,7 @@ namespace CCEnvs.Threading
         }
 
         public static CancellationTokenSource LinkTokens(
-            this CancellationToken source, 
+            this CancellationToken source,
             params CancellationToken[] cancellationTokens)
         {
             return CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens.PrependToArray(source));
@@ -140,7 +140,7 @@ namespace CCEnvs.Threading
 
         public static CancellationTokenSource? TryLinkTokens(
             this CancellationToken source,
-            CancellationToken other, 
+            CancellationToken other,
             out CancellationToken result)
         {
             if (!source.TryLinkTokens(other).Let(out var tokenSource))

@@ -1,5 +1,3 @@
-using CCEnvs.FuncLanguage;
-
 #nullable enable
 namespace CCEnvs.Unity.CommonAPIs
 {

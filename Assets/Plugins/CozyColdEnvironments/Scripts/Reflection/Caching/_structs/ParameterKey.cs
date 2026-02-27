@@ -1,9 +1,8 @@
-using CCEnvs.Reflection.Caching;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using CCEnvs.Reflection.Caching;
 
 #nullable enable
 namespace CCEnvs.Reflection
@@ -39,7 +38,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator ParameterKey(ParameterInfo param)
         {
-            return new ParameterKey(param); 
+            return new ParameterKey(param);
         }
 
         public readonly bool Equals(ParameterKey other)

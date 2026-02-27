@@ -1,5 +1,4 @@
 #nullable enable
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -25,12 +24,12 @@ namespace CCEnvs.Reflection
             this()
         {
             this.method = method;
-            MethodReflectionHandle = methodCore; 
+            MethodReflectionHandle = methodCore;
         }
 
         public static bool operator ==(ReflectionMethodCachedInvokableHandle left, ReflectionMethodCachedInvokableHandle right)
         {
-            return left.Equals(right); 
+            return left.Equals(right);
         }
 
         public static bool operator !=(ReflectionMethodCachedInvokableHandle left, ReflectionMethodCachedInvokableHandle right)

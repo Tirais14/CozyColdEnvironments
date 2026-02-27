@@ -1,9 +1,6 @@
-using CCEnvs.Threading;
-using Cysharp.Threading.Tasks;
-using Microsoft.Extensions.ObjectPool;
 using System;
-using System.Buffers;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -69,11 +66,16 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
             Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
-            System.Threading.Tasks.ValueTask<PooledHandle<T>>
+            System.Threading.Tasks.ValueTask<PooledObject<T>>
 #endif
                 >(batchSize);
 
-            UniTask<PooledObject<T>> task;
+#if UNITASK_PLUGIN
+            Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
+#else
+            System.Threading.Tasks.ValueTask<PooledObject<T>>
+#endif
+                task;
 
             int processedCount = 0;
 
@@ -121,7 +123,7 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
             Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
-            System.Threading.Tasks.ValueTask<PooledHandle<T>>
+            System.Threading.Tasks.ValueTask<PooledObject<T>>
 #endif
             GetFromPoolAsync(CancellationToken cancellationToken)
         {

@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Interactables
             return TryInteract(input.AsObsolete<TIn>().Raw, out result);
         }
     }
-    public interface IInteractable<in TIn, TOut> 
+    public interface IInteractable<in TIn, TOut>
         : IInteractable<TIn>
     {
         bool TryInteract(TIn? input, out Maybe<TOut> result);

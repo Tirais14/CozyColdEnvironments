@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Saves
 
         /// <inheritdoc cref="ISavingSystem.RegisterUnityObjectAsync(GameObject, SceneInfo)"/>
         public static IDisposable SavingSystemRegisterUnityObject(
-            this GameObject source, 
+            this GameObject source,
             SceneInfo sceneInfo = default
             )
         {
@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.Saves
 
         /// <inheritdoc cref="ISavingSystem.RegisterUnityObjectAsync(Component, SceneInfo)"/>
         public static IDisposable SavingSystemRegisterUnityObject(
-            this Component source, 
+            this Component source,
             SceneInfo sceneInfo = default
             )
         {

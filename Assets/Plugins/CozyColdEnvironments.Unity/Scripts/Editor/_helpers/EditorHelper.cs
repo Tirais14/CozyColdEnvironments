@@ -1,9 +1,9 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using UnityEditor;
 using UnityEngine.UIElements;
 
@@ -28,7 +28,7 @@ namespace CCEnvs.UnityEditor
         [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>
         public static void AddUIElementsByReflection(
-            Type type, 
+            Type type,
             object editorInstance,
             VisualElement root
             )

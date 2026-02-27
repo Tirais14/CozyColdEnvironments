@@ -1,5 +1,3 @@
-using UnityEngine;
-
 #nullable enable
 namespace CCEnvs.FuncLanguage
 {

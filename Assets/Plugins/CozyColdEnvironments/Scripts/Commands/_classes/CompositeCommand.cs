@@ -1,12 +1,12 @@
 #nullable enable
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
+using R3;
 
 namespace CCEnvs.Patterns.Commands
 {

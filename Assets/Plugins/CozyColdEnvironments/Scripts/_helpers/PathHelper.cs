@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
 using SuperLinq;
@@ -59,7 +57,8 @@ namespace CCEnvs.Files
         /// <exception cref="IncorrectDataException"></exception>
         public static char GetDirectorySeparator(PathStyle style = PathStyle.Default)
         {
-            return style switch {
+            return style switch
+            {
                 PathStyle.Default => PathEntry.DefaultDirectorySeparator,
                 PathStyle.Windows => '\\',
                 PathStyle.Universal => '/',
@@ -71,10 +70,11 @@ namespace CCEnvs.Files
         {
             if (path is null)
                 throw new ArgumentNullException(nameof(path));
-            if (path.IsEmpty()) 
+            if (path.IsEmpty())
                 return path;
 
-            return style switch {
+            return style switch
+            {
                 PathStyle.Default => path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar),
                 PathStyle.Windows => path.Replace('/', '\\'),
                 PathStyle.Universal => path.Replace('\\', '/'),
@@ -86,7 +86,7 @@ namespace CCEnvs.Files
         {
             if (pathParts is null)
                 throw new ArgumentNullException(nameof(pathParts));
-            if (pathParts.IsEmpty()) 
+            if (pathParts.IsEmpty())
                 return string.Empty;
             if (pathParts.Length == 1)
                 return SetStyle(pathParts[0], style);
@@ -135,7 +135,7 @@ namespace CCEnvs.Files
         {
             if (path is null)
                 throw new ArgumentNullException(nameof(path));
-            if (path.IsEmpty()) 
+            if (path.IsEmpty())
                 return string.Empty;
 
             string[] parts = Split(path);

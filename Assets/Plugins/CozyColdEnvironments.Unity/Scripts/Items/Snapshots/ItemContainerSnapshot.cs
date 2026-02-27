@@ -1,6 +1,6 @@
+using System;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Snapshots;
-using System;
 using UnityEngine;
 
 #nullable enable
@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.Items.Snapshots
 
         public bool UnlockCapacity {
             get => unlockCapacity;
-            set => unlockCapacity = value;  
+            set => unlockCapacity = value;
         }
 
         public ItemContainerSnapshot()
@@ -63,10 +63,10 @@ namespace CCEnvs.Unity.Items.Snapshots
                 count: target.ItemCount,
                 capacity: target.Capacity,
                 isReadOnlyContainer: target.IsReadOnlyContainer)
-                {
-                    UnlockCapacity = target.UnlockCapacity,
-                    Capacity = target.Capacity
-                })
+            {
+                UnlockCapacity = target.UnlockCapacity,
+                Capacity = target.Capacity
+            })
         {
         }
 

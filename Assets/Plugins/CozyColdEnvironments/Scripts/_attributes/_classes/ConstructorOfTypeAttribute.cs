@@ -3,8 +3,8 @@ using System;
 
 namespace CCEnvs.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, 
-        AllowMultiple = true, 
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
+        AllowMultiple = true,
         Inherited = true)]
     public class ConstructorOfTypeAttribute : Attribute, ICCAttribute
     {

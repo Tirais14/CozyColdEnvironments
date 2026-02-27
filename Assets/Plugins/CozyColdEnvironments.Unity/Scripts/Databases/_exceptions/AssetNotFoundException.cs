@@ -1,5 +1,5 @@
-using CCEnvs.Diagnostics;
 using System;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.Databases
@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.Databases
         }
 
         public AssetNotFoundException(IAssetDatabase? db, Identifier? id, Type? type)
-            : 
+            :
             base(Sentence.Empty.AddIfNotDefault(() => $"Database: {db},...", db)
                 .Add($"ID: {id},...")
                 .AddIfNotDefault(() => $"type: {type},...", type)

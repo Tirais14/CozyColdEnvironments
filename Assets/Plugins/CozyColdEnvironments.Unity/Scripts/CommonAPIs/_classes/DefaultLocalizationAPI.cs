@@ -1,6 +1,3 @@
-using R3;
-using UnityEngine.Localization.Settings;
-
 #nullable enable
 namespace CCEnvs.Unity.CommonAPIs
 {

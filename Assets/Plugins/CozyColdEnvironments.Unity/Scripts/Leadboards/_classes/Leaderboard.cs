@@ -1,20 +1,20 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.Linq;
 using CCEnvs.Unity.Profiles;
 using ObservableCollections;
 using R3;
 using SuperLinq;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Leaderboards
 {
     public sealed class Leaderboard
-        : 
+        :
         ILeaderboard
     {
         private readonly List<IDisposable> disposables = new();
@@ -39,10 +39,10 @@ namespace CCEnvs.Unity.Leaderboards
 
         public IUserProfile? SpecialProfile {
             get => specialProfile.Value;
-            set => specialProfile.Value = value; 
+            set => specialProfile.Value = value;
         }
 
-        public ILeaderboardEntry? SpecialEntry => specialEntry.Value;   
+        public ILeaderboardEntry? SpecialEntry => specialEntry.Value;
 
         public IComparer<ILeaderboardEntry> Comparer { get; set; } = null!;
 

@@ -1,9 +1,7 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.TypeMatching;
-using Humanizer;
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using CCEnvs.FuncLanguage;
+using CCEnvs.TypeMatching;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 

@@ -1,16 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public static class SaveSystem 
+    public static class SaveSystem
     {
         public static IReadOnlyDictionary<Type, Func<object, ISnapshot>> Converters => converters;
 
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Saves
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return converters.Remove(type);   
+            return converters.Remove(type);
         }
 
         public static bool UnregisterType<T>()

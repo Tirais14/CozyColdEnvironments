@@ -1,11 +1,10 @@
+using System;
+using System.Reflection;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Linq;
-using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -15,7 +14,7 @@ namespace CCEnvs.Json
         public object Source { get; init; }
         public ValuedMemberInfo? ValuedMember => Source as ValuedMemberInfo;
         public string Name { get; init; }
-        public Func<object, object?>? Get { get; init; } 
+        public Func<object, object?>? Get { get; init; }
         public Action<object, object?>? Set { get; init; }
         public Type UnderlyingType { get; init; }
         public Required Required { get; init; }
@@ -115,7 +114,7 @@ namespace CCEnvs.Json
 
             if (member is FieldInfo field)
                 return Match(new JsonPropertyInfo(field));
-            
+
             if (member is ParameterInfo param)
                 return Match(new JsonPropertyInfo(param));
 

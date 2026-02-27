@@ -1,6 +1,5 @@
-using CCEnvs.Returnables;
 using System;
-using System.Reflection;
+using CCEnvs.Returnables;
 
 #nullable enable
 #pragma warning disable S3881
@@ -36,7 +35,7 @@ namespace CCEnvs.Disposables
         }
     }
 
-    public sealed class Subscription<TObserver, TObservable> 
+    public sealed class Subscription<TObserver, TObservable>
         : ISubscription<TObserver, TObservable>
     {
         private readonly Subscription.Disposer<TObserver, TObservable> disposer;

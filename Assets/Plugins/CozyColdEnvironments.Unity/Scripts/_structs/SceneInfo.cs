@@ -1,9 +1,8 @@
+using System;
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.EditorSerialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -47,7 +46,7 @@ namespace CCEnvs.Unity
 
         public static bool operator ==(SceneInfo left, SceneInfo right)
         {
-            return left.Equals(right); 
+            return left.Equals(right);
         }
 
         public static bool operator !=(SceneInfo left, SceneInfo right)

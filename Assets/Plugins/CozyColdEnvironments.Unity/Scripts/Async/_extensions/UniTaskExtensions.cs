@@ -1,6 +1,6 @@
+using System.Runtime.CompilerServices;
 using CCEnvs.Diagnostics;
 using Cysharp.Threading.Tasks;
-using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs.Unity.Async

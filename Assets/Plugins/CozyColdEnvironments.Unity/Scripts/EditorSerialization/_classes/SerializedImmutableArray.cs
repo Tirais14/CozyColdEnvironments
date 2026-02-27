@@ -14,7 +14,7 @@ namespace CCEnvs.Unity.EditorSerialization
         {
         }
 
-        public SerializedImmutableArray(ImmutableArray<T> defaultValue) 
+        public SerializedImmutableArray(ImmutableArray<T> defaultValue)
             :
             base(defaultValue)
         {

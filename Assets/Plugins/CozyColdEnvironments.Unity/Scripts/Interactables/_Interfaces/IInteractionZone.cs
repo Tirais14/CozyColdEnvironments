@@ -1,5 +1,3 @@
-using CCEnvs.FuncLanguage;
-using System;
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
@@ -7,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Interactables
 {
-    public interface IInteractionZone 
+    public interface IInteractionZone
     {
         object InteractionAgent { get; }
         IEnumerable<GameObject> GameObjects { get; }

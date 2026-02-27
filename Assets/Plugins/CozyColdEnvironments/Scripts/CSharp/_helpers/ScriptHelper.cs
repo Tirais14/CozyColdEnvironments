@@ -1,7 +1,6 @@
 #nullable enable
-using CCEnvs.Extensions;
-using System;
 using System.Linq;
+using CCEnvs.Extensions;
 
 namespace CCEnvs.CHSarp
 {

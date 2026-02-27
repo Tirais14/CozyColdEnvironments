@@ -1,7 +1,6 @@
+using System;
 using CCEnvs.Diagnostics;
 using R3;
-using System;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 #nullable enable
@@ -16,7 +15,7 @@ namespace CCEnvs.Unity
             if (source.parent.name.Contains("___DevCanvas"))
                 return Disposable.Empty;
 
-            var args = 
+            var args =
             (
                 Instance: source,
                 SiblingIdx: source.GetSiblingIndex(),

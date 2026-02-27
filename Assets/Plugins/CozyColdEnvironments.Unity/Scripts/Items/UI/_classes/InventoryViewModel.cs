@@ -1,10 +1,9 @@
+using System.Collections.Generic;
+using System.Threading;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
-using System;
-using System.Collections.Generic;
-using R3;
 using ObservableCollections;
-using System.Threading;
+using R3;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -21,7 +20,7 @@ namespace CCEnvs.Unity.Storages.UI
         public ReactiveCommand<int> Remove => remove;
         public ReactiveCommand<KeyValuePair<int, IItemContainer>> Replace => replace;
 
-        public InventoryViewModel(TModel model, CancellationToken cancellationToken) 
+        public InventoryViewModel(TModel model, CancellationToken cancellationToken)
             :
             base(model, cancellationToken)
         {

@@ -1,13 +1,13 @@
-using CCEnvs.Caching;
-using CCEnvs.Collections;
-using CCEnvs.Reflection.Caching;
-using Humanizer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using CCEnvs.Caching;
+using CCEnvs.Collections;
+using CCEnvs.Reflection.Caching;
+using Humanizer;
 
 #nullable enable
 namespace CCEnvs.Reflection
@@ -29,7 +29,7 @@ namespace CCEnvs.Reflection
             :
             this()
         {
-            BaseReflectionHandle = baseReflectionHandle; 
+            BaseReflectionHandle = baseReflectionHandle;
         }
 
         public static bool operator ==(ReflectionFieldHandle left, ReflectionFieldHandle right)
@@ -146,7 +146,7 @@ namespace CCEnvs.Reflection
             CachedMembers.TryAddField(field);
         }
 
-        public struct FieldEnumerator 
+        public struct FieldEnumerator
             :
             IEnumerator<FieldInfo?>,
             IEnumerable<FieldInfo>
@@ -160,8 +160,8 @@ namespace CCEnvs.Reflection
             public FieldEnumerator(
                 ReflectionFieldHandle reflectionHandle,
                 IEnumerable<MemberInfo> source
-                ) 
-                : 
+                )
+                :
                 this()
             {
                 this.reflectionHandle = reflectionHandle;

@@ -32,7 +32,7 @@ namespace CCEnvs
         }
 
         public LazyCC(System.Func<T> valueFactory,
-                    bool isThreadSafe) 
+                    bool isThreadSafe)
             : base(valueFactory,
                    isThreadSafe)
         {

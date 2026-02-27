@@ -9,7 +9,7 @@ namespace CCEnvs.Pools
 #if UNITASK_PLUGIN
         Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
 #else
-        System.Threading.Tasks.ValueTask<PooledHandle<T>>
+        System.Threading.Tasks.ValueTask<PooledObject<T>>
 #endif
             GetAsync(CancellationToken cancellationToken = default);
     }

@@ -1,6 +1,6 @@
-﻿using CCEnvs.Collections;
+﻿using System;
+using CCEnvs.Collections;
 using Newtonsoft.Json;
-using System;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.Saves
             if (serialized.IsNullOrWhiteSpace())
             {
                 //TODO: Remove extra null validation
-                if(serialized is null)
+                if (serialized is null)
                     typeof(SaveSerializer).PrintError($"Argument {serialized} is null");
 
                 return new arr<SaveData>();
@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.Saves
                 if (saveDatas is null)
                 {
                     typeof(SaveSerializer).PrintWarning($"Nothing deserialized from: {Environment.NewLine}{serialized}");
-                    
+
                     return new arr<SaveData>();
                 }
 
@@ -62,7 +62,7 @@ namespace CCEnvs.Unity.Saves
                 typeof(SaveSerializer).PrintException(ex);
 
                 return string.Empty;
-            } 
+            }
         }
     }
 }

@@ -41,7 +41,7 @@ namespace CCEnvs.Unity.EditorSerialization
                 Assembly = Assembly.Raw,
                 Namespace = Namespace,
                 TypeName = TypeName,
-                IgnoreCase = IgnoreCase,  
+                IgnoreCase = IgnoreCase,
             },
             throwIfNotFound);
         }

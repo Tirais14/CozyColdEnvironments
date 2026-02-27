@@ -1,5 +1,5 @@
-using CommunityToolkit.Diagnostics;
 using System;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs
@@ -9,7 +9,7 @@ namespace CCEnvs
         public static LazyLight<T> CreateByNew<T>()
             where T : new()
         {
-            return new LazyLight<T>(() => new T()); 
+            return new LazyLight<T>(() => new T());
         }
 
         public static LazyLight<T> Create<T>(Func<T> factory)
@@ -55,7 +55,7 @@ namespace CCEnvs
         private T value;
 
         public T Value => GetValue();
-        public bool HasValue { get; private set; }  
+        public bool HasValue { get; private set; }
 
         public LazyLight(TState state, Func<TState, T> factory)
             :

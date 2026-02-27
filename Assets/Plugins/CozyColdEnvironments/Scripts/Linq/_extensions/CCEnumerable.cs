@@ -1,14 +1,12 @@
-using CCEnvs.Collections;
-using CCEnvs.Conversations;
-using CCEnvs.Pools;
-using CommunityToolkit.Diagnostics;
-using SuperLinq;
 using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CCEnvs.Conversations;
+using CommunityToolkit.Diagnostics;
+using SuperLinq;
 
 #nullable enable
 namespace CCEnvs.Linq
@@ -134,7 +132,7 @@ namespace CCEnvs.Linq
 
             var hash = new HashCode();
 
-            foreach ( var item in values)
+            foreach (var item in values)
                 hash.Add(item);
 
             return hash.ToHashCode();
@@ -217,7 +215,7 @@ namespace CCEnvs.Linq
         {
             CC.Guard.IsNotNull(values, nameof(values));
 
-            var results = new Queue<T>();   
+            var results = new Queue<T>();
             foreach (var value in values)
                 results.Enqueue(value);
 
@@ -253,7 +251,7 @@ namespace CCEnvs.Linq
 
             int i = 0;
 
-            T? first  = default;
+            T? first = default;
 
             foreach (var item in source)
             {
@@ -489,7 +487,7 @@ namespace CCEnvs.Linq
 
         public static T First<T, TState>(
             this IEnumerable<T> source,
-            TState state, 
+            TState state,
             Func<T, TState, bool> predicate
             )
         {

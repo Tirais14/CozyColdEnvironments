@@ -2,8 +2,8 @@
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable S2325 // Methods and properties that don't access instance data should be static
 
-using CCEnvs.Unity.Components;
 using System;
+using CCEnvs.Unity.Components;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Diagnostics
@@ -16,10 +16,12 @@ namespace CCEnvs.Unity.Diagnostics
         private static GizmosDrawer? instanceInternal;
 
         private static GizmosDrawer instance {
-            get {
+            get
+            {
                 if (instanceInternal == null)
                 {
-                    GameObject go = new(nameof(GizmosDrawer), typeof(GizmosDrawer)){
+                    GameObject go = new(nameof(GizmosDrawer), typeof(GizmosDrawer))
+                    {
                         isStatic = true
                     };
 

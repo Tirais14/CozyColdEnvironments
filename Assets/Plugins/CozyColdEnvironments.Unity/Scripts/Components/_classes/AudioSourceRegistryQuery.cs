@@ -1,8 +1,8 @@
-using CommunityToolkit.Diagnostics;
-using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using UnityEngine;
 
 #nullable enable
@@ -22,8 +22,8 @@ namespace CCEnvs.Unity.Components
         public IEnumerable<AudioSourceManagerEntry> AudioSourceEntries { get; set; } = null!;
 
         public IEnumerable<AudioSourceManagerEntry> RawAudioSourceEntries {
-            get => _rawAudioSourceEntries ?? AudioSourceEntries; 
-            private set => _rawAudioSourceEntries = value ?? Array.Empty<AudioSourceManagerEntry>(); 
+            get => _rawAudioSourceEntries ?? AudioSourceEntries;
+            private set => _rawAudioSourceEntries = value ?? Array.Empty<AudioSourceManagerEntry>();
         }
 
         public Settings settings { get; set; }

@@ -1,8 +1,8 @@
 #nullable enable
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Diagnostics;
 
 #pragma warning disable S3236
 namespace CCEnvs.FuncLanguage
@@ -88,7 +88,7 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TOutValue Match<T, TValue, TOutValue>(T input, 
+        public static TOutValue Match<T, TValue, TOutValue>(T input,
             Func<TValue, TOutValue> some,
             Func<TOutValue> none)
             where T : struct, IConditional<TValue>

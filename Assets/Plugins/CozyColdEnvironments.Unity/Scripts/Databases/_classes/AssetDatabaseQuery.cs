@@ -1,12 +1,12 @@
-using CCEnvs.Collections;
-using CCEnvs.Reflection;
-using CCEnvs.TypeMatching;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using CCEnvs.Collections;
+using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using ZLinq;
 
 #nullable enable
@@ -122,7 +122,7 @@ namespace CCEnvs.Unity.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<IAssetDatabase> Database(Type? assetType = null, Type ? type = null)
+        public readonly Result<IAssetDatabase> Database(Type? assetType = null, Type? type = null)
         {
             var dbs = Databases(type, assetType);
 

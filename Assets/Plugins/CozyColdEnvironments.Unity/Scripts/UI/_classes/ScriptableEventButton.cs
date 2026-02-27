@@ -1,9 +1,9 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Events;
-using UnityEngine.UI;
-using UnityEngine;
 using CCEnvs.Unity.Injections;
-using CCEnvs.FuncLanguage;
+using UnityEngine;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.UI
         [GetBySelf]
         private Button m_Button = null!;
 
-        public Button button => m_Button; 
+        public Button button => m_Button;
 
         protected override void Awake()
         {

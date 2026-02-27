@@ -1,13 +1,13 @@
 #nullable enable
+using System.Collections.Generic;
 using ObservableCollections;
 using R3;
-using System.Collections.Generic;
 
 namespace CCEnvs.Unity.Items
 {
     public interface IInventory
         : IItemAccessor,
-        IItemContainerInfoItemless, 
+        IItemContainerInfoItemless,
         IEnumerable<KeyValuePair<int, IItemContainer>>
     {
         bool AutoSize { get; set; }

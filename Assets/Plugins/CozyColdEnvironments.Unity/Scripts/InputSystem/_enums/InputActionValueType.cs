@@ -1,5 +1,5 @@
-using UnityEngine;
 using CCEnvs.Attributes.Metadata;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.InputSystem

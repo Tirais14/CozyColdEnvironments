@@ -1,6 +1,4 @@
 #nullable enable
-using CCEnvs.Unity.UI;
-
 namespace CCEnvs.Unity.Items
 {
     public interface IItemContainer

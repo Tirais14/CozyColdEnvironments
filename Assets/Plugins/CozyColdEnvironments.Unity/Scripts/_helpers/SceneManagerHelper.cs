@@ -1,7 +1,6 @@
+using System.Linq;
 using CCEnvs.FuncLanguage;
 using R3;
-using System;
-using System.Linq;
 using UnityEngine.SceneManagement;
 
 #nullable enable
@@ -10,7 +9,7 @@ namespace CCEnvs.Unity
     public static class SceneManagerHelper
     {
         private readonly static ReactiveCommand<(Scene prevScene, Scene currentScene)> activeSceneChangesCmd = new();
-        
+
         private static ReactiveCommand<(Scene scene, LoadSceneMode mode)>? sceneLoadedCmd;
         private static ReactiveCommand<Scene>? sceneUnloadedCmd;
 

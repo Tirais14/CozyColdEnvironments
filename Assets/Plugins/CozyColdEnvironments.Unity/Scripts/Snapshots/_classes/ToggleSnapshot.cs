@@ -1,7 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
-using UnityEngine.UI;
-using UnityEngine;
 using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
@@ -14,7 +13,7 @@ namespace CCEnvs.Unity.Snapshots
 
         public bool IsOn {
             get => isOn;
-            set => isOn = value;    
+            set => isOn = value;
         }
 
         public ToggleSnapshot()

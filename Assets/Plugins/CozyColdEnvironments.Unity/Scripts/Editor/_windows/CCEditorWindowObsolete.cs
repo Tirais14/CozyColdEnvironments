@@ -1,8 +1,8 @@
+using System;
+using System.IO;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.UnityEditor;
-using System;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -23,7 +23,8 @@ namespace CCEnvs.Unity.EditorC
 
         protected void SetRoot() => root ??= rootVisualElement;
 
-        protected VisualElement GetEmptyElement(float height) => new() {
+        protected VisualElement GetEmptyElement(float height) => new()
+        {
             style = { height = height }
         };
 
@@ -31,7 +32,8 @@ namespace CCEnvs.Unity.EditorC
             float height = 2,
             Color? backgroundColor = null,
             float marginTop = 5,
-            float marginBottom = 5) => new() {
+            float marginBottom = 5) => new()
+            {
                 style = {
                     height = height,
                     backgroundColor = backgroundColor ?? Color.gray,

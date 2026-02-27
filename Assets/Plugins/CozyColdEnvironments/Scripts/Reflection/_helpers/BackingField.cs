@@ -1,6 +1,6 @@
-using CommunityToolkit.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Reflection

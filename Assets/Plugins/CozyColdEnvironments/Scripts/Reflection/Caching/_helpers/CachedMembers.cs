@@ -1,9 +1,9 @@
-using CCEnvs.Caching;
-using CommunityToolkit.Diagnostics;
-using Humanizer;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using CCEnvs.Caching;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 
 #nullable enable
 namespace CCEnvs.Reflection.Caching
@@ -40,7 +40,7 @@ namespace CCEnvs.Reflection.Caching
         #region Getters
 
         public static bool TryGetMember(
-            MemberKey key, 
+            MemberKey key,
             [NotNullWhen(true)] out MemberInfo? member
             )
         {
@@ -206,7 +206,7 @@ namespace CCEnvs.Reflection.Caching
         #region AddMethods
 
         public static bool TryAddMember(
-            MemberInfo member, 
+            MemberInfo member,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {

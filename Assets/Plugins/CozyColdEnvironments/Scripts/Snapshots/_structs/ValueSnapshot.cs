@@ -1,9 +1,9 @@
-using CCEnvs.Attributes.Serialization;
-using CCEnvs.Reflection;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Reflection;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Snapshots
@@ -97,7 +97,7 @@ namespace CCEnvs.Snapshots
 
     [Serializable]
     [TypeSerializationDescriptor("Snapshots.ValueSnapshot<>", "aaad0351-d678-4058-b208-d3d8fbdf4a3b")]
-    public readonly struct ValueSnapshot<T> :  ISnapshot<T>, IEquatable<ValueSnapshot<T>>
+    public readonly struct ValueSnapshot<T> : ISnapshot<T>, IEquatable<ValueSnapshot<T>>
     {
         [JsonIgnore]
         public readonly Type TargetType => TypeofCache<T>.Type;

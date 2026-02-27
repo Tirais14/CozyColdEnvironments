@@ -1,7 +1,7 @@
 #nullable enable
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.UI
         void Hide();
 
         UniTask HideAsync(CancellationToken cancellationToken = default);
- 
+
         void Show();
 
         UniTask ShowAsync(CancellationToken cancellationToken = default);

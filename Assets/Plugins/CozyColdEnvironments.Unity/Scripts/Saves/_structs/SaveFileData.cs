@@ -1,9 +1,9 @@
-using CCEnvs.Collections;
-using CCEnvs.Linq;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using CCEnvs.Collections;
+using CCEnvs.Linq;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.Saves
 
         public static bool operator ==(SaveFileData left, SaveFileData right)
         {
-            return left.Equals(right); 
+            return left.Equals(right);
         }
 
         public static bool operator !=(SaveFileData left, SaveFileData right)

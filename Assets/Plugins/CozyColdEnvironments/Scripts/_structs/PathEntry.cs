@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 
 #nullable enable
@@ -76,7 +75,8 @@ namespace CCEnvs.Files
         public string Extension => System.IO.Path.GetExtension(value);
         public bool HasValue => !string.IsNullOrWhiteSpace(value);
         public bool IsValid {
-            get {
+            get
+            {
                 return HasValue
                        &&
                        !value.ContainsAny(System.IO.Path.GetInvalidPathChars())

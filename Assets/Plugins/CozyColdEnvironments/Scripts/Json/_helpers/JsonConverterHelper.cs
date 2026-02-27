@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
@@ -6,11 +11,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using SuperLinq;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -18,7 +18,7 @@ namespace CCEnvs.Json
     public static class JsonConverterHelper
     {
         public static IList<JsonPropertyInfo> ResolveJsonPropertyInfos(
-            Type type, 
+            Type type,
             JsonSerializerSettings? settings = null)
         {
             Guard.IsNotNull(type);
@@ -269,7 +269,7 @@ namespace CCEnvs.Json
         }
 
         public static object CreateInstance(
-            Type type, 
+            Type type,
             ICollection<JProperty> jProps,
             JsonSerializer jSerializer)
         {

@@ -1,6 +1,5 @@
-using CCEnvs.FuncLanguage;
-using CCEnvs.Snapshots;
 using System;
+using CCEnvs.Snapshots;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Snapshots

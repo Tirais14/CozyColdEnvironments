@@ -1,7 +1,6 @@
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using System;
+using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using R3;
 using UnityEngine;
 
@@ -101,7 +100,7 @@ namespace CCEnvs.Unity.Items
             if (item.IsNull() || count <= 0)
                 return Maybe<IItemContainer>.None;
 
-            if (IsFull || (!IsEmpty  && !ContainsItem(item)) || IsReadOnlyContainer)
+            if (IsFull || (!IsEmpty && !ContainsItem(item)) || IsReadOnlyContainer)
                 return new ItemContainer(item, count);
 
             int addedCount = Math.Clamp(count, 0, Capacity - itemCount.Value);

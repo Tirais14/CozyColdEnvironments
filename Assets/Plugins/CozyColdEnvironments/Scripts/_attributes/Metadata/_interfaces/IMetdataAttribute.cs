@@ -6,7 +6,7 @@ namespace CCEnvs.Attributes.Metadata
         object Value { get; }
     }
     public interface IMetdataAttribute<out T> : IMetdataAttribute
-    { 
+    {
         new T Value { get; }
 
         object IMetdataAttribute.Value => Value!;

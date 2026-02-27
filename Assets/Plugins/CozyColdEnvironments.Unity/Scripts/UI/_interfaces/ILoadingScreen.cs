@@ -3,6 +3,6 @@ namespace CCEnvs.Unity.UI
 {
     public interface ILoadingScreen
     {
-        
+
     }
 }

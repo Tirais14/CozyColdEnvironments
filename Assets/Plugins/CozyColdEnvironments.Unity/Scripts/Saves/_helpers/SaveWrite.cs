@@ -1,10 +1,10 @@
-﻿using CCEnvs.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using CCEnvs.Threading.Tasks;
+using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves
@@ -64,7 +64,7 @@ namespace CCEnvs.Unity.Saves
         }
 
         private static void ReplaceTempFileToFile(
-            FileInfo tempFile, 
+            FileInfo tempFile,
             FileInfo file
             )
         {

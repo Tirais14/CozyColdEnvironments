@@ -1,6 +1,6 @@
+using System.Linq;
 using CCEnvs.UnityEditor;
 using CCEnvs.Utils;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
 
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.EditorC
 
         }
 
-        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.DEBUG_TAB +  "/Disable")]
+        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.DEBUG_TAB + "/Disable")]
         public static void DisableDebugMode()
         {
             var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(

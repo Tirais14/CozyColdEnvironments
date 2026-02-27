@@ -3,6 +3,6 @@ namespace CCEnvs.Patterns.Strategy
 {
     public interface IStrategy
     {
-    
+
     }
 }

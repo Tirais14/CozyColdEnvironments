@@ -1,14 +1,11 @@
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
+using CCEnvs.FuncLanguage;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 
@@ -397,7 +394,7 @@ namespace CCEnvs.Reflection
         }
 
         private static string ConvertGenericArgumentsToString(
-            Type type, 
+            Type type,
             TypeNameConvertingAttributes typeNameConvertingAttributes = TypeNameConvertingAttributes.Default
             )
         {

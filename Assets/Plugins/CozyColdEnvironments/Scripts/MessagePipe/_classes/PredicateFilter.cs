@@ -1,3 +1,5 @@
+#if MESSAGE_PIPE_PLUGIN
+
 #nullable enable
 using CommunityToolkit.Diagnostics;
 using MessagePipe;
@@ -25,3 +27,4 @@ namespace CCEnvs.MPipe
         }
     }
 }
+#endif

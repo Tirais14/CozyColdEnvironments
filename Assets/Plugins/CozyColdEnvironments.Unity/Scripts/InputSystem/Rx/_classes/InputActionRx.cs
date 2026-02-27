@@ -1,6 +1,6 @@
-using R3;
 using System;
 using System.Collections.Generic;
+using R3;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 using static UnityEngine.InputSystem.InputAction;
@@ -9,7 +9,7 @@ using static UnityEngine.InputSystem.InputAction;
 #pragma warning disable S3881
 namespace CCEnvs.Unity.InputSystem.Rx
 {
-    public class InputActionRx 
+    public class InputActionRx
         :
         IInputActionRx
     {
@@ -49,7 +49,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
             isEnabled = new ReactiveProperty<bool>(inputAction.enabled);
 
-            Action = inputAction;  
+            Action = inputAction;
             Setup();
         }
 
@@ -157,7 +157,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             canceled.Execute(context);
         }
     }
-    public class InputActionRx<T> 
+    public class InputActionRx<T>
         :
         InputActionRx,
         IInputActionRx<T>
@@ -172,7 +172,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public virtual Observable<T> TCanceled { get; }
 
         [Preserve]
-        public InputActionRx(InputAction inputAction) 
+        public InputActionRx(InputAction inputAction)
             :
             base(inputAction)
         {

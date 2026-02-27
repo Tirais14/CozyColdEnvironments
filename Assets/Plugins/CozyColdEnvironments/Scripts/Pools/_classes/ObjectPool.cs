@@ -39,7 +39,7 @@ namespace CCEnvs.Pools
 
                 obj = factory!.Create();
 
-                Return(obj);   
+                Return(obj);
             }
 
             var handle = CreateHandle(obj);

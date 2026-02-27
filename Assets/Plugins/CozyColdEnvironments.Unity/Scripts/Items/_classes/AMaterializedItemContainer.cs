@@ -4,7 +4,7 @@ using CCEnvs.Unity.Components;
 #pragma warning disable S2933
 namespace CCEnvs.Unity.Items
 {
-    public abstract class AMaterializedItemContainer 
+    public abstract class AMaterializedItemContainer
         : CCBehaviour,
         ICollectable,
         IObjectProvider<IItemContainer>

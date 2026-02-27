@@ -1,6 +1,5 @@
-using Newtonsoft.Json;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 using UnityEngine;
 
 #nullable enable
@@ -18,7 +17,7 @@ namespace CCEnvs.Unity.Snapshots
         protected Vector3Snapshot? angularVelocity;
 
         public Vector3Snapshot? LinearVelocity {
-            get => linearVelocity; 
+            get => linearVelocity;
             protected set => linearVelocity = value;
         }
         public Vector3Snapshot? AngularVelocity {

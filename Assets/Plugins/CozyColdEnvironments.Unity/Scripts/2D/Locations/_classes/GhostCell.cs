@@ -1,6 +1,6 @@
-using CCEnvs.FuncLanguage;
 using System;
 using System.Linq;
+using CCEnvs.FuncLanguage;
 using R3;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -22,7 +22,7 @@ namespace CCEnvs.Unity._2D.Locations
 
         public GhostCell(TileBase? tile, Tilemap tilemap)
         {
-            CC.Guard.IsNotNull(tilemap, nameof(tilemap));  
+            CC.Guard.IsNotNull(tilemap, nameof(tilemap));
 
             Tile = tile;
             this.tilemap = tilemap;
@@ -72,7 +72,7 @@ namespace CCEnvs.Unity._2D.Locations
             MaterializedCellInfo materializedCellInfo = default;
             if (Position.TryGetValue(out Vector3Int pos))
             {
-                
+
                 if (otherTilemap != null)
                 {
                     if (tilemap.transform != otherTilemap.transform)
@@ -152,7 +152,7 @@ namespace CCEnvs.Unity._2D.Locations
                 switch (cmp)
                 {
                     case MonoBehaviour mono:
-                        mono.enabled =false;
+                        mono.enabled = false;
                         break;
                     case Collider col:
                         col.enabled = false;

@@ -1,8 +1,8 @@
+using System.Threading;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.Storages.UI
         private void BindCounterText()
         {
             model.ObserveItemCount()
-                .Subscribe(this, 
+                .Subscribe(this,
                 static (itemCount, @this) =>
                 {
                     if (@this.ShowCounterTextPredicate.TryGetValue(out var predicate))

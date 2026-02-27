@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
 using SuperLinq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 #nullable enable
@@ -118,7 +118,7 @@ namespace CCEnvs.Unity.Collections
         private void BindComponentsClear()
         {
             Value.ObserveClear(destroyCancellationToken)
-                .Where(this, 
+                .Where(this,
                 static (_, @this) => !@this.isInternalClear)
                 .Subscribe(this,
                 static (_, @this) => @this.OnComponentsClear())

@@ -1,7 +1,7 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Reflection.Caching
@@ -12,7 +12,7 @@ namespace CCEnvs.Reflection.Caching
         private int? cachedHashCode;
 
         public string? Name { readonly get; init; }
-        
+
         public Type? DeclaringType { readonly get; init; }
 
         public MemberTypes MemberType { readonly get; init; }

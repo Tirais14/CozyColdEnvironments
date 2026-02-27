@@ -1,7 +1,7 @@
 #nullable enable
-using CCEnvs.Patterns.Factories;
 using System;
 using System.Collections.Generic;
+using CCEnvs.Patterns.Factories;
 
 namespace CCEnvs.Pools
 {
@@ -17,7 +17,7 @@ namespace CCEnvs.Pools
                 capacity: capacity,
                 maxSize: maxSize)
         {
-            
+
         }
 
 #if UNITY_2017_1_OR_NEWER

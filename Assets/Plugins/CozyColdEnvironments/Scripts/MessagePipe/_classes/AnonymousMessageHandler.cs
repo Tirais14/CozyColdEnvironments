@@ -1,3 +1,4 @@
+#if MESSAGE_PIPE_PLUGIN
 using CommunityToolkit.Diagnostics;
 using MessagePipe;
 using System;
@@ -24,3 +25,4 @@ namespace CCEnvs.MPipe
         }
     }
 }
+#endif

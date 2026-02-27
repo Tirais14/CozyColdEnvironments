@@ -60,7 +60,7 @@ namespace CCEnvs
                     if (nextValues is IDisposable disposable)
                         disposable.Dispose();
                 }
-                
+
             }
 
             return results;

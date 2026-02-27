@@ -12,14 +12,14 @@ namespace CCEnvs.Patterns.States
         }
 
         void FixedTick()
-        { 
+        {
         }
 
         void LateTick()
         {
         }
 
-        void Exit() 
+        void Exit()
         {
         }
     }

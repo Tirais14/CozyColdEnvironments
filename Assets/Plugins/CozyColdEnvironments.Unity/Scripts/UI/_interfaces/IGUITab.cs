@@ -1,7 +1,3 @@
-using CCEnvs.FuncLanguage;
-using UnityEngine;
-using UnityEngine.UI;
-
 #nullable enable
 namespace CCEnvs.Unity.UI
 {

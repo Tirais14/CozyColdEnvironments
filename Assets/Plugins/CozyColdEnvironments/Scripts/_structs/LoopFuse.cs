@@ -1,8 +1,8 @@
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using R3;
 
 #nullable enable
 #pragma warning disable IDE0251
@@ -23,8 +23,8 @@ namespace CCEnvs
         /// </summary>
         public event Action<int>? OnLimitReached;
 
-        public int IterationPosition { 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+        public int IterationPosition {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

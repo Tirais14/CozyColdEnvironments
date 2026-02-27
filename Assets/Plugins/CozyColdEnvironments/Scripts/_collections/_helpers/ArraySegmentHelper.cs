@@ -1,7 +1,7 @@
 #nullable enable
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Diagnostics;
 
 namespace CCEnvs.Collections
 {
@@ -9,7 +9,7 @@ namespace CCEnvs.Collections
     {
         public static bool TryAddToArraySegment<T>(
             this ArraySegment<T?> segment,
-            T item, 
+            T item,
             [NotNullWhen(true)] out int? addedIdx)
         {
             CC.Guard.IsNotDefault(segment, nameof(segment));

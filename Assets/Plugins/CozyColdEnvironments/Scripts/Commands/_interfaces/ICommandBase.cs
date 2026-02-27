@@ -1,10 +1,8 @@
 #nullable enable
 
-using Cysharp.Threading.Tasks;
-using R3;
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using R3;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -61,7 +59,7 @@ namespace CCEnvs.Patterns.Commands
     public static class ICommandBaseExtensions
     {
         public static T ScheduleBy<T>(this T command, ICommandScheduler commandScheduler)
-            where T : ICommandBase 
+            where T : ICommandBase
         {
             CC.Guard.IsNotNull(command, nameof(command));
             CC.Guard.IsNotNull(commandScheduler, nameof(commandScheduler));

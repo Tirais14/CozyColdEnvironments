@@ -1,11 +1,11 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
-    public class SaveData 
+    public class SaveData
         :
         IEnumerable<SaveUnit>
     {

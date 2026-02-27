@@ -1,8 +1,7 @@
+using System.IO;
 using CCEnvs.Attributes;
 using CCEnvs.Unity.EditorC;
 using CCEnvs.UnityEditor;
-using System;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -31,7 +30,7 @@ namespace CCEnvs.Unity.CSharp.Editor
         [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Editor Defines Marker")]
         public static void GetWindow()
         {
-            GetWindow<AddUnityEditorDefineWindow>("Editor Defines Marker"); 
+            GetWindow<AddUnityEditorDefineWindow>("Editor Defines Marker");
         }
 
         [MenuItem("Assets/Add Unity Editor Defines")]

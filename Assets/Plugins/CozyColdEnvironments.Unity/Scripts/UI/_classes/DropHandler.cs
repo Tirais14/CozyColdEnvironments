@@ -1,7 +1,5 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Unity.Components;
 using Cysharp.Threading.Tasks;
-using System;
 using R3;
 using UnityEngine;
 using UnityEngine.EventSystems;

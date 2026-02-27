@@ -1,6 +1,6 @@
+using System.Buffers;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
-using System.Buffers;
 
 #nullable enable
 namespace CCEnvs

@@ -1,7 +1,7 @@
-using CCEnvs.FuncLanguage;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using CCEnvs.FuncLanguage;
 
 #nullable enable
 
@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
     public readonly struct AssetDatabaseKey
-        : IEquatable<AssetDatabaseKey>, 
+        : IEquatable<AssetDatabaseKey>,
         IIDMarked<Identifier>
     {
         public Maybe<Type> AssetType { get; }
@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.Databases
         public bool Equals(AssetDatabaseKey other)
         {
             return AssetType == other.AssetType
-                   && 
+                   &&
                    DatabaseID == other.DatabaseID;
         }
         public override bool Equals(object obj)

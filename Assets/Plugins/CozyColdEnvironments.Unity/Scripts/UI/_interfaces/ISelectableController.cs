@@ -4,8 +4,8 @@ using R3;
 
 namespace CCEnvs.Unity.UI
 {
-    public interface ISelectableController 
-    { 
+    public interface ISelectableController
+    {
     }
     public interface ISelectableController<T> : ISelectableController
     {

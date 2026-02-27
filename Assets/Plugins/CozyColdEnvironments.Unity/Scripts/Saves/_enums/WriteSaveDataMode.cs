@@ -3,7 +3,7 @@ namespace CCEnvs.Unity.Saves
 {
     public enum WriteSaveDataMode
     {
+        Merge,
         Override,
-        Merge
     }
 }

@@ -1,7 +1,6 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using CCEnvs.Diagnostics;
 using UnityEngine;
 
 #nullable enable
@@ -10,7 +9,7 @@ namespace CCEnvs.Unity.Diagnostics
 {
     public sealed class GameObjectNotFoundException : CCException
     {
-        public GameObjectNotFoundException(object? key = null, Exception? innerException = null) 
+        public GameObjectNotFoundException(object? key = null, Exception? innerException = null)
             :
             base(Sentence.Empty.Add($"{nameof(GameObject)}...")
                 .AddIfNotDefault(key)

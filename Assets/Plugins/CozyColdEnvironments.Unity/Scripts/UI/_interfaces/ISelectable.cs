@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using R3;
 
 namespace CCEnvs.Unity.UI

@@ -1,3 +1,7 @@
+using System;
+using System.Collections;
+using System.Linq;
+using System.Reflection;
 using CCEnvs.Caching;
 using CCEnvs.Collections;
 using CCEnvs.Pools;
@@ -5,10 +9,6 @@ using CCEnvs.Reflection;
 using Humanizer;
 using Newtonsoft.Json;
 using ObservableCollections;
-using System;
-using System.Collections;
-using System.Linq;
-using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
@@ -116,7 +116,7 @@ namespace CCEnvs.Json.Converters
 
             writer.WriteStartArray();
 
-            foreach ( var item in value.To<IEnumerable>())
+            foreach (var item in value.To<IEnumerable>())
                 serializer.Serialize(writer, item);
 
             writer.WriteEndArray();

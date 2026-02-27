@@ -1,15 +1,15 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Linq;
-using CommunityToolkit.Diagnostics;
-using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using CCEnvs.Caching;
+using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 using BindingFlags = System.Reflection.BindingFlags;
 
 #nullable enable
@@ -19,10 +19,10 @@ namespace CCEnvs.Reflection
     //TODO: Caching, expression trees
     public record Reflect : IShallowCloneable<Reflect>
     {
-        private readonly static MemoryCache cache = new(new MemoryCacheOptions
+        private readonly static Cache<Type, Type[]> cache = new()
         {
             ExpirationScanFrequency = 30.Seconds()
-        });
+        };
 
         [Flags]
         public enum Settings
@@ -834,22 +834,21 @@ namespace CCEnvs.Reflection
 
         private IReadOnlyCollection<Type> GetBaseTypes()
         {
-            if (!cache.TryGetValue($"{type}, {nameof(GetBaseTypes)}", out var results))
+            var key = $"{type}, {nameof(GetBaseTypes)}";
+
+            if (!cache.TryGet(type, out var baseTypes))
             {
-                var baseTypes = type.CollectBaseTypes();
+                baseTypes = type.CollectBaseTypes().ToArray();
 
-                var entry = cache.CreateEntry($"{type}, {nameof(GetBaseTypes)}");
-                entry.Value = baseTypes;
-                entry.AbsoluteExpirationRelativeToNow = 10.Minutes();
-
-                results = baseTypes;
+                if (cache.TryAdd(type, baseTypes, out var entry))
+                    entry.ExpirationTimeRelativeToNow = 10.Minutes();
             }
 
-            return (IReadOnlyCollection<Type>)results!;
+            return baseTypes;
         }
     }
 
-    public static class TypeQueryExtensions 
+    public static class TypeQueryExtensions
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

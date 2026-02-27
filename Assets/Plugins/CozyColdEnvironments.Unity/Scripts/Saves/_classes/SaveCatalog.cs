@@ -1,3 +1,8 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using System.Xml.Linq;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
@@ -8,12 +13,6 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using System;
-using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using System.Xml.Linq;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -21,8 +20,8 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
-    public class SaveCatalog 
-        : 
+    public class SaveCatalog
+        :
         IEquatable<SaveCatalog>,
         IEnumerable<SaveGroup>
     {
@@ -53,7 +52,7 @@ namespace CCEnvs.Unity.Saves
 
         public static bool operator ==(SaveCatalog? left, SaveCatalog? right)
         {
-            if (ReferenceEquals(left, right)) 
+            if (ReferenceEquals(left, right))
                 return true;
 
             if (left is null || right is null)
@@ -61,7 +60,7 @@ namespace CCEnvs.Unity.Saves
 
             return left.Path == right.Path
                    &&
-                   left.Archive ==right.Archive;
+                   left.Archive == right.Archive;
         }
 
         public static bool operator !=(SaveCatalog? left, SaveCatalog? right)
@@ -74,6 +73,13 @@ namespace CCEnvs.Unity.Saves
             Guard.IsNotNull(groupName, nameof(groupName));
 
             return groups.Remove(groupName, out removed);
+        }
+
+        public bool RemoveGroup(string groupName)
+        {
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            return groups.Remove(groupName);
         }
 
         public SaveGroup GetOrCreateGroup(string groupName)
@@ -125,9 +131,10 @@ namespace CCEnvs.Unity.Saves
 
             await UniTaskHelper.TrySwitchToThreadPool();
 
-            string cmdName = InvokableNameFactory.Create(
+            string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(LoadGroupsFromFileAsync)
+                nameof(LoadGroupsFromFileAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
             await Command.Builder.SetName(cmdName)
@@ -184,7 +191,7 @@ namespace CCEnvs.Unity.Saves
 
         private async UniTask LoadGroupsFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true, 
+            bool configureAwait = true,
             bool force = false,
             CancellationToken cancellationToken = default
             )

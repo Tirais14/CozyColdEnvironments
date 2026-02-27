@@ -115,7 +115,7 @@ namespace CCEnvs.Reflection.Caching
         }
 
         public readonly override string ToString()
-        { 
+        {
             if (this == default)
                 return StringHelper.EMPTY_OBJECT;
 

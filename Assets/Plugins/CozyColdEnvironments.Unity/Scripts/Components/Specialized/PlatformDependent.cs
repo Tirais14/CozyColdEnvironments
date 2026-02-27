@@ -68,14 +68,14 @@ namespace CCEnvs.Unity.Components.Specialized
                         allExcluded = false;
                     if (mobile && !isMobile)
                         allExcluded = false;
-                    if (console && !isConsole) 
+                    if (console && !isConsole)
                         allExcluded = false;
 
                     return !allExcluded;
                 }
                 else
                 {
-                    if (webGL && isWebGL) 
+                    if (webGL && isWebGL)
                         return false;
                     if (mobile && isMobile)
                         return false;
@@ -105,9 +105,9 @@ namespace CCEnvs.Unity.Components.Specialized
                 }
                 else
                 {
-                    if (webGL && isWebGL) 
+                    if (webGL && isWebGL)
                         return true;
-                    if (mobile && isMobile) 
+                    if (mobile && isMobile)
                         return true;
                     if (console && isConsole)
                         return true;

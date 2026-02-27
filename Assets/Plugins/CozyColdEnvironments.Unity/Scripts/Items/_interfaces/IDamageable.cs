@@ -1,6 +1,5 @@
 #nullable enable
 using R3;
-using System;
 
 namespace CCEnvs.Unity.Items
 {

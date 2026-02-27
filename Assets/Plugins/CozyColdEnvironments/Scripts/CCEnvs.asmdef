@@ -2,20 +2,17 @@
     "name": "CCEnvs",
     "rootNamespace": "CCEnvs",
     "references": [
-        "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:593a5b492d29ac6448b1ebf7f035ef33",
-        "GUID:5c01796d064528144a599661eaab93a6",
-        "GUID:dc47925d1a5fa2946bdd37746b2b5d48",
-        "GUID:77221876cc6b8244180b96e320b1bcd4",
-        "GUID:f8c68d614fe30d647996098360b5e0d5",
-        "GUID:f02da9ca564ed54499f6f43d8249d415",
-        "GUID:08b38f39e2d9e594389b7a4cf4c2c338"
+        "Unity.TextMeshPro",
+        "UniTask",
+        "UniTask.Linq",
+        "R3.Unity",
+        "R3.Unity.Editor",
+        "R3.Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
-    "overrideReferences": true,
+    "overrideReferences": false,
     "precompiledReferences": [
         "Microsoft.Bcl.Memory.dll",
         "Microsoft.Bcl.TimeProvider.dll",
@@ -42,9 +39,7 @@
         "R3.dll",
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
-        "Newtonsoft.Json.dll",
-        "Serilog.dll",
-        "Serilog.Sinks.File.dll"
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

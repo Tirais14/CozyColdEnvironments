@@ -1,5 +1,5 @@
-using CommunityToolkit.Diagnostics;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Diagnostics;
 using UnityEngine;
 
 #nullable enable

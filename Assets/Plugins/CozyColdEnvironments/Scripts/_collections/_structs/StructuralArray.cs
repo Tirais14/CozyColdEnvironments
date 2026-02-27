@@ -18,7 +18,7 @@ namespace CCEnvs.Collections
         public readonly T this[int index] {
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => array[index];  
+            get => array[index];
         }
 
         public readonly int Length => array.Length;
@@ -56,7 +56,7 @@ namespace CCEnvs.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator T[] (StructuralArray<T> instance)
+        public static implicit operator T[](StructuralArray<T> instance)
         {
             return instance.ToArray();
         }

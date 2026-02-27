@@ -1,11 +1,9 @@
-using CCEnvs.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
-using CCEnvs.Unity.Components;
-using Cysharp.Threading.Tasks;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.UI

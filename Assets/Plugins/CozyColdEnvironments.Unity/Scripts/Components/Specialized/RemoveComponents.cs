@@ -1,7 +1,7 @@
 #nullable enable
+using System;
 using CCEnvs.Collections;
 using Cysharp.Threading.Tasks;
-using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Components.Specialized
@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Components.Specialized
         public int delayFrameCount = 1;
 
         [Tooltip("In Seconds")]
-        public float delayTime = 0f; 
+        public float delayTime = 0f;
 
         private void Awake()
         {

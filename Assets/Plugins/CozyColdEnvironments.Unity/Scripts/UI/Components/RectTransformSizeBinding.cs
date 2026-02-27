@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.UI.Components
 
         public bool ObserveWidth {
             get => observeWidth;
-            set => observeWidth = value;    
+            set => observeWidth = value;
         }
 
         public bool ObserveHeight {
@@ -48,7 +48,7 @@ namespace CCEnvs.Unity.UI.Components
 
         public float HeightMargin {
             get => heightMargin;
-            set => heightMargin = value;   
+            set => heightMargin = value;
         }
 
         new public RectTransform transform {

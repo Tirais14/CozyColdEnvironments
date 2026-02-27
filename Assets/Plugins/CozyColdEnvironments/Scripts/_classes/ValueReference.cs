@@ -30,7 +30,7 @@ namespace CCEnvs
         public static implicit operator T(ValueReference<T> instance)
         {
             return instance.Value;
-        } 
+        }
 
     }
 }

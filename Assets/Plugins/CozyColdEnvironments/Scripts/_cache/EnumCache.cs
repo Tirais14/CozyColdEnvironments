@@ -1,32 +1,30 @@
-using CommunityToolkit.Diagnostics;
-using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Linq;
+using CCEnvs.Caching;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 
 #nullable enable
 namespace CCEnvs.Utils
 {
-    public static class EnumCache 
+    public static class EnumCache
     {
-        private readonly static MemoryCache cache = new(new MemoryCacheOptions
+        private readonly static Cache<Type, Enum[]> cache = new()
         {
             ExpirationScanFrequency = 1.Minutes()
-        });
+        };
 
         public static Enum[] GetFieldValues(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
             Guard.IsTrue(type.IsEnum, nameof(type), "Is not enum");
 
-            if (!cache.TryGetValue(type, out object? values))
+            if (!cache.TryGet(type, out var values))
             {
-                var entry = cache.CreateEntry(type);
-
                 values = Enum.GetValues(type).Cast<Enum>().ToArray();
 
-                entry.Value = values;
-                entry.AbsoluteExpirationRelativeToNow = 10.Minutes();
+                if (cache.TryAdd(type, values, out var entry))
+                    entry.ExpirationTimeRelativeToNow = 10.Minutes();
             }
 
             return (Enum[])values!;

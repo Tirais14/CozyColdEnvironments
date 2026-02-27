@@ -14,7 +14,7 @@ namespace CCEnvs
     public static class WeightedHelper
     {
         public static T ElementByWeightLinear<T>(
-            this IEnumerable<T> source, 
+            this IEnumerable<T> source,
             Func<T, float> weightSelector,
             int? randomSeed = null)
         {

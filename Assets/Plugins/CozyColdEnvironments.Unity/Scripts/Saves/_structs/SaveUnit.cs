@@ -1,8 +1,8 @@
-﻿using CCEnvs.Attributes.Serialization;
+﻿using System;
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using System;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves

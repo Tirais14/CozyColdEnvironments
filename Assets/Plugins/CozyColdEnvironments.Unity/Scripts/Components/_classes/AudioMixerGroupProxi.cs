@@ -1,8 +1,3 @@
-using CCEnvs.Unity.Components;
-using UnityEngine;
-using UnityEngine.Audio;
-using UnityEngine.Events;
-
 #nullable enable
 namespace CCEnvs.Unity.Components
 {

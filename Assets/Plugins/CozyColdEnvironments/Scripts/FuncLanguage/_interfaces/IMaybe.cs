@@ -44,7 +44,7 @@ namespace CCEnvs.FuncLanguage
 
         IMaybe IMaybe.MapUnsafe(Func<object?, object?> selector) => MapUnsafe((x) => selector(x));
     }
-    public interface IMaybe<T, TThis> 
+    public interface IMaybe<T, TThis>
         : IMaybe<T>,
         IConditional<T, TThis>
 

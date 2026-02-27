@@ -1,6 +1,6 @@
+using System.Threading;
 using CCEnvs.Unity.Profiles;
 using R3;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -12,10 +12,10 @@ namespace CCEnvs.Unity.UI.Profiles
         public string Name => model.Name;
 
         public UserProfileViewModel(
-            IUserProfile model, 
+            IUserProfile model,
             CancellationToken cancellationToken = default
-            ) 
-            : 
+            )
+            :
             base(model, cancellationToken)
         {
             Icon = model.ObserveIcon()

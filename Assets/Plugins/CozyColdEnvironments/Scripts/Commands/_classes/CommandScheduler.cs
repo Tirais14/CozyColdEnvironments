@@ -1,21 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Pools;
 using Humanizer;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class CommandScheduler 
-        : 
-        ICommandScheduler, 
-        IDisposable, 
+    public sealed class CommandScheduler
+        :
+        ICommandScheduler,
+        IDisposable,
         IFrameRunnerWorkItem
     {
         private readonly Queue<ICommandBase> commands = new();
@@ -341,7 +341,7 @@ namespace CCEnvs.Patterns.Commands
             {
                 return false;
             }
-            
+
             return cmdDelayFrameCount > 0;
         }
 

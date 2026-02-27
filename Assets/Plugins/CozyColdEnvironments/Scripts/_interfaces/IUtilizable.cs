@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs
 {
-    public interface IUtilizable 
+    public interface IUtilizable
     {
         void Utilize();
     }

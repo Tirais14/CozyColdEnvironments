@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using R3;
-using System;
-using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.UI
                 return viewModel;
             }
         }
-       
+
         protected object modelUnsafe => viewModelUnsafe.model;
 
         protected override void Awake()

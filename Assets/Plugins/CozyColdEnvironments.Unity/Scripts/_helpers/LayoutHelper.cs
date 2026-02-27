@@ -1,7 +1,7 @@
-using CCEnvs.Threading;
-using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using CCEnvs.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +11,7 @@ namespace CCEnvs.Unity
     public static class LayoutHelper
     {
         public static async UniTask ForceRebuildLayoutAsync(
-            RectTransform rectTransform, 
+            RectTransform rectTransform,
             CancellationToken cancellationToken = default
             )
         {

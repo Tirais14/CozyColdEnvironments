@@ -1,6 +1,6 @@
-using R3;
 using System;
 using System.Runtime.CompilerServices;
+using R3;
 
 #nullable enable
 namespace CCEnvs.Pools

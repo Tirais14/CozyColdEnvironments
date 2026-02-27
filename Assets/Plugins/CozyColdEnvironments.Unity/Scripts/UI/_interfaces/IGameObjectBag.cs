@@ -1,16 +1,13 @@
-using CCEnvs.FuncLanguage;
-using R3;
-using UnityEngine;
-using System.Collections.Generic;
 using System;
 using ObservableCollections;
+using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3444
 namespace CCEnvs.Unity.UI
 {
     public interface IGameObjectBag
-        : 
+        :
         IObservableCollection<GameObject>
     {
         [Flags]
@@ -34,13 +31,13 @@ namespace CCEnvs.Unity.UI
             ///// </summary>
             //CellSizeOnLastAddedGameObject = 16,
 
-            Default = ReparentByRootMarker 
-                      | 
+            Default = ReparentByRootMarker
+                      |
                       ActivateOnAdd
                       |
                       DeactivateOnRemove
-                      //|
-                      //CellSizeOnLastAddedGameObject
+            //|
+            //CellSizeOnLastAddedGameObject
         }
 
         Settings settings { get; set; }

@@ -1,5 +1,5 @@
-using CCEnvs.Unity.EditorSerialization;
 using System;
+using CCEnvs.Unity.EditorSerialization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -25,6 +25,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
                 return action;
             }
-        } 
+        }
     }
 }

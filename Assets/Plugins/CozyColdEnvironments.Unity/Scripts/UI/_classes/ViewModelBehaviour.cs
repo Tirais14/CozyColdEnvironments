@@ -1,15 +1,15 @@
-using CCEnvs.Unity.Components;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using CCEnvs.Unity.Components;
+using R3;
 
 #nullable enable
 namespace CCEnvs.Unity.UI
 {
     public abstract class ViewModelBehaviour
         :
-        CCBehaviour, 
+        CCBehaviour,
         IViewModel,
         IDisposable
     {

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
@@ -6,9 +9,6 @@ using CCEnvs.Unity.UI;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using ZLinq;

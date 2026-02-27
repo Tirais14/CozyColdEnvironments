@@ -1,10 +1,10 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using CCEnvs.Attributes.Serialization;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -35,7 +35,7 @@ namespace CCEnvs.Unity.Saves
             if (ReferenceEquals(left, right))
                 return true;
 
-            if (left is null || right is null) 
+            if (left is null || right is null)
                 return false;
 
             return left.Path == right.Path;
@@ -88,7 +88,7 @@ namespace CCEnvs.Unity.Saves
         {
             hashCode ??= HashCode.Combine(Path);
 
-            return hashCode.Value;  
+            return hashCode.Value;
         }
 
         public override string ToString()

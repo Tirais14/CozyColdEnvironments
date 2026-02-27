@@ -5,6 +5,6 @@ namespace CCEnvs.Unity
 {
     public class ItemContainerViewSelectableObserver : ModelSelectableController<IItemContainer>
     {
-        
+
     }
 }

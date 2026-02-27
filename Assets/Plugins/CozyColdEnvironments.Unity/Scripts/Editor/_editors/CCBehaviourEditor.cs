@@ -1,7 +1,7 @@
-﻿using CCEnvs.Attributes;
+﻿using System.Reflection;
+using CCEnvs.Attributes;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -42,7 +42,8 @@ namespace CCEnvs.UnityEditor
                 if (IsNotVisibleField(targetField))
                     continue;
 
-                PropertyField propertyField = new(prop.Copy()){
+                PropertyField propertyField = new(prop.Copy())
+                {
                     label = prop.displayName
                 };
 
@@ -101,7 +102,8 @@ namespace CCEnvs.UnityEditor
             if (targetField.GetCustomAttribute(typeof(GetComponentAttribute))
                 is GetComponentAttribute attribute)
             {
-                propertyField.label = attribute switch {
+                propertyField.label = attribute switch
+                {
                     GetByChildrenAttribute => $"[🧩▼]" + propertyField.label,
                     GetByParentAttribute => $"[🧩▲]" + propertyField.label,
                     _ => $"[🧩]" + propertyField.label,

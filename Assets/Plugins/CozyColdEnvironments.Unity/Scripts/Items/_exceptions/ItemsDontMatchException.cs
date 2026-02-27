@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Items
         {
         }
 
-        public ItemsDontMatchException(IItem? left, IItem? right) 
+        public ItemsDontMatchException(IItem? left, IItem? right)
             :
             base($"Item dont match. Left: {left}; right: {right}.")
         {

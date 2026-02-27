@@ -41,9 +41,9 @@ namespace CCEnvs.Patterns.Commands
                 .BuildPooled();
         }
 
-                public static PooledObject<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
-            this AsyncLazy source
-            )
+        public static PooledObject<AnonymousCommandAsync<AsyncLazy>> ToCommandPooled(
+    this AsyncLazy source
+    )
         {
             CC.Guard.IsNotNullSource(source);
 

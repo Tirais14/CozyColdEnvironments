@@ -1,7 +1,7 @@
-using CCEnvs.FuncLanguage;
 using System;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.FuncLanguage;
 
 #nullable enable
 namespace CCEnvs.Reflection
@@ -69,7 +69,7 @@ namespace CCEnvs.Reflection
 
         public static implicit operator ValuedMemberInfo(PropertyInfo prop)
         {
-            return new ValuedMemberInfo(prop); 
+            return new ValuedMemberInfo(prop);
         }
 
         public static explicit operator FieldInfo(ValuedMemberInfo member)
@@ -92,7 +92,7 @@ namespace CCEnvs.Reflection
         }
     }
 
-    public static class ValuedMemberInfoExtensions 
+    public static class ValuedMemberInfoExtensions
     {
         public static ValuedMemberInfo? GetValuedMember(this Type source, string name)
         {

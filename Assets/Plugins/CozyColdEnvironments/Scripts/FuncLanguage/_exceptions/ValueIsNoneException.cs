@@ -5,7 +5,7 @@ namespace CCEnvs.FuncLanguage
 {
     public class ValueIsNoneException : CCException
     {
-        public ValueIsNoneException() 
+        public ValueIsNoneException()
             :
             base($"Value {nameof(IConditional.IsNone)}.")
         {

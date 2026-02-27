@@ -1,7 +1,7 @@
-using CCEnvs.TypeMatching;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using CCEnvs.TypeMatching;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -32,7 +32,7 @@ namespace CCEnvs.Pools
 
         public PooledObject(
             object value,
-            object state, 
+            object state,
             Action<object, object> returnAction
             )
             :
@@ -227,7 +227,7 @@ namespace CCEnvs.Pools
 
         public static bool operator ==(PooledObject<T> left, PooledObject<T> right)
         {
-            return left.Equals(right); 
+            return left.Equals(right);
         }
 
         public static bool operator !=(PooledObject<T> left, PooledObject<T> right)

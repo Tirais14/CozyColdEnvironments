@@ -1,10 +1,9 @@
+using System.Collections.Generic;
+using System.Threading;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Leaderboards;
 using ObservableCollections;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -27,8 +26,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
         public LeaderboardEntryViewModel(
             ILeaderboardEntry model,
             CancellationToken cancellationToken
-            ) 
-            : 
+            )
+            :
             base(model, cancellationToken)
         {
             ScoreRecords = model.ScoreRecords.CreateView(

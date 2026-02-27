@@ -1,15 +1,14 @@
 #nullable enable
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CCEnvs.Linq;
-using CommunityToolkit.Diagnostics;
-using SuperLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using CCEnvs.Collections;
+using CCEnvs.Linq;
+using CommunityToolkit.Diagnostics;
+using SuperLinq;
 
 namespace CCEnvs.Reflection
 {
@@ -127,7 +126,7 @@ namespace CCEnvs.Reflection
             if (hasNamespaceFilter)
                 filteredTypes = filteredTypes.Where(
                     type => type.Namespace is not null
-                    && 
+                    &&
                     type.Namespace.ContainsOrdinal(parameters.Namespace.Raw, parameters.IgnoreCase));
 
             if (hasTypeNameFilter)

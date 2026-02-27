@@ -1,9 +1,9 @@
-using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -58,7 +58,7 @@ namespace CCEnvs.Unity
         {
             var regexCaptures = Regex.Match(path, @"(.*)\[(d+)\]$").Captures;
 
-            string rawPath = regexCaptures.ElementAtOrDefault(1).Value 
+            string rawPath = regexCaptures.ElementAtOrDefault(1).Value
                 ??
                 throw new System.ArgumentException($"Invalid path: {path}");
 

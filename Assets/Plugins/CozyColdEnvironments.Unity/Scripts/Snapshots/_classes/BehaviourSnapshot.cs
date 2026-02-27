@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
@@ -14,7 +13,7 @@ namespace CCEnvs.Unity.Snapshots
         protected bool m_Enabled;
 
         public bool Enabled {
-            get => m_Enabled; 
+            get => m_Enabled;
             protected set => m_Enabled = value;
         }
 

@@ -1,11 +1,11 @@
 #nullable enable
-using CCEnvs.Reflection;
-using CCEnvs.Threading;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using CCEnvs.Reflection;
+using CCEnvs.Threading;
+using R3;
 
 #pragma warning disable S1699
 namespace CCEnvs.Unity.UI
@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.UI
             this.model = model;
 
             var linkedTokenSource = cancellationToken.LinkTokens(disposeCancellationTokenSource.Token);
-            
+
             linkedTokenSource.AddTo(disposables);
 
             DisposeCancellationToken = linkedTokenSource.Token;

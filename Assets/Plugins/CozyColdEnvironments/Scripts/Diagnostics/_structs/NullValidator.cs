@@ -6,9 +6,9 @@ namespace CCEnvs.Diagnostics
 {
     public struct NullValidator<T>
     {
-        public bool IsNull { 
+        public bool IsNull {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            readonly get; 
+            readonly get;
 
             private set;
         }

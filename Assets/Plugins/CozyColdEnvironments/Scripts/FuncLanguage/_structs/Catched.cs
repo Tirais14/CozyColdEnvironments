@@ -1,9 +1,9 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using CCEnvs.Diagnostics;
+using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3236
@@ -22,7 +22,7 @@ namespace CCEnvs.FuncLanguage
 
         public Catched(Type? exceptionType = null,
             LogType logType = LogType.Log,
-            Action? action = null, 
+            Action? action = null,
             Action<Exception, LogType>? onError = null)
         {
             this.exceptionType = exceptionType;

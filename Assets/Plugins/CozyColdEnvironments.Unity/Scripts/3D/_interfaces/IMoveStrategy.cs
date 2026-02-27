@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Unity._3D
 {
-    public interface IMoveStrategy 
+    public interface IMoveStrategy
     {
         float MoveSpeed { get; }
 
