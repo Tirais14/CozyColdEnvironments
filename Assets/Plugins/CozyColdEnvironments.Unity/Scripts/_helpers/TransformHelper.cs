@@ -1,10 +1,8 @@
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
 using Cysharp.Text;
 using UnityEngine;
-using ZLinq;
-
 #nullable enable
 
 namespace CCEnvs.Unity
@@ -63,7 +61,7 @@ namespace CCEnvs.Unity
             using var pathBuilder = ZString.CreateStringBuilder();
 
             pathBuilder.Grow(parents.Count);
-            pathBuilder.AppendJoin("/", parents.AsValueEnumerable().Reverse().Select(x => x.name).AsEnumerable());
+            pathBuilder.AppendJoin("/", parents.Reverse().Select(x => x.name));
 
             return new HierarchyPath(pathBuilder.ToString(), source.GetSiblingIndex());
         }

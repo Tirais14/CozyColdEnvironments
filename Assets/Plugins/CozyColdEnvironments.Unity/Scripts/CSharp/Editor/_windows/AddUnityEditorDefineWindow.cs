@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.IO;
 using CCEnvs.Attributes;
 using CCEnvs.Unity.EditorC;
@@ -11,7 +12,7 @@ namespace CCEnvs.Unity.CSharp.Editor
 {
     public sealed class AddUnityEditorDefineWindow : CCEditorWindow
     {
-        private const string NSPACE_KEYS_DEFAULT_TEXT = "first,seconds...";
+        private const string NSPACE_KEYS_DEFAULT_TEXT = "first,second...";
 
         [OnInstallResetable]
         private static bool inProcess;
@@ -33,19 +34,19 @@ namespace CCEnvs.Unity.CSharp.Editor
             GetWindow<AddUnityEditorDefineWindow>("Editor Defines Marker");
         }
 
-        [MenuItem("Assets/Add Unity Editor Defines")]
-        public static void GetWindowByProjectBrowser()
-        {
-            var instance = GetWindow<AddUnityEditorDefineWindow>();
+        //[MenuItem("Assets/Add Unity Editor Defines")]
+        //public static void GetWindowByProjectBrowser()
+        //{
+        //    var instance = GetWindow<AddUnityEditorDefineWindow>();
 
-            if (Selection.activeObject == null)
-                return;
+        //    if (Selection.activeObject == null)
+        //        return;
 
-            var folderPath = EditorHelper.GetProjectActiveFolderPath().Raw;
-            var objectPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        //    var folderPath = EditorHelper.GetProjectActiveFolderPath().Raw;
+        //    var objectPath = AssetDatabase.GetAssetPath(Selection.activeObject);
 
-            instance.folderPath.value = Path.Combine(folderPath, objectPath);
-        }
+        //    instance.folderPath.value = Path.Combine(folderPath, objectPath);
+        //}
 
         protected override void CreateElements()
         {
@@ -103,3 +104,4 @@ namespace CCEnvs.Unity.CSharp.Editor
         }
     }
 }
+#endif

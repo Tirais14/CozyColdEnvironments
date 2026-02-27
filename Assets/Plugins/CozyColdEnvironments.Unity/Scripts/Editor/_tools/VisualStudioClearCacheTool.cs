@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.IO;
 using CCEnvs.Diagnostics;
 using CCEnvs.Files;
@@ -34,3 +35,4 @@ namespace CCEnvs.Unity.EditorC
         }
     }
 }
+#endif

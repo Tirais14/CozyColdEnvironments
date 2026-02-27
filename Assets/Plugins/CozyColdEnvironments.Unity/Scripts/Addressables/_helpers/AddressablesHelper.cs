@@ -1,3 +1,4 @@
+#if ADDRESSABLES_PLUGIN
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -19,3 +20,4 @@ namespace CCEnvs.Unity.AddrsAssets
         //}
     }
 }
+#endif

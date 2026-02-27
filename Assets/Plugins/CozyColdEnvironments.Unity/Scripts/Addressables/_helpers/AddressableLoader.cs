@@ -1,3 +1,4 @@
+#if ADDRESSABLES_PLUGIN
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
@@ -126,3 +127,4 @@ namespace CCEnvs.Unity.AddrsAssets
         }
     }
 }
+#endif

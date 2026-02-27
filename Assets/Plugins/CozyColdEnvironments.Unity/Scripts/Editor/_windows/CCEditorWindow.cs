@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Linq;
 using CCEnvs.Reflection;
@@ -37,3 +38,4 @@ namespace CCEnvs.Unity.EditorC
         }
     }
 }
+#endif

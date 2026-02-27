@@ -1,7 +1,6 @@
 ﻿<Solution>
   <Project Path="CCEnvs.Unity.csproj" />
-  <Project Path="UniRx.csproj" />
-  <Project Path="CCEnvs.Unity.Editor.csproj" />
+  <Project Path="Plugins.Neonalig.SceneToolbar.csproj" />
   <Project Path="UniTask.csproj" />
   <Project Path="CCEnvs.csproj" />
   <Project Path="SRDemo.csproj" />
@@ -11,14 +10,13 @@
   <Project Path="UniTask.Addressables.csproj" />
   <Project Path="R3.Unity.csproj" />
   <Project Path="CCEnvironments.Unity.Tests.csproj" />
-  <Project Path="UniRx.Examples.csproj" />
   <Project Path="R3.Unity.Editor.csproj" />
   <Project Path="UniTask.TextMeshPro.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="SREditor.csproj" />
+  <Project Path="Tests.csproj" />
   <Project Path="R3.Unity.TextMeshPro.csproj" />
   <Project Path="CCEnvs.Unity._3D.csproj" />
-  <Project Path="CCEnvs.Unity.CSharp.Editor.csproj" />
   <Project Path="R3.Unity.XRInteractionToolkit.csproj" />
   <Project Path="UniTask.Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />

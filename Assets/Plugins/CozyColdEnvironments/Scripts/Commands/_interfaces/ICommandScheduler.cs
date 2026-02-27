@@ -22,7 +22,7 @@ namespace CCEnvs.Patterns.Commands
 
         bool HasCommand(CommandSignature commandSignature);
 
-        Observable<ICommandBase> ObserveAddCommand();
+        Observable<ICommandBase> ObserveScheduleCommand();
 
         Observable<bool> ObserveIsRunningFinsihed();
 

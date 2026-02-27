@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+#if UNITY_EDITOR
+using System.Reflection;
 using CCEnvs.UnityEditor;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -109,3 +110,4 @@ namespace CCEnvs.Unity.EditorC
         }
     }
 }
+#endif

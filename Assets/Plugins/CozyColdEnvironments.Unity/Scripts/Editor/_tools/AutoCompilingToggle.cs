@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using CCEnvs.Diagnostics;
 using CCEnvs.UnityEditor;
 using UnityEditor;
@@ -70,3 +71,4 @@ namespace CCEnvs.Unity.Editor
         }
     }
 }
+#endif

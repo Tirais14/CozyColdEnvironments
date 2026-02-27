@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Diagnostics;
 using CCEnvs.UnityEditor;
 using UnityEditor;
@@ -140,3 +141,4 @@ namespace CCEnvs.Unity.EditorC
 
     }
 }
+#endif

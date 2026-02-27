@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine.UIElements;
 
 #nullable enable
@@ -15,3 +16,4 @@ namespace CCEnvs.Unity.EditorC
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine.UIElements;
 
@@ -20,3 +21,4 @@ namespace CCEnvs.Unity.EditorC
         }
     }
 }
+#endif

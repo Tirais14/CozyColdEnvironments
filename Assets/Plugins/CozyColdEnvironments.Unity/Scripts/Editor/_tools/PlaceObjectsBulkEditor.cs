@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace CCEnvs.Unity.EditorC
 {
     public class PlaceObjectsBulkEditor
@@ -5,3 +6,4 @@ namespace CCEnvs.Unity.EditorC
 
     }
 }
+#endif

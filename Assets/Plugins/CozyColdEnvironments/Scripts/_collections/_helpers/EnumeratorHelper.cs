@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+
 #nullable enable
 
 namespace CCEnvs.Collections
@@ -17,8 +18,8 @@ namespace CCEnvs.Collections
 
 #if ZLINQ_PLUGIN
         public static IEnumerable<T> AsEnumerable<TEnumerator, T>(
-            this ValueEnumerable<TEnumerator, T> source)
-            where TEnumerator : struct, IValueEnumerator<T>
+            this ZLinq.ValueEnumerable<TEnumerator, T> source)
+            where TEnumerator : struct, ZLinq.IValueEnumerator<T>
         {
             var enumerator = source.Enumerator;
             while (enumerator.TryGetNext(out T item))
