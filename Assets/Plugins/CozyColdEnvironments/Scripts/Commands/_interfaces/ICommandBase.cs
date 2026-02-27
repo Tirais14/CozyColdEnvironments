@@ -20,8 +20,6 @@ namespace CCEnvs.Patterns.Commands
 
         string Name { get; set; }
 
-        int DelayFrameCount { get; set; }
-
         CommandStatus Status { get; }
 
         Type CommandType { get; }

@@ -18,8 +18,6 @@ namespace CCEnvs.Patterns.Commands
 
         public bool IsSingle;
 
-        public int DelayFrameCount;
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static CommandBuilder Create()
@@ -56,15 +54,6 @@ namespace CCEnvs.Patterns.Commands
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandBuilder SetDelayFrames(int count)
-        {
-            DelayFrameCount = count;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Intermediate WithoutState()
         {
             return new Intermediate(this);
@@ -87,7 +76,6 @@ namespace CCEnvs.Patterns.Commands
         {
             Name = null;
             IsSingle = false;
-            DelayFrameCount = 0;
 
             return this;
         }
@@ -240,7 +228,6 @@ namespace CCEnvs.Patterns.Commands
                 {
                     Name = builder.Name ?? string.Empty,
                     IsSingle = builder.IsSingle,
-                    DelayFrameCount = builder.DelayFrameCount,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
@@ -272,7 +259,6 @@ namespace CCEnvs.Patterns.Commands
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
-                cmd.DelayFrameCount = 0;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
@@ -317,7 +303,6 @@ namespace CCEnvs.Patterns.Commands
                 {
                     Name = builder.Name ?? string.Empty,
                     IsSingle = builder.IsSingle,
-                    DelayFrameCount = builder.DelayFrameCount,
                     State = intermediate.State,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
@@ -350,7 +335,6 @@ namespace CCEnvs.Patterns.Commands
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
-                cmd.DelayFrameCount = 0;
                 cmd.State = intermediate.State;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
@@ -396,7 +380,6 @@ namespace CCEnvs.Patterns.Commands
                 {
                     Name = builder.Name ?? string.Empty,
                     IsSingle = builder.IsSingle,
-                    DelayFrameCount = builder.DelayFrameCount,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
@@ -429,7 +412,6 @@ namespace CCEnvs.Patterns.Commands
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
-                cmd.DelayFrameCount = 0;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
@@ -474,7 +456,6 @@ namespace CCEnvs.Patterns.Commands
                 {
                     Name = builder.Name ?? string.Empty,
                     IsSingle = builder.IsSingle,
-                    DelayFrameCount = builder.DelayFrameCount,
                     State = intermediate.State,
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
@@ -507,7 +488,6 @@ namespace CCEnvs.Patterns.Commands
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
-                cmd.DelayFrameCount = 0;
                 cmd.State = intermediate.State;
                 cmd.ExecuteAction = ExecuteAction;
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;

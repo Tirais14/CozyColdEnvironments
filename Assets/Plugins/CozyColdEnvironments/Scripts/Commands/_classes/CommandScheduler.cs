@@ -423,7 +423,7 @@ namespace CCEnvs.Patterns.Commands
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Command: {cmd} will be executed");
 
-            switch (cmd)
+            switch (cmd.Value)
             {
                 case ICommand cmdSync:
                     cmdSync.Execute();

@@ -40,8 +40,6 @@ namespace CCEnvs.Patterns.Commands
         public bool IsResetable { get; }
         public bool IsValid => !disposed;
 
-        public int DelayFrameCount { get; set; }
-
         public CommandStatus Status => status.Value;
 
         public Type CommandType { get; }
@@ -237,7 +235,6 @@ namespace CCEnvs.Patterns.Commands
             isCancellation = false;
 
             Name = string.Empty;
-            DelayFrameCount = 0;
             IsSingle = false;
             status.Value = CommandStatus.None;
         }
