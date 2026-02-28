@@ -1,13 +1,13 @@
+using CCEnvs.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CCEnvs.Collections;
 
 #nullable enable
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public class DictionarySnapshot<TKey, TValue> : Snapshot<IDictionary<TKey, TValue>>
+    public record DictionarySnapshot<TKey, TValue> : Snapshot<IDictionary<TKey, TValue>>
     {
         public HashSet<KeyValuePair<TKey, TValue>>? Pairs { get; set; }
 
@@ -17,7 +17,6 @@ namespace CCEnvs.Snapshots
 
         public DictionarySnapshot(IDictionary<TKey, TValue> target) : base(target)
         {
-            Pairs = target.ToHashSet();
         }
 
         public override bool CanRestore(IDictionary<TKey, TValue>? target)
@@ -42,6 +41,20 @@ namespace CCEnvs.Snapshots
                 else
                     target.Add(pair.Key, pair.Value);
             }
+        }
+
+        protected override void OnCapture(IDictionary<TKey, TValue> target)
+        {
+            base.OnCapture(target);
+
+            Pairs = target.ToHashSet();
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            Pairs = null;
         }
     }
 }

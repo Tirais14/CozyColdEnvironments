@@ -1,8 +1,8 @@
 #if UNITY_2017_1_OR_NEWER
-using System;
 using CCEnvs.Unity.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
+using System;
 using UnityEngine;
 
 #nullable enable

@@ -1,7 +1,7 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
 
 namespace CCEnvs.Patterns.Commands
 {

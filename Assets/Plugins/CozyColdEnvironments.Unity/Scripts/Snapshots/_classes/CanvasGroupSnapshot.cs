@@ -1,24 +1,25 @@
+using CCEnvs.Attributes.Serialization;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots.UI
 {
     [Serializable]
-    public sealed class CanvasGroupSnapshot : BehaviourSnapshot<CanvasGroup>
+    [TypeSerializationDescriptor("CanvasGroupSnapshot", "5b152852-c9bb-4775-aeb0-aaad5b29143e")]
+    public sealed record CanvasGroupSnapshot : BehaviourSnapshot<CanvasGroup>
     {
         [field: SerializeField]
-        public float Alpha { get; private set; } = 1f;
+        public float? Alpha { get; set; } = 1f;
 
         [field: SerializeField]
-        public bool Interctable { get; private set; } = true;
+        public bool? Interctable { get; set; } = true;
 
         [field: SerializeField]
-        public bool BlockRaycasts { get; private set; } = true;
+        public bool? BlockRaycasts { get; set; } = true;
 
         [field: SerializeField]
-        public bool IgnoreParentGroups { get; private set; }
+        public bool? IgnoreParentGroups { get; set; }
 
         public CanvasGroupSnapshot()
         {
@@ -26,24 +27,47 @@ namespace CCEnvs.Unity.Snapshots.UI
 
         public CanvasGroupSnapshot(CanvasGroup target) : base(target)
         {
+        }
+
+        public CanvasGroupSnapshot(BehaviourSnapshot<CanvasGroup> original) : base(original)
+        {
+        }
+
+        protected override void OnRestore(ref CanvasGroup target)
+        {
+            base.OnRestore(ref target);
+
+            if (Alpha.HasValue)
+                target!.alpha = Alpha.Value;
+
+            if (Interctable.HasValue)
+                target.interactable = Interctable.Value;
+
+            if (BlockRaycasts.HasValue)
+                target.blocksRaycasts = BlockRaycasts.Value;
+
+            if (IgnoreParentGroups.HasValue)
+                target.ignoreParentGroups = IgnoreParentGroups.Value;
+        }
+
+        protected override void OnCapture(CanvasGroup target)
+        {
+            base.OnCapture(target);
+
             Alpha = target.alpha;
             Interctable = target.interactable;
             BlockRaycasts = target.blocksRaycasts;
             IgnoreParentGroups = target.ignoreParentGroups;
         }
 
-        public override bool TryRestore(CanvasGroup? target, [NotNullWhen(true)] out CanvasGroup? restored)
+        protected override void OnReset()
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
+            base.OnReset();
 
-            target!.alpha = Alpha;
-            target.interactable = Interctable;
-            target.blocksRaycasts = BlockRaycasts;
-            target.ignoreParentGroups = IgnoreParentGroups;
-
-            restored = target;
-            return true;
+            Alpha = default;
+            Interctable = default;
+            BlockRaycasts = default;
+            IgnoreParentGroups = default;
         }
     }
 }

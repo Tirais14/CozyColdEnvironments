@@ -1,12 +1,12 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Reflection;
 using SuperLinq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace CCEnvs
 {
@@ -35,7 +35,7 @@ namespace CCEnvs
                     from member in members
                     select member
                     )
-                    .Distinct()
+                    //.Distinct()
                     .ToArray();
 
             static bool[] processAssemblyNames(string[] assemblyNames)

@@ -1,11 +1,12 @@
+using CCEnvs.Attributes.Serialization;
 using System;
-using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    public sealed class TypeSnapshot : Snapshot<Type>
+    [TypeSerializationDescriptor("TypeSnapshot", "250788e8-a26b-45a3-9abd-f3471a842972")]
+    public sealed record TypeSnapshot : Snapshot<Type>
     {
 #if UNITY_2017_1_OR_NEWER
         [field: UnityEngine.Space(8f)]
@@ -28,10 +29,6 @@ namespace CCEnvs.Snapshots
             :
             base(target)
         {
-            Guard.IsNotNull(target);
-
-            Name = target.Name;
-            AssemblyName = target.AssemblyQualifiedName;
         }
 
         public override bool CanRestore(Type? target) => false;
@@ -43,6 +40,22 @@ namespace CCEnvs.Snapshots
 
         protected override void OnRestore(ref Type target)
         {
+        }
+
+        protected override void OnCapture(Type target)
+        {
+            base.OnCapture(target);
+
+            Name = target.Name;
+            AssemblyName = target.AssemblyQualifiedName;
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            Name = null;
+            AssemblyName = null;
         }
     }
 }

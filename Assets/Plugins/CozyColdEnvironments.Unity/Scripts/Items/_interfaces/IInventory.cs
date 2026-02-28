@@ -1,7 +1,7 @@
 #nullable enable
-using System.Collections.Generic;
 using ObservableCollections;
 using R3;
+using System.Collections.Generic;
 
 namespace CCEnvs.Unity.Items
 {

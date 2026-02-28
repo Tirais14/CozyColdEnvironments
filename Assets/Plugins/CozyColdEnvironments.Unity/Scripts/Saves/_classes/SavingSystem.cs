@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
@@ -18,6 +11,13 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using SuperLinq;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -479,7 +479,8 @@ namespace CCEnvs.Unity.Saves
                 var leftSnapshotsPairs = leftSnapshots.Select(leftSnapshot => (leftSnapshot.Key!, leftSnapshot.Snapshot))
                     .ToDictionary();
 
-                interSceneDatas.Add(leftSceneData, leftSnapshotsPairs!);
+                if (!interSceneDatas.TryAdd(leftSceneData, leftSnapshotsPairs))
+                    interSceneDatas[leftSceneData] = leftSnapshotsPairs;
             }
 
             foreach (var (rightSceneData, rightSnapshots) in rightSceneDatas)

@@ -1,8 +1,8 @@
+using Cysharp.Threading.Tasks;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
-using R3;
 using UnityEngine;
 
 #nullable enable

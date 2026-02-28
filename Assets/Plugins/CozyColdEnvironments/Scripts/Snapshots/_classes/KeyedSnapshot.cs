@@ -1,9 +1,9 @@
 
 #nullable enable
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
 
 namespace CCEnvs.Snapshots
 {
@@ -36,6 +36,13 @@ namespace CCEnvs.Snapshots
             return !(left == right);
         }
 
+        public readonly ISnapshot CaptureFrom(object obj)
+        {
+            Snapshot.CaptureFrom(obj);
+
+            return this;
+        }
+
         public readonly bool TryRestore(object? target, [NotNullWhen(true)] out object? restored)
         {
             return Snapshot.TryRestore(target, out restored);
@@ -44,6 +51,12 @@ namespace CCEnvs.Snapshots
         public readonly bool CanRestore(object? target)
         {
             return Snapshot.CanRestore(target);
+        }
+
+        public readonly ISnapshot Reset()
+        {
+            Snapshot.Reset();
+            return this;
         }
 
         public readonly override bool Equals(object? obj)

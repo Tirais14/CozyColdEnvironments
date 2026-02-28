@@ -1,18 +1,18 @@
+using CCEnvs.Attributes.Serialization;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    public class BehaviourSnapshot<T> : ComponentSnapshot<T>
+    public record BehaviourSnapshot<T> : ComponentSnapshot<T>
         where T : Behaviour
     {
         [SerializeField]
-        protected bool m_Enabled;
+        protected bool? m_Enabled;
 
-        public bool Enabled {
+        public bool? Enabled {
             get => m_Enabled;
             protected set => m_Enabled = value;
         }
@@ -25,25 +25,49 @@ namespace CCEnvs.Unity.Snapshots
             :
             base(target)
         {
-            Enabled = target.enabled;
         }
 
-        public override bool TryRestore(T? target, [NotNullWhen(true)] out T? restored)
+        protected BehaviourSnapshot(ComponentSnapshot<T> original) : base(original)
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
-
-            target!.enabled = Enabled;
-
-            restored = target;
-            return true;
         }
 
         protected override void OnRestore(ref T target)
         {
             base.OnRestore(ref target);
 
-            target.enabled = Enabled;
+            if (Enabled != null)
+                target.enabled = Enabled.Value;
+        }
+
+        protected override void OnCapture(T target)
+        {
+            base.OnCapture(target);
+
+            Enabled = target.enabled;
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            Enabled = null;
+        }
+    }
+
+    [Serializable]
+    [TypeSerializationDescriptor("BehaviourSnapshot", "affcf8e9-c4d7-4e78-8e56-0dd261fcb229")]
+    public record BehaviourSnapshot : BehaviourSnapshot<Behaviour>
+    {
+        public BehaviourSnapshot()
+        {
+        }
+
+        public BehaviourSnapshot(Behaviour target) : base(target)
+        {
+        }
+
+        protected BehaviourSnapshot(BehaviourSnapshot<Behaviour> original) : base(original)
+        {
         }
     }
 }

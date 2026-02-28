@@ -1,5 +1,6 @@
+using CCEnvs.Attributes.Serialization;
+using Newtonsoft.Json;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,33 +8,57 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.Snapshots.UI
 {
     [Serializable]
-    public class GraphicSnapshot : BehaviourSnapshot<Graphic>
+    public record GraphicSnapshot<T> : BehaviourSnapshot<T>
+        where T : Graphic
     {
-        public Color Color { get; set; }
-        public bool RaycastTarget { get; set; }
+        [JsonProperty("color")]
+        public Color? Color { get; set; }
+
+        [JsonProperty("raycastTarget")]
+        public bool? RaycastTarget { get; set; }
 
         public GraphicSnapshot()
         {
         }
 
-        public GraphicSnapshot(Graphic target)
+        public GraphicSnapshot(T target)
             :
             base(target)
         {
+        }
+
+        protected override void OnRestore(ref T target)
+        {
+            base.OnRestore(ref target);
+
+            if (Color.HasValue)
+                target.color = Color.Value;
+
+            if (RaycastTarget.HasValue)
+                target.raycastTarget = RaycastTarget.Value;
+        }
+
+        protected override void OnCapture(T target)
+        {
+            base.OnCapture(target);
+
             Color = target.color;
             RaycastTarget = target.raycastTarget;
         }
 
-        public override bool TryRestore(Graphic? target, [NotNullWhen(true)] out Graphic? restored)
+        protected override void OnReset()
         {
-            if (!base.TryRestore(target, out restored))
-                return false;
+            base.OnReset();
 
-            target!.color = Color;
-            target.raycastTarget = RaycastTarget;
-
-            restored = target;
-            return true;
+            Color = default;
+            RaycastTarget = default;
         }
+    }
+
+    [Serializable]
+    [TypeSerializationDescriptor("GraphicSnapshot", "ade0f9d1-6ddc-487f-abd0-ab8ac2e88d4e")]
+    public record GraphicSnapshot : GraphicSnapshot<Graphic>
+    {
+
     }
 }

@@ -14,9 +14,6 @@ namespace CCEnvs.Diagnostics
     {
         public static IDebugLogger Instance { get; private set; } = new CCDebug();
 
-        private readonly HashSet<Type> disabled = new(0);
-        private readonly HashSet<Type> disabledAdditive = new(0);
-
         public bool IsEnabled { get; set; }
 #if CC_DEBUG_ENABLED
          = true;
@@ -26,18 +23,6 @@ namespace CCEnvs.Diagnostics
         {
             CC.Guard.IsNotNull(logger, nameof(logger));
             Instance = logger;
-        }
-
-        public void DisableDebugFor(params Type[] types)
-        {
-            for (int i = 0; i < types.Length; i++)
-                disabled.Add(types[i]);
-        }
-
-        public void EnableDebugFor(params Type[] types)
-        {
-            for (int i = 0; i < types.Length; i++)
-                disabled.Remove(types[i]);
         }
 
         public void PrintLog(object message, object? context = null)
@@ -66,8 +51,8 @@ namespace CCEnvs.Diagnostics
 
         public void PrintError(object message, object? context = null)
         {
-            if (!IsPrintAllowed(context))
-                return;
+            //if (!IsPrintAllowed(context))
+            //    return;
 
 #if UNITY_2017_1_OR_NEWER
             Debug.LogError(GetMessage(message, context), context as Object);
@@ -138,7 +123,7 @@ namespace CCEnvs.Diagnostics
 
         public void AssertError(bool condition, object message, object? context)
         {
-            if (!IsPrintAllowed(context) || condition)
+            if (condition)
                 return;
 
 #if UNITY_2017_1_OR_NEWER
@@ -150,7 +135,7 @@ namespace CCEnvs.Diagnostics
 
         public void AssertException(bool condition, Exception exception, object? context)
         {
-            if (!IsPrintAllowed(context) || condition)
+            if (condition)
                 return;
 
 #if UNITY_2017_1_OR_NEWER
@@ -200,7 +185,7 @@ namespace CCEnvs.Diagnostics
             if (context is not null)
                 return $"{GetContextInfo(context)}: {GetTargetInfo(target)}.";
 
-            return $"{target}.";
+            return target.ToString();
         }
 
         private static string GetContextInfo(object context)
@@ -216,7 +201,7 @@ namespace CCEnvs.Diagnostics
             if (context is Object unityObj)
                 return $"{GetTypeName(unityObj)}({unityObj.name})";
 
-            return $"{GetTypeName(contextTarget)}";
+            return GetTypeName(contextTarget);
         }
 
         private static string GetTargetInfo(object target)
@@ -226,31 +211,7 @@ namespace CCEnvs.Diagnostics
 
         private bool IsPrintAllowed(object? context)
         {
-            if (!IsEnabled)
-                return false;
-
-            object? target;
-            DebugArguments debugArguments = default;
-            if (context is DebugContext debugContext)
-                debugContext.Deconstruct(out target, out debugArguments);
-            else
-                target = context;
-
-            if (target is not null)
-            {
-                if (target is not Type contextType)
-                    contextType = target.GetType();
-
-                if (disabled.Contains(contextType))
-                    return false;
-                if (debugArguments.IsFlagSetted(DebugArguments.IsAdditive)
-                    &&
-                    disabledAdditive.Contains(contextType)
-                    )
-                    return false;
-            }
-
-            return true;
+            return IsEnabled;
         }
     }
 }

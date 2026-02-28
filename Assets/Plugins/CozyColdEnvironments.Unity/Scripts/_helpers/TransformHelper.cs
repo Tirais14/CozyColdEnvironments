@@ -1,7 +1,7 @@
+using Cysharp.Text;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Cysharp.Text;
 using UnityEngine;
 #nullable enable
 

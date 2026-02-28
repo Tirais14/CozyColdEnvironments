@@ -1,8 +1,8 @@
-using System;
-using System.Threading;
 using CCEnvs.Unity.Profiles;
 using ObservableCollections;
 using R3;
+using System;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.Leaderboards

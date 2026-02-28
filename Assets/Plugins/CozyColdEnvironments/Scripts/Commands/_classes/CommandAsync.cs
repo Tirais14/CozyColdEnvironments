@@ -1,8 +1,8 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
 
 #pragma warning disable S107
 #pragma warning disable S3963

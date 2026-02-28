@@ -1,28 +1,25 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using CCEnvs.Json.Converters;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace CCEnvs.Snapshots
 {
-    public abstract class Snapshot
+    public abstract record Snapshot
     {
 
     }
 
     [Serializable]
-    [JsonConverter(typeof(SnapshotJsonConverter))]
-    public abstract class Snapshot<T> : Snapshot, ISnapshot<T>
+    public abstract record Snapshot<T> : Snapshot, ISnapshot<T>
     {
-        protected readonly bool isValueType = typeof(T).IsValueType;
-
         [JsonIgnore]
         public virtual Type TargetType => TypeofCache<T>.Type;
 
         protected Snapshot()
         {
+            Reset();
         }
 
         protected Snapshot(T target)
@@ -30,6 +27,15 @@ namespace CCEnvs.Snapshots
             this()
         {
             CC.Guard.IsNotNullTarget(target);
+
+            CaptureFrom(target);
+        }
+
+        public ISnapshot<T> CaptureFrom(T target)
+        {
+            CC.Guard.IsNotNull(target, nameof(target));
+
+            return this;
         }
 
         public virtual bool TryRestore(T? target, [NotNullWhen(true)] out T? restored)
@@ -52,10 +58,17 @@ namespace CCEnvs.Snapshots
 
         public virtual bool CanRestore(T? target)
         {
-            if (!isValueType && target.IsNull())
+            if (!TypeofCache<T>.Type.IsValueType && target.IsNull())
                 return false;
 
             return true!;
+        }
+
+        public ISnapshot<T> Reset()
+        {
+            OnReset();
+
+            return this;
         }
 
         protected abstract void OnRestore(ref T target);
@@ -63,6 +76,16 @@ namespace CCEnvs.Snapshots
         protected virtual T? CreateValue()
         {
             return default;
+        }
+
+        protected virtual void OnCapture(T target)
+        {
+
+        }
+
+        protected virtual void OnReset()
+        {
+
         }
     }
 }

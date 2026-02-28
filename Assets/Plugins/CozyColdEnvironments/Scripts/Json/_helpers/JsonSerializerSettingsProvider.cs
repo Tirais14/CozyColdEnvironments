@@ -1,6 +1,6 @@
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -28,7 +28,7 @@ namespace CCEnvs.Json
 
             settings.Error = (sender, args) => args.CurrentObject.PrintException(args.ErrorContext.Error);
 
-            settings.TypeNameHandling = TypeNameHandling.Objects;
+            settings.TypeNameHandling = TypeNameHandling.None;
             settings.Formatting = Formatting.Indented;
             settings.MaxDepth = 64;
             settings.ObjectCreationHandling = ObjectCreationHandling.Auto;

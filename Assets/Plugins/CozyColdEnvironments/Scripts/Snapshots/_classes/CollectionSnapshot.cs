@@ -5,10 +5,11 @@ using System.Linq;
 #nullable enable
 namespace CCEnvs.Snapshots
 {
-    public class CollectionSnapshot<TCollection, TItem> : Snapshot<TCollection>
+    [Serializable]
+    public record CollectionSnapshot<TCollection, TItem> : Snapshot<TCollection>
         where TCollection : ICollection<TItem>
     {
-        public IReadOnlyList<TItem> Items { get; private set; } = Array.Empty<TItem>();
+        public IReadOnlyList<TItem>? Items { get; private set; }
 
         public CollectionSnapshot()
         {
@@ -16,6 +17,21 @@ namespace CCEnvs.Snapshots
 
         public CollectionSnapshot(TCollection target) : base(target)
         {
+        }
+
+        protected override void OnRestore(ref TCollection target)
+        {
+            if (Items.IsNotNull())
+            {
+                foreach (var item in Items)
+                    target.Add(item);
+            }
+        }
+
+        protected override void OnCapture(TCollection target)
+        {
+            base.OnCapture(target);
+
             Items = target.Aggregate(new List<TItem>(),
                 (collection, item) =>
                 {
@@ -24,10 +40,11 @@ namespace CCEnvs.Snapshots
                 });
         }
 
-        protected override void OnRestore(ref TCollection target)
+        protected override void OnReset()
         {
-            foreach (var item in Items)
-                target.Add(item);
+            base.OnReset();
+
+            Items = null;
         }
     }
 }

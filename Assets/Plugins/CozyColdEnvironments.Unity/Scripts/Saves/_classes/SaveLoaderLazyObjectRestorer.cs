@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using CCEnvs.Collections;
+﻿using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using R3;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -22,7 +22,7 @@ namespace CCEnvs.Unity.Saves
 
         private int batchSize = 100;
 
-        public long EveryFrame {
+        public long ExecuteEveryFrame {
             get => everyFrame;
             set => everyFrame = Math.Clamp(value, 0L, long.MaxValue);
         }
@@ -160,7 +160,7 @@ namespace CCEnvs.Unity.Saves
             if (disposed)
                 return false;
 
-            if (frameCount % EveryFrame != 0)
+            if (frameCount % ExecuteEveryFrame != 0)
                 return true;
 
             OnFrame();

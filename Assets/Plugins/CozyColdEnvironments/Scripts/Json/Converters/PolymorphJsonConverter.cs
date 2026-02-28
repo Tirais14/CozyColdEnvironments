@@ -1,8 +1,8 @@
-using System;
-using System.Linq;
 using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
@@ -19,8 +19,8 @@ namespace CCEnvs.Json.Converters
             if (reader.TokenType == JsonToken.Null)
                 return default;
 
-            if (reader.TokenType != JsonToken.StartObject)
-                throw new JsonSerializationException($"Token Type \"{reader.TokenType}\" is not {JsonToken.StartObject}");
+            //if (reader.TokenType != JsonToken.StartObject)
+            //    throw new JsonSerializationException($"Token Type \"{reader.TokenType}\" is not {JsonToken.StartObject}");
 
             var jObj = JObject.Load(reader);
             JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing \"$type\" property");

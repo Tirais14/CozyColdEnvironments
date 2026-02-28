@@ -1,14 +1,15 @@
-using System;
-using CCEnvs.Json.Converters;
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Snapshots;
 using Newtonsoft.Json;
+using System;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [JsonConverter(typeof(SnapshotJsonConverter))]
-    public class TransformSnapshot : ComponentSnapshot<Transform>
+    public record TransformSnapshot<T> : ComponentSnapshot<T>
+        where T : Transform
     {
         [JsonIgnore]
         [SerializeField]
@@ -41,14 +42,19 @@ namespace CCEnvs.Unity.Snapshots
         {
         }
 
-        public TransformSnapshot(Transform target) : base(target)
+        public TransformSnapshot(T target) : base(target)
         {
-            Position = new Vector3Snapshot(target.position);
-            LocalPosition = new Vector3Snapshot(target.localPosition);
-            Rotation = new QuaternionSnapshot(target.rotation);
         }
 
-        protected override void OnRestore(ref Transform target)
+        protected TransformSnapshot(ComponentSnapshot<T> original) : base(original)
+        {
+        }
+
+        protected TransformSnapshot(Snapshot<T> original) : base(original)
+        {
+        }
+
+        protected override void OnRestore(ref T target)
         {
             base.OnRestore(ref target);
 
@@ -60,6 +66,49 @@ namespace CCEnvs.Unity.Snapshots
 
             if (Rotation is not null && Rotation.TryRestore(default, out var rot))
                 target!.rotation = rot;
+        }
+
+        protected override void OnCapture(T target)
+        {
+            base.OnCapture(target);
+
+            Position = new Vector3Snapshot(target.position);
+            LocalPosition = new Vector3Snapshot(target.localPosition);
+            Rotation = new QuaternionSnapshot(target.rotation);
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            Position = default;
+            LocalPosition = default;
+            Rotation = default;
+        }
+    }
+
+    [Serializable]
+    [TypeSerializationDescriptor("TransformSnapshot", "0a16247f-5bbd-4968-9cd3-706be8b12247")]
+    public record TransformSnapshot : TransformSnapshot<Transform>
+    {
+        public TransformSnapshot()
+        {
+        }
+
+        public TransformSnapshot(Transform target) : base(target)
+        {
+        }
+
+        protected TransformSnapshot(TransformSnapshot<Transform> original) : base(original)
+        {
+        }
+
+        protected TransformSnapshot(ComponentSnapshot<Transform> original) : base(original)
+        {
+        }
+
+        protected TransformSnapshot(Snapshot<Transform> original) : base(original)
+        {
         }
     }
 }

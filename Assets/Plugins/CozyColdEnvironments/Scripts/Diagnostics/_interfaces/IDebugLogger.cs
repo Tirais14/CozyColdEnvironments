@@ -7,10 +7,6 @@ namespace CCEnvs.Diagnostics
     {
         bool IsEnabled { get; set; }
 
-        void EnableDebugFor(params Type[] types);
-
-        void DisableDebugFor(params Type[] types);
-
         void PrintLog(object message, object? context = null);
 
         void PrintWarning(object message, object? context = null);

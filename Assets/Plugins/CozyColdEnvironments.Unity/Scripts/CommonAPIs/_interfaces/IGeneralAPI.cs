@@ -1,6 +1,6 @@
 #nullable enable
-using System;
 using R3;
+using System;
 
 namespace CCEnvs.Unity.CommonAPIs
 {

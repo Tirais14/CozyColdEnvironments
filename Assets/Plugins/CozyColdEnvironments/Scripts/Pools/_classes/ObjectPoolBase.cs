@@ -1,12 +1,12 @@
+using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
+using R3;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
-using CCEnvs.Reflection.Caching;
-using R3;
 
 #nullable enable
 #pragma warning disable S3267
@@ -24,7 +24,7 @@ namespace CCEnvs.Pools
 
         protected readonly ConcurrentStack<T> inactiveItems;
 
-        protected readonly ConcurrentDictionary<T, PooledObject<T>> activeItems;
+        protected readonly ConcurrentDictionary<T, PooledObject<T>> activeItems = new(ReferenceEqualityComparer<T>.Instance);
 
         protected ReactiveCommand<T>? getCmd;
         protected ReactiveCommand<T>? returnCmd;
@@ -73,8 +73,12 @@ namespace CCEnvs.Pools
 
 #if CC_DEBUG_ENABLED
 
-            if (inactiveItems.Where(static x => x.IsNotNull()).Contains(obj))
+            if (ReferenceEqualityComparer<T?>.Instance.Equals(obj, fastObject)
+                ||
+                inactiveItems.Where(static x => x.IsNotNull()).Contains(obj, ReferenceEqualityComparer<T>.Instance))
+            {
                 throw new InvalidOperationException($"Object: {obj} is already pooled");
+            }
 
 #endif
 

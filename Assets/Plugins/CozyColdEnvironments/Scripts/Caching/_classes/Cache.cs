@@ -1,4 +1,7 @@
 #nullable enable
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -6,9 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Timers;
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
-using Humanizer;
 using UnityEditor;
 
 #pragma warning disable S3267

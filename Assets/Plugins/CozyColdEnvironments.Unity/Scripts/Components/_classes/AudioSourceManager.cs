@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using CCEnvs.Caching;
 using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using R3;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 #nullable enable
@@ -134,7 +134,7 @@ namespace CCEnvs.Unity.Components
             float multiplier = item.VolumeMultiplier;
 
             foreach (var entry in item.Entries)
-                entry.Source.volume = entry.CapturedState.Volume * multiplier * gMultiplier;
+                entry.Source.volume = entry.CapturedState.Volume.GetValueOrDefault() * multiplier * gMultiplier;
         }
 
         private static void NormalizeTag(string? tag, out string result)
@@ -160,7 +160,7 @@ namespace CCEnvs.Unity.Components
 
             public void ApplySettingsTo(AudioSourceManagerEntry entry)
             {
-                float volume = entry.CapturedState.Volume * VolumeMultiplier * GetAudioSourceVolumeMultiplier(null);
+                float volume = entry.CapturedState.Volume.GetValueOrDefault() * VolumeMultiplier * GetAudioSourceVolumeMultiplier(null);
                 entry.Source.volume = volume;
             }
         }

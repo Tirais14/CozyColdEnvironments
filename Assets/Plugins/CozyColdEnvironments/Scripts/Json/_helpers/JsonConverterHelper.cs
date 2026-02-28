@@ -1,16 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using SuperLinq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -201,27 +201,54 @@ namespace CCEnvs.Json
             }
         }
 
-        public static (ConstructorInfo ctor, IList<JProperty> jProps)? ResolveConstructor(
+        public static (ConstructorInfo? ctor, IList<JProperty> jProps) ResolveConstructor(
             Type type,
-            ICollection<JProperty> jProps, JsonSerializerSettings? settings = null)
+            ICollection<JProperty> jProps,
+            JsonSerializerSettings? settings = null
+            )
         {
             Guard.IsNotNull(type, nameof(type));
             CC.Guard.IsNotNull(jProps, nameof(jProps));
             settings ??= JsonSerializerSettingsProvider.GetDefault();
 
-            var ctors = type.Reflect()
-                .Cache()
-                .Constructors()
-                .Select(ctor => (ctor, prms: ctor.GetParameters()))
-                .Where(pair => pair.prms.IsEmpty() || pair.ctor.IsDefined<JsonConstructorAttribute>())
-                .OrderByDescending(pair => pair.prms.Length)
-                .ToArray();
+            using var ctors = ListPool<(ConstructorInfo ctor, ParameterInfo[] prms)>.Shared.Get();
+
+            foreach (var ctor in type.GetConstructors(BindingFlagsDefault.All))
+            {
+                if (ctor.IsDefined<JsonConstructorAttribute>())
+                {
+                    ctors.Value.Clear();
+                    ctors.Value.Add((ctor, ctor.GetParameters()));
+                    break;
+                }
+
+                ctors.Value.Add((ctor, ctor.GetParameters()));
+            }
+
+            if (ctors.Value.Count > 1)
+            {
+                ctors.Value.Sort(
+                    static (left, right) =>
+                    {
+                        var comaprer = Comparer<int>.Default;
+
+                        return -comaprer.Compare(left.prms.Length, right.prms.Length);
+                    });
+            }
 
             if (jProps.IsNotNullOrEmpty())
             {
-                var orderedJProps = new List<JProperty>(jProps.Count);
-                var usedJProps = new HashSet<JProperty>(jProps.Count);
-                foreach (var (ctor, prms) in ctors)
+                using var orderedJProps = ListPool<JProperty>.Shared.Get();
+
+                if (orderedJProps.Value.Capacity < jProps.Count)
+                    orderedJProps.Value.Capacity = jProps.Count;
+
+                using var usedJProps = HashSetPool<JProperty>.Shared.Get();
+
+                if (usedJProps.Value.Count < jProps.Count)
+                    usedJProps.Value.EnsureCapacity(jProps.Count);
+
+                foreach (var (ctor, prms) in ctors.Value)
                 {
                     int requiredParamCount = prms.Count(param => !param.HasDefaultValue);
                     if (requiredParamCount > jProps.Count)
@@ -236,13 +263,13 @@ namespace CCEnvs.Json
                             jProp.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase)
                             );
 
-                        if (matchingJProp is not null && !usedJProps.Contains(matchingJProp))
+                        if (matchingJProp is not null && !usedJProps.Value.Contains(matchingJProp))
                         {
-                            orderedJProps.Add(matchingJProp);
-                            usedJProps.Add(matchingJProp);
+                            orderedJProps.Value.Add(matchingJProp);
+                            usedJProps.Value.Add(matchingJProp);
                         }
                         else if (param.HasDefaultValue)
-                            orderedJProps.Add(new JProperty(paramName));
+                            orderedJProps.Value.Add(new JProperty(paramName));
                         else
                         {
                             isFound = false;
@@ -250,14 +277,16 @@ namespace CCEnvs.Json
                         }
                     }
 
-                    if (isFound && orderedJProps.Count >= requiredParamCount)
-                        return (ctor, orderedJProps);
+                    if (isFound && orderedJProps.Value.Count >= requiredParamCount)
+                        return (ctor, orderedJProps.Value);
 
-                    orderedJProps.Clear();
-                    usedJProps.Clear();
+                    orderedJProps.Value.Clear();
+                    usedJProps.Value.Clear();
                 }
             }
-            else if (ctors.FirstOrDefault(pair => pair.prms.IsEmpty())
+            else if (!type.IsValueType
+                &&
+                ctors.Value.FirstOrDefault(pair => pair.prms.IsEmpty())
                 .Maybe()
                 .Map(pair => pair.ctor)
                 .TryGetValue(out var ctor))
@@ -265,7 +294,7 @@ namespace CCEnvs.Json
                 return (ctor, Array.Empty<JProperty>());
             }
 
-            return null;
+            return (null, Array.Empty<JProperty>());
         }
 
         public static object CreateInstance(
@@ -276,9 +305,15 @@ namespace CCEnvs.Json
             Guard.IsNotNull(type, nameof(type));
 
             JsonSerializerSettings settings = jSerializer.GetSerializerSettings();
-            var ctorInfo = ResolveConstructor(type, jProps, settings) ?? throw new JsonException($"Cannot resolve constructor of type \"{type}\"");
+
+            var ctorInfo = ResolveConstructor(type, jProps, settings);
+
             var jPropInfos = ResolveJsonPropertyInfos(type, settings);
-            var deserializedJProps = new List<object?>(jProps.Count);
+
+            var deserializedJProps = ListPool<object?>.Shared.Get();
+
+            if (deserializedJProps.Value.Capacity < jProps.Count)
+                deserializedJProps.Value.Capacity = jProps.Count;
 
             foreach (JProperty jProp in ctorInfo.jProps)
             {
@@ -292,15 +327,105 @@ namespace CCEnvs.Json
                 }
 
                 object? deserializedJProp = jProp.Value.ToObject(matchingJPropInfo.UnderlyingType, jSerializer);
-                deserializedJProps.Add(deserializedJProp);
+                deserializedJProps.Value.Add(deserializedJProp);
             }
 
-            var instance = ctorInfo.ctor.Invoke(deserializedJProps.ToArray());
+            object instance;
 
-            if (ctorInfo.ctor.GetParameters().IsEmpty() && jProps.IsNotEmpty())
-                Populate(instance, jProps, jSerializer);
+            if (ctorInfo.ctor is null)
+            {
+                if (!type.IsValueType)
+                    throw new JsonException($"Cannot resolve constructor of type \"{type}\"");
+
+                instance = Activator.CreateInstance(type);
+            }
+            else
+                instance = ctorInfo.ctor.Invoke(deserializedJProps.Value.ToArray());
+
+            Populate(instance, jProps, jSerializer);
 
             return instance;
+        }
+
+        private readonly static Lazy<Type> jsonInternalReaderType = new(
+            static () =>
+            {
+                return Type.GetType($"JsonSerializerInternalReader, Newtonsoft.Json", throwOnError: true);
+            });
+
+        private static MethodInfo? parametrizedObjectFactory;
+
+        private static PropertyInfo? parametrizedCreatorProp;
+
+        public static object CreateNewObject(Type type, JsonReader reader, JsonSerializer serializer)
+        {
+            Guard.IsNotNull(type, nameof(type));
+            Guard.IsNotNull(reader, nameof(reader));
+            Guard.IsNotNull(serializer, nameof(serializer));
+
+            var tContract = serializer.ContractResolver.ResolveContract(type);
+
+            if (tContract is not JsonObjectContract contract)
+                throw new ArgumentException($"Contract: {tContract.GetType()}. Expected: JsonObjectContract");
+
+            var parametrizedCreator = GetParametrizedCreator(contract);
+
+            if (parametrizedCreator is not null || contract.OverrideCreator is not null)
+            {
+                var intReader = CreateJsonSerializerInternalReader(serializer);
+
+                var prms = new object?[]
+                {
+                    reader,
+                    contract, null,
+                    contract.OverrideCreator ?? parametrizedCreator,
+                    null
+                };
+
+                return GetParametrizedObjectFactory(serializer)
+                    .Invoke(intReader, prms);
+            }
+            else if (contract.DefaultCreator is not null)
+                return contract.DefaultCreator();
+
+            throw new JsonSerializationException($"Cannot resolve any creator of type");
+        }
+
+        private static object CreateJsonSerializerInternalReader(JsonSerializer serializer)
+        {
+            var jSerializerIntReaderType = jsonInternalReaderType.Value;
+
+            return Activator.CreateInstance(jSerializerIntReaderType, serializer);
+        }
+
+        private static MethodInfo GetParametrizedObjectFactory(JsonSerializer serializer)
+        {
+            if (parametrizedObjectFactory is not null)
+                return parametrizedObjectFactory;
+
+            var intReader = CreateJsonSerializerInternalReader(serializer);
+
+            parametrizedObjectFactory = intReader.GetType()
+                .GetMethods(BindingFlagsDefault.InstanceNonPublic)
+                .FirstOrDefault(method => method.Name == "CreateObjectUsingCreatorWithParameters")
+                ??
+                throw new InvalidOperationException("Cannot find method: CreateObjectUsingCreatorWithParameters");
+
+            return parametrizedObjectFactory;
+        }
+
+        private static ObjectConstructor<object>? GetParametrizedCreator(JsonObjectContract contract)
+        {
+            if (parametrizedCreatorProp is not null)
+            {
+                return parametrizedCreatorProp.GetValue(contract)
+                    .To<ObjectConstructor<object>?>();
+            }
+
+            parametrizedCreatorProp = TypeofCache<JsonObjectContract>.Type.GetProperty("ParameterizedCreator", BindingFlagsDefault.InstanceNonPublic);
+
+            return parametrizedCreatorProp.GetValue(contract)
+                    .To<ObjectConstructor<object>?>();
         }
     }
 }

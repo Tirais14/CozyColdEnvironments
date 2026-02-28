@@ -1,13 +1,14 @@
-using System;
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
 using Newtonsoft.Json;
+using System;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    public class ComponentSnapshot<T> : Snapshot<T>
+    public record ComponentSnapshot<T> : Snapshot<T>
         where T : Component
     {
         [Header(nameof(Component))]
@@ -15,11 +16,11 @@ namespace CCEnvs.Unity.Snapshots
 
         [JsonIgnore]
         [SerializeField]
-        protected GameObjectExtraInfo? m_ExtraInfo;
+        protected GameObjectExtraInfo? extraInfo;
 
         public GameObjectExtraInfo? ExtraInfo {
-            get => m_ExtraInfo;
-            set => m_ExtraInfo = value;
+            get => extraInfo;
+            set => extraInfo = value;
         }
 
         public ComponentSnapshot()
@@ -30,7 +31,10 @@ namespace CCEnvs.Unity.Snapshots
             :
             base(target)
         {
-            ExtraInfo = target.GetExtraInfo();
+        }
+
+        protected ComponentSnapshot(Snapshot<T> original) : base(original)
+        {
         }
 
         public override bool CanRestore(T? target)
@@ -47,6 +51,37 @@ namespace CCEnvs.Unity.Snapshots
             return ExtraInfo!.FindGameObject(includeInactive: true)
                 .Map(static go => go.Q().Component<T>().Raw)
                 .GetValue();
+        }
+
+        protected override void OnCapture(T target)
+        {
+            base.OnCapture(target);
+
+            ExtraInfo = target.GetExtraInfo();
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            extraInfo = null;
+        }
+    }
+
+    [Serializable]
+    [TypeSerializationDescriptor("ComponentSnapshot", "ad92c12a-fa33-4c14-bbdc-0fd040a7d85a")]
+    public record ComponentSnapshot : ComponentSnapshot<Component>
+    {
+        public ComponentSnapshot()
+        {
+        }
+
+        public ComponentSnapshot(Component target) : base(target)
+        {
+        }
+
+        protected ComponentSnapshot(ComponentSnapshot<Component> original) : base(original)
+        {
         }
     }
 }

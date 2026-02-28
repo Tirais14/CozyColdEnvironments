@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using CCEnvs.Collections;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs
@@ -65,7 +65,7 @@ namespace CCEnvs
             if (source.IsNullOrEmpty())
                 return;
 
-            UtilizeEach(source ,bufferized);
+            UtilizeEach(source, bufferized);
             source.Clear();
         }
 

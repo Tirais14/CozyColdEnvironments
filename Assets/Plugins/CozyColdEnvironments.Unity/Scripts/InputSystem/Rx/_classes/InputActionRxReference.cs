@@ -1,5 +1,5 @@
-using System;
 using CCEnvs.Unity.EditorSerialization;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

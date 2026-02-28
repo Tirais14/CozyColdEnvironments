@@ -1,6 +1,6 @@
+using R3;
 using System;
 using System.Collections.Generic;
-using R3;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 using static UnityEngine.InputSystem.InputAction;

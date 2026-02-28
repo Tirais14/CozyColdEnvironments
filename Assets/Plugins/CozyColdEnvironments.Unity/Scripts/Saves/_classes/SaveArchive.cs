@@ -1,10 +1,17 @@
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
+using CCEnvs.Patterns.Commands;
+using CCEnvs.Pools;
+using CCEnvs.Threading.Tasks;
+using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
+using ObservableCollections;
+using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using CCEnvs.Attributes.Serialization;
-using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
-using ObservableCollections;
+using System.Threading;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -12,7 +19,10 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [TypeSerializationDescriptor("Saves.SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
-    public class SaveArchive : IEquatable<SaveArchive>, IEnumerable<SaveCatalog>
+    public class SaveArchive
+        :
+        IEquatable<SaveArchive>,
+        IEnumerable<SaveCatalog>
     {
         [JsonProperty("catalogs")]
         private ObservableDictionary<string, SaveCatalog> catalogs = new();
@@ -74,6 +84,49 @@ namespace CCEnvs.Unity.Saves
             return this;
         }
 
+        public async UniTask LoadCatalogsFromFileAsync(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool force = false,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (catalogs.IsEmpty())
+                return;
+
+            await UniTaskHelper.TrySwitchToThreadPool();
+
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(LoadCatalogsFromFileAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
+                );
+
+            await Command.Builder.SetName(cmdName)
+                .WithState((@this: this, writeSaveDataMode, configureAwait, force))
+                .Asyncronously()
+                .SetExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await args.@this.LoadCatalogsFromFileAsyncCore(
+                        args.writeSaveDataMode,
+                        args.force,
+                        args.configureAwait,
+                        cancellationToken
+                        );
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(SaveSystem.CommandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+
+            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+        }
+
         public bool Equals(SaveArchive other)
         {
             return this == other;
@@ -102,5 +155,42 @@ namespace CCEnvs.Unity.Saves
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private async UniTask LoadCatalogsFromFileAsyncCore(
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool force = false,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            await UniTaskHelper.TrySwitchToThreadPool();
+
+            using var tasks = new PooledArray<UniTask>(catalogs.Count);
+
+            UniTask task;
+
+            int i = 0;
+
+            try
+            {
+                foreach (var catalog in catalogs.To<IDictionary<string, SaveCatalog>>().Values)
+                {
+                    task = catalog.LoadGroupsFromFileAsync(
+                        writeSaveDataMode,
+                        force,
+                        configureAwait: false,
+                        cancellationToken: cancellationToken
+                        );
+
+                    tasks[i++] = task;
+                }
+
+                await UniTask.WhenAll(tasks.Raw);
+            }
+            finally
+            {
+                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+            }
+        }
     }
 }

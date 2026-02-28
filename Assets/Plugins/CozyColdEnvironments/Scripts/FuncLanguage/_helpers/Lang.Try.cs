@@ -1,7 +1,7 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
-using CCEnvs.Diagnostics;
 
 #pragma warning disable S3236
 namespace CCEnvs.FuncLanguage

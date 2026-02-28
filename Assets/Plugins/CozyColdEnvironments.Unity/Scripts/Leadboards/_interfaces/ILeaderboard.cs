@@ -1,9 +1,9 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
 using CCEnvs.Unity.Profiles;
 using ObservableCollections;
 using R3;
+using System;
+using System.Collections.Generic;
 
 namespace CCEnvs.Unity.Leaderboards
 {

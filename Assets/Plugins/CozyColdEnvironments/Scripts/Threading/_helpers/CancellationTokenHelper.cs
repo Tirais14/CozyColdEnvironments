@@ -1,5 +1,5 @@
-using System.Threading;
 using CCEnvs.Collections;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Threading

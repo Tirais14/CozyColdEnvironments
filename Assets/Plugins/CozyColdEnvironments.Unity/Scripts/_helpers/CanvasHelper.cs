@@ -1,6 +1,6 @@
-using System;
 using CCEnvs.Diagnostics;
 using R3;
+using System;
 using UnityEngine;
 
 #nullable enable

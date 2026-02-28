@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using ObservableCollections;
 using R3;
+using System;
+using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Unity.UI

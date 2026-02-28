@@ -1,131 +1,45 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Reflection;
 using Newtonsoft.Json;
+using System;
 
 #nullable enable
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("Snapshots.ValueSnapshot", "1a8143b1-606a-465b-9e88-654179587eb5")]
-    public readonly struct ValueSnapshot : ISnapshot, IEquatable<ValueSnapshot>
+    [TypeSerializationDescriptor("ValueSnapshot", "57858be4-477c-42bb-ae94-2959ec67138c")]
+    public sealed record ValueSnapshot : Snapshot<object>
     {
-        [JsonIgnore]
-        public readonly Type TargetType { get; }
-
-        [JsonProperty("value")]
-        public object Value { get; }
-
-        [JsonConstructor]
-        public ValueSnapshot(object value)
+        public ValueSnapshot()
         {
-            CC.Guard.IsNotNull(value, nameof(value));
-
-            TargetType = value.GetType();
-            Value = value;
         }
 
-        public static bool operator ==(ValueSnapshot left, ValueSnapshot right)
+        public ValueSnapshot(Snapshot<object> original) : base(original)
         {
-            return left.Equals(right);
         }
 
-        public static bool operator !=(ValueSnapshot left, ValueSnapshot right)
+        public ValueSnapshot(object target) : base(target)
         {
-            return !(left == right);
         }
 
-        public ValueSnapshot<T> Cast<T>()
+        protected override void OnRestore(ref object target)
         {
-            return new ValueSnapshot<T>((T)Value);
-        }
-
-        public ValueSnapshot WithValue(object value)
-        {
-            return new ValueSnapshot(value);
-        }
-
-        public readonly bool CanRestore(object? target)
-        {
-            return TargetType.IsValueType || target.IsNotNull();
-        }
-
-        public readonly bool TryRestore(object? target, [NotNullWhen(true)] out object? restored)
-        {
-            if (!CanRestore(target))
-            {
-                target = Value;
-
-                if (!CanRestore(target))
-                {
-                    restored = default;
-                    return false;
-                }
-            }
-
-            restored = target!;
-            return true;
-        }
-
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is ValueSnapshot snapshot && Equals(snapshot);
-        }
-
-        public readonly bool Equals(ValueSnapshot other)
-        {
-            return EqualityComparer<Type>.Default.Equals(TargetType, other.TargetType)
-                   &&
-                   EqualityComparer<object?>.Default.Equals(Value, other.Value);
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(TargetType, Value);
-        }
-
-        public readonly override string ToString()
-        {
-            if (Equals(default))
-                return StringHelper.EMPTY_OBJECT;
-
-            return $"({nameof(Value)}: {Value}; {nameof(TargetType)}: {TargetType})";
         }
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("Snapshots.ValueSnapshot<>", "aaad0351-d678-4058-b208-d3d8fbdf4a3b")]
-    public readonly struct ValueSnapshot<T> : ISnapshot<T>, IEquatable<ValueSnapshot<T>>
+    public sealed record ValueSnapshot<T> : Snapshot<T>, ISnapshot<T>
     {
-        [JsonIgnore]
-        public readonly Type TargetType => TypeofCache<T>.Type;
-
         [JsonProperty("value")]
-        public T Value { get; }
+        public T? Value { get; set; }
 
-        [JsonConstructor]
+        public ValueSnapshot()
+        {
+        }
+
         public ValueSnapshot(T value)
+            :
+            base(value)
         {
-            CC.Guard.IsNotNull(value, nameof(value));
-
-            Value = value;
-        }
-
-        public static implicit operator ValueSnapshot(ValueSnapshot<T> instance)
-        {
-            return new ValueSnapshot(instance.Value!);
-        }
-
-        public static bool operator ==(ValueSnapshot<T> left, ValueSnapshot<T> right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(ValueSnapshot<T> left, ValueSnapshot<T> right)
-        {
-            return !(left == right);
         }
 
         public ValueSnapshot<T> WithValue(T value)
@@ -133,51 +47,22 @@ namespace CCEnvs.Snapshots
             return new ValueSnapshot<T>(value);
         }
 
-        public readonly bool CanRestore(T? target)
+        protected override void OnCapture(T target)
         {
-            return TargetType.IsValueType || target.IsNotNull();
+            base.OnCapture(target);
+
+            Value = target;
         }
 
-        public readonly bool TryRestore(T? target, [NotNullWhen(true)] out T? restored)
+        protected override void OnRestore(ref T target)
         {
-            if (!CanRestore(target))
-            {
-                target = Value;
-
-                if (!CanRestore(target))
-                {
-                    restored = default;
-                    return false;
-                }
-            }
-
-            restored = target!;
-            return true;
         }
 
-        public readonly override bool Equals(object? obj)
+        protected override void OnReset()
         {
-            return obj is ValueSnapshot<T> snapshot && Equals(snapshot);
-        }
+            base.OnReset();
 
-        public readonly bool Equals(ValueSnapshot<T> other)
-        {
-            return EqualityComparer<Type>.Default.Equals(TargetType, other.TargetType)
-                   &&
-                   EqualityComparer<T>.Default.Equals(Value, other.Value);
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(TargetType, Value);
-        }
-
-        public readonly override string ToString()
-        {
-            if (Equals(default))
-                return StringHelper.EMPTY_OBJECT;
-
-            return $"({nameof(Value)}: {Value}; {nameof(TargetType)}: {TargetType})";
+            Value = default;
         }
     }
 }

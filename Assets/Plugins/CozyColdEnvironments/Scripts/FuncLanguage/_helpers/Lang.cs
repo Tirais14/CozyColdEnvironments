@@ -1,8 +1,8 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using CommunityToolkit.Diagnostics;
 
 #pragma warning disable S3236
 namespace CCEnvs.FuncLanguage

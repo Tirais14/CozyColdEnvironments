@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
 using CCEnvs.Attributes.Serialization;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    [TypeSerializationDescriptor("EditorSerialization.SerializedNullable<>", "4495c4c5-17b8-4bee-b4c8-8de70cb2554d")]
+    [TypeSerializationDescriptor("SerializedNullable<>", "4495c4c5-17b8-4bee-b4c8-8de70cb2554d")]
     public struct SerializedNullable<T> : IEditorSerialized<T?>, IEquatable<SerializedNullable<T>> where T : struct
     {
         [SerializeField]
@@ -19,6 +19,7 @@ namespace CCEnvs.Unity.EditorSerialization
         [JsonProperty("hasValue")]
         private bool hasValue;
 
+        [JsonIgnore]
         public readonly T? Deserialized {
             get
             {

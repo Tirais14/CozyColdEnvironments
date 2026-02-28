@@ -1,6 +1,6 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using CCEnvs.Diagnostics;
 using UnityEngine;
 
 #nullable enable

@@ -1,12 +1,14 @@
-using System;
+using CCEnvs.Attributes.Serialization;
 using Newtonsoft.Json;
+using System;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    public class RigidBodySnapshot : ComponentSnapshot<Rigidbody>
+    public record RigidBodySnapshot<T> : ComponentSnapshot<T>
+        where T : Rigidbody
     {
         [JsonIgnore]
         [SerializeField]
@@ -29,13 +31,15 @@ namespace CCEnvs.Unity.Snapshots
         {
         }
 
-        public RigidBodySnapshot(Rigidbody target) : base(target)
+        public RigidBodySnapshot(T target) : base(target)
         {
-            LinearVelocity = new Vector3Snapshot(target.linearVelocity);
-            AngularVelocity = new Vector3Snapshot(target.angularVelocity);
         }
 
-        protected override void OnRestore(ref Rigidbody target)
+        protected RigidBodySnapshot(ComponentSnapshot<T> original) : base(original)
+        {
+        }
+
+        protected override void OnRestore(ref T target)
         {
             base.OnRestore(ref target);
 
@@ -44,6 +48,43 @@ namespace CCEnvs.Unity.Snapshots
 
             if (angularVelocity is not null && angularVelocity.TryRestore(default, out var aVelocity))
                 target.angularVelocity = aVelocity;
+        }
+
+        protected override void OnCapture(T target)
+        {
+            base.OnCapture(target);
+
+            LinearVelocity = new Vector3Snapshot(target.linearVelocity);
+            AngularVelocity = new Vector3Snapshot(target.angularVelocity);
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            LinearVelocity = null;
+            AngularVelocity = null;
+        }
+    }
+
+    [Serializable]
+    [TypeSerializationDescriptor("RigidBodySnapshot", "93662e04-2ce4-4ea1-8761-60efc7d50534")]
+    public record RigidBodySnapshot : RigidBodySnapshot<Rigidbody>
+    {
+        public RigidBodySnapshot()
+        {
+        }
+
+        public RigidBodySnapshot(Rigidbody target) : base(target)
+        {
+        }
+
+        protected RigidBodySnapshot(RigidBodySnapshot<Rigidbody> original) : base(original)
+        {
+        }
+
+        protected RigidBodySnapshot(ComponentSnapshot<Rigidbody> original) : base(original)
+        {
         }
     }
 }

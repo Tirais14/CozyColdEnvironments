@@ -1,8 +1,8 @@
+using CommunityToolkit.Diagnostics;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CommunityToolkit.Diagnostics;
-using SuperLinq;
 using UnityEngine;
 
 #nullable enable
@@ -67,7 +67,7 @@ namespace CCEnvs.Unity.Components
             RawAudioSourceEntries = AudioSourceEntries.Do(
                 entry =>
                 {
-                    entry.Source.volume = Mathf.Clamp01(entry.CapturedState.Volume * multiplier);
+                    entry.Source.volume = Mathf.Clamp01(entry.CapturedState.Volume.GetValueOrDefault() * multiplier);
                 });
 
             return this;

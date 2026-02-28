@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CCEnvs.Serialization;
+using System;
 
 #nullable enable
 namespace CCEnvs.Attributes.Serialization
@@ -7,12 +8,18 @@ namespace CCEnvs.Attributes.Serialization
     public sealed class TypeSerializationDescriptorAttribute : Attribute, ICCAttribute
     {
         public string Name { get; }
+
         public string? ID { get; }
 
         public TypeSerializationDescriptorAttribute(string name, string? id = null)
         {
             Name = name;
             ID = id;
+        }
+
+        public TypeSerializationDescriptor ToDescriptor()
+        {
+            return new TypeSerializationDescriptor(Name, ID);
         }
     }
 }

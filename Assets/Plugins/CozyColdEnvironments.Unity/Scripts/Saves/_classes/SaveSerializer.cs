@@ -1,6 +1,6 @@
-﻿using System;
-using CCEnvs.Collections;
+﻿using CCEnvs.Collections;
 using Newtonsoft.Json;
+using System;
 
 #nullable enable
 namespace CCEnvs.Unity.Saves

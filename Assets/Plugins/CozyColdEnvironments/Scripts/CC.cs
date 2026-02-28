@@ -1,11 +1,4 @@
 #nullable enable
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using CCEnvs.Attributes;
 using CCEnvs.Json;
 using CCEnvs.Json.Converters;
@@ -15,6 +8,13 @@ using CCEnvs.Serialization;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CCEnvs
 {
@@ -33,6 +33,7 @@ namespace CCEnvs
         public static Func<bool> FalseFactory { get; } = static () => false;
 
         public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault(
+            new TypeByDescriptorJsonConverter(),
             new ObservableDictionaryJsonConverter()
             );
 

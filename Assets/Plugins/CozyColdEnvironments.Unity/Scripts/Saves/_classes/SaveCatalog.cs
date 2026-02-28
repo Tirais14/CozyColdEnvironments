@@ -1,8 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using System.Xml.Linq;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
@@ -13,6 +8,11 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using System.Xml.Linq;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -117,10 +117,10 @@ namespace CCEnvs.Unity.Saves
             return sb.Value.ToString();
         }
 
-        private async UniTask LoadGroupsFromFileAsync(
+        public async UniTask LoadGroupsFromFileAsync(
             WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
             bool force = false,
+            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
@@ -145,8 +145,8 @@ namespace CCEnvs.Unity.Saves
                 {
                     await args.@this.LoadGroupsFromFileAsyncCore(
                         args.writeSaveDataMode,
-                        args.configureAwait,
                         args.force,
+                        args.configureAwait,
                         cancellationToken
                         );
                 })

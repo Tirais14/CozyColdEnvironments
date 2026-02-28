@@ -1,3 +1,4 @@
+using CCEnvs.Attributes.Serialization;
 using System;
 using UnityEngine.UI;
 
@@ -5,7 +6,8 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    public class SelectableSnapshot<T> : UIBehaviourSnapshot<T>
+    [TypeSerializationDescriptor("SelectableSnapshot", "62ec9842-d738-43ef-9246-6a66a15d746d")]
+    public record SelectableSnapshot<T> : UIBehaviourSnapshot<T>
         where T : Selectable
     {
         public SelectableSnapshot()
@@ -13,6 +15,10 @@ namespace CCEnvs.Unity.Snapshots
         }
 
         public SelectableSnapshot(T target) : base(target)
+        {
+        }
+
+        protected SelectableSnapshot(UIBehaviourSnapshot<T> original) : base(original)
         {
         }
     }
