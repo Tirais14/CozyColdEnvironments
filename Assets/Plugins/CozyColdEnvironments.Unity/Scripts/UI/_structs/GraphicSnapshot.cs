@@ -59,6 +59,16 @@ namespace CCEnvs.Unity.Snapshots.UI
     [TypeSerializationDescriptor("GraphicSnapshot", "ade0f9d1-6ddc-487f-abd0-ab8ac2e88d4e")]
     public record GraphicSnapshot : GraphicSnapshot<Graphic>
     {
+        public GraphicSnapshot()
+        {
+        }
 
+        public GraphicSnapshot(Graphic target) : base(target)
+        {
+        }
+
+        protected GraphicSnapshot(GraphicSnapshot<Graphic> original) : base(original)
+        {
+        }
     }
 }

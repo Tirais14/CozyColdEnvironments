@@ -2,7 +2,6 @@ using CCEnvs.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Json.Converters
@@ -23,8 +22,11 @@ namespace CCEnvs.Json.Converters
             //    throw new JsonSerializationException($"Token Type \"{reader.TokenType}\" is not {JsonToken.StartObject}");
 
             var jObj = JObject.Load(reader);
-            JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing \"$type\" property");
+
+            JProperty typeProp = jObj.Property("$type") ?? throw new JsonSerializationException("Missing $type property");
+
             string typeReference = typeProp.Value.ToString();
+
             Type actualType;
 
             try
@@ -45,7 +47,15 @@ namespace CCEnvs.Json.Converters
                 throw;
             }
 
-            return (T)JsonConverterHelper.CreateInstance(actualType, jObj.Properties().ToArray(), serializer);
+            //jObj.Remove("$type");
+
+            var instance = JsonConverterHelper.CreateNewObject(actualType, jObj.CreateReader(), serializer);
+
+            serializer.Populate(jObj.CreateReader(), instance);
+
+            return (T)instance;
+
+            //return (T)JsonConverterHelper.CreateInstance(actualType, jObj.Properties().ToArray(), serializer);
         }
 
         public override void WriteJson(

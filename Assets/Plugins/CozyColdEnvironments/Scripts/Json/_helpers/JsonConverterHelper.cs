@@ -350,45 +350,46 @@ namespace CCEnvs.Json
         private readonly static Lazy<Type> jsonInternalReaderType = new(
             static () =>
             {
-                return Type.GetType($"JsonSerializerInternalReader, Newtonsoft.Json", throwOnError: true);
+                return Type.GetType($"Newtonsoft.Json.Serialization.JsonSerializerInternalReader, Newtonsoft.Json", throwOnError: true);
             });
 
-        private static MethodInfo? parametrizedObjectFactory;
+        private static MethodInfo? createObjectMethod;
 
         private static PropertyInfo? parametrizedCreatorProp;
 
-        public static object CreateNewObject(Type type, JsonReader reader, JsonSerializer serializer)
+        public static object CreateNewObject(
+            Type type,
+            JsonReader reader,
+            JsonSerializer serializer
+            )
         {
             Guard.IsNotNull(type, nameof(type));
             Guard.IsNotNull(reader, nameof(reader));
             Guard.IsNotNull(serializer, nameof(serializer));
 
-            var tContract = serializer.ContractResolver.ResolveContract(type);
+            var contract = serializer.ContractResolver.ResolveContract(type);
 
-            if (tContract is not JsonObjectContract contract)
-                throw new ArgumentException($"Contract: {tContract.GetType()}. Expected: JsonObjectContract");
+            var intReader = CreateJsonSerializerInternalReader(serializer);
 
-            var parametrizedCreator = GetParametrizedCreator(contract);
+            var createObjectMethod = GetCreateObjectMethod();
 
-            if (parametrizedCreator is not null || contract.OverrideCreator is not null)
+            var prms = new object?[] //CreateObject
             {
-                var intReader = CreateJsonSerializerInternalReader(serializer);
+                reader,
+                contract,
+                null,
+                null,
+                null,
+                false,
+            };
+             
+            //Magic offset :>
+            reader.Read();
+            reader.Read();
 
-                var prms = new object?[]
-                {
-                    reader,
-                    contract, null,
-                    contract.OverrideCreator ?? parametrizedCreator,
-                    null
-                };
+            var instance = createObjectMethod.Invoke(intReader, prms);
 
-                return GetParametrizedObjectFactory(serializer)
-                    .Invoke(intReader, prms);
-            }
-            else if (contract.DefaultCreator is not null)
-                return contract.DefaultCreator();
-
-            throw new JsonSerializationException($"Cannot resolve any creator of type");
+            return instance;
         }
 
         private static object CreateJsonSerializerInternalReader(JsonSerializer serializer)
@@ -398,20 +399,18 @@ namespace CCEnvs.Json
             return Activator.CreateInstance(jSerializerIntReaderType, serializer);
         }
 
-        private static MethodInfo GetParametrizedObjectFactory(JsonSerializer serializer)
+        private static MethodInfo GetCreateObjectMethod()
         {
-            if (parametrizedObjectFactory is not null)
-                return parametrizedObjectFactory;
+            if (createObjectMethod is not null)
+                return createObjectMethod;
 
-            var intReader = CreateJsonSerializerInternalReader(serializer);
+            var methods = jsonInternalReaderType.Value.GetMethods(BindingFlagsDefault.InstancePublic | BindingFlags.DeclaredOnly);
 
-            parametrizedObjectFactory = intReader.GetType()
-                .GetMethods(BindingFlagsDefault.InstanceNonPublic)
-                .FirstOrDefault(method => method.Name == "CreateObjectUsingCreatorWithParameters")
+            createObjectMethod = methods.FirstOrDefault(method => method.Name == "CreateNewObject")
                 ??
-                throw new InvalidOperationException("Cannot find method: CreateObjectUsingCreatorWithParameters");
+                throw new InvalidOperationException("Cannot find method: CreateNewObject");
 
-            return parametrizedObjectFactory;
+            return createObjectMethod;
         }
 
         private static ObjectConstructor<object>? GetParametrizedCreator(JsonObjectContract contract)
