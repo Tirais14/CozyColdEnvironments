@@ -1,3 +1,22 @@
+# NameFactory
+A lightweight, cached name generation utility that creates unique, human-readable identifiers from objects with automatic memory management via time-based expiration.
+Ideal to use with a Command.Builder
+
+## Features
+- Automatic caching: Generated names are cached by (Type, CallerHash) to avoid repeated string construction. Cache entries expire after a configurable duration (default: 5 minutes)
+- Hash-based disambiguation: When addHashToId is true, the caller's hash code is appended to the identifier, ensuring uniqueness across instances of the same type
+- Flexible identifier handling: Accepts Identifier? (a lightweight wrapper for string/number IDs) with optional hash injection
+- Null-safe fallback – If caller is null, returns a simple formatted string without caching
+- Thread-safe lazy initialization: The internal cache is initialized on first use via Lazy<T>, ensuring safe concurrent access without startup overhead
+
+Return Value: a formatted string: "{CallerType}.{body} - {id}", where {id} may include an injected hash.
+
+>[!NOTE]
+> - Cache key: (Type Type, int CallerHash) – ensures names are unique per runtime instance, not just type.
+> - Memory safety: Default 5-minute expiration prevents unbounded growth; adjust based on object lifetime.
+> - Hash stability: Uses GetHashCode() – ensure overridden types provide consistent hashes during their lifetime.
+> - Identifier composition: When addHashToId = true, the hash is appended via Identifier.WithNumber(), preserving original ID semantics
+
 # SavingSystem
 >[!WARNING]
 >This system is no longer under active development due to fundamental architectural limitations. A more robust, modular save system is being developed as its replacement. Use SavingSystem only for legacy support or >short-term projects. Migration to the new system is strongly recommended for long-term maintenance
