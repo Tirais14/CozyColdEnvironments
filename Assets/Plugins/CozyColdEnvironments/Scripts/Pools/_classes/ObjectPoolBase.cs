@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Caching;
+using CCEnvs.TypeMatching;
 using R3;
 using System;
 using System.Collections.Concurrent;
@@ -191,7 +192,7 @@ namespace CCEnvs.Pools
 
         protected bool TryGetFromInactive([NotNullWhen(true)] out T? result)
         {
-            var succes = Interlocked.CompareExchange(ref fastObject, null, fastObject).Let(out result)
+            var succes = Interlocked.CompareExchange(ref fastObject, null, fastObject).Is(out result)
                          ||
                          inactiveItems.TryPop(out result);
 

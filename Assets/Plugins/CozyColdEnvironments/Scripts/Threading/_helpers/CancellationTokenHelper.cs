@@ -1,4 +1,5 @@
 using CCEnvs.Collections;
+using CCEnvs.TypeMatching;
 using System.Threading;
 
 #nullable enable
@@ -126,7 +127,7 @@ namespace CCEnvs.Threading
             out CancellationToken result,
             params CancellationToken[] cancellationTokens)
         {
-            if (!source.TryLinkTokens(cancellationTokens).Let(out var tokenSource))
+            if (source.TryLinkTokens(cancellationTokens).IsNot<CancellationTokenSource>(out var tokenSource))
             {
                 result = source;
 
@@ -143,7 +144,7 @@ namespace CCEnvs.Threading
             CancellationToken other,
             out CancellationToken result)
         {
-            if (!source.TryLinkTokens(other).Let(out var tokenSource))
+            if (source.TryLinkTokens(other).IsNot<CancellationTokenSource>(out var tokenSource))
             {
                 result = source;
 

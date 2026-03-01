@@ -1,5 +1,6 @@
 using CCEnvs.Reflection;
 using CCEnvs.Serialization;
+using CCEnvs.TypeMatching;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -47,7 +48,7 @@ namespace CCEnvs.Snapshots
             if (!CanRestore(target))
                 return false;
 
-            if (target.IsNull() && !CreateValue().Let(out target))
+            if (target.IsNull() && CreateValue().IsNot(out target))
                 return false;
 
             var targetNotNull = target.IsNotNull();

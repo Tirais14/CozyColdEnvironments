@@ -9,14 +9,14 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [SerializationDescriptor("Saves.SaveUnit", "77478f05-ab2b-4cb0-b420-39baf8fd8452")]
-    public readonly struct SaveUnit : IEquatable<SaveUnit>
+    public readonly struct SaveEntry : IEquatable<SaveEntry>
     {
         public string Key { get; }
 
         public ISnapshot Snapshot { get; }
 
         [JsonConstructor]
-        public SaveUnit(string key, ISnapshot snapshot)
+        public SaveEntry(string key, ISnapshot snapshot)
         {
             Guard.IsNotNull(key, nameof(key));
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
@@ -31,17 +31,17 @@ namespace CCEnvs.Unity.Saves
             snapshot = Snapshot;
         }
 
-        public static bool operator ==(SaveUnit left, SaveUnit right)
+        public static bool operator ==(SaveEntry left, SaveEntry right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(SaveUnit left, SaveUnit right)
+        public static bool operator !=(SaveEntry left, SaveEntry right)
         {
             return !(left == right);
         }
 
-        public readonly bool Equals(SaveUnit other)
+        public readonly bool Equals(SaveEntry other)
         {
             return Snapshot.Equals(other.Snapshot)
                    &&
@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Saves
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is SaveUnit unit && Equals(unit);
+            return obj is SaveEntry unit && Equals(unit);
         }
 
         public readonly override int GetHashCode()

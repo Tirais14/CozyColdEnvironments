@@ -2,10 +2,12 @@
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace CCEnvs.Conversations
 {
@@ -91,7 +93,7 @@ namespace CCEnvs.Conversations
                         where instance.IsInstanceOfType(ctorInfo.prms[0].ParameterType)
                         select ctorInfo.ctr;
 
-            if (ctors.FirstOrDefault().Let(out var ctor))
+            if (ctors.FirstOrDefault().Is<ConstructorInfo>(out var ctor))
                 return ctor.Invoke(Range.From(instance));
 
             return Maybe<object>.None;

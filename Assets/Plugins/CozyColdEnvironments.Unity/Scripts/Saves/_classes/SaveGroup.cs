@@ -20,14 +20,16 @@ using UnityEngine;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [SerializationDescriptor("Saves.SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
+    [SerializationDescriptor("SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
     public sealed class SaveGroup
         :
         IEquatable<SaveGroup?>,
         IEnumerable<KeyValuePair<string, object>>
     {
+        [JsonIgnore]
         private readonly ObservableDictionary<string, object> observableObjects = new();
 
+        [JsonIgnore]
         private int? hashCode;
 
         [JsonProperty("saveData")]
@@ -146,45 +148,6 @@ namespace CCEnvs.Unity.Saves
             return key is not null;
         }
 
-        public ISnapshot GetObjectSnapshot(string? key)
-        {
-            key ??= string.Empty;
-
-            var obj = observableObjects[key];
-
-            var objType = obj.GetType();
-
-            var converter = SaveSystem.ResolveConverter(objType);
-
-            return converter(obj);
-        }
-
-        public PooledArray<SaveUnit> CreateSaveUnitsPooled()
-        {
-            var saveUnits = new PooledArray<SaveUnit>(observableObjects.Count);
-
-            SaveUnit saveUnit;
-
-            ISnapshot snapshot;
-
-            Func<object, ISnapshot> objConverter;
-
-            int i = 0;
-
-            foreach (var (key, obj) in observableObjects)
-            {
-                objConverter = SaveSystem.ResolveConverter(obj.GetType());
-
-                snapshot = objConverter(obj);
-
-                saveUnit = new SaveUnit(key, snapshot);
-
-                saveUnits[i++] = saveUnit;
-            }
-
-            return saveUnits;
-        }
-
         public SaveGroup CaptureAndWriteSaveData(
             WriteSaveDataMode writeSaveDataMode = WriteSaveDataMode.Override
             )
@@ -234,10 +197,10 @@ namespace CCEnvs.Unity.Saves
 
             var result = new ValueReference<SaveData?>();
 
-            await Command.Builder.SetName(cmdName)
+            await Command.Builder.WithName(cmdName)
                 .WithState((@this: this, configureAwait, result))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     args.result = await args.@this.GetSaveDataFromFileAsyncCore(
@@ -251,7 +214,6 @@ namespace CCEnvs.Unity.Saves
                 .ScheduleBy(SaveSystem.CommandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
 
             await UniTaskHelper.TrySwitchToMainThread(configureAwait);
 
@@ -276,10 +238,10 @@ namespace CCEnvs.Unity.Saves
                 expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
-            await Command.Builder.SetName(cmdName)
+            await Command.Builder.WithName(cmdName)
                 .WithState((@this: this, configureAwait, writeSaveDataMode))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.LoadSaveDataFromFileAsyncCore(
@@ -359,6 +321,39 @@ namespace CCEnvs.Unity.Saves
             return cmp.GetExtraInfo().ToString();
         }
 
+        private ISnapshot CaptureObjectSnapshot(string key)
+        {
+            var obj = observableObjects[key];
+
+            var objType = obj.GetType();
+
+            var converter = SaveSystem.ResolveConverter(objType);
+
+            return converter(obj, null);
+        }
+
+        private PooledArray<SaveEntry> CreateSaveUnitsPooled()
+        {
+            var saveUnits = new PooledArray<SaveEntry>(observableObjects.Count);
+
+            SaveEntry saveUnit;
+
+            ISnapshot snapshot;
+
+            int i = 0;
+
+            foreach (var key in observableObjects.To<IDictionary<string, object>>().Keys)
+            {
+                snapshot = CaptureObjectSnapshot(key);
+
+                saveUnit = new SaveEntry(key, snapshot);
+
+                saveUnits[i++] = saveUnit;
+            }
+
+            return saveUnits;
+        }
+
         private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
             bool configureAwait = true,
             CancellationToken cancellationToken = default
@@ -409,14 +404,14 @@ namespace CCEnvs.Unity.Saves
             {
                 if (loadedSaveData is null)
                 {
-                    SaveData.Write(Array.Empty<SaveUnit>(), writeSaveDataMode);
+                    SaveData.Write(Array.Empty<SaveEntry>(), writeSaveDataMode);
 
                     IsSaveLoadedFromFile = true;
 
                     return;
                 }
 
-                SaveData.Write(loadedSaveData.SaveUnits.Values, writeSaveDataMode);
+                SaveData.Write(loadedSaveData.SaveEntries.Values, writeSaveDataMode);
 
                 IsSaveLoadedFromFile = true;
             }

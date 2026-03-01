@@ -1,6 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -157,7 +158,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
             IInputActionRx action;
             foreach (var prop in props)
             {
-                if (prop.GetValue(this).Let(out var propValue)
+                if (prop.GetValue(this).Is<object>(out var propValue)
                     &&
                     propValue is IDisposable propValueDisposable)
                 {

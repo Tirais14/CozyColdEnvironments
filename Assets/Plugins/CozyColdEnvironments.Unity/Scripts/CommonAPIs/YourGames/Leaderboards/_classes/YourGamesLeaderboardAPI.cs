@@ -72,13 +72,13 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
         public void PullLeaderboard()
         {
-            Command.Builder.SetName(nameof(PullLeaderboard), this)
+            Command.Builder.WithName(nameof(PullLeaderboard), this)
                 .SetSingle()
                 .WithState(this)
-                .SetExecutePredicate(
+                .WithExecutePredicate(
                 static @this => @this.IsLeaderboardAPIReadyToInvoke())
-                .Syncronously()
-                .SetExecuteAction(
+                .Synchronously()
+                .WithExecuteAction(
                 static @this =>
                 {
                     lastLeaderboardAPIInvokeTimestamp = TimeProvider.System.GetTimestamp();
@@ -99,13 +99,13 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                 return;
             }
 
-            Command.Builder.SetName(nameof(PostLeaderboard), this)
+            Command.Builder.WithName(nameof(PostLeaderboard), this)
                 .SetSingle()
                 .WithState(this)
-                .SetExecutePredicate(
+                .WithExecutePredicate(
                 static @this => @this.IsLeaderboardAPIReadyToInvoke())
-                .Syncronously()
-                .SetExecuteAction(setLeaderboard)
+                .Synchronously()
+                .WithExecuteAction(setLeaderboard)
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(disposeCancellationTokenSource.Token)

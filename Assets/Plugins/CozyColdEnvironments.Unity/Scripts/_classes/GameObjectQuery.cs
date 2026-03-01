@@ -644,7 +644,7 @@ namespace CCEnvs.Unity
                     return cmps;
 
                 bool foundAny = false;
-                if (current.Q().IncludeInactive(includeInactive).Components(type).Let(out var t)
+                if (current.Q().IncludeInactive(includeInactive).Components(type).IsNotNull(out var t)
                     &&
                     t.IsNotEmpty())
                 {
@@ -729,7 +729,7 @@ namespace CCEnvs.Unity
                 if (target.Q()
                     .IncludeInactive(includeInactive)
                     .Components(type)
-                    .Let(out var t)
+                    .IsNotNull(out var t)
                     &&
                     t.IsNotEmpty())
                 {

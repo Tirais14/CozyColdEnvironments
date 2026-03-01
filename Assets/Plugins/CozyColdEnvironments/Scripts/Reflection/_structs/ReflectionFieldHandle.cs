@@ -1,6 +1,7 @@
 using CCEnvs.Caching;
 using CCEnvs.Collections;
 using CCEnvs.Reflection.Caching;
+using CCEnvs.TypeMatching;
 using Humanizer;
 using System;
 using System.Collections;
@@ -88,7 +89,7 @@ namespace CCEnvs.Reflection
                 return field;
             }
 
-            if (!GetFields().SingleOrDefault().Let(out field))
+            if (GetFields().SingleOrDefault().IsNot(out field))
             {
                 if (throwIfNotFound)
                     throw new InvalidOperationException($"Cannot find field by {this}");

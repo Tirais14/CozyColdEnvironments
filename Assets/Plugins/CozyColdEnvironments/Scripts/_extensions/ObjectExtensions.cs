@@ -140,24 +140,30 @@ namespace CCEnvs
             return casted;
         }
 
-        public static bool Let<T>(this T? source, [NotNullWhen(true)] out T? local)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Let<T>(this T source, out T local)
         {
-            return source.Is<T>(out local);
+            local = source;
+
+            return source;
         }
-        public static bool Let<T, TOut>(
-            this T? source,
-            Func<T, TOut?> converter,
-            [NotNullWhen(true)] out TOut? local)
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TOut Let<T, TOut>(
+            this T source,
+            Func<T, TOut> converter,
+            out TOut local)
         {
             Guard.IsNotNull(converter);
 
             if (source.IsNull())
             {
                 local = default!;
-                return false;
+                return local;
             }
 
-            return converter(source).Is<TOut>(out local);
+            local = converter(source);
+            return local;
         }
 
         /// <inheritdoc cref="TypeMutator.MutateType(object, Type)"/>

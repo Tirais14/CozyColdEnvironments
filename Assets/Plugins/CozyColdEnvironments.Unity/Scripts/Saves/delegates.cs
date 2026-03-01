@@ -1,5 +1,7 @@
 ﻿#nullable enable
+using CCEnvs.Snapshots;
+
 namespace CCEnvs.Unity.Saves
 {
-    public delegate byte[] BytesCompressor(byte[] bytes, object? state);
+    public delegate ISnapshot SnapshotFactory(object obj, ISnapshot? existingSnapshot);
 }

@@ -1,6 +1,7 @@
 using CCEnvs.Caching;
 using CCEnvs.Linq;
 using CCEnvs.Reflection.Caching;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
@@ -193,7 +194,7 @@ namespace CCEnvs.Reflection
                 return member;
             }
 
-            if (!GetMembers(memberType).SingleOrDefault().Let(out member))
+            if (GetMembers(memberType).SingleOrDefault().IsNot(out member))
             {
                 if (throwIfNotFound)
                     throw new InvalidOperationException($"Cannot find any member by {this}");

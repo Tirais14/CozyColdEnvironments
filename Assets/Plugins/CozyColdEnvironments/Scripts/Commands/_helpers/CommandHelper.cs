@@ -15,10 +15,10 @@ namespace CCEnvs.Patterns.Commands
             this UniTask source
             )
         {
-            return Command.Builder.SetName($"{nameof(UniTask)}")
+            return Command.Builder.WithName($"{nameof(UniTask)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -30,10 +30,10 @@ namespace CCEnvs.Patterns.Commands
             this UniTask<T> source
             )
         {
-            return Command.Builder.SetName($"{nameof(UniTask<T>)}")
+            return Command.Builder.WithName($"{nameof(UniTask<T>)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -47,10 +47,10 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNullSource(source);
 
-            return Command.Builder.SetName($"{nameof(AsyncLazy)}")
+            return Command.Builder.WithName($"{nameof(AsyncLazy)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -64,10 +64,10 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNullSource(source);
 
-            return Command.Builder.SetName($"{nameof(AsyncLazy<T>)}")
+            return Command.Builder.WithName($"{nameof(AsyncLazy<T>)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -80,10 +80,10 @@ namespace CCEnvs.Patterns.Commands
             this ValueTask source
             )
         {
-            return Command.Builder.SetName($"{nameof(ValueTask)}")
+            return Command.Builder.WithName($"{nameof(ValueTask)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -95,10 +95,10 @@ namespace CCEnvs.Patterns.Commands
             this ValueTask<T> source
             )
         {
-            return Command.Builder.SetName($"{nameof(ValueTask<T>)}")
+            return Command.Builder.WithName($"{nameof(ValueTask<T>)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -112,10 +112,10 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNullSource(source);
 
-            return Command.Builder.SetName($"{nameof(Task)}")
+            return Command.Builder.WithName($"{nameof(Task)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;
@@ -129,10 +129,10 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNullSource(source);
 
-            return Command.Builder.SetName($"{nameof(Task<T>)}")
+            return Command.Builder.WithName($"{nameof(Task<T>)}")
                 .WithState(source)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (source, _) =>
                 {
                     await source;

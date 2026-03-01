@@ -90,11 +90,11 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         public virtual void SortEntries()
         {
-            Command.Builder.SetName(nameof(SortEntries), this)
+            Command.Builder.WithName(nameof(SortEntries), this)
                .SetSingle()
                .WithState(this)
-               .Asyncronously()
-               .SetExecuteAction(
+               .Asynchronously()
+               .WithExecuteAction(
                static async (@this, cancellationToken) =>
                {
                    await UniTask.WaitForEndOfFrame(cancellationToken: cancellationToken);
@@ -233,11 +233,11 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             newEntries.Add(entry);
 
-            Command.Builder.SetName(nameof(OnEntryAdd), this)
+            Command.Builder.WithName(nameof(OnEntryAdd), this)
                 .SetSingle()
                 .WithState((@this: this, entry))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.InstantiateNewEntriesAsync(cancellationToken);

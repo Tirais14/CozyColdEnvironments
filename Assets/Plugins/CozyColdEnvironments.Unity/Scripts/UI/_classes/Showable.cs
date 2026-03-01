@@ -150,10 +150,10 @@ namespace CCEnvs.Unity.UI
             if (!IsEnabled || PreventHide)
                 return;
 
-            Command.Builder.SetName(nameof(Hide), this)
+            Command.Builder.WithName(nameof(Hide), this)
                 .WithState(this)
-                .Syncronously()
-                .SetExecuteAction(
+                .Synchronously()
+                .WithExecuteAction(
                 static @this => @this.HideInternal())
                 .BuildPooled()
                 .Value
@@ -194,15 +194,15 @@ namespace CCEnvs.Unity.UI
             if (!IsEnabled)
                 return;
 
-            Command.Builder.SetName(nameof(Show), this)
+            Command.Builder.WithName(nameof(Show), this)
                 .WithState(this)
-                .SetExecutePredicate(
+                .WithExecutePredicate(
                 static @this =>
                 {
                     return @this.IsReadyToShow;
                 })
-                .Syncronously()
-                .SetExecuteAction(
+                .Synchronously()
+                .WithExecuteAction(
                 static @this => @this.ShowInternal())
                 .BuildPooled()
                 .Value
@@ -273,10 +273,10 @@ namespace CCEnvs.Unity.UI
             if (!IsEnabled)
                 return;
 
-            Command.Builder.SetName(nameof(Redraw), this)
+            Command.Builder.WithName(nameof(Redraw), this)
                 .WithState(this)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (@this, cancellationToken) =>
                 {
                     await @this.RebuildControlledLayouts(cancellationToken, initCall: false);

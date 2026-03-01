@@ -18,7 +18,7 @@ using System.Threading;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [SerializationDescriptor("Saves.SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
+    [SerializationDescriptor("SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
     public class SaveArchive
         :
         IEquatable<SaveArchive>,
@@ -27,6 +27,7 @@ namespace CCEnvs.Unity.Saves
         [JsonProperty("catalogs")]
         private ObservableDictionary<string, SaveCatalog> catalogs = new();
 
+        [JsonIgnore]
         private int? hashCode;
 
         [JsonIgnore]
@@ -104,10 +105,10 @@ namespace CCEnvs.Unity.Saves
                 expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
-            await Command.Builder.SetName(cmdName)
+            await Command.Builder.WithName(cmdName)
                 .WithState((@this: this, writeSaveDataMode, configureAwait, force))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.LoadCatalogsFromFileAsyncCore(

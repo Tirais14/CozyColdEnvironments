@@ -27,7 +27,7 @@ namespace CCEnvs.Patterns.Commands
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandBuilder SetName(string? name = null)
+        public CommandBuilder WithName(string? name = null)
         {
             Name = name;
 
@@ -36,7 +36,7 @@ namespace CCEnvs.Patterns.Commands
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandBuilder SetName<T>(string? name, T invocationSource)
+        public CommandBuilder WithName<T>(string? name, T invocationSource)
         {
             Name = $"{invocationSource.GetTypeName(TypeNameConvertingAttributes.IncludeGenericArguments)}.{name ?? "???"}";
 
@@ -97,7 +97,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Intermediate SetExecutePredicate(Func<bool>? executePredicate)
+            public Intermediate WithExecutePredicate(Func<bool>? executePredicate)
             {
                 ExecutePredicate = executePredicate;
 
@@ -106,7 +106,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Intermediate SetResetAction(Action? resetAction)
+            public Intermediate WithResetAction(Action? resetAction)
             {
                 ResetAction = resetAction;
 
@@ -115,7 +115,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Intermediate SetCancelAction(Action? cancelAction)
+            public Intermediate WithCancelAction(Action? cancelAction)
             {
                 CancelAction = cancelAction;
 
@@ -149,7 +149,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Intermediate<TState> SetExecutePredicate(Func<TState, bool>? executePredicate)
+            public Intermediate<TState> WithExecutePredicate(Func<TState, bool>? executePredicate)
             {
                 ExecutePredicate = executePredicate;
 
@@ -158,7 +158,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Intermediate<TState> SetResetAction(Action<TState>? resetAction)
+            public Intermediate<TState> WithResetAction(Action<TState>? resetAction)
             {
                 ResetAction = resetAction;
 
@@ -167,7 +167,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Intermediate<TState> SetCancelAction(Action<TState>? cancelAction)
+            public Intermediate<TState> WithCancelAction(Action<TState>? cancelAction)
             {
                 CancelAction = cancelAction;
 
@@ -176,7 +176,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly Sync<TState> Syncronously()
+            public readonly Sync<TState> Synchronously()
             {
                 Guard.IsNotNull(State, nameof(State));
 
@@ -185,7 +185,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly Async<TState> Asyncronously()
+            public readonly Async<TState> Asynchronously()
             {
                 Guard.IsNotNull(State, nameof(State));
 
@@ -213,7 +213,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Async SetExecuteAction(Func<CancellationToken, ValueTask>? executeAction)
+            public Async WithExecuteAction(Func<CancellationToken, ValueTask>? executeAction)
             {
                 ExecuteAction = executeAction;
 
@@ -288,7 +288,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Async<TState> SetExecuteAction(Func<TState, CancellationToken, ValueTask>? executeAction)
+            public Async<TState> WithExecuteAction(Func<TState, CancellationToken, ValueTask>? executeAction)
             {
                 ExecuteAction = executeAction;
 
@@ -365,7 +365,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Sync SetExecuteAction(Action? executeAction)
+            public Sync WithExecuteAction(Action? executeAction)
             {
                 ExecuteAction = executeAction;
 
@@ -441,7 +441,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Sync<TState> SetExecuteAction(Action<TState>? executeAction)
+            public Sync<TState> WithExecuteAction(Action<TState>? executeAction)
             {
                 ExecuteAction = executeAction;
 

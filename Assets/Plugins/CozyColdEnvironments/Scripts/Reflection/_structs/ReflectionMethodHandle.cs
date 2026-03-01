@@ -2,6 +2,7 @@ using CCEnvs.Caching;
 using CCEnvs.Collections;
 using CCEnvs.Linq;
 using CCEnvs.Reflection.Caching;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
@@ -154,7 +155,7 @@ namespace CCEnvs.Reflection
                 return method;
             }
 
-            if (!GetMethods().SingleOrDefault().Let(out method))
+            if (GetMethods().SingleOrDefault().IsNot(out method))
             {
                 if (throwIfNotFound)
                     throw new InvalidOperationException($"Cannot find any method by {nameof(ReflectionMethodHandle)}: {this}");
@@ -187,7 +188,7 @@ namespace CCEnvs.Reflection
                 return ctor;
             }
 
-            if (!GetConstructors().SingleOrDefault().Let(out ctor))
+            if (GetConstructors().SingleOrDefault().IsNot(out ctor))
             {
                 if (throwIfNotFound)
                     throw new InvalidOperationException($"Cannot find any constructor by {nameof(ReflectionMethodHandle)}: {this}");

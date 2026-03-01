@@ -202,7 +202,7 @@ namespace CCEnvs.Unity.Saves
         {
             if (!groupSaveDatas.TryGetValue(saveGroup, out var saveData)
                 ||
-                !saveData.SaveUnits.TryGetValue(objKey, out var saveUnit))
+                !saveData.SaveEntries.TryGetValue(objKey, out var saveUnit))
             {
                 TryCallOnSaveRestoringCallback(obj);
 
@@ -302,7 +302,7 @@ namespace CCEnvs.Unity.Saves
         private void OnCatalogGroupAdd(DictionaryAddEvent<string, SaveGroup> groupEv)
         {
             BindGroupObjectAdd(groupEv.Value);
-            groupSaveDatas.TryAdd(groupEv.Value, groupEv.Value.SaveData);
+            groupSaveDatas.Add(groupEv.Value, groupEv.Value.SaveData);
         }
 
         private void BindCatalogGroupAdd(SaveCatalog catalog)

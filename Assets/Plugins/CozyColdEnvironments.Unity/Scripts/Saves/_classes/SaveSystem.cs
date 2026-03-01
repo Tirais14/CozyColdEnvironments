@@ -12,36 +12,45 @@ namespace CCEnvs.Unity.Saves
 {
     public static class SaveSystem
     {
-        public static IReadOnlyDictionary<Type, Func<object, ISnapshot>> Converters => converters;
+        public const int MAX_IO_OPERATIONS = 2;
 
-        public static Func<object, ISnapshot> DefaultConverter { get; } = (obj) => new ValueSnapshot(obj);
+        public static IReadOnlyDictionary<Type, SnapshotFactory> Converters => converters;
+
+        public static SnapshotFactory DefaultConverter { get; } =
+            static (obj, existingSnapshot) =>
+            {
+                if (existingSnapshot is null)
+                    return new ValueSnapshot(obj);
+
+                return existingSnapshot.Reset().CaptureFrom(obj);
+            };
 
         public static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
 
-        internal static SemaphoreSlim readWriteSemaphore {
+        internal static SemaphoreSlim IOSemaphore {
             get
             {
-                _readWriteSemaphore ??= new SemaphoreSlim(
-                    Environment.ProcessorCount * 2,
-                    Environment.ProcessorCount * 2
+                _ioSemaphore ??= new SemaphoreSlim(
+                    MAX_IO_OPERATIONS,
+                    MAX_IO_OPERATIONS
                     );
 
-                return _readWriteSemaphore;
+                return _ioSemaphore;
             }
         }
 
-        private static SemaphoreSlim? _readWriteSemaphore;
+        private static SemaphoreSlim? _ioSemaphore;
 
-        private readonly static Dictionary<Type, Func<object, ISnapshot>> converters = new();
+        private readonly static Dictionary<Type, SnapshotFactory> converters = new();
 
-        public static void RegisterType(Type type, Func<object, ISnapshot> converter)
+        public static void RegisterType(Type type, SnapshotFactory converter)
         {
             Guard.IsNotNull(type, nameof(type));
             Guard.IsNotNull(converter, nameof(converter));
 
             converters.Add(type, converter);
         }
-        public static void RegisterType<T>(Func<object, ISnapshot> converter)
+        public static void RegisterType<T>(SnapshotFactory converter)
         {
             RegisterType(typeof(T), converter);
         }
@@ -58,7 +67,7 @@ namespace CCEnvs.Unity.Saves
             return UnregisterType(typeof(T));
         }
 
-        public static Func<object, ISnapshot> ResolveConverter(Type type)
+        public static SnapshotFactory ResolveConverter(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
@@ -73,7 +82,7 @@ namespace CCEnvs.Unity.Saves
             return converter;
         }
 
-        public static Func<object, ISnapshot> ResolveConverter<T>()
+        public static SnapshotFactory ResolveConverter<T>()
         {
             return ResolveConverter(typeof(T));
         }

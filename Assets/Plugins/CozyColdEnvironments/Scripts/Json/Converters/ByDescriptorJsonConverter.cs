@@ -8,7 +8,7 @@ using System.Reflection;
 #nullable enable
 namespace CCEnvs.Json
 {
-    public class PolymorphByDescriptorJsonConverter : JsonConverter
+    public class ByDescriptorJsonConverter : JsonConverter
     {
         public const string DESCRIPTOR_PROPERTY_NAME = "$typeDescriptor";
 
@@ -35,12 +35,12 @@ namespace CCEnvs.Json
                 throw new JsonSerializationException("Expected JObject");
 
             if (jObj.Property(DESCRIPTOR_PROPERTY_NAME).IsNull(out var descriptorProp))
-                throw new JsonSerializationException($"Property: {DESCRIPTOR_PROPERTY_NAME} value is null");
+                throw new JsonSerializationException($"Object: {objectType}, property: {DESCRIPTOR_PROPERTY_NAME} value is null");
 
             var descriptor = descriptorProp.Value.ToObject<TypeSerializationDescriptor>(serializer);
 
             if (descriptor == default)
-                throw new JsonSerializationException($"{nameof(TypeSerializationDescriptor)} value not found");
+                throw new JsonSerializationException($"Object: {objectType}, {nameof(TypeSerializationDescriptor)} value not found");
 
             if (!TypeSerializationHelper.DescriptedTypes.TryGetValue(descriptor, out var resultType))
                 throw new JsonSerializationException($"Type: {objectType} hasn't {nameof(TypeSerializationDescriptor)}");

@@ -19,7 +19,7 @@ using System.Xml.Linq;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [SerializationDescriptor("Saves.SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
+    [SerializationDescriptor("SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
     public class SaveCatalog
         :
         IEquatable<SaveCatalog>,
@@ -28,6 +28,7 @@ namespace CCEnvs.Unity.Saves
         [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
 
+        [JsonIgnore]
         private int? hashCode;
 
         [JsonIgnore]
@@ -137,10 +138,10 @@ namespace CCEnvs.Unity.Saves
                 expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
-            await Command.Builder.SetName(cmdName)
+            await Command.Builder.WithName(cmdName)
                 .WithState((@this: this, writeSaveDataMode, configureAwait, force))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.LoadGroupsFromFileAsyncCore(

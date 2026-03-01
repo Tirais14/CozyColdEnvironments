@@ -1,4 +1,5 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.TypeMatching;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -98,9 +99,9 @@ namespace CCEnvs.Reflection
         {
             CC.Guard.IsNotNullSource(source);
 
-            if (source.GetField(name).Let(out FieldInfo? field))
+            if (source.GetField(name).Is(out FieldInfo? field))
                 return field;
-            else if (source.GetProperty(name).Let(out PropertyInfo? prop))
+            else if (source.GetProperty(name).Is(out PropertyInfo? prop))
                 return prop;
 
             return null;
@@ -113,9 +114,9 @@ namespace CCEnvs.Reflection
         {
             CC.Guard.IsNotNullSource(source);
 
-            if (source.GetField(name, bindingFlags).Let(out FieldInfo? field))
+            if (source.GetField(name, bindingFlags).Is(out FieldInfo? field))
                 return field;
-            else if (source.GetProperty(name, bindingFlags).Let(out PropertyInfo? prop))
+            else if (source.GetProperty(name, bindingFlags).Is(out PropertyInfo? prop))
                 return prop;
 
             return null;

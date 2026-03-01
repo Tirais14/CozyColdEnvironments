@@ -90,11 +90,11 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
         private void OnLanguageSwitched(string code)
         {
-            Command.Builder.SetName(nameof(OnLanguageSwitched), this)
+            Command.Builder.WithName(nameof(OnLanguageSwitched), this)
                 .SetSingle()
                 .WithState((@this: this, code))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await LocalizationSettings.InitializationOperation.Task;

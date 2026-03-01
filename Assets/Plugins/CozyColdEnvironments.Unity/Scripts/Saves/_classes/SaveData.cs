@@ -12,20 +12,21 @@ using System.Collections.Generic;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [SerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
-    public class SaveData
+    [SerializationDescriptor("SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
+    public sealed class SaveData
         :
-        IEnumerable<SaveUnit>
+        IEnumerable<SaveEntry>,
+        IDisposable
     {
         [JsonProperty("saveUnits")]
-        private ObservableDictionary<string, SaveUnit> saveUnits = new();
+        private ObservableDictionary<string, SaveEntry> saveEntries = new();
 
         [JsonProperty("group")]
         public SaveGroup Group { get; init; }
 
         [JsonIgnore]
-        public IReadOnlyObservableDictionary<string, SaveUnit> SaveUnits {
-            get => saveUnits;
+        public IReadOnlyObservableDictionary<string, SaveEntry> SaveEntries {
+            get => saveEntries;
         }
 
         public SaveData(SaveGroup group)
@@ -35,16 +36,16 @@ namespace CCEnvs.Unity.Saves
             Group = group;
         }
 
-        public bool TryAdd(SaveUnit saveUnit)
+        public bool TryAdd(SaveEntry saveEntry)
         {
-            return saveUnits.TryAdd(saveUnit.Key, saveUnit);
+            return saveEntries.TryAdd(saveEntry.Key, saveEntry);
         }
 
-        public bool Remove(string key, out SaveUnit saveUnit)
+        public bool Remove(string key, out SaveEntry saveEntry)
         {
             Guard.IsNotNull(key, nameof(key));
 
-            return saveUnits.Remove(key, out saveUnit);
+            return saveEntries.Remove(key, out saveEntry);
         }
 
         public bool Remove(string key)
@@ -56,42 +57,42 @@ namespace CCEnvs.Unity.Saves
 
         public SaveData Clear()
         {
-            saveUnits.Clear();
+            saveEntries.Clear();
 
             return this;
         }
 
-        public SaveData AddRange(IEnumerable<SaveUnit> saveUnits)
+        public SaveData AddRange(IEnumerable<SaveEntry> saveEntries)
         {
-            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
+            CC.Guard.IsNotNull(saveEntries, nameof(saveEntries));
 
-            if (saveUnits.IsEmpty())
+            if (saveEntries.IsEmpty())
                 return this;
 
-            foreach (var saveUnit in saveUnits)
-                this.saveUnits.TryAdd(saveUnit.Key, saveUnit);
+            foreach (var saveUnit in saveEntries)
+                this.saveEntries.TryAdd(saveUnit.Key, saveUnit);
 
             return this;
         }
 
         public SaveData Write(
-            IEnumerable<SaveUnit> saveUnits,
+            IEnumerable<SaveEntry> saveEntries,
             WriteSaveDataMode writeSaveDataMode = default
             )
         {
-            if (saveUnits.IsNull())
+            if (saveEntries.IsNull())
             {
-                this.PrintError($"Argument: {nameof(saveUnits)} is null");
+                this.PrintError($"Argument: {nameof(saveEntries)} is null");
                 return this;
             }
 
             switch (writeSaveDataMode)
             {
                 case WriteSaveDataMode.Override:
-                    Override(saveUnits);
+                    Override(saveEntries);
                     break;
                 case WriteSaveDataMode.Merge:
-                    Merge(saveUnits);
+                    Merge(saveEntries);
                     break;
                 default:
                     throw new InvalidOperationException(writeSaveDataMode.ToString());
@@ -100,42 +101,51 @@ namespace CCEnvs.Unity.Saves
             return this;
         }
 
-        public SaveData Merge(IEnumerable<SaveUnit> otherSaveUnits)
+        public SaveData Merge(IEnumerable<SaveEntry> otherSaveEntries)
         {
-            CC.Guard.IsNotNull(otherSaveUnits, nameof(otherSaveUnits));
+            CC.Guard.IsNotNull(otherSaveEntries, nameof(otherSaveEntries));
 
-            if (otherSaveUnits.IsEmpty())
+            if (otherSaveEntries.IsEmpty())
                 return this;
 
-            foreach (var saveUnit in otherSaveUnits)
+            foreach (var saveUnit in otherSaveEntries)
             {
-                if (!saveUnits.TryAdd(saveUnit.Key, saveUnit))
-                    saveUnits[saveUnit.Key] = saveUnit;
+                if (!saveEntries.TryAdd(saveUnit.Key, saveUnit))
+                    saveEntries[saveUnit.Key] = saveUnit;
             }
 
             return this;
         }
 
-        public SaveData Override(IEnumerable<SaveUnit> saveUnits)
+        public SaveData Override(IEnumerable<SaveEntry> saveEntries)
         {
-            CC.Guard.IsNotNull(saveUnits, nameof(saveUnits));
+            CC.Guard.IsNotNull(saveEntries, nameof(saveEntries));
 
-            this.saveUnits.Clear();
+            this.saveEntries.Clear();
 
-            foreach (var saveUnit in saveUnits)
-                this.saveUnits.Add(saveUnit.Key, saveUnit);
+            foreach (var saveUnit in saveEntries)
+                this.saveEntries.Add(saveUnit.Key, saveUnit);
 
             return this;
         }
 
-        public IEnumerator<SaveUnit> GetEnumerator()
+        public IEnumerator<SaveEntry> GetEnumerator()
         {
-            return saveUnits.To<IDictionary<string, SaveUnit>>().Values.GetEnumerator();
+            return saveEntries.To<IDictionary<string, SaveEntry>>().Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private bool disposed;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
         }
     }
 }

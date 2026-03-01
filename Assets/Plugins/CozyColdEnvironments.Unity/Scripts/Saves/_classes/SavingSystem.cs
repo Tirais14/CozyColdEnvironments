@@ -323,11 +323,11 @@ namespace CCEnvs.Unity.Saves
 
         public async UniTask SaveInFileAsync(string path, CancellationToken cancellationToken = default)
         {
-            await Command.Builder.SetName(nameof(SaveInFileAsync), this)
+            await Command.Builder.WithName(nameof(SaveInFileAsync), this)
                 .SetSingle()
                 .WithState((@this: this, path))
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.SaveInFileAsyncCore(args.path, cancellationToken);
@@ -344,11 +344,11 @@ namespace CCEnvs.Unity.Saves
         {
             string serialized = string.Empty;
 
-            await Command.Builder.SetName(nameof(SaveInMemoryAsync), this)
+            await Command.Builder.WithName(nameof(SaveInMemoryAsync), this)
                 .SetSingle()
                 .WithoutState()
                 .Asyncronously()
-                .SetExecuteAction(
+                .WithExecuteAction(
                 async (cancellationToken) =>
                 {
                     serialized = await SaveInMemoryAsyncCore(cancellationToken);

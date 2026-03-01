@@ -56,10 +56,10 @@ namespace CCEnvs.Unity.Components
 
         private async UniTaskVoid OnLocaleChangedAsync()
         {
-            Command.Builder.SetName(string.Join('.', nameof(TMP_DropdownLocalizer), nameof(OnLocaleChangedAsync)))
+            Command.Builder.WithName(string.Join('.', nameof(TMP_DropdownLocalizer), nameof(OnLocaleChangedAsync)))
                 .WithState(this)
-                .Asyncronously()
-                .SetExecuteAction(async (@this, token) =>
+                .Asynchronously()
+                .WithExecuteAction(async (@this, token) =>
                 {
                     var tokenSource = token.LinkTokens(@this.destroyCancellationToken);
 

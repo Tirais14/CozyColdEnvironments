@@ -1,6 +1,7 @@
 using CCEnvs.Caching;
 using CCEnvs.Collections;
 using CCEnvs.Reflection.Caching;
+using CCEnvs.TypeMatching;
 using Humanizer;
 using System;
 using System.Collections;
@@ -88,7 +89,7 @@ namespace CCEnvs.Reflection
                 return prop;
             }
 
-            if (!GetProperties().SingleOrDefault().Let(out prop))
+            if (GetProperties().SingleOrDefault().IsNot(out prop))
             {
                 if (throwIfNotFound)
                     throw new InvalidOperationException($"Cannot find property by {nameof(ReflectionFieldHandle)}: {this}");
