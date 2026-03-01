@@ -1,3 +1,25 @@
+# ObjectPool
+A high-performance, thread-safe object pooling framework with reactive lifecycle observation, Unity integration, and support for both synchronous and asynchronous object creation.
+
+## Features
+- Thread-safe acquisition/return - Uses ConcurrentStack<T> for idle objects and ConcurrentDictionary<T, PooledObject<T>> for active tracking. Safe to call Get()/Return() from multiple threads
+- Automatic handle-based return - PooledObject<T> implements IDisposable; returning to pool happens automatically on Dispose()
+- IPoolable<T> lifecycle hooks - Objects implementing IPoolable receive OnSpawned()/OnDespawned() callbacks and hold a weak reference to their pool handle
+- Unity-aware pooling - When T is a GameObject or Component, pooled objects are automatically deactivated/hidden on return and reactivated on get. Position is reset to (0, -100000) to avoid physics collisions
+- Reactive lifecycle observables - Monitor pool activity via R3
+- Async pooling support - ObjectPoolAsync<T> supports factories returning ValueTask<T> or UniTask<T> for asynchronous initialization (e.g., loading assets, network setup).
+
+Unity Integration Details
+When T is a Unity type (GameObject, Component):
+- On Get():
+  - gameObject.SetActive(true)
+  - Position reset to (0, -100000) (off-screen staging area)
+- On Return():
+  - gameObject.SetActive(false)
+  - Position reset to (0, -100000)
+- On Pool Dispose():
+  - All inactive objects destroyed via UnityEngine.Object.Destroy()
+
 # NameFactory
 A lightweight, cached name generation utility that creates unique, human-readable identifiers from objects with automatic memory management via time-based expiration.
 Ideal to use with a Command.Builder
