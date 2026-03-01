@@ -54,3 +54,24 @@ public class FetchCommand : CommandAsync
     }
 }
 ```
+## Command.Builder
+Command.Builder returns a structure designed for fluent runtime command construction. It provides strict type safety and supports the implementation of all core methods defined in the Command interface.
+
+Execution Modes
+The builder supports two distinct finalization strategies for the constructed command:
+1. Pooled Instance
+
+- Behavior: The command instance is retrieved from an internal object pool.
+- Lifecycle: Upon completion of execution within the CommandScheduler, the instance is automatically returned to the pool for reuse.
+- Use Case: Optimized for high-frequency scenarios to reduce garbage collection overhead.
+
+2. New Instance
+
+- Behavior: A fresh command instance is allocated.
+- Lifecycle: Once execution is complete, the Dispose method is explicitly invoked on the command instance.
+- Use Case: Suitable for commands requiring unique state isolation or non-poolable resources.
+
+Key Features
+- Fluent Interface: Enables readable, chainable command definition at runtime.
+- Strict Typing: Ensures compile-time safety for command parameters and return types.
+- Resource Management: Automatic handling of instance lifecycle based on the selected mode (pool return vs. disposal).
