@@ -1,3 +1,21 @@
+
+# Navigation
+[SavingSystem](#savingsystem)
+
+[CommandScheduler](#commandscheduler)
+
+[Command](#command)
+
+[Leaderboard](#leaderboard)
+
+[StateMachine](#statemachine)
+
+[ObjectPool](#objectpool)
+
+[Factory](#factory)
+
+[NameFactory](#namefactory)
+
 # SavingSystem
 >[!WARNING]
 >This system is no longer under active development due to fundamental architectural limitations. A more robust, modular save system is being developed as its replacement. Use SavingSystem only for legacy support or >short-term projects. Migration to the new system is strongly recommended for long-term maintenance
@@ -21,7 +39,7 @@ Define how objects convert to/from snapshots:
 ```C#
 // Generic overload
 SavingSystem.Instance.RegisterType<Player>(
-    player => new PlayerSnapshot(player.Health, player.Position)
+    player => new PlayerSnapshot(player)
 );
 
 // Non-generic overload
@@ -228,6 +246,46 @@ Command.Builder.WithName("Activate Item Cannon")
     .AttachExternalCancellationToken(destroyCancellationToken)
     .ScheduleBy(G.LoadingCommands);
 ```
+
+# Leaderboard
+
+A reactive, MVVM-based leaderboard system for Unity with automatic sorting, position tracking, multi-score records, and UI synchronization via R3 observables and ObservableCollections
+
+## Using
+### Leaderboard View Setup
+<img width="399" height="147" alt="изображение" src="https://github.com/user-attachments/assets/7be0259a-61ff-4c28-9f6a-af036d6e6dbc" />
+
+Entry Prefab - It is the main prefab which must contain LeaderboardEntryView
+Special Entry Prefab - If null the Entry Prefab will used. Can contain other graphics to distinguish it from the common entry prefab
+
+### Leaderboard View Entry Setup
+<img width="824" height="378" alt="изображение" src="https://github.com/user-attachments/assets/a821e355-cbda-419a-8d78-58b97220cbb1" />
+
+### LeaderboardEntryView
+The LeaderboardEntryView component provides Unity Inspector bindings to connect UI elements with leaderboard entry data. Configure these fields in the Inspector to wire up your UI prefab
+
+Serialized Fields
+- Score Record Views - A key-value collection that maps score record names to their UI text components.
+  - Key (string): The name of the score record as defined in LeaderboardEntry.ScoreRecords (e.g., "kills", "deaths", "time")
+  - Value (TMP_Text): The TextMeshPro component that displays the record's value
+
+Profile Icon View - Image component which draws the icon
+
+## Features
+- Reactive data flow - All state changes (Score, Position, ScoreRecords) propagate via R3 Observable<T>, enabling zero-boilerplate UI updates
+- Automatic sorting & position tracking - Entries are sorted on score change; EntryPositions dictionary updates 1-based ranks automatically
+- Multi-score records per entry - Each entry tracks named sub-scores ("kills", "deaths", "time") that sum to total Score
+- pecial entry highlighting - Pin a IUserProfile to track its entry separately, useful for "player's rank" display
+- MVVM UI integration - LeaderboardView/LeaderboardEntryView use ViewModel bindings with automatic prefab instantiation, sorting, and visibility culling
+- Frame-throttled updates - Sorting and UI reordering use ThrottleLastFrame(1) and UniTask.WaitForEndOfFrame to batch changes and avoid per-frame allocations
+- Memory-safe disposal - All subscriptions, commands, and Unity objects are tracked via CancellationTokenSource and List<IDisposable>, preventing leaks on scene unload
+- Customizable sorting – Provide any IComparer<ILeaderboardEntry> for complex ranking logic (e.g., K/D ratio, time-based decay)
+
+>[!IMPORTANT]
+> - Duplicate record names – AddScoreRecord() throws ArgumentException if name already exists
+> - Null profile/entry – Add(null) throws ArgumentNullException via CC.Guard
+> - Invalid comparer – Setting Comparer = null is allowed; defaults to IComparable<ILeaderboardEntry>.Default
+> - Async cancellation – All UniTask operations respect CancellationToken; ObjectDisposedException thrown if used after Dispose()
 
 # StateMachine 
 
