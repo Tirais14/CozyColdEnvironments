@@ -18,7 +18,8 @@
 
 # SavingSystem
 >[!WARNING]
->This system is no longer under active development due to fundamental architectural limitations. A more robust, modular save system is being developed as its replacement. Use SavingSystem only for legacy support or >short-term projects. Migration to the new system is strongly recommended for long-term maintenance
+>This system is no longer under active development due to fundamental architectural limitations. A more robust, modular save system is being developed as its replacement. Use SavingSystem only for legacy support or
+>short-term projects
 
 ## Features
 - Minimal manual intervention: Register objects and types once; saving/loading is fully automatic. No per-field save logic required in game code
@@ -222,7 +223,7 @@ Key Features
 - Strict Typing: Ensures compile-time safety for command parameters and return types.
 - Resource Management: Automatic handling of instance lifecycle based on the selected mode (pool return vs. disposal).
 
-### Example
+### Examples
 ```C#
 Command.Builder.WithName("Activate Item Cannon")
     .SetSingle()
@@ -245,6 +246,33 @@ Command.Builder.WithName("Activate Item Cannon")
     .Value
     .AttachExternalCancellationToken(destroyCancellationToken)
     .ScheduleBy(G.LoadingCommands);
+```
+```C#
+string cmdName = NameFactory.CreateFromCaller(
+    this,
+    nameof(GetSaveDataFromFileAsync),
+    expirationTimeRelativeToNow: TimeSpan.Zero
+    );
+
+var result = new ValueReference<SaveData?>();
+
+await Command.Builder.WithName(cmdName)
+    .WithState((@this: this, configureAwait, result))
+    .Asynchronously()
+    .WithExecuteAction(
+    static async (args, cancellationToken) =>
+    {
+        args.result = await args.@this.GetSaveDataFromFileAsyncCore(
+            args.configureAwait,
+            cancellationToken
+            );
+    })
+    .BuildPooled()
+    .Value
+    .AttachExternalCancellationToken(cancellationToken)
+    .ScheduleBy(SaveSystem.CommandScheduler)
+    .ObserveIsDone()
+    .FirstAsync(cancellationToken);
 ```
 
 # Leaderboard
