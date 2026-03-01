@@ -1,5 +1,4 @@
 using CCEnvs.Serialization;
-using Mono.Cecil.Cil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -53,7 +52,7 @@ namespace CCEnvs.Json
             if (jContract is not JsonObjectContract jObjContract)
                 throw new JsonSerializationException("Expected JsonObjectContract");
 
-            object instance = JsonConverterHelper.CreateNewObject(resultType, jObj.CreateReader(), serializer);
+            object instance = JsonSerializerInternalReaderHelper.CreateNewObject(resultType, jObj.CreateReader(), serializer);
 
             serializer.Populate(jObj.CreateReader(), instance);
 
@@ -89,7 +88,7 @@ namespace CCEnvs.Json
 
                 serializer.Serialize(writer, descriptor);
 
-                JsonConverterHelper.WriteObjectBody(
+                JsonSerializerInternalWriterhelper.WriteObjectBody(
                     writer,
                     jObjContract,
                     serializer,
