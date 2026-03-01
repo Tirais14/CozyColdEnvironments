@@ -1,56 +1,3 @@
-# ObjectPool
-A high-performance, thread-safe object pooling framework with reactive lifecycle observation, Unity integration, and support for both synchronous and asynchronous object creation.
-
-## Features
-- Thread-safe acquisition/return - Uses ConcurrentStack<T> for idle objects and ConcurrentDictionary<T, PooledObject<T>> for active tracking. Safe to call Get()/Return() from multiple threads
-- Automatic handle-based return - PooledObject<T> implements IDisposable; returning to pool happens automatically on Dispose()
-- IPoolable<T> lifecycle hooks - Objects implementing IPoolable receive OnSpawned()/OnDespawned() callbacks and hold a weak reference to their pool handle
-- Unity-aware pooling - When T is a GameObject or Component, pooled objects are automatically deactivated/hidden on return and reactivated on get. Position is reset to (0, -100000) to avoid physics collisions
-- Reactive lifecycle observables - Monitor pool activity via R3
-- Async pooling support - ObjectPoolAsync<T> supports factories returning ValueTask<T> or UniTask<T> for asynchronous initialization (e.g., loading assets, network setup).
-
-Unity Integration Details
-When T is a Unity type (GameObject, Component):
-- On Get():
-  - gameObject.SetActive(true)
-  - Position reset to (0, -100000) (off-screen staging area)
-- On Return():
-  - gameObject.SetActive(false)
-  - Position reset to (0, -100000)
-- On Pool Dispose():
-  - All inactive objects destroyed via UnityEngine.Object.Destroy()
-
-# Factory
-A lightweight, type-safe factory abstraction layer supporting synchronous and asynchronous object creation with variable argument counts, state capture, and conditional async task support (UniTask/ValueTask).
-
-## Features
-- Anonymous factory implementation - Factory.Create() returns lightweight AnonymousFactory<T> instances that wrap lambdas, avoiding boilerplate class definitions
-- State-captured factories - Bind external state to a factory at creation time for contextual object construction
-- Async factory support - Factory.Async.Create() returns factories producing UniTask<T> or ValueTask<T> based on UNITASK_PLUGIN compilation symbol
-- Non-generic fallback - IFactory.Create(params object[] args) enables runtime-polymorphic usage (e.g., for DI containers), with explicit casts handled internally
-
->[!NOTE]
->Prefer strongly-typed generic factories over non-generic params usage
-
-# NameFactory
-A lightweight, cached name generation utility that creates unique, human-readable identifiers from objects with automatic memory management via time-based expiration.
-Ideal to use with a Command.Builder
-
-## Features
-- Automatic caching: Generated names are cached by (Type, CallerHash) to avoid repeated string construction. Cache entries expire after a configurable duration (default: 5 minutes)
-- Hash-based disambiguation: When addHashToId is true, the caller's hash code is appended to the identifier, ensuring uniqueness across instances of the same type
-- Flexible identifier handling: Accepts Identifier? (a lightweight wrapper for string/number IDs) with optional hash injection
-- Null-safe fallback – If caller is null, returns a simple formatted string without caching
-- Thread-safe lazy initialization: The internal cache is initialized on first use via Lazy<T>, ensuring safe concurrent access without startup overhead
-
-Return Value: a formatted string: "{CallerType}.{body} - {id}", where {id} may include an injected hash.
-
->[!NOTE]
-> - Cache key: (Type Type, int CallerHash) – ensures names are unique per runtime instance, not just type.
-> - Memory safety: Default 5-minute expiration prevents unbounded growth; adjust based on object lifetime.
-> - Hash stability: Uses GetHashCode() – ensure overridden types provide consistent hashes during their lifetime.
-> - Identifier composition: When addHashToId = true, the hash is appended via Identifier.WithNumber(), preserving original ID semantics
-
 # SavingSystem
 >[!WARNING]
 >This system is no longer under active development due to fundamental architectural limitations. A more robust, modular save system is being developed as its replacement. Use SavingSystem only for legacy support or >short-term projects. Migration to the new system is strongly recommended for long-term maintenance
@@ -281,3 +228,142 @@ Command.Builder.WithName("Activate Item Cannon")
     .AttachExternalCancellationToken(destroyCancellationToken)
     .ScheduleBy(G.LoadingCommands);
 ```
+
+# StateMachine 
+
+>[!WARNING]
+>Waiting for refactoring
+
+A Unity-integrated, type-safe state machine implementation that manages IState instances with automatic lifecycle callbacks tied to Unity's update loop.
+
+## Features
+- Unity lifecycle integration - Active state receives Tick()/FixedTick()/LateTick() automatically mapped from Update()/FixedUpdate()/LateUpdate()
+- Idle state fallback - Abstract CreateIdleState() ensures a default state; SetIdle() restores it. Automatically activated on OnDisable()
+- Type-safe state queries - IsPlaying<T>(), IsPlaying(Type), and IsPlaying(IState) enable compile-time and runtime state checks
+- Transition deduplication - SetState() skips no-op transitions when the new state equals the current one (reference equality)
+
+## IState
+```C#
+public interface IState
+{
+    void Enter();        // Called when state becomes active
+    void Tick();         // Called every Update frame
+    void FixedTick();    // Called every FixedUpdate frame  
+    void LateTick();     // Called every LateUpdate frame
+    void Exit();         // Called when state is deactivated
+}
+```
+## Example
+```C#
+using CCEnvs.Collections;
+using CCEnvs.Patterns.States;
+using CCEnvs.Unity;
+using CCEnvs.Unity.UI;
+using System.Collections.Generic;
+using Zenject;
+
+#nullable enable
+namespace Game.States
+{
+    public sealed class GameStateMachine : AStateMachine
+    {
+        private GameIdleState? idleState = null!;
+
+        private GameUIState uiState = null!;
+
+        private GameGameplayState? gameplayState = null!;
+
+        private List<IShowable> activeGUITabs = null!;
+
+        [Inject]
+        private void Construct(
+            [InjectOptional] GameIdleState? idleState,
+            GameUIState uiState,
+            [InjectOptional] GameGameplayState? gameplayState,
+            List<IShowable> activeGUITabs
+            )
+        {
+            this.idleState = idleState;
+            this.uiState = uiState;
+            this.gameplayState = gameplayState;
+            this.activeGUITabs = activeGUITabs;
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+
+            bool hasActiveGUITabs = activeGUITabs.IsNotNullOrEmpty();
+            bool isGameplayScene = SceneManagerHelper.ActiveSceneInfo.Name == G.GAMEPLAY_SCENE_NAME;
+
+            if (isGameplayScene && !hasActiveGUITabs)
+                SetState(gameplayState);
+            else if (hasActiveGUITabs)
+                SetState(uiState);
+            else
+                SetIdle();
+        }
+
+        protected override IState? CreateIdleState() => idleState;
+    }
+}
+
+```
+
+>[!IMPORTANT]
+> - Main-thread only - All state transitions and callbacks must occur on Unity's main thread. Do not call SetState() from background threads
+> - OnDisable auto-idle - When the MonoBehaviour is disabled, SetIdle() is called automatically. Ensure Exit() cleanup is idempotent
+> - Keep Tick()/FixedTick() lightweight – they run every frame. Offload heavy work to coroutines or async methods.
+
+# ObjectPool
+A high-performance, thread-safe object pooling framework with reactive lifecycle observation, Unity integration, and support for both synchronous and asynchronous object creation.
+
+## Features
+- Thread-safe acquisition/return - Uses ConcurrentStack<T> for idle objects and ConcurrentDictionary<T, PooledObject<T>> for active tracking. Safe to call Get()/Return() from multiple threads
+- Automatic handle-based return - PooledObject<T> implements IDisposable; returning to pool happens automatically on Dispose()
+- IPoolable<T> lifecycle hooks - Objects implementing IPoolable receive OnSpawned()/OnDespawned() callbacks and hold a weak reference to their pool handle
+- Unity-aware pooling - When T is a GameObject or Component, pooled objects are automatically deactivated/hidden on return and reactivated on get. Position is reset to (0, -100000) to avoid physics collisions
+- Reactive lifecycle observables - Monitor pool activity via R3
+- Async pooling support - ObjectPoolAsync<T> supports factories returning ValueTask<T> or UniTask<T> for asynchronous initialization (e.g., loading assets, network setup).
+
+Unity Integration Details
+When T is a Unity type (GameObject, Component):
+- On Get():
+  - gameObject.SetActive(true)
+  - Position reset to (0, -100000) (off-screen staging area)
+- On Return():
+  - gameObject.SetActive(false)
+  - Position reset to (0, -100000)
+- On Pool Dispose():
+  - All inactive objects destroyed via UnityEngine.Object.Destroy()
+
+# Factory
+A lightweight, type-safe factory abstraction layer supporting synchronous and asynchronous object creation with variable argument counts, state capture, and conditional async task support (UniTask/ValueTask).
+
+## Features
+- Anonymous factory implementation - Factory.Create() returns lightweight AnonymousFactory<T> instances that wrap lambdas, avoiding boilerplate class definitions
+- State-captured factories - Bind external state to a factory at creation time for contextual object construction
+- Async factory support - Factory.Async.Create() returns factories producing UniTask<T> or ValueTask<T> based on UNITASK_PLUGIN compilation symbol
+- Non-generic fallback - IFactory.Create(params object[] args) enables runtime-polymorphic usage (e.g., for DI containers), with explicit casts handled internally
+
+>[!NOTE]
+>Prefer strongly-typed generic factories over non-generic params usage
+
+# NameFactory
+A lightweight, cached name generation utility that creates unique, human-readable identifiers from objects with automatic memory management via time-based expiration.
+Ideal to use with a Command.Builder
+
+## Features
+- Automatic caching: Generated names are cached by (Type, CallerHash) to avoid repeated string construction. Cache entries expire after a configurable duration (default: 5 minutes)
+- Hash-based disambiguation: When addHashToId is true, the caller's hash code is appended to the identifier, ensuring uniqueness across instances of the same type
+- Flexible identifier handling: Accepts Identifier? (a lightweight wrapper for string/number IDs) with optional hash injection
+- Null-safe fallback – If caller is null, returns a simple formatted string without caching
+- Thread-safe lazy initialization: The internal cache is initialized on first use via Lazy<T>, ensuring safe concurrent access without startup overhead
+
+Return Value: a formatted string: "{CallerType}.{body} - {id}", where {id} may include an injected hash.
+
+>[!NOTE]
+> - Cache key: (Type Type, int CallerHash) – ensures names are unique per runtime instance, not just type.
+> - Memory safety: Default 5-minute expiration prevents unbounded growth; adjust based on object lifetime.
+> - Hash stability: Uses GetHashCode() – ensure overridden types provide consistent hashes during their lifetime.
+> - Identifier composition: When addHashToId = true, the hash is appended via Identifier.WithNumber(), preserving original ID semantics
