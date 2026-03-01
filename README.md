@@ -20,6 +20,18 @@ When T is a Unity type (GameObject, Component):
 - On Pool Dispose():
   - All inactive objects destroyed via UnityEngine.Object.Destroy()
 
+# Factory
+A lightweight, type-safe factory abstraction layer supporting synchronous and asynchronous object creation with variable argument counts, state capture, and conditional async task support (UniTask/ValueTask).
+
+## Features
+- Anonymous factory implementation - Factory.Create() returns lightweight AnonymousFactory<T> instances that wrap lambdas, avoiding boilerplate class definitions
+- State-captured factories - Bind external state to a factory at creation time for contextual object construction
+- Async factory support - Factory.Async.Create() returns factories producing UniTask<T> or ValueTask<T> based on UNITASK_PLUGIN compilation symbol
+- Non-generic fallback - IFactory.Create(params object[] args) enables runtime-polymorphic usage (e.g., for DI containers), with explicit casts handled internally
+
+>[!NOTE]
+>Prefer strongly-typed generic factories over non-generic params usage
+
 # NameFactory
 A lightweight, cached name generation utility that creates unique, human-readable identifiers from objects with automatic memory management via time-based expiration.
 Ideal to use with a Command.Builder
