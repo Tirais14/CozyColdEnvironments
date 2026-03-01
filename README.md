@@ -1,10 +1,103 @@
+# SavingSystem
+>[!WARNING]
+>This system is no longer under active development due to fundamental architectural limitations. A more robust, modular save system is being developed as its replacement. Use SavingSystem only for legacy support or >short-term projects. Migration to the new system is strongly recommended for long-term maintenance
+
+## Features
+- Minimal manual intervention: Register objects and types once; saving/loading is fully automatic. No per-field save logic required in game code
+- Auto-restore on registration: When an object is registered, the system checks loaded snapshots and applies matching data immediately
+- Unity Inspector integration: Use SavingSystemRegistrationComponent to register objects without code
+- Version-tolerant snapshots via SerializationDescriptorAttribute – Snapshots include type descriptors enabling:
+  - Polymorphic deserialization (e.g., EnemyBase → BossEnemy)
+  - Forward/backward compatibility across save versions
+- Scene-aware registration: Objects can be scoped to specific scenes; unloading a scene auto-unregisters its objects
+- Reactive state observation: Monitor save/load progress via R3 observables
+- Thread-aware async operations: Heavy snapshot work runs on thread pool; Unity interactions marshal back to main thread via UniTask
+- In-memory and file-based saves: Support both serialized strings and file I/O.
+
+## Registration API
+
+Register Types (Converters)
+Define how objects convert to/from snapshots:
+```C#
+// Generic overload
+SavingSystem.Instance.RegisterType<Player>(
+    player => new PlayerSnapshot(player.Health, player.Position)
+);
+
+// Non-generic overload
+SavingSystem.Instance.RegisterType(
+    typeof(Enemy),
+    obj => new EnemySnapshot((Enemy)obj)
+);
+```
+
+Register Instances
+```C#
+// Simple string key
+SavingSystem.Instance.RegisterObject(player, "Player_01");
+
+// Key selector function
+SavingSystem.Instance.RegisterObject(
+    enemy, 
+    e => $"Enemy_{e.EnemyId}_{e.SpawnPoint}"
+);
+
+// With stateful key factory
+SavingSystem.Instance.RegisterObject(
+    item,
+    itemState,
+    (it, state) => $"Item_{it.Id}_{state.Rarity}"
+);
+
+// Unity objects (auto-key via PersistentGuid/RuntimeId/hierarchy path)
+SavingSystem.Instance.RegisterUnityObject(myGameObject);
+SavingSystem.Instance.RegisterUnityObject(myComponent);
+```
+
+Unregister
+```C#
+// Single object
+SavingSystem.Instance.UnregisterObject(player);
+
+// All objects (e.g., on game reset)
+SavingSystem.Instance.UnregisterAll();
+
+// Type + all its instances
+SavingSystem.Instance.UnregisterType<Player>();
+```
+
+Save/Load Workflow
+```C#
+// 1. Register types (once, at startup)
+SavingSystem.Instance.RegisterType<Player>(p => new PlayerSnapshot(p));
+
+// 2. Register objects (when they spawn)
+SavingSystem.Instance.RegisterObject(player, "Player_01");
+
+// 3. Save (anytime)
+await SavingSystem.Instance.SaveInFileAsync("saves/latest.json");
+
+// 4. Load (auto-applies to already-registered objects)
+await SavingSystem.Instance.LoadFromFileAsync("saves/latest.json");
+
+// 5. Register new object AFTER load → auto-restores if snapshot exists
+SavingSystem.Instance.RegisterObject(newEnemy, "Enemy_Boss"); // state applied immediately
+```
+
+>[!IMPORTANT]
+> - Registration order matters: Objects registered after LoadFromFileAsync will auto-restore if a matching snapshot exists. Objects registered before load will be captured during the next save.
+> - Keys must be unique per (Type, SceneInfo): Duplicate keys throw InvalidOperationException.
+> - Unity objects require stable identifiers: Use PersistentGuid or RuntimeId components to ensure keys survive scene reloads.
+> - Cancellation support: All async methods accept CancellationToken; internally linked to SavingSystem's lifetime.
+> - Thread safety: Registration/unregistration is main-thread only (Unity constraint). Snapshot serialization runs off-main-thread where possible.
+
 # CommandScheduler
 A frame-based, thread-safe command execution scheduler with reactive state observation and automatic garbage collection.
 
-Features
+## Features
 - Frame-based execution: Commands are processed on frame ticks via IFrameRunnerWorkItem. Integrates with any FrameProvider or runs manually via OnFrame()
 - Thread-safe scheduling: Schedule() can be called from any thread. Internal state uses ConcurrentQueue, ConcurrentDictionary, and lock(SyncRoot) for safe concurrent access
-- Signature-based command cancellation: Scheduling a new command with an existing CommandSignature automatically cancels pending duplicates, preventing redundant work
+- Signature-based command cancellation: Scheduling a new command with an existing CommandSignature and IsSingle == true automatically cancels pending duplicates, preventing redundant work
 - Dual-mode garbage collection: Lazy cleanup on dequeue + optional periodic bulk cleanup. Tunable via GarbageCollectEveryFrame, GarbageThreshold, and GargabeCommandCountThreshold
 - Reactive state observation: Monitor scheduling and lifecycle events via R3 observables: ObserveScheduleCommand(), ObserveIsRunningStarted(), ObserveEnabled(), etc
 - Sync/async command support: Executes both ICommand.Execute() and ICommandAsync.ExecuteAsync() uniformly
@@ -27,11 +120,11 @@ GC tuning
 Delay before IsRunning flips to false after queue empty
 - int DelayFrameCountBeforeRunningFinished - Default: 0
 
-## ⚠️ Important Notes
-- A command must be valid (IsValid == true) and not completed (IsDone == false) at the time of Schedule().
-- After execution or cancellation, commands are recycled via Utilizable.TryUtilizeOrDispose().
-- QueueCommand is an internal pooled wrapper — do not use directly.
- -For debugging, enable CCDebug.Instance.IsEnabled — the scheduler will log key lifecycle events.
+>[!IMPORTANT]
+> - A command must be valid (IsValid == true) and not completed (IsDone == false) at the time of Schedule().
+> - After execution or cancellation, commands are recycled via Utilizable.TryUtilizeOrDispose().
+> - QueueCommand is an internal pooled wrapper — do not use directly.
+> -For debugging, enable CCDebug.Instance.IsEnabled — the scheduler will log key lifecycle events.
 
 # Command
 Implementation of the Command pattern with async/await support, cancellation, status observation, and lifecycle management
@@ -49,7 +142,7 @@ CommandStatus values
 - Canceled — Cancelled by user or token
 - Faulted — Finished with error
 
-API
+## API
 - Name: Command identifier (default: type name)
 - Status: Current state
 - IsDone, IsRunning, IsCancelled: State flags
@@ -58,12 +151,12 @@ API
 - TryReset: Reset to initial state
 - AttachExternalCancellationToken: Link external cancellation token if it CanBeCancelled
 
-## ⚠️ Important Notes
-- Single Execution: Re-calling Execute() while IsRunning == true throws InvalidOperationException.
-- Dispose: Command implements IDisposable. All operations are forbidden after Dispose().
-- IsResetable: Set in constructor. If false, Reset() throws an exception.
-- Exceptions: OperationCanceledException and TaskCanceledException are treated as cancellation; all others result in Faulted status.
-- Thread Safety: Status updates are atomic via ReactiveProperty, but OnExecute* logic must be thread-safe if used externally.
+>[!IMPORTANT]
+> - Single Execution: Re-calling Execute() while IsRunning == true throws InvalidOperationException.
+> - Dispose: Command implements IDisposable. All operations are forbidden after Dispose().
+> - IsResetable: Set in constructor. If false, Reset() throws an exception.
+> - Exceptions: OperationCanceledException and TaskCanceledException are treated as cancellation; all others result in Faulted status.
+> - Thread Safety: Status updates are atomic via ReactiveProperty, but OnExecute* logic must be thread-safe if used externally.
 
 ## Exapmles
 
