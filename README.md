@@ -12,8 +12,20 @@ Features
 - Configurable idle behavior: DelayFrameCountBeforeRunningFinished controls how long IsRunning stays true after the queue empties, useful for UI feedback or transition logic
 - Diagnostic logging: Built-in debug output via CCDebug.Instance when enabled, with command names and lifecycle events.
 
-Features
--Garbage Collection: has 2 modes - periodic and lazy. Periodic
+## Properties
+- bool IsEnabled - Scheduler active state
+- bool IsRunning - Currently executing commands
+- bool HasCommands - Queue or current command exists
+- string Name - Optional identifier for logging
+- object SyncRoot - Lock object for external synchronization
+   
+GC tuning
+- long GarbageCollectEveryFrame - Default: 60
+- float GarbageThreshold: Default - 0.35f, range [0.1, 1.1]
+- int GargabeCommandCountThreshold: Default - 32, min: 8
+   
+Delay before IsRunning flips to false after queue empty
+- int DelayFrameCountBeforeRunningFinished - Default: 0
 
 ## ⚠️ Important Notes
 - A command must be valid (IsValid == true) and not completed (IsDone == false) at the time of Schedule().
