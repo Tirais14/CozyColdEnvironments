@@ -1,4 +1,5 @@
 using CCEnvs.Serialization;
+using Mono.Cecil.Cil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -82,54 +83,23 @@ namespace CCEnvs.Json
 
             if (contract is JsonObjectContract jObjContract)
             {
-                WriteObject(
+                writer.WriteStartObject();
+
+                writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
+
+                serializer.Serialize(writer, descriptor);
+
+                JsonConverterHelper.WriteObjectBody(
                     writer,
                     jObjContract,
                     serializer,
-                    descriptor,
                     value
                     );
+
+                writer.WriteEndObject();
             }
             else
                 throw new NotImplementedException(objType.ToString());
-        }
-
-        private static void WriteObject(
-            JsonWriter writer,
-            JsonObjectContract contract,
-            JsonSerializer serializer,
-            TypeSerializationDescriptor descriptor,
-            object target
-            )
-        {
-            writer.WriteStartObject();
-
-            writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
-
-            serializer.Serialize(writer, descriptor);
-
-            foreach (var jProp in contract.Properties)
-            {
-                if (!JsonConverterHelper.CalculatePropertyValues(
-                    serializer,
-                    writer,
-                    target,
-                    contract,
-                    null,
-                    jProp,
-                    out _,
-                    out var memberValue
-                    ))
-                {
-                    continue;
-                }
-
-                writer.WritePropertyName(jProp.PropertyName!);
-
-                serializer.Serialize(writer, memberValue);
-            }
-
-            writer.WriteEndObject();
         }
     }
 }

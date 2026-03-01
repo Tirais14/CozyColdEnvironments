@@ -2,6 +2,7 @@ using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
+using CCEnvs.Serialization;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -506,6 +507,35 @@ namespace CCEnvs.Json
             }
 
             return calculatePropertyValuesMethod;
+        }
+
+        public static void WriteObjectBody(
+            JsonWriter writer,
+            JsonObjectContract contract,
+            JsonSerializer serializer,
+            object target
+            )
+        {
+            foreach (var jProp in contract.Properties)
+            {
+                if (!CalculatePropertyValues(
+                    serializer,
+                    writer,
+                    target,
+                    contract,
+                    null,
+                    jProp,
+                    out _,
+                    out var memberValue
+                    ))
+                {
+                    continue;
+                }
+
+                writer.WritePropertyName(jProp.PropertyName!);
+
+                serializer.Serialize(writer, memberValue);
+            }
         }
     }
 }
