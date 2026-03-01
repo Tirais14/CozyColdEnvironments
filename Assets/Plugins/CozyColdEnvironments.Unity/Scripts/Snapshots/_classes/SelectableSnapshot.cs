@@ -6,7 +6,6 @@ using UnityEngine.UI;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("SelectableSnapshot", "62ec9842-d738-43ef-9246-6a66a15d746d")]
     public record SelectableSnapshot<T> : UIBehaviourSnapshot<T>
         where T : Selectable
     {
@@ -19,6 +18,27 @@ namespace CCEnvs.Unity.Snapshots
         }
 
         protected SelectableSnapshot(UIBehaviourSnapshot<T> original) : base(original)
+        {
+        }
+    }
+
+    [Serializable]
+    [SerializationDescriptor("SelectableSnapshot", "62ec9842-d738-43ef-9246-6a66a15d746d")]
+    public record SelectableSnapshot : SelectableSnapshot<Selectable>
+    {
+        public SelectableSnapshot()
+        {
+        }
+
+        public SelectableSnapshot(Selectable target) : base(target)
+        {
+        }
+
+        protected SelectableSnapshot(SelectableSnapshot<Selectable> original) : base(original)
+        {
+        }
+
+        protected SelectableSnapshot(UIBehaviourSnapshot<Selectable> original) : base(original)
         {
         }
     }

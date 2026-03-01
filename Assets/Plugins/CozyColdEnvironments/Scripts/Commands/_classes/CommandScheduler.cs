@@ -39,6 +39,7 @@ namespace CCEnvs.Patterns.Commands
 
         private int delayFrameCountBeforeRunningFinished;
         private int garbageCmdCount;
+        private int garbageCommandCountThreshold = 32;
 
         private long idleFrameCount;
         private long garbageCollectEveryFrame = 60L;
@@ -78,6 +79,14 @@ namespace CCEnvs.Patterns.Commands
         public float GarbageThreshold {
             get => garbageThreshold;
             set => garbageThreshold = Math.Clamp(value, 0.1f, 1.1f);
+        }
+
+        /// <summary>
+        /// Scheduled command count to allow garbage collect
+        /// </summary>
+        public int GargabeCommandCountThreshold {
+            get => garbageCommandCountThreshold;
+            set => garbageCommandCountThreshold = Math.Clamp(value, 8, int.MaxValue);
         }
 
         public string Name { get; }
@@ -513,10 +522,12 @@ namespace CCEnvs.Patterns.Commands
 
             OnFrame();
 
-            if (garbageCollectEveryFrame > 1L)
-            {
-                int cmdCount = commands.Count;
+            int cmdCount = commands.Count;
 
+            if (garbageCollectEveryFrame > 1L
+                &&
+                cmdCount >= GargabeCommandCountThreshold)
+            {
                 if (cmdCount != 0
                     &&
                     frameCount % garbageCollectEveryFrame == 0

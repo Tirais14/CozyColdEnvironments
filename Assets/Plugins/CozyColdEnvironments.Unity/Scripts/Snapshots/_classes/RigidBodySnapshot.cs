@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("RigidBodySnapshot", "93662e04-2ce4-4ea1-8761-60efc7d50534")]
+    [SerializationDescriptor("RigidBodySnapshot", "93662e04-2ce4-4ea1-8761-60efc7d50534")]
     public record RigidBodySnapshot : RigidBodySnapshot<Rigidbody>
     {
         public RigidBodySnapshot()

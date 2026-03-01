@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("GameObjectSnapshot", "e6eab1e7-05e5-4e7e-a7a5-e5e004d8029c")]
+    [SerializationDescriptor("GameObjectSnapshot", "e6eab1e7-05e5-4e7e-a7a5-e5e004d8029c")]
     public sealed record GameObjectSnapshot : Snapshot<GameObject>
     {
         [field: SerializeField]

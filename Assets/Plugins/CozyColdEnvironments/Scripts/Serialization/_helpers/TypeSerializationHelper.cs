@@ -20,7 +20,7 @@ namespace CCEnvs.Serialization
 
             var descriptedTypeInfos =
                 (from type in domainMembers.AsParallel().OfType<Type>()
-                 select (type, attr: type.GetCustomAttribute<TypeSerializationDescriptorAttribute>(inherit: false)) into typeInfo
+                 select (type, attr: type.GetCustomAttribute<SerializationDescriptorAttribute>(inherit: false)) into typeInfo
                  where typeInfo.attr is not null
                  select (typeInfo.type, desc: typeInfo.attr.ToDescriptor())
                 )
@@ -37,7 +37,7 @@ namespace CCEnvs.Serialization
 
                 if (descriptedType.type.IsGenericType)
                 {
-                    typeof(TypeSerializationHelper).PrintWarning("Generic types is not supported");
+                    typeof(TypeSerializationHelper).PrintError($"Generic types (type: {descriptedType.type}) is not supported");
                     continue;
                 }
 

@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [TypeSerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
+    [SerializationDescriptor("Saves.SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public class SaveData
         :
         IEnumerable<SaveUnit>

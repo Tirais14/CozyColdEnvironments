@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots.UI
 {
     [Serializable]
-    [TypeSerializationDescriptor("CanvasGroupSnapshot", "5b152852-c9bb-4775-aeb0-aaad5b29143e")]
+    [SerializationDescriptor("CanvasGroupSnapshot", "5b152852-c9bb-4775-aeb0-aaad5b29143e")]
     public sealed record CanvasGroupSnapshot : BehaviourSnapshot<CanvasGroup>
     {
         [field: SerializeField]

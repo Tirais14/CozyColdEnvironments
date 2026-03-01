@@ -50,7 +50,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("TMP_DropdownSnapshot", "ae4298d7-7cf7-4d92-ac28-c005a83e8067")]
+    [SerializationDescriptor("TMP_DropdownSnapshot", "ae4298d7-7cf7-4d92-ac28-c005a83e8067")]
     public record TMP_DropdownSnapshot : TMP_DropdownSnapshot<TMP_Dropdown>
     {
         public TMP_DropdownSnapshot()

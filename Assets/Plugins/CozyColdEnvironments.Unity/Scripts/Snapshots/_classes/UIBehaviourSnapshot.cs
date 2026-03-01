@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("UIBehaviourSnapshot<>", "3fafb94c-22a5-4ef2-9ac3-3760846ecb23")]
+    [SerializationDescriptor("UIBehaviourSnapshot<>", "3fafb94c-22a5-4ef2-9ac3-3760846ecb23")]
     public record UIBehaviourSnapshot : UIBehaviourSnapshot<UIBehaviour>
     {
         public UIBehaviourSnapshot()

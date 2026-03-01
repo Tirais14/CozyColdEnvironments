@@ -1,4 +1,3 @@
-using CCEnvs.Attributes.Serialization;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
@@ -13,7 +12,6 @@ using static CCEnvs.FuncLanguage.LangOperator;
 namespace CCEnvs.FuncLanguage
 {
     [Serializable]
-    [TypeSerializationDescriptor("FuncLanguage.Maybe<>", "5e3a47b4-5306-4c87-b8dd-41da28cbdd13")]
     public
 #if !UNITY_2017_1_OR_NEWER
         readonly

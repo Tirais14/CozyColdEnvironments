@@ -8,7 +8,7 @@ using System;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [TypeSerializationDescriptor("Saves.SaveUnit", "77478f05-ab2b-4cb0-b420-39baf8fd8452")]
+    [SerializationDescriptor("Saves.SaveUnit", "77478f05-ab2b-4cb0-b420-39baf8fd8452")]
     public readonly struct SaveUnit : IEquatable<SaveUnit>
     {
         public string Key { get; }

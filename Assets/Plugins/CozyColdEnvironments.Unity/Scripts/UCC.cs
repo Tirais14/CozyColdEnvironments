@@ -169,31 +169,31 @@ namespace CCEnvs.Unity
             SavingSystem.Self.RegisterType<Component>(
                 static cmp =>
                 {
-                    return new ComponentSnapshot<Component>(cmp);
+                    return new ComponentSnapshot(cmp);
                 });
 
             SavingSystem.Self.RegisterType<Behaviour>(
                 static beh =>
                 {
-                    return new BehaviourSnapshot<Behaviour>();
+                    return new BehaviourSnapshot();
                 });
 
             SavingSystem.Self.RegisterType<MonoBehaviour>(
                 static beh =>
                 {
-                    return new MonoBehaviourSnapshot<MonoBehaviour>();
+                    return new MonoBehaviourSnapshot();
                 });
 
             SavingSystem.Self.RegisterType<UIBehaviour>(
                 static beh =>
                 {
-                    return new UIBehaviourSnapshot<UIBehaviour>();
+                    return new UIBehaviourSnapshot();
                 });
 
             SavingSystem.Self.RegisterType<Selectable>(
                 static sel =>
                 {
-                    return new SelectableSnapshot<Selectable>();
+                    return new SelectableSnapshot();
                 });
         }
         #endregion Install

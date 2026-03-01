@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("AudioSourceSnapshot", "378125b2-945a-4b38-8269-e7ad43f8a9f6")]
+    [SerializationDescriptor("AudioSourceSnapshot", "378125b2-945a-4b38-8269-e7ad43f8a9f6")]
     public record AudioSourceSnapshot : BehaviourSnapshot<AudioSource>
     {
         public float? Volume { get; set; }

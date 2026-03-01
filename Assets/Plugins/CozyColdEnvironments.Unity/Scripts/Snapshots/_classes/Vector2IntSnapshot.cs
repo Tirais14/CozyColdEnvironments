@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("Vector2IntSnapshot", "36645266-52d5-41b1-a907-d556cdeb61f4")]
+    [SerializationDescriptor("Vector2IntSnapshot", "36645266-52d5-41b1-a907-d556cdeb61f4")]
     public sealed record Vector2IntSnapshot : Snapshot<Vector2Int>
     {
         [field: SerializeField]

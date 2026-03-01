@@ -20,7 +20,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [TypeSerializationDescriptor("Saves.SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
+    [SerializationDescriptor("Saves.SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
     public sealed class SaveGroup
         :
         IEquatable<SaveGroup?>,

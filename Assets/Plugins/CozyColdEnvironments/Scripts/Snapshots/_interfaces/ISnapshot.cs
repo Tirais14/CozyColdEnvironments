@@ -1,12 +1,12 @@
 #nullable enable
-using CCEnvs.Json.Converters;
+using CCEnvs.Serialization;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Snapshots
 {
-    [JsonConverter(typeof(PolymorphJsonConverter<ISnapshot>))]
+    [PolymorphSerializable]
     public interface ISnapshot
     {
         [JsonIgnore]
@@ -21,7 +21,7 @@ namespace CCEnvs.Snapshots
         ISnapshot Reset();
     }
 
-    [JsonConverter(typeof(PolymorphJsonConverter<ISnapshot>))]
+    [PolymorphSerializable]
     public interface ISnapshot<T> : ISnapshot
     {
         ISnapshot<T> CaptureFrom(T obj);

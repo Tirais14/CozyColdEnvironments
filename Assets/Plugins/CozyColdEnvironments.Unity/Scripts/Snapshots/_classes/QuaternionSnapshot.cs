@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("QuaternionSnapshot", "f6c48935-fce4-4ba6-bbf2-e815ccb1fa4f")]
+    [SerializationDescriptor("QuaternionSnapshot", "f6c48935-fce4-4ba6-bbf2-e815ccb1fa4f")]
     public sealed record QuaternionSnapshot : Snapshot<Quaternion>
     {
         [field: SerializeField]

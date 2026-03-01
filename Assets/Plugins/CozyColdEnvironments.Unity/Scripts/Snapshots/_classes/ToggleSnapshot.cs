@@ -58,7 +58,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("ToggleSnapshot", "430233b6-9c52-4b81-9e04-c9553d0d288a")]
+    [SerializationDescriptor("ToggleSnapshot", "430233b6-9c52-4b81-9e04-c9553d0d288a")]
     public record ToggleSnapshot : ToggleSnapshot<Toggle>
     {
         public ToggleSnapshot()

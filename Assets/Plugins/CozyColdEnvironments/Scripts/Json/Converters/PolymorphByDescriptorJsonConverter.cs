@@ -1,4 +1,3 @@
-using CCEnvs.Attributes.Serialization;
 using CCEnvs.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -9,15 +8,15 @@ using System.Reflection;
 #nullable enable
 namespace CCEnvs.Json
 {
-    public class TypeByDescriptorJsonConverter : JsonConverter
+    public class PolymorphByDescriptorJsonConverter : JsonConverter
     {
         public const string DESCRIPTOR_PROPERTY_NAME = "$typeDescriptor";
 
         public override bool CanConvert(Type objectType)
         {
-            return !objectType.IsGenericType
-                    &&
-                    objectType.GetCustomAttribute<TypeSerializationDescriptorAttribute>() is not null;
+            return TypeSerializationHelper.TypeDescriptors.ContainsKey(objectType)
+                   ||
+                   objectType.GetCustomAttribute<PolymorphSerializableAttribute>(inherit: true) is not null;
         }
 
         public override object? ReadJson(
@@ -58,24 +57,6 @@ namespace CCEnvs.Json
             serializer.Populate(jObj.CreateReader(), instance);
 
             return instance;
-
-            //static bool TryFallback(
-            //    JObject jObj,
-            //    Type objectType,
-            //    object? existingValue,
-            //    JsonSerializer serializer,
-            //    out object? result
-            //    )
-            //{
-            //    if (jObj["$type"] == null)
-            //    {
-            //        result = null;
-            //        return false;
-            //    }
-
-            //    result = new PolymorphJsonConverter<object>().ReadJson(jObj.CreateReader(), objectType, existingValue, serializer);
-            //    return true;
-            //}
         }
 
         public override void WriteJson(
@@ -90,29 +71,62 @@ namespace CCEnvs.Json
                 return;
             }
 
-            var valueType = value.GetType();
+            var objType = value.GetType();
 
-            if (!TypeSerializationHelper.TryGetTypeSerializationDescriptor(valueType, out var descriptorAtt))
+            if (!TypeSerializationHelper.TryGetTypeSerializationDescriptor(objType, out var descriptor))
                 throw new JsonSerializationException($"Type: {value.GetType()} hasn't type descriptor");
 
             serializer.TypeNameHandling = TypeNameHandling.None;
 
+            var contract = serializer.ContractResolver.ResolveContract(objType);
+
+            if (contract is JsonObjectContract jObjContract)
+            {
+                WriteObject(
+                    writer,
+                    jObjContract,
+                    serializer,
+                    descriptor,
+                    value
+                    );
+            }
+            else
+                throw new NotImplementedException(objType.ToString());
+        }
+
+        private static void WriteObject(
+            JsonWriter writer,
+            JsonObjectContract contract,
+            JsonSerializer serializer,
+            TypeSerializationDescriptor descriptor,
+            object target
+            )
+        {
             writer.WriteStartObject();
 
             writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
 
-            serializer.Serialize(writer, descriptorAtt);
+            serializer.Serialize(writer, descriptor);
 
-            var jPropInfos = JsonConverterHelper.ResolveJsonPropertyInfos(value.GetType(), serializer.GetSerializerSettings());
-
-            foreach (var jPropInfo in jPropInfos)
+            foreach (var jProp in contract.Properties)
             {
-                if (!jPropInfo.ShouldSerialize)
+                if (!JsonConverterHelper.CalculatePropertyValues(
+                    serializer,
+                    writer,
+                    target,
+                    contract,
+                    null,
+                    jProp,
+                    out _,
+                    out var memberValue
+                    ))
+                {
                     continue;
+                }
 
-                writer.WritePropertyName(jPropInfo.Name);
+                writer.WritePropertyName(jProp.PropertyName!);
 
-                serializer.Serialize(writer, jPropInfo?.Get?.Invoke(value));
+                serializer.Serialize(writer, memberValue);
             }
 
             writer.WriteEndObject();

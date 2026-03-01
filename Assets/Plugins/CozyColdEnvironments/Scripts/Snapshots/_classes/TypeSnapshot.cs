@@ -5,7 +5,7 @@ using System;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("TypeSnapshot", "250788e8-a26b-45a3-9abd-f3471a842972")]
+    [SerializationDescriptor("TypeSnapshot", "250788e8-a26b-45a3-9abd-f3471a842972")]
     public sealed record TypeSnapshot : Snapshot<Type>
     {
 #if UNITY_2017_1_OR_NEWER

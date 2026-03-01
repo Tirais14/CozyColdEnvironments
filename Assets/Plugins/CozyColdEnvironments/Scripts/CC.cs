@@ -33,7 +33,7 @@ namespace CCEnvs
         public static Func<bool> FalseFactory { get; } = static () => false;
 
         public static JsonSerializerSettings JsonSettings { get; } = JsonSerializerSettingsProvider.GetDefault(
-            new TypeByDescriptorJsonConverter(),
+            new PolymorphByDescriptorJsonConverter(),
             new ObservableDictionaryJsonConverter()
             );
 

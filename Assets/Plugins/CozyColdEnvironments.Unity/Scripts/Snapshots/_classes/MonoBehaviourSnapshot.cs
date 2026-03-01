@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("MonoBehaviourSnapshot", "76287dcc-37e4-4995-8c32-552ebfc18426")]
+    [SerializationDescriptor("MonoBehaviourSnapshot", "76287dcc-37e4-4995-8c32-552ebfc18426")]
     public record MonoBehaviourSnapshot : MonoBehaviourSnapshot<MonoBehaviour>
     {
         public MonoBehaviourSnapshot()

@@ -80,10 +80,16 @@ namespace CCEnvs.Collections
             CC.Guard.IsNotNullSource(source);
             CC.Guard.IsNotNullSource(source);
 
+            if (source.IsEmpty())
+                return other;
+
+            if (other.IsEmpty())
+                return source;
+
             var arr = new T[source.Length + other.Length];
 
             source.CopyTo(arr, 0);
-            other.CopyTo(arr, source.Length - 1);
+            other.CopyTo(arr, source.Length);
 
             return arr;
         }

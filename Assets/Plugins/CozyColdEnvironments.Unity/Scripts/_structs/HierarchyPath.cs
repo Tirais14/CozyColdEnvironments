@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    [TypeSerializationDescriptor("HierarchyPath", "77427b05-d52c-4cb1-8c64-4bcd8bead81f")]
+    [SerializationDescriptor("HierarchyPath", "77427b05-d52c-4cb1-8c64-4bcd8bead81f")]
     public struct HierarchyPath : IEquatable<HierarchyPath>
     {
         private int? hashCode;

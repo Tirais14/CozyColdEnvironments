@@ -18,7 +18,7 @@ using System.Threading;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
-    [TypeSerializationDescriptor("Saves.SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
+    [SerializationDescriptor("Saves.SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
     public class SaveArchive
         :
         IEquatable<SaveArchive>,

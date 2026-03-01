@@ -56,7 +56,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("SliderSnapshot", "ba53286b-2e78-4cce-822b-46fcd2e3bbb2")]
+    [SerializationDescriptor("SliderSnapshot", "ba53286b-2e78-4cce-822b-46fcd2e3bbb2")]
     public record SliderSnapshot : SliderSnapshot<Slider>
     {
         public SliderSnapshot()

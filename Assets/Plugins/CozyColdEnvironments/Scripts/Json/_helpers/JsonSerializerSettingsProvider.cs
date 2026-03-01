@@ -32,10 +32,26 @@ namespace CCEnvs.Json
             settings.Formatting = Formatting.Indented;
             settings.MaxDepth = 64;
             settings.ObjectCreationHandling = ObjectCreationHandling.Auto;
-            settings.ContractResolver = new DefaultContractResolver()
+
+            var ccContractResolver = new CCContractResolver
             {
-                NamingStrategy = new CamelCaseNamingStrategy()
+                NamingStrategy = new CamelCaseNamingStrategy(),
             };
+
+            //var ignoreTypeMemberName = new KeyValuePair<Type, List<string>>[]
+            //{
+            //    KeyValuePair.Create(
+            //        typeof(void),
+            //        new List<string>(1)
+            //        {
+            //            "EqualityContract"
+            //        })
+            //};
+
+            //ccContractResolver.IgnoredTypeMemberNames.AddRange(ignoreTypeMemberName);
+
+            settings.ContractResolver = ccContractResolver;
+            settings.ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor;
 
             return settings;
         }

@@ -6,7 +6,7 @@ using System;
 namespace CCEnvs.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("ValueSnapshot", "57858be4-477c-42bb-ae94-2959ec67138c")]
+    [SerializationDescriptor("ValueSnapshot", "57858be4-477c-42bb-ae94-2959ec67138c")]
     public sealed record ValueSnapshot : Snapshot<object>
     {
         public ValueSnapshot()

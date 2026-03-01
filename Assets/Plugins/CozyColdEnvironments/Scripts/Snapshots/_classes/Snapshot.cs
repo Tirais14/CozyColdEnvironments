@@ -1,4 +1,5 @@
 using CCEnvs.Reflection;
+using CCEnvs.Serialization;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -12,6 +13,7 @@ namespace CCEnvs.Snapshots
     }
 
     [Serializable]
+    [PolymorphSerializable]
     public abstract record Snapshot<T> : Snapshot, ISnapshot<T>
     {
         [JsonIgnore]
@@ -26,14 +28,14 @@ namespace CCEnvs.Snapshots
             :
             this()
         {
-            CC.Guard.IsNotNullTarget(target);
-
             CaptureFrom(target);
         }
 
         public ISnapshot<T> CaptureFrom(T target)
         {
             CC.Guard.IsNotNull(target, nameof(target));
+
+            OnCapture(target);
 
             return this;
         }

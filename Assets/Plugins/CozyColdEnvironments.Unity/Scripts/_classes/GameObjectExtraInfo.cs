@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    [TypeSerializationDescriptor("GameObjectExtraInfo", "3a2f26f8-31d8-4f71-831f-af7446d37f30")]
+    [SerializationDescriptor("GameObjectExtraInfo", "3a2f26f8-31d8-4f71-831f-af7446d37f30")]
     public sealed class GameObjectExtraInfo
     {
         [field: SerializeField]

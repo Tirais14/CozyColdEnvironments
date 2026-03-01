@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 namespace CCEnvs.Unity
 {
     [Serializable]
-    [TypeSerializationDescriptor("SceneInfo", "2c534bb6-ba5c-4eae-a359-abc635b00b8b")]
+    [SerializationDescriptor("SceneInfo", "2c534bb6-ba5c-4eae-a359-abc635b00b8b")]
     public struct SceneInfo : IEquatable<SceneInfo>
     {
         private int? hashCode;

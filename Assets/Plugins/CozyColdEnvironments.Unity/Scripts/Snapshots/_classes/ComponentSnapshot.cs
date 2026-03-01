@@ -69,7 +69,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("ComponentSnapshot", "ad92c12a-fa33-4c14-bbdc-0fd040a7d85a")]
+    [SerializationDescriptor("ComponentSnapshot", "ad92c12a-fa33-4c14-bbdc-0fd040a7d85a")]
     public record ComponentSnapshot : ComponentSnapshot<Component>
     {
         public ComponentSnapshot()

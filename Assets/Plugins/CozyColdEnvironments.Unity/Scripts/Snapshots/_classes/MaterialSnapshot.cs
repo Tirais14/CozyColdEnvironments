@@ -8,7 +8,6 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable]
-    [TypeSerializationDescriptor("MaterialSnapshot", "15fde967-8b34-4521-944a-608baa11b83f")]
     public record MaterialSnapshot<T> : Snapshot<T>
         where T : Material
     {
@@ -60,6 +59,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
+    [SerializationDescriptor("MaterialSnapshot", "15fde967-8b34-4521-944a-608baa11b83f")]
     public record MaterialSnapshot : MaterialSnapshot<Material>
     {
         public MaterialSnapshot()

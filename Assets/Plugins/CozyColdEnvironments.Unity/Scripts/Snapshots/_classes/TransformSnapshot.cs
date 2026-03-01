@@ -88,7 +88,7 @@ namespace CCEnvs.Unity.Snapshots
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("TransformSnapshot", "0a16247f-5bbd-4968-9cd3-706be8b12247")]
+    [SerializationDescriptor("TransformSnapshot", "0a16247f-5bbd-4968-9cd3-706be8b12247")]
     public record TransformSnapshot : TransformSnapshot<Transform>
     {
         public TransformSnapshot()

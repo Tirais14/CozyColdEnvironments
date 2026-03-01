@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.UI
     }
 
     [Serializable]
-    [TypeSerializationDescriptor("ShowableSnapshot", "9c03d67d-e30b-4531-8881-add1c5c12420")]
+    [SerializationDescriptor("ShowableSnapshot", "9c03d67d-e30b-4531-8881-add1c5c12420")]
     public record ShowableSnapshot : ShowableSnapshot<IShowable>
     {
         public ShowableSnapshot()
