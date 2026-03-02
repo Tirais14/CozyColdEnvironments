@@ -9,6 +9,8 @@
 
 - [Planned](#planned)
 
+- [GameObjectQuery](#gameobjectquery)
+
 - [SavingSystem](#savingsystem)
 
 - [CommandScheduler](#commandscheduler)
