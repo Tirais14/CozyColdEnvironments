@@ -1,5 +1,7 @@
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Pools;
+using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
 using System;
@@ -8,13 +10,20 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
+    [Serializable]
+    [SerializationDescriptor("SaveGroupIncremental", "0c685a10-b6e3-4033-851b-8c740ffc7b59")]
     public sealed class SaveGroupIncremental : SaveGroup
     {
-        private readonly HashSet<IncrementallyObject> dirtyObjects = new();
-        private readonly Dictionary<string, object> nonIncrementallyObjects = new();
-        private readonly Dictionary<ISaveObjectIncrementally, OnSaveObjectIsDirtyChanged> incrementallyObjectBindings = new();
+        [JsonIgnore]
+        private readonly Dictionary<string, ISaveObjectIncremental> dirtyObjects = new();
+        [JsonIgnore]
+        private readonly Dictionary<string, object> nonIncrementalObjects = new();
+        [JsonIgnore]
+        private readonly Dictionary<string, OnSaveObjectIsDirtyChanged> incrementalObjectBindings = new();
 
+        [JsonIgnore]
         private readonly IDisposable observableObjectAddBinding;
+        [JsonIgnore]
         private readonly IDisposable observableObjectRemoveBinding;
 
         public SaveGroupIncremental(
@@ -30,7 +39,10 @@ namespace CCEnvs.Unity.Saves
 
         protected override PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
         {
-            var entryCount = dirtyObjects.Count + nonIncrementallyObjects.Count;
+            int entryCount;
+
+            lock (SyncRoot)
+                entryCount = dirtyObjects.Count + nonIncrementalObjects.Count;
 
             var saveEntries = ListPool<SaveEntry>.Shared.Get();
 
@@ -46,7 +58,7 @@ namespace CCEnvs.Unity.Saves
                     saveEntries.Value.Add(saveEntry);
                 }
 
-                foreach (var (key, obj) in nonIncrementallyObjects)
+                foreach (var (key, obj) in nonIncrementalObjects)
                 {
                     if (!TryCreateAndProcessSaveEntry(key, obj, out var saveEntry))
                         continue;
@@ -69,14 +81,17 @@ namespace CCEnvs.Unity.Saves
                 observableObjectAddBinding?.Dispose();
                 observableObjectRemoveBinding?.Dispose();
 
-                foreach (var obj in observableObjects)
+                lock (SyncRoot)
                 {
-                    if (obj.Value is ISaveObjectIncrementally saveObjectIncrementally)
-                        UnbindOnSaveObjectIsDirtyChanged(saveObjectIncrementally);
-                }
+                    foreach (var obj in observableObjects)
+                    {
+                        if (obj.Value is ISaveObjectIncremental saveObjectIncremental)
+                            UnbindOnSaveObjectIsDirtyChanged(obj.Key, saveObjectIncremental);
+                    }
 
-                dirtyObjects.Clear();
-                nonIncrementallyObjects.Clear();
+                    dirtyObjects.Clear();
+                    nonIncrementalObjects.Clear();
+                }
             }
 
             disposed = true;
@@ -84,55 +99,76 @@ namespace CCEnvs.Unity.Saves
             base.Dispose(disposing);
         }
 
-        //private void ThrowIfDisposed()
-        //{
-        //    if (!disposed)
-        //        return;
+        private void ThrowIfDisposed()
+        {
+            if (!disposed)
+                return;
 
-        //    throw new ObjectDisposedException(GetType().Name);
-        //}
+            throw new ObjectDisposedException(GetType().Name);
+        }
 
         private void OnSaveObjectIsDirtyChangedCore(
-            IncrementallyObject obj,
+            string key,
+            ISaveObjectIncremental obj,
             bool state
             )
         {
+            ThrowIfDisposed();
+
             if (!state)
             {
-                dirtyObjects.Remove(obj);
+                lock (SyncRoot)
+                    dirtyObjects.Remove(key);
+
                 return;
             }
 
-            dirtyObjects.Add(obj);
+            lock (SyncRoot)
+                dirtyObjects.TryAdd(key, obj);
         }
 
-        private void BindOnSaveObjectIsDirtyChanged(string key, ISaveObjectIncrementally obj)
+        private void BindOnSaveObjectIsDirtyChanged(string key, ISaveObjectIncremental obj)
         {
-            obj.OnSaveObjectIsDirtyChanged +=(obj, state) =>
-            {
-                var incObj = new IncrementallyObject(key, obj);
+            UnbindOnSaveObjectIsDirtyChanged(key, obj);
 
-                OnSaveObjectIsDirtyChangedCore(incObj, state);
+            obj.OnSaveObjectIsDirtyChanged += onSaveObjectIsDirtyChanged;
+
+            lock (SyncRoot)
+                incrementalObjectBindings[key] = onSaveObjectIsDirtyChanged;
+
+            void onSaveObjectIsDirtyChanged(ISaveObjectIncremental obj, bool state)
+            {
+                OnSaveObjectIsDirtyChangedCore(key, obj, state);
             };
         }
 
-        private void UnbindOnSaveObjectIsDirtyChanged(ISaveObjectIncrementally obj)
+        private void UnbindOnSaveObjectIsDirtyChanged(string key, ISaveObjectIncremental obj)
         {
-            if (!incrementallyObjectBindings.TryGetValue(obj, out var binding))
-                return;
+            OnSaveObjectIsDirtyChanged binding;
+
+            lock (SyncRoot)
+            {
+                if (!incrementalObjectBindings.Remove(key, out binding))
+                    return;
+            }
 
             obj.OnSaveObjectIsDirtyChanged -= binding;
         }
 
         private void OnObservableObjectAdd(DictionaryAddEvent<string, object> addEv)
         {
+            ThrowIfDisposed();
+
             var obj = addEv.Value;
             var key = addEv.Key;
 
-            if (obj is ISaveObjectIncrementally saveObjectIncrementally)
+            if (obj is ISaveObjectIncremental saveObjectIncrementally)
                 BindOnSaveObjectIsDirtyChanged(key, saveObjectIncrementally);
             else
-                nonIncrementallyObjects.Add(key, obj);
+            {
+                lock (SyncRoot)
+                    nonIncrementalObjects[key] = obj;
+            }
         }
 
         private IDisposable BindObservableObjectAdd()
@@ -143,81 +179,24 @@ namespace CCEnvs.Unity.Saves
 
         private void OnObservableObjectRemove(DictionaryRemoveEvent<string, object> removeEv)
         {
+            ThrowIfDisposed();
+
+            var key = removeEv.Key;
             var obj = removeEv.Value;
 
-            if (obj is ISaveObjectIncrementally saveObjectIncrementally)
-                UnbindOnSaveObjectIsDirtyChanged(saveObjectIncrementally);
+            if (obj is ISaveObjectIncremental saveObjectIncrementally)
+                UnbindOnSaveObjectIsDirtyChanged(key, saveObjectIncrementally);
             else
-                nonIncrementallyObjects.Remove(removeEv.Key);
+            {
+                lock (SyncRoot)
+                    nonIncrementalObjects.Remove(key);
+            }
         }
 
         private IDisposable BindObservableObjectRemove()
         {
             return observableObjects.ObserveDictionaryRemove(DisposeCancellationToken)
                 .Subscribe(OnObservableObjectRemove);
-        }
-
-        private struct IncrementallyObject : IEquatable<IncrementallyObject>
-        {
-            private int? hash;
-
-            public readonly string Key;
-
-            public readonly ISaveObjectIncrementally Object;
-
-            public IncrementallyObject(
-                string key,
-                ISaveObjectIncrementally obj
-                )
-            {
-                hash = default;
-
-                Key = key;
-                Object = obj;
-            }
-
-            public readonly void Deconstruct(out string key, out ISaveObjectIncrementally obj)
-            {
-                key = Key;
-                obj = Object;
-            }
-
-            public static bool operator ==(IncrementallyObject left, IncrementallyObject right)
-            {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(IncrementallyObject left, IncrementallyObject right)
-            {
-                return !(left == right);
-            }
-
-            public readonly override bool Equals(object? obj)
-            {
-                return obj is IncrementallyObject info && Equals(info);
-            }
-
-            public readonly bool Equals(IncrementallyObject other)
-            {
-                return Key == other.Key
-                       &&
-                       EqualityComparer<ISaveObjectIncrementally>.Default.Equals(Object, other.Object);
-            }
-
-            public override int GetHashCode()
-            {
-                hash ??= HashCode.Combine(Key, Object);
-
-                return hash.Value;
-            }
-
-            public readonly override string ToString()
-            {
-                if (this == default)
-                    return StringHelper.EMPTY_OBJECT;
-
-                return $"({nameof(Key)}: {Key}; {nameof(Object)}: {Object})";
-            }
         }
     }
 }

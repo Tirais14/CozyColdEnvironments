@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
-    public class SaveArchive
+    public sealed class SaveArchive
         :
         IEquatable<SaveArchive>,
         IEnumerable<SaveCatalog>

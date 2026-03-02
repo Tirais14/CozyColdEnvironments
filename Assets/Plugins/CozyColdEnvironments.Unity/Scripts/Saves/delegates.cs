@@ -7,5 +7,5 @@ namespace CCEnvs.Unity.Saves
 
     public delegate ISnapshot SnapshotFactory<T>(T obj);
 
-    public delegate void OnSaveObjectIsDirtyChanged(ISaveObjectIncrementally obj, bool state);
+    public delegate void OnSaveObjectIsDirtyChanged(ISaveObjectIncremental obj, bool state);
 }

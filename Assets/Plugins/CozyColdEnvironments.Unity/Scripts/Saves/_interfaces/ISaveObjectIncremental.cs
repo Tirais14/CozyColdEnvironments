@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Unity.Saves
 {
-    public interface ISaveObjectIncrementally
+    public interface ISaveObjectIncremental
     {
         event OnSaveObjectIsDirtyChanged OnSaveObjectIsDirtyChanged;
 

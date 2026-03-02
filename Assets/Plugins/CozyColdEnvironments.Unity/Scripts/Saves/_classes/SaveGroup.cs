@@ -2,6 +2,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
+using CCEnvs.Serialization;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CCEnvs.Threading.Tasks;
@@ -22,6 +23,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Saves
 {
     [Serializable]
+    [PolymorphSerializable]
     [SerializationDescriptor("SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
     public class SaveGroup
         :
@@ -72,7 +74,7 @@ namespace CCEnvs.Unity.Saves
         }
 
         [JsonIgnore]
-        public object SyncRoot { get; } = new();
+        protected object SyncRoot { get; } = new();
 
         public SaveGroup(
             SaveCatalog catalog,
@@ -136,9 +138,19 @@ namespace CCEnvs.Unity.Saves
             return !(left == right);
         }
 
+        /// <summary>
+        /// obj cannot be ValueType
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public SaveGroup RegisterObject(object obj, string? key = null)
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
+
+            if (obj.GetType().IsValueType)
+                throw new ArgumentException($"Cannot register ValueType object: {obj}", nameof(obj));
 
             if (key is null && !TryResolveKey(obj, out key))
                 key = string.Empty;

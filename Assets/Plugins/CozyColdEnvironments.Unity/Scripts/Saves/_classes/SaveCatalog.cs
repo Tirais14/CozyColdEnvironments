@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
-    public class SaveCatalog
+    public sealed class SaveCatalog
         :
         IEquatable<SaveCatalog>,
         IEnumerable<SaveGroup>
@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.Saves
         [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
 
-        [JsonProperty("incrementallyGroups")]
+        [JsonProperty("incrementalGroups")]
         private ObservableDictionary<string, SaveGroupIncremental> incrementalGroups = new();
 
         [JsonIgnore]
