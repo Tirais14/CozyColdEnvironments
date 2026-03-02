@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public interface ISaveRestoringCallbackReciever
     {

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]

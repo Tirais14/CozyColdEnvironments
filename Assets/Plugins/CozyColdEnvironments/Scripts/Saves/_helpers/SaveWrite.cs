@@ -7,7 +7,7 @@ using System.IO.Compression;
 using System.Threading;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public static class SaveWrite
     {

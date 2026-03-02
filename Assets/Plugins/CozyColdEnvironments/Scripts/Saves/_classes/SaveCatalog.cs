@@ -16,7 +16,7 @@ using System.Xml.Linq;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
@@ -301,16 +301,19 @@ namespace CCEnvs.Unity.Saves
 
             try
             {
-                foreach (var group in groups.To<IDictionary<string, SaveGroup>>().Values)
+                lock (groups.SyncRoot)
                 {
-                    task = group.LoadSaveDataFromFileAsync(
-                        writeSaveDataMode,
-                        configureAwait: false,
-                        force,
-                        cancellationToken: cancellationToken
-                        );
+                    foreach (var (_, group) in groups)
+                    {
+                        task = group.LoadSaveDataFromFileAsync(
+                            writeSaveDataMode,
+                            configureAwait: false,
+                            force,
+                            cancellationToken: cancellationToken
+                            );
 
-                    tasks[i++] = task;
+                        tasks[i++] = task;
+                    }
                 }
 
                 await UniTask.WhenAll(tasks.Raw);

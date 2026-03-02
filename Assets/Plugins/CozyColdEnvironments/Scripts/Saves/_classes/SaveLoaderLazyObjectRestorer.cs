@@ -1,18 +1,20 @@
-﻿using CCEnvs.Collections;
+﻿#if UNITY_2017_1_OR_NEWER
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public sealed class SaveLoaderLazyObjectRestorer : IDisposable, IFrameRunnerWorkItem
     {
-        private readonly Queue<MonoBehaviourInfo> monoBehs = new();
+        private readonly ConcurrentQueue<MonoBehaviourInfo> monoBehs = new();
 
         private readonly HashSet<MonoBehaviour> enquedMonoBehs = new();
 
@@ -37,6 +39,8 @@ namespace CCEnvs.Unity.Saves
                     batchSize = value;
             }
         }
+
+        public object SyncRoot { get; } = new();
 
         public SaveLoaderLazyObjectRestorer(
             SaveObjectRestorer saveLoader,
@@ -63,12 +67,15 @@ namespace CCEnvs.Unity.Saves
             Guard.IsNotNull(key, nameof(key));
             Guard.IsNotNull(saveGroup, nameof(saveGroup));
 
-            if (enquedMonoBehs.Contains(monoBeh))
+            lock (SyncRoot)
             {
-                if (CCDebug.Instance.IsEnabled)
-                    this.PrintLog($"Mono Behaviour is already enqueued");
+                if (enquedMonoBehs.Contains(monoBeh))
+                {
+                    if (CCDebug.Instance.IsEnabled)
+                        this.PrintLog($"Mono Behaviour is already enqueued");
 
-                return;
+                    return;
+                }
             }
 
             var monoBehInfo = new MonoBehaviourInfo(
@@ -80,7 +87,9 @@ namespace CCEnvs.Unity.Saves
                 );
 
             monoBehs.Enqueue(monoBehInfo);
-            enquedMonoBehs.Add(monoBeh);
+
+            lock (SyncRoot)
+                enquedMonoBehs.Add(monoBeh);
         }
 
         private bool disposed;
@@ -90,7 +99,6 @@ namespace CCEnvs.Unity.Saves
                 return;
 
             monoBehs.Clear();
-            monoBehs.TrimExcess();
 
             disposed = true;
         }
@@ -146,7 +154,9 @@ namespace CCEnvs.Unity.Saves
                     );
 
                 monoBeh.TryInvokeCallback(isMonoBehRestored);
-                enquedMonoBehs.Remove(monoBeh.Value);
+
+                lock (SyncRoot)
+                    enquedMonoBehs.Remove(monoBeh.Value);
             }
 
             int notReadyCount = notReadyMonoBehs.Value.Count;
@@ -267,3 +277,4 @@ namespace CCEnvs.Unity.Saves
         }
     }
 }
+#endif

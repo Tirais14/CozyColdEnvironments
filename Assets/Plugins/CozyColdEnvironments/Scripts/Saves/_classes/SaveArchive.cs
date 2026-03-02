@@ -15,7 +15,7 @@ using System.Threading;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
@@ -174,17 +174,20 @@ namespace CCEnvs.Unity.Saves
 
             try
             {
-                foreach (var catalog in catalogs.To<IDictionary<string, SaveCatalog>>().Values)
+                lock (catalogs.SyncRoot)
                 {
-                    task = catalog.LoadGroupsFromFileAsync(
-                        writeSaveDataMode,
-                        force,
-                        configureAwait: false,
-                        cancellationToken: cancellationToken
-                        );
+                    foreach (var (_, catalog) in catalogs)
+                    {
+                        task = catalog.LoadGroupsFromFileAsync(
+                            writeSaveDataMode,
+                            force,
+                            configureAwait: false,
+                            cancellationToken: cancellationToken
+                            );
 
-                    tasks[i++] = task;
-                }
+                        tasks[i++] = task;
+                    }
+                }    
 
                 await UniTask.WhenAll(tasks.Raw);
             }

@@ -7,24 +7,6 @@ namespace CCEnvs.Reflection.Caching
 {
     public static class TypeCache<T>
     {
-        #region IL2CPP Type definitions
-
-#pragma warning disable S1144
-
-        //private readonly static T[]? m_Array;
-
-        //private readonly static List<T>? m_List;
-
-        //private readonly static HashSet<T>? m_HashSet;
-
-        //private readonly static Queue<T>? m_Queue;
-
-        //private readonly static Stack<T>? m_Stack;
-
-#pragma warning restore S1144
-
-        #endregion
-
         public static bool IsUnityObject { get; }
 
         public static bool IsUnityComponent { get; }

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public static class SaveSystem
     {
@@ -17,12 +17,9 @@ namespace CCEnvs.Unity.Saves
         public static IReadOnlyDictionary<Type, SnapshotFactory> Converters => converters;
 
         public static SnapshotFactory DefaultConverter { get; } =
-            static (obj, existingSnapshot) =>
+            static (obj) =>
             {
-                if (existingSnapshot is null)
-                    return new ValueSnapshot(obj);
-
-                return existingSnapshot.Reset().CaptureFrom(obj);
+                return new ValueSnapshot<object>(obj);
             };
 
         public static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
@@ -50,9 +47,11 @@ namespace CCEnvs.Unity.Saves
 
             converters.Add(type, converter);
         }
-        public static void RegisterType<T>(SnapshotFactory converter)
+        public static void RegisterType<T>(SnapshotFactory<T> converter)
         {
-            RegisterType(typeof(T), converter);
+            Guard.IsNotNull(converter, nameof(converter));
+
+            RegisterType(typeof(T), (obj) => converter((T)obj));
         }
 
         public static bool UnregisterType(Type type)

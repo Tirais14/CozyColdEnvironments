@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public static class SaveSerializer
     {

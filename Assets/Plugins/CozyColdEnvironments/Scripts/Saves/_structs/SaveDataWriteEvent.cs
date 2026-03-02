@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public readonly struct SaveDataWriteEvent : IEquatable<SaveDataWriteEvent>
     {

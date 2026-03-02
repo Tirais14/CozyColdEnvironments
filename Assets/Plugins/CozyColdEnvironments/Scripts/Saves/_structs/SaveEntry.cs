@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [Serializable]
     [SerializationDescriptor("Saves.SaveUnit", "77478f05-ab2b-4cb0-b420-39baf8fd8452")]

@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveGroupIncremental", "0c685a10-b6e3-4033-851b-8c740ffc7b59")]

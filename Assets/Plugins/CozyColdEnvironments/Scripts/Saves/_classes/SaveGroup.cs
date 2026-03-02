@@ -2,6 +2,8 @@
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
 using CCEnvs.Serialization;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
@@ -15,12 +17,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [Serializable]
     [PolymorphSerializable]
@@ -31,6 +33,59 @@ namespace CCEnvs.Unity.Saves
         IEnumerable<KeyValuePair<string, object>>,
         IDisposable
     {
+        #region UnityAssemblyReflected
+
+#if UNITY_2017_1_OR_NEWER
+        private readonly static Lazy<Type> gameObjectExtraInfoExtensionsType = new(
+            static () =>
+            {
+                return Type.GetType(
+                    "GameObjectExtraInfoExtensions, CCEnvs.Unity", 
+                    throwOnError: true
+                    );
+            });
+
+        private readonly static Lazy<MethodInfo> gameObjectExtraInfoExtensions_GetExtraInfo_GO = new(
+            static () =>
+            {
+                var extType = gameObjectExtraInfoExtensionsType.Value;
+
+                if (extType is null)
+                    throw new ArgumentException(nameof(extType));
+
+                return extType.GetMethod(
+                    "GetExtraInfo",
+                    BindingFlagsDefault.StaticPublic,
+                    binder: null,
+                    new Type[] { typeof(UnityEngine.GameObject) },
+                    new arr<ParameterModifier>()
+                    )
+                    ??
+                    throw new InvalidOperationException("Cannot find method");
+            });
+
+        private readonly static Lazy<MethodInfo> gameObjectExtraInfoExtensions_GetExtraInfo_Cmp = new(
+            static () =>
+            {
+                var extType = gameObjectExtraInfoExtensionsType.Value;
+
+                if (extType is null)
+                    throw new ArgumentException(nameof(extType));
+
+                return extType.GetMethod(
+                    "GetExtraInfo",
+                    BindingFlagsDefault.StaticPublic,
+                    binder: null,
+                    new Type[] { typeof(UnityEngine.Component) },
+                    new arr<ParameterModifier>()
+                    )
+                    ??
+                    throw new InvalidOperationException("Cannot find method");
+            });
+
+#endif //UNITY_2017_1_OR_NEWER
+        #endregion UnityAssemblyReflected
+
         [JsonIgnore]
         protected readonly ObservableDictionary<string, object> observableObjects = new();
 
@@ -74,7 +129,7 @@ namespace CCEnvs.Unity.Saves
         }
 
         [JsonIgnore]
-        protected object SyncRoot { get; } = new();
+        public object SyncRoot { get; } = new();
 
         public SaveGroup(
             SaveCatalog catalog,
@@ -96,8 +151,11 @@ namespace CCEnvs.Unity.Saves
 
             incGroup = new SaveGroupIncremental(group.Catalog, group.Name);
 
-            foreach (var (key, obj) in group.observableObjects)
-                incGroup.RegisterObject(obj, key);
+            lock (group.SyncRoot)
+            {
+                foreach (var (key, obj) in group.observableObjects)
+                    incGroup.RegisterObject(obj, key);
+            }
 
             group.Dispose();
 
@@ -110,8 +168,11 @@ namespace CCEnvs.Unity.Saves
 
             var group = new SaveGroup(incGroup.Catalog, incGroup.Name);
 
-            foreach (var (key, obj) in incGroup.observableObjects)
-                incGroup.RegisterObject(obj, key);
+            lock (incGroup.SyncRoot)
+            {
+                foreach (var (key, obj) in incGroup.observableObjects)
+                    incGroup.RegisterObject(obj, key);
+            }
 
             incGroup.Dispose();
 
@@ -155,7 +216,8 @@ namespace CCEnvs.Unity.Saves
             if (key is null && !TryResolveKey(obj, out key))
                 key = string.Empty;
 
-            observableObjects.Add(key, obj);
+            lock (SyncRoot)
+                observableObjects.Add(key, obj);
 
             return this;
         }
@@ -166,7 +228,8 @@ namespace CCEnvs.Unity.Saves
 
             Guard.IsNotNull(key, nameof(key));
 
-            return observableObjects.Remove(key);
+            lock (SyncRoot)
+                return observableObjects.Remove(key);
         }
 
         public bool UnregisterObject(object obj)
@@ -184,7 +247,8 @@ namespace CCEnvs.Unity.Saves
             if (key is null)
                 return false;
 
-            return observableObjects.ContainsKey(key);
+            lock (SyncRoot)
+                return observableObjects.ContainsKey(key);
         }
 
         public bool IsObjectRegistered(object obj)
@@ -206,8 +270,10 @@ namespace CCEnvs.Unity.Saves
 
             key = obj switch
             {
-                GameObject go => ResolveGameObjectKey(go),
-                Component cmp => ResolveComponentKey(cmp),
+#if UNITY_2017_1_OR_NEWER
+                UnityEngine.GameObject go => ResolveGameObjectKey(go),
+                UnityEngine.Component cmp => ResolveComponentKey(cmp),
+#endif
                 _ => null
             };
 
@@ -249,7 +315,8 @@ namespace CCEnvs.Unity.Saves
         {
             ThrowIfDisposed();
 
-            observableObjects.Clear();
+            lock (SyncRoot)
+                observableObjects.Clear();
 
             return this;
         }
@@ -397,7 +464,9 @@ namespace CCEnvs.Unity.Saves
             if (disposing)
             {
                 disposeCancellationTokenSource.CancelAndDispose();
-                observableObjects.Clear();
+
+                lock (SyncRoot)
+                    observableObjects.Clear();
             }
 
             disposed = true;
@@ -415,7 +484,12 @@ namespace CCEnvs.Unity.Saves
         {
             var saveUnits = ListPool<SaveEntry>.Shared.Get();
 
-            saveUnits.Value.TryIncreaseCapacity(observableObjects.Count);
+            int observableObjectCount;
+
+            lock (SyncRoot)
+                observableObjectCount = observableObjects.Count;
+
+            saveUnits.Value.TryIncreaseCapacity(observableObjectCount);
 
             lock (SyncRoot)
             {
@@ -480,17 +554,19 @@ namespace CCEnvs.Unity.Saves
             throw new ObjectDisposedException(GetType().Name);
         }
 
+#if UNITY_2017_1_OR_NEWER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string ResolveGameObjectKey(GameObject go)
+        private string ResolveGameObjectKey(UnityEngine.GameObject go)
         {
-            return go.GetExtraInfo().ToString();
+            return gameObjectExtraInfoExtensions_GetExtraInfo_GO.Value.Invoke(null, new object[] { go }).ToString();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string ResolveComponentKey(Component cmp)
+        private string ResolveComponentKey(UnityEngine.Component cmp)
         {
-            return cmp.GetExtraInfo().ToString();
+            return gameObjectExtraInfoExtensions_GetExtraInfo_Cmp.Value.Invoke(null, new object[] { cmp }).ToString();
         }
+#endif
 
         private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
             bool configureAwait = true,
@@ -563,22 +639,6 @@ namespace CCEnvs.Unity.Saves
             {
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
             }
-        }
-
-        private async UniTask<SaveData> GetOrLoadSaveDataFromFileAsyncCore(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default,
-            bool forceGet = false
-            )
-        {
-            await LoadSaveDataFromFileAsyncCore(
-                writeSaveDataMode,
-                configureAwait,
-                cancellationToken
-                );
-
-            return SaveData;
         }
     }
 }

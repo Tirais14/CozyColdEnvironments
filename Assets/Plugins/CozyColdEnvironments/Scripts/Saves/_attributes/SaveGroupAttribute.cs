@@ -2,7 +2,7 @@ using CCEnvs.Attributes;
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
     public sealed class SaveGroupAttribute : Attribute, ICCAttribute

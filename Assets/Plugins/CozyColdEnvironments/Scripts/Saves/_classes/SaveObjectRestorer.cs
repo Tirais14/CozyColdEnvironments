@@ -1,8 +1,5 @@
 using CCEnvs.Collections;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Leaderboards;
-using CCEnvs.Unity.Profiles;
-using CCEnvs.Unity.UI.Leaderboards;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
@@ -14,7 +11,7 @@ using System.Threading;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.Saves
 {
     public sealed class SaveObjectRestorer : IDisposable
     {
@@ -390,27 +387,6 @@ namespace CCEnvs.Unity.Saves
         {
             if (disposed)
                 throw new ObjectDisposedException(GetType().FullName);
-        }
-
-
-        private void Foo(LeaderboardView lboardView)
-        {
-            //UserProfile is IDisposable. Already binded to view. Do not call Dispose manually
-            var lboard = lboardView.GetModel<Leaderboard>();
-
-            //UserProfile is IDisposable. In real code you must resolve where it is should dispose
-            using var playerProfile = new UserProfile("Tirais", "448d3cf7-8133-4326-b7e5-cac543082ebe");
-
-            //Now the special entry will be display a player profile in the SpecialEntry Property
-            lboard.SpecialProfile = playerProfile;
-
-            //UserProfile is IDisposable. In real code you must resolve where it is should dispose
-            using var entry = new LeaderboardEntry(playerProfile);
-
-            //Thus names will be used in the inspectors LeaderboardEntryView ScoreRecordViews field
-            entry.AddScoreRecord("kills").AddScoreRecord("deaths");
-
-            entry.AddScore("kills", 1);
         }
     }
 }
