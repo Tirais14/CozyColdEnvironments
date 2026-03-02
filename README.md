@@ -18,6 +18,7 @@
 - [CommandScheduler](#commandscheduler)
 
 - [Command](#command)
+  - [CommandBuilder](#commandbuilder)
 
 - [Leaderboard](#leaderboard)
   - [LeaderboardViewModel](#leaderboardviewmodel)
