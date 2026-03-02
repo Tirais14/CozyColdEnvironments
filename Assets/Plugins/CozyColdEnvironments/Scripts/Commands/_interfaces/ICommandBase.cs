@@ -24,20 +24,13 @@ namespace CCEnvs.Patterns.Commands
 
         Type CommandType { get; }
 
-        CancellationToken CancellationToken { get; }
-
         CommandSignature Signature { get; }
-
-        Identifier ID { get; }
 
         void Undo();
 
         void Cancel();
 
         bool TryReset();
-
-        [Obsolete]
-        CommandSignature GetCommandSignature();
 
         IDisposable GetCancellationHandle();
 

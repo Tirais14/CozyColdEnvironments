@@ -41,13 +41,11 @@ namespace CCEnvs.Patterns.Commands
 
         public bool ReturnToPool()
         {
-            return poolHandle.Map(
-                static x =>
-                {
-                    x.Dispose();
-                    return true;
-                })
-                .GetValue(); ;
+            if (!poolHandle.TryGetValue(out var handle))
+                return false;
+
+            handle.Dispose();
+            return true;
         }
 
         public Observable<IPoolable> ObserveDespawn()
@@ -59,6 +57,7 @@ namespace CCEnvs.Patterns.Commands
 
         protected override void OnReset()
         {
+            base.OnReset();
             poolHandle = default;
         }
 

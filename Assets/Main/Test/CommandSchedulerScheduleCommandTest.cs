@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CCEnvs;
 using CCEnvs.Patterns.Commands;
@@ -13,28 +14,21 @@ namespace Tests
 {
     public class CommandSchedulerScheduleCommandTest : CCBehaviour
     {
+        private const int CMD_COUNT = 256;
+
         private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
 
-        private readonly List<ICommandBase> commands = new(16384);
+        private readonly List<ICommandBase> commands = new(CMD_COUNT);
 
         public void Launch()
         {
-            for (int i = 0; i < 16384; i++)
+            for (int i = 0; i < CMD_COUNT; i++)
                 commands.Add(CreateCommand());
 
-            UniTask.Create(this,
-                static async @this =>
-                {
-                    await UniTask.WaitForSeconds(3f);
+            foreach (var cmd in commands)
+                cmd.ScheduleBy(commandScheduler);
 
-                    foreach (var cmd in @this.commands)
-                        cmd.ScheduleBy(@this.commandScheduler);
-
-#if UNITY_EDITOR
-                    EditorApplication.isPaused = true;
-#endif
-                })
-                .ForgetByPrintException();
+            commands.Clear();
         }
 
         private ICommandBase CreateCommand()
@@ -44,10 +38,10 @@ namespace Tests
                 nameof(CreateCommand)
                 );
 
-            return Command.Builder.SetName(cmdName)
+            return Command.Builder.WithName(cmdName)
                 .WithState(this)
-                .Asyncronously()
-                .SetExecuteAction(
+                .Asynchronously()
+                .WithExecuteAction(
                 static async (@this, cancellationToken) =>
                 {
                 })

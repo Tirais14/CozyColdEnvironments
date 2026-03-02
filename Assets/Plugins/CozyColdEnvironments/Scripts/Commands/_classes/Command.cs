@@ -1,5 +1,4 @@
 #nullable enable
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading.Tasks;
 
@@ -19,8 +18,11 @@ namespace CCEnvs.Patterns.Commands
         {
             ThrowIfDisposed();
 
-            Guard.IsFalse(IsRunning, nameof(IsRunning), "Is already running");
-            Guard.IsFalse(IsDone, nameof(IsDone), "Already done");
+            if (IsRunning)
+                throw new InvalidOperationException("Is already running");
+
+            if (IsDone)
+                throw new InvalidCastException("Already done");
 
             isExecuted = true;
 
@@ -52,7 +54,9 @@ namespace CCEnvs.Patterns.Commands
             finally
             {
                 //Prevents the callback triggering after execution completed
-                SetDefaultCancellationToken();
+                //TrySetDefaultCancellationToken();
+
+                DetachCancellationTokens();
             }
         }
 

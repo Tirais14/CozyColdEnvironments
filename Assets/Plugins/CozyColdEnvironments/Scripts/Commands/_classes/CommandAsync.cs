@@ -1,5 +1,4 @@
 #nullable enable
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,17 +18,26 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual async ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                SetCanceled();
+                return;
+            }
+
             ThrowIfDisposed();
 
-            Guard.IsFalse(IsRunning, nameof(IsRunning), "Is already running");
-            Guard.IsFalse(IsDone, nameof(IsDone), "Already done");
+            if (IsRunning)
+                throw new InvalidOperationException("Is already running");
+
+            if (IsDone)
+                throw new InvalidCastException("Already done");
 
             isExecuted = true;
 
-            AttachExternalCancellationToken(cancellationToken);
-
             try
             {
+                AttachExternalCancellationToken(cancellationToken);
+
                 if (CancellationToken.IsCancellationRequested)
                 {
                     SetCanceled();
@@ -55,8 +63,7 @@ namespace CCEnvs.Patterns.Commands
             }
             finally
             {
-                //Prevents the callback triggering after execution completed
-                SetDefaultCancellationToken();
+                DetachCancellationTokens();
             }
         }
 

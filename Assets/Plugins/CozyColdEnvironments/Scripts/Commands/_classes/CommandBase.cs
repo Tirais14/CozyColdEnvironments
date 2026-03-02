@@ -1,11 +1,10 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.Threading;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 #pragma warning disable S107
 #pragma warning disable S3963
@@ -14,20 +13,26 @@ namespace CCEnvs.Patterns.Commands
     public abstract partial class CommandBase<TThis> : ICommandBase<TThis>
         where TThis : ICommandBase
     {
+        public const string DEFAULT_NAME = "Unnamed";
+
         protected bool isExecuted;
 
-        protected string name;
+        protected string name = DEFAULT_NAME;
 
         private readonly ReactiveProperty<CommandStatus> status = new();
 
-        private readonly List<CancellationTokenSource> cancellationTokenSources = new(2);
-        private readonly List<CancellationTokenRegistration> cancellationTokenRegistrations = new(4);
+        private List<CancellationTokenSource>? _cancellationTokenSources;
+        private List<CancellationTokenRegistration>? _cancellationTokenRegistrations;
+
+        private CancellationTokenRegistration? cancellationTokenRegistration;
 
         private bool isCancellation;
 
+        private Type? _commandType;
+
         public string Name {
             get => name;
-            set => name = value.IsNullOrWhiteSpace() ? GetType().ToString() : value;
+            set => name = value ?? DEFAULT_NAME;
         }
 
         public virtual bool IsReadyToExecute => !IsRunning && !IsDone;
@@ -42,22 +47,44 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandStatus Status => status.Value;
 
-        public Type CommandType { get; }
+        public Type CommandType {
+            get
+            {
+                _commandType ??= GetType();
 
-        public CancellationToken CancellationToken { get; private set; }
+                return _commandType;
+            }
+        }
 
-        public CommandSignature Signature => new(GetType(), Name);
+        public CommandSignature Signature => new(CommandType, Name);
 
-        public Identifier ID { get; set; }
+        protected CancellationToken CancellationToken { get; private set; }
+
+        protected object SyncRoot { get; } = new();
+
+        private List<CancellationTokenSource> cancellationTokenSources {
+            get
+            {
+                _cancellationTokenSources ??= new List<CancellationTokenSource>(1);
+
+                return _cancellationTokenSources;
+            }
+        }
+
+        private List<CancellationTokenRegistration> cancellationTokenRegistrations {
+            get
+            {
+                _cancellationTokenRegistrations ??= new List<CancellationTokenRegistration>(1);
+
+                return _cancellationTokenRegistrations;
+            }
+        }
 
         protected CommandBase(bool isResetable = true)
         {
-            Name = name ?? GetType().ToString();
             IsResetable = isResetable;
 
-            CommandType = GetType();
-
-            SetDefaultCancellationToken();
+            //TrySetDefaultCancellationToken();
         }
 
         public virtual void Undo()
@@ -66,7 +93,7 @@ namespace CCEnvs.Patterns.Commands
 
             try
             {
-                OnCancel();
+                Cancel();
                 OnUndo();
             }
             catch (Exception ex)
@@ -114,12 +141,6 @@ namespace CCEnvs.Patterns.Commands
             return this.To<TThis>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandSignature GetCommandSignature()
-        {
-            return new CommandSignature(GetType(), Name, ID);
-        }
-
         public override string ToString()
         {
             return $"({nameof(Name)}: {Name}; {nameof(Status)}: {Status}; {nameof(IsValid)}: {IsValid})";
@@ -129,10 +150,10 @@ namespace CCEnvs.Patterns.Commands
         {
             ThrowIfDisposed();
 
-            if (isCancellation)
+            if (IsDone)
                 return;
 
-            if (IsDone)
+            if (isCancellation)
                 return;
 
             isCancellation = true;
@@ -149,7 +170,6 @@ namespace CCEnvs.Patterns.Commands
             }
             finally
             {
-                SetDefaultCancellationToken();
                 isCancellation = false;
             }
 
@@ -170,6 +190,12 @@ namespace CCEnvs.Patterns.Commands
         {
             ThrowIfDisposed();
 
+            if (!CancellationToken.CanBeCanceled)
+            {
+                CancellationToken = cancellationToken;
+                return this.To<TThis>();
+            }
+
             var linkedTokenSource = CancellationToken.TryLinkTokens(
                 cancellationToken,
                 out cancellationToken
@@ -178,7 +204,8 @@ namespace CCEnvs.Patterns.Commands
             if (linkedTokenSource is null)
                 return this.To<TThis>();
 
-            cancellationTokenSources.Add(linkedTokenSource);
+            lock (SyncRoot)
+                cancellationTokenSources.Add(linkedTokenSource);
 
             CancellationToken = cancellationToken;
 
@@ -219,7 +246,7 @@ namespace CCEnvs.Patterns.Commands
                 Cancel();
                 SetFaulted(null);
                 status.Dispose();
-                DisposeCancellationTokenSources();
+                DetachCancellationTokens();
             }
 
             disposed = true;
@@ -231,6 +258,8 @@ namespace CCEnvs.Patterns.Commands
 
         protected virtual void OnReset()
         {
+            DetachCancellationTokens();
+
             isExecuted = false;
             isCancellation = false;
 
@@ -278,46 +307,85 @@ namespace CCEnvs.Patterns.Commands
                 {
                     var typed = @this.To<CommandBase<TThis>>();
 
-                    if (typed.isCancellation)
+                    if (typed.isCancellation
+                        ||
+                        typed.IsCancelled)
+                    {
                         return;
+                    }
 
                     typed.Cancel();
                 },
                 this
                 );
 
-            cancellationTokenRegistrations.Add(reg);
+            if (!cancellationTokenRegistration.HasValue)
+            {
+                cancellationTokenRegistration = reg;
+                return;
+            }
+
+            lock (SyncRoot)
+                cancellationTokenRegistrations.Add(reg);
         }
 
-        protected void SetDefaultCancellationToken()
+        //protected void TrySetDefaultCancellationToken()
+        //{
+        //    DisposeCancellationTokenSources();
+
+        //    var defaultCancellationTokenSource = new CancellationTokenSource();
+
+        //    cancellationTokenSources.Add(defaultCancellationTokenSource);
+        //    CancellationToken = defaultCancellationTokenSource.Token;
+
+        //    RegisterCancellationTokenToCancel(CancellationToken);
+        //}
+
+        protected void DetachCancellationTokens()
         {
-            DisposeCancellationTokenSources();
+            if (_cancellationTokenRegistrations.IsNotNullOrEmpty())
+            {
+                lock (SyncRoot)
+                {
+                    for (int i = cancellationTokenRegistrations.Count - 1; i >= 0; i--)
+                    {
+                        cancellationTokenRegistrations[i].Dispose();
+                        cancellationTokenRegistrations.RemoveAt(i);
+                    }
 
-            var defaultCancellationTokenSource = new CancellationTokenSource();
+                    if (cancellationTokenRegistrations.Count >= 16)
+                        cancellationTokenRegistrations.Capacity = 4;
+                }
+            }
 
-            cancellationTokenSources.Add(defaultCancellationTokenSource);
-            CancellationToken = defaultCancellationTokenSource.Token;
+            if (_cancellationTokenSources.IsNotNullOrEmpty())
+            {
+                lock (SyncRoot)
+                {
+                    for (int i = cancellationTokenSources.Count - 1; i >= 0; i--)
+                    {
+                        cancellationTokenSources[i].Dispose();
+                        cancellationTokenSources.RemoveAt(i);
+                    }
 
-            RegisterCancellationTokenToCancel(CancellationToken);
+                    if (cancellationTokenRegistrations.Count >= 16)
+                        cancellationTokenSources.Capacity = 4;
+                }
+            }
+
+            cancellationTokenRegistration?.Dispose();
+            cancellationTokenRegistration = default;
+            CancellationToken = default;
         }
 
-        protected void DisposeCancellationTokenSources()
-        {
-            cancellationTokenRegistrations.DisposeEach();
-            cancellationTokenRegistrations.Clear();
+        //protected void CancelByCancellationToken()
+        //{
+        //    if (cancellationTokenSources.IsEmpty())
+        //        throw new InvalidOperationException($"Command: {this} corrupted and cannot be canceled by token");
 
-            cancellationTokenSources.DisposeEach();
-            cancellationTokenSources.Clear();
-        }
-
-        protected void CancelByCancellationToken()
-        {
-            if (cancellationTokenSources.IsEmpty())
-                throw new InvalidOperationException($"Command: {this} corrupted and cannot be canceled by token");
-
-            cancellationTokenSources[^1].Cancel();
-            DisposeCancellationTokenSources();
-        }
+        //    cancellationTokenSources[^1].Cancel();
+        //    DisposeCancellationTokenSources();
+        //}
 
         protected void ThrowIfDisposed()
         {

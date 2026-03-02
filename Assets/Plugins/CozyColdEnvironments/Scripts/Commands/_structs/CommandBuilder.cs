@@ -315,7 +315,7 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledObject<AnonymousCommandAsync<TState>> BuildPooled()
             {
-                PooledObject<AnonymousCommandAsync<TState>> pooledCmd;
+                PooledObject<AnonymousCommandAsync<TState>> pooledCmd = default;
                 AnonymousCommandAsync<TState> cmd;
 
                 if (pool is not null && pool.InactiveCount > 0)

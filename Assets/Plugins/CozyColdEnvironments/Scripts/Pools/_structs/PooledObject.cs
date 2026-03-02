@@ -75,7 +75,7 @@ namespace CCEnvs.Pools
         {
             Guard.IsNotNull(returnAction, nameof(returnAction));
 
-            return new PooledObject<T>(value, pool!, (value, state) => returnAction.Invoke(value, state));
+            return new PooledObject<T>(value, pool!, returnAction);
         }
 
         public static bool operator ==(PooledObject left, PooledObject right)

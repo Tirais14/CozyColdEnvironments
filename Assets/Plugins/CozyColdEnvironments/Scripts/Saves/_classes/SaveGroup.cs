@@ -555,6 +555,8 @@ namespace CCEnvs.Saves
         }
 
 #if UNITY_2017_1_OR_NEWER
+        //TODO: Refactor inter-build communication or not,
+        //i dont know what to do with this reflection :<
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string ResolveGameObjectKey(UnityEngine.GameObject go)
         {

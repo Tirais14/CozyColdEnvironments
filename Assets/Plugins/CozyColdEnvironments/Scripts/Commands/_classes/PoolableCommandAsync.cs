@@ -9,7 +9,10 @@ namespace CCEnvs.Patterns.Commands
     {
         private ReactiveCommand<IPoolable>? onDespawnCmd;
 
-        protected Maybe<PooledObject> poolHandle => this.To<IPoolable>().PoolHandle;
+        protected Maybe<PooledObject> poolHandle {
+            get => this.To<IPoolable>().PoolHandle;
+            set => this.To<IPoolable>().PoolHandle = default;
+        }
 
         Maybe<PooledObject> IPoolable.PoolHandle { get; set; }
 
@@ -32,13 +35,11 @@ namespace CCEnvs.Patterns.Commands
 
         public bool ReturnToPool()
         {
-            return poolHandle.Map(
-                static handle =>
-                {
-                    handle.Dispose();
-                    return true;
-                })
-                .GetValue();
+            if (!poolHandle.TryGetValue(out var handle))
+                return false;
+
+            handle.Dispose();
+            return true;
         }
 
         public void Utilize()
@@ -52,6 +53,13 @@ namespace CCEnvs.Patterns.Commands
             onDespawnCmd ??= new ReactiveCommand<IPoolable>();
 
             return onDespawnCmd;
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+
+            poolHandle = default;
         }
 
         private bool disposed;
