@@ -64,6 +64,10 @@ Within the game's entry point, you must invoke CC.Install(). If necessary, pass 
 - Reduce the number of mandatory project dependencies.
 - Refactor the framework into a modular architecture.
 
+# Games
+## [SlowMoCrusher!](https://tirais14.itch.io/slowmocrusher)
+<img width="1600" height="900" alt="GameCover" src="https://github.com/user-attachments/assets/2218be4f-0d53-4e16-8364-c3e82d336e9a" />
+
 # GameObjectQuery
 >[!NOTE]
 >Currently incurs memory allocations. Plans are in place to minimize these allocations to negligible levels in the near future.
