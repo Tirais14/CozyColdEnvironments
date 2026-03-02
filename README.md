@@ -49,8 +49,8 @@ Within the game's entry point, you must invoke CC.Install(). If necessary, pass 
 - [ObservableCollections.R3](https://www.nuget.org/packages/ObservableCollections.R3)
 - [SuperLinq](https://github.com/viceroypenguin/SuperLinq)
 - [Newtonsoft.Json](https://www.newtonsoft.com/json)
-- [Humanizer](https://github.com/Humanizr/Humanizer) (Core)
-- [CommunityToolkit](github.com/CommunityToolkit/dotnet) (Common and Diagnsotics modules)
+- [Humanizer](https://github.com/Humanizr/Humanizer) (Core EN)
+- [CommunityToolkit](github.com/CommunityToolkit/dotnet) (Common and Diagnostics modules)
 
 # Roadmap
 - Finalize the new save system.
@@ -553,7 +553,7 @@ namespace Game.States
 > - Keep Tick()/FixedTick() lightweight – they run every frame. Offload heavy work to coroutines or async methods.
 
 # ObjectPool
-A high-performance, thread-safe object pooling framework with reactive lifecycle observation, Unity integration, and support for both synchronous and asynchronous object creation.
+A high-performance, thread-safe object pooling system with reactive lifecycle observation, Unity integration, and support for both synchronous and asynchronous object creation.
 
 ## Features
 - Thread-safe acquisition/return - Uses ConcurrentStack<T> for idle objects and ConcurrentDictionary<T, PooledObject<T>> for active tracking. Safe to call Get()/Return() from multiple threads
