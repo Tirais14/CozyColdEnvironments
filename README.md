@@ -9,6 +9,8 @@
 
 - [Planned](#planned)
 
+- [Games](#games)
+
 - [GameObjectQuery](#gameobjectquery)
 
 - [SavingSystem](#savingsystem)
