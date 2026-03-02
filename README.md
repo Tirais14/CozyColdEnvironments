@@ -1,20 +1,142 @@
-
 # Navigation
-[SavingSystem](#savingsystem)
+- [About](#about)
 
-[CommandScheduler](#commandscheduler)
+- [Setup](#setup)
 
-[Command](#command)
+- [Dependecies](#dependecies)
 
-[Leaderboard](#leaderboard)
+- [Roadmap](#roadmap)
 
-[StateMachine](#statemachine)
+- [Planned](#planned)
 
-[ObjectPool](#objectpool)
+- [SavingSystem](#savingsystem)
 
-[Factory](#factory)
+- [CommandScheduler](#commandscheduler)
 
-[NameFactory](#namefactory)
+- [Command](#command)
+
+- [Leaderboard](#leaderboard)
+  - [LeaderboardViewModel](#leaderboardviewmodel)
+  - [LeaderboardEntryView](#leaderboardentryview)
+
+- [StateMachine](#statemachine)
+
+- [ObjectPool](#objectpool)
+
+- [Factory](#factory)
+
+- [NameFactory](#namefactory)
+
+# About
+>[!IMPORTANT]
+>Under active development
+
+CozyColdEnvironments is a game development framework that enables developers to focus more on the game itself rather than on the design of discrete, commonly recurring game components
+
+# Setup
+Upon installation of all dependencies, the project should compile successfully. Following a successful build, the menu items illustrated in the screenshot will become available. Select Add Define Symbols to register all installed plugins; this action automatically integrates them into the codebase based on their definitions.
+Additionally, the Debug: Enable option adds the CC_DEBUG_ENABLED preprocessor symbol. This activates logging mechanisms and supplementary diagnostic utilities designed to facilitate debugging. It is imperative to disable this mode prior to release; failure to do so may result in significant per-frame memory allocations and severe performance degradation.
+
+Within the game's entry point, you must invoke CC.Install(). If necessary, pass the names of specific assemblies to which attribute-based functionalities (such as OnInstallExecuteAttribute or SerializationDescriptorAttribute) should be applied. The correct operation of the entire project relies on CC.Install(). This method must be executed on the main thread as early as possible, ideally within the first user-defined script.
+
+<img width="335" height="92" alt="изображение" src="https://github.com/user-attachments/assets/78cf7c28-cc06-433c-b312-fbcf28166c70" />
+
+# Dependecies
+- [UniTask](https://github.com/Cysharp/UniTask) [Optional]
+- [R3](https://github.com/Cysharp/R3)
+- [ZLinq](https://github.com/Cysharp/ZLinq) [Optional] 
+- [ObservableCollections](https://github.com/Cysharp/ObservableCollections)
+- [ObservableCollections.R3](https://www.nuget.org/packages/ObservableCollections.R3)
+- [SuperLinq](https://github.com/viceroypenguin/SuperLinq)
+- [Newtonsoft.Json](https://www.newtonsoft.com/json)
+- [Humanizer](https://github.com/Humanizr/Humanizer) (Core)
+- [CommunityToolkit](github.com/CommunityToolkit/dotnet) (Common and Diagnsotics modules)
+
+# Roadmap
+- Finalize the new save system.
+- Remove obsolete or redundant code segments
+- Optimize the GameObjectQuery
+
+# Planned
+- Integrate support for various platforms, such as Steam (currently, only partial support for Yandex.Games is implemented).
+- Reduce the number of mandatory project dependencies.
+- Refactor the framework into a modular architecture.
+
+# GameObjectQuery
+>[!NOTE]
+>Currently incurs memory allocations. Plans are in place to minimize these allocations to negligible levels in the near future.
+
+A type-safe, fluent API for querying Unity GameObjects and Components with powerful filtering, scope control, and MVVM-aware helpers.
+
+## Search Scope
+```C#
+gameObjectQuery.FromSelf()           // Search target itself (default)
+gameObjectQuery.FromChildrens()      // Search descendants (recursive by default)
+gameObjectQuery.FromParents()        // Search up the hierarchy
+gameObjectQuery.NotRecursive()       // Limit to direct children/parents only
+gameObjectQuery.ExcludeSelf()        // Don't include the target in results
+```
+
+## Filters
+```C#
+gameObjectQuery.WithName("Player")                    // Partial match by default
+gameObjectQuery.WithName("Player", byFullName: true)  // Exact name match
+gameObjectQuery.WithName("player", ignoreCase: true)  // Case-insensitive
+gameObjectQuery.WithTag("Enemy")                      // Unity tag filter
+gameObjectQuery.WithLayerMask(LayerMask.NameToLayer("UI"))
+gameObjectQuery.HasComponent<Health>()                // Must have this component
+gameObjectQuery.DepthLimiter<RootMarker>()            // Stop search at this component type
+```
+
+## Special Queries
+```C#
+// Get children/parents directly
+var childs = gameObject.Q().ChildrenGameObjects();
+var parents = gameObject.Q().ParentGameObjects();
+
+// Get root with RootMarker support
+var root = gameObject.Q().RootTransform();
+
+// Scene-wide search
+var allManagers = GameObjectQuery.Scene
+    .HasComponent<GameManager>()
+    .Components<GameManager>();
+```
+
+## Exmaples
+```C#
+private void Foo(GameObject go)
+{
+    go.Q()
+        .FromChildrens()
+        .ExcludeSelf()
+        .IncludeInactive()
+        .WithTag("items")
+        .WithName("whisky", ignoreCase: true)
+        .Component<IItem>()
+        .Lax()
+        .IfSome(x => x.Drink());
+}
+```
+```C#
+private void Foo(GameObject go)
+{
+    var transforms = go.Q()
+        .FromChildrens()
+        .IncludeInactive()
+        .ExcludeSelf()
+        .DepthLimiter<IShowable>()
+        .Components<RectTransform>();
+
+    //Locates all RectTransform components within each branch
+    //of the hierarchy, terminating the search on branch upon encountering
+    //an IShowable interface.
+
+    //This mechanism is particularly useful in scenarios where
+    //each IShowable instance requires exclusive control over
+    //its descendant RectTransform elements.
+}
+```
 
 # SavingSystem
 >[!WARNING]
@@ -279,26 +401,6 @@ await Command.Builder.WithName(cmdName)
 
 A reactive, MVVM-based leaderboard system for Unity with automatic sorting, position tracking, multi-score records, and UI synchronization via R3 observables and ObservableCollections
 
-## Using
-### Leaderboard View Setup
-<img width="399" height="147" alt="изображение" src="https://github.com/user-attachments/assets/7be0259a-61ff-4c28-9f6a-af036d6e6dbc" />
-
-Entry Prefab - It is the main prefab which must contain LeaderboardEntryView
-Special Entry Prefab - If null the Entry Prefab will used. Can contain other graphics to distinguish it from the common entry prefab
-
-### Leaderboard View Entry Setup
-<img width="824" height="378" alt="изображение" src="https://github.com/user-attachments/assets/a821e355-cbda-419a-8d78-58b97220cbb1" />
-
-### LeaderboardEntryView
-The LeaderboardEntryView component provides Unity Inspector bindings to connect UI elements with leaderboard entry data. Configure these fields in the Inspector to wire up your UI prefab
-
-Serialized Fields
-- Score Record Views - A key-value collection that maps score record names to their UI text components.
-  - Key (string): The name of the score record as defined in LeaderboardEntry.ScoreRecords (e.g., "kills", "deaths", "time")
-  - Value (TMP_Text): The TextMeshPro component that displays the record's value
-
-Profile Icon View - Image component which draws the icon
-
 ## Features
 - Reactive data flow - All state changes (Score, Position, ScoreRecords) propagate via R3 Observable<T>, enabling zero-boilerplate UI updates
 - Automatic sorting & position tracking - Entries are sorted on score change; EntryPositions dictionary updates 1-based ranks automatically
@@ -308,6 +410,55 @@ Profile Icon View - Image component which draws the icon
 - Frame-throttled updates - Sorting and UI reordering use ThrottleLastFrame(1) and UniTask.WaitForEndOfFrame to batch changes and avoid per-frame allocations
 - Memory-safe disposal - All subscriptions, commands, and Unity objects are tracked via CancellationTokenSource and List<IDisposable>, preventing leaks on scene unload
 - Customizable sorting – Provide any IComparer<ILeaderboardEntry> for complex ranking logic (e.g., K/D ratio, time-based decay)
+
+### LeaderboardViewModel 
+Configure the leaderboard UI behavior and visual elements in the Inspector.
+
+<img width="407" height="147" alt="изображение" src="https://github.com/user-attachments/assets/f884783a-975b-49b7-ac60-ee31bee43a1a" />
+
+- Entry Prefab - The prefab to instantiate for regular leaderboard entries. Must contain a LeaderboardEntryView component
+- [Optional] Special Entry Prefab - The prefab to instantiate for the special/highlighted entry (e.g., current player's rank). Must contain a LeaderboardEntryView
+component
+- Entry Views Root - The parent transform where entry prefabs will be instantiated as children
+- Sorting Enabled - Controls whether entries are automatically sorted by score and reordered in the UI
+- Max Visible Count - Maximum number of entries to display simultaneously. Entries beyond this limit are hidden (not destroyed).
+  
+### LeaderboardEntryView
+The LeaderboardEntryView component provides Unity Inspector bindings to connect UI elements with leaderboard entry data. Configure these fields in the Inspector to wire up your UI prefab
+
+<img width="824" height="378" alt="изображение" src="https://github.com/user-attachments/assets/a821e355-cbda-419a-8d78-58b97220cbb1" />
+
+Serialized Fields
+- Score Record Views - A key-value collection that maps score record names to their UI text components.
+  - Key (string): The name of the score record as defined in LeaderboardEntry.ScoreRecords (e.g., "kills", "deaths", "time")
+  - Value (TMP_Text): The TextMeshPro component that displays the record's value
+
+- [Optional] Profile Icon View - Unity UI Image component that displays the profile's avatar/icon sprite
+- [Optional] Profile Name View - TextMeshPro component that displays the profile's name from IUserProfile.Name.
+- [Optional] Position View - TextMeshPro component that displays the entry's current rank/position in the leaderboard
+
+## Example
+```C#
+private void Foo(LeaderboardView lboardView)
+{
+    //UserProfile is IDisposable. Already binded to view. Do not call Dispose manually
+    var lboard = lboardView.GetModel<Leaderboard>();
+
+    //UserProfile is IDisposable. In real code you must resolve where it is should dispose
+    using var playerProfile = new UserProfile("Tirais", "448d3cf7-8133-4326-b7e5-cac543082ebe");
+
+    //Now the special entry will be display a player profile in the SpecialEntry Property
+    lboard.SpecialProfile = playerProfile;
+
+    //UserProfile is IDisposable. In real code you must resolve where it is should dispose
+    using var entry = new LeaderboardEntry(playerProfile);
+
+    //Thus names will be used in the inspectors LeaderboardEntryView ScoreRecordViews field
+    entry.AddScoreRecord("kills").AddScoreRecord("deaths");
+
+    entry.AddScore("kills", 1);
+}
+```
 
 >[!IMPORTANT]
 > - Duplicate record names – AddScoreRecord() throws ArgumentException if name already exists
