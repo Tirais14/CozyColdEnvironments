@@ -1,10 +1,10 @@
-using Cysharp.Text;
+using CCEnvs.Pools;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-#nullable enable
 
+#nullable enable
 namespace CCEnvs.Unity
 {
     public static class TransformHelper
@@ -58,10 +58,12 @@ namespace CCEnvs.Unity
 
             var parents = Loops.BreadthFirstSearch(source, (x) => x.parent);
 
-            using var pathBuilder = ZString.CreateStringBuilder();
+            using var pathBuilder = StringBuilderPool.Shared.Get();
 
-            pathBuilder.Grow(parents.Count);
-            pathBuilder.AppendJoin("/", parents.Reverse().Select(x => x.name));
+            if (pathBuilder.Value.Capacity < parents.Count)
+                pathBuilder.Value.Capacity = parents.Count;
+
+            pathBuilder.Value.AppendJoin("/", parents.Reverse().Select(x => x.name));
 
             return new HierarchyPath(pathBuilder.ToString(), source.GetSiblingIndex());
         }

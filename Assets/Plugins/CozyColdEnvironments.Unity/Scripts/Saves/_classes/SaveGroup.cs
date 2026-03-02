@@ -1,7 +1,9 @@
 ﻿using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
+using CCEnvs.Threading;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
@@ -21,19 +23,23 @@ namespace CCEnvs.Unity.Saves
 {
     [Serializable]
     [SerializationDescriptor("SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
-    public sealed class SaveGroup
+    public class SaveGroup
         :
         IEquatable<SaveGroup?>,
-        IEnumerable<KeyValuePair<string, object>>
+        IEnumerable<KeyValuePair<string, object>>,
+        IDisposable
     {
         [JsonIgnore]
-        private readonly ObservableDictionary<string, object> observableObjects = new();
+        protected readonly ObservableDictionary<string, object> observableObjects = new();
 
         [JsonIgnore]
-        private int? hashCode;
+        protected int? hashCode;
 
         [JsonProperty("saveData")]
-        private SaveData? _saveData;
+        protected SaveData? _saveData;
+
+        [JsonIgnore]
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         [JsonIgnore]
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
@@ -43,6 +49,9 @@ namespace CCEnvs.Unity.Saves
 
         [JsonProperty("catalog")]
         public SaveCatalog Catalog { get; init; }
+
+        [JsonProperty("incrementalWriting")]
+        public bool IncrementalWriting { get; set; }
 
         [JsonIgnore]
         public SaveData SaveData {
@@ -55,7 +64,15 @@ namespace CCEnvs.Unity.Saves
         }
 
         [JsonIgnore]
-        public bool IsSaveLoadedFromFile { get; private set; }
+        public bool IsDataLoadedFromFile { get; private set; }
+
+        [JsonIgnore]
+        protected CancellationToken DisposeCancellationToken {
+            get => disposeCancellationTokenSource.Token;
+        }
+
+        [JsonIgnore]
+        public object SyncRoot { get; } = new();
 
         public SaveGroup(
             SaveCatalog catalog,
@@ -66,6 +83,37 @@ namespace CCEnvs.Unity.Saves
 
             Name = name ?? string.Empty;
             Catalog = catalog;
+        }
+
+        public static SaveGroupIncremental ConvertToIncremental(SaveGroup group)
+        {
+            Guard.IsNotNull(group, nameof(group));
+
+            if (group is SaveGroupIncremental incGroup)
+                return incGroup;
+
+            incGroup = new SaveGroupIncremental(group.Catalog, group.Name);
+
+            foreach (var (key, obj) in group.observableObjects)
+                incGroup.RegisterObject(obj, key);
+
+            group.Dispose();
+
+            return incGroup;
+        }
+
+        public static SaveGroup ConvertToNonIncremental(SaveGroupIncremental incGroup)
+        {
+            Guard.IsNotNull(incGroup, nameof(incGroup));
+
+            var group = new SaveGroup(incGroup.Catalog, incGroup.Name);
+
+            foreach (var (key, obj) in incGroup.observableObjects)
+                incGroup.RegisterObject(obj, key);
+
+            incGroup.Dispose();
+
+            return group;
         }
 
         public static bool operator ==(SaveGroup? left, SaveGroup? right)
@@ -102,6 +150,8 @@ namespace CCEnvs.Unity.Saves
 
         public bool UnregisterObject(string key)
         {
+            ThrowIfDisposed();
+
             Guard.IsNotNull(key, nameof(key));
 
             return observableObjects.Remove(key);
@@ -109,6 +159,8 @@ namespace CCEnvs.Unity.Saves
 
         public bool UnregisterObject(object obj)
         {
+            ThrowIfDisposed();
+
             if (!TryResolveKey(obj, out var key))
                 key = string.Empty;
 
@@ -136,6 +188,8 @@ namespace CCEnvs.Unity.Saves
             [NotNullWhen(true)] out string? key
             )
         {
+            ThrowIfDisposed();
+
             CC.Guard.IsNotNull(obj, nameof(obj));
 
             key = obj switch
@@ -152,15 +206,19 @@ namespace CCEnvs.Unity.Saves
             WriteSaveDataMode writeSaveDataMode = WriteSaveDataMode.Override
             )
         {
-            using var saveUnits = CreateSaveUnitsPooled();
+            ThrowIfDisposed();
 
-            SaveData.Write(saveUnits, writeSaveDataMode);
+            using var saveUnits = CreateAndProcessSaveEntriesPooled();
+
+            SaveData.Write(saveUnits.Value, writeSaveDataMode);
 
             return this;
         }
 
         public string GetFullPath()
         {
+            ThrowIfDisposed();
+
             using var sb = StringBuilderPool.Shared.Get();
 
             using var pathParts = PooledArray<string>.FromRange(
@@ -177,6 +235,8 @@ namespace CCEnvs.Unity.Saves
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SaveGroup Clear()
         {
+            ThrowIfDisposed();
+
             observableObjects.Clear();
 
             return this;
@@ -187,6 +247,8 @@ namespace CCEnvs.Unity.Saves
             CancellationToken cancellationToken = default
             )
         {
+            ThrowIfDisposed();
+
             await UniTaskHelper.TrySwitchToThreadPool();
 
             string cmdName = NameFactory.CreateFromCaller(
@@ -227,7 +289,9 @@ namespace CCEnvs.Unity.Saves
             CancellationToken cancellationToken = default
             )
         {
-            if (!force && IsSaveLoadedFromFile)
+            ThrowIfDisposed();
+
+            if (!force && IsDataLoadedFromFile)
                 return;
 
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -267,7 +331,9 @@ namespace CCEnvs.Unity.Saves
             CancellationToken cancellationToken = default
             )
         {
-            if (forceGet || IsSaveLoadedFromFile)
+            ThrowIfDisposed();
+
+            if (forceGet || IsDataLoadedFromFile)
                 return SaveData;
 
             await LoadSaveDataFromFileAsync(
@@ -309,6 +375,99 @@ namespace CCEnvs.Unity.Saves
             return hashCode.Value;
         }
 
+        private bool disposed;
+        public void Dispose() => Dispose(true);
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                disposeCancellationTokenSource.CancelAndDispose();
+                observableObjects.Clear();
+            }
+
+            disposed = true;
+        }
+
+        protected virtual void OnSaveDataWrite(
+            ArraySegment<SaveEntry> saveEntries,
+            WriteSaveDataMode writeMode
+            )
+        {
+            SaveData.Write(saveEntries, writeMode);
+        }
+
+        protected virtual PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
+        {
+            var saveUnits = ListPool<SaveEntry>.Shared.Get();
+
+            saveUnits.Value.TryIncreaseCapacity(observableObjects.Count);
+
+            lock (SyncRoot)
+            {
+                foreach (var (key, obj) in observableObjects)
+                {
+                    if (TryCreateAndProcessSaveEntry(key, obj, out var saveEntry))
+                        continue;
+
+                    saveUnits.Value.Add(saveEntry);
+                }
+            }
+
+            return saveUnits;
+        }
+
+        protected bool TryCreateAndProcessSaveEntry(
+            string key,
+            object obj,
+            out SaveEntry saveEntry
+            )
+        {
+            ISnapshot snapshot;
+
+            SnapshotFactory snapshotFactory;
+
+            if (SaveData.SaveEntries.TryGetValue(key, out saveEntry))
+            {
+                snapshot = saveEntry.Snapshot;
+                snapshot = snapshot.CaptureFrom(obj);
+            }
+            else
+            {
+                snapshotFactory = SaveSystem.ResolveConverter(obj.GetType());
+
+                try
+                {
+                    snapshot = snapshotFactory(obj);
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                    return false;
+                }
+
+                if (snapshot.IsNull())
+                {
+                    this.PrintError($"Snapshot factory of type: {obj.GetType()} returned null");
+                    return false;
+                }
+            }
+
+            saveEntry = new SaveEntry(key, snapshot);
+
+            return true;
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (!disposed)
+                return;
+
+            throw new ObjectDisposedException(GetType().Name);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string ResolveGameObjectKey(GameObject go)
         {
@@ -319,39 +478,6 @@ namespace CCEnvs.Unity.Saves
         private string ResolveComponentKey(Component cmp)
         {
             return cmp.GetExtraInfo().ToString();
-        }
-
-        private ISnapshot CaptureObjectSnapshot(string key)
-        {
-            var obj = observableObjects[key];
-
-            var objType = obj.GetType();
-
-            var converter = SaveSystem.ResolveConverter(objType);
-
-            return converter(obj, null);
-        }
-
-        private PooledArray<SaveEntry> CreateSaveUnitsPooled()
-        {
-            var saveUnits = new PooledArray<SaveEntry>(observableObjects.Count);
-
-            SaveEntry saveUnit;
-
-            ISnapshot snapshot;
-
-            int i = 0;
-
-            foreach (var key in observableObjects.To<IDictionary<string, object>>().Keys)
-            {
-                snapshot = CaptureObjectSnapshot(key);
-
-                saveUnit = new SaveEntry(key, snapshot);
-
-                saveUnits[i++] = saveUnit;
-            }
-
-            return saveUnits;
         }
 
         private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
@@ -406,14 +532,14 @@ namespace CCEnvs.Unity.Saves
                 {
                     SaveData.Write(Array.Empty<SaveEntry>(), writeSaveDataMode);
 
-                    IsSaveLoadedFromFile = true;
+                    IsDataLoadedFromFile = true;
 
                     return;
                 }
 
                 SaveData.Write(loadedSaveData.SaveEntries.Values, writeSaveDataMode);
 
-                IsSaveLoadedFromFile = true;
+                IsDataLoadedFromFile = true;
             }
             catch (Exception ex)
             {

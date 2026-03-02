@@ -119,5 +119,13 @@ namespace CCEnvs.Collections
 
             return true;
         }
+
+        public static List<T> TryIncreaseCapacity<T>(this List<T> source, int newCapacity)
+        {
+            if (source.Capacity < newCapacity)
+                source.Capacity = newCapacity;
+
+            return source;
+        }
     }
 }

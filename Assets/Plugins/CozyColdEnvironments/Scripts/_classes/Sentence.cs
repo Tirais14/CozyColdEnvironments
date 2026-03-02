@@ -1,6 +1,6 @@
 using CCEnvs.Collections;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
-using Cysharp.Text;
 using System;
 using System.Collections.Generic;
 
@@ -135,7 +135,7 @@ namespace CCEnvs
             if (parts.IsNullOrEmpty())
                 return string.Empty;
 
-            using var sb = ZString.CreateStringBuilder();
+            using var sb = StringBuilderPool.Shared.Get();
             string? value;
             bool isContinuation;
             bool isLast;
@@ -152,9 +152,9 @@ namespace CCEnvs
                         if (value == CONTINUATION_SIGN)
                         {
                             if (isLast)
-                                sb.Append('.');
+                                sb.Value.Append('.');
                             else
-                                sb.Append(' ');
+                                sb.Value.Append(' ');
                         }
                         else
                         {
@@ -163,13 +163,13 @@ namespace CCEnvs
 
                             if (isContinuation)
                             {
-                                sb.Append(value.Delete(CONTINUATION_SIGN));
-                                sb.Append(' ');
+                                sb.Value.Append(value.Delete(CONTINUATION_SIGN));
+                                sb.Value.Append(' ');
                             }
                             else
                             {
-                                sb.Append(value);
-                                sb.Append(". ");
+                                sb.Value.Append(value);
+                                sb.Value.Append(". ");
                             }
                         }
                     }

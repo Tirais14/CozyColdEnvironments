@@ -28,6 +28,9 @@ namespace CCEnvs.Unity.Saves
         [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
 
+        [JsonProperty("incrementallyGroups")]
+        private ObservableDictionary<string, SaveGroupIncremental> incrementalGroups = new();
+
         [JsonIgnore]
         private int? hashCode;
 
@@ -73,6 +76,12 @@ namespace CCEnvs.Unity.Saves
         {
             Guard.IsNotNull(groupName, nameof(groupName));
 
+            if (incrementalGroups.Remove(groupName, out var incGroup))
+            {
+                removed = incGroup;
+                return true;
+            }
+
             return groups.Remove(groupName, out removed);
         }
 
@@ -80,7 +89,9 @@ namespace CCEnvs.Unity.Saves
         {
             Guard.IsNotNull(groupName, nameof(groupName));
 
-            return groups.Remove(groupName);
+            return incrementalGroups.Remove(groupName)
+                   &&
+                   groups.Remove(groupName);
         }
 
         public SaveGroup GetOrCreateGroup(string groupName)
@@ -89,6 +100,9 @@ namespace CCEnvs.Unity.Saves
 
             if (!groups.TryGetValue(groupName, out var group))
             {
+                if (incrementalGroups.ContainsKey(groupName))
+                    throw new InvalidOperationException($"Group: {groupName} already exists and it's incremental");
+
                 group = new SaveGroup(this, groupName);
 
                 groups.Add(groupName, group);
@@ -97,9 +111,89 @@ namespace CCEnvs.Unity.Saves
             return group;
         }
 
+        public SaveGroupIncremental GetOrCreateIncrementalGroup(string groupName)
+        {
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            if (!incrementalGroups.TryGetValue(groupName, out var group))
+            {
+                if (groups.ContainsKey(groupName))
+                    throw new InvalidOperationException($"Group: {groupName} already exists and it's not incremental");
+
+                group = new SaveGroupIncremental(this, groupName);
+
+                incrementalGroups.Add(groupName, group);
+            }
+
+            return group;
+        }
+
+        public bool ChangeGroupTypeTo(string groupName, bool incremental)
+        {
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            bool isGroupIncremental = incrementalGroups.Remove(groupName, out var incGroup);
+            bool isBasicGroup = groups.Remove(groupName, out var group);
+            bool success = false;
+
+            try
+            {
+                if (isGroupIncremental && !incremental)
+                {
+                    group = SaveGroup.ConvertToNonIncremental(incGroup);
+                    success = true;
+                }
+                else if (isBasicGroup && incremental)
+                {
+                    incGroup = SaveGroup.ConvertToIncremental(group);
+                    success = true;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+
+                if (isGroupIncremental)
+                    incrementalGroups.Add(groupName, incGroup);
+                else if (isBasicGroup)
+                    groups.Add(groupName, group);
+            }
+
+            return success;
+        }
+
+        public SaveGroup GetOrCreateGroupGeneric(
+            string groupName,
+            bool incremental
+            )
+        {
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            if (incremental)
+            {
+                if (incrementalGroups.TryGetValue(groupName, out var incGroup))
+                    return incGroup;
+
+                if (ChangeGroupTypeTo(groupName, incremental))
+                    return incrementalGroups[groupName];
+
+                return GetOrCreateIncrementalGroup(groupName);
+            }
+
+            if (groups.TryGetValue(groupName, out var group))
+                return group;
+
+            if (ChangeGroupTypeTo(groupName, incremental))
+                return groups[groupName];
+
+            return GetOrCreateIncrementalGroup(groupName);
+        }
+
         public SaveCatalog Clear()
         {
             groups.Clear();
+            incrementalGroups.Clear();
 
             return this;
         }
