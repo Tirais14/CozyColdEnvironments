@@ -1,4 +1,5 @@
-﻿using CCEnvs.Threading.Tasks;
+﻿using CCEnvs.Diagnostics;
+using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using System;
@@ -30,6 +31,17 @@ namespace CCEnvs.Saves
 
             try
             {
+                if (CCDebug.Instance.IsEnabled)
+                    typeof(SaveWrite).PrintLog("Writing started");
+
+                if (!file.Directory.Exists)
+                {
+                    if (CCDebug.Instance.IsEnabled)
+                        typeof(SaveWrite).PrintLog($"Directory created: {file.Directory.FullName}");
+
+                    file.Directory.Create();
+                }
+
                 await SaveSystem.IOSemaphore.WaitAsync(cancellationToken);
 
                 if (backupEnabled)
@@ -71,13 +83,28 @@ namespace CCEnvs.Saves
             TryDeleteFile(file);
 
             tempFile.MoveTo(file.FullName);
+
+            if (CCDebug.Instance.IsEnabled)
+                typeof(SaveWrite).PrintLog($"Writed to file: {file.FullName}");
         }
 
         private static void TryCompressFile(FileStream fileStream)
         {
-            using var gZipStream = new GZipStream(fileStream, CompressionLevel.Optimal);
+            if (CCDebug.Instance.IsEnabled)
+                typeof(SaveWrite).PrintLog($"Compression started");
 
-            fileStream.Position = 0;
+            try
+            {
+                using var gZipStream = new GZipStream(fileStream, CompressionLevel.Optimal);
+            }
+            catch (Exception ex)
+            {
+                typeof(SaveWrite).PrintException(ex);
+            }
+            finally
+            {
+                fileStream.Position = 0;
+            }
         }
 
         private static FileInfo CreateTempFile(FileInfo fileInfo)
@@ -85,7 +112,15 @@ namespace CCEnvs.Saves
             var path = Path.Combine(fileInfo.DirectoryName, fileInfo.Name + ".temp");
 
             if (File.Exists(path))
+            {
+                if (CCDebug.Instance.IsEnabled)
+                    typeof(SaveWrite).PrintLog($"Previous temp file deleted: {path}");
+
                 File.Delete(path);
+            }
+
+            if (CCDebug.Instance.IsEnabled)
+                typeof(SaveWrite).PrintLog($"Temp file created: {fileInfo.FullName}");
 
             return fileInfo.CopyTo(path);
         }
@@ -98,6 +133,9 @@ namespace CCEnvs.Saves
             {
                 return;
             }
+
+            if (CCDebug.Instance.IsEnabled)
+                typeof(SaveWrite).PrintLog($"Deleting file: {file.FullName}");
 
             try
             {
@@ -116,6 +154,9 @@ namespace CCEnvs.Saves
                 var backupFile = new FileInfo(Path.ChangeExtension(file.FullName, "bak"));
 
                 TryDeleteFile(backupFile);
+
+                if (CCDebug.Instance.IsEnabled)
+                    typeof(SaveWrite).PrintLog($"Backup created: {backupFile.FullName}");
 
                 file.CopyTo(backupFile.FullName);
             }

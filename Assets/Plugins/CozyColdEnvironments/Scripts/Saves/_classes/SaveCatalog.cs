@@ -18,7 +18,7 @@ using System.Xml.Linq;
 #pragma warning disable IDE0044
 namespace CCEnvs.Saves
 {
-    [Serializable]
+    [Serializable, JsonObject]
     [SerializationDescriptor("SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
     public sealed class SaveCatalog
         :
@@ -142,11 +142,15 @@ namespace CCEnvs.Saves
                 {
                     group = SaveGroup.ConvertToNonIncremental(incGroup);
                     success = true;
+
+                    groups[groupName] = group;
                 }
                 else if (isBasicGroup && incremental)
                 {
                     incGroup = SaveGroup.ConvertToIncremental(group);
                     success = true;
+
+                    incrementalGroups[groupName] = incGroup;
                 }
 
             }

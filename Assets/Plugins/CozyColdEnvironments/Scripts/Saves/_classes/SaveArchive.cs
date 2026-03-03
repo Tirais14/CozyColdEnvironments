@@ -17,13 +17,15 @@ using System.Threading;
 #pragma warning disable IDE0044
 namespace CCEnvs.Saves
 {
-    [Serializable]
+    [Serializable, JsonObject]
     [SerializationDescriptor("SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
     public sealed class SaveArchive
         :
         IEquatable<SaveArchive>,
         IEnumerable<SaveCatalog>
     {
+        public const string DEFAULT_PATH = "Default";
+
         [JsonProperty("catalogs")]
         private ObservableDictionary<string, SaveCatalog> catalogs = new();
 
@@ -38,7 +40,7 @@ namespace CCEnvs.Saves
 
         public SaveArchive(string? path = null)
         {
-            Path = path ?? string.Empty;
+            Path = path ?? DEFAULT_PATH;
         }
 
         public static bool operator ==(SaveArchive? left, SaveArchive? right)
@@ -64,9 +66,10 @@ namespace CCEnvs.Saves
             return catalogs.Remove(catalogPath, out removed);
         }
 
-        public SaveCatalog GetOrCreateCatalog(string path)
+        public SaveCatalog GetOrCreateCatalog(string? path = null)
         {
-            Guard.IsNotNull(path, nameof(path));
+            if (path.IsNullOrWhiteSpace())
+                path = DEFAULT_PATH;
 
             if (!catalogs.TryGetValue(path, out var catalog))
             {

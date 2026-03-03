@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Saves;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Components.Specialized;
 using CCEnvs.Unity.Items;
@@ -7,6 +8,8 @@ using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using TMPro;
 using UnityEngine;
@@ -196,6 +199,89 @@ namespace CCEnvs.Unity
                     return new SelectableSnapshot();
                 });
         }
+
+        [OnInstallExecutable]
+        private static void InstallSaveSystem()
+        {
+            SaveSystem.RegisterType<GameObject>(
+                static (go) =>
+                {
+                    return new GameObjectSnapshot(go);
+                });
+
+            SaveSystem.RegisterType<Slider>(
+                static (slider) =>
+                {
+                    return new SliderSnapshot(slider);
+                });
+
+            SaveSystem.RegisterType<TMP_Dropdown>(
+                static (dropdown) =>
+                {
+                    return new TMP_DropdownSnapshot(dropdown);
+                });
+
+            SaveSystem.RegisterType<Toggle>(
+                static toggle =>
+                {
+                    return new ToggleSnapshot(toggle);
+                });
+
+            SaveSystem.RegisterType<Component>(
+                static cmp =>
+                {
+                    return new ComponentSnapshot(cmp);
+                });
+
+            SaveSystem.RegisterType<Behaviour>(
+                static beh =>
+                {
+                    return new BehaviourSnapshot();
+                });
+
+            SaveSystem.RegisterType<MonoBehaviour>(
+                static beh =>
+                {
+                    return new MonoBehaviourSnapshot();
+                });
+
+            SaveSystem.RegisterType<UIBehaviour>(
+                static beh =>
+                {
+                    return new UIBehaviourSnapshot();
+                });
+
+            SaveSystem.RegisterType<Selectable>(
+                static sel =>
+                {
+                    return new SelectableSnapshot();
+                });
+
+            SaveSystem.RegisterType<Rigidbody>(
+                static rb =>
+                {
+                    return new RigidBodySnapshot(rb);
+                });
+
+            SaveSystem.RegisterType<Material>(
+                static mat =>
+                {
+                    return new MaterialSnapshot(mat);
+                });
+
+            SaveSystem.RegisterType<Transform>(
+                static tr =>
+                {
+                    return new TransformSnapshot(tr);
+                });
+
+            SaveSystem.RegisterType<AudioSource>(
+                static aSource =>
+                {
+                    return new AudioSourceSnapshot(aSource);
+                });
+        }
+
         #endregion Install
 
         public static class Platform

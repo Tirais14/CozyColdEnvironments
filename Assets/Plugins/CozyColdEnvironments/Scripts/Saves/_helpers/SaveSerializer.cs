@@ -53,7 +53,7 @@ namespace CCEnvs.Saves
 
             try
             {
-                var serialized = JsonConvert.SerializeObject(saveDatas, CC.JsonSettings);
+                var serialized = JsonConvert.SerializeObject(saveDatas, CC.SerializerSettings);
 
                 return serialized;
             }

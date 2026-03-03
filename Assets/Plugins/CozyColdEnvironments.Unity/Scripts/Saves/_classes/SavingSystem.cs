@@ -239,7 +239,7 @@ namespace CCEnvs.Unity.Saves
 
                 return JsonConvert.SerializeObject(
                     saveFileData,
-                    CC.JsonSettings
+                    CC.SerializerSettings
                     );
             }
             finally
@@ -304,7 +304,7 @@ namespace CCEnvs.Unity.Saves
 
             try
             {
-                var saveData = JsonConvert.DeserializeObject<SaveFileData>(serializedData, CC.JsonSettings);
+                var saveData = JsonConvert.DeserializeObject<SaveFileData>(serializedData, CC.SerializerSettings);
 
                 await ApplySaveFileDataAsync(saveData, linkedTokenSource.Token);
 
@@ -542,7 +542,7 @@ namespace CCEnvs.Unity.Saves
 
                 string serializedsaveFileData = JsonConvert.SerializeObject(
                     mergedSaveDate,
-                    CC.JsonSettings
+                    CC.SerializerSettings
                     );
 
                 await File.WriteAllTextAsync(
@@ -586,7 +586,7 @@ namespace CCEnvs.Unity.Saves
 
                 return JsonConvert.SerializeObject(
                     mergedSaveDate,
-                    CC.JsonSettings
+                    CC.SerializerSettings
                     );
             }
             catch (Exception ex)
@@ -908,7 +908,7 @@ namespace CCEnvs.Unity.Saves
                 if (serialized.IsNullOrWhiteSpace())
                     return default;
 
-                var fileData = JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.JsonSettings);
+                var fileData = JsonConvert.DeserializeObject<SaveFileData>(serialized, CC.SerializerSettings);
 
                 return (fileData, serialized);
             }

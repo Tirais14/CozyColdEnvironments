@@ -1,5 +1,6 @@
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
@@ -11,7 +12,7 @@ using System.Collections.Generic;
 #pragma warning disable IDE0044
 namespace CCEnvs.Saves
 {
-    [Serializable]
+    [Serializable, JsonObject]
     [SerializationDescriptor("SaveData", "{868DC038-8CB2-4C61-97DE-931D4D21212C}")]
     public sealed class SaveData
         :
@@ -38,26 +39,56 @@ namespace CCEnvs.Saves
 
         public bool TryAdd(SaveEntry saveEntry)
         {
-            return saveEntries.TryAdd(saveEntry.Key, saveEntry);
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Save entry added: {saveEntry}");
+
+            var success = saveEntries.TryAdd(saveEntry.Key, saveEntry);
+
+            if (!success && CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Save entry not added: {saveEntry}");
+
+            return success;
         }
 
         public bool Remove(string key, out SaveEntry saveEntry)
         {
             Guard.IsNotNull(key, nameof(key));
 
-            return saveEntries.Remove(key, out saveEntry);
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Removing save entry: {key}");
+
+            var success = saveEntries.Remove(key, out saveEntry);
+
+            if (success && CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Removed save entry: {saveEntry}");
+
+            return success;
         }
 
         public bool Remove(string key)
         {
             Guard.IsNotNull(key, nameof(key));
 
-            return Remove(key);
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Removing save entry: {key}");
+
+            var success = saveEntries.Remove(key);
+
+            if (success && CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Removed save entry: {key}");
+
+            return success;
         }
 
         public SaveData Clear()
         {
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Clearing...");
+
             saveEntries.Clear();
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Cleared");
 
             return this;
         }
@@ -66,11 +97,17 @@ namespace CCEnvs.Saves
         {
             CC.Guard.IsNotNull(saveEntries, nameof(saveEntries));
 
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Adding...");
+
             if (saveEntries.IsEmpty())
                 return this;
 
             foreach (var saveUnit in saveEntries)
                 this.saveEntries.TryAdd(saveUnit.Key, saveUnit);
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Added");
 
             return this;
         }
@@ -105,14 +142,17 @@ namespace CCEnvs.Saves
         {
             CC.Guard.IsNotNull(otherSaveEntries, nameof(otherSaveEntries));
 
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Merging...");
+
             if (otherSaveEntries.IsEmpty())
                 return this;
 
-            foreach (var saveUnit in otherSaveEntries)
-            {
-                if (!saveEntries.TryAdd(saveUnit.Key, saveUnit))
-                    saveEntries[saveUnit.Key] = saveUnit;
-            }
+            foreach (var saveEntry in otherSaveEntries)
+                saveEntries[saveEntry.Key] = saveEntry;
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Merged");
 
             return this;
         }
@@ -121,10 +161,16 @@ namespace CCEnvs.Saves
         {
             CC.Guard.IsNotNull(saveEntries, nameof(saveEntries));
 
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Overriding...");
+
             this.saveEntries.Clear();
 
-            foreach (var saveUnit in saveEntries)
-                this.saveEntries.Add(saveUnit.Key, saveUnit);
+            foreach (var saveEntry in saveEntries)
+                this.saveEntries[saveEntry.Key] = saveEntry;
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Overrided");
 
             return this;
         }

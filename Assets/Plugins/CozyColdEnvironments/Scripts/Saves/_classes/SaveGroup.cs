@@ -1,31 +1,30 @@
-﻿using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
-using CCEnvs.Patterns.Commands;
-using CCEnvs.Pools;
-using CCEnvs.Reflection;
-using CCEnvs.Reflection.Caching;
-using CCEnvs.Serialization;
-using CCEnvs.Snapshots;
-using CCEnvs.Threading;
-using CCEnvs.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
-using ObservableCollections;
-using R3;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Collections;
+using CCEnvs.Patterns.Commands;
+using CCEnvs.Pools;
+using CCEnvs.Serialization;
+using CCEnvs.Snapshots;
+using CCEnvs.Threading;
+using CCEnvs.Threading.Tasks;
+using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
+using Humanizer;
+using Newtonsoft.Json;
+using ObservableCollections;
+using R3;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Saves
 {
-    [Serializable]
-    [PolymorphSerializable]
+    [Serializable, JsonObject, PolymorphSerializable]
     [SerializationDescriptor("SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
     public class SaveGroup
         :
@@ -33,59 +32,6 @@ namespace CCEnvs.Saves
         IEnumerable<KeyValuePair<string, object>>,
         IDisposable
     {
-        #region UnityAssemblyReflected
-
-#if UNITY_2017_1_OR_NEWER
-        private readonly static Lazy<Type> gameObjectExtraInfoExtensionsType = new(
-            static () =>
-            {
-                return Type.GetType(
-                    "GameObjectExtraInfoExtensions, CCEnvs.Unity", 
-                    throwOnError: true
-                    );
-            });
-
-        private readonly static Lazy<MethodInfo> gameObjectExtraInfoExtensions_GetExtraInfo_GO = new(
-            static () =>
-            {
-                var extType = gameObjectExtraInfoExtensionsType.Value;
-
-                if (extType is null)
-                    throw new ArgumentException(nameof(extType));
-
-                return extType.GetMethod(
-                    "GetExtraInfo",
-                    BindingFlagsDefault.StaticPublic,
-                    binder: null,
-                    new Type[] { typeof(UnityEngine.GameObject) },
-                    new arr<ParameterModifier>()
-                    )
-                    ??
-                    throw new InvalidOperationException("Cannot find method");
-            });
-
-        private readonly static Lazy<MethodInfo> gameObjectExtraInfoExtensions_GetExtraInfo_Cmp = new(
-            static () =>
-            {
-                var extType = gameObjectExtraInfoExtensionsType.Value;
-
-                if (extType is null)
-                    throw new ArgumentException(nameof(extType));
-
-                return extType.GetMethod(
-                    "GetExtraInfo",
-                    BindingFlagsDefault.StaticPublic,
-                    binder: null,
-                    new Type[] { typeof(UnityEngine.Component) },
-                    new arr<ParameterModifier>()
-                    )
-                    ??
-                    throw new InvalidOperationException("Cannot find method");
-            });
-
-#endif //UNITY_2017_1_OR_NEWER
-        #endregion UnityAssemblyReflected
-
         [JsonIgnore]
         protected readonly ObservableDictionary<string, object> observableObjects = new();
 
@@ -155,6 +101,8 @@ namespace CCEnvs.Saves
             {
                 foreach (var (key, obj) in group.observableObjects)
                     incGroup.RegisterObject(obj, key);
+
+                incGroup.SaveData.Merge(group.SaveData.SaveEntries.Values);
             }
 
             group.Dispose();
@@ -172,6 +120,8 @@ namespace CCEnvs.Saves
             {
                 foreach (var (key, obj) in incGroup.observableObjects)
                     incGroup.RegisterObject(obj, key);
+
+                group.SaveData.Merge(incGroup.SaveData.SaveEntries.Values);
             }
 
             incGroup.Dispose();
@@ -199,27 +149,35 @@ namespace CCEnvs.Saves
             return !(left == right);
         }
 
-        /// <summary>
-        /// obj cannot be ValueType
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public SaveGroup RegisterObject(object obj, string? key = null)
+        public SaveGroup RegisterObject(
+            object obj,
+            string? key,
+            out string resolvedKey
+            )
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
 
-            if (obj.GetType().IsValueType)
-                throw new ArgumentException($"Cannot register ValueType object: {obj}", nameof(obj));
-
-            if (key is null && !TryResolveKey(obj, out key))
+            if (key is null && !SaveGroupObjectKey.TryResolve(obj, out key))
                 key = string.Empty;
+
+            resolvedKey = key;
 
             lock (SyncRoot)
                 observableObjects.Add(key, obj);
 
             return this;
+        }
+
+        public SaveGroup RegisterObject(object obj, string? key = null)
+        {
+            return RegisterObject(obj, key, out _);
+        }
+
+        public SaveGroupRegistration RegisterObjectHandled(object obj, string? key = null)
+        {
+            RegisterObject(obj, key, out var resolvedKey);
+
+            return new SaveGroupRegistration(this, resolvedKey);
         }
 
         public bool UnregisterObject(string key)
@@ -236,7 +194,7 @@ namespace CCEnvs.Saves
         {
             ThrowIfDisposed();
 
-            if (!TryResolveKey(obj, out var key))
+            if (!SaveGroupObjectKey.TryResolve(obj, out var key))
                 key = string.Empty;
 
             return UnregisterObject(key);
@@ -253,31 +211,10 @@ namespace CCEnvs.Saves
 
         public bool IsObjectRegistered(object obj)
         {
-            if (!TryResolveKey(obj, out var key))
+            if (!SaveGroupObjectKey.TryResolve(obj, out var key))
                 key = string.Empty;
 
             return IsObjectRegistered(key);
-        }
-
-        public bool TryResolveKey(
-            object obj,
-            [NotNullWhen(true)] out string? key
-            )
-        {
-            ThrowIfDisposed();
-
-            CC.Guard.IsNotNull(obj, nameof(obj));
-
-            key = obj switch
-            {
-#if UNITY_2017_1_OR_NEWER
-                UnityEngine.GameObject go => ResolveGameObjectKey(go),
-                UnityEngine.Component cmp => ResolveComponentKey(cmp),
-#endif
-                _ => null
-            };
-
-            return key is not null;
         }
 
         public SaveGroup CaptureAndWriteSaveData(
@@ -305,8 +242,12 @@ namespace CCEnvs.Saves
                 Name
                 );
 
-            sb.Value.AppendJoin('/', pathParts.Value);
-
+            foreach (var pathPart in pathParts)
+            {
+                sb.Value.Append(pathPart);
+                sb.Value.Append('/');
+            }
+            
             return sb.Value.ToString();
         }
 
@@ -327,13 +268,14 @@ namespace CCEnvs.Saves
             )
         {
             ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
 
             await UniTaskHelper.TrySwitchToThreadPool();
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(GetSaveDataFromFileAsync),
-                expirationTimeRelativeToNow: TimeSpan.Zero
+                expirationTimeRelativeToNow: 2.Minutes()
                 );
 
             var result = new ValueReference<SaveData?>();
@@ -369,6 +311,7 @@ namespace CCEnvs.Saves
             )
         {
             ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (!force && IsDataLoadedFromFile)
                 return;
@@ -378,7 +321,7 @@ namespace CCEnvs.Saves
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(LoadSaveDataFromFileAsync),
-                expirationTimeRelativeToNow: TimeSpan.Zero
+                expirationTimeRelativeToNow: 2.Minutes()
                 );
 
             await Command.Builder.WithName(cmdName)
@@ -411,6 +354,7 @@ namespace CCEnvs.Saves
             )
         {
             ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (forceGet || IsDataLoadedFromFile)
                 return SaveData;
@@ -423,6 +367,45 @@ namespace CCEnvs.Saves
                 );
 
             return SaveData;
+        }
+
+        public async UniTask WriteSaveDataToFileAsync(
+            bool compressionEnabled = true,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await UniTaskHelper.TrySwitchToThreadPool();
+
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(WriteSaveDataToFileAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
+                );
+
+            await Command.Builder.WithName(cmdName)
+                .WithState((@this: this, compressionEnabled, configureAwait))
+                .Asynchronously()
+                .WithExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await args.@this.WriteSaveDataToFileAsyncCore(
+                        args.compressionEnabled,
+                        args.configureAwait,
+                        cancellationToken
+                        );
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(SaveSystem.CommandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+
+            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -472,30 +455,22 @@ namespace CCEnvs.Saves
             disposed = true;
         }
 
-        protected virtual void OnSaveDataWrite(
-            ArraySegment<SaveEntry> saveEntries,
-            WriteSaveDataMode writeMode
-            )
-        {
-            SaveData.Write(saveEntries, writeMode);
-        }
-
+        /// <summary>
+        /// !May change SaveData snapshot states!
+        /// </summary>
         protected virtual PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
         {
             var saveUnits = ListPool<SaveEntry>.Shared.Get();
 
-            int observableObjectCount;
-
-            lock (SyncRoot)
-                observableObjectCount = observableObjects.Count;
-
-            saveUnits.Value.TryIncreaseCapacity(observableObjectCount);
-
             lock (SyncRoot)
             {
+                int observableObjectCount = observableObjects.Count;
+
+                saveUnits.Value.TryIncreaseCapacity(observableObjectCount);
+
                 foreach (var (key, obj) in observableObjects)
                 {
-                    if (TryCreateAndProcessSaveEntry(key, obj, out var saveEntry))
+                    if (!TryCreateAndProcessSaveEntry(key, obj, out var saveEntry))
                         continue;
 
                     saveUnits.Value.Add(saveEntry);
@@ -554,22 +529,6 @@ namespace CCEnvs.Saves
             throw new ObjectDisposedException(GetType().Name);
         }
 
-#if UNITY_2017_1_OR_NEWER
-        //TODO: Refactor inter-build communication or not,
-        //i dont know what to do with this reflection :<
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string ResolveGameObjectKey(UnityEngine.GameObject go)
-        {
-            return gameObjectExtraInfoExtensions_GetExtraInfo_GO.Value.Invoke(null, new object[] { go }).ToString();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string ResolveComponentKey(UnityEngine.Component cmp)
-        {
-            return gameObjectExtraInfoExtensions_GetExtraInfo_Cmp.Value.Invoke(null, new object[] { cmp }).ToString();
-        }
-#endif
-
         private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
             bool configureAwait = true,
             CancellationToken cancellationToken = default
@@ -609,6 +568,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var loadedSaveData = await GetSaveDataFromFileAsyncCore(
                 configureAwait: false,
                 cancellationToken
@@ -641,6 +602,61 @@ namespace CCEnvs.Saves
             {
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
             }
+        }
+
+        private async UniTask WriteSaveDataToFileAsyncCore(
+            bool compressionEnabeld = true,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await UniTaskHelper.TrySwitchToThreadPool();
+
+            string saveDataSerialized;
+
+            try
+            {
+                saveDataSerialized = SerializeSaveDataAsyncCore();
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+                return;
+            }
+            finally
+            {
+                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+            }
+
+            try
+            {
+                var path = GetFullPath();
+
+                await SaveWrite.ToFileAsync(
+                    path,
+                    saveDataSerialized,
+                    compressionEnabled: compressionEnabeld,
+                    configureAwait: false,
+                    cancellationToken: cancellationToken
+                    );
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+
+                return;
+            }
+            finally
+            {
+                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+            }
+        }
+
+        private string SerializeSaveDataAsyncCore()
+        {
+            return JsonConvert.SerializeObject(SaveData, CC.SerializerSettings) ?? string.Empty;
         }
     }
 }

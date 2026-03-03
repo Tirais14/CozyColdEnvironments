@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using CCEnvs.Pools;
 using UnityEngine;
 
 using Object = UnityEngine.Object;
@@ -87,9 +87,6 @@ namespace CCEnvs.Diagnostics
 
         public void PrintException(Exception exception, object? context = null)
         {
-            if (!IsPrintAllowed(context))
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.LogException(exception, context as Object);
 #else
@@ -161,18 +158,18 @@ namespace CCEnvs.Diagnostics
 
             string ConvertGenericArguments()
             {
-                var sb = new StringBuilder();
+                using var sb = StringBuilderPool.Shared.Get();
 
-                sb.Append('<');
+                sb.Value.Append('<');
 
                 IEnumerable<string> names =
                     from type in type.GetGenericArguments()
                     select GetTypeName(type) into name
                     select name;
 
-                sb.AppendJoin(", ", names);
+                sb.Value.AppendJoin(", ", names);
 
-                sb.Append('>');
+                sb.Value.Append('>');
 
                 return sb.ToString();
             }

@@ -27,7 +27,6 @@ namespace CCEnvs.Unity
             HierarchyPath = gameObject.GetHierarchyPath();
         }
 
-        [JsonConstructor]
         public GameObjectExtraInfo(string? persistenGuid, HierarchyPath hierarchyPath)
         {
             PersistenGuid = persistenGuid;
