@@ -175,6 +175,11 @@ namespace CCEnvs.Saves
             return this;
         }
 
+        public string SerializeEntries()
+        {
+            return JsonConvert.SerializeObject(saveEntries, SaveSystem.SerializerSettings) ?? string.Empty;
+        }
+
         public IEnumerator<SaveEntry> GetEnumerator()
         {
             return saveEntries.To<IDictionary<string, SaveEntry>>().Values.GetEnumerator();

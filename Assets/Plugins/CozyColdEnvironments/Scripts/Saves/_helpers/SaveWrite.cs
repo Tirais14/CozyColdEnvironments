@@ -1,38 +1,44 @@
-﻿using CCEnvs.Diagnostics;
-using CCEnvs.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using CCEnvs.Diagnostics;
+using CCEnvs.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
 {
     public static class SaveWrite
     {
+        public const string DEFAULT_SAVE_EXTENSION = "jgz";
+
         public static async UniTask ToFileAsync(
-            string filePath,
-            string fileContent,
-            bool backupEnabled = true,
-            bool compressionEnabled = true,
+            WriteSaveDataToFileParameters parameters,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Guard.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
-
             await UniTaskHelper.TrySwitchToThreadPool();
 
-            var file = new FileInfo(filePath);
+            var file = new FileInfo(parameters.FilePath);
+
+            if (CCDebug.Instance.IsEnabled)
+            {
+                typeof(SaveWrite).PrintLog($"Writing started:" +
+                    $"{Environment.NewLine}{nameof(parameters.FilePath)}: {parameters.FilePath}" +
+                    $"{Environment.NewLine}{nameof(parameters.Backuped)}: {parameters.Backuped}" +
+                    $"{Environment.NewLine}{nameof(parameters.Compressed)}: {parameters.Compressed}"
+                    );
+            }
 
             try
             {
-                if (CCDebug.Instance.IsEnabled)
-                    typeof(SaveWrite).PrintLog("Writing started");
+                await SaveSystem.IOSemaphore.WaitAsync(cancellationToken);
 
                 if (!file.Directory.Exists)
                 {
@@ -42,21 +48,26 @@ namespace CCEnvs.Saves
                     file.Directory.Create();
                 }
 
-                await SaveSystem.IOSemaphore.WaitAsync(cancellationToken);
-
-                if (backupEnabled)
+                if (parameters.Backuped)
                     TryBackupFile(file);
 
-                var tempFile = CreateTempFile(file);
+                using var tempFileStream = CreateTempFile(file, out var tempFile);
 
-                using var tempFileStream = tempFile.Open(FileMode.OpenOrCreate);
+                if (parameters.Compressed)
+                {
+                    using var gZipStream = new GZipStream(tempFileStream, CompressionLevel.Optimal, leaveOpen: true);
 
-                WriteToFile(tempFileStream, fileContent);
+                    await WriteToStreamAsync(gZipStream, parameters.FileContent, cancellationToken);
 
-                if (compressionEnabled)
-                    TryCompressFile(tempFileStream);
+                    await gZipStream.DisposeAsync();
+                }
+                else
+                    await WriteToStreamAsync(tempFileStream, parameters.FileContent, cancellationToken);
 
+                await tempFileStream.FlushAsync();
                 await tempFileStream.DisposeAsync();
+
+                tempFile.Refresh();
 
                 ReplaceTempFileToFile(tempFile, file);
             }
@@ -68,11 +79,15 @@ namespace CCEnvs.Saves
             }
         }
 
-        private static void WriteToFile(FileStream fileStream, string fileContent)
+        private static async Task WriteToStreamAsync(
+            Stream fileStream, 
+            string fileContent,
+            CancellationToken cancellationToken
+            )
         {
-            var fileWriter = new StreamWriter(fileStream);
+            var bytes = Encoding.UTF8.GetBytes(fileContent);
 
-            fileWriter.WriteAsync(fileContent);
+            await fileStream.WriteAsync(bytes, cancellationToken);
         }
 
         private static void ReplaceTempFileToFile(
@@ -88,41 +103,43 @@ namespace CCEnvs.Saves
                 typeof(SaveWrite).PrintLog($"Writed to file: {file.FullName}");
         }
 
-        private static void TryCompressFile(FileStream fileStream)
+        //private static GZipStream GetGZipStream(Stream fileStream)
+        //{
+        //    GZipStream? gZipStream = null;
+
+        //    try
+        //    {
+        //        gZipStream = new GZipStream(fileStream, CompressionLevel.Optimal, leaveOpen: true);
+
+        //        if (CCDebug.Instance.IsEnabled)
+        //            typeof(SaveWrite).PrintLog($"Compressed");
+
+        //        return gZipStream;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        typeof(SaveWrite).PrintException(ex);
+
+        //        gZipStream?.Dispose();
+
+        //        throw;
+        //    }
+        //}
+
+        private static FileStream CreateTempFile(FileInfo file, out FileInfo tempFile)
         {
-            if (CCDebug.Instance.IsEnabled)
-                typeof(SaveWrite).PrintLog($"Compression started");
+            var path = Path.Combine(file.DirectoryName, file.Name + ".temp");
 
-            try
-            {
-                using var gZipStream = new GZipStream(fileStream, CompressionLevel.Optimal);
-            }
-            catch (Exception ex)
-            {
-                typeof(SaveWrite).PrintException(ex);
-            }
-            finally
-            {
-                fileStream.Position = 0;
-            }
-        }
+            tempFile = new FileInfo(path);
 
-        private static FileInfo CreateTempFile(FileInfo fileInfo)
-        {
-            var path = Path.Combine(fileInfo.DirectoryName, fileInfo.Name + ".temp");
+            TryDeleteFile(tempFile);
 
-            if (File.Exists(path))
-            {
-                if (CCDebug.Instance.IsEnabled)
-                    typeof(SaveWrite).PrintLog($"Previous temp file deleted: {path}");
-
-                File.Delete(path);
-            }
+            FileStream tempFileStream = tempFile.Create();
 
             if (CCDebug.Instance.IsEnabled)
-                typeof(SaveWrite).PrintLog($"Temp file created: {fileInfo.FullName}");
+                typeof(SaveWrite).PrintLog($"Temp file created: {file.FullName}");
 
-            return fileInfo.CopyTo(path);
+            return tempFileStream;
         }
 
         private static void TryDeleteFile(FileInfo? file)
@@ -134,12 +151,14 @@ namespace CCEnvs.Saves
                 return;
             }
 
-            if (CCDebug.Instance.IsEnabled)
-                typeof(SaveWrite).PrintLog($"Deleting file: {file.FullName}");
-
             try
             {
+                bool fileExists = file.Exists;
+
                 file.Delete();
+
+                if (fileExists && CCDebug.Instance.IsEnabled)
+                    typeof(SaveWrite).PrintLog($"Deleted file: {file.FullName}");
             }
             catch (Exception ex)
             {
@@ -149,16 +168,19 @@ namespace CCEnvs.Saves
 
         private static void TryBackupFile(FileInfo file)
         {
+            if (!file.Exists)
+                return;
+
             try
             {
                 var backupFile = new FileInfo(Path.ChangeExtension(file.FullName, "bak"));
 
                 TryDeleteFile(backupFile);
 
+                file.CopyTo(backupFile.FullName);
+
                 if (CCDebug.Instance.IsEnabled)
                     typeof(SaveWrite).PrintLog($"Backup created: {backupFile.FullName}");
-
-                file.CopyTo(backupFile.FullName);
             }
             catch (Exception ex)
             {

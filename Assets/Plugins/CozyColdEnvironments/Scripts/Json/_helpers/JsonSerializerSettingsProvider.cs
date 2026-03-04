@@ -26,7 +26,12 @@ namespace CCEnvs.Json
 
             settings.NullValueHandling = NullValueHandling.Include;
 
-            settings.Error = (sender, args) => args.CurrentObject.PrintException(args.ErrorContext.Error);
+            settings.Error = (sender, args) =>
+            {
+                args.CurrentObject.PrintException(args.ErrorContext.Error);
+
+                args.ErrorContext.Handled = false;
+            };
 
             settings.TypeNameHandling = TypeNameHandling.None;
             settings.Formatting = Formatting.Indented;

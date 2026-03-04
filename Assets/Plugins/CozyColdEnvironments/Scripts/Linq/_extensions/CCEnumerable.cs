@@ -16,22 +16,76 @@ namespace CCEnvs.Linq
         public static IEnumerable<KeyValuePair<TKey, TValue>> AsKeyValuePairs<TKey, TValue>(
             this IEnumerable<(TKey, TValue)> source)
         {
+            CC.Guard.IsNotNull(source, nameof(source));
+
             return source.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2)).Where(x => true);
         }
 
-        public static IEnumerable<KeyValuePair<TKey, T>> SelectValue<TKey, TValue, T>(
+        //public static IEnumerable<KeyValuePair<TKey, T>> SelectValue<TKey, TOut, T>(
+        //    this IEnumerable<KeyValuePair<TKey, TOut>> source,
+        //    Func<TOut, T> selector)
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
+
+        //    foreach (var kvp in source)
+        //        yield return new KeyValuePair<TKey, T>(kvp.Key, selector(kvp.Value));
+        //}
+
+        public static IEnumerable<TOut> SelectValue<TValue, TKey, TOut>(
             this IEnumerable<KeyValuePair<TKey, TValue>> source,
-            Func<TValue, T> selector)
+            Func<TValue, TOut> selector
+            )
         {
-            return source.Select(x => new KeyValuePair<TKey, T>(x.Key, selector(x.Value)));
+            Guard.IsNotNull(source, nameof(source));
+            Guard.IsNotNull(selector, nameof(selector));
+
+
+            foreach (var kvp in source)
+                yield return selector(kvp.Value);
         }
 
-        public static IEnumerable<KeyValuePair<T, TValue>> SelectKey<TKey, TValue, T>(
-            this IEnumerable<KeyValuePair<TKey, TValue>> source,
-            Func<TKey, T> selector)
+        public static IEnumerable<TValue> SelectValue<TValue, TKey>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source
+            )
         {
-            return source.Select(x => new KeyValuePair<T, TValue>(selector(x.Key), x.Value));
+            Guard.IsNotNull(source, nameof(source));
+
+            foreach (var kvp in source)
+                yield return kvp.Value;
         }
+
+        public static IEnumerable<TOut> SelectKey<TValue, TKey, TOut>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source,
+            Func<TKey, TOut> selector
+            )
+        {
+            Guard.IsNotNull(source, nameof(source));
+            Guard.IsNotNull(selector, nameof(selector));
+
+
+            foreach (var kvp in source)
+                yield return selector(kvp.Key);
+        }
+
+        public static IEnumerable<TKey> SelectKey<TValue, TKey>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> source
+            )
+        {
+            Guard.IsNotNull(source, nameof(source));
+
+            foreach (var kvp in source)
+                yield return kvp.Key;
+        }
+
+        //public static IEnumerable<KeyValuePair<T, TOut>> SelectKey<TKey, TOut, T>(
+        //    this IEnumerable<KeyValuePair<TKey, TOut>> source,
+        //    Func<TKey, T> selector)
+        //{
+        //    CC.Guard.IsNotNull(source, nameof(source));
+
+        //    foreach (var kvp in source)
+        //        yield return KeyValuePair.Create(selector(kvp.Key), kvp.Value);
+        //}
 
         public static T[] ForEachAndMaterialize<T>(this IEnumerable<T> values, Action<T> action)
         {
@@ -150,9 +204,11 @@ namespace CCEnvs.Linq
         }
 
         public static IEnumerable<TValue> UnassignKey<TKey, TValue>(
-            this IEnumerable<KeyValuePair<TKey, TValue>> values)
+            this IEnumerable<KeyValuePair<TKey, TValue>> source)
         {
-            return values.Select(x => x.Value);
+            CC.Guard.IsNotNull(source, nameof(source));
+
+            return source.Select(x => x.Value);
         }
 
         public static T[] ToArrayOrEmpty<T>(this IEnumerable<T>? collection)

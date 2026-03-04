@@ -1,5 +1,13 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Xml.Linq;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Disposables;
+using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Threading.Tasks;
@@ -8,11 +16,7 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using System.Xml.Linq;
+using UnityEngine.tvOS;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -23,7 +27,8 @@ namespace CCEnvs.Saves
     public sealed class SaveCatalog
         :
         IEquatable<SaveCatalog>,
-        IEnumerable<SaveGroup>
+        IEnumerable<SaveGroup>,
+        IDisposable
     {
         [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
@@ -64,7 +69,9 @@ namespace CCEnvs.Saves
 
             return left.Path == right.Path
                    &&
-                   left.Archive == right.Archive;
+                   left.Archive == right.Archive
+                   &&
+                   left.disposed == right.disposed;
         }
 
         public static bool operator !=(SaveCatalog? left, SaveCatalog? right)
@@ -72,30 +79,29 @@ namespace CCEnvs.Saves
             return !(left == right);
         }
 
-        public bool RemoveGroup(string groupName, out SaveGroup? removed)
+        public bool RemoveGroup(string groupName)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
             if (incrementalGroups.Remove(groupName, out var incGroup))
             {
-                removed = incGroup;
+                incGroup.Dispose();
                 return true;
             }
 
-            return groups.Remove(groupName, out removed);
-        }
+            if (groups.Remove(groupName, out var group))
+            {
+                group.Dispose();
+                return true;
+            }
 
-        public bool RemoveGroup(string groupName)
-        {
-            Guard.IsNotNull(groupName, nameof(groupName));
-
-            return incrementalGroups.Remove(groupName)
-                   &&
-                   groups.Remove(groupName);
+            return false;
         }
 
         public SaveGroup GetOrCreateGroup(string groupName)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
             if (!groups.TryGetValue(groupName, out var group))
@@ -113,6 +119,7 @@ namespace CCEnvs.Saves
 
         public SaveGroupIncremental GetOrCreateIncrementalGroup(string groupName)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
             if (!incrementalGroups.TryGetValue(groupName, out var group))
@@ -130,6 +137,7 @@ namespace CCEnvs.Saves
 
         public bool ChangeGroupTypeTo(string groupName, bool incremental)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
             bool isGroupIncremental = incrementalGroups.Remove(groupName, out var incGroup);
@@ -172,6 +180,7 @@ namespace CCEnvs.Saves
             bool incremental
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
             if (incremental)
@@ -196,6 +205,14 @@ namespace CCEnvs.Saves
 
         public SaveCatalog Clear()
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            lock (groups.SyncRoot)
+                groups.SelectValue().DisposeEach(bufferized: false);
+            
+            lock (incrementalGroups.SyncRoot)
+                incrementalGroups.SelectValue().DisposeEach(bufferized: false);
+
             groups.Clear();
             incrementalGroups.Clear();
 
@@ -204,16 +221,9 @@ namespace CCEnvs.Saves
 
         public string GetFullPath()
         {
-            using var sb = StringBuilderPool.Shared.Get();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            using var pathParts = PooledArray<string>.FromRange(
-                Archive.Path,
-                Path
-                );
-
-            sb.Value.AppendJoin('/', pathParts.Value);
-
-            return sb.Value.ToString();
+            return System.IO.Path.Join(Archive.Path, Path);
         }
 
         public async UniTask LoadGroupsFromFileAsync(
@@ -223,6 +233,7 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
             if (groups.IsEmpty())
@@ -271,7 +282,7 @@ namespace CCEnvs.Saves
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Path, Archive);
+            hashCode ??= HashCode.Combine(Path, Archive, disposed);
 
             return hashCode.Value;
         }
@@ -279,6 +290,21 @@ namespace CCEnvs.Saves
         public override string ToString()
         {
             return $"({nameof(Path)}: {Path}; {nameof(Archive)}: {Archive})";
+        }
+
+        private int disposed;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            groups.SelectValue().DisposeEach(bufferized: false);
+            groups.Clear();
+
+            incrementalGroups.SelectValue().DisposeEach(bufferized: false);
+            incrementalGroups.Clear();
+
+            GC.SuppressFinalize(this);
         }
 
         public IEnumerator<SaveGroup> GetEnumerator()

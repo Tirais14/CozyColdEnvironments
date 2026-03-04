@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Serialization;
@@ -53,9 +53,6 @@ namespace CCEnvs.Saves
         [JsonProperty("catalog")]
         public SaveCatalog Catalog { get; init; }
 
-        [JsonProperty("incrementalWriting")]
-        public bool IncrementalWriting { get; set; }
-
         [JsonIgnore]
         public SaveData SaveData {
             get
@@ -97,15 +94,23 @@ namespace CCEnvs.Saves
 
             incGroup = new SaveGroupIncremental(group.Catalog, group.Name);
 
-            lock (group.SyncRoot)
+            try
             {
-                foreach (var (key, obj) in group.observableObjects)
-                    incGroup.RegisterObject(obj, key);
+                lock (group.SyncRoot)
+                {
+                    foreach (var (key, obj) in group.observableObjects)
+                        incGroup.RegisterObject(obj, key);
 
-                incGroup.SaveData.Merge(group.SaveData.SaveEntries.Values);
+                    incGroup.SaveData.Merge(group.SaveData.SaveEntries.Values);
+                }
+
+                group.Dispose();
             }
-
-            group.Dispose();
+            catch (Exception)
+            {
+                incGroup.Dispose();
+                throw;
+            }
 
             return incGroup;
         }
@@ -116,15 +121,23 @@ namespace CCEnvs.Saves
 
             var group = new SaveGroup(incGroup.Catalog, incGroup.Name);
 
-            lock (incGroup.SyncRoot)
+            try
             {
-                foreach (var (key, obj) in incGroup.observableObjects)
-                    incGroup.RegisterObject(obj, key);
+                lock (incGroup.SyncRoot)
+                {
+                    foreach (var (key, obj) in incGroup.observableObjects)
+                        incGroup.RegisterObject(obj, key);
 
-                group.SaveData.Merge(incGroup.SaveData.SaveEntries.Values);
+                    group.SaveData.Merge(incGroup.SaveData.SaveEntries.Values);
+                }
+
+                incGroup.Dispose();
             }
-
-            incGroup.Dispose();
+            catch (Exception)
+            {
+                group.Dispose();
+                throw;
+            }
 
             return group;
         }
@@ -141,7 +154,9 @@ namespace CCEnvs.Saves
                    &&
                    left.Catalog == right.Catalog
                    &&
-                   left._saveData == right._saveData;
+                   left._saveData == right._saveData
+                   &&
+                   left.disposed == right.disposed;
         }
 
         public static bool operator !=(SaveGroup? left, SaveGroup? right)
@@ -162,8 +177,7 @@ namespace CCEnvs.Saves
 
             resolvedKey = key;
 
-            lock (SyncRoot)
-                observableObjects.Add(key, obj);
+            observableObjects.Add(key, obj);
 
             return this;
         }
@@ -182,17 +196,16 @@ namespace CCEnvs.Saves
 
         public bool UnregisterObject(string key)
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             Guard.IsNotNull(key, nameof(key));
 
-            lock (SyncRoot)
-                return observableObjects.Remove(key);
+            return observableObjects.Remove(key);
         }
 
         public bool UnregisterObject(object obj)
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (!SaveGroupObjectKey.TryResolve(obj, out var key))
                 key = string.Empty;
@@ -202,11 +215,10 @@ namespace CCEnvs.Saves
 
         public bool IsObjectRegistered(string? key)
         {
-            if (key is null)
+            if (key is null || CCDisposable.IsDisposed(disposed))
                 return false;
 
-            lock (SyncRoot)
-                return observableObjects.ContainsKey(key);
+            return observableObjects.ContainsKey(key);
         }
 
         public bool IsObjectRegistered(object obj)
@@ -218,10 +230,10 @@ namespace CCEnvs.Saves
         }
 
         public SaveGroup CaptureAndWriteSaveData(
-            WriteSaveDataMode writeSaveDataMode = WriteSaveDataMode.Override
+            WriteSaveDataMode writeSaveDataMode = default
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var saveUnits = CreateAndProcessSaveEntriesPooled();
 
@@ -232,32 +244,19 @@ namespace CCEnvs.Saves
 
         public string GetFullPath()
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            using var sb = StringBuilderPool.Shared.Get();
+            var arch = Catalog.Archive;
 
-            using var pathParts = PooledArray<string>.FromRange(
-                Catalog.Archive.Path,
-                Catalog.Path,
-                Name
-                );
-
-            foreach (var pathPart in pathParts)
-            {
-                sb.Value.Append(pathPart);
-                sb.Value.Append('/');
-            }
-            
-            return sb.Value.ToString();
+            return Path.Join(arch.Path, Catalog.Path, Name);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SaveGroup Clear()
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            lock (SyncRoot)
-                observableObjects.Clear();
+            observableObjects.Clear();
 
             return this;
         }
@@ -267,7 +266,7 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -310,7 +309,7 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
             if (!force && IsDataLoadedFromFile)
@@ -353,7 +352,7 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
             if (forceGet || IsDataLoadedFromFile)
@@ -370,12 +369,14 @@ namespace CCEnvs.Saves
         }
 
         public async UniTask WriteSaveDataToFileAsync(
-            bool compressionEnabled = true,
+            string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
+            bool compressed = true,
+            bool backuped = true,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -387,15 +388,17 @@ namespace CCEnvs.Saves
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, compressionEnabled, configureAwait))
+                .WithState((@this: this, fileExtension, compressed, backuped, configureAwait))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.WriteSaveDataToFileAsyncCore(
-                        args.compressionEnabled,
-                        args.configureAwait,
-                        cancellationToken
+                        fileExtension: args.fileExtension,
+                        compressed: args.compressed,
+                        backuped: args.backuped,
+                        configureAwait: args.configureAwait,
+                        cancellationToken: cancellationToken
                         );
                 })
                 .BuildPooled()
@@ -432,27 +435,27 @@ namespace CCEnvs.Saves
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Name, Catalog, _saveData);
+            hashCode ??= HashCode.Combine(Name, Catalog, _saveData, disposed);
 
             return hashCode.Value;
         }
 
-        private bool disposed;
-        public void Dispose() => Dispose(true);
+        private int disposed;
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             if (disposing)
             {
                 disposeCancellationTokenSource.CancelAndDispose();
-
-                lock (SyncRoot)
-                    observableObjects.Clear();
+                observableObjects.Clear();
             }
-
-            disposed = true;
         }
 
         /// <summary>
@@ -460,6 +463,8 @@ namespace CCEnvs.Saves
         /// </summary>
         protected virtual PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             var saveUnits = ListPool<SaveEntry>.Shared.Get();
 
             lock (SyncRoot)
@@ -486,6 +491,8 @@ namespace CCEnvs.Saves
             out SaveEntry saveEntry
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             ISnapshot snapshot;
 
             SnapshotFactory snapshotFactory;
@@ -521,19 +528,13 @@ namespace CCEnvs.Saves
             return true;
         }
 
-        private void ThrowIfDisposed()
-        {
-            if (!disposed)
-                return;
-
-            throw new ObjectDisposedException(GetType().Name);
-        }
-
         private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -568,6 +569,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var loadedSaveData = await GetSaveDataFromFileAsyncCore(
@@ -605,58 +608,40 @@ namespace CCEnvs.Saves
         }
 
         private async UniTask WriteSaveDataToFileAsyncCore(
-            bool compressionEnabeld = true,
+            string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
+            bool compressed = true,
+            bool backuped = true,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             await UniTaskHelper.TrySwitchToThreadPool();
 
-            string saveDataSerialized;
+            string serializedEntries = SaveData.SerializeEntries();
 
-            try
-            {
-                saveDataSerialized = SerializeSaveDataAsyncCore();
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-                return;
-            }
-            finally
-            {
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
+            var path = GetFullPath();
 
-            try
+            var parameters = new WriteSaveDataToFileParameters(
+                path,
+                fileExtension
+                )
             {
-                var path = GetFullPath();
+                Compressed = compressed,
+                Backuped = backuped,
+                FileContent = serializedEntries
+            };
 
-                await SaveWrite.ToFileAsync(
-                    path,
-                    saveDataSerialized,
-                    compressionEnabled: compressionEnabeld,
-                    configureAwait: false,
-                    cancellationToken: cancellationToken
-                    );
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
+            await SaveWrite.ToFileAsync(
+                parameters,
+                configureAwait: false,
+                cancellationToken: cancellationToken
+                );
 
-                return;
-            }
-            finally
-            {
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-        }
-
-        private string SerializeSaveDataAsyncCore()
-        {
-            return JsonConvert.SerializeObject(SaveData, CC.SerializerSettings) ?? string.Empty;
+            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
         }
     }
 }

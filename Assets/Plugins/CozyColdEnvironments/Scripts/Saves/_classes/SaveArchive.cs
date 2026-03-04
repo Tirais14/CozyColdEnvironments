@@ -1,5 +1,12 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Disposables;
+using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Threading.Tasks;
@@ -8,10 +15,7 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+using UnityEngine.tvOS;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -22,7 +26,8 @@ namespace CCEnvs.Saves
     public sealed class SaveArchive
         :
         IEquatable<SaveArchive>,
-        IEnumerable<SaveCatalog>
+        IEnumerable<SaveCatalog>,
+        IDisposable
     {
         public const string DEFAULT_PATH = "Default";
 
@@ -51,7 +56,9 @@ namespace CCEnvs.Saves
             if (left is null || right is null)
                 return false;
 
-            return left.Path == right.Path;
+            return left.Path == right.Path
+                   &&
+                   left.disposed == right.disposed;
         }
 
         public static bool operator !=(SaveArchive? left, SaveArchive? right)
@@ -59,15 +66,22 @@ namespace CCEnvs.Saves
             return !(left == right);
         }
 
-        public bool RemoveCatalog(string catalogPath, out SaveCatalog? removed)
+        public bool RemoveCatalog(string catalogPath)
         {
             Guard.IsNotNull(catalogPath, nameof(catalogPath));
 
-            return catalogs.Remove(catalogPath, out removed);
+            if (!catalogs.Remove(catalogPath, out var catalog))
+                return false;
+
+            catalog.Dispose();
+
+            return true;
         }
 
         public SaveCatalog GetOrCreateCatalog(string? path = null)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (path.IsNullOrWhiteSpace())
                 path = DEFAULT_PATH;
 
@@ -83,6 +97,11 @@ namespace CCEnvs.Saves
 
         public SaveArchive Clear()
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            lock (catalogs.SyncRoot)
+                catalogs.SelectValue().DisposeEach(bufferized: false);
+
             catalogs.Clear();
 
             return this;
@@ -95,6 +114,7 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
             if (catalogs.IsEmpty())
@@ -143,7 +163,7 @@ namespace CCEnvs.Saves
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Path);
+            hashCode ??= HashCode.Combine(Path, disposed);
 
             return hashCode.Value;
         }
@@ -151,6 +171,16 @@ namespace CCEnvs.Saves
         public override string ToString()
         {
             return $"({nameof(Path)}: {Path})";
+        }
+
+        private int disposed;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            catalogs.SelectValue().DisposeEach(bufferized: false);
+            catalogs.Clear();
         }
 
         public IEnumerator<SaveCatalog> GetEnumerator()

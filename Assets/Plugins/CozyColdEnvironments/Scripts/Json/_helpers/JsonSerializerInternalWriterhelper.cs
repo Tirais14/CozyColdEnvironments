@@ -46,6 +46,9 @@ namespace CCEnvs.Json
                     continue;
                 }
 
+                if (writer.WriteState == WriteState.Property)
+                    writer.WriteNull();
+
                 writer.WritePropertyName(jProp.PropertyName!);
 
                 serializer.Serialize(writer, memberValue);

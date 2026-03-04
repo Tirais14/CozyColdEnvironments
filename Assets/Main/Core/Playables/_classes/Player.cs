@@ -5,17 +5,23 @@ using CCEnvs.Unity.Components;
 using UnityEngine;
 
 #nullable enable
-namespace Tests.SubSystems.Players
+namespace Core.Playables
 {
     public class Player : CCBehaviour
     {
         private SaveGroupRegistration saveSysReg;
+
+        private SaveGroupIncremental saveGroup = null!;
+
+        public event OnSaveObjectIsDirtyChanged? OnSaveObjectIsDirtyChanged;
 
         [field: SerializeField]
         public float Health { get; set; } = 100f;
 
         [field: SerializeField]
         public float Drunkness { get; set; } = 0.1f;
+
+        public bool IsSaveObjectDirty => throw new System.NotImplementedException();
 
         protected override void Awake()
         {
@@ -27,33 +33,33 @@ namespace Tests.SubSystems.Players
                 {
                     return new PlayerSnapshot(player);
                 });
+
+            saveGroup = SaveSystem.GetOrCreateArchive(G.SaveDefaultArchivePath)
+                .GetOrCreateCatalog(G.SaveDefaultCatalogPath)
+                .GetOrCreateIncrementalGroup(G.SaveDefaultGroupName);
         }
 
         public void RegisterInSaveSystem()
         {
-            saveSysReg = SaveSystem.GetOrCreateArchive(Path.Join(Application.dataPath, "Save1"))
-                .GetOrCreateCatalog()
-                .GetOrCreateIncrementalGroup("PlayerInfo")
-                .RegisterObjectHandled(this);
+            saveSysReg = saveGroup.RegisterObjectHandled(this);
         }
 
         public void LoadSaveGame()
         {
-            SaveSystem.GetOrCreateArchive(Path.Join(Application.dataPath, "Save1"))
-                .GetOrCreateCatalog()
-                .GetOrCreateIncrementalGroup("PlayerInfo")
-                .LoadSaveDataFromFileAsync()
+            saveGroup.LoadSaveDataFromFileAsync()
                 .ForgetByPrintException();
         }
 
         public void SaveGame()
         {
-            SaveSystem.GetOrCreateArchive(Path.Join(Application.dataPath, "Save1"))
-                .GetOrCreateCatalog()
-                .GetOrCreateIncrementalGroup("PlayerInfo")
-                .CaptureAndWriteSaveData()
-                .WriteSaveDataToFileAsync()
+            saveGroup.CaptureAndWriteSaveData()
+                .WriteSaveDataToFileAsync(compressed: false)
                 .ForgetByPrintException();
+        }
+
+        public void MarkSaveObjectDirty()
+        {
+            //OnSaveObjectIsDirtyChanged?.Invoke(this, true);
         }
     }
 }

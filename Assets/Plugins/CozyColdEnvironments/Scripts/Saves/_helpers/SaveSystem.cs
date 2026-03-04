@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
@@ -18,6 +19,7 @@ namespace CCEnvs.Saves
 
         private readonly static Dictionary<Type, SnapshotFactory> converters = new();
 
+        [OnInstallResetable]
         private readonly static ObservableDictionary<string, SaveArchive> archives = new(1, null);
 
         private static SemaphoreSlim? _ioSemaphore;

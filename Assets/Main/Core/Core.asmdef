@@ -1,19 +1,15 @@
 {
-    "name": "Tests",
-    "rootNamespace": "Tests",
+    "name": "Core",
+    "rootNamespace": "Core",
     "references": [
         "GUID:d2872dbf20cb9874e9a6ada3585f81fe",
         "GUID:1898880136cb79448802a5416e8c3523",
-        "GUID:b54d6d4f4c2784149b0a20a4a58f9fdc",
         "GUID:70c5325f05596aa46a0416b206c7ad6e",
         "GUID:5cc6529029fb0ef4c8453476fc92bdaa",
         "GUID:5df8e2236ab5f5d49b1fed049c26f943",
-        "GUID:990fd1dfd7f1cb449839a92f480f5087",
         "GUID:b6e841483145e2f4e8bb13ac82f48e34",
         "GUID:b2784df3f7cd304499eb68a75aa724f3",
-        "GUID:1475e7c60692d69479a9d90ba1e55f76",
         "GUID:77221876cc6b8244180b96e320b1bcd4",
-        "GUID:f8c68d614fe30d647996098360b5e0d5",
         "GUID:f02da9ca564ed54499f6f43d8249d415"
     ],
     "includePlatforms": [],
@@ -22,9 +18,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "UNITY_EDITOR"
-    ],
+    "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
 }

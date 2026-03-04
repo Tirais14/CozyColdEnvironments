@@ -1,8 +1,11 @@
+using System;
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Unity.Snapshots;
 
 #nullable enable
-namespace Tests.SubSystems.Players
+namespace Core.Playables
 {
+    [Serializable, SerializationDescriptor("PlayerSnapshot", "2663f353-f544-4b48-bd81-2b04e622527a")]
     public record PlayerSnapshot : CCBehaviourSnapshot<Player>
     {
         public float? Health { get; set; }

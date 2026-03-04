@@ -1,16 +1,18 @@
-using CCEnvs.Attributes;
-using CCEnvs.Collections;
-using CCEnvs.Diagnostics;
-using CCEnvs.Linq;
-using CCEnvs.Patterns.Factories;
-using CCEnvs.Pools;
-using Humanizer;
-using R3;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using CCEnvs.Attributes;
+using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
+using CCEnvs.Linq;
+using CCEnvs.Patterns.Factories;
+using CCEnvs.Pools;
+using Humanizer;
+using R3;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -34,7 +36,6 @@ namespace CCEnvs.Patterns.Commands
 
         private QueueCommand? cmd;
 
-        private bool disposed;
         private bool isRunningFinshingDelayed;
 
         private int delayFrameCountBeforeRunningFinished;
@@ -113,9 +114,8 @@ namespace CCEnvs.Patterns.Commands
 
         public void Schedule(ICommandBase cmd)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             CC.Guard.IsNotNull(cmd, nameof(cmd));
-
-            ThrowIfDisposed();
 
             if (!cmd.IsValid)
                 throw new ArgumentException($"Command: {cmd} is not valid", nameof(cmd));
@@ -132,9 +132,7 @@ namespace CCEnvs.Patterns.Commands
             var commandSet = commandSets.GetOrCreateNew(cmd.Signature);
 
             lock (SyncRoot)
-            {
                 commandSet.Add(queueCmd);
-            }
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Command: {cmd} scheduled");
@@ -145,6 +143,8 @@ namespace CCEnvs.Patterns.Commands
         [OnInstallExecutable]
         public void Reset()
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog("Resetting");
 
@@ -164,26 +164,37 @@ namespace CCEnvs.Patterns.Commands
             garbageCmdCount = 0;
         }
 
+        private int disposed;
         public void Dispose()
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog("Disposing");
 
-            Reset();
+            try
+            {
+                Reset();
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+                throw;
+            }
 
             scheduleCommandRxCmd?.Dispose();
             isEnabled.Dispose();
             isRunning.Dispose();
 
-            disposed = true;
+            GC.SuppressFinalize(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnFrame()
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (!IsEnabled)
                 return;
 
@@ -193,13 +204,11 @@ namespace CCEnvs.Patterns.Commands
                 return;
             }
 
-            ThrowIfDisposed();
-
             StartRunningFrame();
 
             var loopFuse = LoopFuse.Create();
 
-            while (!disposed
+            while (!CCDisposable.IsDisposed(disposed)
                    &&
                    loopFuse.MoveNext()
                    )
@@ -218,7 +227,7 @@ namespace CCEnvs.Patterns.Commands
 
         public void Enable()
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (isEnabled.Value)
                 return;
@@ -228,6 +237,8 @@ namespace CCEnvs.Patterns.Commands
 
         public void Disable()
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (!isEnabled.Value)
                 return;
 
@@ -241,6 +252,8 @@ namespace CCEnvs.Patterns.Commands
 
         public bool HasCommand(CommandSignature cmdSignature)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (!commandSets.TryGetValue(cmdSignature, out var cmds))
                 return false;
 
@@ -249,6 +262,8 @@ namespace CCEnvs.Patterns.Commands
 
         public bool HasCommand(ICommandBase? command)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (command.IsNull())
                 return false;
 
@@ -303,16 +318,12 @@ namespace CCEnvs.Patterns.Commands
                     return;
 
                 lock (SyncRoot)
-                {
                     cmd = equalCmds[i];
-                }
 
                 if (!IsCommandUndone(cmd.Value))
                 {
                     lock (SyncRoot)
-                    {
                         equalCmds.RemoveAt(i);
-                    }
 
                     continue;
                 }
@@ -446,13 +457,6 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ThrowIfDisposed()
-        {
-            if (disposed)
-                throw new ObjectDisposedException(GetType().ToString());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnRunningFinished()
         {
             isRunningFinshingDelayed = false;
@@ -517,7 +521,7 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool IFrameRunnerWorkItem.MoveNext(long frameCount)
         {
-            if (disposed)
+            if (CCDisposable.IsDisposed(disposed))
                 return false;
 
             OnFrame();

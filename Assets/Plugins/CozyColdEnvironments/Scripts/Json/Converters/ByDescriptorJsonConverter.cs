@@ -14,9 +14,13 @@ namespace CCEnvs.Json
 
         public override bool CanConvert(Type objectType)
         {
-            return TypeSerializationHelper.TypeDescriptors.ContainsKey(objectType)
-                   ||
-                   objectType.GetCustomAttribute<PolymorphSerializableAttribute>(inherit: true) is not null;
+            if (TypeSerializationHelper.TypeDescriptors.ContainsKey(objectType))
+                return true;
+
+            if (objectType.GetCustomAttribute<PolymorphSerializableAttribute>(inherit: true) is not null)
+                return true;
+
+            return false;
         }
 
         public override object? ReadJson(

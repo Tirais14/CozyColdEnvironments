@@ -5,7 +5,7 @@ using CCEnvs.Unity.Components;
 using R3;
 
 #nullable enable
-namespace Tests
+namespace RuntimeTests
 {
     public class CommandSchedulerScheduleCommandTest : CCBehaviour
     {

@@ -3,7 +3,7 @@ using CCEnvs.Unity.Components;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace Tests.SubSystems
+namespace Core
 {
     public class EntryPoint : CCBehaviour
     {

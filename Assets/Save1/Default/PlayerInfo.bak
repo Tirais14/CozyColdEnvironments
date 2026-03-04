@@ -1,0 +1,77 @@
+{
+  "$typeDescriptor": {
+    "name": "SaveData",
+    "id": "{868DC038-8CB2-4C61-97DE-931D4D21212C}"
+  },
+  "saveUnits": [
+    {
+      "key": "Player [6]",
+      "value": {
+        "$typeDescriptor": {
+          "name": "Saves.SaveUnit",
+          "id": "77478f05-ab2b-4cb0-b420-39baf8fd8452"
+        },
+        "key": "Player [6]",
+        "snapshot": {
+          "$typeDescriptor": {
+            "name": "PlayerSnapshot",
+            "id": "2663f353-f544-4b48-bd81-2b04e622527a"
+          },
+          "health": 100.0,
+          "drunkness": 0.1,
+          "enabled": true,
+          "extraInfo": {
+            "$typeDescriptor": {
+              "name": "GameObjectExtraInfo",
+              "id": "3a2f26f8-31d8-4f71-831f-af7446d37f30"
+            },
+            "persistentGUID": null,
+            "hierarchyPath": {
+              "$typeDescriptor": {
+                "name": "HierarchyPath",
+                "id": "77427b05-d52c-4cb1-8c64-4bcd8bead81f"
+              },
+              "rawPath": "Player",
+              "position": 6
+            }
+          }
+        }
+      }
+    }
+  ],
+  "group": {
+    "$typeDescriptor": {
+      "name": "SaveGroupIncremental",
+      "id": "0c685a10-b6e3-4033-851b-8c740ffc7b59"
+    },
+    "saveData": null,
+    "name": "PlayerInfo",
+    "catalog": {
+      "$typeDescriptor": {
+        "name": "SaveCatalog",
+        "id": "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497"
+      },
+      "groups": [],
+      "incrementalGroups": [
+        {
+          "key": "PlayerInfo",
+          "value": null
+        }
+      ],
+      "path": "Default",
+      "archive": {
+        "$typeDescriptor": {
+          "name": "SaveArchive",
+          "id": "d619c03c-9b22-4be0-a351-e4cf2e66b4a0"
+        },
+        "catalogs": [
+          {
+            "key": "Default",
+            "value": null
+          }
+        ],
+        "path": "D:/Projects/Unity/CozyColdEnvironments/Assets\\Save1"
+      }
+    }
+  }
+}
