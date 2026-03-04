@@ -31,7 +31,7 @@ namespace CCEnvs.Threading
             {
                 source.Cancel();
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 typeof(CancellationTokenSourceHelper).PrintException(ex);
             }

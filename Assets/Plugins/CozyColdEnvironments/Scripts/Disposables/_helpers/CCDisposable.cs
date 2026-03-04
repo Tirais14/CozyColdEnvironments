@@ -5,7 +5,7 @@ using CCEnvs.Reflection;
 #nullable enable
 namespace CCEnvs.Disposables
 {
-    public class CCDisposable
+    public static class CCDisposable
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static LightDisposable<TState> CreateLight<TState>(
