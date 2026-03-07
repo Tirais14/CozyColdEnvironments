@@ -1,9 +1,9 @@
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.Collections;
+using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -45,7 +45,7 @@ namespace CCEnvs.Json
                 null,
                 null,
                 null,
-                false,
+                null,
             };
 
             //Magic offset :>

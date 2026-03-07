@@ -1,6 +1,6 @@
+using System.Linq;
 using CCEnvs.FuncLanguage;
 using R3;
-using System.Linq;
 using UnityEngine.SceneManagement;
 
 #nullable enable

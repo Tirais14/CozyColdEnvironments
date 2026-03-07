@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 #nullable enable

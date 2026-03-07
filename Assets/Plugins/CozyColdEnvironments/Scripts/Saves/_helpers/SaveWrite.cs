@@ -80,7 +80,7 @@ namespace CCEnvs.Saves
         }
 
         private static async Task WriteToStreamAsync(
-            Stream fileStream, 
+            Stream fileStream,
             string fileContent,
             CancellationToken cancellationToken
             )

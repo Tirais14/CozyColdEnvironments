@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
@@ -12,16 +11,13 @@ using CCEnvs.Pools;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using UnityEngine.tvOS;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.Saves
 {
-    [Serializable, JsonObject]
     [SerializationDescriptor("SaveArchive", "d619c03c-9b22-4be0-a351-e4cf2e66b4a0")]
     public sealed class SaveArchive
         :
@@ -31,16 +27,12 @@ namespace CCEnvs.Saves
     {
         public const string DEFAULT_PATH = "Default";
 
-        [JsonProperty("catalogs")]
         private ObservableDictionary<string, SaveCatalog> catalogs = new();
 
-        [JsonIgnore]
         private int? hashCode;
 
-        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveCatalog> Catalogs => catalogs;
 
-        [JsonProperty("path")]
         public string Path { get; init; }
 
         public SaveArchive(string? path = null)
@@ -220,7 +212,7 @@ namespace CCEnvs.Saves
 
                         tasks[i++] = task;
                     }
-                }    
+                }
 
                 await UniTask.WhenAll(tasks.Raw);
             }

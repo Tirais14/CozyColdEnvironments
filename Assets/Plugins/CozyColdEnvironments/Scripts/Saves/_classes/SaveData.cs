@@ -1,12 +1,12 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -19,33 +19,43 @@ namespace CCEnvs.Saves
         IEnumerable<SaveEntry>,
         IDisposable
     {
-        [JsonProperty("saveUnits")]
+        [JsonProperty("saveUnits", Order = 10)]
         private ObservableDictionary<string, SaveEntry> saveEntries = new();
-
-        [JsonProperty("group")]
-        public SaveGroup Group { get; init; }
 
         [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveEntry> SaveEntries {
             get => saveEntries;
         }
 
-        public SaveData(SaveGroup group)
-        {
-            Guard.IsNotNull(group, nameof(group));
+        [JsonProperty("version", Order = -2)]
+        public long Version { get; init; }
 
-            Group = group;
+        [JsonProperty("groupName", Order = -1)]
+        public string GroupName { get; init; }
+
+        public SaveData(string groupName, long version = 0L)
+        {
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            GroupName = groupName;
+            Version = version;
+        }
+
+        public SaveData(SaveGroup group, long version = 0L)
+            :
+            this(group?.Name!, version)
+        {
         }
 
         public bool TryAdd(SaveEntry saveEntry)
         {
             if (CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Save entry added: {saveEntry}");
+                this.PrintLog($"Save entry not added: {saveEntry}");
 
             var success = saveEntries.TryAdd(saveEntry.Key, saveEntry);
 
             if (!success && CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Save entry not added: {saveEntry}");
+                this.PrintLog($"Save entry added: {saveEntry}");
 
             return success;
         }
@@ -173,11 +183,6 @@ namespace CCEnvs.Saves
                 this.PrintLog("Overrided");
 
             return this;
-        }
-
-        public string SerializeEntries()
-        {
-            return JsonConvert.SerializeObject(saveEntries, SaveSystem.SerializerSettings) ?? string.Empty;
         }
 
         public IEnumerator<SaveEntry> GetEnumerator()

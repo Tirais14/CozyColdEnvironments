@@ -1,7 +1,7 @@
 #nullable enable
+using System;
 using CCEnvs.Collections;
 using Cysharp.Threading.Tasks;
-using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Components.Specialized

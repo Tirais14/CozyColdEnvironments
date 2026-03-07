@@ -1,7 +1,7 @@
+using System.Runtime.CompilerServices;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.UI;
-using System.Runtime.CompilerServices;
 using UnityEngine.EventSystems;
 
 #nullable enable

@@ -1,17 +1,17 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using CCEnvs.Collections;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json
 {
-    public class JsonSerializerInternalWriterhelper
+    public class JsonSerializerInternalWriterHelper
     {
         private readonly static Lazy<Type> jsonInternalWriterType = new(
         static () =>
@@ -62,7 +62,7 @@ namespace CCEnvs.Json
             JsonContainerContract contract,
             JsonProperty? member,
             JsonProperty property,
-            [NotNullWhen(true)] out JsonContract? memberContract,
+            out JsonContract? memberContract,
             out object? memberValue
             )
         {

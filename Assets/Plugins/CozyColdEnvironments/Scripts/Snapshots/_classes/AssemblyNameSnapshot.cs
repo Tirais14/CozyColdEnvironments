@@ -1,6 +1,6 @@
-using CCEnvs.Attributes.Serialization;
 using System;
 using System.Reflection;
+using CCEnvs.Attributes.Serialization;
 
 #nullable enable
 namespace CCEnvs.Snapshots

@@ -1,12 +1,12 @@
-﻿using CCEnvs.Diagnostics;
+﻿using System;
+using System.IO;
+using System.IO.Compression;
+using System.Threading;
+using CCEnvs.Diagnostics;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -62,7 +62,7 @@ namespace CCEnvs.Saves
             }
         }
 
-        public static async UniTask<SaveData?> SaveDataFromFileAsync(
+        public static async UniTask<SaveData?> DataFromFileAsync(
             string filePath,
             bool configureAwait = true,
             CancellationToken cancellationToken = default)

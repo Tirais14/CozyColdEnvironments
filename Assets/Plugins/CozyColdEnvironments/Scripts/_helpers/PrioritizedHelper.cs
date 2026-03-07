@@ -1,8 +1,8 @@
 #nullable enable
-using CCEnvs.Attributes;
-using Humanizer;
 using System;
 using System.Reflection;
+using CCEnvs.Attributes;
+using Humanizer;
 
 namespace CCEnvs
 {

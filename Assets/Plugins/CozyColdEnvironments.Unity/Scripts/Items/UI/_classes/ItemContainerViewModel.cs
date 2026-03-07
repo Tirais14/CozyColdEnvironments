@@ -1,8 +1,8 @@
+using System.Threading;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable

@@ -9,7 +9,6 @@ using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
-using CCEnvs.Serialization;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CCEnvs.Threading.Tasks;
@@ -24,7 +23,6 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    [Serializable, JsonObject, PolymorphSerializable]
     [SerializationDescriptor("SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
     public class SaveGroup
         :
@@ -32,47 +30,36 @@ namespace CCEnvs.Saves
         IEnumerable<KeyValuePair<string, object>>,
         IDisposable
     {
-        [JsonIgnore]
         protected readonly ObservableDictionary<string, object> observableObjects = new();
 
-        [JsonIgnore]
         protected int? hashCode;
 
-        [JsonProperty("saveData")]
         protected SaveData? _saveData;
 
-        [JsonIgnore]
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
-        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
-        [JsonProperty("name")]
         public string Name { get; init; }
 
-        [JsonProperty("catalog")]
         public SaveCatalog Catalog { get; init; }
 
-        [JsonIgnore]
         public SaveData SaveData {
             get
             {
-                _saveData ??= new SaveData(this);
+                _saveData ??= new SaveData(Name);
 
                 return _saveData;
             }
         }
 
-        [JsonIgnore]
         public bool IsDataLoadedFromFile { get; private set; }
 
-        [JsonIgnore]
+        public object SyncRoot { get; } = new();
+
         protected CancellationToken DisposeCancellationToken {
             get => disposeCancellationTokenSource.Token;
         }
-
-        [JsonIgnore]
-        public object SyncRoot { get; } = new();
 
         public SaveGroup(
             SaveCatalog catalog,
@@ -523,7 +510,7 @@ namespace CCEnvs.Saves
                 }
             }
 
-            saveEntry = new SaveEntry(key, snapshot);
+            saveEntry = new SaveEntry(, key, snapshot);
 
             return true;
         }
@@ -543,7 +530,7 @@ namespace CCEnvs.Saves
 
             try
             {
-                var loadedSaveData = await SaveLoad.SaveDataFromFileAsync(
+                var loadedSaveData = await SaveLoad.DataFromFileAsync(
                     filePath,
                     configureAwait: false,
                     cancellationToken
@@ -621,7 +608,7 @@ namespace CCEnvs.Saves
 
             await UniTaskHelper.TrySwitchToThreadPool();
 
-            string serializedEntries = SaveData.SerializeEntries();
+            string serializedEntries = JsonConvert.SerializeObject(SaveData);
 
             var path = GetFullPath();
 

@@ -1,6 +1,6 @@
+using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
-using System;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Snapshots

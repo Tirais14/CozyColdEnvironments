@@ -145,23 +145,7 @@ namespace CCEnvs.Patterns.Commands
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (CCDebug.Instance.IsEnabled)
-                this.PrintLog("Resetting");
-
-            EraseCurrentCommand();
-
-            lock (SyncRoot)
-            {
-                int i = 0;
-                int cmdCount = commands.Count;
-
-                while (i < cmdCount && commands.TryDequeue(out var cmd))
-                    OnCommandDone(cmd);
-            }
-
-            commandSets.Clear();
-
-            garbageCmdCount = 0;
+            OnReset();
         }
 
         private int disposed;
@@ -175,7 +159,7 @@ namespace CCEnvs.Patterns.Commands
 
             try
             {
-                Reset();
+                OnReset();
             }
             catch (Exception ex)
             {
@@ -294,6 +278,27 @@ namespace CCEnvs.Patterns.Commands
         public Observable<bool> ObserveDisabled()
         {
             return isEnabled.Where(x => !x);
+        }
+
+        private void OnReset()
+        {
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Resetting");
+
+            EraseCurrentCommand();
+
+            lock (SyncRoot)
+            {
+                int i = 0;
+                int cmdCount = commands.Count;
+
+                while (i < cmdCount && commands.TryDequeue(out var cmd))
+                    OnCommandDone(cmd);
+            }
+
+            commandSets.Clear();
+
+            garbageCmdCount = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

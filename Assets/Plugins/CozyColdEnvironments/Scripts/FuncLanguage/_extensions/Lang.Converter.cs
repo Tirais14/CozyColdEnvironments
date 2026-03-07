@@ -1,7 +1,7 @@
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 #pragma warning disable S3236

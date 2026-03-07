@@ -1,6 +1,6 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using System.Collections.Generic;
+using CCEnvs.FuncLanguage;
 
 namespace CCEnvs.Unity.UI
 {

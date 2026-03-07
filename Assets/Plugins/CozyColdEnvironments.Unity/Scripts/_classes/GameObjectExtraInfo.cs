@@ -1,7 +1,7 @@
+using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.FuncLanguage;
 using Newtonsoft.Json;
-using System;
 using UnityEngine;
 
 #nullable enable
@@ -13,11 +13,15 @@ namespace CCEnvs.Unity
     {
         [field: SerializeField]
         [JsonProperty("persistentGUID")]
-        public string? PersistenGuid { get; private set; }
+        public string? PersistenGuid { get; init; }
 
         [field: SerializeField]
         [JsonProperty("hierarchyPath")]
-        public HierarchyPath HierarchyPath { get; private set; }
+        public HierarchyPath HierarchyPath { get; init; }
+
+        public GameObjectExtraInfo()
+        {
+        }
 
         public GameObjectExtraInfo(GameObject gameObject)
         {

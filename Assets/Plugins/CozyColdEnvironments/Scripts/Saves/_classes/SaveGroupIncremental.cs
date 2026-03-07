@@ -1,36 +1,29 @@
+using System;
+using System.Collections.Generic;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Pools;
-using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using System;
-using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Saves
 {
-    [Serializable]
     [SerializationDescriptor("SaveGroupIncremental", "0c685a10-b6e3-4033-851b-8c740ffc7b59")]
     public sealed class SaveGroupIncremental : SaveGroup
     {
-        [JsonIgnore]
         private readonly Dictionary<string, ISaveObjectIncremental> dirtyObjects = new();
-        [JsonIgnore]
         private readonly Dictionary<string, object> nonIncrementalObjects = new();
-        [JsonIgnore]
         private readonly Dictionary<string, OnSaveObjectIsDirtyChanged> incrementalObjectBindings = new();
 
-        [JsonIgnore]
         private readonly IDisposable observableObjectAddBinding;
-        [JsonIgnore]
         private readonly IDisposable observableObjectRemoveBinding;
 
         public SaveGroupIncremental(
             SaveCatalog catalog,
             string? name = null
             )
-            : 
+            :
             base(catalog, name)
         {
             observableObjectAddBinding = BindObservableObjectAdd();
@@ -139,7 +132,8 @@ namespace CCEnvs.Saves
             void onSaveObjectIsDirtyChanged(ISaveObjectIncremental obj, bool state)
             {
                 OnSaveObjectIsDirtyChangedCore(key, obj, state);
-            };
+            }
+            ;
         }
 
         private void UnbindOnSaveObjectIsDirtyChanged(string key, ISaveObjectIncremental obj)

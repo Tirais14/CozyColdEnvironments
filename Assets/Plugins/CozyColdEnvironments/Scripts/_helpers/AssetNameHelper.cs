@@ -1,8 +1,8 @@
+using System;
+using System.Text.RegularExpressions;
 using CCEnvs.Attributes;
 using CCEnvs.Caching;
 using Humanizer;
-using System;
-using System.Text.RegularExpressions;
 
 #nullable enable
 namespace Game

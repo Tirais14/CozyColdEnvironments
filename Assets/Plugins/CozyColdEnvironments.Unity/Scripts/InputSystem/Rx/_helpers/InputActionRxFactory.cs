@@ -1,6 +1,6 @@
+using System;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
-using System;
 using UnityEngine.InputSystem;
 
 #nullable enable

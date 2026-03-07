@@ -1,6 +1,6 @@
+using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.TypeMatching;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Threading

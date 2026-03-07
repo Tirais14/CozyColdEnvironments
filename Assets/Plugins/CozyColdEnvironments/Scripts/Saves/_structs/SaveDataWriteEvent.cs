@@ -13,7 +13,7 @@ namespace CCEnvs.Saves
         public SaveDataWriteEvent(
             IReadOnlyList<SaveEntry> changedSaveEntries,
             WriteSaveDataMode writeMode
-            ) 
+            )
         {
             WrittenEntries = changedSaveEntries;
             WriteMode = writeMode;

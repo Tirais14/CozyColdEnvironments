@@ -1,8 +1,8 @@
 #nullable enable
 
-using R3;
 using System;
 using System.Threading;
+using R3;
 
 namespace CCEnvs.Patterns.Commands
 {

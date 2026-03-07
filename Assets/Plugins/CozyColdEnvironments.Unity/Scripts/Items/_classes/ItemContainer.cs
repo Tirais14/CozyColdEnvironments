@@ -1,7 +1,7 @@
+using System;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using R3;
-using System;
 using UnityEngine;
 
 #nullable enable

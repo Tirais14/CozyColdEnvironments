@@ -1,14 +1,14 @@
+using System;
+using System.Reflection;
 using CCEnvs.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json
 {
-    public class ByDescriptorJsonConverter : JsonConverter
+    public class DescriptedObjectJsonConverter : JsonConverter
     {
         public const string DESCRIPTOR_PROPERTY_NAME = "$typeDescriptor";
 
@@ -36,31 +36,23 @@ namespace CCEnvs.Json
             var jToken = JToken.Load(reader);
 
             if (jToken is not JObject jObj)
-                throw new JsonSerializationException("Expected JObject");
+                throw new JsonSerializationException($"Expected JObject. Current: {jToken.GetType()}");
 
             if (jObj.Property(DESCRIPTOR_PROPERTY_NAME).IsNull(out var descriptorProp))
-                throw new JsonSerializationException($"Object: {objectType}, property: {DESCRIPTOR_PROPERTY_NAME} value is null");
+                return OnDescriptorPropertyNotFound(jObj, objectType, serializer);
 
             var descriptor = descriptorProp.Value.ToObject<TypeSerializationDescriptor>(serializer);
 
-            if (descriptor == default)
-                throw new JsonSerializationException($"Object: {objectType}, {nameof(TypeSerializationDescriptor)} value not found");
-
-            if (!TypeSerializationHelper.DescriptedTypes.TryGetValue(descriptor, out var resultType))
-                throw new JsonSerializationException($"Type: {objectType} hasn't {nameof(TypeSerializationDescriptor)}");
+            if (descriptor == default
+                ||
+                !TypeSerializationHelper.DescriptedTypes.TryGetValue(descriptor, out var resultType))
+            {
+                return OnDescriptorNotFound(jObj, objectType, serializer);
+            }
 
             jObj.Remove(DESCRIPTOR_PROPERTY_NAME);
 
-            var jContract = serializer.ContractResolver.ResolveContract(resultType);
-
-            if (jContract is not JsonObjectContract jObjContract)
-                throw new JsonSerializationException("Expected JsonObjectContract");
-
-            object instance = JsonSerializerInternalReaderHelper.CreateNewObject(resultType, jObj.CreateReader(), serializer);
-
-            serializer.Populate(jObj.CreateReader(), instance);
-
-            return instance;
+            return OnReadJson(jObj, resultType, serializer);
         }
 
         public override void WriteJson(
@@ -92,7 +84,7 @@ namespace CCEnvs.Json
 
                 serializer.Serialize(writer, descriptor);
 
-                JsonSerializerInternalWriterhelper.WriteObjectBody(
+                JsonSerializerInternalWriterHelper.WriteObjectBody(
                     writer,
                     jObjContract,
                     serializer,
@@ -103,6 +95,36 @@ namespace CCEnvs.Json
             }
             else
                 throw new NotImplementedException(objType.ToString());
+        }
+
+        protected virtual object? OnDescriptorPropertyNotFound(
+            JObject jObj,
+            Type objType,
+            JsonSerializer serializer
+            )
+        {
+            throw new JsonSerializationException($"Object: {objType}, property: {DESCRIPTOR_PROPERTY_NAME} value is null");
+        }
+
+        protected virtual object? OnDescriptorNotFound(
+            JObject jObj,
+            Type objType,
+            JsonSerializer serializer
+            )
+        {
+            throw new JsonSerializationException($"Object: {objType} hasn't {nameof(TypeSerializationDescriptor)}");
+        }
+
+        protected virtual object? OnReadJson(
+            JObject jObj,
+            Type objType,
+            JsonSerializer serializer
+            )
+        {
+            var instance = JsonSerializerInternalReaderHelper.CreateNewObject(objType, jObj.CreateReader(), serializer);
+            //serializer.Populate(jObj.CreateReader(), instance);
+
+            return instance;
         }
     }
 }

@@ -1,6 +1,6 @@
+using System.Threading;
 using CCEnvs.Unity.Profiles;
 using R3;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable

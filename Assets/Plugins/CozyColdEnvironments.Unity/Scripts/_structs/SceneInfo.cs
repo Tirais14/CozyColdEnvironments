@@ -1,8 +1,8 @@
+using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Unity.EditorSerialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

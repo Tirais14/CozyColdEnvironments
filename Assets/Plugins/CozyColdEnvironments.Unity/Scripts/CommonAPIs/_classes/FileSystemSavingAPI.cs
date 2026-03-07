@@ -1,22 +1,22 @@
+using System.Threading;
 using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using CCEnvs.Unity.Saves;
 using Cysharp.Threading.Tasks;
 using R3;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Unity.CommonAPIs
 {
-    public sealed class DefaultSavingAPI : ISavingAPI
+    public sealed class FileSystemSavingAPI : ISavingAPI
     {
         [field: OnInstallResetable]
-        public static DefaultSavingAPI? Instance { get; private set; }
+        public static FileSystemSavingAPI? Instance { get; private set; }
 
         public bool IsGameSaving => SavingSystem.Self.IsSaving;
         public bool IsSaveGameLoading => SavingSystem.Self.IsSaveLoading;
 
-        public DefaultSavingAPI()
+        public FileSystemSavingAPI()
         {
             if (Instance is not null)
                 throw CC.ThrowHelper.CannotCreateInstance(nameof(DefaultGeneralAPI));

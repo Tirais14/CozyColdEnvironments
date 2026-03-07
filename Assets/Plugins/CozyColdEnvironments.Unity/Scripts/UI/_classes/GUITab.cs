@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Runtime.CompilerServices;
 using CCEnvs.Dependencies;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
@@ -7,8 +9,6 @@ using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using R3;
-using System;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;

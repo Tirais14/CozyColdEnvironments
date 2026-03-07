@@ -112,7 +112,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                 .Subscribe(this,
                 static (saveData, @this) =>
                 {
-                    var jSettings = CC.JsonSettings;
+                    var jSettings = CC.SerializerSettings;
 
                     jSettings.Formatting = Formatting.None;
 

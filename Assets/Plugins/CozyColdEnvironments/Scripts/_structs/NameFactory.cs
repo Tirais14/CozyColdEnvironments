@@ -1,6 +1,6 @@
-﻿using CCEnvs.Caching;
+﻿using System;
+using CCEnvs.Caching;
 using Humanizer;
-using System;
 
 #nullable enable
 namespace CCEnvs

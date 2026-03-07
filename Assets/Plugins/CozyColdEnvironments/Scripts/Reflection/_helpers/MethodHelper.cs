@@ -1,8 +1,8 @@
 #nullable enable
-using CommunityToolkit.Diagnostics;
 using System;
 using System.Linq;
 using System.Reflection;
+using CommunityToolkit.Diagnostics;
 
 namespace CCEnvs.Reflection
 {

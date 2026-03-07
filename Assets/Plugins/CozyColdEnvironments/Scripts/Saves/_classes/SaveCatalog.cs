@@ -13,16 +13,13 @@ using CCEnvs.Pools;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using UnityEngine.tvOS;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.Saves
 {
-    [Serializable, JsonObject]
     [SerializationDescriptor("SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
     public sealed class SaveCatalog
         :
@@ -30,22 +27,16 @@ namespace CCEnvs.Saves
         IEnumerable<SaveGroup>,
         IDisposable
     {
-        [JsonProperty("groups")]
         private ObservableDictionary<string, SaveGroup> groups = new();
 
-        [JsonProperty("incrementalGroups")]
         private ObservableDictionary<string, SaveGroupIncremental> incrementalGroups = new();
 
-        [JsonIgnore]
         private int? hashCode;
 
-        [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveGroup> Groups => groups;
 
-        [JsonProperty("path")]
         public string Path { get; init; }
 
-        [JsonProperty("archive")]
         public SaveArchive Archive { get; init; }
 
         public SaveCatalog(
@@ -209,7 +200,7 @@ namespace CCEnvs.Saves
 
             lock (groups.SyncRoot)
                 groups.SelectValue().DisposeEach(bufferized: false);
-            
+
             lock (incrementalGroups.SyncRoot)
                 incrementalGroups.SelectValue().DisposeEach(bufferized: false);
 

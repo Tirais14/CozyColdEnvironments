@@ -1,6 +1,6 @@
+using System;
 using CCEnvs.Attributes.Serialization;
 using Newtonsoft.Json;
-using System;
 
 #nullable enable
 namespace CCEnvs.Snapshots

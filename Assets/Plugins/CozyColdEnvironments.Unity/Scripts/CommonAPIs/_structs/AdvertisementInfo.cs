@@ -1,5 +1,5 @@
-using CommunityToolkit.Diagnostics;
 using System;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.CommonAPIs

@@ -1,5 +1,5 @@
-using CCEnvs.Diagnostics;
 using System;
+using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Unity.Databases

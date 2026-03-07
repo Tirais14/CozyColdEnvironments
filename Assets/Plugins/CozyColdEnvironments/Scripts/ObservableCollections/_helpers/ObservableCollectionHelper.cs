@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 #nullable enable
 namespace CCEnvs.ObservableCollections
 {

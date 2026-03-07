@@ -1,8 +1,8 @@
-﻿using CCEnvs.Attributes.Serialization;
+﻿using System;
+using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using System;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -11,16 +11,21 @@ namespace CCEnvs.Saves
     [SerializationDescriptor("Saves.SaveUnit", "77478f05-ab2b-4cb0-b420-39baf8fd8452")]
     public readonly struct SaveEntry : IEquatable<SaveEntry>
     {
-        public string Key { get; }
+        [JsonProperty("version")]
+        public long Version { get; init; }
 
-        public ISnapshot Snapshot { get; }
+        [JsonProperty("key")]
+        public string Key { get; init; }
 
-        [JsonConstructor]
-        public SaveEntry(string key, ISnapshot snapshot)
+        [JsonProperty("snapshot")]
+        public ISnapshot Snapshot { get; init; }
+
+        public SaveEntry(long version, string key, ISnapshot snapshot)
         {
             Guard.IsNotNull(key, nameof(key));
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 
+            Version = version;
             Key = key;
             Snapshot = snapshot;
         }

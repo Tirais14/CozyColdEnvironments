@@ -1,6 +1,6 @@
+using System;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using System;
 
 #nullable enable
 namespace CCEnvs.Serialization

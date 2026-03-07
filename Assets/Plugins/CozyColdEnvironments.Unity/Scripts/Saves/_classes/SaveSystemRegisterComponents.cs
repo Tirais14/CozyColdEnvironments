@@ -42,7 +42,7 @@ namespace CCEnvs.Unity.Saves
                 {
                     var reg = saveGroup.RegisterObjectHandled(cmp, cmp.GetExtraInfo().ToString());
 
-                    registrations.Add(reg); 
+                    registrations.Add(reg);
                 }
                 catch (System.Exception ex)
                 {

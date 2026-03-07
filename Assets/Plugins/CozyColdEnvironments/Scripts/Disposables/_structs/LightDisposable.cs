@@ -68,7 +68,7 @@ namespace CCEnvs.Disposables
         }
     }
 
-    public struct LightDisposable<TState> 
+    public struct LightDisposable<TState>
         :
         IEquatable<LightDisposable<TState>>,
         IDisposable

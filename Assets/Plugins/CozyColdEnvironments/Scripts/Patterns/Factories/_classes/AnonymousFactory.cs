@@ -1,5 +1,5 @@
-using CommunityToolkit.Diagnostics;
 using System;
+using CommunityToolkit.Diagnostics;
 
 #nullable enable
 #pragma warning disable S2436

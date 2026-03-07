@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
@@ -9,11 +13,8 @@ using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Snapshots.UI;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using R3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -127,7 +128,7 @@ namespace CCEnvs.Unity.UI
             if (IsInited)
                 return;
 
-            ValidateInit();
+            ThrowIfInitFailured();
 
             using var _ = destroyCancellationToken.TryLinkTokens(
                 cancellationToken,
@@ -145,20 +146,12 @@ namespace CCEnvs.Unity.UI
 
         public void Hide()
         {
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled || PreventHide)
                 return;
 
-            Command.Builder.WithName(nameof(Hide), this)
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(
-                static @this => @this.HideInternal())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
-                .ScheduleBy(commandScheduler);
+            GetHideCommand(destroyCancellationToken).ScheduleBy(commandScheduler);
         }
 
         public async UniTask HideAsync(CancellationToken cancellationToken = default)
@@ -166,7 +159,7 @@ namespace CCEnvs.Unity.UI
             if (!IsShown || PreventHide)
                 return;
 
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled)
                 return;
@@ -178,36 +171,19 @@ namespace CCEnvs.Unity.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            Hide();
-
-            await UniTask.WaitWhile(
-                this,
-                static @this => @this.IsShown,
-                cancellationToken: cancellationToken
-                );
+            await GetHideCommand(cancellationToken).ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
         }
 
         public void Show()
         {
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled)
                 return;
 
-            Command.Builder.WithName(nameof(Show), this)
-                .WithState(this)
-                .WithExecutePredicate(
-                static @this =>
-                {
-                    return @this.IsReadyToShow;
-                })
-                .Synchronously()
-                .WithExecuteAction(
-                static @this => @this.ShowInternal())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
-                .ScheduleBy(commandScheduler);
+            GetShowCommand(destroyCancellationToken).ScheduleBy(commandScheduler);  
         }
 
         public async UniTask ShowAsync(CancellationToken cancellationToken = default)
@@ -215,7 +191,7 @@ namespace CCEnvs.Unity.UI
             if (IsShown)
                 return;
 
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled)
                 return;
@@ -227,18 +203,14 @@ namespace CCEnvs.Unity.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            Show();
-
-            await UniTask.WaitUntil(
-                this,
-                static @this => @this.IsShown,
-                cancellationToken: cancellationToken
-                );
+            await GetShowCommand(cancellationToken).ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
         }
 
         public bool SwitchShownState()
         {
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled)
                 return IsShown;
@@ -268,7 +240,7 @@ namespace CCEnvs.Unity.UI
 
         public void Redraw()
         {
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled)
                 return;
@@ -289,7 +261,7 @@ namespace CCEnvs.Unity.UI
 
         public async UniTask RedrawAsync(CancellationToken cancellationToken = default)
         {
-            ValidateInit();
+            ThrowIfInitFailured();
 
             if (!IsEnabled)
                 return;
@@ -439,7 +411,7 @@ namespace CCEnvs.Unity.UI
             return new InvalidOperationException($"{nameof(GUITab)}: {this} is not correctly initialized");
         }
 
-        protected void ValidateInit()
+        protected void ThrowIfInitFailured()
         {
             if (isInitFaulted)
                 throw GetInitFaultedException();
@@ -672,6 +644,47 @@ namespace CCEnvs.Unity.UI
                     @this.SetRoot();
                 })
                 .RegisterTo(destroyCancellationToken);
+        }
+
+        private ICommandBase GetHideCommand(CancellationToken cancellationToken)
+        {
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(Hide),
+                expirationTimeRelativeToNow: 5.Minutes()
+                );
+
+            return Command.Builder.WithName(cmdName)
+                .WithState(this)
+                .Synchronously()
+                .WithExecuteAction(
+                static @this => @this.HideInternal())
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken);
+        }
+
+        private ICommandBase GetShowCommand(CancellationToken cancellationToken)
+        {
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(Hide),
+                expirationTimeRelativeToNow: 5.Minutes()
+                );
+
+            return Command.Builder.WithName(cmdName)
+                .WithState(this)
+                .WithExecutePredicate(
+                static @this =>
+                {
+                    return @this.IsReadyToShow;
+                })
+                .Synchronously()
+                .WithExecuteAction(
+                static @this => @this.ShowInternal())
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken);
         }
     }
 }

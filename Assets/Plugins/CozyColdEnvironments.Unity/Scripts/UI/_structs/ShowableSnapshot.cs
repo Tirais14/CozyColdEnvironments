@@ -1,7 +1,7 @@
 #nullable enable
+using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
-using System;
 
 namespace CCEnvs.Unity.UI
 {

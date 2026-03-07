@@ -1,7 +1,7 @@
 #nullable enable
-using CCEnvs.Patterns.Factories;
 using System;
 using System.Collections.Generic;
+using CCEnvs.Patterns.Factories;
 
 namespace CCEnvs.Pools
 {

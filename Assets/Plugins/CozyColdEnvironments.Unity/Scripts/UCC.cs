@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Saves;
@@ -7,10 +9,6 @@ using CCEnvs.Unity.Items;
 using CCEnvs.Unity.Saves;
 using CCEnvs.Unity.Snapshots;
 using Cysharp.Threading.Tasks;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
