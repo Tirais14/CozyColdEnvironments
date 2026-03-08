@@ -28,16 +28,15 @@ namespace CCEnvs.Saves
         IDisposable
     {
         private ObservableDictionary<string, SaveGroup> groups = new();
-
         private ObservableDictionary<string, SaveGroupIncremental> incrementalGroups = new();
 
         private int? hashCode;
 
         public IReadOnlyObservableDictionary<string, SaveGroup> Groups => groups;
 
-        public string Path { get; init; }
+        public string Path { get; }
 
-        public SaveArchive Archive { get; init; }
+        public SaveArchive Archive { get;}
 
         public SaveCatalog(
             SaveArchive archive,
@@ -90,7 +89,10 @@ namespace CCEnvs.Saves
             return false;
         }
 
-        public SaveGroup GetOrCreateGroup(string groupName)
+        public SaveGroup GetOrCreateGroup(
+            string groupName,
+            long saveDataVersion = 0L
+            )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
@@ -100,7 +102,7 @@ namespace CCEnvs.Saves
                 if (incrementalGroups.ContainsKey(groupName))
                     throw new InvalidOperationException($"Group: {groupName} already exists and it's incremental");
 
-                group = new SaveGroup(this, groupName);
+                group = new SaveGroup(this, groupName, saveDataVersion);
 
                 groups.Add(groupName, group);
             }
@@ -108,7 +110,10 @@ namespace CCEnvs.Saves
             return group;
         }
 
-        public SaveGroupIncremental GetOrCreateIncrementalGroup(string groupName)
+        public SaveGroupIncremental GetOrCreateIncrementalGroup(
+            string groupName, 
+            long saveDataVersion = 0L
+            )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
@@ -118,7 +123,7 @@ namespace CCEnvs.Saves
                 if (groups.ContainsKey(groupName))
                     throw new InvalidOperationException($"Group: {groupName} already exists and it's not incremental");
 
-                group = new SaveGroupIncremental(this, groupName);
+                group = new SaveGroupIncremental(this, groupName, saveDataVersion);
 
                 incrementalGroups.Add(groupName, group);
             }
@@ -230,7 +235,9 @@ namespace CCEnvs.Saves
             if (groups.IsEmpty())
                 return;
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -312,7 +319,9 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             using var tasks = new PooledArray<UniTask>(groups.Count);
 

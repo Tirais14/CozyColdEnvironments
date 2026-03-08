@@ -1,108 +1,134 @@
-using System;
-using System.Threading;
-using CCEnvs.Disposables;
-using CCEnvs.Patterns.Commands;
-using CCEnvs.Saves;
-using CCEnvs.Threading.Tasks;
-using Cysharp.Threading.Tasks;
-using Humanizer;
-using Newtonsoft.Json.Converters;
-using R3;
-using UnityEngine;
-
+#nullable enable
 namespace CCEnvs
 {
-    public class SaveDataLoader
-    {
-        public SaveData Data { get; set; }
+//    public class SaveDataLoader
+//    {
+//        public SaveData Data { get; set; }
 
-        public bool IsLoaded { get; private set; }
+//        public bool IsLoaded { get; private set; }
 
-        public async UniTask LoadSaveDataFromFileAsync(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
-            bool force = false,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-            cancellationToken.ThrowIfCancellationRequested();
+//        public async UniTask LoadSaveDataFromFileAsync(
+//            WriteSaveDataMode writeSaveDataMode = default,
+//            bool configureAwait = true,
+//            bool force = false,
+//            CancellationToken cancellationToken = default
+//            )
+//        {
+//            cancellationToken.ThrowIfCancellationRequested();
 
-            if (!force && IsLoaded)
-                return;
+//            if (!force && IsLoaded)
+//                return;
 
-            await UniTaskHelper.TrySwitchToThreadPool();
+//#if !PLATFORM_WEBGL
+//            await UniTaskHelper.TrySwitchToThreadPool();
+//#endif
 
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(LoadSaveDataFromFileAsync),
-                expirationTimeRelativeToNow: 2.Minutes()
-                );
+//            string cmdName = NameFactory.CreateFromCaller(
+//                this,
+//                nameof(LoadSaveDataFromFileAsync),
+//                expirationTimeRelativeToNow: 2.Minutes()
+//                );
 
-            await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, configureAwait, writeSaveDataMode))
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (args, cancellationToken) =>
-                {
-                    await args.@this.LoadSaveDataFromFileAsyncCore(
-                        args.writeSaveDataMode,
-                        args.configureAwait,
-                        cancellationToken
-                        );
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+//            await Command.Builder.WithName(cmdName)
+//                .WithState((@this: this, configureAwait, writeSaveDataMode))
+//                .Asynchronously()
+//                .WithExecuteAction(
+//                static async (args, cancellationToken) =>
+//                {
+//                    await args.@this.LoadSaveDataFromFileAsyncCore(
+//                        args.writeSaveDataMode,
+//                        args.configureAwait,
+//                        cancellationToken
+//                        );
+//                })
+//                .BuildPooled()
+//                .Value
+//                .AttachExternalCancellationToken(cancellationToken)
+//                .ScheduleBy(SaveSystem.CommandScheduler)
+//                .ObserveIsDone()
+//                .FirstAsync(cancellationToken);
 
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-        }
+//            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+//        }
 
-        private async UniTask LoadSaveDataFromFileAsyncCore(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
+//        private async UniTask LoadSaveDataFromFileAsyncCore(
+//            WriteSaveDataMode writeSaveDataMode = default,
+//            bool configureAwait = true,
+//            CancellationToken cancellationToken = default
+//            )
+//        {
+//            cancellationToken.ThrowIfCancellationRequested();
 
-            cancellationToken.ThrowIfCancellationRequested();
+//            var loadedSaveData = await GetSaveDataFromFileAsyncCore(
+//                configureAwait: false,
+//                cancellationToken
+//                );
 
-            var loadedSaveData = await GetSaveDataFromFileAsyncCore(
-                configureAwait: false,
-                cancellationToken
-                );
+//#if !PLATFORM_WEBGL
+//            await UniTaskHelper.TrySwitchToThreadPool();
+//#endif
 
-            await UniTaskHelper.TrySwitchToThreadPool();
+//            try
+//            {
+//                if (loadedSaveData is null)
+//                {
+//                    Data.Write(Array.Empty<SaveEntry>(), writeSaveDataMode);
 
-            try
-            {
-                if (loadedSaveData is null)
-                {
-                    Data.Write(Array.Empty<SaveEntry>(), writeSaveDataMode);
+//                    IsLoaded = true;
 
-                    IsDataLoadedFromFile = true;
+//                    return;
+//                }
 
-                    return;
-                }
+//                Data.Write(loadedSaveData.SaveEntries.Values, writeSaveDataMode);
 
-                SaveData.Write(loadedSaveData.SaveEntries.Values, writeSaveDataMode);
+//                IsLoaded = true;
+//            }
+//            catch (Exception ex)
+//            {
+//                this.PrintException(ex);
 
-                IsDataLoadedFromFile = true;
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
+//                return;
+//            }
+//            finally
+//            {
+//                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+//            }
+//        }
 
-                return;
-            }
-            finally
-            {
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-        }
-    }
+//        private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
+//            string path,
+//            bool configureAwait = true,
+//            CancellationToken cancellationToken = default
+//            )
+//        {
+//            cancellationToken.ThrowIfCancellationRequested();
+
+//#if !PLATFORM_WEBGL
+//            await UniTaskHelper.TrySwitchToThreadPool();
+//#endif
+
+//            var filePath = GetFullPath();
+
+//            try
+//            {
+//                var loadedSaveData = await SaveLoad.DataFromFileAsync(
+//                    filePath,
+//                    configureAwait: false,
+//                    cancellationToken
+//                    );
+
+//                return loadedSaveData;
+//            }
+//            catch (Exception ex)
+//            {
+//                this.PrintException(ex);
+
+//                return null;
+//            }
+//            finally
+//            {
+//                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+//            }
+//        }
+//    }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
@@ -545,12 +546,18 @@ namespace CCEnvs.Unity.Saves
                     CC.SerializerSettings
                     );
 
+#if PLATFORM_WEBGL
+                var bytes = Encoding.UTF8.GetBytes(serializedsaveFileData);
+
+                File.WriteAllBytes(path, bytes);
+#else
                 await File.WriteAllTextAsync(
                     path,
                     serializedsaveFileData,
                     cancellationToken: cTokenSource.Token
                     )
                     .ConfigureAwait(true);
+#endif
             }
             catch (Exception ex)
             {

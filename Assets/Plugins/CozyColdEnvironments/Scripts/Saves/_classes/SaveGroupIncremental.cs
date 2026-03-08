@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
+using CCEnvs.Disposables;
 using CCEnvs.Pools;
 using ObservableCollections;
 using R3;
@@ -21,10 +23,11 @@ namespace CCEnvs.Saves
 
         public SaveGroupIncremental(
             SaveCatalog catalog,
-            string? name = null
+            string? name = null,
+            long saveDataVersion = 0L
             )
             :
-            base(catalog, name)
+            base(catalog, name, saveDataVersion)
         {
             observableObjectAddBinding = BindObservableObjectAdd();
             observableObjectRemoveBinding = BindObservableObjectRemove();
@@ -63,10 +66,10 @@ namespace CCEnvs.Saves
             return saveEntries;
         }
 
-        private bool disposed;
+        private int disposed;
         protected override void Dispose(bool disposing)
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             if (disposing)
@@ -87,17 +90,7 @@ namespace CCEnvs.Saves
                 }
             }
 
-            disposed = true;
-
             base.Dispose(disposing);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (!disposed)
-                return;
-
-            throw new ObjectDisposedException(GetType().Name);
         }
 
         private void OnSaveObjectIsDirtyChangedCore(
@@ -106,7 +99,7 @@ namespace CCEnvs.Saves
             bool state
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (!state)
             {
@@ -151,7 +144,7 @@ namespace CCEnvs.Saves
 
         private void OnObservableObjectAdd(DictionaryAddEvent<string, object> addEv)
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             var obj = addEv.Value;
             var key = addEv.Key;
@@ -173,7 +166,7 @@ namespace CCEnvs.Saves
 
         private void OnObservableObjectRemove(DictionaryRemoveEvent<string, object> removeEv)
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             var key = removeEv.Key;
             var obj = removeEv.Value;

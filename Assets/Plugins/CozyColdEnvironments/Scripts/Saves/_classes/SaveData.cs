@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
@@ -195,13 +196,8 @@ namespace CCEnvs.Saves
             return GetEnumerator();
         }
 
-        private bool disposed;
         public void Dispose()
         {
-            if (disposed)
-                return;
-
-            disposed = true;
         }
     }
 }

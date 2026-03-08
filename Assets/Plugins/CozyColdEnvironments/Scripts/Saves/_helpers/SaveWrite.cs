@@ -23,7 +23,9 @@ namespace CCEnvs.Saves
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             var file = new FileInfo(parameters.FilePath);
 

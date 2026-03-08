@@ -34,24 +34,15 @@ namespace CCEnvs.Saves
 
         protected int? hashCode;
 
-        protected SaveData? _saveData;
-
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
-        public string Name { get; init; }
+        public string Name { get; }
 
-        public SaveCatalog Catalog { get; init; }
+        public SaveCatalog Catalog { get; }
 
-        public SaveData SaveData {
-            get
-            {
-                _saveData ??= new SaveData(Name);
-
-                return _saveData;
-            }
-        }
+        public SaveData SaveData { get; }
 
         public bool IsDataLoadedFromFile { get; private set; }
 
@@ -63,13 +54,15 @@ namespace CCEnvs.Saves
 
         public SaveGroup(
             SaveCatalog catalog,
-            string? name = null
+            string? name = null,
+            long saveDataVersion = 0L
             )
         {
             Guard.IsNotNull(catalog, nameof(catalog));
 
             Name = name ?? string.Empty;
             Catalog = catalog;
+            SaveData = new SaveData(Name, saveDataVersion);
         }
 
         public static SaveGroupIncremental ConvertToIncremental(SaveGroup group)
@@ -141,7 +134,7 @@ namespace CCEnvs.Saves
                    &&
                    left.Catalog == right.Catalog
                    &&
-                   left._saveData == right._saveData
+                   left.SaveData == right.SaveData
                    &&
                    left.disposed == right.disposed;
         }
@@ -256,7 +249,9 @@ namespace CCEnvs.Saves
             CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -302,7 +297,9 @@ namespace CCEnvs.Saves
             if (!force && IsDataLoadedFromFile)
                 return;
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -366,7 +363,9 @@ namespace CCEnvs.Saves
             CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -422,7 +421,7 @@ namespace CCEnvs.Saves
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Name, Catalog, _saveData, disposed);
+            hashCode ??= HashCode.Combine(Name, Catalog, SaveData, disposed);
 
             return hashCode.Value;
         }
@@ -431,7 +430,7 @@ namespace CCEnvs.Saves
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);  
         }
         protected virtual void Dispose(bool disposing)
         {
@@ -510,7 +509,7 @@ namespace CCEnvs.Saves
                 }
             }
 
-            saveEntry = new SaveEntry(, key, snapshot);
+            saveEntry = new SaveEntry(SaveData.Version, key, snapshot);
 
             return true;
         }
@@ -524,7 +523,9 @@ namespace CCEnvs.Saves
 
             cancellationToken.ThrowIfCancellationRequested();
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             var filePath = GetFullPath();
 
@@ -565,7 +566,9 @@ namespace CCEnvs.Saves
                 cancellationToken
                 );
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             try
             {
@@ -606,7 +609,9 @@ namespace CCEnvs.Saves
 
             cancellationToken.ThrowIfCancellationRequested();
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             string serializedEntries = JsonConvert.SerializeObject(SaveData);
 
