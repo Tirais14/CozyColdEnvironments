@@ -45,7 +45,7 @@ namespace CCEnvs.Caching
                 return false;
             }
 
-            value = this.value;
+            value = GetValue()!;
             return true;
         }
 

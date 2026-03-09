@@ -122,7 +122,7 @@ namespace CCEnvs.Json
             )
         {
             var instance = JsonSerializerInternalReaderHelper.CreateNewObject(objType, jObj.CreateReader(), serializer);
-            //serializer.Populate(jObj.CreateReader(), instance);
+            serializer.Populate(jObj.CreateReader(), instance);
 
             return instance;
         }

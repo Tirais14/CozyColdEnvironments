@@ -1,24 +1,26 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Timers;
-using CCEnvs.Collections;
-using CommunityToolkit.Diagnostics;
-using Humanizer;
+using System.Threading;
 using UnityEditor;
 
 #pragma warning disable S3267
 namespace CCEnvs.Caching
 {
-    public sealed class Cache<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
+    public sealed class Cache<TKey, TValue>
+        :
+        IEnumerable<KeyValuePair<TKey, TValue>>,
+        IDisposable
     {
         private readonly ConcurrentDictionary<TKey, ICacheEntry<TValue>> entries = new();
 
-        private readonly Timer timer = new();
+        private Timer? timer;
 
         private TimeSpan _expirationScanFrequency;
 
@@ -29,7 +31,7 @@ namespace CCEnvs.Caching
             set
             {
                 _expirationScanFrequency = value;
-                timer.Interval = _expirationScanFrequency.TotalMilliseconds;
+                OnExpirationScaneFrequencyChanged(_expirationScanFrequency);
             }
         }
         public int? SizeLimit {
@@ -42,7 +44,7 @@ namespace CCEnvs.Caching
                     return;
                 }
 
-                _sizeLimit = Math.Abs(value.Value);
+                _sizeLimit = Math.Max(0, value.Value);
             }
         }
 
@@ -64,17 +66,14 @@ namespace CCEnvs.Caching
             }
         }
 
+        public object SyncRoot { get; } = new();
+
         public Cache()
         {
-            timer = new Timer
-            {
-                AutoReset = true
-            };
-
-            timer.Elapsed += ValidateEntries;
-
             ExpirationScanFrequency = 10.Seconds();
         }
+
+        ~Cache() => Dispose();
 
         public ICacheEntry<TValue> CreateEntry(TKey key)
         {
@@ -85,12 +84,13 @@ namespace CCEnvs.Caching
 
             var entry = new CacheEntry<TValue>(default);
 
-            entries.TryAdd(key, entry);
+            lock (SyncRoot)
+                entries[key] = entry;
 
             return entry;
         }
 
-        public TValue? Get(TKey key)
+        public TValue? GetValue(TKey key)
         {
             Guard.IsNotNull(key, nameof(key));
 
@@ -104,16 +104,16 @@ namespace CCEnvs.Caching
             return entry.GetValue();
         }
 
-        public bool TryGet(TKey key, [NotNullWhen(true)] out TValue? result)
+        public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? result)
         {
             Guard.IsNotNull(key, nameof(key));
 
-            result = Get(key);
+            result = GetValue(key);
 
-            return result.IsNotDefault();
+            return result.IsNotNull();
         }
 
-        public TValue GetOrCreate(
+        public TValue GetOrCreateValue(
             TKey key,
             Func<ICacheEntry<TValue>, TValue> factory)
         {
@@ -187,20 +187,36 @@ namespace CCEnvs.Caching
 
         public void Clear()
         {
-            entries.Clear();
+            lock (SyncRoot)
+                entries.Clear();
         }
+
+        public void Dispose() => timer?.Dispose();
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return entries.Where(static entry => entry.Value.IsValid)
-                .Select(static entry => new KeyValuePair<TKey, TValue>(entry.Key, entry.Value.GetValue()!))
-                .ToArray()
-                .GetEnumeratorT();
+            foreach (var (key, entry) in entries)
+            {
+                if (entry.IsValid)
+                    yield return KeyValuePair.Create(key, entry.GetValue()!);
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private void ValidateEntries(object sender, ElapsedEventArgs args)
+        private void OnExpirationScaneFrequencyChanged(TimeSpan scanFreq)
+        {
+            if (scanFreq <= TimeSpan.Zero)
+            {
+                timer?.Dispose();
+                timer = null;
+                return;
+            }
+
+            timer = new Timer(ValidateEntries, null, TimeSpan.Zero, scanFreq);
+        }
+
+        private void ValidateEntries(object state)
         {
             if (SizeLimit is not null
                 &&
@@ -210,31 +226,38 @@ namespace CCEnvs.Caching
             {
                 var toRemoveCount = entries.Count - SizeLimit.Value;
 
-                var toRemoveKeys = entries.OrderBy(entry =>
+                var toRemove = entries.OrderByDescending(entry =>
                     {
                         return entry.Value.IdleTime.Ticks;
                     })
                     .ThenBy(entry =>
                     {
-                        return Convert.ToByte(entry.Value.HasValue);
-                    })
-                    .Select(pair => pair.Key)
-                    .Take(toRemoveCount)
-                    .ToArray();
+                        return !entry.Value.HasValue;
+                    });
 
-                foreach (var entryKey in toRemoveKeys)
-                    entries.TryRemove(entryKey, out _);
+                int removedCount = 0;
+
+                lock (SyncRoot)
+                {
+                    foreach (var (entryKey, _) in toRemove)
+                    {
+                        if (removedCount++ >= toRemoveCount)
+                            break;
+
+                        entries.TryRemove(entryKey, out _);
+                    }
+                }
             }
 
-            foreach (var pair in entries)
+            lock (SyncRoot)
             {
-                if (!pair.Value.HasValue)
-                    continue;
+                foreach (var (_, entry) in entries)
+                {
+                    if (entry.IsValid)
+                        continue;
 
-                if (!pair.Value.IsExpired())
-                    continue;
-
-                pair.Value.SetValue(default);
+                    entry.SetValue(default);
+                }
             }
         }
     }

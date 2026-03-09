@@ -40,6 +40,8 @@ namespace CCEnvs.Saves
             Path = path ?? DEFAULT_PATH;
         }
 
+        ~SaveArchive() => Dispose();
+
         public static bool operator ==(SaveArchive? left, SaveArchive? right)
         {
             if (ReferenceEquals(left, right))
@@ -112,7 +114,9 @@ namespace CCEnvs.Saves
             if (catalogs.IsEmpty())
                 return;
 
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -171,7 +175,9 @@ namespace CCEnvs.Saves
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            catalogs.SelectValue().DisposeEach(bufferized: false);
+            lock (catalogs.SyncRoot)
+                catalogs.SelectValue().DisposeEach(bufferized: false);
+
             catalogs.Clear();
         }
 
@@ -189,7 +195,9 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
+#if !PLATFORM_WEBGL
             await UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             using var tasks = new PooledArray<UniTask>(catalogs.Count);
 

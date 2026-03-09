@@ -12,30 +12,71 @@ namespace CCEnvs.Reflection.Caching
     {
         private readonly static Cache<MemberKey, MemberInfo> members = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = DefaultExpirationScanFrequency,
+            SizeLimit = DefaultSizeLimit
         };
 
         private readonly static Cache<FieldKey, FieldInfo> fields = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = DefaultExpirationScanFrequency,
+            SizeLimit = DefaultSizeLimit
         };
 
         private readonly static Cache<PropertyKey, PropertyInfo> props = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = DefaultExpirationScanFrequency,
+            SizeLimit = DefaultSizeLimit
         };
 
         private readonly static Cache<ParameterKey, ParameterInfo> parameters = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = DefaultExpirationScanFrequency,
+            SizeLimit = DefaultSizeLimit
         };
 
         private readonly static Cache<MethodKey, MethodBase> methods = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = DefaultExpirationScanFrequency,
+            SizeLimit = DefaultSizeLimit
         };
 
+        private static TimeSpan perMemberScanFrequency;
+
+        private static int? perMemberSizeLimit;
+
         public static TimeSpan DefaultExpirationTimeRelativeToNow { get; set; } = 20.Minutes();
+
+        public static TimeSpan DefaultExpirationScanFrequency { get; } = 1.Minutes();
+
+        public static TimeSpan ExpirationScanFrequency {
+            get => perMemberScanFrequency;
+            set
+            {
+                perMemberScanFrequency = value;
+
+                members.ExpirationScanFrequency = perMemberScanFrequency;
+                fields.ExpirationScanFrequency = perMemberScanFrequency;
+                props.ExpirationScanFrequency = perMemberScanFrequency;
+                parameters.ExpirationScanFrequency = perMemberScanFrequency;
+                methods.ExpirationScanFrequency = perMemberScanFrequency;
+            }
+        }
+
+        public static int? DefaultSizeLimit { get; } = 163840;
+
+        public static int? SizeLimit {
+            get => perMemberSizeLimit;
+            set
+            {
+                perMemberSizeLimit = value;
+
+                members.SizeLimit = perMemberSizeLimit;
+                fields.SizeLimit = perMemberSizeLimit;
+                props.SizeLimit = perMemberSizeLimit;
+                parameters.SizeLimit = perMemberSizeLimit;
+                methods.SizeLimit = perMemberSizeLimit;
+            }
+        }
 
         #region Getters
 
@@ -44,7 +85,7 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out MemberInfo? member
             )
         {
-            return members.TryGet(key, out member);
+            return members.TryGetValue(key, out member);
         }
 
         public static bool TryGetField(
@@ -52,7 +93,7 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out FieldInfo? field
             )
         {
-            return fields.TryGet(key, out field);
+            return fields.TryGetValue(key, out field);
         }
 
         public static bool TryGetProperty(
@@ -60,7 +101,7 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out PropertyInfo? prop
             )
         {
-            return props.TryGet(key, out prop);
+            return props.TryGetValue(key, out prop);
         }
 
         public static bool TryGetParameter(
@@ -68,7 +109,7 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out ParameterInfo? param
             )
         {
-            return parameters.TryGet(key, out param);
+            return parameters.TryGetValue(key, out param);
         }
 
         public static bool TryGetMethod(
@@ -76,7 +117,7 @@ namespace CCEnvs.Reflection.Caching
             [NotNullWhen(true)] out MethodInfo? method
             )
         {
-            if (!methods.TryGet(key, out var tMethod))
+            if (!methods.TryGetValue(key, out var tMethod))
             {
                 method = null;
                 return false;
@@ -93,7 +134,7 @@ namespace CCEnvs.Reflection.Caching
         {
             key = key.WithMemberPart(key.Core.WithName(".ctor"));
 
-            if (!methods.TryGet(key, out var tConstructor))
+            if (!methods.TryGetValue(key, out var tConstructor))
             {
                 constructor = null;
                 return false;
@@ -122,7 +163,7 @@ namespace CCEnvs.Reflection.Caching
                             return false;
                         }
 
-                        if (!methods.TryGet(ctorKey, out var ctor))
+                        if (!methods.TryGetValue(ctorKey, out var ctor))
                         {
                             member = null;
                             return false;
@@ -145,7 +186,7 @@ namespace CCEnvs.Reflection.Caching
                             return false;
                         }
 
-                        if (!fields.TryGet(fieldKey, out var field))
+                        if (!fields.TryGetValue(fieldKey, out var field))
                         {
                             member = null;
                             return false;
@@ -163,7 +204,7 @@ namespace CCEnvs.Reflection.Caching
                             return false;
                         }
 
-                        if (!methods.TryGet(methodKey, out var method))
+                        if (!methods.TryGetValue(methodKey, out var method))
                         {
                             member = null;
                             return false;
@@ -184,7 +225,7 @@ namespace CCEnvs.Reflection.Caching
                             return false;
                         }
 
-                        if (!props.TryGet(propKey, out var prop))
+                        if (!props.TryGetValue(propKey, out var prop))
                         {
                             member = null;
                             return false;

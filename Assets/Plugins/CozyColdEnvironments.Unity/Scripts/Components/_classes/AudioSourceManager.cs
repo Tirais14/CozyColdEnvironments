@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.Components
             CC.Guard.IsNotNull(entry, nameof(entry));
             Guard.IsNotNull(entry.EntryTag, nameof(entry.EntryTag));
 
-            var item = self.items.GetOrCreate(
+            var item = self.items.GetOrCreateValue(
                 entry.EntryTag,
                 factory: static (entry) =>
                 {
@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.Components
             CC.Guard.IsNotNull(entry, nameof(entry));
             CC.Guard.IsNotNull(entry.EntryTag, nameof(entry.EntryTag));
 
-            if (!self.items.Get(entry.EntryTag).Maybe().TryGetValue(out var item))
+            if (!self.items.GetValue(entry.EntryTag).Maybe().TryGetValue(out var item))
                 return false;
 
             return item.Entries.Remove(entry);
@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.Components
         {
             var entries = tag.IsNullOrWhiteSpace() switch
             {
-                false => self.items.Get(tag)
+                false => self.items.GetValue(tag)
                     .Maybe()
                     .Map(static item => (IEnumerable<AudioSourceManagerEntry>)item.Entries)
                     .GetValue(static () => Array.Empty<AudioSourceManagerEntry>()),
@@ -88,7 +88,7 @@ namespace CCEnvs.Unity.Components
 
             multiplier = Mathf.Abs(multiplier);
 
-            var item = self.items.GetOrCreate(
+            var item = self.items.GetOrCreateValue(
                 tag,
                 factory: static entry =>
                 {
@@ -113,7 +113,7 @@ namespace CCEnvs.Unity.Components
         {
             NormalizeTag(tag, out tag);
 
-            if (!self.items.Get(tag).Maybe().TryGetValue(out var item))
+            if (!self.items.GetValue(tag).Maybe().TryGetValue(out var item))
                 return 1f;
 
             return item.VolumeMultiplier;

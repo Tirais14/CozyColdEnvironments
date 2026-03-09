@@ -22,17 +22,14 @@ namespace CCEnvs.Saves
             upgraders[info] = upgrader;
         }
 
-        public static LightDisposable<SaveEntryUpgradeVersionInfo> RegisterDisposableHandled(
+        public static SaveEntryUpgraderRegistration RegisterDisposableHandled(
             SaveEntryUpgradeVersionInfo info,
             SaveEntryVersionUpgrader upgrader
             )
         {
             RegisterDisposableHandled(info, upgrader);
 
-            return CCDisposable.CreateLight(
-                info,
-                static info => UnregisterUpgrader(info)
-                );
+            return new SaveEntryUpgraderRegistration(info);
         }
 
         public static bool UnregisterUpgrader(SaveEntryUpgradeVersionInfo info)

@@ -67,7 +67,7 @@ namespace CCEnvs.Json.Converters
 
             if (items.Value.IsEmpty())
             {
-                if (!ctors.TryGet((objectType, WithParameter: false), out ctor))
+                if (!ctors.TryGetValue((objectType, WithParameter: false), out ctor))
                 {
                     ctor = objectType.GetConstructor(
                         BindingFlagsDefault.InstancePublic,
@@ -85,7 +85,7 @@ namespace CCEnvs.Json.Converters
                 return dictionary;
             }
 
-            if (!ctors.TryGet((objectType, WithParameter: true), out ctor))
+            if (!ctors.TryGetValue((objectType, WithParameter: true), out ctor))
             {
                 ctor = objectType.GetConstructors(BindingFlagsDefault.InstancePublic)
                     .Select(ctor => (ctor, prms: ctor.GetParameters()))

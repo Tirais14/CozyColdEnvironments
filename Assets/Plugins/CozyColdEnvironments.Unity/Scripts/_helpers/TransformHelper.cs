@@ -65,7 +65,7 @@ namespace CCEnvs.Unity
 
             pathBuilder.Value.AppendJoin("/", parents.Reverse().Select(x => x.name));
 
-            return new HierarchyPath(pathBuilder.ToString(), source.GetSiblingIndex());
+            return new HierarchyPath(pathBuilder.Value.ToString(), source.GetSiblingIndex());
         }
 
         public static bool MatchHierarchyPath(this Transform source, HierarchyPath hierarchyPath)

@@ -27,6 +27,11 @@ namespace CCEnvs.Saves
                 });
         }
 
+        public static implicit operator LightDisposable<(SaveGroup Group, string Key)>(SaveGroupRegistration instance)
+        {
+            return instance.core;
+        }
+
         public static bool operator ==(SaveGroupRegistration left, SaveGroupRegistration right)
         {
             return left.Equals(right);

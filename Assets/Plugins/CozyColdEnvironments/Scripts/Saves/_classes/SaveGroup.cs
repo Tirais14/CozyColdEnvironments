@@ -65,6 +65,8 @@ namespace CCEnvs.Saves
             SaveData = new SaveData(Name, saveDataVersion);
         }
 
+        ~SaveGroup() => Dispose();
+
         public static SaveGroupIncremental ConvertToIncremental(SaveGroup group)
         {
             Guard.IsNotNull(group, nameof(group));
@@ -255,8 +257,7 @@ namespace CCEnvs.Saves
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(GetSaveDataFromFileAsync),
-                expirationTimeRelativeToNow: 2.Minutes()
+                nameof(GetSaveDataFromFileAsync)
                 );
 
             var result = new ValueReference<SaveData?>();
@@ -303,8 +304,7 @@ namespace CCEnvs.Saves
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(LoadSaveDataFromFileAsync),
-                expirationTimeRelativeToNow: 2.Minutes()
+                nameof(LoadSaveDataFromFileAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
@@ -369,8 +369,7 @@ namespace CCEnvs.Saves
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(WriteSaveDataToFileAsync),
-                expirationTimeRelativeToNow: TimeSpan.Zero
+                nameof(WriteSaveDataToFileAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
@@ -427,11 +426,7 @@ namespace CCEnvs.Saves
         }
 
         private int disposed;
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);  
-        }
+        public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)

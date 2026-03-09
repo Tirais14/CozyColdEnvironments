@@ -7,6 +7,12 @@ namespace CCEnvs.Reflection.Caching
 {
     public static class TypeCache<T>
     {
+        private static string? _name;
+
+        private static string? _fullName;
+
+        private static string? _namespace;
+
         public static bool IsUnityObject { get; }
 
         public static bool IsUnityComponent { get; }
@@ -14,6 +20,33 @@ namespace CCEnvs.Reflection.Caching
         public static bool IsUnityGameObject { get; }
 
         public static bool IsCCBheaviour { get; }
+
+        public static string Name {
+            get
+            {
+                _name ??= TypeofCache<T>.Type.Name;
+
+                return _name;
+            }
+        }
+
+        public static string FullName {
+            get
+            {
+                _fullName ??= TypeofCache<T>.Type.FullName;
+
+                return _fullName;
+            }
+        }
+
+        public static string Namespace {
+            get
+            {
+                _namespace ??= TypeofCache<T>.Type.Namespace;
+
+                return _namespace;
+            }
+        }
 
         static TypeCache()
         {

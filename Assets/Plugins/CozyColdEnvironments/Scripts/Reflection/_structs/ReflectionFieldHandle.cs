@@ -17,7 +17,8 @@ namespace CCEnvs.Reflection
     {
         private static readonly Cache<ReflectionFieldHandle, FieldKey> cachedFieldKeys = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = 1.Minutes(),
+            SizeLimit = 16384
         };
 
         private int? hashCode;
@@ -81,7 +82,7 @@ namespace CCEnvs.Reflection
 
         public readonly FieldInfo? GetField(bool throwIfNotFound)
         {
-            if (cachedFieldKeys.TryGet(this, out var fieldKey)
+            if (cachedFieldKeys.TryGetValue(this, out var fieldKey)
                 &&
                 CachedMembers.TryGetField(fieldKey, out var field)
                 )

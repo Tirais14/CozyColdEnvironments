@@ -47,7 +47,7 @@ namespace Game
             if (assetName is null)
                 throw new ArgumentNullException(assetName);
 
-            if (decloniszedNameCache.TryGet(assetName, out var declonizedAssetName))
+            if (decloniszedNameCache.TryGetValue(assetName, out var declonizedAssetName))
                 return declonizedAssetName;
 
             var match = Regex.Match(assetName, @"^(\w+)");

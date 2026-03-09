@@ -148,7 +148,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly MethodInfo? GetMethod(bool throwIfNotFound)
         {
-            if (cachedMethodKeys.TryGet(this, out var methodKey)
+            if (cachedMethodKeys.TryGetValue(this, out var methodKey)
                 &&
                 CachedMembers.TryGetMethod(methodKey, out var method))
             {
@@ -181,7 +181,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ConstructorInfo? GetConstructor(bool throwIfNotFound)
         {
-            if (cachedCtorKeys.TryGet(this, out var ctorKey)
+            if (cachedCtorKeys.TryGetValue(this, out var ctorKey)
                 &&
                 CachedMembers.TryGetConstructor(ctorKey, out var ctor))
             {

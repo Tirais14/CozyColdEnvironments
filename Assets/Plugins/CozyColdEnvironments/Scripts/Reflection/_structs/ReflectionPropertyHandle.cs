@@ -81,7 +81,7 @@ namespace CCEnvs.Reflection
 
         public readonly PropertyInfo? GetProperty(bool throwIfNotFound)
         {
-            if (cachedPropKeys.TryGet(this, out var propKey)
+            if (cachedPropKeys.TryGetValue(this, out var propKey)
                 &&
                 CachedMembers.TryGetProperty(propKey, out var prop)
                 )

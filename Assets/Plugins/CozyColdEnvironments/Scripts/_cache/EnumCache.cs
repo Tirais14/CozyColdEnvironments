@@ -19,7 +19,7 @@ namespace CCEnvs.Utils
             Guard.IsNotNull(type, nameof(type));
             Guard.IsTrue(type.IsEnum, nameof(type), "Is not enum");
 
-            if (!cache.TryGet(type, out var values))
+            if (!cache.TryGetValue(type, out var values))
             {
                 values = Enum.GetValues(type).Cast<Enum>().ToArray();
 

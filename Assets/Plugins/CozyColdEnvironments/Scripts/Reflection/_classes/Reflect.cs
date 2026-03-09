@@ -836,7 +836,7 @@ namespace CCEnvs.Reflection
         {
             var key = $"{type}, {nameof(GetBaseTypes)}";
 
-            if (!cache.TryGet(type, out var baseTypes))
+            if (!cache.TryGetValue(type, out var baseTypes))
             {
                 baseTypes = type.CollectBaseTypes().ToArray();
 

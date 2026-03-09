@@ -16,12 +16,14 @@ namespace CCEnvs.Reflection
     {
         private static readonly Cache<ReflectionHandle, MemberKey> cachedMemberKeys = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = 1.Minutes(),
+            SizeLimit = 163840
         };
 
         private static readonly Cache<ReflectionHandle, MemberInfo[]> cachedMembers = new()
         {
-            ExpirationScanFrequency = 1.Minutes()
+            ExpirationScanFrequency = 1.Minutes(),
+            SizeLimit = 163840
         };
 
         private int? hashCode;
@@ -160,7 +162,7 @@ namespace CCEnvs.Reflection
         {
             Guard.IsNotNull(Type, nameof(Type));
 
-            if (cachedMembers.TryGet(this, out var members))
+            if (cachedMembers.TryGetValue(this, out var members))
                 return members;
 
             members = Type.FindMembers(memberType, Bindings,
@@ -187,7 +189,7 @@ namespace CCEnvs.Reflection
             bool throwIfNotFound = false
             )
         {
-            if (cachedMemberKeys.TryGet(this, out var memberKey)
+            if (cachedMemberKeys.TryGetValue(this, out var memberKey)
                 &&
                 CachedMembers.TryGetMemberUntyped(memberKey, memberType, out var member))
             {

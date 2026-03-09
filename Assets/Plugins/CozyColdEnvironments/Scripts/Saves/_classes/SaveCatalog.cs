@@ -13,6 +13,7 @@ using CCEnvs.Pools;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using ObservableCollections;
 using R3;
 
@@ -48,6 +49,8 @@ namespace CCEnvs.Saves
             Path = path ?? string.Empty;
             Archive = archive;
         }
+
+        ~SaveCatalog() => Dispose();
 
         public static bool operator ==(SaveCatalog? left, SaveCatalog? right)
         {
@@ -241,8 +244,7 @@ namespace CCEnvs.Saves
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(LoadGroupsFromFileAsync),
-                expirationTimeRelativeToNow: TimeSpan.Zero
+                nameof(LoadGroupsFromFileAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
@@ -296,13 +298,15 @@ namespace CCEnvs.Saves
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            groups.SelectValue().DisposeEach(bufferized: false);
+            lock (groups.SyncRoot)
+                groups.SelectValue().DisposeEach(bufferized: false);
+
             groups.Clear();
 
-            incrementalGroups.SelectValue().DisposeEach(bufferized: false);
-            incrementalGroups.Clear();
+            lock (incrementalGroups.SyncRoot)
+                incrementalGroups.SelectValue().DisposeEach(bufferized: false);
 
-            GC.SuppressFinalize(this);
+            incrementalGroups.Clear();
         }
 
         public IEnumerator<SaveGroup> GetEnumerator()

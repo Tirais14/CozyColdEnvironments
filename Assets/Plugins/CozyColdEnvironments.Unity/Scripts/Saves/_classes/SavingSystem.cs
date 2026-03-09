@@ -1,24 +1,28 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
+using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using R3;
 using SuperLinq;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -525,6 +529,9 @@ namespace CCEnvs.Unity.Saves
             if (IsSaveLoading)
                 throw new InvalidOperationException("Cannot save game while save loading");
 
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Saving in file {path}");
+
             isSaving.Value = true;
             using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
 
@@ -546,10 +553,9 @@ namespace CCEnvs.Unity.Saves
                     CC.SerializerSettings
                     );
 
-#if PLATFORM_WEBGL
-                var bytes = Encoding.UTF8.GetBytes(serializedsaveFileData);
-
-                File.WriteAllBytes(path, bytes);
+#if PLATFORM_WEBGL && !UNITY_EDITOR
+                File.WriteAllText(path, serializedsaveFileData);
+                PlayerPrefs.Save();
 #else
                 await File.WriteAllTextAsync(
                     path,
@@ -558,6 +564,7 @@ namespace CCEnvs.Unity.Saves
                     )
                     .ConfigureAwait(true);
 #endif
+
             }
             catch (Exception ex)
             {
@@ -574,6 +581,9 @@ namespace CCEnvs.Unity.Saves
         {
             if (IsSaveLoading)
                 throw new InvalidOperationException("Cannot save game while save loading");
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog("Saving in memory");
 
             isSaving.Value = true;
             using var cTokenSource = cancellationToken.LinkTokens(destroyCancellationToken);
@@ -824,7 +834,7 @@ namespace CCEnvs.Unity.Saves
                     loadedSnapshot,
                     tokenSource.Token
                     )
-                    .Forget();
+                    .ForgetByPrintException();
 
                 return true;
             }
@@ -907,10 +917,16 @@ namespace CCEnvs.Unity.Saves
         {
             try
             {
+                string serialized;
+
+#if PLATFORM_WEBGL && !UNITY_EDITOR
+                serialized = File.ReadAllText(path);
+#else
                 if (!File.Exists(path))
                     return default;
 
-                string serialized = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(true);
+                serialized = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(true);
+#endif
 
                 if (serialized.IsNullOrWhiteSpace())
                     return default;
@@ -919,8 +935,9 @@ namespace CCEnvs.Unity.Saves
 
                 return (fileData, serialized);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                this.PrintException(ex);
                 return (default, string.Empty);
             }
         }

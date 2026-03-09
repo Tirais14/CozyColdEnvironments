@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using CCEnvs.Collections;
+using CCEnvs.Disposables;
 using CCEnvs.Threading;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
@@ -44,7 +46,7 @@ namespace CCEnvs.Saves
             Action<object?, bool>? callback = null
             )
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (obj.IsNull())
             {
@@ -75,6 +77,7 @@ namespace CCEnvs.Saves
 
             switch (obj)
             {
+#if UNITY_2017_1_OR_NEWER
                 case MonoBehaviour monoBeh:
                     {
                         lazyObjectRestorer.TryEnqueue(
@@ -86,6 +89,7 @@ namespace CCEnvs.Saves
                             );
                     }
                     break;
+#endif
                 default:
                     {
                         var isRestored = TryRestoreObjectCore(obj, key, group);
@@ -133,7 +137,7 @@ namespace CCEnvs.Saves
 
         public SaveObjectRestorer MergeSaveDatas(IEnumerable<SaveData> saveDatas)
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             CC.Guard.IsNotNull(saveDatas, nameof(saveDatas));
 
@@ -151,7 +155,7 @@ namespace CCEnvs.Saves
 
         public SaveObjectRestorer OverrideSaveDatas(IEnumerable<SaveData> saveDatas)
         {
-            ThrowIfDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             CC.Guard.IsNotNull(saveDatas, nameof(saveDatas));
 
@@ -166,10 +170,10 @@ namespace CCEnvs.Saves
             return this;
         }
 
-        private bool disposed;
+        private int disposed;
         public void Dispose()
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             disposeCancellationTokenSource.CancelAndDispose();
@@ -178,7 +182,6 @@ namespace CCEnvs.Saves
 
             archiveDisposables.Values.DisposeEach();
             archiveDisposables.Clear();
-            archiveDisposables.TrimExcess();
 
             catalogDisposables.Values.DisposeEach();
             catalogDisposables.Clear();
@@ -194,8 +197,6 @@ namespace CCEnvs.Saves
             lazyObjectRestorer.Dispose();
 
             Archives.Clear();
-
-            disposed = true;
         }
 
         internal bool TryRestoreObjectCore(object obj, string objKey, SaveGroup saveGroup)
@@ -381,12 +382,6 @@ namespace CCEnvs.Saves
             Archives.ObserveDictionaryRemove(disposeCancellationTokenSource.Token)
                 .Subscribe(OnArchiveRemove)
                 .AddTo(disposables);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (disposed)
-                throw new ObjectDisposedException(GetType().FullName);
         }
     }
 }

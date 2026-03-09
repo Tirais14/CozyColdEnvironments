@@ -1,10 +1,11 @@
+using CCEnvs.Collections;
+using R3;
 using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
-using R3;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -73,9 +74,9 @@ namespace CCEnvs.Pools
         }
 
         public PooledArray(int count)
+            :
+            this()
         {
-            disposed = false;
-
             if (count <= 0)
             {
                 array = new arr<T>();
@@ -301,19 +302,22 @@ namespace CCEnvs.Pools
             return !(left == right);
         }
 
-        private bool disposed;
+        public readonly void Clear()
+        {
+            Array.Clear(Raw, 0, Raw.Length);
+        }
+
+        private int disposed;
         public void Dispose()
         {
-            if (disposed
+            if (this == default
                 ||
-                this == default)
+                Interlocked.Exchange(ref disposed, 1) != 0)
             {
                 return;
             }
 
             handle.Dispose();
-
-            disposed = true;
         }
 
         public readonly int IndexOf(T item)
@@ -354,14 +358,12 @@ namespace CCEnvs.Pools
                    &&
                    EqualityComparer<ArraySegment<T>>.Default.Equals(value, other.value)
                    &&
-                   Length == other.Length
-                   &&
-                   disposed == other.disposed;
+                   Length == other.Length;
         }
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(handle, array, value, Length, disposed);
+            return HashCode.Combine(handle, array, value, Length);
         }
 
         public readonly override string ToString()

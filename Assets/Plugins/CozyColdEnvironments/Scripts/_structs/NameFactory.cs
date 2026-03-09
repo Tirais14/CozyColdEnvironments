@@ -26,7 +26,7 @@ namespace CCEnvs
 
             var nameKey = (Type: caller.GetType(), CallerHash: caller.GetHashCode());
 
-            if (names.Value.TryGet(nameKey, out var name))
+            if (names.Value.TryGetValue(nameKey, out var name))
                 return name;
 
             if (id == null)
