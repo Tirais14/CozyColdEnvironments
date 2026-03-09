@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using CCEnvs.Attributes;
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
@@ -9,6 +7,9 @@ using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -41,6 +42,8 @@ namespace CCEnvs.Saves
             set => serializerSettings = value ?? GetDefaultSerializerSettings();
         }
 
+        public static SaveObjectRestorer ObjectRestorer { get; } = new();
+
         internal static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
 
         internal static SemaphoreSlim IOSemaphore {
@@ -53,6 +56,13 @@ namespace CCEnvs.Saves
 
                 return _ioSemaphore;
             }
+        }
+
+        static SaveSystem()
+        {
+            BindArchiveAdd();
+            BindArchiveRemove();
+            BindAcrhivesClear();
         }
 
         public static SaveArchive GetOrCreateArchive(string path)
@@ -147,6 +157,44 @@ namespace CCEnvs.Saves
             serializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
 
             return serializerSettings;
+        }
+
+        private static void OnArchiveAdd(DictionaryAddEvent<string, SaveArchive> addEv)
+        {
+            var archivePath = addEv.Key;
+            var archive = addEv.Value;
+
+            ObjectRestorer.Archives.Add(archivePath, archive);
+        }
+
+        private static void BindArchiveAdd()
+        {
+            Archives.ObserveDictionaryAdd()
+                .Subscribe(OnArchiveAdd);
+        }
+
+        private static void OnArchiveRemove(DictionaryRemoveEvent<string, SaveArchive> removeEv)
+        {
+            var archivePath = removeEv.Key;
+
+            ObjectRestorer.Archives.Remove(archivePath);
+        }
+
+        private static void BindArchiveRemove()
+        {
+            Archives.ObserveDictionaryRemove()
+                .Subscribe(OnArchiveRemove);
+        }
+
+        private static void OnArchivesClear(Unit _)
+        {
+            ObjectRestorer.Archives.Clear();
+        }
+
+        private static void BindAcrhivesClear()
+        {
+            Archives.ObserveClear()
+                .Subscribe(OnArchivesClear);
         }
 
         //private static void InstallByAttributes(MemberInfo[] domainMembers)

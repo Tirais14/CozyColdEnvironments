@@ -101,8 +101,12 @@ namespace CCEnvs
                 OnLimitReached?.Invoke(IterationPosition);
                 onLimitReachedCmd?.Execute(IterationPosition);
 
+                var ex = CC.ThrowHelper.EndlessLoopException(IterationCount);
+
                 if (ThrowOnLimitReached)
-                    throw CC.ThrowHelper.EndlessLoopException(IterationCount);
+                    throw ex;
+                else
+                    this.PrintException(ex);
 
                 return false;
             }

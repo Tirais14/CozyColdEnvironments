@@ -122,17 +122,14 @@ namespace CCEnvs.Saves
 
             using var notReadyMonoBehs = ListPool<MonoBehaviourInfo>.Shared.Get();
 
-#if CC_DEBUG_ENABLED
             var loopFuse = LoopFuse.Create();
-#endif
+            loopFuse.ThrowOnLimitReached = false;
 
             while (processedCount++ < toProcessCount
                    &&
                    monoBehs.TryDequeue(out var monoBeh)
-#if CC_DEBUG_ENABLED
                    &&
                    loopFuse.MoveNext()
-#endif
                    )
             {
                 if (monoBeh.Value.IsNull())
