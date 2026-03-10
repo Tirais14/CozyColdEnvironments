@@ -104,11 +104,11 @@ namespace CCEnvs.Patterns.Commands
             Enable();
         }
 
-        public static CommandScheduler CreateDefaultRegistered()
+        public static CommandScheduler CreateDefaultRegistered(string? name = null)
         {
             return new CommandScheduler(
                 ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds()),
-                name: nameof(CC)
+                name: name
                 );
         }
 

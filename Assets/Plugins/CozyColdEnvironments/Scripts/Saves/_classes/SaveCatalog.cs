@@ -1,4 +1,3 @@
-using CCEnvs.Attributes.Serialization;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
@@ -13,10 +12,8 @@ using System.Xml.Linq;
 #pragma warning disable IDE0044
 namespace CCEnvs.Saves
 {
-    [SerializationDescriptor("SaveCatalog", "f6d4d3d5-bfab-4d7a-89a8-2107c8b2d497")]
     public sealed class SaveCatalog
         :
-        IEquatable<SaveCatalog>,
         IEnumerable<SaveGroup>,
         IDisposable
     {
@@ -46,28 +43,6 @@ namespace CCEnvs.Saves
         }
 
         ~SaveCatalog() => Dispose();
-
-        public static bool operator ==(SaveCatalog? left, SaveCatalog? right)
-        {
-            if (ReferenceEquals(left, right))
-                return true;
-
-            if (left is null || right is null)
-                return false;
-
-            return left.Path == right.Path
-                   &&
-                   left.Archive == right.Archive
-                   &&
-                   left.disposed == right.disposed
-                   &&
-                   left.Loader == right.Loader;
-        }
-
-        public static bool operator !=(SaveCatalog? left, SaveCatalog? right)
-        {
-            return !(left == right);
-        }
 
         public bool RemoveGroup(string groupName)
         {
@@ -229,24 +204,7 @@ namespace CCEnvs.Saves
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            return System.IO.Path.Join(Archive.Path, Path, Loader);
-        }
-
-        public bool Equals(SaveCatalog other)
-        {
-            return this == other;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is SaveCatalog typed && Equals(typed);
-        }
-
-        public override int GetHashCode()
-        {
-            hashCode ??= HashCode.Combine(Path, Archive, disposed);
-
-            return hashCode.Value;
+            return System.IO.Path.Join(Archive.Path, Path);
         }
 
         public override string ToString()
@@ -259,6 +217,8 @@ namespace CCEnvs.Saves
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
+
+            Loader.Dispose();
 
             lock (groups.SyncRoot)
                 groups.SelectValue().DisposeEach(bufferized: false);

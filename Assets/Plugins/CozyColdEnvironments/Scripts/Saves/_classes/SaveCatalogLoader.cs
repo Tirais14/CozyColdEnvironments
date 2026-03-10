@@ -13,8 +13,10 @@ using ValueTaskSupplement;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public class SaveCatalogLoader : IDisposable
+    public sealed class SaveCatalogLoader : IDisposable
     {
+        private readonly CommandScheduler commandScheduler = new(ObservableSystem.DefaultFrameProvider, nameof(SaveCatalogLoader));
+
         public SaveCatalog Catalog { get; }
 
         public SaveCatalogLoader(SaveCatalog catalog)
@@ -28,7 +30,6 @@ namespace CCEnvs.Saves
 
         public async ValueTask LoadGroupsFromFileAsync(
             WriteSaveDataMode writeSaveDataMode = default,
-            bool force = false,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
@@ -49,22 +50,68 @@ namespace CCEnvs.Saves
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, writeSaveDataMode, configureAwait, force))
+                .WithState((@this: this, writeSaveDataMode, configureAwait))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.LoadGroupsFromFileAsyncCore(
-                        args.writeSaveDataMode,
-                        args.force,
-                        args.configureAwait,
-                        cancellationToken
+                        writeSaveDataMode: args.writeSaveDataMode,
+                        configureAwait: args.configureAwait,
+                        cancellationToken: cancellationToken
                         );
                 })
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
+                .ScheduleBy(commandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
+        }
+
+        public async ValueTask LoadGroupsFromSerializedAsync(
+            SaveCatalogSerialized serialized,
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (Catalog.Groups.IsEmpty())
+                return;
+
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            await UniTaskHelper.TrySwitchToThreadPool();
+#endif
+
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(LoadGroupsFromSerializedAsync)
+                );
+
+            await Command.Builder.WithName(cmdName)
+                .WithState((@this: this, serialized, writeSaveDataMode, configureAwait))
+                .Asynchronously()
+                .WithExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    await args.@this.LoadGroupsFromSerializedAsyncCore(
+                        serialized: args.serialized,
+                        writeSaveDataMode: args.writeSaveDataMode,
+                        configureAwait: args.configureAwait,
+                        cancellationToken: cancellationToken
+                        );
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
 
@@ -78,12 +125,13 @@ namespace CCEnvs.Saves
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
+
+            commandScheduler.Dispose();
         }
 
         private async ValueTask LoadGroupsFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
             bool configureAwait = true,
-            bool force = false,
             CancellationToken cancellationToken = default
             )
         {
@@ -108,7 +156,6 @@ namespace CCEnvs.Saves
                         task = group.SaveDataLoader.LoadSaveDataFromFileAsync(
                             writeSaveDataMode,
                             configureAwait: false,
-                            force,
                             cancellationToken: cancellationToken
                             );
 
@@ -118,12 +165,64 @@ namespace CCEnvs.Saves
 
                 await ValueTaskEx.WhenAll(tasks.Value);
             }
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             finally
             {
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
             }
+#endif
+        }
+
+        private async ValueTask LoadGroupsFromSerializedAsyncCore(
+            SaveCatalogSerialized serialized,
+            WriteSaveDataMode writeSaveDataMode = default,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+            cancellationToken.ThrowIfCancellationRequested();
+
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            await UniTaskHelper.TrySwitchToThreadPool();
+#endif
+
+            using var tasks = ListPool<ValueTask>.Shared.Get();
+
+#pragma warning disable CS4014
+            tasks.Value.TryIncreaseCapacity(Catalog.Groups.Count);
+#pragma warning restore CS4014
+
+            ValueTask task;
+
+            try
+            {
+                foreach (var (_, serializedGroup) in serialized.Groups)
+                {
+                    if (!Catalog.Groups.TryGetValue(serializedGroup.Name, out var group))
+                        continue;
+
+                    task = group.SaveDataLoader.LoadSaveDataFromSerializedAsync(
+                        serializedGroup.SaveDataSerialized,
+                        writeSaveDataMode,
+                        configureAwait: false,
+                        cancellationToken: cancellationToken
+                        );
+
+                    tasks.Value.Add(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+                return;
+            }
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            finally
+            {
+                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+            }
+#endif
         }
     }
 }

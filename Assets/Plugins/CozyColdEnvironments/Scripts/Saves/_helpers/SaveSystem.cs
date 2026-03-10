@@ -50,7 +50,7 @@ namespace CCEnvs.Saves
 
         public static SaveObjectRestorer ObjectRestorer { get; } = new();
 
-        internal static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
+        //internal static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
 
         internal static SemaphoreSlim IOSemaphore {
             get

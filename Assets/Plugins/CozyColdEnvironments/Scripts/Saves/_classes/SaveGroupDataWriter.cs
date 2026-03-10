@@ -14,6 +14,8 @@ namespace CCEnvs
 {
     public sealed class SaveGroupDataWriter : IDisposable
     {
+        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroupDataWriter));
+
         private ReactiveCommand<SaveData>? onWritten;
 
         public SaveGroup Group { get; }
@@ -66,7 +68,7 @@ namespace CCEnvs
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
+                .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
 
@@ -106,7 +108,7 @@ namespace CCEnvs
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
+                .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
 
@@ -123,6 +125,7 @@ namespace CCEnvs
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
+            commandScheduler.Dispose();
             onWritten?.Dispose();
         }
 

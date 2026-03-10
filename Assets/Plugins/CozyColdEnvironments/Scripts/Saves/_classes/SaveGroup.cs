@@ -16,10 +16,8 @@ using System.Threading;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    [SerializationDescriptor("SaveGroup", "617e5bef-3872-4fae-b0d4-8d42f0893231")]
     public class SaveGroup
         :
-        IEquatable<SaveGroup?>,
         IEnumerable<KeyValuePair<string, object>>,
         IDisposable
     {
@@ -121,32 +119,6 @@ namespace CCEnvs.Saves
             }
 
             return group;
-        }
-
-        public static bool operator ==(SaveGroup? left, SaveGroup? right)
-        {
-            if (ReferenceEquals(left, right))
-                return true;
-
-            if (left is null || right is null)
-                return false;
-
-            return left.Name == right.Name
-                   &&
-                   left.Catalog == right.Catalog
-                   &&
-                   left.SaveData == right.SaveData
-                   &&
-                   left.SaveDataLoader == right.SaveDataLoader
-                   &&
-                   left.SaveDataWriter == right.SaveDataWriter
-                   &&
-                   left.disposed == right.disposed;
-        }
-
-        public static bool operator !=(SaveGroup? left, SaveGroup? right)
-        {
-            return !(left == right);
         }
 
         public SaveGroup RegisterObject(
@@ -256,30 +228,6 @@ namespace CCEnvs.Saves
         public override string ToString()
         {
             return $"({nameof(Name)}: {Name}; {nameof(Catalog)}: {Catalog})";
-        }
-
-        public bool Equals(SaveGroup? other)
-        {
-            return this == other;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is SaveGroup typed && Equals(typed);
-        }
-
-        public override int GetHashCode()
-        {
-            hashCode ??= HashCode.Combine(
-                Name,
-                Catalog,
-                SaveData,
-                SaveDataLoader,
-                SaveDataWriter,
-                disposed
-                );
-
-            return hashCode.Value;
         }
 
         private int disposed;
