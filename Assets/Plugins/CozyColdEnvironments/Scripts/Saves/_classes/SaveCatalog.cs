@@ -348,7 +348,7 @@ namespace CCEnvs.Saves
                 {
                     foreach (var (_, group) in groups)
                     {
-                        task = group.LoadSaveDataFromFileAsync(
+                        task = group.SaveDataLoader.LoadSaveDataFromFileAsync(
                             writeSaveDataMode,
                             configureAwait: false,
                             force,
