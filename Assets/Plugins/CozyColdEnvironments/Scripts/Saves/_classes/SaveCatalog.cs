@@ -1,9 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Xml.Linq;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
@@ -12,10 +6,15 @@ using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using Humanizer;
 using ObservableCollections;
 using R3;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using ValueTaskSupplement;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -235,7 +234,7 @@ namespace CCEnvs.Saves
             return System.IO.Path.Join(Archive.Path, Path);
         }
 
-        public async UniTask LoadGroupsFromFileAsync(
+        public async ValueTask LoadGroupsFromFileAsync(
             WriteSaveDataMode writeSaveDataMode = default,
             bool force = false,
             bool configureAwait = true,
@@ -326,20 +325,20 @@ namespace CCEnvs.Saves
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private async UniTask LoadGroupsFromFileAsyncCore(
+        private async ValueTask LoadGroupsFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
             bool configureAwait = true,
             bool force = false,
             CancellationToken cancellationToken = default
             )
         {
-#if !PLATFORM_WEBGL
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
-            using var tasks = new PooledArray<UniTask>(groups.Count);
+            using var tasks = new PooledArray<ValueTask>(groups.Count);
 
-            UniTask task;
+            ValueTask task;
 
             int i = 0;
 
@@ -360,11 +359,13 @@ namespace CCEnvs.Saves
                     }
                 }
 
-                await UniTask.WhenAll(tasks.Raw);
+                await ValueTaskEx.WhenAll(tasks.Raw);
             }
             finally
             {
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
             }
         }
     }

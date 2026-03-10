@@ -215,6 +215,8 @@ namespace CCEnvs.Saves
         {
             ClearArchives();
 
+            ObjectRestorer.ClearArchives();
+
             lock (convertersSyncRoot)
                 converters.Clear();
         }

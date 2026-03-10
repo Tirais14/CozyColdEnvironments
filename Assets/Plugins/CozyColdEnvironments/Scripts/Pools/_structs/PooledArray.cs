@@ -292,6 +292,26 @@ namespace CCEnvs.Pools
             return array;
         }
 
+        public static implicit operator Span<T>(PooledArray<T> instance)
+        {
+            return instance.AsSpan();
+        }
+
+        public static implicit operator ReadOnlySpan<T>(PooledArray<T> instance)
+        {
+            return instance.AsSpan();
+        }
+
+        public static implicit operator Memory<T>(PooledArray<T> instance)
+        {
+            return instance.AsMemory();
+        }
+
+        public static implicit operator ReadOnlyMemory<T>(PooledArray<T> instance)
+        {
+            return instance.AsMemory();
+        }
+
         public static bool operator ==(PooledArray<T> left, PooledArray<T> right)
         {
             return left.Equals(right);

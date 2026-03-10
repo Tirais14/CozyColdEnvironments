@@ -1,68 +1,89 @@
-﻿using System;
-using CCEnvs.Collections;
+﻿using CCEnvs.IO;
+using CCEnvs.IO.Compression;
 using Newtonsoft.Json;
+using System;
+using System.IO;
+using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
 {
     public static class SaveSerializer
     {
-        public static SaveData[] TryDeserialize(string serialized)
+        public static async ValueTask<SaveData?> DeserializeAsync(
+            string? serialized,
+            CancellationToken cancellationToken = default
+            )
         {
-            if (serialized.IsNullOrWhiteSpace())
-            {
-                //TODO: Remove extra null validation
-                if (serialized is null)
-                    typeof(SaveSerializer).PrintError($"Argument {serialized} is null");
+            cancellationToken.ThrowIfCancellationRequested();
 
-                return new arr<SaveData>();
+            if (serialized.IsNullOrWhiteSpace())
+                return null;
+
+            if (GZipHelper.IsCompressed(serialized))
+            {
+                using var memStream = await StreamFactory.CreateMemoryStreamAsync(
+                    serialized.AsMemory(),
+                    cancellationToken: cancellationToken
+                    );
+
+                using var gZipStream = new GZipStream(memStream, mode: CompressionMode.Decompress);
+
+                using var streamReader = new StreamReader(gZipStream);
+
+#if !PLATFORM_WEBGL
+                serialized = await streamReader.ReadToEndAsync();
+#else
+                serialized = streamReader.ReadToEnd();
+#endif
             }
 
             try
             {
-                var saveDatas = JsonConvert.DeserializeObject<SaveData[]>(serialized);
-
-                if (saveDatas is null)
-                {
-                    typeof(SaveSerializer).PrintWarning($"Nothing deserialized from: {Environment.NewLine}{serialized}");
-
-                    return new arr<SaveData>();
-                }
-
-                return saveDatas;
+                return JsonConvert.DeserializeObject<SaveData>(serialized, SaveSystem.SerializerSettings);
             }
             catch (Exception ex)
             {
                 typeof(SaveSerializer).PrintException(ex);
 
-                return new arr<SaveData>();
+                return null;
             }
         }
 
-        public static string TrySerialize(SaveData[] saveDatas)
+        public static async ValueTask<string> SerializeAsync(
+            SaveData? saveData,
+            bool compressed = true,
+            CancellationToken cancellationToken = default
+            )
         {
-            if (saveDatas.IsNull())
-            {
-                typeof(SaveSerializer).PrintError($"Argument: {nameof(saveDatas)} is null");
+            cancellationToken.ThrowIfCancellationRequested();
 
-                return string.Empty;
-            }
-
-            if (saveDatas.IsEmpty())
+            if (saveData is null)
                 return string.Empty;
 
-            try
-            {
-                var serialized = JsonConvert.SerializeObject(saveDatas, CC.SerializerSettings);
+            var serialized = JsonConvert.SerializeObject(
+                saveData,
+                SaveSystem.SerializerSettings
+                )
+                ??
+                string.Empty;
 
+            if (serialized.IsNullOrWhiteSpace())
                 return serialized;
-            }
-            catch (Exception ex)
-            {
-                typeof(SaveSerializer).PrintException(ex);
 
-                return string.Empty;
-            }
+            using var memStream = StreamFactory.CreateMemoryStream(serialized);
+
+            using var gZipStream = new GZipStream(memStream, CompressionLevel.Optimal);
+
+            using var streamReader = new StreamReader(gZipStream);
+
+#if !PLATFORM_WEBGL
+            return await streamReader.ReadToEndAsync();
+#else
+            return streamReader.ReadToEnd();
+#endif
         }
     }
 }

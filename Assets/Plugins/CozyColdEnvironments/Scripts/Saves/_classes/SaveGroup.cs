@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using CCEnvs.Attributes.Serialization;
+﻿using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
@@ -13,12 +7,16 @@ using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using Humanizer;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
-using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -44,9 +42,11 @@ namespace CCEnvs.Saves
 
         public SaveData SaveData { get; }
 
-        public bool IsDataLoadedFromFile { get; private set; }
+        public bool IsDataLoaded { get; private set; }
 
         public object SyncRoot { get; } = new();
+
+        public SaveDataLoader SaveDataLoader { get; }
 
         protected CancellationToken DisposeCancellationToken {
             get => disposeCancellationTokenSource.Token;
@@ -63,6 +63,7 @@ namespace CCEnvs.Saves
             Name = name ?? string.Empty;
             Catalog = catalog;
             SaveData = new SaveData(Name, saveDataVersion);
+            SaveDataLoader = new SaveDataLoader(this);
         }
 
         ~SaveGroup() => Dispose();
@@ -243,116 +244,7 @@ namespace CCEnvs.Saves
             return this;
         }
 
-        public async UniTask<SaveData?> GetSaveDataFromFileAsync(
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-            cancellationToken.ThrowIfCancellationRequested();
-
-#if !PLATFORM_WEBGL
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(GetSaveDataFromFileAsync)
-                );
-
-            var result = new ValueReference<SaveData?>();
-
-            await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, configureAwait, result))
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (args, cancellationToken) =>
-                {
-                    args.result = await args.@this.GetSaveDataFromFileAsyncCore(
-                        args.configureAwait,
-                        cancellationToken
-                        );
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
-
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-
-            return result;
-        }
-
-        public async UniTask LoadSaveDataFromFileAsync(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
-            bool force = false,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (!force && IsDataLoadedFromFile)
-                return;
-
-#if !PLATFORM_WEBGL
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(LoadSaveDataFromFileAsync)
-                );
-
-            await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, configureAwait, writeSaveDataMode))
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (args, cancellationToken) =>
-                {
-                    await args.@this.LoadSaveDataFromFileAsyncCore(
-                        args.writeSaveDataMode,
-                        args.configureAwait,
-                        cancellationToken
-                        );
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
-
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-        }
-
-        public async UniTask<SaveData> GetOrLoadSaveDataFromFileAsync(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool forceGet = false,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (forceGet || IsDataLoadedFromFile)
-                return SaveData;
-
-            await LoadSaveDataFromFileAsync(
-                writeSaveDataMode,
-                configureAwait,
-                forceGet,
-                cancellationToken
-                );
-
-            return SaveData;
-        }
-
-        public async UniTask WriteSaveDataToFileAsync(
+        public async ValueTask WriteSaveDataToFileAsync(
             string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
             bool compressed = true,
             bool backuped = true,
@@ -363,7 +255,7 @@ namespace CCEnvs.Saves
             CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
 
-#if !PLATFORM_WEBGL
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
@@ -393,7 +285,9 @@ namespace CCEnvs.Saves
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
 
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -509,90 +403,7 @@ namespace CCEnvs.Saves
             return true;
         }
 
-        private async UniTask<SaveData?> GetSaveDataFromFileAsyncCore(
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-#if !PLATFORM_WEBGL
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            var filePath = GetFullPath();
-
-            try
-            {
-                var loadedSaveData = await SaveLoad.DataFromFileAsync(
-                    filePath,
-                    configureAwait: false,
-                    cancellationToken
-                    );
-
-                return loadedSaveData;
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-
-                return null;
-            }
-            finally
-            {
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-        }
-
-        private async UniTask LoadSaveDataFromFileAsyncCore(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var loadedSaveData = await GetSaveDataFromFileAsyncCore(
-                configureAwait: false,
-                cancellationToken
-                );
-
-#if !PLATFORM_WEBGL
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            try
-            {
-                if (loadedSaveData is null)
-                {
-                    SaveData.Write(Array.Empty<SaveEntry>(), writeSaveDataMode);
-
-                    IsDataLoadedFromFile = true;
-
-                    return;
-                }
-
-                SaveData.Write(loadedSaveData.SaveEntries.Values, writeSaveDataMode);
-
-                IsDataLoadedFromFile = true;
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-
-                return;
-            }
-            finally
-            {
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-        }
-
-        private async UniTask WriteSaveDataToFileAsyncCore(
+        private async ValueTask WriteSaveDataToFileAsyncCore(
             string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
             bool compressed = true,
             bool backuped = true,
@@ -628,7 +439,11 @@ namespace CCEnvs.Saves
                 cancellationToken: cancellationToken
                 );
 
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
         }
+
+
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
@@ -13,6 +14,7 @@ using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
+using ValueTaskSupplement;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -105,7 +107,7 @@ namespace CCEnvs.Saves
             return this;
         }
 
-        public async UniTask LoadCatalogsFromFileAsync(
+        public async ValueTask LoadCatalogsFromFileAsync(
             WriteSaveDataMode writeSaveDataMode = default,
             bool force = false,
             bool configureAwait = true,
@@ -192,20 +194,20 @@ namespace CCEnvs.Saves
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private async UniTask LoadCatalogsFromFileAsyncCore(
+        private async ValueTask LoadCatalogsFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
             bool force = false,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-#if !PLATFORM_WEBGL
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
-            using var tasks = new PooledArray<UniTask>(catalogs.Count);
+            using var tasks = new PooledArray<ValueTask>(catalogs.Count);
 
-            UniTask task;
+            ValueTask task;
 
             int i = 0;
 
@@ -226,11 +228,13 @@ namespace CCEnvs.Saves
                     }
                 }
 
-                await UniTask.WhenAll(tasks.Raw);
+                await ValueTaskEx.WhenAll(tasks.Raw);
             }
             finally
             {
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
             }
         }
     }

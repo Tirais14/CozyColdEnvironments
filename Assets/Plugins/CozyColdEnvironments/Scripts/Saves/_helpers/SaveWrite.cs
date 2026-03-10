@@ -15,7 +15,7 @@ namespace CCEnvs.Saves
     {
         public const string DEFAULT_SAVE_EXTENSION = "jgz";
 
-        public static async UniTask ToFileAsync(
+        public static async ValueTask ToFileAsync(
             WriteSaveDataToFileParameters parameters,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
@@ -23,7 +23,7 @@ namespace CCEnvs.Saves
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-#if !PLATFORM_WEBGL
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
@@ -77,11 +77,13 @@ namespace CCEnvs.Saves
             {
                 SaveSystem.IOSemaphore.Release();
 
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
             }
         }
 
-        private static async Task WriteToStreamAsync(
+        private static async ValueTask WriteToStreamAsync(
             Stream fileStream,
             string fileContent,
             CancellationToken cancellationToken

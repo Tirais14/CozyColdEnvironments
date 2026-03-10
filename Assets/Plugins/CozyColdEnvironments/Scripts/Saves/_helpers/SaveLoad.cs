@@ -2,7 +2,9 @@
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using System.Threading.Tasks;
 using CCEnvs.Diagnostics;
+using CCEnvs.IO.Compression;
 using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace CCEnvs.Saves
 {
     public static class SaveLoad
     {
-        public static async UniTask<string> FromFileAsync(
+        public static async ValueTask<string> FromFileAsync(
             string filePath,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
@@ -62,7 +64,7 @@ namespace CCEnvs.Saves
             }
         }
 
-        public static async UniTask<SaveData?> DataFromFileAsync(
+        public static async ValueTask<SaveData?> DataFromFileAsync(
             string filePath,
             bool configureAwait = true,
             CancellationToken cancellationToken = default)
@@ -94,7 +96,7 @@ namespace CCEnvs.Saves
             return buffer[0] == 0x1F && buffer[1] == 0x8B; //Magic bytes from GZip
         }
 
-        private static async UniTask<string> TryDecompressAsync(
+        private static async ValueTask<string> TryDecompressAsync(
             FileStream tempFileStream
             )
         {
@@ -102,7 +104,7 @@ namespace CCEnvs.Saves
 
             try
             {
-                if (IsFileCompressed(tempFileStream))
+                if (GZipHelper.IsCompressed(tempFileStream))
                 {
                     using var gZipStream = new GZipStream(tempFileStream, CompressionMode.Decompress);
 

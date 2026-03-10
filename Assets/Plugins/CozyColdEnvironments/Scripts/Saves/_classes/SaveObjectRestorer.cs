@@ -41,7 +41,7 @@ namespace CCEnvs.Saves
         public void TryRestoreObject(
             object obj,
             string key,
-            SaveGroup group,
+            string groupName,
             object? callbackState = null,
             Action<object?, bool>? callback = null
             )
@@ -135,6 +135,13 @@ namespace CCEnvs.Saves
             return this;
         }
 
+        public SaveObjectRestorer ClearArchives()
+        {
+            Archives.Clear();
+
+            return this;
+        }
+
         public SaveObjectRestorer MergeSaveDatas(IEnumerable<SaveData> saveDatas)
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -192,9 +199,9 @@ namespace CCEnvs.Saves
             disposables.Dispose();
         }
 
-        internal bool TryRestoreObjectCore(object obj, string objKey, SaveGroup saveGroup)
+        internal bool TryRestoreObjectCore(object obj, string objKey, string groupName)
         {
-            if (!groupSaveDatas.TryGetValue(saveGroup.Name, out var saveData)
+            if (!groupSaveDatas.TryGetValue(groupName, out var saveData)
                 ||
                 !saveData.SaveEntries.TryGetValue(objKey, out var saveUnit))
             {
@@ -276,11 +283,6 @@ namespace CCEnvs.Saves
             }
         }
 
-        private void BindSaveDataEntryAdd()
-        {
-
-        }
-
         private void OnGroupObjectAdd(
             DictionaryAddEvent<string, object> objEv,
             SaveGroup group
@@ -298,12 +300,33 @@ namespace CCEnvs.Saves
                 .AddTo(disposables);
         }
 
+        private void OnSaveDataLoaded(SaveGroup group)
+        {
+            lock (group.ObservableObjects.SyncRoot)
+            {
+                foreach (var (key, obj) in group.ObservableObjects)
+                    TryRestoreObject(obj, key, group.Name);
+            }
+        }
+
+        private void BindSaveDataLoaded(SaveGroup group)
+        {
+            group.ObserveLoadSaveData()
+                .Subscribe((@this: this, group),
+                static (saveData, args) =>
+                {
+                    args.@this.OnSaveDataLoaded(args.group);
+                })
+                .AddTo(disposables);
+        }
+
         private void OnCatalogGroupAdd(DictionaryAddEvent<string, SaveGroup> addEv)
         {
             var group = addEv.Value;
 
             BindGroupObjectAdd(group);
             groupSaveDatas.Add(group.Name, group.SaveData);
+            BindSaveDataLoaded(group);
         }
 
         private void BindCatalogGroupAdd(SaveCatalog catalog)
