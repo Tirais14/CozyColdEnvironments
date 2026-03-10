@@ -24,6 +24,8 @@ namespace CCEnvs.Saves
 
         public bool IsDataLoaded { get; private set; }
 
+        public bool RedirectFromFileToSerializedStorage { get; }
+
         public SaveGroupDataLoader(SaveGroup group)
         {
             Guard.IsNotNull(group, nameof(group));
@@ -38,8 +40,19 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            if (RedirectFromFileToSerializedStorage
+                &&
+                TryGetSerializedSaveGroup(out var serializedGroup))
+            {
+                return await DeserializeSaveDataFromSerializedAsync(
+                    serializedGroup.SaveDataSerialized,
+                    configureAwait: configureAwait,
+                    cancellationToken: cancellationToken
+                    );
+            }
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -83,8 +96,20 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            if (RedirectFromFileToSerializedStorage
+                &&
+                TryGetSerializedSaveGroup(out var serializedGroup))
+            {
+                await LoadSaveDataFromSerializedAsync(
+                    serializedGroup.SaveDataSerialized,
+                    writeSaveDataMode: writeSaveDataMode,
+                    configureAwait: configureAwait,
+                    cancellationToken: cancellationToken
+                    );
+            }
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -126,8 +151,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (forceGet || IsDataLoaded)
                 return Data;
@@ -147,8 +172,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -207,8 +232,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -252,8 +277,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (forceGet || IsDataLoaded)
                 return Data;
@@ -290,9 +315,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
@@ -330,8 +354,8 @@ namespace CCEnvs.Saves
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             var loadedSaveData = await DeserializeSaveDataFromFileAsyncCore(
                 configureAwait: false,
@@ -444,6 +468,23 @@ namespace CCEnvs.Saves
                 await UniTaskHelper.TrySwitchToMainThread(configureAwait);
 #endif
             }
+        }
+
+        private bool TryGetSerializedSaveGroup(out SaveGroupSerialized serializedGroup)
+        {
+            serializedGroup = default;
+
+            var archivePath = Group.Catalog.Archive.Path;
+
+            if (!SaveSystemSerializedStorage.Archives.TryGetValue(archivePath, out var serializedArchive))
+                return false;
+
+            var catalogPath = Group.Catalog.Path;
+
+            if (!serializedArchive.Catalogs.TryGetValue(catalogPath, out var serializedCatalog))
+                return false;
+
+            return serializedCatalog.Groups.TryGetValue(Group.Name, out serializedGroup);
         }
     }
 }

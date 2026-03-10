@@ -1,20 +1,11 @@
+using CCEnvs.Disposables;
+using CCEnvs.Linq;
+using CommunityToolkit.Diagnostics;
+using ObservableCollections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
-using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
-using CCEnvs.Disposables;
-using CCEnvs.Linq;
-using CCEnvs.Patterns.Commands;
-using CCEnvs.Pools;
-using CCEnvs.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using ObservableCollections;
-using R3;
-using ValueTaskSupplement;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -33,11 +24,14 @@ namespace CCEnvs.Saves
 
         public IReadOnlyObservableDictionary<string, SaveCatalog> Catalogs => catalogs;
 
-        public string Path { get; init; }
+        public string Path { get; }
+
+        public SaveArchiveLoader Loader { get; }
 
         public SaveArchive(string? path = null)
         {
             Path = path ?? DEFAULT_PATH;
+            Loader = new SaveArchiveLoader(this);
         }
 
         ~SaveArchive() => Dispose();
@@ -97,6 +91,8 @@ namespace CCEnvs.Saves
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
+
+            Loader.Dispose();
 
             lock (catalogs.SyncRoot)
                 catalogs.SelectValue().DisposeEach(bufferized: false);

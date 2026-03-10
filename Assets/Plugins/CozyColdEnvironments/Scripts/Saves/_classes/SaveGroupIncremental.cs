@@ -18,6 +18,10 @@ namespace CCEnvs.Saves
         private readonly Dictionary<string, object> nonIncrementalObjects = new();
         private readonly Dictionary<string, OnSaveObjectIsDirtyChanged> incrementalObjectBindings = new();
 
+        private readonly object dirtyObjectGate = new();
+        private readonly object nonIncrementalObjectsGate = new();
+        private readonly object incrementalObjectBindingsGate = new();
+
         private readonly IDisposable observableObjectAddBinding;
         private readonly IDisposable observableObjectRemoveBinding;
 
@@ -37,14 +41,15 @@ namespace CCEnvs.Saves
         {
             int entryCount;
 
-            lock (SyncRoot)
-                entryCount = dirtyObjects.Count + nonIncrementalObjects.Count;
+            lock (dirtyObjectGate)
+                lock (nonIncrementalObjectsGate)
+                    entryCount = dirtyObjects.Count + nonIncrementalObjects.Count;
 
             var saveEntries = ListPool<SaveEntry>.Shared.Get();
 
             saveEntries.Value.TryIncreaseCapacity(entryCount);
 
-            lock (SyncRoot)
+            lock (dirtyObjectGate)
             {
                 foreach (var (key, obj) in dirtyObjects)
                 {
@@ -53,7 +58,10 @@ namespace CCEnvs.Saves
 
                     saveEntries.Value.Add(saveEntry);
                 }
+            }
 
+            lock (nonIncrementalObjectsGate)
+            {
                 foreach (var (key, obj) in nonIncrementalObjects)
                 {
                     if (!TryCreateAndProcessSaveEntry(key, obj, out var saveEntry))
@@ -77,7 +85,7 @@ namespace CCEnvs.Saves
                 observableObjectAddBinding?.Dispose();
                 observableObjectRemoveBinding?.Dispose();
 
-                lock (SyncRoot)
+                lock (observableObjects.SyncRoot)
                 {
                     foreach (var obj in observableObjects)
                     {
@@ -103,13 +111,13 @@ namespace CCEnvs.Saves
 
             if (!state)
             {
-                lock (SyncRoot)
+                lock (dirtyObjectGate)
                     dirtyObjects.Remove(key);
 
                 return;
             }
 
-            lock (SyncRoot)
+            lock (dirtyObjectGate)
                 dirtyObjects.TryAdd(key, obj);
         }
 
@@ -119,7 +127,7 @@ namespace CCEnvs.Saves
 
             obj.OnSaveObjectIsDirtyChanged += onSaveObjectIsDirtyChanged;
 
-            lock (SyncRoot)
+            lock (incrementalObjectBindingsGate)
                 incrementalObjectBindings[key] = onSaveObjectIsDirtyChanged;
 
             void onSaveObjectIsDirtyChanged(ISaveObjectIncremental obj, bool state)
@@ -133,7 +141,7 @@ namespace CCEnvs.Saves
         {
             OnSaveObjectIsDirtyChanged binding;
 
-            lock (SyncRoot)
+            lock (incrementalObjectBindingsGate)
             {
                 if (!incrementalObjectBindings.Remove(key, out binding))
                     return;
@@ -153,7 +161,7 @@ namespace CCEnvs.Saves
                 BindOnSaveObjectIsDirtyChanged(key, saveObjectIncrementally);
             else
             {
-                lock (SyncRoot)
+                lock (nonIncrementalObjectsGate)
                     nonIncrementalObjects[key] = obj;
             }
         }
@@ -175,7 +183,7 @@ namespace CCEnvs.Saves
                 UnbindOnSaveObjectIsDirtyChanged(key, saveObjectIncrementally);
             else
             {
-                lock (SyncRoot)
+                lock (nonIncrementalObjectsGate)
                     nonIncrementalObjects.Remove(key);
             }
         }

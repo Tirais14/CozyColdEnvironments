@@ -86,6 +86,9 @@ namespace CCEnvs.Saves
             if (Catalog.Groups.IsEmpty())
                 return;
 
+            if (serialized == default)
+                return;
+
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif

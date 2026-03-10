@@ -1,7 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
-using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
@@ -25,11 +24,9 @@ namespace CCEnvs.Saves
 
         private readonly static Dictionary<Type, SnapshotFactory> converters = new();
 
-        private readonly static object convertersSyncRoot = new();
+        private readonly static object convertersGate = new();
 
         private readonly static ObservableDictionary<string, SaveArchive> archives = new(1, null);
-
-        private static SemaphoreSlim? _ioSemaphore;
 
         private static JsonSerializerSettings serializerSettings = GetDefaultSerializerSettings();
 
@@ -50,19 +47,7 @@ namespace CCEnvs.Saves
 
         public static SaveObjectRestorer ObjectRestorer { get; } = new();
 
-        //internal static CommandScheduler CommandScheduler { get; } = new(UnityFrameProvider.Update, nameof(SaveSystem));
-
-        internal static SemaphoreSlim IOSemaphore {
-            get
-            {
-                _ioSemaphore ??= new SemaphoreSlim(
-                    MAX_IO_OPERATIONS,
-                    MAX_IO_OPERATIONS
-                    );
-
-                return _ioSemaphore;
-            }
-        }
+        internal static SemaphoreSlim IOSemaphore { get; } = new(MAX_IO_OPERATIONS);
 
         static SaveSystem()
         {
@@ -114,7 +99,7 @@ namespace CCEnvs.Saves
             Guard.IsNotNull(type, nameof(type));
             Guard.IsNotNull(converter, nameof(converter));
 
-            lock (convertersSyncRoot)
+            lock (convertersGate)
                 converters[type] = converter;
         }
         public static void RegisterType<T>(SnapshotFactory<T> converter)
@@ -135,7 +120,7 @@ namespace CCEnvs.Saves
         {
             Guard.IsNotNull(type, nameof(type));
 
-            lock (convertersSyncRoot)
+            lock (convertersGate)
                 return converters.Remove(type);
         }
 
@@ -217,50 +202,8 @@ namespace CCEnvs.Saves
 
             ObjectRestorer.ClearArchives();
 
-            lock (convertersSyncRoot)
+            lock (convertersGate)
                 converters.Clear();
         }
-
-        //private static void InstallByAttributes(MemberInfo[] domainMembers)
-        //{
-        //    (from type in domainMembers.AsParallel().OfType<Type>()
-        //     select (type, regTypeAttribute: type.GetCustomAttribute<RegisterSaveSystemTypeAttribute>()) into typeInfo
-        //     where typeInfo.regTypeAttribute is not null
-        //     select typeInfo)
-        //    .ForAll(typeInfo =>
-        //    {
-        //        var ctors = typeInfo.type.GetConstructors(BindingFlagsDefault.InstancePublic)
-        //            .Select(ctor => (ctor, prms: ctor.GetParameters()))
-        //            .ToArray();
-
-        //        if (ctors.IsEmpty())
-        //        {
-        //            typeof(SaveSystem).PrintError($"Cannot find any snapshot constructor");
-        //            return;
-        //        }
-
-        //        if (ctors.FirstOrDefault(ctorInfo => ctorInfo.prms.Length > 0 && ctorInfo.prms[0].ParameterType == typeInfo.regTypeAttribute.SnapshotType)
-        //            .IsNull(out var ctorInfo)
-        //            &&
-        //            CCDebug.Instance.IsEnabled)
-        //        {
-        //            typeof(SaveSystem).PrintLog($"Not found snapshot constructor of type: {typeInfo.regTypeAttribute.SnapshotType} and serach continued");
-        //        }
-
-        //        if (ctors.FirstOrDefault(ctorInfo => ctorInfo.prms.Length > 0 && ctorInfo.prms[0].ParameterType.IsType(typeInfo.regTypeAttribute.SnapshotType))
-        //            .IsNull(out ctorInfo))
-        //        {
-        //            typeof(SaveSystem).PrintError($"Not found snapshot constructor of type: {typeInfo.regTypeAttribute.SnapshotType}");
-        //            return;
-        //        }
-
-        //        var ctor = ctorInfo.ctor;
-
-        //        SaveSystem.RegisterType(typeInfo.type, (obj) =>
-        //        {
-        //            ctor.Invoke(new object[] { obj });
-        //        });
-        //    });
-        //}
     }
 }

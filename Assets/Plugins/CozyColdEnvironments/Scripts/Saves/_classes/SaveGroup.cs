@@ -35,10 +35,6 @@ namespace CCEnvs.Saves
 
         public SaveData SaveData { get; }
 
-        public bool IsDataLoaded { get; private set; }
-
-        public object SyncRoot { get; } = new();
-
         public SaveGroupDataLoader SaveDataLoader { get; }
 
         public SaveGroupDataWriter SaveDataWriter { get; }
@@ -50,7 +46,8 @@ namespace CCEnvs.Saves
         public SaveGroup(
             SaveCatalog catalog,
             string? name = null,
-            long saveDataVersion = 0L
+            long saveDataVersion = 0L,
+            bool redirectFileToSerialized = false
             )
         {
             Guard.IsNotNull(catalog, nameof(catalog));
@@ -75,7 +72,7 @@ namespace CCEnvs.Saves
 
             try
             {
-                lock (group.SyncRoot)
+                lock (group.observableObjects.SyncRoot)
                 {
                     foreach (var (key, obj) in group.observableObjects)
                         incGroup.RegisterObject(obj, key);
@@ -102,7 +99,7 @@ namespace CCEnvs.Saves
 
             try
             {
-                lock (incGroup.SyncRoot)
+                lock (incGroup.observableObjects.SyncRoot)
                 {
                     foreach (var (key, obj) in incGroup.observableObjects)
                         incGroup.RegisterObject(obj, key);
@@ -255,7 +252,7 @@ namespace CCEnvs.Saves
 
             var saveUnits = ListPool<SaveEntry>.Shared.Get();
 
-            lock (SyncRoot)
+            lock (observableObjects.SyncRoot)
             {
                 int observableObjectCount = observableObjects.Count;
 
