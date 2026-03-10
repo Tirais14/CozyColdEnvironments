@@ -56,7 +56,7 @@ namespace CCEnvs.Saves
         public void TryEnqueue(
             MonoBehaviour monoBeh,
             string key,
-            SaveGroup saveGroup,
+            string saveGroupName,
             object? callbackState = null,
             Action<object?, bool>? callback = null
             )
@@ -65,7 +65,7 @@ namespace CCEnvs.Saves
 
             CC.Guard.IsNotNull(monoBeh, nameof(monoBeh));
             Guard.IsNotNull(key, nameof(key));
-            Guard.IsNotNull(saveGroup, nameof(saveGroup));
+            Guard.IsNotNull(saveGroupName, nameof(saveGroupName));
 
             lock (SyncRoot)
             {
@@ -81,7 +81,7 @@ namespace CCEnvs.Saves
             var monoBehInfo = new MonoBehaviourInfo(
                 monoBeh,
                 key,
-                saveGroup,
+                saveGroupName,
                 callbackState,
                 callback
                 );
@@ -147,7 +147,7 @@ namespace CCEnvs.Saves
                 isMonoBehRestored = saveLoader.TryRestoreObjectCore(
                     monoBeh.Value,
                     monoBeh.Key,
-                    monoBeh.SaveGroup
+                    monoBeh.SaveGroupName
                     );
 
                 monoBeh.TryInvokeCallback(isMonoBehRestored);
@@ -185,7 +185,7 @@ namespace CCEnvs.Saves
 
             public readonly string Key;
 
-            public readonly SaveGroup SaveGroup;
+            public readonly string SaveGroupName;
 
             public readonly object? CallbackState;
 
@@ -194,14 +194,14 @@ namespace CCEnvs.Saves
             public MonoBehaviourInfo(
                 MonoBehaviour value,
                 string key,
-                SaveGroup saveGroup,
+                string saveGroupName,
                 object? callbackState = null,
                 Action<object?, bool>? callback = null
                 )
             {
                 Value = value;
                 Key = key;
-                SaveGroup = saveGroup;
+                SaveGroupName = saveGroupName;
                 CallbackState = callbackState;
                 Callback = callback;
             }
@@ -259,7 +259,7 @@ namespace CCEnvs.Saves
                        &&
                        EqualityComparer<MonoBehaviour>.Default.Equals(Value, other.Value)
                        &&
-                       EqualityComparer<SaveGroup>.Default.Equals(SaveGroup, other.SaveGroup)
+                       EqualityComparer<string>.Default.Equals(SaveGroupName, other.SaveGroupName)
                        &&
                        EqualityComparer<object?>.Default.Equals(CallbackState, other.CallbackState)
                        &&
@@ -268,7 +268,7 @@ namespace CCEnvs.Saves
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Key, Value, SaveGroup, CallbackState, Callback);
+                return HashCode.Combine(Key, Value, SaveGroupName, CallbackState, Callback);
             }
 
             public int CompareTo(MonoBehaviourInfo other)

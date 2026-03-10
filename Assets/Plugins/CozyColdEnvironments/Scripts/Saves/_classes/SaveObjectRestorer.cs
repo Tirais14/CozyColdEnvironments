@@ -66,9 +66,9 @@ namespace CCEnvs.Saves
                 return;
             }
 
-            if (group.IsNull())
+            if (groupName.IsNull())
             {
-                this.PrintError($"Argument: {nameof(group)} is null");
+                this.PrintError($"Argument: {nameof(groupName)} is null");
 
                 callback?.Invoke(callbackState, false);
 
@@ -83,7 +83,7 @@ namespace CCEnvs.Saves
                         lazyObjectRestorer.TryEnqueue(
                             monoBeh,
                             key,
-                            group,
+                            groupName,
                             callbackState,
                             callback
                             );
@@ -92,7 +92,7 @@ namespace CCEnvs.Saves
 #endif
                 default:
                     {
-                        var isRestored = TryRestoreObjectCore(obj, key, group);
+                        var isRestored = TryRestoreObjectCore(obj, key, groupName);
 
                         try
                         {
@@ -288,7 +288,7 @@ namespace CCEnvs.Saves
             SaveGroup group
             )
         {
-            TryRestoreObject(objEv.Value, objEv.Key, group);
+            TryRestoreObject(objEv.Value, objEv.Key, group.Name);
         }
 
         private void BindGroupObjectAdd(SaveGroup group)
@@ -311,7 +311,7 @@ namespace CCEnvs.Saves
 
         private void BindSaveDataLoaded(SaveGroup group)
         {
-            group.ObserveLoadSaveData()
+            group.SaveDataLoader.ObserveLoadSaveData()
                 .Subscribe((@this: this, group),
                 static (saveData, args) =>
                 {
