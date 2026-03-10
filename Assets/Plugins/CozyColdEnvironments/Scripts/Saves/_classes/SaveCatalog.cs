@@ -336,11 +336,11 @@ namespace CCEnvs.Saves
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
-            using var tasks = new PooledArray<ValueTask>(groups.Count);
+            using var tasks = ListPool<ValueTask>.Shared.Get();
+
+            tasks.Value.TryIncreaseCapacity(groups.Count);
 
             ValueTask task;
-
-            int i = 0;
 
             try
             {
@@ -355,11 +355,11 @@ namespace CCEnvs.Saves
                             cancellationToken: cancellationToken
                             );
 
-                        tasks[i++] = task;
+                        tasks.Value.Add(task);
                     }
                 }
 
-                await ValueTaskEx.WhenAll(tasks.Raw);
+                await ValueTaskEx.WhenAll(tasks.Value);
             }
             finally
             {

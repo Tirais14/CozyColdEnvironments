@@ -46,7 +46,9 @@ namespace CCEnvs.Saves
 
         public object SyncRoot { get; } = new();
 
-        public SaveDataLoader SaveDataLoader { get; }
+        public SaveGroupDataLoader SaveDataLoader { get; }
+
+        public SaveGroupDataWriter SaveDataWriter { get; }
 
         protected CancellationToken DisposeCancellationToken {
             get => disposeCancellationTokenSource.Token;
@@ -63,7 +65,8 @@ namespace CCEnvs.Saves
             Name = name ?? string.Empty;
             Catalog = catalog;
             SaveData = new SaveData(Name, saveDataVersion);
-            SaveDataLoader = new SaveDataLoader(this);
+            SaveDataLoader = new SaveGroupDataLoader(this);
+            SaveDataWriter = new SaveGroupDataWriter(this);
         }
 
         ~SaveGroup() => Dispose();
@@ -244,52 +247,6 @@ namespace CCEnvs.Saves
             return this;
         }
 
-        public async ValueTask WriteSaveDataToFileAsync(
-            string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
-            bool compressed = true,
-            bool backuped = true,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-            cancellationToken.ThrowIfCancellationRequested();
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(WriteSaveDataToFileAsync)
-                );
-
-            await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, fileExtension, compressed, backuped, configureAwait))
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (args, cancellationToken) =>
-                {
-                    await args.@this.WriteSaveDataToFileAsyncCore(
-                        fileExtension: args.fileExtension,
-                        compressed: args.compressed,
-                        backuped: args.backuped,
-                        configureAwait: args.configureAwait,
-                        cancellationToken: cancellationToken
-                        );
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
-        }
-
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             return observableObjects.GetEnumerator();
@@ -330,6 +287,8 @@ namespace CCEnvs.Saves
             {
                 disposeCancellationTokenSource.CancelAndDispose();
                 observableObjects.Clear();
+                SaveDataLoader.Dispose();
+                SaveDataWriter.Dispose();
             }
         }
 
@@ -402,48 +361,5 @@ namespace CCEnvs.Saves
 
             return true;
         }
-
-        private async ValueTask WriteSaveDataToFileAsyncCore(
-            string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
-            bool compressed = true,
-            bool backuped = true,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-#if !PLATFORM_WEBGL
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            string serializedEntries = JsonConvert.SerializeObject(SaveData);
-
-            var path = GetFullPath();
-
-            var parameters = new WriteSaveDataToFileParameters(
-                path,
-                fileExtension
-                )
-            {
-                Compressed = compressed,
-                Backuped = backuped,
-                FileContent = serializedEntries
-            };
-
-            await SaveWrite.ToFileAsync(
-                parameters,
-                configureAwait: false,
-                cancellationToken: cancellationToken
-                );
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
-        }
-
-
     }
 }

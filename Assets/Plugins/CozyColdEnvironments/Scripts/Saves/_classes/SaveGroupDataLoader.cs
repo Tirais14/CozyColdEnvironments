@@ -12,7 +12,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public sealed class SaveDataLoader : IDisposable
+    public sealed class SaveGroupDataLoader : IDisposable
     {
         private ReactiveCommand<SaveData>? onLoadedSaveData;
 
@@ -22,14 +22,14 @@ namespace CCEnvs.Saves
 
         public bool IsDataLoaded { get; private set; }
 
-        public SaveDataLoader(SaveGroup group)
+        public SaveGroupDataLoader(SaveGroup group)
         {
             Guard.IsNotNull(group, nameof(group));
 
             Group = group;
         }
 
-        ~SaveDataLoader() => Dispose();
+        ~SaveGroupDataLoader() => Dispose();
 
         public async ValueTask<SaveData?> DeserializeSaveDataFromFileAsync(
             bool configureAwait = true,
@@ -144,6 +144,65 @@ namespace CCEnvs.Saves
             return Data;
         }
 
+        public async ValueTask<SaveData?> DeserializeSaveDataTextAsync(
+            string serialized,
+            bool configureAwait = true,
+            CancellationToken cancellationToken = default
+            )
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+            cancellationToken.ThrowIfCancellationRequested();
+
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            await UniTaskHelper.TrySwitchToThreadPool();
+#endif
+
+            var cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(DeserializeSaveDataTextAsync)
+                );
+
+            var result = new ValueReference<SaveData?>();
+
+            await Command.Builder.WithName(cmdName)
+                .WithState((@this: this, serialized, configureAwait, result))
+                .Asynchronously()
+                .WithExecuteAction(
+                static async (args, cancellationToken) =>
+                {
+                    args.result = await args.@this.DeserializeSaveDataFromTextAsyncCore(
+                        serialized: args.serialized,
+                        configureAwait: args.configureAwait,
+                        cancellationToken: cancellationToken
+                        );
+
+#if !PLATFORM_WEBGL && !UNITASK_PLUGIN
+                    await Task.Run(async () =>
+                    {
+                        args.result = await args.@this.DeserializeSaveDataAsyncCore(
+                            serialized: args.serialized,
+                            configureAwait: args.configureAwait,
+                            cancellationToken: cancellationToken
+                            );
+                    },
+                    cancellationToken)
+                    .ConfigureAwait(args.configureAwait);
+#endif
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(SaveSystem.CommandScheduler)
+                .ObserveIsDone()
+                .FirstAsync(cancellationToken);
+
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
+
+            return result;
+        }
+
         public async ValueTask LoadSaveDataFromTextAsync(
             string serialized,
             WriteSaveDataMode writeSaveDataMode = default,
@@ -212,66 +271,6 @@ namespace CCEnvs.Saves
             return Data;
         }
 
-        public async ValueTask<SaveData?> DeserializeSaveDataAsync(
-            string serialized,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            var cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(DeserializeSaveDataAsync)
-                );
-
-            var result = new ValueReference<SaveData?>();
-
-            await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, serialized, configureAwait, result))
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (args, cancellationToken) =>
-                {
-                    args.result = await args.@this.DeserializeSaveDataAsyncCore(
-                        serialized: args.serialized,
-                        configureAwait: args.configureAwait,
-                        cancellationToken: cancellationToken
-                        );
-
-#if !PLATFORM_WEBGL && !UNITASK_PLUGIN
-                    await Task.Run(async () =>
-                    {
-                        args.result = await args.@this.DeserializeSaveDataAsyncCore(
-                            serialized: args.serialized,
-                            configureAwait: args.configureAwait,
-                            cancellationToken: cancellationToken
-                            );
-                    },
-                    cancellationToken)
-                    .ConfigureAwait(args.configureAwait);
-#endif
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
-
-            return result;
-        }
-
         private int disposed;
         public void Dispose()
         {
@@ -334,7 +333,6 @@ namespace CCEnvs.Saves
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var loadedSaveData = await DeserializeSaveDataFromFileAsyncCore(
@@ -377,7 +375,7 @@ namespace CCEnvs.Saves
             }
         }
 
-        private async ValueTask<SaveData?> DeserializeSaveDataAsyncCore(
+        private async ValueTask<SaveData?> DeserializeSaveDataFromTextAsyncCore(
             string serialized,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
@@ -425,7 +423,7 @@ namespace CCEnvs.Saves
 
             try
             {
-                var saveData = await DeserializeSaveDataAsyncCore(
+                var saveData = await DeserializeSaveDataFromTextAsyncCore(
                     serialized,
                     configureAwait: false,
                     cancellationToken
@@ -434,6 +432,8 @@ namespace CCEnvs.Saves
                 var entries = saveData?.SaveEntries.SelectValue() ?? Array.Empty<SaveEntry>();
 
                 Data.Write(entries, writeSaveDataMode: writeSaveDataMode);
+
+                onLoadedSaveData?.Execute(Data);
             }
             catch (Exception ex)
             {
