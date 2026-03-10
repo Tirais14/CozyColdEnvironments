@@ -8,6 +8,7 @@ using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
+using R3;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -22,6 +23,9 @@ namespace CCEnvs.Saves
     {
         [JsonProperty("saveUnits", Order = 10)]
         private ObservableDictionary<string, SaveEntry> saveEntries = new();
+
+        [JsonIgnore]
+        private ReactiveCommand<WriteSaveDataMode> writeEvent = new();
 
         [JsonIgnore]
         public IReadOnlyObservableDictionary<string, SaveEntry> SaveEntries {
@@ -48,22 +52,14 @@ namespace CCEnvs.Saves
         {
         }
 
-        public bool TryAdd(SaveEntry saveEntry)
-        {
-            if (CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Save entry not added: {saveEntry}");
-
-            var success = saveEntries.TryAdd(saveEntry.Key, saveEntry);
-
-            if (!success && CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Save entry added: {saveEntry}");
-
-            return success;
-        }
-
         public bool Remove(string key, out SaveEntry saveEntry)
         {
-            Guard.IsNotNull(key, nameof(key));
+            if (key.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(key)} is null");
+                saveEntry = default;
+                return false;
+            }
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Removing save entry: {key}");
@@ -78,7 +74,11 @@ namespace CCEnvs.Saves
 
         public bool Remove(string key)
         {
-            Guard.IsNotNull(key, nameof(key));
+            if (key.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(key)} is null");
+                return false;
+            }
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Removing save entry: {key}");
@@ -104,43 +104,65 @@ namespace CCEnvs.Saves
             return this;
         }
 
-        public SaveData AddRange(IEnumerable<SaveEntry> saveEntries)
+        public bool Append(SaveEntry saveEntry)
         {
-            CC.Guard.IsNotNull(saveEntries, nameof(saveEntries));
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Save entry not added: {saveEntry}");
+
+            var success = saveEntries.TryAdd(saveEntry.Key, saveEntry);
+
+            if (!success && CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Save entry added: {saveEntry}");
+
+            return success;
+        }
+
+        public SaveData Append(IEnumerable<SaveEntry> otherSaveEntries)
+        {
+            if (otherSaveEntries.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(otherSaveEntries)} is null");
+                return this;
+            }
 
             if (CCDebug.Instance.IsEnabled)
-                this.PrintLog("Adding...");
+                this.PrintLog("Appending...");
 
-            if (saveEntries.IsEmpty())
+            if (otherSaveEntries.IsEmpty())
                 return this;
 
-            foreach (var saveUnit in saveEntries)
+            using var otherSaveEntriesCopy = otherSaveEntries.EnumerableToArrayPooled();
+
+            foreach (var saveUnit in otherSaveEntriesCopy)
                 this.saveEntries.TryAdd(saveUnit.Key, saveUnit);
 
             if (CCDebug.Instance.IsEnabled)
-                this.PrintLog("Added");
+                this.PrintLog("Appended");
 
             return this;
         }
 
         public SaveData Write(
-            IEnumerable<SaveEntry> saveEntries,
+            IEnumerable<SaveEntry> otherSaveEntries,
             WriteSaveDataMode writeSaveDataMode = default
             )
         {
-            if (saveEntries.IsNull())
+            if (otherSaveEntries.IsNull())
             {
-                this.PrintError($"Argument: {nameof(saveEntries)} is null");
+                this.PrintError($"Argument: {nameof(otherSaveEntries)} is null");
                 return this;
             }
 
             switch (writeSaveDataMode)
             {
                 case WriteSaveDataMode.Override:
-                    Override(saveEntries);
+                    Override(otherSaveEntries);
                     break;
                 case WriteSaveDataMode.Merge:
-                    Merge(saveEntries);
+                    Merge(otherSaveEntries);
+                    break;
+                case WriteSaveDataMode.Append:
+                    Append(otherSaveEntries);
                     break;
                 default:
                     throw new InvalidOperationException(writeSaveDataMode.ToString());
@@ -151,7 +173,11 @@ namespace CCEnvs.Saves
 
         public SaveData Merge(IEnumerable<SaveEntry> otherSaveEntries)
         {
-            CC.Guard.IsNotNull(otherSaveEntries, nameof(otherSaveEntries));
+            if (otherSaveEntries.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(otherSaveEntries)} is null");
+                return this;
+            }
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog("Merging...");
@@ -159,29 +185,41 @@ namespace CCEnvs.Saves
             if (otherSaveEntries.IsEmpty())
                 return this;
 
-            foreach (var saveEntry in otherSaveEntries)
+            using var otherSaveEntriesCopy = otherSaveEntries.EnumerableToArrayPooled();
+
+            foreach (var saveEntry in otherSaveEntriesCopy)
                 saveEntries[saveEntry.Key] = saveEntry;
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog("Merged");
 
+            writeEvent?.Execute(WriteSaveDataMode.Merge);
+
             return this;
         }
 
-        public SaveData Override(IEnumerable<SaveEntry> saveEntries)
+        public SaveData Override(IEnumerable<SaveEntry> otherSaveEntries)
         {
-            CC.Guard.IsNotNull(saveEntries, nameof(saveEntries));
+            if (otherSaveEntries.IsNull())
+            {
+                this.PrintError($"Argument: {nameof(otherSaveEntries)} is null");
+                return this;
+            }
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog("Overriding...");
 
             this.saveEntries.Clear();
 
-            foreach (var saveEntry in saveEntries)
+            using var otherSaveEntriesCopy = otherSaveEntries.EnumerableToArrayPooled();
+
+            foreach (var saveEntry in otherSaveEntriesCopy)
                 this.saveEntries[saveEntry.Key] = saveEntry;
 
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog("Overrided");
+
+            writeEvent?.Execute(WriteSaveDataMode.Override);
 
             return this;
         }
@@ -198,6 +236,14 @@ namespace CCEnvs.Saves
 
         public void Dispose()
         {
+            writeEvent?.Dispose();
+        }
+
+        public Observable<WriteSaveDataMode> ObserveWrite()
+        {
+            writeEvent ??= new ReactiveCommand<WriteSaveDataMode>();
+
+            return writeEvent;
         }
     }
 }

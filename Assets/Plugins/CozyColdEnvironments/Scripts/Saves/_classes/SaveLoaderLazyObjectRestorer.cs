@@ -167,8 +167,12 @@ namespace CCEnvs.Saves
             if (disposed)
                 return false;
 
-            if (frameCount % ExecuteEveryFrame != 0)
+            if (ExecuteEveryFrame > 0
+                &&
+                frameCount % ExecuteEveryFrame != 0)
+            {
                 return true;
+            }
 
             OnFrame();
 

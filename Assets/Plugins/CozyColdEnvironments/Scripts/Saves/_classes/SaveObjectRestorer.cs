@@ -276,6 +276,11 @@ namespace CCEnvs.Saves
             }
         }
 
+        private void BindSaveDataEntryAdd()
+        {
+
+        }
+
         private void OnGroupObjectAdd(
             DictionaryAddEvent<string, object> objEv,
             SaveGroup group

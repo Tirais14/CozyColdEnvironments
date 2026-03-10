@@ -5,5 +5,6 @@ namespace CCEnvs.Saves
     {
         Merge,
         Override,
+        Append,
     }
 }

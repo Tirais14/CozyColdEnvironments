@@ -68,7 +68,6 @@ namespace CCEnvs.Saves
                 return false;
 
             catalog.Dispose();
-
             return true;
         }
 
@@ -79,11 +78,16 @@ namespace CCEnvs.Saves
             if (path.IsNullOrWhiteSpace())
                 path = DEFAULT_PATH;
 
-            if (!catalogs.TryGetValue(path, out var catalog))
-            {
-                catalog = new SaveCatalog(this, path);
+            SaveCatalog? catalog;
 
-                catalogs.Add(path, catalog);
+            lock (catalogs.SyncRoot)
+            {
+                if (!catalogs.TryGetValue(path, out catalog))
+                {
+                    catalog = new SaveCatalog(this, path);
+
+                    catalogs.Add(path, catalog);
+                }
             }
 
             return catalog;

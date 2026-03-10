@@ -100,14 +100,19 @@ namespace CCEnvs.Saves
             CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
-            if (!groups.TryGetValue(groupName, out var group))
+            SaveGroup? group;
+
+            lock (groups.SyncRoot)
             {
-                if (incrementalGroups.ContainsKey(groupName))
-                    throw new InvalidOperationException($"Group: {groupName} already exists and it's incremental");
+                if (!groups.TryGetValue(groupName, out group))
+                {
+                    if (incrementalGroups.ContainsKey(groupName))
+                        throw new InvalidOperationException($"Group: {groupName} already exists and it's incremental");
 
-                group = new SaveGroup(this, groupName, saveDataVersion);
+                    group = new SaveGroup(this, groupName, saveDataVersion);
 
-                groups.Add(groupName, group);
+                    groups.Add(groupName, group);
+                }
             }
 
             return group;
@@ -121,14 +126,19 @@ namespace CCEnvs.Saves
             CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
 
-            if (!incrementalGroups.TryGetValue(groupName, out var group))
+            SaveGroupIncremental? group;
+
+            lock (incrementalGroups.SyncRoot)
             {
-                if (groups.ContainsKey(groupName))
-                    throw new InvalidOperationException($"Group: {groupName} already exists and it's not incremental");
+                if (!incrementalGroups.TryGetValue(groupName, out group))
+                {
+                    if (groups.ContainsKey(groupName))
+                        throw new InvalidOperationException($"Group: {groupName} already exists and it's not incremental");
 
-                group = new SaveGroupIncremental(this, groupName, saveDataVersion);
+                    group = new SaveGroupIncremental(this, groupName, saveDataVersion);
 
-                incrementalGroups.Add(groupName, group);
+                    incrementalGroups.Add(groupName, group);
+                }
             }
 
             return group;

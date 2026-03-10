@@ -1,6 +1,6 @@
 using CCEnvs.Attributes;
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
@@ -16,11 +16,17 @@ namespace CCEnvs.Saves
 {
     public static class SaveSystem
     {
-        public const int MAX_IO_OPERATIONS = 2;
+        public const int MAX_IO_OPERATIONS =
+#if PLATFORM_WEBGL
+            1;
+#else
+            2;
+#endif
 
         private readonly static Dictionary<Type, SnapshotFactory> converters = new();
 
-        [OnInstallResetable]
+        private readonly static object convertersSyncRoot = new();
+
         private readonly static ObservableDictionary<string, SaveArchive> archives = new(1, null);
 
         private static SemaphoreSlim? _ioSemaphore;
@@ -69,32 +75,37 @@ namespace CCEnvs.Saves
         {
             Guard.IsNotNullOrWhiteSpace(path, nameof(path));
 
-            if (!archives.TryGetValue(path, out var archive))
-            {
-                archive = new SaveArchive(path);
+            SaveArchive? archive;
 
-                archives.Add(path, archive);
+            lock (archives.SyncRoot)
+            {
+                if (!archives.TryGetValue(path, out archive))
+                {
+                    archive = new SaveArchive(path);
+
+                    archives.Add(path, archive);
+                }
             }
 
             return archive;
-        }
-
-        public static bool RemoveArchive(string path, out SaveArchive removed)
-        {
-            Guard.IsNotNullOrWhiteSpace(path, nameof(path));
-
-            return archives.Remove(path, out removed);
         }
 
         public static bool RemoveArchive(string path)
         {
             Guard.IsNotNullOrWhiteSpace(path, nameof(path));
 
-            return archives.Remove(path);
+            if (!archives.Remove(path, out var archive))
+                return false;
+
+            archive.Dispose();
+            return true;
         }
 
         public static void ClearArchives()
         {
+            lock (archives.SyncRoot)
+                archives.SelectValue().DisposeEach(bufferized: false);
+
             archives.Clear();
         }
 
@@ -103,7 +114,8 @@ namespace CCEnvs.Saves
             Guard.IsNotNull(type, nameof(type));
             Guard.IsNotNull(converter, nameof(converter));
 
-            converters[type] = converter;
+            lock (convertersSyncRoot)
+                converters[type] = converter;
         }
         public static void RegisterType<T>(SnapshotFactory<T> converter)
         {
@@ -123,7 +135,8 @@ namespace CCEnvs.Saves
         {
             Guard.IsNotNull(type, nameof(type));
 
-            return converters.Remove(type);
+            lock (convertersSyncRoot)
+                return converters.Remove(type);
         }
 
         public static bool UnregisterType<T>()
@@ -195,6 +208,15 @@ namespace CCEnvs.Saves
         {
             Archives.ObserveClear()
                 .Subscribe(OnArchivesClear);
+        }
+
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            ClearArchives();
+
+            lock (convertersSyncRoot)
+                converters.Clear();
         }
 
         //private static void InstallByAttributes(MemberInfo[] domainMembers)
