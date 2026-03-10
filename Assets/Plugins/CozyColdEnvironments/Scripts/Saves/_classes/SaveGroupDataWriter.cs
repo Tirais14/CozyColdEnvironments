@@ -9,10 +9,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
 namespace CCEnvs
 {
     public sealed class SaveGroupDataWriter : IDisposable
     {
+        private ReactiveCommand<SaveData>? onWritten;
+
         public SaveGroup Group { get; }
 
         public SaveData Data => Group.SaveData;
@@ -26,7 +29,7 @@ namespace CCEnvs
 
         ~SaveGroupDataWriter() => Dispose();
 
-        public async ValueTask WriteSaveDataToFileAsync(
+        public async ValueTask WriteToFileAsync(
             string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
             bool compressed = true,
             bool backuped = true,
@@ -43,7 +46,7 @@ namespace CCEnvs
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(WriteSaveDataToFileAsync)
+                nameof(WriteToFileAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
@@ -52,7 +55,7 @@ namespace CCEnvs
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    await args.@this.WriteSaveDataToFileAsyncCore(
+                    await args.@this.WriteToFileAsyncCore(
                         fileExtension: args.fileExtension,
                         compressed: args.compressed,
                         backuped: args.backuped,
@@ -72,7 +75,7 @@ namespace CCEnvs
 #endif
         }
 
-        public async ValueTask<string> WriteSaveDataToTextAsync(
+        public async ValueTask<string> WriteToTextAsync(
             bool compressed = true,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
@@ -83,7 +86,7 @@ namespace CCEnvs
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(WriteSaveDataToTextAsync)
+                nameof(WriteToTextAsync)
                 );
 
             var result = new ValueReference<string>();
@@ -94,7 +97,7 @@ namespace CCEnvs
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.WriteSaveDataToTextAsyncCore(
+                    args.result = await args.@this.WriteToTextAsyncCOre(
                         compressed: args.compressed,
                         configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
@@ -120,10 +123,17 @@ namespace CCEnvs
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-
+            onWritten?.Dispose();
         }
 
-        private async ValueTask WriteSaveDataToFileAsyncCore(
+        public Observable<SaveData> ObserveWrite()
+        {
+            onWritten ??= new ReactiveCommand<SaveData>();
+
+            return onWritten;
+        }
+
+        private async ValueTask WriteToFileAsyncCore(
             string fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION,
             bool compressed = true,
             bool backuped = true,
@@ -164,7 +174,7 @@ namespace CCEnvs
 #endif
         }
 
-        private async ValueTask<string> WriteSaveDataToTextAsyncCore(
+        private async ValueTask<string> WriteToTextAsyncCOre(
             bool compressed = true,
             bool configureAwait = true,
             CancellationToken cancellationToken = default

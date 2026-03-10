@@ -1,20 +1,13 @@
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
-using CCEnvs.Patterns.Commands;
-using CCEnvs.Pools;
-using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
-using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using ValueTaskSupplement;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -38,6 +31,8 @@ namespace CCEnvs.Saves
 
         public SaveArchive Archive { get;}
 
+        public SaveCatalogLoader Loader { get; }
+
         public SaveCatalog(
             SaveArchive archive,
             string? path = null
@@ -47,6 +42,7 @@ namespace CCEnvs.Saves
 
             Path = path ?? string.Empty;
             Archive = archive;
+            Loader = new SaveCatalogLoader(this);
         }
 
         ~SaveCatalog() => Dispose();
@@ -63,7 +59,9 @@ namespace CCEnvs.Saves
                    &&
                    left.Archive == right.Archive
                    &&
-                   left.disposed == right.disposed;
+                   left.disposed == right.disposed
+                   &&
+                   left.Loader == right.Loader;
         }
 
         public static bool operator !=(SaveCatalog? left, SaveCatalog? right)
@@ -231,52 +229,7 @@ namespace CCEnvs.Saves
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            return System.IO.Path.Join(Archive.Path, Path);
-        }
-
-        public async ValueTask LoadGroupsFromFileAsync(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool force = false,
-            bool configureAwait = true,
-            CancellationToken cancellationToken = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (groups.IsEmpty())
-                return;
-
-#if !PLATFORM_WEBGL
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(LoadGroupsFromFileAsync)
-                );
-
-            await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, writeSaveDataMode, configureAwait, force))
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (args, cancellationToken) =>
-                {
-                    await args.@this.LoadGroupsFromFileAsyncCore(
-                        args.writeSaveDataMode,
-                        args.force,
-                        args.configureAwait,
-                        cancellationToken
-                        );
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(SaveSystem.CommandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
-
-            await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+            return System.IO.Path.Join(Archive.Path, Path, Loader);
         }
 
         public bool Equals(SaveCatalog other)
@@ -324,49 +277,5 @@ namespace CCEnvs.Saves
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        private async ValueTask LoadGroupsFromFileAsyncCore(
-            WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
-            bool force = false,
-            CancellationToken cancellationToken = default
-            )
-        {
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
-            using var tasks = ListPool<ValueTask>.Shared.Get();
-
-            tasks.Value.TryIncreaseCapacity(groups.Count);
-
-            ValueTask task;
-
-            try
-            {
-                lock (groups.SyncRoot)
-                {
-                    foreach (var (_, group) in groups)
-                    {
-                        task = group.SaveDataLoader.LoadSaveDataFromFileAsync(
-                            writeSaveDataMode,
-                            configureAwait: false,
-                            force,
-                            cancellationToken: cancellationToken
-                            );
-
-                        tasks.Value.Add(task);
-                    }
-                }
-
-                await ValueTaskEx.WhenAll(tasks.Value);
-            }
-            finally
-            {
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
-            }
-        }
     }
 }

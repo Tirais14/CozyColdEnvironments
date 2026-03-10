@@ -1,22 +1,17 @@
 ﻿using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
-using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
-using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
-using Newtonsoft.Json;
 using ObservableCollections;
-using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -141,6 +136,10 @@ namespace CCEnvs.Saves
                    left.Catalog == right.Catalog
                    &&
                    left.SaveData == right.SaveData
+                   &&
+                   left.SaveDataLoader == right.SaveDataLoader
+                   &&
+                   left.SaveDataWriter == right.SaveDataWriter
                    &&
                    left.disposed == right.disposed;
         }
@@ -271,7 +270,14 @@ namespace CCEnvs.Saves
 
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(Name, Catalog, SaveData, disposed);
+            hashCode ??= HashCode.Combine(
+                Name,
+                Catalog,
+                SaveData,
+                SaveDataLoader,
+                SaveDataWriter,
+                disposed
+                );
 
             return hashCode.Value;
         }
