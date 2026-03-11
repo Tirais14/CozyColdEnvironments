@@ -1,5 +1,6 @@
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -15,15 +16,21 @@ namespace CCEnvs.Saves
 
         public string Path { get; }
 
+        public object GroupsGate { get; }
+
+        [JsonConstructor]
         public SaveCatalogSerialized(
             string path,
-            IEnumerable<SaveGroupSerialized> groups
+            IEnumerable<SaveGroupSerialized>? groups = null
             )
         {
             Guard.IsNotNullOrWhiteSpace(path, nameof(path));
             CC.Guard.IsNotNull(groups, nameof(groups));
 
             Path = path;
+            GroupsGate = new object();
+
+            groups ??= Array.Empty<SaveGroupSerialized>();
 
             var groupDic = new Dictionary<string, SaveGroupSerialized>();
 
@@ -44,6 +51,32 @@ namespace CCEnvs.Saves
         public static bool operator !=(SaveCatalogSerialized left, SaveCatalogSerialized right)
         {
             return !(left == right);
+        }
+
+        public void Add(SaveGroupSerialized group)
+        {
+            if (this == default)
+                throw new InvalidOperationException($"{this} is not initialized");
+
+            lock (GroupsGate)
+                groups[group.Name] = group;
+        }
+
+        public bool Remove(string groupName)
+        {
+            if (this == default)
+                throw new InvalidOperationException($"{this} is not initialized");
+
+            Guard.IsNotNull(groupName, nameof(groupName));
+
+            lock (GroupsGate)
+                return groups.Remove(groupName);
+        }
+
+        public void Clear()
+        {
+            lock (GroupsGate)
+                groups.Clear();
         }
 
         public override bool Equals(object? obj)

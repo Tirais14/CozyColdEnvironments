@@ -1,8 +1,9 @@
-using CCEnvs.Collections;
-using CCEnvs.Disposables;
+﻿using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
+using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Threading;
@@ -12,32 +13,29 @@ using ValueTaskSupplement;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public sealed class SaveCatalogLoader : IDisposable
+    public sealed class SaveCatalogSerializer : IDisposable
     {
-        private readonly CommandScheduler commandScheduler = new(ObservableSystem.DefaultFrameProvider, nameof(SaveCatalogLoader));
+        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered();
 
         public SaveCatalog Catalog { get; }
 
-        public SaveCatalogLoader(SaveCatalog catalog)
+        public SaveCatalogSerializer(SaveCatalog catalog)
         {
             Guard.IsNotNull(catalog, nameof(catalog));
 
             Catalog = catalog;
         }
 
-        ~SaveCatalogLoader() => Dispose();
+        ~SaveCatalogSerializer() => Dispose();
 
-        public async ValueTask LoadGroupsFromFileAsync(
-            WriteSaveDataMode writeSaveDataMode = default,
+        public async ValueTask SerializeGroupsToFileAsync(
+            SerializeToFileParameters parameters = default,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
-
-            if (Catalog.Groups.IsEmpty())
-                return;
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
@@ -45,17 +43,17 @@ namespace CCEnvs.Saves
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(LoadGroupsFromFileAsync)
+                nameof(SerializeGroupsToFileAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, writeSaveDataMode, configureAwait))
+                .WithState((@this: this, parameters, configureAwait))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    await args.@this.LoadGroupsFromFileAsyncCore(
-                        writeSaveDataMode: args.writeSaveDataMode,
+                    await args.@this.SerializeGroupsToFileAsyncCore(
+                        parameters: args.parameters,
                         configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
@@ -72,21 +70,14 @@ namespace CCEnvs.Saves
 #endif
         }
 
-        public async ValueTask LoadGroupsFromSerializedAsync(
-            SaveCatalogSerialized serialized,
-            WriteSaveDataMode writeSaveDataMode = default,
+        public async ValueTask<SaveCatalogSerialized> SerializeCatalogAsync(
+            bool compressed = true,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
-
-            if (Catalog.Groups.IsEmpty())
-                return;
-
-            if (serialized == default)
-                return;
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
@@ -94,18 +85,19 @@ namespace CCEnvs.Saves
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(LoadGroupsFromSerializedAsync)
+                nameof(SerializeCatalogAsync)
                 );
 
+            var result = new ValueReference<SaveCatalogSerialized>();
+
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, serialized, writeSaveDataMode, configureAwait))
+                .WithState((@this: this, compressed, configureAwait, result))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    await args.@this.LoadGroupsFromSerializedAsyncCore(
-                        serialized: args.serialized,
-                        writeSaveDataMode: args.writeSaveDataMode,
+                    args.result = await args.@this.SerializeCatalogAsyncCore(
+                        compressed: args.compressed,
                         configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
@@ -120,6 +112,8 @@ namespace CCEnvs.Saves
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
 #endif
+
+            return result;
         }
 
         private int disposed;
@@ -131,21 +125,20 @@ namespace CCEnvs.Saves
             commandScheduler.Dispose();
         }
 
-        private async ValueTask LoadGroupsFromFileAsyncCore(
-            WriteSaveDataMode writeSaveDataMode = default,
+        private async ValueTask SerializeGroupsToFileAsyncCore(
+            SerializeToFileParameters parameters = default,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
-            using var tasks = ListPool<ValueTask>.Shared.Get();
-
-#pragma warning disable CS4014
-            tasks.Value.TryIncreaseCapacity(Catalog.Groups.Count);
-#pragma warning restore CS4014
+            var tasks = ListPool<ValueTask>.Shared.Get();
 
             ValueTask task;
 
@@ -155,14 +148,14 @@ namespace CCEnvs.Saves
                 {
                     foreach (var (_, group) in Catalog.Groups)
                     {
-                        task = group.SaveDataLoader.LoadSaveDataFromFileAsync(
-                            writeSaveDataMode,
+                        task = group.Serializer.SerializeDataToFileAsync(
+                            parameters: parameters,
                             configureAwait: false,
-                            cancellationToken: cancellationToken
+                            cancellationToken
                             );
 
                         tasks.Value.Add(task);
-                    }
+                    }  
                 }
 
                 await ValueTaskEx.WhenAll(tasks.Value);
@@ -180,49 +173,44 @@ namespace CCEnvs.Saves
 #endif
         }
 
-        private async ValueTask LoadGroupsFromSerializedAsyncCore(
-            SaveCatalogSerialized serialized,
-            WriteSaveDataMode writeSaveDataMode = default,
+        private async ValueTask<SaveCatalogSerialized> SerializeCatalogAsyncCore(
+            bool compressed = true,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
-            using var tasks = ListPool<ValueTask>.Shared.Get();
-
-#pragma warning disable CS4014
-            tasks.Value.TryIncreaseCapacity(Catalog.Groups.Count);
-#pragma warning restore CS4014
-
-            ValueTask task;
-
             try
             {
-                foreach (var (_, serializedGroup) in serialized.Groups)
-                {
-                    if (!Catalog.Groups.TryGetValue(serializedGroup.Name, out var group))
-                        continue;
+                var serializeTasks = ListPool<ValueTask<SaveGroupSerialized>>.Shared.Get();
 
-                    task = group.SaveDataLoader.LoadSaveDataFromSerializedAsync(
-                        serializedGroup.SaveDataSerialized,
-                        writeSaveDataMode,
+                ValueTask<SaveGroupSerialized> serializeTask;
+
+                foreach (var (_, group) in Catalog.Groups)
+                {
+                    serializeTask = group.Serializer.SerializeGroupAsync(
+                        compressed: compressed,
                         configureAwait: false,
                         cancellationToken: cancellationToken
                         );
 
-                    tasks.Value.Add(task);
+                    serializeTasks.Value.Add(serializeTask);
                 }
+
+                var serializedGroups = await ValueTaskEx.WhenAll(serializeTasks.Value);
+
+                return new SaveCatalogSerialized(Catalog.Path, serializedGroups);
             }
             catch (Exception ex)
             {
                 this.PrintException(ex);
-                return;
+                return new SaveCatalogSerialized(Catalog.Path);
             }
 #if !PLATFORM_WEBGL && UNITASK_PLUGIN
             finally

@@ -5,25 +5,13 @@ using CommunityToolkit.Diagnostics;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public struct WriteSaveDataToFileParameters : IEquatable<WriteSaveDataToFileParameters>
+    public struct SerializeToFileParameters : IEquatable<SerializeToFileParameters>
     {
-        private string? fileContent;
-
         private bool? compressed;
 
         private bool? backuped;
 
         public string FilePath { get; }
-
-        public string FileContent {
-            get
-            {
-                fileContent ??= string.Empty;
-
-                return fileContent;
-            }
-            set => fileContent = value;
-        }
 
         public string FileExtension { get; }
 
@@ -47,7 +35,7 @@ namespace CCEnvs.Saves
             set => backuped = value;
         }
 
-        public WriteSaveDataToFileParameters(
+        public SerializeToFileParameters(
             string filePath,
             string? fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION
             )
@@ -63,26 +51,24 @@ namespace CCEnvs.Saves
             FileExtension = fileExtension;
         }
 
-        public static bool operator ==(WriteSaveDataToFileParameters left, WriteSaveDataToFileParameters right)
+        public static bool operator ==(SerializeToFileParameters left, SerializeToFileParameters right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(WriteSaveDataToFileParameters left, WriteSaveDataToFileParameters right)
+        public static bool operator !=(SerializeToFileParameters left, SerializeToFileParameters right)
         {
             return !(left == right);
         }
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is WriteSaveDataToFileParameters parameters && Equals(parameters);
+            return obj is SerializeToFileParameters parameters && Equals(parameters);
         }
 
-        public readonly bool Equals(WriteSaveDataToFileParameters other)
+        public readonly bool Equals(SerializeToFileParameters other)
         {
-            return fileContent == other.fileContent
-                   &&
-                   FileExtension == other.FileExtension
+            return FileExtension == other.FileExtension
                    &&
                    compressed == other.compressed
                    &&
@@ -94,7 +80,6 @@ namespace CCEnvs.Saves
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(
-                fileContent,
                 FileExtension,
                 compressed,
                 backuped,

@@ -1,5 +1,4 @@
-﻿using CCEnvs.Attributes.Serialization;
-using CCEnvs.Collections;
+﻿using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
@@ -35,9 +34,9 @@ namespace CCEnvs.Saves
 
         public SaveData SaveData { get; }
 
-        public SaveGroupDataLoader SaveDataLoader { get; }
+        public SaveGroupLoader SaveDataLoader { get; }
 
-        public SaveGroupDataWriter SaveDataWriter { get; }
+        public SaveGroupSerializer Serializer { get; }
 
         protected CancellationToken DisposeCancellationToken {
             get => disposeCancellationTokenSource.Token;
@@ -47,7 +46,7 @@ namespace CCEnvs.Saves
             SaveCatalog catalog,
             string? name = null,
             long saveDataVersion = 0L,
-            bool redirectFileToSerialized = false
+            bool redirectFromFileToSerializedStorage = false
             )
         {
             Guard.IsNotNull(catalog, nameof(catalog));
@@ -55,8 +54,8 @@ namespace CCEnvs.Saves
             Name = name ?? string.Empty;
             Catalog = catalog;
             SaveData = new SaveData(Name, saveDataVersion);
-            SaveDataLoader = new SaveGroupDataLoader(this);
-            SaveDataWriter = new SaveGroupDataWriter(this);
+            SaveDataLoader = new SaveGroupLoader(this);
+            Serializer = new SaveGroupSerializer(this, redirectFromFileToSerializedStorage);
         }
 
         ~SaveGroup() => Dispose();
@@ -239,7 +238,7 @@ namespace CCEnvs.Saves
                 disposeCancellationTokenSource.CancelAndDispose();
                 observableObjects.Clear();
                 SaveDataLoader.Dispose();
-                SaveDataWriter.Dispose();
+                Serializer.Dispose();
             }
         }
 

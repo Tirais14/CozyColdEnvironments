@@ -22,33 +22,38 @@ namespace CCEnvs.Saves
             if (serialized.IsNullOrWhiteSpace())
                 return null;
 
-            if (GZipHelper.IsCompressed(serialized))
-            {
-                using var memStream = await StreamFactory.CreateMemoryStreamAsync(
-                    serialized.AsMemory(),
-                    cancellationToken: cancellationToken
-                    );
-
-                using var gZipStream = new GZipStream(memStream, mode: CompressionMode.Decompress);
-
-                using var streamReader = new StreamReader(gZipStream);
-
-#if !PLATFORM_WEBGL
-                serialized = await streamReader.ReadToEndAsync();
-#else
-                serialized = streamReader.ReadToEnd();
-#endif
-            }
+            await SaveSystem.SerializingSemaphore.WaitAsync();
 
             try
             {
+                if (GZipHelper.IsCompressed(serialized))
+                {
+                    using var memStream = await StreamFactory.CreateMemoryStreamAsync(
+                        serialized.AsMemory(),
+                        cancellationToken: cancellationToken
+                        );
+
+                    using var gZipStream = new GZipStream(memStream, mode: CompressionMode.Decompress);
+
+                    using var streamReader = new StreamReader(gZipStream);
+
+#if !PLATFORM_WEBGL
+                    serialized = await streamReader.ReadToEndAsync();
+#else
+                    serialized = streamReader.ReadToEnd();
+#endif
+                }
+
                 return JsonConvert.DeserializeObject<SaveData>(serialized, SaveSystem.SerializerSettings);
             }
             catch (Exception ex)
             {
                 typeof(SaveSerializer).PrintException(ex);
-
                 return null;
+            }
+            finally
+            {
+                SaveSystem.SerializingSemaphore.Release();
             }
         }
 
@@ -63,27 +68,41 @@ namespace CCEnvs.Saves
             if (saveData is null)
                 return string.Empty;
 
-            var serialized = JsonConvert.SerializeObject(
-                saveData,
-                SaveSystem.SerializerSettings
-                )
-                ??
-                string.Empty;
+            await SaveSystem.SerializingSemaphore.WaitAsync();
 
-            if (serialized.IsNullOrWhiteSpace())
-                return serialized;
+            try
+            {
+                var serialized = JsonConvert.SerializeObject(
+                    saveData,
+                    SaveSystem.SerializerSettings
+                    )
+                    ??
+                    string.Empty;
 
-            using var memStream = StreamFactory.CreateMemoryStream(serialized);
+                if (serialized.IsNullOrWhiteSpace())
+                    return serialized;
 
-            using var gZipStream = new GZipStream(memStream, CompressionLevel.Optimal);
+                using var memStream = StreamFactory.CreateMemoryStream(serialized);
 
-            using var streamReader = new StreamReader(gZipStream);
+                using var gZipStream = new GZipStream(memStream, CompressionLevel.Optimal);
+
+                using var streamReader = new StreamReader(gZipStream);
 
 #if !PLATFORM_WEBGL
-            return await streamReader.ReadToEndAsync();
+                return await streamReader.ReadToEndAsync();
 #else
-            return streamReader.ReadToEnd();
+                return streamReader.ReadToEnd();
 #endif
+            }
+            catch (Exception ex)
+            {
+                typeof(SaveSerializer).PrintException(ex);
+                return string.Empty;
+            }
+            finally
+            {
+                SaveSystem.SerializingSemaphore.Release();
+            }
         }
     }
 }

@@ -30,6 +30,8 @@ namespace CCEnvs.Saves
 
         public SaveCatalogLoader Loader { get; }
 
+        public SaveCatalogSerializer Serializer { get; }
+
         public SaveCatalog(
             SaveArchive archive,
             string? path = null
@@ -40,6 +42,7 @@ namespace CCEnvs.Saves
             Path = path ?? string.Empty;
             Archive = archive;
             Loader = new SaveCatalogLoader(this);
+            Serializer = new SaveCatalogSerializer(this);
         }
 
         ~SaveCatalog() => Dispose();
@@ -219,6 +222,7 @@ namespace CCEnvs.Saves
                 return;
 
             Loader.Dispose();
+            Serializer.Dispose();
 
             lock (groups.SyncRoot)
                 groups.SelectValue().DisposeEach(bufferized: false);

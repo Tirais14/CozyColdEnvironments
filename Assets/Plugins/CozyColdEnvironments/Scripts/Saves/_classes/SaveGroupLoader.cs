@@ -12,9 +12,9 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public sealed class SaveGroupDataLoader : IDisposable
+    public sealed class SaveGroupLoader : IDisposable
     {
-        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroupDataLoader));
+        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroupLoader));
 
         private ReactiveCommand<SaveData>? onLoadedSaveData;
 
@@ -26,14 +26,14 @@ namespace CCEnvs.Saves
 
         public bool RedirectFromFileToSerializedStorage { get; }
 
-        public SaveGroupDataLoader(SaveGroup group)
+        public SaveGroupLoader(SaveGroup group)
         {
             Guard.IsNotNull(group, nameof(group));
 
             Group = group;
         }
 
-        ~SaveGroupDataLoader() => Dispose();
+        ~SaveGroupLoader() => Dispose();
 
         public async ValueTask<SaveData?> DeserializeSaveDataFromFileAsync(
             bool configureAwait = true,
@@ -43,10 +43,11 @@ namespace CCEnvs.Saves
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (RedirectFromFileToSerializedStorage
-                &&
-                TryGetSerializedSaveGroup(out var serializedGroup))
+            if (RedirectFromFileToSerializedStorage)
             {
+                if (!TryGetSerializedSaveGroup(out var serializedGroup))
+                    return null; 
+
                 return await DeserializeSaveDataFromSerializedAsync(
                     serializedGroup.SaveDataSerialized,
                     configureAwait: configureAwait,
@@ -99,10 +100,11 @@ namespace CCEnvs.Saves
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (RedirectFromFileToSerializedStorage
-                &&
-                TryGetSerializedSaveGroup(out var serializedGroup))
+            if (RedirectFromFileToSerializedStorage)
             {
+                if (!TryGetSerializedSaveGroup(out var serializedGroup))
+                    return;
+
                 await LoadSaveDataFromSerializedAsync(
                     serializedGroup.SaveDataSerialized,
                     writeSaveDataMode: writeSaveDataMode,

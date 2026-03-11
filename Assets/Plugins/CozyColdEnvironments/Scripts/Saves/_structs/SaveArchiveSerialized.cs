@@ -1,5 +1,6 @@
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -15,15 +16,21 @@ namespace CCEnvs.Saves
 
         public string Path { get; }
 
+        public object CatalogsGate { get; }
+
+        [JsonConstructor]
         public SaveArchiveSerialized(
             string path,
-            IEnumerable<SaveCatalogSerialized> catalogs
+            IEnumerable<SaveCatalogSerialized>? catalogs = null
             )
         {
             Guard.IsNotNullOrWhiteSpace(path, nameof(path));
             CC.Guard.IsNotNull(catalogs, nameof(catalogs));
 
             Path = path;
+            CatalogsGate = new object();
+
+            catalogs ??= Array.Empty<SaveCatalogSerialized>();
 
             var catalogDic = new Dictionary<string, SaveCatalogSerialized>();
 
@@ -44,6 +51,34 @@ namespace CCEnvs.Saves
         public static bool operator !=(SaveArchiveSerialized left, SaveArchiveSerialized right)
         {
             return !(left == right);
+        }
+
+        public void Add(SaveCatalogSerialized catalog)
+        {
+            if (this == default)
+                throw new InvalidOperationException($"{this} is not initialized");
+
+            Guard.IsNotDefault(catalog, nameof(catalog));
+
+            lock (CatalogsGate)
+                catalogs[catalog.Path] = catalog;
+        }
+
+        public bool Remove(string catalogPath)
+        {
+            if (this == default)
+                throw new InvalidOperationException($"{this} is not initialized");
+
+            Guard.IsNotNullOrWhiteSpace(catalogPath, nameof(catalogPath));
+
+            lock (CatalogsGate)
+                return catalogs.Remove(catalogPath);
+        }
+
+        public void Clear()
+        {
+            lock (CatalogsGate)
+                catalogs.Clear();
         }
 
         public override bool Equals(object? obj)

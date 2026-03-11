@@ -49,6 +49,8 @@ namespace CCEnvs.Saves
 
         internal static SemaphoreSlim IOSemaphore { get; } = new(MAX_IO_OPERATIONS);
 
+        internal static SemaphoreSlim SerializingSemaphore { get; } = new(Math.Clamp(Environment.ProcessorCount / 2, 1, int.MaxValue));
+
         static SaveSystem()
         {
             BindArchiveAdd();

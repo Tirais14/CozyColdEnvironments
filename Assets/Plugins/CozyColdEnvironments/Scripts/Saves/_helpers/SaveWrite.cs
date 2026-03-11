@@ -16,7 +16,8 @@ namespace CCEnvs.Saves
         public const string DEFAULT_SAVE_EXTENSION = "jgz";
 
         public static async ValueTask ToFileAsync(
-            WriteSaveDataToFileParameters parameters,
+            string fileContent,
+            SerializeToFileParameters parameters,
             bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
@@ -59,12 +60,12 @@ namespace CCEnvs.Saves
                 {
                     using var gZipStream = new GZipStream(tempFileStream, CompressionLevel.Optimal, leaveOpen: true);
 
-                    await WriteToStreamAsync(gZipStream, parameters.FileContent, cancellationToken);
+                    await WriteToStreamAsync(gZipStream, fileContent, cancellationToken);
 
                     await gZipStream.DisposeAsync();
                 }
                 else
-                    await WriteToStreamAsync(tempFileStream, parameters.FileContent, cancellationToken);
+                    await WriteToStreamAsync(tempFileStream, fileContent, cancellationToken);
 
                 await tempFileStream.FlushAsync();
                 await tempFileStream.DisposeAsync();
