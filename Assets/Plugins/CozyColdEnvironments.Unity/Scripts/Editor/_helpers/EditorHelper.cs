@@ -1,10 +1,10 @@
 #if UNITY_EDITOR
-using System;
-using System.Linq;
-using System.Reflection;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
+using System;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine.UIElements;
 
@@ -14,7 +14,7 @@ namespace CCEnvs.UnityEditor
 {
     public static class EditorHelper
     {
-        public const string CC_TAB = "CC";
+        public const string CCEnvs = "CCEnvs";
         public const string EDITOR_TAB_NAME = "Editor";
         public const string TOOLS_TAB_NAME = "Tools";
         public const string COMPILING_TAB_NAME = "Compiling";

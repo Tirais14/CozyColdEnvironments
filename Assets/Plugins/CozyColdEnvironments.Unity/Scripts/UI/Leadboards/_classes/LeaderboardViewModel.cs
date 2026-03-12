@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Leaderboards;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using ObservableCollections;
 using R3;
 using UnityEngine;
@@ -29,9 +31,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
         [Tooltip("Must contain LeaderboardEntryView")]
         protected GameObject entryPrefab;
 
-        [SerializeField]
+        [SerializeField, OptionalField]
         [Tooltip("Must contain LeaderboardEntryView")]
         protected GameObject specialEntryPrefab;
+
+        [SerializeField, OptionalField]
+        protected Showable? loadingScreen;
 
         [SerializeField]
         protected Transform entryViewsRoot;
@@ -47,6 +52,11 @@ namespace CCEnvs.Unity.UI.Leaderboards
         public GameObject EntryPrefab {
             get => entryPrefab;
             set => entryPrefab = value;
+        }
+
+        public Showable? LoadingScreen {
+            get => loadingScreen;
+            set => loadingScreen = value;
         }
 
         public Transform EntryViewsRoot {
@@ -127,6 +137,16 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             CC.Guard.IsNotNull(entryViewsRoot, nameof(entryViewsRoot));
 
+            long startTimestamp = TimeProvider.System.GetTimestamp();
+
+            bool loadingScreenShown = false;
+
+            if (loadingScreen.IsNotNull() && entryViewsRoot.childCount == 0)
+            {
+                loadingScreen.Show();
+                loadingScreenShown = true;
+            }
+
             await UniTask.WaitForEndOfFrame(cancellationToken: cancellationToken);
 
             ILeaderboardEntry entry;
@@ -204,9 +224,27 @@ namespace CCEnvs.Unity.UI.Leaderboards
                     }
                 }
 
+                processegGOs.Dispose();
+
                 newEntries.Clear();
 
                 SortEntries();
+
+                if (loadingScreenShown)
+                {
+                    var timeSinceStart = TimeProvider.System.GetElapsedTime(startTimestamp);
+
+                    if (timeSinceStart < 1.Seconds())
+                    {
+                        await UniTask.WaitForSeconds(
+                            duration: (1.Seconds() - timeSinceStart).TotalSecondsF(),
+                            ignoreTimeScale: true,
+                            cancellationToken: cancellationToken
+                            );
+                    }
+
+                    loadingScreen!.Hide();
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -233,7 +271,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
             newEntries.Add(entry);
 
-            Command.Builder.WithName(nameof(OnEntryAdd), this)
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(OnEntryAdd)
+                );
+
+            Command.Builder.WithName(cmdName)
                 .SetSingle()
                 .WithState((@this: this, entry))
                 .Asynchronously()

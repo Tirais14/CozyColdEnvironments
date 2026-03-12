@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.EditorC
     {
         public static bool IsRestarted { get; }
 
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Restart Scene")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Restart Scene")]
         public static void Execute()
         {
             if (!Application.isPlaying)
@@ -39,16 +39,22 @@ namespace CCEnvs.Unity.EditorC
                 }
             }
 
-            UniTask.Create(async () =>
+            UniTask.Void(async () =>
             {
-
-                await SceneManager.LoadSceneAsync(sceneNames.First(), LoadSceneMode.Single);
-
-                foreach (var name in sceneNames.Slice(1, sceneNames.Length - 2))
+                try
                 {
-                    await SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+                    await SceneManager.LoadSceneAsync(sceneNames.First(), LoadSceneMode.Single);
+
+                    foreach (var name in sceneNames.Slice(1, sceneNames.Length - 2))
+                    {
+                        await SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+                    }
                 }
-            }).Forget();
+                catch (Exception ex)
+                {
+                    typeof(RestartGameTool).PrintException(ex);
+                }
+            });
         }
     }
 }

@@ -21,42 +21,34 @@ namespace CCEnvs
 
         public SaveData Data => Group.SaveData;
 
-        public bool RedirectFromFileToSerailizedStorage { get; }
+        public RedirectionMode Redirection => Group.Redirection;
 
         public SaveGroupSerializer(
-            SaveGroup group,
-            bool redirectFromFileToSerializedStorage
+            SaveGroup group
             )
         {
             Guard.IsNotNull(group, nameof(group));
 
             Group = group;
-            RedirectFromFileToSerailizedStorage = redirectFromFileToSerializedStorage;
         }
 
         ~SaveGroupSerializer() => Dispose();
 
         public async ValueTask SerializeDataToFileAsync(
             SerializeToFileParameters parameters = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (RedirectFromFileToSerailizedStorage)
+            if (Redirection == RedirectionMode.FromFileToSerializedStorage)
             {
                 await SerializeDataToFileRedirectedAsync(
                     compressed: parameters.Compressed,
-                    configureAwait: configureAwait,
                     cancellationToken: cancellationToken
                     );
             }
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -64,14 +56,14 @@ namespace CCEnvs
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, parameters, configureAwait))
+                .OnThreadPool()
+                .WithState((@this: this, parameters))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.SerializeDataToFileAsyncCore(
                         parameters: args.parameters,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -81,24 +73,15 @@ namespace CCEnvs
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
         }
 
         public async ValueTask<string> SerializeDataAsync(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -108,14 +91,14 @@ namespace CCEnvs
             var result = new ValueReference<string>();
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, compressed, configureAwait, result))
+                .OnThreadPool()
+                .WithState((@this: this, compressed, result))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     args.result = await args.@this.SerializeDataAsyncCore(
                         compressed: args.compressed,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -126,23 +109,14 @@ namespace CCEnvs
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
 
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
-
             return result;
         }
 
         public async ValueTask<SaveGroupSerialized> SerializeGroupAsync(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(SerializeGroupAsync)
@@ -151,14 +125,14 @@ namespace CCEnvs
             var result = new ValueReference<SaveGroupSerialized>();
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, compressed, configureAwait, result))
+                .OnThreadPool()
+                .WithState((@this: this, compressed, result))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     args.result = await args.@this.SerializeGroupAsyncCore(
                         compressed: args.compressed,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -168,10 +142,6 @@ namespace CCEnvs
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
 
             return result;
         }
@@ -195,16 +165,11 @@ namespace CCEnvs
 
         private async ValueTask SerializeDataToFileAsyncCore(
             SerializeToFileParameters parameters = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             try
             {
@@ -224,26 +189,15 @@ namespace CCEnvs
                 this.PrintException(ex);
                 throw;
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
 
         private async ValueTask<string> SerializeDataAsyncCore(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             try
             {
@@ -258,17 +212,10 @@ namespace CCEnvs
                 this.PrintException(ex);
                 return string.Empty;
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
 
         private async ValueTask SerializeDataToFileRedirectedAsync(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
@@ -279,7 +226,6 @@ namespace CCEnvs
             {
                 var serializedGroup = await SerializeGroupAsyncCore(
                     compressed: compressed,
-                    configureAwait: false,
                     cancellationToken: cancellationToken
                     );
 
@@ -297,17 +243,10 @@ namespace CCEnvs
                 this.PrintException(ex);
                 return;
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
 
         private async ValueTask<SaveGroupSerialized> SerializeGroupAsyncCore(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
@@ -318,7 +257,6 @@ namespace CCEnvs
             {
                 string serialized = await SerializeDataAsyncCore(
                     compressed: compressed,
-                    configureAwait: configureAwait,
                     cancellationToken: cancellationToken
                     );
 

@@ -18,7 +18,7 @@ namespace CCEnvs.Saves
 
         public SaveArchive Archive { get; }
 
-        SaveArchiveSerializer(SaveArchive archive)
+        public SaveArchiveSerializer(SaveArchive archive)
         {
             Guard.IsNotNull(archive, nameof(archive));
 
@@ -29,16 +29,12 @@ namespace CCEnvs.Saves
 
         public async ValueTask SerializeCatalogsToFileAsync(
             SerializeToFileParameters parameters = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -46,14 +42,14 @@ namespace CCEnvs.Saves
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, parameters, configureAwait))
+                .OnThreadPool()
+                .WithState((@this: this, parameters))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.SerializeCatalogsToFileAsyncCore(
                         parameters: args.parameters,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -63,24 +59,15 @@ namespace CCEnvs.Saves
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
         }
 
         public async ValueTask<SaveArchiveSerialized> SerializeArchiveAsync(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -90,14 +77,14 @@ namespace CCEnvs.Saves
             var result = new ValueReference<SaveArchiveSerialized>();
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, compressed, configureAwait, result))
+                .OnThreadPool()
+                .WithState((@this: this, compressed, result))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     args.result = await args.@this.SerializeArchiveAsyncCore(
                         compressed: args.compressed,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -107,10 +94,6 @@ namespace CCEnvs.Saves
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
 
             return result;
         }
@@ -126,16 +109,12 @@ namespace CCEnvs.Saves
 
         private async ValueTask SerializeCatalogsToFileAsyncCore(
             SerializeToFileParameters parameters = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
             var tasks = ListPool<ValueTask>.Shared.Get();
 
             ValueTask task;
@@ -148,7 +127,6 @@ namespace CCEnvs.Saves
                     {
                         task = catalog.Serializer.SerializeGroupsToFileAsync(
                             parameters: parameters,
-                            configureAwait: false,
                             cancellationToken
                             );
 
@@ -163,26 +141,15 @@ namespace CCEnvs.Saves
                 this.PrintException(ex);
                 return;
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
 
         private async ValueTask<SaveArchiveSerialized> SerializeArchiveAsyncCore(
             bool compressed = true,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             var serializeTasks = ListPool<ValueTask<SaveCatalogSerialized>>.Shared.Get();
 
@@ -196,7 +163,6 @@ namespace CCEnvs.Saves
                     {
                         serializeTask = catalog.Serializer.SerializeCatalogAsync(
                             compressed: compressed,
-                            configureAwait: false,
                             cancellationToken: cancellationToken
                             );
 
@@ -213,12 +179,6 @@ namespace CCEnvs.Saves
                 this.PrintException(ex);
                 return new SaveArchiveSerialized(Archive.Path);
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
     }
 }

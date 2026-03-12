@@ -11,7 +11,7 @@ using UnityEditor.Build;
 #nullable enable
 namespace CCEnvs.Unity.EditorC
 {
-    public static class EdtiorDefinesInstaller
+    public static class EdtiorDefinesInstallTool
     {
         private const string UNITASK = "Cysharp.Threading";
         private const string ZLINQ = "ZLinq";
@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.EditorC
             { ZENJECT, Range.From(ZENJECT_SYMBOL) }
         };
 
-        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Add Define Symbols", priority = -1)]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Install", priority = -1)]
         public static void AddDefines()
         {
             var nspaces = GetInstalledPluginNamespaces();
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.EditorC
                 PlayerSettingsHelper.AddScriptingDefineSymbols(Range.From(bTarget), symbol);
         }
 
-        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/" + EditorHelper.CC_TAB + "/Remove Define Symbols", priority = -1)]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Uninstall", priority = -1)]
         public static void RemoveDefines()
         {
             foreach (var targetGroup in GetTargetGroupDefineSymbols())

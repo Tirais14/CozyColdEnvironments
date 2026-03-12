@@ -22,6 +22,7 @@ namespace CCEnvs.Patterns.Commands
         public bool IsFaulted { get; } = false;
         public bool IsResetable { get; } = false;
         public bool IsValid { get; } = true;
+        public bool ExecuteOnThreadPool { get; } = false;
 
         public string Name {
             get => "Completed";

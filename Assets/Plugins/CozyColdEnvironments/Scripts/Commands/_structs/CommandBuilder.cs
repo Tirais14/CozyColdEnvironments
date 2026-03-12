@@ -17,6 +17,7 @@ namespace CCEnvs.Patterns.Commands
         public string? Name;
 
         public bool IsSingle;
+        public bool ExecuteOnThreadPool;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -48,6 +49,15 @@ namespace CCEnvs.Patterns.Commands
         public CommandBuilder SetSingle(bool state = true)
         {
             IsSingle = state;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CommandBuilder OnThreadPool(bool state = true)
+        {
+            ExecuteOnThreadPool = state;
 
             return this;
         }
@@ -231,7 +241,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
-                    CancelAction = intermediate.CancelAction
+                    CancelAction = intermediate.CancelAction,
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
                 };
             }
 
@@ -263,6 +274,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
+                cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
 
                 return pooledCmd;
             }
@@ -307,7 +319,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
-                    CancelAction = intermediate.CancelAction
+                    CancelAction = intermediate.CancelAction,
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
                 };
             }
 
@@ -340,6 +353,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
+                cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
 
                 return pooledCmd;
             }
@@ -383,7 +397,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
-                    CancelAction = intermediate.CancelAction
+                    CancelAction = intermediate.CancelAction,
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
                 };
             }
 
@@ -416,6 +431,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
+                cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
 
                 return pooledCmd;
             }
@@ -460,7 +476,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecuteAction = ExecuteAction,
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
-                    CancelAction = intermediate.CancelAction
+                    CancelAction = intermediate.CancelAction,
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
                 };
             }
 
@@ -493,6 +510,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ExecutePredicate = intermediate.ExecutePredicate;
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
+                cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
 
                 return pooledCmd;
             }

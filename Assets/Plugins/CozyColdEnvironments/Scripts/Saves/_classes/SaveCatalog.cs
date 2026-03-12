@@ -69,7 +69,8 @@ namespace CCEnvs.Saves
 
         public SaveGroup GetOrCreateGroup(
             string groupName,
-            long saveDataVersion = 0L
+            long saveDataVersion = 0L,
+            RedirectionMode redirectionMode = default
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -84,18 +85,30 @@ namespace CCEnvs.Saves
                     if (incrementalGroups.ContainsKey(groupName))
                         throw new InvalidOperationException($"Group: {groupName} already exists and it's incremental");
 
-                    group = new SaveGroup(this, groupName, saveDataVersion);
+                    group = new SaveGroup(
+                        this,
+                        groupName,
+                        saveDataVersion,
+                        redirectionMode
+                        );
 
                     groups.Add(groupName, group);
                 }
             }
+
+            if (group.SaveData.Version != saveDataVersion)
+                PrintVersionsNotMatchWarning(group.SaveData.Version, saveDataVersion);
+
+            if (group.Redirection != redirectionMode)
+                PrintRedirectionModesNotMatchError(group.Redirection, redirectionMode);
 
             return group;
         }
 
         public SaveGroupIncremental GetOrCreateIncrementalGroup(
             string groupName, 
-            long saveDataVersion = 0L
+            long saveDataVersion = 0L,
+            RedirectionMode redirectionMode = default
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -110,16 +123,30 @@ namespace CCEnvs.Saves
                     if (groups.ContainsKey(groupName))
                         throw new InvalidOperationException($"Group: {groupName} already exists and it's not incremental");
 
-                    group = new SaveGroupIncremental(this, groupName, saveDataVersion);
+                    group = new SaveGroupIncremental(
+                        this,
+                        groupName,
+                        saveDataVersion,
+                        redirectionMode
+                        );
 
                     incrementalGroups.Add(groupName, group);
                 }
             }
 
+            if (group.SaveData.Version != saveDataVersion)
+                PrintVersionsNotMatchWarning(group.SaveData.Version, saveDataVersion);
+
+            if (group.Redirection != redirectionMode)
+                PrintRedirectionModesNotMatchError(group.Redirection, redirectionMode);
+
             return group;
         }
 
-        public bool ChangeGroupTypeTo(string groupName, bool incremental)
+        public bool ChangeGroupTypeTo(
+            string groupName,
+            bool incremental
+            )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
             Guard.IsNotNull(groupName, nameof(groupName));
@@ -241,5 +268,15 @@ namespace CCEnvs.Saves
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void PrintVersionsNotMatchWarning(long current, long expected)
+        {
+            this.PrintWarning($"Versions is not match. Current: {current}; expected: {expected}");
+        }
+
+        private void PrintRedirectionModesNotMatchError(RedirectionMode current, RedirectionMode expected)
+        {
+            this.PrintError($"Redirection modes is not match. Current: {current}; expected: {expected}");
+        }
     }
 }

@@ -2,6 +2,7 @@ using CCEnvs.Attributes;
 using CCEnvs.Dependencies;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,7 +40,16 @@ namespace CCEnvs.Unity.CommonAPIs
             this.playerAPI = playerAPI;
 
             if (playerAPI.IsAuthorized)
+            {
                 OnAuthorized();
+                return;
+            }
+
+            playerAPI.ObserveIsAuthorised()
+                .Where(x => x)
+                .Subscribe(this,
+                static (_, @this) => @this.OnAuthorized())
+                .AddDisposableTo(this);
         }
 
         protected override void Start()

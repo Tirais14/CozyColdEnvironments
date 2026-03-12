@@ -25,13 +25,16 @@ namespace CCEnvs.Saves
         private readonly IDisposable observableObjectAddBinding;
         private readonly IDisposable observableObjectRemoveBinding;
 
+        public bool HasDirtyObjects => nonIncrementalObjects.Count != 0 || dirtyObjects.Count != 0;
+
         public SaveGroupIncremental(
             SaveCatalog catalog,
             string? name = null,
-            long saveDataVersion = 0L
+            long saveDataVersion = 0L,
+            RedirectionMode redirectionMode = default
             )
             :
-            base(catalog, name, saveDataVersion)
+            base(catalog, name, saveDataVersion, redirectionMode)
         {
             observableObjectAddBinding = BindObservableObjectAdd();
             observableObjectRemoveBinding = BindObservableObjectRemove();

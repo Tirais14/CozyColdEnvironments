@@ -16,13 +16,29 @@ namespace CCEnvs.Patterns.Commands
 
         public virtual void Execute()
         {
-            ThrowIfDisposed();
+            if (CancellationToken.IsCancellationRequested)
+            {
+                SetCanceled();
+                return;
+            }
+
+            if (!IsValid)
+            {
+                PrintIsNotValidError();
+                return;
+            }
 
             if (IsRunning)
-                throw new InvalidOperationException("Is already running");
+            {
+                PrintAlreadyExecutedError();
+                return;
+            }
 
             if (IsDone)
-                throw new InvalidCastException("Already done");
+            {
+                PrintAlreadyDoneError();
+                return;
+            }
 
             isExecuted = true;
 

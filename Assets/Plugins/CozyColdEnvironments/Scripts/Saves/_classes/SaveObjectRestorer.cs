@@ -311,7 +311,7 @@ namespace CCEnvs.Saves
 
         private void BindSaveDataLoaded(SaveGroup group)
         {
-            group.SaveDataLoader.ObserveLoadSaveData()
+            group.Loader.ObserveLoadSaveData()
                 .Subscribe((@this: this, group),
                 static (saveData, args) =>
                 {

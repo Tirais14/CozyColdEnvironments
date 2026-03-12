@@ -28,10 +28,13 @@ namespace CCEnvs.Saves
 
         public SaveArchiveLoader Loader { get; }
 
+        public SaveArchiveSerializer Serializer { get; }
+
         public SaveArchive(string? path = null)
         {
             Path = path ?? DEFAULT_PATH;
             Loader = new SaveArchiveLoader(this);
+            Serializer = new SaveArchiveSerializer(this);
         }
 
         ~SaveArchive() => Dispose();
@@ -71,8 +74,6 @@ namespace CCEnvs.Saves
 
         public SaveArchive Clear()
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
             lock (catalogs.SyncRoot)
                 catalogs.SelectValue().DisposeEach(bufferized: false);
 
@@ -93,11 +94,8 @@ namespace CCEnvs.Saves
                 return;
 
             Loader.Dispose();
-
-            lock (catalogs.SyncRoot)
-                catalogs.SelectValue().DisposeEach(bufferized: false);
-
-            catalogs.Clear();
+            Serializer.Dispose();
+            Clear();
         }
 
         public IEnumerator<SaveCatalog> GetEnumerator()

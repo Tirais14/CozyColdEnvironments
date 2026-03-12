@@ -34,7 +34,7 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return $"{nameof(CommandType)}: {CommandType}; {CommandName}: {CommandName}.";
+            return $"({nameof(CommandType)}: {CommandType.Map(type => type.Name).GetValue("null")}; {nameof(CommandName)}: {CommandName})";
         }
 
         public bool Equals(CommandSignature other)

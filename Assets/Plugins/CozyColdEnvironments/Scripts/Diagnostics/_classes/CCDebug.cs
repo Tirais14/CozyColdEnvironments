@@ -26,9 +26,6 @@ namespace CCEnvs.Diagnostics
 
         public void PrintLog(object message, object? context = null)
         {
-            if (!IsPrintAllowed(context))
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.Log(GetMessage(message, context), context as Object);
 #else
@@ -38,9 +35,6 @@ namespace CCEnvs.Diagnostics
 
         public void PrintWarning(object message, object? context = null)
         {
-            if (!IsPrintAllowed(context))
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning(GetMessage(message, context), context as Object);
 #else
@@ -50,9 +44,6 @@ namespace CCEnvs.Diagnostics
 
         public void PrintError(object message, object? context = null)
         {
-            //if (!IsPrintAllowed(context))
-            //    return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.LogError(GetMessage(message, context), context as Object);
 #else
@@ -62,9 +53,6 @@ namespace CCEnvs.Diagnostics
 
         public void PrintExceptionAsLog(Exception exception, object? context = null)
         {
-            if (!IsPrintAllowed(context))
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.Log($"{exception.GetType().Name}: {exception.Message}", context as Object);
 #else
@@ -74,9 +62,6 @@ namespace CCEnvs.Diagnostics
 
         public void PrintExceptionAsWarning(Exception exception, object? context = null)
         {
-            if (!IsPrintAllowed(context))
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning($"{exception.GetType().Name}: {exception.Message}", context as Object);
 #else
@@ -95,9 +80,6 @@ namespace CCEnvs.Diagnostics
 
         public void AssertLog(bool condition, object message, object? context)
         {
-            if (!IsPrintAllowed(context) || condition)
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.Log(GetMessage(message, context), context as Object);
 #else
@@ -107,9 +89,6 @@ namespace CCEnvs.Diagnostics
 
         public void AssertWarning(bool condition, object message, object? context)
         {
-            if (!IsPrintAllowed(context) || condition)
-                return;
-
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning(GetMessage(message, context), context as Object);
 #else

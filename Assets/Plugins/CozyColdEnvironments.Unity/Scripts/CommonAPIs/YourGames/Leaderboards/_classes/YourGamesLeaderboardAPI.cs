@@ -72,7 +72,12 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
         public void PullLeaderboard()
         {
-            Command.Builder.WithName(nameof(PullLeaderboard), this)
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(PullLeaderboard)
+                );
+
+            Command.Builder.WithName(cmdName)
                 .SetSingle()
                 .WithState(this)
                 .WithExecutePredicate(
@@ -99,7 +104,12 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                 return;
             }
 
-            Command.Builder.WithName(nameof(PostLeaderboard), this)
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(PostLeaderboard)
+                );
+
+            Command.Builder.WithName(cmdName)
                 .SetSingle()
                 .WithState(this)
                 .WithExecutePredicate(

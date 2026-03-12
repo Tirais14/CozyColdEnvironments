@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using CCEnvs.Collections;
+using CCEnvs.Disposables;
 using CCEnvs.Threading;
 using R3;
 
@@ -43,7 +44,8 @@ namespace CCEnvs.Patterns.Commands
         public bool IsDone => IsCompleted || IsCancelled || IsFaulted;
         public bool IsSingle { get; set; }
         public bool IsResetable { get; }
-        public bool IsValid => !disposed;
+        public bool IsValid => !CCDisposable.IsDisposed(disposed);
+        public bool ExecuteOnThreadPool { get; set; }
 
         public CommandStatus Status => status.Value;
 
@@ -234,22 +236,30 @@ namespace CCEnvs.Patterns.Commands
             return status;
         }
 
-        private bool disposed;
+        private int disposed;
         public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             if (disposing)
             {
-                Cancel();
-                SetFaulted(null);
-                status.Dispose();
-                DetachCancellationTokens();
-            }
+                try
+                {
+                    OnCancel();
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                }
 
-            disposed = true;
+                SetFaulted(null);
+
+                DetachCancellationTokens();
+
+                status.Dispose();
+            }
         }
 
         protected virtual void OnUndo()
@@ -266,6 +276,7 @@ namespace CCEnvs.Patterns.Commands
             Name = string.Empty;
             IsSingle = false;
             status.Value = CommandStatus.None;
+            ExecuteOnThreadPool = false;
         }
 
         protected virtual void OnCancel()
@@ -389,8 +400,22 @@ namespace CCEnvs.Patterns.Commands
 
         protected void ThrowIfDisposed()
         {
-            if (disposed)
-                throw new ObjectDisposedException(GetType().ToString());
+            CCDisposable.ThrowIfDisposed(this, disposed);
+        }
+
+        protected void PrintAlreadyDoneError()
+        {
+            this.PrintError($"Command is already done and cannot be executed. Command: {Signature}; status {Status}");
+        }
+
+        protected void PrintAlreadyExecutedError()
+        {
+            this.PrintError($"Command is already executed. Command: {Signature}; status {Status}");
+        }
+
+        protected void PrintIsNotValidError()
+        {
+            this.PrintError($"Command is not valid and cannot be executed. Command: {Signature}; status: {Status}");
         }
     }
 }

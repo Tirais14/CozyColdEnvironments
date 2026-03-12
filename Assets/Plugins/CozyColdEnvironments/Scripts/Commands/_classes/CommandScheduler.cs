@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
@@ -11,8 +12,11 @@ using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
+using Cysharp.Threading.Tasks;
 using Humanizer;
 using R3;
+using CCEnvs.Threading.Tasks;
+using CCEnvs.Threading;
 
 #nullable enable
 namespace CCEnvs.Patterns.Commands
@@ -33,6 +37,8 @@ namespace CCEnvs.Patterns.Commands
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
+
+        private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
 
         private QueueCommand? cmd;
 
@@ -94,6 +100,8 @@ namespace CCEnvs.Patterns.Commands
 
         public object SyncRoot { get; } = new();
 
+        private CancellationToken disposeCancellationToken => _disposeCancellationTokenSource.Token;
+
         public CommandScheduler(FrameProvider? frameProvider = null, string? name = null)
         {
             frameProvider?.Register(this);
@@ -103,6 +111,8 @@ namespace CCEnvs.Patterns.Commands
 
             Enable();
         }
+
+        ~CommandScheduler() => Dispose();
 
         public static CommandScheduler CreateDefaultRegistered(string? name = null)
         {
@@ -118,10 +128,15 @@ namespace CCEnvs.Patterns.Commands
             CC.Guard.IsNotNull(cmd, nameof(cmd));
 
             if (!cmd.IsValid)
-                throw new ArgumentException($"Command: {cmd} is not valid", nameof(cmd));
+                throw new ArgumentException($"Comman is not valid. Command: {cmd.Signature}", nameof(cmd));
 
             if (cmd.IsDone)
-                throw new ArgumentException($"Command: {cmd} invalid status: {cmd.Status}", nameof(cmd));
+            {
+                //throw new ArgumentException($"Command: {cmd} invalid status: {cmd.Status}", nameof(cmd));
+
+                this.PrintWarning($"Command is already done. Command: {cmd.Signature}; status {cmd.Status}");
+                return;
+            }
 
             ProcessCommandsBy(cmd);
 
@@ -167,11 +182,10 @@ namespace CCEnvs.Patterns.Commands
                 throw;
             }
 
+            _disposeCancellationTokenSource.CancelAndDispose();
             scheduleCommandRxCmd?.Dispose();
             isEnabled.Dispose();
             isRunning.Dispose();
-
-            GC.SuppressFinalize(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -451,10 +465,52 @@ namespace CCEnvs.Patterns.Commands
             switch (cmd!.Value)
             {
                 case ICommand cmdSync:
-                    cmdSync.Execute();
+                    {
+                        if (cmdSync.ExecuteOnThreadPool)
+                        {
+#if UNITASK_PLUGIN
+                            UniTask.RunOnThreadPool(
+                                cmdSync.Execute,
+                                cancellationToken: disposeCancellationToken
+                                )
+                                .Forget();
+#else
+                            Task.Run(
+                                cmdSync.Execute,
+                                cancellationToken: disposeCancellationToken
+                                );
+#endif
+                            return;
+                        }
+
+                        cmdSync.Execute();
+                    }
                     break;
                 case ICommandAsync cmdAsync:
-                    cmdAsync.ExecuteAsync();
+                    {
+                        if (cmdAsync.ExecuteOnThreadPool)
+                        {
+#if UNITASK_PLUGIN
+                            UniTask.RunOnThreadPool(
+                                static async cmdAsync =>
+                                {
+                                    await ((ICommandAsync)cmdAsync).ExecuteAsync();
+                                },
+                                cmdAsync,
+                                cancellationToken: disposeCancellationToken
+                                )
+                                .Forget();
+#else
+                            Task.Run(
+                                async () => await cmdAsync.ExecuteAsync(),
+                                cancellationToken: disposeCancellationToken
+                                );
+#endif
+                            return;
+                        }
+
+                        cmdAsync.ExecuteAsync();
+                    }
                     break;
                 default:
                     throw new InvalidOperationException();

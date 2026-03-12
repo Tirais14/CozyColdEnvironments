@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Editor
 {
     [InitializeOnLoad]
-    public static class AutoCompilingToggle
+    public static class AutoCompilingToggleTool
     {
         private const string AUTO_COMPILING = "AutoCompiling";
 
@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.Editor
                                                     ||
                                                     PlayerPrefs.GetInt(AUTO_COMPILING) == 1;
 
-        static AutoCompilingToggle()
+        static AutoCompilingToggleTool()
         {
             if (!IsCompilationEnabled)
                 DisableAutoCompiling(isInternal: false);
@@ -24,13 +24,13 @@ namespace CCEnvs.Unity.Editor
                 EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
         public static void EnableAutoCompiling()
         {
             EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CC_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
         public static void DisableAutoCompiling()
         {
             DisableAutoCompiling(isInternal: false);
@@ -43,7 +43,7 @@ namespace CCEnvs.Unity.Editor
 
             if (!isInternal)
                 CCDebug.Instance.PrintLog($"Auto compiling enabled.",
-                                 typeof(AutoCompilingToggle));
+                                 typeof(AutoCompilingToggleTool));
         }
 
         private static void SetDisabled(bool isInternal)
@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.Editor
 
             if (!isInternal)
                 CCDebug.Instance.PrintLog($"Auto compiling disabled.",
-                                 typeof(AutoCompilingToggle));
+                                 typeof(AutoCompilingToggleTool));
         }
 
         private static void EnableAutoCompiling(bool isInternal)

@@ -93,7 +93,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                     return YG2.player.auth;
                 });
 
-            return Observable.Return(IsAuthorized).Concat(isAuthorizedObservable);
+            return isAuthorizedObservable;
 #else
             return Observable.Empty<bool>();
 #endif

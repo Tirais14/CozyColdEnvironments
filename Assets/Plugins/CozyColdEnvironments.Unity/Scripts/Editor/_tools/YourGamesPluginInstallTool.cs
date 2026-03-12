@@ -7,9 +7,9 @@ using UnityEditor.Build;
 #nullable enable
 namespace CCEnvs.Unity.EditorC
 {
-    public static class YourGamesPluginDisableTool
+    public static class YourGamesPluginInstallTool
     {
-        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/YG2/Disable")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/YG2/Uninstall")]
         public static void Disable()
         {
             var defineSymbols = PlayerSettingsHelper.GetNamedBuildTargets()
@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.EditorC
                 );
         }
 
-        [MenuItem(EditorHelper.COMPILING_TAB_NAME + "/YG2/Enable")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/YG2/Install")]
         public static void Enable()
         {
             PlayerSettingsHelper.AddScriptingDefineSymbols(

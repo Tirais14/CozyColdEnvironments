@@ -10,15 +10,16 @@ namespace CCEnvs.Patterns.Commands
     {
         bool IsReadyToExecute { get; }
         bool IsCancelled { get; }
-        bool IsSingle { get; set; }
+        bool IsSingle { get; }
         bool IsCompleted { get; }
         bool IsRunning { get; }
         bool IsDone { get; }
         bool IsFaulted { get; }
         bool IsResetable { get; }
         bool IsValid { get; }
+        bool ExecuteOnThreadPool { get;}
 
-        string Name { get; set; }
+        string Name { get; }
 
         CommandStatus Status { get; }
 

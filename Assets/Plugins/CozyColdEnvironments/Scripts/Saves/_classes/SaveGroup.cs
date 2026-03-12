@@ -22,8 +22,6 @@ namespace CCEnvs.Saves
     {
         protected readonly ObservableDictionary<string, object> observableObjects = new();
 
-        protected int? hashCode;
-
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
@@ -34,9 +32,11 @@ namespace CCEnvs.Saves
 
         public SaveData SaveData { get; }
 
-        public SaveGroupLoader SaveDataLoader { get; }
+        public SaveGroupLoader Loader { get; }
 
         public SaveGroupSerializer Serializer { get; }
+
+        public RedirectionMode Redirection { get; }
 
         protected CancellationToken DisposeCancellationToken {
             get => disposeCancellationTokenSource.Token;
@@ -46,7 +46,7 @@ namespace CCEnvs.Saves
             SaveCatalog catalog,
             string? name = null,
             long saveDataVersion = 0L,
-            bool redirectFromFileToSerializedStorage = false
+            RedirectionMode redirectionMode = default
             )
         {
             Guard.IsNotNull(catalog, nameof(catalog));
@@ -54,8 +54,9 @@ namespace CCEnvs.Saves
             Name = name ?? string.Empty;
             Catalog = catalog;
             SaveData = new SaveData(Name, saveDataVersion);
-            SaveDataLoader = new SaveGroupLoader(this);
-            Serializer = new SaveGroupSerializer(this, redirectFromFileToSerializedStorage);
+            Redirection = redirectionMode;
+            Loader = new SaveGroupLoader(this);
+            Serializer = new SaveGroupSerializer(this);
         }
 
         ~SaveGroup() => Dispose();
@@ -123,6 +124,7 @@ namespace CCEnvs.Saves
             out string resolvedKey
             )
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
             CC.Guard.IsNotNull(obj, nameof(obj));
 
             if (key is null && !SaveGroupObjectKey.TryResolve(obj, out key))
@@ -168,6 +170,8 @@ namespace CCEnvs.Saves
 
         public bool IsObjectRegistered(string? key)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (key is null || CCDisposable.IsDisposed(disposed))
                 return false;
 
@@ -176,6 +180,8 @@ namespace CCEnvs.Saves
 
         public bool IsObjectRegistered(object obj)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (!SaveGroupObjectKey.TryResolve(obj, out var key))
                 key = string.Empty;
 
@@ -237,7 +243,7 @@ namespace CCEnvs.Saves
             {
                 disposeCancellationTokenSource.CancelAndDispose();
                 observableObjects.Clear();
-                SaveDataLoader.Dispose();
+                Loader.Dispose();
                 Serializer.Dispose();
             }
         }

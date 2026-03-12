@@ -24,13 +24,23 @@ namespace CCEnvs.Patterns.Commands
                 return;
             }
 
-            ThrowIfDisposed();
+            if (!IsValid)
+            {
+                PrintIsNotValidError();
+                return;
+            }
 
             if (IsRunning)
-                throw new InvalidOperationException("Is already running");
+            {
+                PrintAlreadyExecutedError();
+                return;
+            }
 
             if (IsDone)
-                throw new InvalidCastException("Already done");
+            {
+                PrintAlreadyDoneError();
+                return;
+            }
 
             isExecuted = true;
 

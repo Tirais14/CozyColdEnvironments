@@ -29,19 +29,14 @@ namespace CCEnvs.Saves
 
         public async ValueTask LoadGroupsFromFileAsync(
             WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (Catalog.Groups.IsEmpty())
                 return;
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -49,14 +44,14 @@ namespace CCEnvs.Saves
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, writeSaveDataMode, configureAwait))
+                .OnThreadPool()
+                .WithState((@this: this, writeSaveDataMode))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
                     await args.@this.LoadGroupsFromFileAsyncCore(
                         writeSaveDataMode: args.writeSaveDataMode,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -66,21 +61,16 @@ namespace CCEnvs.Saves
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
         }
 
         public async ValueTask LoadGroupsFromSerializedAsync(
             SaveCatalogSerialized serialized,
             WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (Catalog.Groups.IsEmpty())
                 return;
@@ -88,17 +78,14 @@ namespace CCEnvs.Saves
             if (serialized == default)
                 return;
 
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
-
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(LoadGroupsFromSerializedAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
-                .WithState((@this: this, serialized, writeSaveDataMode, configureAwait))
+                .OnThreadPool()
+                .WithState((@this: this, serialized, writeSaveDataMode))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
@@ -106,7 +93,6 @@ namespace CCEnvs.Saves
                     await args.@this.LoadGroupsFromSerializedAsyncCore(
                         serialized: args.serialized,
                         writeSaveDataMode: args.writeSaveDataMode,
-                        configureAwait: args.configureAwait,
                         cancellationToken: cancellationToken
                         );
                 })
@@ -116,10 +102,6 @@ namespace CCEnvs.Saves
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-#endif
         }
 
         private int disposed;
@@ -133,13 +115,11 @@ namespace CCEnvs.Saves
 
         private async ValueTask LoadGroupsFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
+            cancellationToken.ThrowIfCancellationRequested();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var tasks = ListPool<ValueTask>.Shared.Get();
 
@@ -155,9 +135,8 @@ namespace CCEnvs.Saves
                 {
                     foreach (var (_, group) in Catalog.Groups)
                     {
-                        task = group.SaveDataLoader.LoadSaveDataFromFileAsync(
+                        task = group.Loader.LoadSaveDataFromFileAsync(
                             writeSaveDataMode,
-                            configureAwait: false,
                             cancellationToken: cancellationToken
                             );
 
@@ -172,27 +151,16 @@ namespace CCEnvs.Saves
                 this.PrintException(ex);
                 return;
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
 
         private async ValueTask LoadGroupsFromSerializedAsyncCore(
             SaveCatalogSerialized serialized,
             WriteSaveDataMode writeSaveDataMode = default,
-            bool configureAwait = true,
             CancellationToken cancellationToken = default
             )
         {
-            CCDisposable.ThrowIfDisposed(this, disposed);
             cancellationToken.ThrowIfCancellationRequested();
-
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
-#endif
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var tasks = ListPool<ValueTask>.Shared.Get();
 
@@ -209,10 +177,9 @@ namespace CCEnvs.Saves
                     if (!Catalog.Groups.TryGetValue(serializedGroup.Name, out var group))
                         continue;
 
-                    task = group.SaveDataLoader.LoadSaveDataFromSerializedAsync(
+                    task = group.Loader.LoadSaveDataFromSerializedAsync(
                         serializedGroup.SaveDataSerialized,
                         writeSaveDataMode,
-                        configureAwait: false,
                         cancellationToken: cancellationToken
                         );
 
@@ -224,12 +191,6 @@ namespace CCEnvs.Saves
                 this.PrintException(ex);
                 return;
             }
-#if !PLATFORM_WEBGL && UNITASK_PLUGIN
-            finally
-            {
-                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
-            }
-#endif
         }
     }
 }
