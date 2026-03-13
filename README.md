@@ -56,6 +56,7 @@ Within the game's entry point, you must invoke CC.Install(). If necessary, pass 
 - [Newtonsoft.Json](https://www.newtonsoft.com/json)
 - [Humanizer](https://github.com/Humanizr/Humanizer) (Core EN)
 - [CommunityToolkit](github.com/CommunityToolkit/dotnet) (Common and Diagnostics modules)
+- [ValueTaskSupplement](https://github.com/Cysharp/ValueTaskSupplement)
 
 # Roadmap
 - Finalize the new save system.
