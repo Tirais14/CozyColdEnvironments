@@ -22,10 +22,10 @@ namespace CCEnvs
             Value = value;
         }
 
-        public static implicit operator ValueReference<T>(T value)
-        {
-            return new ValueReference<T>(value);
-        }
+        //public static implicit operator ValueReference<T>(T value)
+        //{
+        //    return new ValueReference<T>(value);
+        //}
 
         public static implicit operator T(ValueReference<T> instance)
         {

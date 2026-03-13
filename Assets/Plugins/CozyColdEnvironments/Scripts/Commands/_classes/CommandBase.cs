@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Threading;
+using Cysharp.Threading.Tasks;
 using R3;
 
 #pragma warning disable S107
@@ -214,6 +216,20 @@ namespace CCEnvs.Patterns.Commands
             RegisterCancellationTokenToCancel(CancellationToken);
 
             return this.To<TThis>();
+        }
+
+        public async ValueTask WaitForDone(CancellationToken cancellationTokenAdditional = default)
+        {
+            if (IsDone)
+                return;
+
+            using var _ = CancellationToken.LinkTokens(cancellationTokenAdditional, out cancellationTokenAdditional);
+
+            await UniTask.WaitUntil(
+                this,
+                static @this => @this.IsDone,
+                cancellationToken: cancellationTokenAdditional
+                );
         }
 
         public Observable<CommandStatus> ObserveIsDone()

@@ -14,7 +14,7 @@ namespace CCEnvs.Saves
 {
     public sealed class SaveArchiveLoader : IDisposable
     {
-        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered();
+        private ReactiveCommand<SaveArchive>? onLoaded;
 
         public SaveArchive Archive { get; }
 
@@ -59,9 +59,8 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Archive.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask LoadCatalogsFromSerializedAsync(
@@ -101,9 +100,14 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Archive.commandScheduler)
+                .WaitForDone();
+        }
+
+        public Observable<SaveArchive> ObserveLoad()
+        {
+            onLoaded ??= new ReactiveCommand<SaveArchive>();
+            return onLoaded;
         }
 
         private int disposed;
@@ -112,7 +116,9 @@ namespace CCEnvs.Saves
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            commandScheduler.Dispose();
+            onLoaded?.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         private async ValueTask LoadCatalogsFromFileAsyncCore(
@@ -147,6 +153,8 @@ namespace CCEnvs.Saves
                 }
 
                 await ValueTaskEx.WhenAll(tasks.Value);
+
+                onLoaded?.Execute(Archive);
             }
             catch (Exception ex)
             {
@@ -189,6 +197,8 @@ namespace CCEnvs.Saves
                 }
 
                 await ValueTaskEx.WhenAll(tasks.Value);
+
+                onLoaded?.Execute(Archive);
             }
             catch (Exception ex)
             {

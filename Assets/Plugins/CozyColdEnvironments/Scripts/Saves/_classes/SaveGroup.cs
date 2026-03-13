@@ -1,10 +1,12 @@
 ﻿using CCEnvs.Collections;
 using CCEnvs.Disposables;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
+using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +22,8 @@ namespace CCEnvs.Saves
         IEnumerable<KeyValuePair<string, object>>,
         IDisposable
     {
+        internal readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroup));
+
         protected readonly ObservableDictionary<string, object> observableObjects = new();
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
@@ -35,6 +39,8 @@ namespace CCEnvs.Saves
         public SaveGroupLoader Loader { get; }
 
         public SaveGroupSerializer Serializer { get; }
+
+        public SaveGroupWriter Writer { get; }
 
         public RedirectionMode Redirection { get; }
 
@@ -57,6 +63,7 @@ namespace CCEnvs.Saves
             Redirection = redirectionMode;
             Loader = new SaveGroupLoader(this);
             Serializer = new SaveGroupSerializer(this);
+            Writer = new SaveGroupWriter(this);
         }
 
         ~SaveGroup() => Dispose();
@@ -188,19 +195,6 @@ namespace CCEnvs.Saves
             return IsObjectRegistered(key);
         }
 
-        public SaveGroup CaptureAndWriteSaveData(
-            WriteSaveDataMode writeSaveDataMode = default
-            )
-        {
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
-            using var saveUnits = CreateAndProcessSaveEntriesPooled();
-
-            SaveData.Write(saveUnits.Value, writeSaveDataMode);
-
-            return this;
-        }
-
         public string GetFullPath()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -244,14 +238,16 @@ namespace CCEnvs.Saves
                 disposeCancellationTokenSource.CancelAndDispose();
                 observableObjects.Clear();
                 Loader.Dispose();
-                Serializer.Dispose();
+                Writer.Dispose();
             }
+
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
         /// !May change SaveData snapshot states!
         /// </summary>
-        protected virtual PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
+        internal virtual PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 

@@ -25,7 +25,28 @@ namespace CCEnvs.Saves
         private readonly IDisposable observableObjectAddBinding;
         private readonly IDisposable observableObjectRemoveBinding;
 
-        public bool HasDirtyObjects => nonIncrementalObjects.Count != 0 || dirtyObjects.Count != 0;
+        public bool HasDirtyObjects {
+            get
+            {
+                lock (nonIncrementalObjectsGate)
+                {
+                    if (nonIncrementalObjects.Count != 0)
+                        return true;
+                }
+
+                lock (dirtyObjectGate)
+                    return dirtyObjects.Count != 0;
+            }
+        }
+
+        public int DirtyObjectCount {
+            get
+            {
+                lock (dirtyObjectGate)
+                    lock (nonIncrementalObjectsGate)
+                        return dirtyObjects.Count + nonIncrementalObjects.Count;
+            }
+        }
 
         public SaveGroupIncremental(
             SaveCatalog catalog,
@@ -40,7 +61,7 @@ namespace CCEnvs.Saves
             observableObjectRemoveBinding = BindObservableObjectRemove();
         }
 
-        protected override PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
+        internal override PooledObject<List<SaveEntry>> CreateAndProcessSaveEntriesPooled()
         {
             int entryCount;
 

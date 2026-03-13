@@ -1,5 +1,6 @@
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
+using CCEnvs.Patterns.Commands;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using System;
@@ -17,6 +18,8 @@ namespace CCEnvs.Saves
         IDisposable
     {
         public const string DEFAULT_PATH = "Default";
+
+        internal readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveArchive));
 
         private ObservableDictionary<string, SaveCatalog> catalogs = new();
 
@@ -94,8 +97,10 @@ namespace CCEnvs.Saves
                 return;
 
             Loader.Dispose();
-            Serializer.Dispose();
+            commandScheduler.Dispose();
             Clear();
+
+            GC.SuppressFinalize(this);
         }
 
         public IEnumerator<SaveCatalog> GetEnumerator()

@@ -1,57 +1,57 @@
 #nullable enable
+using CCEnvs.Reflection;
+using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using R3;
 
 namespace CCEnvs.Patterns.Commands
 {
-    public sealed class CompletedCommandAsync : ICommandAsync, IEquatable<CompletedCommandAsync>
+    public sealed class CompletedCommandAsync
+        :
+        ICommandAsync,
+        IEquatable<CompletedCommandAsync?>
     {
-        public bool IsReadyToExecute { get; } = true;
-        public bool IsCancelled { get; }
+        public bool IsReadyToExecute => false;
+        public bool IsCancelled => false;
+        public bool IsSingle => false;
+        public bool IsCompleted => true;
+        public bool IsRunning => false;
+        public bool IsDone => true;
+        public bool IsFaulted => false;
+        public bool IsResetable => false;
+        public bool IsValid => true;
+        public bool ExecuteOnThreadPool => false;
 
-        public bool IsSingle {
-            get => false;
-            set => _ = value;
-        }
+        public string Name => "Completed";
 
-        public bool IsCompleted { get; } = true;
-        public bool IsRunning { get; } = false;
-        public bool IsDone { get; } = true;
-        public bool IsFaulted { get; } = false;
-        public bool IsResetable { get; } = false;
-        public bool IsValid { get; } = true;
-        public bool ExecuteOnThreadPool { get; } = false;
+        public CommandStatus Status => CommandStatus.Completed;
 
-        public string Name {
-            get => "Completed";
-            set => _ = value;
-        }
+        public Type CommandType => TypeofCache<CompletedCommandAsync>.Type;
 
-        public int DelayFrameCount {
-            get => 0;
-            set => _ = value;
-        }
+        public CommandSignature Signature => new(TypeofCache<CompletedCommandAsync>.Type, Name, 545423464);
 
-        public CommandStatus Status { get; } = CommandStatus.Completed;
-
-        public Type CommandType { get; } = typeof(CompletedCommandAsync);
-
-        public CancellationToken CancellationToken { get; } = default;
-
-        public CommandSignature Signature { get; }
-
-        public Identifier ID { get; } = "Completed";
-
-        public static bool operator ==(CompletedCommandAsync? left, CompletedCommandAsync? right)
+        public ICommandAsync AttachExternalCancellationToken(CancellationToken cancellationToken)
         {
-            return left != null && left.Equals(right);
+            return this;
         }
 
-        public static bool operator !=(CompletedCommandAsync? left, CompletedCommandAsync? right)
+        public void Cancel()
         {
-            return !(left == right);
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public bool Equals(CompletedCommandAsync? other)
+        {
+            return other is not null;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is CompletedCommandAsync typed && Equals(typed);
         }
 
         public ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
@@ -59,59 +59,43 @@ namespace CCEnvs.Patterns.Commands
             return default;
         }
 
-        public void Undo()
-        {
-        }
-
-        public CommandSignature GetCommandSignature()
-        {
-            return new CommandSignature(typeof(CompletedCommandAsync), Name);
-        }
-
-        public override string ToString()
-        {
-            return $"({Name})";
-        }
-
-        public ICommandAsync Reset() => this;
-
-        public bool TryReset() => false;
-
-        public bool Equals(CompletedCommandAsync? other) => other != null;
-
-        public override bool Equals(object obj)
-        {
-            return obj is CompletedCommandAsync typed && Equals(typed);
-        }
-
-        public override int GetHashCode() => 0;
-
-        public void Dispose()
-        {
-        }
-
-        public void Cancel()
-        {
-        }
-
         public IDisposable GetCancellationHandle()
         {
             return Disposable.Empty;
         }
 
-        public ICommandAsync AttachExternalCancellationToken(CancellationToken cancellationToken)
+        public override int GetHashCode()
         {
-            return this;
+            return 0;
         }
 
         public Observable<CommandStatus> ObserveIsDone()
         {
-            return Observable.Return(CommandStatus.Completed);
+            return Observable.Return(Status);
         }
 
         public Observable<CommandStatus> ObserveStatus()
         {
-            throw new NotImplementedException();
+            return Observable.Return(Status);
+        }
+
+        public ICommandAsync Reset()
+        {
+            return this;
+        }
+
+        public bool TryReset()
+        {
+            return IsResetable;
+        }
+
+        public void Undo()
+        {
+        }
+
+        public ValueTask WaitForDone(CancellationToken cancellationTokenAdditional = default)
+        {
+            return default;
         }
     }
 }

@@ -1,9 +1,7 @@
-﻿using CCEnvs.Disposables;
-using CCEnvs.Patterns.Commands;
+﻿using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +10,8 @@ using ValueTaskSupplement;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public sealed class SaveCatalogSerializer : IDisposable
+    public sealed class SaveCatalogSerializer
     {
-        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered();
-
         public SaveCatalog Catalog { get; }
 
         public SaveCatalogSerializer(SaveCatalog catalog)
@@ -25,15 +21,12 @@ namespace CCEnvs.Saves
             Catalog = catalog;
         }
 
-        ~SaveCatalogSerializer() => Dispose();
-
         public async ValueTask SerializeGroupsToFileAsync(
             SerializeToFileParameters parameters = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -55,9 +48,8 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Catalog.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask<SaveCatalogSerialized> SerializeCatalogAsync(
@@ -66,23 +58,22 @@ namespace CCEnvs.Saves
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(SerializeCatalogAsync)
                 );
 
-            var result = new ValueReference<SaveCatalogSerialized>();
+            using var result = ValueReferencePool<SaveCatalogSerialized>.Shared.Get();
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, compressed, result))
+                .WithState((@this: this, compressed, result: result.Value))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.SerializeCatalogAsyncCore(
+                    args.result.Value = await args.@this.SerializeCatalogAsyncCore(
                         compressed: args.compressed,
                         cancellationToken: cancellationToken
                         );
@@ -90,20 +81,10 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Catalog.commandScheduler)
+                .WaitForDone();
 
-            return result;
-        }
-
-        private int disposed;
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            commandScheduler.Dispose();
+            return result.Value;
         }
 
         private async ValueTask SerializeGroupsToFileAsyncCore(
@@ -112,7 +93,6 @@ namespace CCEnvs.Saves
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var tasks = ListPool<ValueTask>.Shared.Get();
 
@@ -148,7 +128,6 @@ namespace CCEnvs.Saves
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var serializeTasks = ListPool<ValueTask<SaveGroupSerialized>>.Shared.Get();
 

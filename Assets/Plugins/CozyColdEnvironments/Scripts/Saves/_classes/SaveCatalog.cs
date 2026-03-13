@@ -1,5 +1,6 @@
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
+using CCEnvs.Patterns.Commands;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using System;
@@ -17,12 +18,16 @@ namespace CCEnvs.Saves
         IEnumerable<SaveGroup>,
         IDisposable
     {
+        internal CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveCatalog));
+
         private ObservableDictionary<string, SaveGroup> groups = new();
         private ObservableDictionary<string, SaveGroupIncremental> incrementalGroups = new();
 
         private int? hashCode;
 
         public IReadOnlyObservableDictionary<string, SaveGroup> Groups => groups;
+
+        public IReadOnlyObservableDictionary<string, SaveGroupIncremental> IncrementalGroups => incrementalGroups;
 
         public string Path { get; }
 
@@ -31,6 +36,8 @@ namespace CCEnvs.Saves
         public SaveCatalogLoader Loader { get; }
 
         public SaveCatalogSerializer Serializer { get; }
+
+        public SaveCatalogWriter Writer { get; }
 
         public SaveCatalog(
             SaveArchive archive,
@@ -43,6 +50,7 @@ namespace CCEnvs.Saves
             Archive = archive;
             Loader = new SaveCatalogLoader(this);
             Serializer = new SaveCatalogSerializer(this);
+            Writer = new SaveCatalogWriter(this);
         }
 
         ~SaveCatalog() => Dispose();
@@ -249,7 +257,7 @@ namespace CCEnvs.Saves
                 return;
 
             Loader.Dispose();
-            Serializer.Dispose();
+            Writer.Dispose();
 
             lock (groups.SyncRoot)
                 groups.SelectValue().DisposeEach(bufferized: false);
@@ -260,6 +268,8 @@ namespace CCEnvs.Saves
                 incrementalGroups.SelectValue().DisposeEach(bufferized: false);
 
             incrementalGroups.Clear();
+
+            GC.SuppressFinalize(this);
         }
 
         public IEnumerator<SaveGroup> GetEnumerator()

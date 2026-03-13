@@ -12,10 +12,8 @@ using ValueTaskSupplement;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public class SaveArchiveSerializer : IDisposable
+    public class SaveArchiveSerializer
     {
-        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered();
-
         public SaveArchive Archive { get; }
 
         public SaveArchiveSerializer(SaveArchive archive)
@@ -25,16 +23,12 @@ namespace CCEnvs.Saves
             Archive = archive;
         }
 
-        ~SaveArchiveSerializer() => Dispose();
-
         public async ValueTask SerializeCatalogsToFileAsync(
             SerializeToFileParameters parameters = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
-
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -56,9 +50,8 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Archive.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask<SaveArchiveSerialized> SerializeArchiveAsync(
@@ -67,23 +60,22 @@ namespace CCEnvs.Saves
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(SerializeArchiveAsync)
                 );
 
-            var result = new ValueReference<SaveArchiveSerialized>();
+            using var result = ValueReferencePool<SaveArchiveSerialized>.Shared.Get();
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, compressed, result))
+                .WithState((@this: this, compressed, result: result.Value))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.SerializeArchiveAsyncCore(
+                    args.result.Value = await args.@this.SerializeArchiveAsyncCore(
                         compressed: args.compressed,
                         cancellationToken: cancellationToken
                         );
@@ -91,20 +83,10 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Archive.commandScheduler)
+                .WaitForDone();
 
-            return result;
-        }
-
-        private int disposed;
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            commandScheduler.Dispose();
+            return result.Value;
         }
 
         private async ValueTask SerializeCatalogsToFileAsyncCore(
@@ -113,9 +95,8 @@ namespace CCEnvs.Saves
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            var tasks = ListPool<ValueTask>.Shared.Get();
+            using var tasks = ListPool<ValueTask>.Shared.Get();
 
             ValueTask task;
 
@@ -149,9 +130,8 @@ namespace CCEnvs.Saves
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            var serializeTasks = ListPool<ValueTask<SaveCatalogSerialized>>.Shared.Get();
+            using var serializeTasks = ListPool<ValueTask<SaveCatalogSerialized>>.Shared.Get();
 
             ValueTask<SaveCatalogSerialized> serializeTask;
 

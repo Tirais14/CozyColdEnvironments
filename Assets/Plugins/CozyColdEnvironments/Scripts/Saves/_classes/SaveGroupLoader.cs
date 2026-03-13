@@ -1,7 +1,7 @@
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
-using CCEnvs.Threading.Tasks;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -14,9 +14,7 @@ namespace CCEnvs.Saves
 {
     public sealed class SaveGroupLoader : IDisposable
     {
-        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroupLoader));
-
-        private ReactiveCommand<SaveData>? onLoadedSaveData;
+        private ReactiveCommand<SaveData>? onLoaded;
 
         public SaveGroup Group { get; }
 
@@ -60,27 +58,26 @@ namespace CCEnvs.Saves
                 nameof(DeserializeSaveDataFromFileAsync)
                 );
 
-            var result = new ValueReference<SaveData?>();
+            using var result = ValueReferencePool<SaveData?>.Shared.Get();
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, result))
+                .WithState((@this: this, result: result.Value))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.DeserializeSaveDataFromFileAsyncCore(
+                    args.result.Value = await args.@this.DeserializeSaveDataFromFileAsyncCore(
                         cancellationToken
                         );
                 })
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
 
-            return result;
+            return result.Value;
         }
 
         public async ValueTask LoadSaveDataFromFileAsync(
@@ -91,7 +88,7 @@ namespace CCEnvs.Saves
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (Redirection)
+            if (Redirection == RedirectionMode.FromFileToSerializedStorage)
             {
                 if (!TryGetSerializedSaveGroup(out var serializedGroup))
                     return;
@@ -123,9 +120,8 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask<SaveData> GetOrLoadSaveDataFromFileAsync(
@@ -161,16 +157,16 @@ namespace CCEnvs.Saves
                 nameof(DeserializeSaveDataFromSerializedAsync)
                 );
 
-            var result = new ValueReference<SaveData?>();
+            using var result = ValueReferencePool<SaveData?>.Shared.Get();
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, serialized, result))
+                .WithState((@this: this, serialized, result: result.Value))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.DeserializeSaveDataFromSerializedAsyncCore(
+                    args.result.Value = await args.@this.DeserializeSaveDataFromSerializedAsyncCore(
                         serialized: args.serialized,
                         cancellationToken: cancellationToken
                         );
@@ -178,11 +174,10 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
 
-            return result;
+            return result.Value;
         }
 
         public async ValueTask LoadSaveDataFromSerializedAsync(
@@ -215,9 +210,8 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask<SaveData> GetOrLoadSaveDataFromSerializedAsync(
@@ -248,15 +242,16 @@ namespace CCEnvs.Saves
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            commandScheduler.Dispose();
-            onLoadedSaveData?.Dispose();
+            onLoaded?.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         public Observable<SaveData> ObserveLoadSaveData()
         {
-            onLoadedSaveData ??= new ReactiveCommand<SaveData>();
+            onLoaded ??= new ReactiveCommand<SaveData>();
 
-            return onLoadedSaveData;
+            return onLoaded;
         }
 
         private async ValueTask<SaveData?> DeserializeSaveDataFromFileAsyncCore(
@@ -313,7 +308,7 @@ namespace CCEnvs.Saves
 
                 IsDataLoaded = true;
 
-                onLoadedSaveData?.Execute(Data);
+                onLoaded?.Execute(Data);
             }
             catch (Exception ex)
             {
@@ -363,7 +358,7 @@ namespace CCEnvs.Saves
 
                 Data.Write(entries, writeSaveDataMode: writeSaveDataMode);
 
-                onLoadedSaveData?.Execute(Data);
+                onLoaded?.Execute(Data);
             }
             catch (Exception ex)
             {

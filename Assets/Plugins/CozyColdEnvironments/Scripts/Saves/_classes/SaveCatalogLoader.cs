@@ -14,7 +14,7 @@ namespace CCEnvs.Saves
 {
     public sealed class SaveCatalogLoader : IDisposable
     {
-        private readonly CommandScheduler commandScheduler = new(ObservableSystem.DefaultFrameProvider, nameof(SaveCatalogLoader));
+        private ReactiveCommand<SaveCatalog>? onLoaded;
 
         public SaveCatalog Catalog { get; }
 
@@ -58,9 +58,8 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Catalog.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask LoadGroupsFromSerializedAsync(
@@ -99,9 +98,14 @@ namespace CCEnvs.Saves
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Catalog.commandScheduler)
+                .WaitForDone();
+        }
+
+        public Observable<SaveCatalog> ObserveLoad()
+        {
+            onLoaded ??= new ReactiveCommand<SaveCatalog>();
+            return onLoaded;
         }
 
         private int disposed;
@@ -110,7 +114,9 @@ namespace CCEnvs.Saves
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            commandScheduler.Dispose();
+            onLoaded?.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         private async ValueTask LoadGroupsFromFileAsyncCore(
@@ -145,6 +151,8 @@ namespace CCEnvs.Saves
                 }
 
                 await ValueTaskEx.WhenAll(tasks.Value);
+
+                onLoaded?.Execute(Catalog);
             }
             catch (Exception ex)
             {
@@ -185,6 +193,10 @@ namespace CCEnvs.Saves
 
                     tasks.Value.Add(task);
                 }
+
+                await ValueTaskEx.WhenAll(tasks.Value);
+
+                onLoaded?.Execute(Catalog);
             }
             catch (Exception ex)
             {

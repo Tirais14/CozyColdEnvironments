@@ -1,9 +1,8 @@
-using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
+using CCEnvs.Pools;
 using CCEnvs.Saves;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
-using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +10,8 @@ using System.Threading.Tasks;
 #nullable enable
 namespace CCEnvs
 {
-    public sealed class SaveGroupSerializer : IDisposable
+    public sealed class SaveGroupSerializer
     {
-        private readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroupSerializer));
-
-        private ReactiveCommand<Unit>? onSerialized;
-
         public SaveGroup Group { get; }
 
         public SaveData Data => Group.SaveData;
@@ -32,15 +27,12 @@ namespace CCEnvs
             Group = group;
         }
 
-        ~SaveGroupSerializer() => Dispose();
-
         public async ValueTask SerializeDataToFileAsync(
             SerializeToFileParameters parameters = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (Redirection == RedirectionMode.FromFileToSerializedStorage)
             {
@@ -70,9 +62,8 @@ namespace CCEnvs
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
         }
 
         public async ValueTask<string> SerializeDataAsync(
@@ -81,23 +72,22 @@ namespace CCEnvs
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(SerializeDataAsync)
                 );
 
-            var result = new ValueReference<string>();
+            using var result = ValueReferencePool<string>.Shared.Get();
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, compressed, result))
+                .WithState((@this: this, compressed, result: result.Value))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.SerializeDataAsyncCore(
+                    args.result.Value = await args.@this.SerializeDataAsyncCore(
                         compressed: args.compressed,
                         cancellationToken: cancellationToken
                         );
@@ -105,11 +95,10 @@ namespace CCEnvs
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
 
-            return result;
+            return result.Value;
         }
 
         public async ValueTask<SaveGroupSerialized> SerializeGroupAsync(
@@ -117,21 +106,23 @@ namespace CCEnvs
             CancellationToken cancellationToken = default
             )
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             string cmdName = NameFactory.CreateFromCaller(
                 this,
                 nameof(SerializeGroupAsync)
                 );
 
-            var result = new ValueReference<SaveGroupSerialized>();
+            using var result = ValueReferencePool<SaveGroupSerialized>.Shared.Get();
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, compressed, result))
+                .WithState((@this: this, compressed, result: result.Value))
                 .Asynchronously()
                 .WithExecuteAction(
                 static async (args, cancellationToken) =>
                 {
-                    args.result = await args.@this.SerializeGroupAsyncCore(
+                    args.result.Value = await args.@this.SerializeGroupAsyncCore(
                         compressed: args.compressed,
                         cancellationToken: cancellationToken
                         );
@@ -139,28 +130,10 @@ namespace CCEnvs
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .ObserveIsDone()
-                .FirstAsync(cancellationToken);
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
 
-            return result;
-        }
-
-        private int disposed;
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            commandScheduler.Dispose();
-            onSerialized?.Dispose();
-        }
-
-        public Observable<Unit> ObserveSerialize()
-        {
-            onSerialized ??= new ReactiveCommand<Unit>();
-
-            return onSerialized;
+            return result.Value;
         }
 
         private async ValueTask SerializeDataToFileAsyncCore(
@@ -169,7 +142,6 @@ namespace CCEnvs
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             try
             {
@@ -197,7 +169,6 @@ namespace CCEnvs
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             try
             {
@@ -220,7 +191,6 @@ namespace CCEnvs
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             try
             {
@@ -251,7 +221,6 @@ namespace CCEnvs
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             try
             {

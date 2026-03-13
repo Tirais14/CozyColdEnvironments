@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using R3;
 
 namespace CCEnvs.Patterns.Commands
@@ -38,6 +39,8 @@ namespace CCEnvs.Patterns.Commands
         Observable<CommandStatus> ObserveIsDone();
 
         Observable<CommandStatus> ObserveStatus();
+
+        ValueTask WaitForDone(CancellationToken cancellationTokenAdditional = default);
     }
 
     public interface ICommandBase<TThis> : ICommandBase
