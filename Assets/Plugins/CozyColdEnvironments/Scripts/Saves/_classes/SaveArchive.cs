@@ -33,11 +33,14 @@ namespace CCEnvs.Saves
 
         public SaveArchiveSerializer Serializer { get; }
 
+        public SaveArchiveWriter Writer { get; }
+
         public SaveArchive(string? path = null)
         {
             Path = path ?? DEFAULT_PATH;
             Loader = new SaveArchiveLoader(this);
             Serializer = new SaveArchiveSerializer(this);
+            Writer = new SaveArchiveWriter(this);
         }
 
         ~SaveArchive() => Dispose();
@@ -98,6 +101,7 @@ namespace CCEnvs.Saves
 
             Loader.Dispose();
             commandScheduler.Dispose();
+            Writer.Dispose();
             Clear();
 
             GC.SuppressFinalize(this);

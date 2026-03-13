@@ -182,18 +182,21 @@ namespace CCEnvs.Saves
 
             try
             {
-                foreach (var (_, serializedCatalog) in serialized.Catalogs)
+                lock (serialized.CatalogsGate)
                 {
-                    if (!Archive.Catalogs.TryGetValue(serializedCatalog.Path, out var catalog))
-                        continue;
+                    foreach (var (_, serializedCatalog) in serialized.Catalogs)
+                    {
+                        if (!Archive.Catalogs.TryGetValue(serializedCatalog.Path, out var catalog))
+                            continue;
 
-                    task = catalog.Loader.LoadGroupsFromSerializedAsync(
-                        serializedCatalog,
-                        writeSaveDataMode: writeSaveDataMode,
-                        cancellationToken: cancellationToken
-                        );
+                        task = catalog.Loader.LoadGroupsFromSerializedAsync(
+                            serializedCatalog,
+                            writeSaveDataMode: writeSaveDataMode,
+                            cancellationToken: cancellationToken
+                            );
 
-                    tasks.Value.Add(task);
+                        tasks.Value.Add(task);
+                    }
                 }
 
                 await ValueTaskEx.WhenAll(tasks.Value);

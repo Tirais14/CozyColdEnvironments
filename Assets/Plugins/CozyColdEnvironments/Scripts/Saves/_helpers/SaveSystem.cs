@@ -1,6 +1,7 @@
 using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -50,6 +52,8 @@ namespace CCEnvs.Saves
         internal static SemaphoreSlim IOSemaphore { get; } = new(MAX_IO_OPERATIONS);
 
         internal static SemaphoreSlim SerializingSemaphore { get; } = new(Math.Clamp(Environment.ProcessorCount / 2, 1, int.MaxValue));
+
+        internal static CommandScheduler CommandScheduler { get; } = CommandScheduler.CreateDefaultRegistered();
 
         static SaveSystem()
         {
@@ -149,6 +153,19 @@ namespace CCEnvs.Saves
         public static SnapshotFactory ResolveConverter<T>()
         {
             return ResolveConverter(typeof(T));
+        }
+
+        public static async ValueTask SaveProgressAsync(
+            CaptureAndWriteParameters captureAndWriteParameters = default,
+            CancellationToken cancellationToken = default
+            )
+        {
+            await SaveSystemWriter.CaptureAndWriteArchivesAsync(
+                captureAndWriteParameters,
+                cancellationToken
+                );
+
+
         }
 
         private static JsonSerializerSettings GetDefaultSerializerSettings()

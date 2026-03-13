@@ -1,8 +1,6 @@
 using CCEnvs.Collections;
-using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
-using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Threading;
@@ -12,136 +10,113 @@ using ValueTaskSupplement;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public sealed class SaveCatalogLoader : IDisposable
+    public static class SaveSystemLoader
     {
-        private ReactiveCommand<SaveCatalog>? onLoaded;
+        private readonly static Type selfType = typeof(SaveSystemLoader);
 
-        public SaveCatalog Catalog { get; }
+        private static ReactiveCommand<Unit>? onLoaded;
 
-        public SaveCatalogLoader(SaveCatalog catalog)
-        {
-            Guard.IsNotNull(catalog, nameof(catalog));
-
-            Catalog = catalog;
-        }
-
-        ~SaveCatalogLoader() => Dispose();
-
-        public async ValueTask LoadGroupsFromFileAsync(
+        public static async ValueTask LoadArchivesFromFileAsync(
             WriteSaveDataMode writeSaveDataMode = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (Catalog.Groups.IsEmpty())
+            if (SaveSystem.Archives.IsEmpty())
                 return;
 
             string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(LoadGroupsFromFileAsync)
+                selfType,
+                nameof(LoadArchivesFromFileAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, writeSaveDataMode))
+                .WithState(writeSaveDataMode)
                 .Asynchronously()
                 .WithExecuteAction(
-                static async (args, cancellationToken) =>
+                static async (writeSaveDataMode, cancellationToken) =>
                 {
-                    await args.@this.LoadGroupsFromFileAsyncCore(
-                        writeSaveDataMode: args.writeSaveDataMode,
+                    await LoadArchivesFromFileAsyncCore(
+                        writeSaveDataMode: writeSaveDataMode,
                         cancellationToken: cancellationToken
                         );
                 })
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(Catalog.commandScheduler)
+                .ScheduleBy(SaveSystem.CommandScheduler)
                 .WaitForDone();
         }
 
-        public async ValueTask LoadGroupsFromSerializedAsync(
-            SaveCatalogSerialized serialized,
+        public static async ValueTask LoadArchivesFromSerializedAsync(
             WriteSaveDataMode writeSaveDataMode = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
-            if (Catalog.Groups.IsEmpty())
+            if (SaveSystem.Archives.IsEmpty())
                 return;
 
-            if (serialized == default)
+            if (SaveSystemSerializedStorage.Archives.IsEmpty())
                 return;
 
             string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(LoadGroupsFromSerializedAsync)
+                selfType,
+                nameof(LoadArchivesFromSerializedAsync),
+                expirationTimeRelativeToNow: TimeSpan.Zero
                 );
 
             await Command.Builder.WithName(cmdName)
                 .OnThreadPool()
-                .WithState((@this: this, serialized, writeSaveDataMode))
+                .WithState(writeSaveDataMode)
                 .Asynchronously()
                 .WithExecuteAction(
-                static async (args, cancellationToken) =>
+                static async (writeSaveDataMode, cancellationToken) =>
                 {
-                    await args.@this.LoadGroupsFromSerializedAsyncCore(
-                        serialized: args.serialized,
-                        writeSaveDataMode: args.writeSaveDataMode,
+                    await LoadArchivesFromSerializedAsyncCore(
+                        writeSaveDataMode: writeSaveDataMode,
                         cancellationToken: cancellationToken
                         );
                 })
                 .BuildPooled()
                 .Value
                 .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(Catalog.commandScheduler)
+                .ScheduleBy(SaveSystem.CommandScheduler)
                 .WaitForDone();
         }
 
-        public Observable<SaveCatalog> ObserveLoad()
+        public static Observable<Unit> ObserveLoad()
         {
-            onLoaded ??= new ReactiveCommand<SaveCatalog>();
+            onLoaded ??= new ReactiveCommand<Unit>();
             return onLoaded;
         }
 
-        private int disposed;
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            onLoaded?.Dispose();
-
-            GC.SuppressFinalize(this);
-        }
-
-        private async ValueTask LoadGroupsFromFileAsyncCore(
+        private static async ValueTask LoadArchivesFromFileAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var tasks = ListPool<ValueTask>.Shared.Get();
 
 #pragma warning disable CS4014
-            tasks.Value.TryIncreaseCapacity(Catalog.Groups.Count);
+            tasks.Value.TryIncreaseCapacity(SaveSystem.Archives.Count);
 #pragma warning restore CS4014
 
             ValueTask task;
 
             try
             {
-                lock (Catalog.Groups.SyncRoot)
+                lock (SaveSystem.Archives.SyncRoot)
                 {
-                    foreach (var (_, group) in Catalog.Groups)
+                    foreach (var (_, archive) in SaveSystem.Archives)
                     {
-                        task = group.Loader.LoadSaveDataFromFileAsync(
+                        task = archive.Loader.LoadCatalogsFromFileAsync(
                             writeSaveDataMode,
                             cancellationToken: cancellationToken
                             );
@@ -152,44 +127,42 @@ namespace CCEnvs.Saves
 
                 await ValueTaskEx.WhenAll(tasks.Value);
 
-                onLoaded?.Execute(Catalog);
+                onLoaded?.Execute(Unit.Default);
             }
             catch (Exception ex)
             {
-                this.PrintException(ex);
+                selfType.PrintException(ex);
                 return;
             }
         }
 
-        private async ValueTask LoadGroupsFromSerializedAsyncCore(
-            SaveCatalogSerialized serialized,
+        private static async ValueTask LoadArchivesFromSerializedAsyncCore(
             WriteSaveDataMode writeSaveDataMode = default,
             CancellationToken cancellationToken = default
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CCDisposable.ThrowIfDisposed(this, disposed);
 
             using var tasks = ListPool<ValueTask>.Shared.Get();
 
 #pragma warning disable CS4014
-            tasks.Value.TryIncreaseCapacity(Catalog.Groups.Count);
+            tasks.Value.TryIncreaseCapacity(SaveSystem.Archives.Count);
 #pragma warning restore CS4014
 
             ValueTask task;
 
             try
             {
-                lock (serialized.GroupsGate)
+                lock (SaveSystemSerializedStorage.ArchivesGate)
                 {
-                    foreach (var (_, serializedGroup) in serialized.Groups)
+                    foreach (var (_, serializedArchive) in SaveSystemSerializedStorage.Archives)
                     {
-                        if (!Catalog.Groups.TryGetValue(serializedGroup.Name, out var group))
+                        if (!SaveSystem.Archives.TryGetValue(serializedArchive.Path, out var archive))
                             continue;
 
-                        task = group.Loader.LoadSaveDataFromSerializedAsync(
-                            serializedGroup.SaveDataSerialized,
-                            writeSaveDataMode,
+                        task = archive.Loader.LoadCatalogsFromSerializedAsync(
+                            serialized: serializedArchive,
+                            writeSaveDataMode: writeSaveDataMode,
                             cancellationToken: cancellationToken
                             );
 
@@ -199,11 +172,11 @@ namespace CCEnvs.Saves
 
                 await ValueTaskEx.WhenAll(tasks.Value);
 
-                onLoaded?.Execute(Catalog);
+                onLoaded?.Execute(Unit.Default);
             }
             catch (Exception ex)
             {
-                this.PrintException(ex);
+                selfType.PrintException(ex);
                 return;
             }
         }
