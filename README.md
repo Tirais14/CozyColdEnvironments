@@ -69,7 +69,7 @@ Within the game's entry point, you must invoke CC.Install(). If necessary, pass 
 - Refactor the framework into a modular architecture.
 
 # Games
-## [SlowMoCrusher](tirais14.itch.io/slowmocrusher)
+## [SlowMoCrusher]([tirais14.itch.io/slowmocrusher](https://tirais14.itch.io/slowmocrusher))
 <img width="1600" height="900" alt="GameCover" src="https://github.com/user-attachments/assets/2218be4f-0d53-4e16-8364-c3e82d336e9a" />
 
 # GameObjectQuery
