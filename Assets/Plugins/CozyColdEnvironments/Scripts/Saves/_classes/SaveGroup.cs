@@ -28,6 +28,8 @@ namespace CCEnvs.Saves
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
+        private bool objectWasRegistered;
+
         public IReadOnlyObservableDictionary<string, object> ObservableObjects => observableObjects;
 
         public string Name { get; }
@@ -44,6 +46,8 @@ namespace CCEnvs.Saves
 
         public RedirectionMode Redirection { get; }
 
+        public bool LoadOnFirstObjectRegistered { get; }
+
         protected CancellationToken DisposeCancellationToken {
             get => disposeCancellationTokenSource.Token;
         }
@@ -52,7 +56,8 @@ namespace CCEnvs.Saves
             SaveCatalog catalog,
             string? name = null,
             long saveDataVersion = 0L,
-            RedirectionMode redirectionMode = default
+            RedirectionMode redirectionMode = default,
+            bool loadOnFirstObjectRegistered = true
             )
         {
             Guard.IsNotNull(catalog, nameof(catalog));
@@ -64,6 +69,7 @@ namespace CCEnvs.Saves
             Loader = new SaveGroupLoader(this);
             Serializer = new SaveGroupSerializer(this);
             Writer = new SaveGroupWriter(this);
+            LoadOnFirstObjectRegistered = loadOnFirstObjectRegistered;
         }
 
         ~SaveGroup() => Dispose();
@@ -75,7 +81,13 @@ namespace CCEnvs.Saves
             if (group is SaveGroupIncremental incGroup)
                 return incGroup;
 
-            incGroup = new SaveGroupIncremental(group.Catalog, group.Name);
+            incGroup = new SaveGroupIncremental(
+                group.Catalog,
+                group.Name,
+                saveDataVersion: group.SaveData.Version,
+                redirectionMode: group.Redirection,
+                loadOnFirstObjectRegistered: group.LoadOnFirstObjectRegistered
+                );
 
             try
             {
@@ -102,7 +114,13 @@ namespace CCEnvs.Saves
         {
             Guard.IsNotNull(incGroup, nameof(incGroup));
 
-            var group = new SaveGroup(incGroup.Catalog, incGroup.Name);
+            var group = new SaveGroup(
+                incGroup.Catalog, 
+                incGroup.Name,
+                saveDataVersion: incGroup.SaveData.Version,
+                redirectionMode: incGroup.Redirection,
+                loadOnFirstObjectRegistered: incGroup.LoadOnFirstObjectRegistered
+                );
 
             try
             {
@@ -140,6 +158,17 @@ namespace CCEnvs.Saves
             resolvedKey = key;
 
             observableObjects.Add(key, obj);
+
+            if (!objectWasRegistered
+                &&
+                !Loader.IsDataLoaded
+                &&
+                LoadOnFirstObjectRegistered)
+            {
+                Loader.LoadSaveDataFromFileAsync(cancellationToken: DisposeCancellationToken).Forget(this);
+            }
+
+            objectWasRegistered = true;
 
             return this;
         }

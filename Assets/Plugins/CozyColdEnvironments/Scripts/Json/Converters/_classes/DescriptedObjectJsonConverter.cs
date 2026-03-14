@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using CCEnvs.Reflection;
 using CCEnvs.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -36,7 +37,7 @@ namespace CCEnvs.Json
             var jToken = JToken.Load(reader);
 
             if (jToken is not JObject jObj)
-                throw new JsonSerializationException($"Expected JObject. Current: {jToken.GetType()}");
+                throw new JsonSerializationException($"Expected JObject. Current: {jToken.Type}: type: {objectType}");
 
             if (jObj.Property(DESCRIPTOR_PROPERTY_NAME).IsNull(out var descriptorProp))
                 return OnDescriptorPropertyNotFound(jObj, objectType, serializer);

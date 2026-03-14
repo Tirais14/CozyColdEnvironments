@@ -137,6 +137,32 @@ namespace CCEnvs.Caching
             return value;
         }
 
+        public TValue GetOrCreateValue<TState>(
+            TKey key,
+            TState state,
+            Func<ICacheEntry<TValue>, TState, TValue> factory
+            )
+        {
+            Guard.IsNotNull(key, nameof(key));
+            Guard.IsNotNull(factory, nameof(factory));
+
+            ICacheEntry<TValue> entry;
+
+            if (entries.TryGetValue(key, out entry))
+            {
+                if (!entry.IsValid)
+                    entry.SetValue(factory(entry, state));
+
+                return entry.GetValue()!;
+            }
+
+            entry = CreateEntry(key);
+            var value = factory(entry, state);
+            entry.SetValue(value);
+
+            return value;
+        }
+
         public bool TryRemove(TKey? key, [NotNullWhen(true)] out TValue? value)
         {
             if (key is null)

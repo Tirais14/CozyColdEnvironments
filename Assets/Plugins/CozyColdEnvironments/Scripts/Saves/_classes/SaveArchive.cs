@@ -1,11 +1,13 @@
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #nullable enable
@@ -34,6 +36,8 @@ namespace CCEnvs.Saves
         public SaveArchiveSerializer Serializer { get; }
 
         public SaveArchiveWriter Writer { get; }
+
+        public SaveCatalog this[string catalogPath] => Catalogs[catalogPath];
 
         public SaveArchive(string? path = null)
         {
@@ -67,15 +71,26 @@ namespace CCEnvs.Saves
 
             lock (catalogs.SyncRoot)
             {
-                if (!catalogs.TryGetValue(path, out catalog))
+                if (!catalogs.TryGetValue(path, out catalog!))
                 {
                     catalog = new SaveCatalog(this, path);
-
                     catalogs.Add(path, catalog);
                 }
             }
 
             return catalog;
+        }
+
+        public SaveCatalog[] GetOrCreateCatalogs(params string[] paths)
+        {
+            Guard.IsNotNull(paths, nameof(paths));
+
+            var catalogs = new SaveCatalog[paths.Length];
+
+            for (int i = 0; i < paths.Length; i++)
+                catalogs[i] = GetOrCreateCatalog(paths[i]);
+
+            return catalogs;
         }
 
         public SaveArchive Clear()

@@ -50,6 +50,8 @@ namespace CCEnvs.IO.Compression
             if (byteCount < 2)
                 return false;
 
+            stream.Position = Math.Min(0, stream.Position - 2);
+
             return IsCompressed(buffer);
         }
 

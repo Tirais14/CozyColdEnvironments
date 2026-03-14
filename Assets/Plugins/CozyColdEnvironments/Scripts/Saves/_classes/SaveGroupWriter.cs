@@ -4,6 +4,7 @@ using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -23,18 +24,19 @@ namespace CCEnvs.Saves
 
         ~SaveGroupWriter() => Dispose();
 
-        public void CaptureAndWriteSaveData(
-            CaptureAndWriteParameters prms = default
+        public async ValueTask CaptureAndWriteSaveDataAsync(
+            CaptureAndWriteParameters prms = default,
+            CancellationToken cancellationToken = default
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(CaptureAndWriteSaveData)
+                nameof(CaptureAndWriteSaveDataAsync)
                 );
 
-            Command.Builder.WithName(cmdName)
+            await Command.Builder.WithName(cmdName)
                 .WithState((@this: this, prms))
                 .Synchronously()
                 .WithExecuteAction(
@@ -46,7 +48,9 @@ namespace CCEnvs.Saves
                 })
                 .BuildPooled()
                 .Value
-                .ScheduleBy(Group.commandScheduler);
+                .AttachExternalCancellationToken(cancellationToken)
+                .ScheduleBy(Group.commandScheduler)
+                .WaitForDone();
         }
 
         public Observable<WriteEventInfo<SaveGroup>> ObserveWrite()

@@ -52,10 +52,17 @@ namespace CCEnvs.Saves
             SaveCatalog catalog,
             string? name = null,
             long saveDataVersion = 0L,
-            RedirectionMode redirectionMode = default
+            RedirectionMode redirectionMode = default,
+            bool loadOnFirstObjectRegistered = true
             )
             :
-            base(catalog, name, saveDataVersion, redirectionMode)
+            base(
+                catalog,
+                name,
+                saveDataVersion,
+                redirectionMode,
+                loadOnFirstObjectRegistered
+                )
         {
             observableObjectAddBinding = BindObservableObjectAdd();
             observableObjectRemoveBinding = BindObservableObjectRemove();

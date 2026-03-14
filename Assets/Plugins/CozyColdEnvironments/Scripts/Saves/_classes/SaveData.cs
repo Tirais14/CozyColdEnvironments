@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
@@ -9,6 +5,9 @@ using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -49,6 +48,13 @@ namespace CCEnvs.Saves
         public SaveData(SaveGroup group, long version = 0L)
             :
             this(group?.Name!, version)
+        {
+        }
+
+        [JsonConstructor]
+        private SaveData()
+            :
+            this(string.Empty)
         {
         }
 

@@ -75,7 +75,7 @@ namespace CCEnvs.Saves
                 cancellationToken
                 );
 
-            var saveData = JsonConvert.DeserializeObject<SaveData>(saveDataRaw);
+            var saveData = JsonConvert.DeserializeObject<SaveData>(saveDataRaw, SaveSystem.SerializerSettings);
 
             return saveData;
         }
@@ -114,8 +114,6 @@ namespace CCEnvs.Saves
                     streamReader = new StreamReader(tempFileStream);
 
                 var content = await streamReader.ReadToEndAsync();
-
-                tempFileStream.Position = 0;
 
                 return content;
             }

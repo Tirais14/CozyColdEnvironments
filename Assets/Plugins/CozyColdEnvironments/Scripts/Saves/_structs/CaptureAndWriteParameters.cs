@@ -11,11 +11,16 @@ namespace CCEnvs.Saves
 
         public CaptureAndWriteParameters(
             WriteSaveDataMode writeMode,
-            int? preferedObjectLimitPerFrame
+            int? preferedObjectLimitPerFrame = null
             )
         {
             WriteMode = writeMode;
             PreferedObjectLimitPerFrame = preferedObjectLimitPerFrame;
+        }
+
+        public static implicit operator CaptureAndWriteParameters(WriteSaveDataMode writeMode)
+        {
+            return new CaptureAndWriteParameters(writeMode);
         }
 
         public static bool operator ==(CaptureAndWriteParameters left, CaptureAndWriteParameters right)

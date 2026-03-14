@@ -211,6 +211,9 @@ namespace CCEnvs.Patterns.Commands
                    loopFuse.MoveNext()
                    )
             {
+                if (IsCurrentCommandUndone())
+                    break;
+
                 if (!TryResolveCommand())
                     break;
 
@@ -435,9 +438,6 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryResolveCommand()
         {
-            if (IsCurrentCommandUndone())
-                return true;
-
             EraseCurrentCommand();
 
             while (commands.TryDequeue(out var cmd))

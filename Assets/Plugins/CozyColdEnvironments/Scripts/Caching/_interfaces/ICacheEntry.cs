@@ -9,6 +9,7 @@ namespace CCEnvs.Caching
         DateTime? LastAppealTime { get; }
         TimeSpan? ExpirationTimeRelativeToNow { get; set; }
         TimeSpan IdleTime { get; }
+
         bool HasValue { get; }
         bool IsValid { get; }
 

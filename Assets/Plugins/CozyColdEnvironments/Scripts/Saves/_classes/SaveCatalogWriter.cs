@@ -131,7 +131,7 @@ namespace CCEnvs.Saves
 
                     try
                     {
-                        group.Writer.CaptureAndWriteSaveData(prms);
+                        group.Writer.CaptureAndWriteSaveDataAsync(prms);
                     }
                     catch (Exception ex)
                     {
@@ -187,7 +187,7 @@ namespace CCEnvs.Saves
 
                 try
                 {
-                    groupIncr.Writer.CaptureAndWriteSaveData(prms);
+                    groupIncr.Writer.CaptureAndWriteSaveDataAsync(prms);
                 }
                 catch (Exception ex)
                 {

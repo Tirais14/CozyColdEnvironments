@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public static class SaveSystem
+    public static partial class SaveSystem
     {
         public const int MAX_IO_OPERATIONS =
 #if PLATFORM_WEBGL
@@ -79,6 +79,14 @@ namespace CCEnvs.Saves
             }
 
             return archive;
+        }
+
+        public static void GetOrCreateArchives(params string[] paths)
+        {
+            Guard.IsNotNull(paths, nameof(paths));  
+
+            foreach (var path in paths)
+                GetOrCreateArchive(path);
         }
 
         public static bool RemoveArchive(string path)
@@ -155,18 +163,18 @@ namespace CCEnvs.Saves
             return ResolveConverter(typeof(T));
         }
 
-        public static async ValueTask SaveProgressAsync(
-            CaptureAndWriteParameters captureAndWriteParameters = default,
-            CancellationToken cancellationToken = default
-            )
-        {
-            await SaveSystemWriter.CaptureAndWriteArchivesAsync(
-                captureAndWriteParameters,
-                cancellationToken
-                );
+        //public static async ValueTask SaveProgressAsync(
+        //    CaptureAndWriteParameters captureAndWriteParameters = default,
+        //    CancellationToken cancellationToken = default
+        //    )
+        //{
+        //    await SaveSystemWriter.CaptureAndWriteArchivesAsync(
+        //        captureAndWriteParameters,
+        //        cancellationToken
+        //        );
 
 
-        }
+        //}
 
         private static JsonSerializerSettings GetDefaultSerializerSettings()
         {

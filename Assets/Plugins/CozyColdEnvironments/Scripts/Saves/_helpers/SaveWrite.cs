@@ -16,6 +16,7 @@ namespace CCEnvs.Saves
         public const string DEFAULT_SAVE_EXTENSION = "jgz";
 
         public static async ValueTask ToFileAsync(
+            string filePath,
             string fileContent,
             SerializeToFileParameters parameters,
             bool configureAwait = true,
@@ -28,12 +29,12 @@ namespace CCEnvs.Saves
             await UniTaskHelper.TrySwitchToThreadPool();
 #endif
 
-            var file = new FileInfo(parameters.FilePath);
+            var file = new FileInfo(filePath);
 
             if (CCDebug.Instance.IsEnabled)
             {
                 typeof(SaveWrite).PrintLog($"Writing started:" +
-                    $"{Environment.NewLine}{nameof(parameters.FilePath)}: {parameters.FilePath}" +
+                    $"{Environment.NewLine}{nameof(filePath)}: {filePath}" +
                     $"{Environment.NewLine}{nameof(parameters.Backuped)}: {parameters.Backuped}" +
                     $"{Environment.NewLine}{nameof(parameters.Compressed)}: {parameters.Compressed}"
                     );

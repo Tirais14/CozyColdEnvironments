@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
@@ -39,6 +40,23 @@ namespace CCEnvs.Saves
 
         public SaveCatalogWriter Writer { get; }
 
+        public SaveGroup this[string groupName] {
+            get
+            {
+                if (groups.TryGetValue(groupName, out var group))
+                    return group;
+
+                if (incrementalGroups.TryGetValue(groupName, out var incGroup))
+                    return incGroup;
+
+                throw new InvalidOperationException($"Cannot find group. Group: {groupName}");
+            }
+        }
+
+        public SaveGroupIncremental this[string groupName, bool _] {
+            get => incrementalGroups[groupName];
+        }
+
         public SaveCatalog(
             SaveArchive archive,
             string? path = null
@@ -76,84 +94,139 @@ namespace CCEnvs.Saves
         }
 
         public SaveGroup GetOrCreateGroup(
-            string groupName,
-            long saveDataVersion = 0L,
-            RedirectionMode redirectionMode = default
+            CreateGroupParameters createParams
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-            Guard.IsNotNull(groupName, nameof(groupName));
+            Guard.IsNotDefault(createParams, nameof(createParams));
 
             SaveGroup? group;
 
             lock (groups.SyncRoot)
             {
-                if (!groups.TryGetValue(groupName, out group))
+                if (!groups.TryGetValue(createParams.GroupName, out group))
                 {
-                    if (incrementalGroups.ContainsKey(groupName))
-                        throw new InvalidOperationException($"Group: {groupName} already exists and it's incremental");
+                    if (incrementalGroups.TryGetValue(createParams.GroupName, out var incGroup))
+                    {
+                        if (CCDebug.Instance.IsEnabled)
+                            this.PrintWarning($"Group already exists as incremental. Group: {createParams.GroupName}");
 
-                    group = new SaveGroup(
-                        this,
-                        groupName,
-                        saveDataVersion,
-                        redirectionMode
-                        );
+                        group = incGroup;
+                    }
+                    else
+                    {
+                        group = new SaveGroup(
+                            this,
+                            createParams.GroupName,
+                            saveDataVersion: createParams.SaveDataVersion,
+                            redirectionMode: createParams.Redirection,
+                            loadOnFirstObjectRegistered: createParams.LoadOnFirstObjectRegistered
+                            );
 
-                    groups.Add(groupName, group);
+                        groups.Add(createParams.GroupName, group);
+                    }
                 }
             }
 
-            if (group.SaveData.Version != saveDataVersion)
-                PrintVersionsNotMatchWarning(group.SaveData.Version, saveDataVersion);
+            if (group.SaveData.Version != createParams.SaveDataVersion)
+                PrintVersionsNotMatchWarning(group.SaveData.Version, createParams.SaveDataVersion);
 
-            if (group.Redirection != redirectionMode)
-                PrintRedirectionModesNotMatchError(group.Redirection, redirectionMode);
+            if (group.Redirection != createParams.Redirection)
+                PrintRedirectionModesNotMatchError(group.Redirection, createParams.Redirection);
 
             return group;
         }
 
+        public SaveGroup[] GetOrCreateGroups(
+            CreateGroupParameters? createParamsBase,
+            params string[] groupNames
+            )
+        {
+            Guard.IsNotNull(groupNames, nameof(groupNames));
+
+            var groups = new SaveGroup[groupNames.Length];
+
+            CreateGroupParameters createParams;
+
+            string groupName;
+
+            for (int i = 0; i < groupNames.Length; i++)
+            {
+                groupName = groupNames[i];
+
+                createParams = createParamsBase.GetValueOrDefault().WithGroupName(groupName);
+
+                groups[i] = GetOrCreateGroup(createParams);
+            }
+
+            return groups;
+        }
+
         public SaveGroupIncremental GetOrCreateIncrementalGroup(
-            string groupName, 
-            long saveDataVersion = 0L,
-            RedirectionMode redirectionMode = default
+            CreateGroupParameters createParams
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-            Guard.IsNotNull(groupName, nameof(groupName));
+            Guard.IsNotDefault(createParams, nameof(createParams));
 
             SaveGroupIncremental? group;
 
             lock (incrementalGroups.SyncRoot)
             {
-                if (!incrementalGroups.TryGetValue(groupName, out group))
+                if (!incrementalGroups.TryGetValue(createParams.GroupName, out group))
                 {
-                    if (groups.ContainsKey(groupName))
-                        throw new InvalidOperationException($"Group: {groupName} already exists and it's not incremental");
+                    if (groups.ContainsKey(createParams.GroupName))
+                        throw new InvalidOperationException($"Group already exists as basic. Group: {createParams.GroupName}");
 
                     group = new SaveGroupIncremental(
                         this,
-                        groupName,
-                        saveDataVersion,
-                        redirectionMode
+                        createParams.GroupName,
+                        saveDataVersion: createParams.SaveDataVersion,
+                        redirectionMode: createParams.Redirection,
+                        loadOnFirstObjectRegistered: createParams.LoadOnFirstObjectRegistered
                         );
 
-                    incrementalGroups.Add(groupName, group);
+                    incrementalGroups.Add(createParams.GroupName, group);
                 }
             }
 
-            if (group.SaveData.Version != saveDataVersion)
-                PrintVersionsNotMatchWarning(group.SaveData.Version, saveDataVersion);
+            if (group.SaveData.Version != createParams.SaveDataVersion)
+                PrintVersionsNotMatchWarning(group.SaveData.Version, createParams.SaveDataVersion);
 
-            if (group.Redirection != redirectionMode)
-                PrintRedirectionModesNotMatchError(group.Redirection, redirectionMode);
+            if (group.Redirection != createParams.Redirection)
+                PrintRedirectionModesNotMatchError(group.Redirection, createParams.Redirection);
 
             return group;
         }
 
+        public SaveGroupIncremental[] GetOrCreateIncrementalGroups(
+            CreateGroupParameters? createParamsBase,
+            params string[] groupNames
+            )
+        {
+            Guard.IsNotNull(groupNames, nameof(groupNames));
+
+            var incGroups = new SaveGroupIncremental[groupNames.Length];
+
+            CreateGroupParameters createParams;
+
+            string groupName;
+
+            for (int i = 0; i < groupNames.Length; i++)
+            {
+                groupName = groupNames[i];
+
+                createParams = createParamsBase.GetValueOrDefault().WithGroupName(groupName);
+
+                incGroups[i] = GetOrCreateIncrementalGroup(createParams);
+            }
+
+            return incGroups;
+        }
+
         public bool ChangeGroupTypeTo(
             string groupName,
-            bool incremental
+            bool toIncremental
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -165,14 +238,14 @@ namespace CCEnvs.Saves
 
             try
             {
-                if (isGroupIncremental && !incremental)
+                if (isGroupIncremental && !toIncremental)
                 {
                     group = SaveGroup.ConvertToNonIncremental(incGroup);
                     success = true;
 
                     groups[groupName] = group;
                 }
-                else if (isBasicGroup && incremental)
+                else if (isBasicGroup && toIncremental)
                 {
                     incGroup = SaveGroup.ConvertToIncremental(group);
                     success = true;
@@ -195,31 +268,31 @@ namespace CCEnvs.Saves
         }
 
         public SaveGroup GetOrCreateGroupGeneric(
-            string groupName,
+            CreateGroupParameters createParams,
             bool incremental
             )
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-            Guard.IsNotNull(groupName, nameof(groupName));
+            Guard.IsNotDefault(createParams, nameof(createParams));
 
             if (incremental)
             {
-                if (incrementalGroups.TryGetValue(groupName, out var incGroup))
+                if (incrementalGroups.TryGetValue(createParams.GroupName, out var incGroup))
                     return incGroup;
 
-                if (ChangeGroupTypeTo(groupName, incremental))
-                    return incrementalGroups[groupName];
+                if (ChangeGroupTypeTo(createParams.GroupName, incremental))
+                    return incrementalGroups[createParams.GroupName];
 
-                return GetOrCreateIncrementalGroup(groupName);
+                return GetOrCreateIncrementalGroup(createParams);
             }
 
-            if (groups.TryGetValue(groupName, out var group))
+            if (groups.TryGetValue(createParams.GroupName, out var group))
                 return group;
 
-            if (ChangeGroupTypeTo(groupName, incremental))
-                return groups[groupName];
+            if (ChangeGroupTypeTo(createParams.GroupName, incremental))
+                return groups[createParams.GroupName];
 
-            return GetOrCreateIncrementalGroup(groupName);
+            return GetOrCreateIncrementalGroup(createParams);
         }
 
         public SaveCatalog Clear()

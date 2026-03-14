@@ -14,9 +14,9 @@
   <Project Path="UniTask.TextMeshPro.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="SREditor.csproj" />
+  <Project Path="Core.csproj" />
   <Project Path="R3.Unity.TextMeshPro.csproj" />
   <Project Path="CCEnvs.Unity._3D.csproj" />
-  <Project Path="Core.csproj" />
   <Project Path="R3.Unity.XRInteractionToolkit.csproj" />
   <Project Path="UniTask.Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />

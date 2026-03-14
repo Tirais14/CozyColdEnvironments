@@ -247,8 +247,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1153818861}
-        m_TargetAssemblyTypeName: Tests.SubSystems.Players.Player, Tests
-        m_MethodName: SaveGame
+        m_TargetAssemblyTypeName: Core.Playables.Player, Core
+        m_MethodName: SavePlayerData
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -10,8 +8,6 @@ namespace CCEnvs.Saves
         private bool? compressed;
 
         private bool? backuped;
-
-        public string FilePath { get; }
 
         public string FileExtension { get; }
 
@@ -36,18 +32,14 @@ namespace CCEnvs.Saves
         }
 
         public SerializeToFileParameters(
-            string filePath,
             string? fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION
             )
             :
             this()
         {
-            Guard.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
-
             if (fileExtension.IsNullOrWhiteSpace())
                 fileExtension = SaveWrite.DEFAULT_SAVE_EXTENSION;
 
-            FilePath = Path.ChangeExtension(filePath, fileExtension);
             FileExtension = fileExtension;
         }
 
@@ -72,9 +64,7 @@ namespace CCEnvs.Saves
                    &&
                    compressed == other.compressed
                    &&
-                   backuped == other.backuped
-                   &&
-                   FilePath == other.FilePath;
+                   backuped == other.backuped;
         }
 
         public readonly override int GetHashCode()
@@ -82,17 +72,16 @@ namespace CCEnvs.Saves
             return HashCode.Combine(
                 FileExtension,
                 compressed,
-                backuped,
-                FilePath
+                backuped
                 );
         }
 
-        public readonly override string ToString()
+        public override string ToString()
         {
             if (this == default)
                 return GetType().Name;
 
-            return $"({nameof(FilePath)}: {FilePath})";
+            return $"({nameof(FileExtension)}: {FileExtension}; {nameof(Compressed)}: {Compressed}; {nameof(Backuped)}: {Backuped})";
         }
     }
 }

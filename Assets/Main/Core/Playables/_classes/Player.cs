@@ -1,7 +1,9 @@
-using System.IO;
 using CCEnvs.Saves;
+using CCEnvs.Threading;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -34,9 +36,13 @@ namespace Core.Playables
                     return new PlayerSnapshot(player);
                 });
 
-            saveGroup = SaveSystem.GetOrCreateArchive(G.SaveDefaultArchivePath)
-                .GetOrCreateCatalog(G.SaveDefaultCatalogPath)
-                .GetOrCreateIncrementalGroup(G.SaveDefaultGroupName);
+            saveGroup = Saves.GetPlayerDataGroup();
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            saveSysReg.Dispose();
         }
 
         public void RegisterInSaveSystem()
@@ -46,15 +52,26 @@ namespace Core.Playables
 
         public void LoadSaveGame()
         {
-            saveGroup.LoadSaveDataFromFileAsync()
+            saveGroup.Loader.LoadSaveDataFromFileAsync(cancellationToken: destroyCancellationToken)
+                .AsUniTask()
                 .ForgetByPrintException();
         }
 
-        public void SaveGame()
+        public void SavePlayerData()
         {
-            saveGroup.CaptureAndWriteSaveData()
-                .WriteSaveDataToFileAsync(compressed: false)
-                .ForgetByPrintException();
+            SavePlayerDataAsync().ForgetByPrintException();
+        }
+
+        public async UniTask SavePlayerDataAsync(CancellationToken cancellationToken = default)
+        {
+            using var _ = destroyCancellationToken.TryLinkTokens(cancellationToken, out cancellationToken);
+
+            await saveGroup.Writer.CaptureAndWriteSaveDataAsync(cancellationToken: cancellationToken);
+
+            await saveGroup.Serializer.SerializeDataToFileAsync(
+                Saves.DefaultSerializeToFileParams,
+                cancellationToken: cancellationToken
+                );
         }
 
         public void MarkSaveObjectDirty()
