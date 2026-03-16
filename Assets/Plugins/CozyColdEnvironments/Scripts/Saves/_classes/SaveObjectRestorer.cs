@@ -3,11 +3,13 @@ using CCEnvs.Disposables;
 using CCEnvs.Threading;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -28,6 +30,8 @@ namespace CCEnvs.Saves
         private readonly SaveLoaderLazyObjectRestorer lazyObjectRestorer;
 
         public ObservableDictionary<string, SaveArchive> Archives { get; } = new();
+
+        private CancellationToken disposeToken => disposeCancellationTokenSource.Token;
 
         public SaveObjectRestorer()
         {
@@ -295,27 +299,26 @@ namespace CCEnvs.Saves
         {
             var disposables = groupDisposables.GetOrCreateNew(group.Name);
 
-            group.ObservableObjects.ObserveDictionaryAdd(disposeCancellationTokenSource.Token)
+            group.ObservableObjects.ObserveDictionaryAdd(disposeToken)
                 .Subscribe(group, OnGroupObjectAdd)
                 .AddTo(disposables);
         }
 
-        private void OnSaveDataLoaded(SaveGroup group)
+        private void OnGroupLoaded(SaveGroup group)
         {
-            lock (group.ObservableObjects.SyncRoot)
-            {
-                foreach (var (key, obj) in group.ObservableObjects)
-                    TryRestoreObject(obj, key, group.Name);
-            }
+            foreach (var (key, obj) in group)
+                TryRestoreObject(obj, key, group.Name);
         }
 
-        private void BindSaveDataLoaded(SaveGroup group)
+        private void BindGroupLoaded(SaveGroup group)
         {
+            var disposables = groupDisposables.GetOrCreateNew(group.Name);
+
             group.Loader.ObserveLoadSaveData()
                 .Subscribe((@this: this, group),
                 static (saveData, args) =>
                 {
-                    args.@this.OnSaveDataLoaded(args.group);
+                    args.@this.OnGroupLoaded(args.group);
                 })
                 .AddTo(disposables);
         }
@@ -326,15 +329,24 @@ namespace CCEnvs.Saves
 
             BindGroupObjectAdd(group);
             groupSaveDatas.Add(group.Name, group.SaveData);
-            BindSaveDataLoaded(group);
+            BindGroupLoaded(group);
+        }
+
+        private void OnCatalogIncrementalGroupAdd(DictionaryAddEvent<string, SaveGroupIncremental> addEv)
+        {
+            OnCatalogGroupAdd(new DictionaryAddEvent<string, SaveGroup>(addEv.Key, addEv.Value));
         }
 
         private void BindCatalogGroupAdd(SaveCatalog catalog)
         {
             var disposables = catalogDisposables.GetOrCreateNew(catalog.Path);
 
-            catalog.Groups.ObserveDictionaryAdd(disposeCancellationTokenSource.Token)
+            catalog.Groups.ObserveDictionaryAdd(disposeToken)
                 .Subscribe(OnCatalogGroupAdd)
+                .AddTo(disposables);
+
+            catalog.IncrementalGroups.ObserveDictionaryAdd(disposeToken)
+                .Subscribe(OnCatalogIncrementalGroupAdd)
                 .AddTo(disposables);
         }
 
@@ -346,9 +358,9 @@ namespace CCEnvs.Saves
 
             DictionaryAddEvent<string, SaveGroup> groupAddEv;
 
-            foreach (var (groupKey, group) in catalog.Groups)
+            foreach (var group in catalog)
             {
-                groupAddEv = new DictionaryAddEvent<string, SaveGroup>(groupKey, group);
+                groupAddEv = new DictionaryAddEvent<string, SaveGroup>(group.Name, group);
 
                 OnCatalogGroupAdd(groupAddEv);
             }
@@ -358,7 +370,7 @@ namespace CCEnvs.Saves
         {
             var disposables = archiveDisposables.GetOrCreateNew(archive.Path);
 
-            archive.Catalogs.ObserveDictionaryAdd(disposeCancellationTokenSource.Token)
+            archive.Catalogs.ObserveDictionaryAdd(disposeToken)
                 .Subscribe(OnArchiveCatalogAdd)
                 .AddTo(disposables);
         }
@@ -371,9 +383,9 @@ namespace CCEnvs.Saves
 
             DictionaryAddEvent<string, SaveCatalog> catalogAddEv;
 
-            foreach (var (ctlgKey, ctlg) in archive.Catalogs)
+            foreach (var catalog in archive)
             {
-                catalogAddEv = new DictionaryAddEvent<string, SaveCatalog>(ctlgKey, ctlg);
+                catalogAddEv = new DictionaryAddEvent<string, SaveCatalog>(catalog.Path, catalog);
 
                 OnArchiveCatalogAdd(catalogAddEv);
             }
@@ -381,41 +393,52 @@ namespace CCEnvs.Saves
 
         private void BindArchiveAdd()
         {
-            Archives.ObserveDictionaryAdd(disposeCancellationTokenSource.Token)
+            Archives.ObserveDictionaryAdd(disposeToken)
                 .Subscribe(OnArchiveAdd)
                 .AddTo(disposables);
         }
 
-        private void OnArchiveRemove(DictionaryRemoveEvent<string, SaveArchive> removeEv)
+        private void OnCatalogGroupRemove(DictionaryRemoveEvent<string, SaveGroup> removeEv)
         {
-            if (this.archiveDisposables.Remove(removeEv.Value.Path, out var archiveDisposables))
-                archiveDisposables.Dispose();
+            var group = removeEv.Value;
 
-            var archive = removeEv.Value;
+            if (groupDisposables.Remove(group.Name, out var disposables))
+                disposables.Dispose();
 
-            lock (archive.Catalogs.SyncRoot)
-            {
-                foreach (var catalog in archive.Catalogs.Values)
-                {
-                    if (this.catalogDisposables.Remove(catalog.Path, out var catalogDisposables))
-                        catalogDisposables.Dispose();
-
-                    lock (catalog.Groups.SyncRoot)
-                    {
-                        foreach (var group in catalog.Groups.Values)
-                        {
-                            if (this.groupDisposables.Remove(group.Name, out var groupDisposables))
-                                groupDisposables.Dispose();
-                        }
-                    }
-                }
-            }
+            groupSaveDatas.Remove(group.Name);
         }
 
-        private void BindArchiveRemove()
+        private void OnCatalogIncrementalGroupRemove(DictionaryRemoveEvent<string, SaveGroupIncremental> removeEv)
         {
-            Archives.ObserveDictionaryRemove(disposeCancellationTokenSource.Token)
-                .Subscribe(OnArchiveRemove)
+            OnCatalogGroupRemove(new DictionaryRemoveEvent<string, SaveGroup>(removeEv.Key, removeEv.Value));
+        }
+
+        private void BindCatalogGroupRemove(SaveCatalog catalog)
+        {
+            var disposables = catalogDisposables.GetOrCreateNew(catalog.Path);
+
+            catalog.Groups.ObserveDictionaryRemove(disposeToken)
+                .Subscribe(OnCatalogGroupRemove)
+                .AddTo(disposables);
+        }
+
+        private void OnArchiveCatalogRemove(DictionaryRemoveEvent<string, SaveCatalog> removeEv)
+        {
+            var catalog = removeEv.Value;
+
+            if (catalogDisposables.Remove(catalog.Path, out var disposables))
+                disposables.Dispose();
+
+            foreach (var group in catalog)
+                OnCatalogGroupRemove(new DictionaryRemoveEvent<string, SaveGroup>(group.Name, group));
+        }
+
+        private void BindArchiveCatalogRemove(SaveArchive archive)
+        {
+            var disposables = archiveDisposables.GetOrCreateNew(archive.Path);
+
+            archive.Catalogs.ObserveDictionaryRemove(disposeToken)
+                .Subscribe(OnArchiveCatalogRemove)
                 .AddTo(disposables);
         }
 
@@ -436,10 +459,21 @@ namespace CCEnvs.Saves
             groupSaveDatas.TrimExcess();
         }
 
-        private void BindArchivesClear()
+        private void OnArchiveRemove(DictionaryRemoveEvent<string, SaveArchive> removeEv)
         {
-            Archives.ObserveClear(disposeCancellationTokenSource.Token)
-                .Subscribe(OnArchivesClear)
+            if (this.archiveDisposables.Remove(removeEv.Value.Path, out var archiveDisposables))
+                archiveDisposables.Dispose();
+
+            var archive = removeEv.Value;
+
+            foreach (var catalog in archive)
+                OnArchiveCatalogRemove(new DictionaryRemoveEvent<string, SaveCatalog>(catalog.Path, catalog));
+        }
+
+        private void BindArchiveRemove()
+        {
+            Archives.ObserveDictionaryRemove(disposeToken)
+                .Subscribe(OnArchiveRemove)
                 .AddTo(disposables);
         }
 
@@ -452,9 +486,16 @@ namespace CCEnvs.Saves
             OnArchiveAdd(addEv);
         }
 
+        private void BindArchivesClear()
+        {
+            Archives.ObserveClear(disposeToken)
+                .Subscribe(OnArchivesClear)
+                .AddTo(disposables);
+        }
+
         private void BindArchiveReplace()
         {
-            Archives.ObserveDictionaryReplace(disposeCancellationTokenSource.Token)
+            Archives.ObserveDictionaryReplace(disposeToken)
                 .Subscribe(OnArchiveReplace)
                 .AddTo(disposables);
         }

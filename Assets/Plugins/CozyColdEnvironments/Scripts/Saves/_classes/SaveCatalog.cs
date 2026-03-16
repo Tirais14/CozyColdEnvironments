@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
@@ -347,7 +348,7 @@ namespace CCEnvs.Saves
 
         public IEnumerator<SaveGroup> GetEnumerator()
         {
-            return groups.To<IDictionary<string, SaveGroup>>().Values.GetEnumerator();
+            return new Enumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -360,6 +361,61 @@ namespace CCEnvs.Saves
         private void PrintRedirectionModesNotMatchError(RedirectionMode current, RedirectionMode expected)
         {
             this.PrintError($"Redirection modes is not match. Current: {current}; expected: {expected}");
+        }
+
+        public struct Enumerator : IEnumerator<SaveGroup>
+        {
+            private readonly SaveCatalog catalog;
+
+            private readonly IEnumerator<KeyValuePair<string, SaveGroup>> groupsEnumerator;
+            private readonly IEnumerator<KeyValuePair<string, SaveGroupIncremental>> incGroupsEnumerator;
+
+#pragma warning disable CS8766
+            public SaveGroup? Current { readonly get; private set; }
+
+            readonly object? IEnumerator.Current => Current;
+#pragma warning restore CS8766
+
+            public Enumerator(SaveCatalog catalog)
+                :
+                this()
+            {
+                Guard.IsNotNull(catalog, nameof(catalog));
+
+                this.catalog = catalog;
+
+                groupsEnumerator = catalog.Groups.GetEnumerator();
+                incGroupsEnumerator = catalog.IncrementalGroups.GetEnumerator();
+            }
+
+            public bool MoveNext()
+            {
+                if (groupsEnumerator.TryMoveNext(out var group))
+                {
+                    Current = group.Value;
+                    return true;
+                }
+
+                if (incGroupsEnumerator.TryMoveNext(out var incGroup))
+                {
+                    Current = incGroup.Value;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public readonly void Dispose()
+            {
+                groupsEnumerator.Dispose();
+                incGroupsEnumerator.Dispose();
+            }
+
+            public readonly void Reset()
+            {
+                groupsEnumerator.Reset();
+                incGroupsEnumerator.Reset();
+            }
         }
     }
 }

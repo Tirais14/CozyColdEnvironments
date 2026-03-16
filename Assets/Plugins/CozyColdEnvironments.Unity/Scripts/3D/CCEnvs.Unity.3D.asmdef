@@ -1,0 +1,19 @@
+{
+    "name": "CCEnvs.Unity.D3",
+    "rootNamespace": "CCEnvs.Unity.D3",
+    "references": [
+        "CCEnvs",
+        "CCEnvs.Unity",
+        "Unity.InputSystem",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

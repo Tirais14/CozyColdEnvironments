@@ -14,21 +14,27 @@ namespace CCEnvs.Unity.InputSystem.Rx
         InputAction Action { get; }
         string ActionName { get; }
 
-        Observable<CallbackContext> Raw { get; }
-        Observable<CallbackContext> Started { get; }
-        Observable<CallbackContext> Performed { get; }
-        Observable<CallbackContext> Canceled { get; }
-
         bool IsButtonPressed();
+
+        Observable<CallbackContext> ObserveRaw();
+
+        Observable<CallbackContext> ObserveStarted();
+
+        Observable<CallbackContext> ObservePerformed();
+
+        Observable<CallbackContext> ObserveCanceled();
     }
     public interface IInputActionRx<T> : IInputActionRx
         where T : struct
     {
         T InputValue { get; }
 
-        Observable<T> TRaw { get; }
-        Observable<T> TStarted { get; }
-        Observable<T> TPerformed { get; }
-        Observable<T> TCanceled { get; }
+        Observable<T> ObserveRawValue();
+
+        Observable<T> ObserveStartedValue();
+
+        Observable<T> ObservePerformedValue();
+
+        Observable<T> ObserveCanceledValue();
     }
 }

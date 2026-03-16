@@ -321,11 +321,17 @@ namespace CCEnvs.Unity.Items
 
         protected virtual int ResolveID(IItemContainer itemContainer)
         {
-            IEnumerable<int> ids = collectionBase.Values.AsValueEnumerable()
+            IEnumerable<int> ids = collectionBase.Values
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
                 .Select(x => x.GetContainerID())
                 .Where(x => x.IsSome)
                 .Select(x => x.Raw)
-                .AsEnumerable();
+#if ZLINQ_PLUGIN
+                .AsEnumerable()
+#endif 
+                ;
 
             if (Do.TryFindHoleInRange(start: 0, ContainerCount, ids, out int hole))
                 return hole;

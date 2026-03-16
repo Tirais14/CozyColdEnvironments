@@ -124,7 +124,11 @@ namespace CCEnvs.Saves
 
         public IEnumerator<SaveCatalog> GetEnumerator()
         {
-            return catalogs.To<IDictionary<string, SaveCatalog>>().Values.GetEnumerator();
+            lock (catalogs.SyncRoot)
+            {
+                foreach (var (_, catalog) in catalogs)
+                    yield return catalog;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

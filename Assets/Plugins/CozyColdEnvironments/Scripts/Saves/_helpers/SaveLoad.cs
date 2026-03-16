@@ -1,14 +1,13 @@
-﻿using System;
+﻿using CCEnvs.Diagnostics;
+using CCEnvs.IO.Compression;
+using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
-using CCEnvs.Diagnostics;
-using CCEnvs.IO.Compression;
-using CCEnvs.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
-using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -25,7 +24,9 @@ namespace CCEnvs.Saves
 
             Guard.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
 
-            await UniTaskHelper.TrySwitchToThreadPool();
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+            await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToThreadPool();
+#endif
 
             var file = new FileInfo(filePath);
 
@@ -60,7 +61,9 @@ namespace CCEnvs.Saves
             {
                 SaveSystem.IOSemaphore.Release();
 
-                await UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#if !PLATFORM_WEBGL && UNITASK_PLUGIN
+                await CCEnvs.Threading.Tasks.UniTaskHelper.TrySwitchToMainThread(configureAwait);
+#endif
             }
         }
 

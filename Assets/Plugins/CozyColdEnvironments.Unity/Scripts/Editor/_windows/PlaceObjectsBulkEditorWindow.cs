@@ -1,13 +1,18 @@
 #if UNITY_EDITOR
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using CCEnvs.FuncLanguage;
 using CCEnvs.UnityEditor;
+using CommunityToolkit.Diagnostics;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.Unity.EditorC
 {
+    [InitializeOnLoad]
     public sealed class PlaceObjectsBulkEditorWindow : CCEditorWindow
     {
         //private readonly List<VisualElement> objects = new();
@@ -97,16 +102,40 @@ namespace CCEnvs.Unity.EditorC
             //};
         }
 
+        private bool TryRaycast(
+            Vector2 mousePos,
+            out RaycastHit hit
+            )
+        {
+            var ray = HandleUtility.GUIPointToWorldRay(mousePos);
+
+            var hitBoxed = HandleUtility.RaySnap(ray);
+
+            if (hitBoxed is not RaycastHit tHit)
+            {
+                hit = default;
+                return false;
+            }
+
+            hit = tHit;
+            return true;
+        }
+
         private void PlaceObject()
         {
-            var mouseRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-
-            if (!Physics.Raycast(mouseRay, out var hit, float.PositiveInfinity, LayerMask.GetMask("Terrain")))
+            if (Event.current == null)
                 return;
 
-            var toPlaceObj = (GameObject)PrefabUtility.InstantiatePrefab(objectToPlace.value);
+            if (!TryRaycast(Event.current.mousePosition, out var raycastHit))
+                return;
 
-            //toPlaceObj.transform.SetParent((Transform)placingParent.value);
+            GameObject? toPlaceObj = (GameObject?)PrefabUtility.InstantiatePrefab(objectToPlace.value);
+
+            if (toPlaceObj == null)
+                toPlaceObj = (GameObject?)Instantiate(objectToPlace.value);
+
+            if (toPlaceObj == null)
+                return;
 
             toPlaceObj.transform.rotation *= Quaternion.Euler(0f, UnityEngine.Random.Range(-180, 180), 0f);
 
@@ -116,7 +145,7 @@ namespace CCEnvs.Unity.EditorC
 
             Undo.RegisterCreatedObjectUndo(toPlaceObj, "Place Prefab");
 
-            toPlaceObj.transform.position = hit.point;
+            toPlaceObj.transform.position = raycastHit.point;
 
             lastPlacedObjectWatch.Restart();
         }

@@ -11,6 +11,7 @@ using CCEnvs.Json;
 using CCEnvs.Json.Converters;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
+using CCEnvs.Saves;
 using CCEnvs.Serialization;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -34,7 +35,7 @@ namespace CCEnvs
 
         public static JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.GetDefault(
             new DescriptedObjectJsonConverter(),
-            new ObservableDictionaryJsonConverter()
+            new TypeSerializationDescriptorJsonConverter()
             );
 
         [field: OnInstallResetable]

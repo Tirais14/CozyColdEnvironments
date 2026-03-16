@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Threading;
+using CCEnvs.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using R3;
 
@@ -225,11 +226,19 @@ namespace CCEnvs.Patterns.Commands
 
             using var _ = CancellationToken.LinkTokens(cancellationTokenAdditional, out cancellationTokenAdditional);
 
-            await UniTask.WaitUntil(
+#if UNITAS_PLUGIN
+            await Cysharp.Threading.Tasks.UniTask.WaitUntil(
                 this,
                 static @this => @this.IsDone,
                 cancellationToken: cancellationTokenAdditional
                 );
+#else
+            await TaskHelper.WaitUntil(
+                this,
+                static @this => @this.IsDone,
+                cancellationToken: cancellationTokenAdditional
+                );
+#endif
         }
 
         public Observable<CommandStatus> ObserveIsDone()

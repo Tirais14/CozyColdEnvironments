@@ -6,7 +6,6 @@ using CCEnvs.Snapshots;
 using CCEnvs.Threading;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
-using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -96,7 +95,7 @@ namespace CCEnvs.Saves
                     foreach (var (key, obj) in group.observableObjects)
                         incGroup.RegisterObject(obj, key);
 
-                    incGroup.SaveData.Merge(group.SaveData.SaveEntries.Values);
+                    incGroup.SaveData.Append(group.SaveData.SaveEntries.Values);
                 }
 
                 group.Dispose();
@@ -129,7 +128,7 @@ namespace CCEnvs.Saves
                     foreach (var (key, obj) in incGroup.observableObjects)
                         incGroup.RegisterObject(obj, key);
 
-                    group.SaveData.Merge(incGroup.SaveData.SaveEntries.Values);
+                    group.SaveData.Append(incGroup.SaveData.SaveEntries.Values);
                 }
 
                 incGroup.Dispose();
@@ -165,7 +164,10 @@ namespace CCEnvs.Saves
                 &&
                 LoadOnFirstObjectRegistered)
             {
-                Loader.LoadSaveDataFromFileAsync(cancellationToken: DisposeCancellationToken).Forget(this);
+                Loader.LoadSaveDataFromFileAsync(
+                    cancellationToken: DisposeCancellationToken
+                    )
+                    .Forget(this);
             }
 
             objectWasRegistered = true;

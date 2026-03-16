@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using Cysharp.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -96,9 +95,9 @@ namespace CCEnvs.Pools
 
                 var tHandles = await
 #if UNITASK_PLUGIN
-                    UniTask.WhenAll(tasks.Value.Array);
+                    Cysharp.Threading.Tasks.UniTask.WhenAll(tasks.Value.Array);
 #else
-                    ValueTaskHelper.WhenAll(tasks.Value.Array);
+                    ValueTaskSupplement.ValueTaskEx.WhenAll(tasks.Value.Array);
 #endif
 
                 for (int i = 0; i < processCount; i++)
@@ -107,9 +106,9 @@ namespace CCEnvs.Pools
                 if (delayFrameCountBetweenBatches > 0)
                 {
 #if UNITASK_PLUGIN
-                    await UniTask.DelayFrame(delayFrameCountBetweenBatches);
+                    await Cysharp.Threading.Tasks.UniTask.DelayFrame(delayFrameCountBetweenBatches);
 #else
-                    await ValueTaskHelper.DelayFrame(delayFrameCountBetweenBatches);
+                    await CCEnvs.Threading.Tasks.ValueTaskHelper.DelayFrame(delayFrameCountBetweenBatches);
 #endif
                 }
 

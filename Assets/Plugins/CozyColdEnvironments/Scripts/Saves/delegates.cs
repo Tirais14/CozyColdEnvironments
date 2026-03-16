@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using CCEnvs.Snapshots;
+using Newtonsoft.Json.Linq;
 
 namespace CCEnvs.Saves
 {
@@ -10,4 +11,6 @@ namespace CCEnvs.Saves
     public delegate void OnSaveObjectIsDirtyChanged(ISaveObjectIncremental obj, bool state);
 
     public delegate SaveEntry SaveEntryVersionUpgrader(SaveEntry entry, long nextVersion);
+
+    public delegate SaveEntry? SaveEntryDeserializingErrorHandler(JProperty jProp, System.Exception ex);
 }

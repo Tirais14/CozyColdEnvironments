@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
+using CCEnvs.Json;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Snapshots;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CCEnvs.Saves.Json;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -81,12 +83,16 @@ namespace CCEnvs.Saves
             return archive;
         }
 
-        public static void GetOrCreateArchives(params string[] paths)
+        public static SaveArchive[] GetOrCreateArchives(params string[] paths)
         {
-            Guard.IsNotNull(paths, nameof(paths));  
+            Guard.IsNotNull(paths, nameof(paths));
 
-            foreach (var path in paths)
-                GetOrCreateArchive(path);
+            var archives = new SaveArchive[paths.Length];
+
+            for (int i = 0; i < paths.Length; i++)
+                archives[i] = GetOrCreateArchive(paths[i]);
+
+            return archives;
         }
 
         public static bool RemoveArchive(string path)
@@ -163,23 +169,12 @@ namespace CCEnvs.Saves
             return ResolveConverter(typeof(T));
         }
 
-        //public static async ValueTask SaveProgressAsync(
-        //    CaptureAndWriteParameters captureAndWriteParameters = default,
-        //    CancellationToken cancellationToken = default
-        //    )
-        //{
-        //    await SaveSystemWriter.CaptureAndWriteArchivesAsync(
-        //        captureAndWriteParameters,
-        //        cancellationToken
-        //        );
-
-
-        //}
-
         private static JsonSerializerSettings GetDefaultSerializerSettings()
         {
             var serializerSettings = CC.SerializerSettings;
             serializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+
+            serializerSettings.AddConverters(new SaveEntriesJsonConverter());
 
             return serializerSettings;
         }

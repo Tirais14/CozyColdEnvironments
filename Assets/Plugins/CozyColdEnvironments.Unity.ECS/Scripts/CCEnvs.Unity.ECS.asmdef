@@ -1,0 +1,24 @@
+{
+    "name": "CCEnvs.Unity.ECS",
+    "rootNamespace": "CCEnvs.Unity.ECS",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Physics",
+        "Unity.Physics.Hybrid",
+        "Unity.Burst"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "DOTS_PLUGIN"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

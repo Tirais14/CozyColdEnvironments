@@ -1,6 +1,7 @@
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using ObservableCollections;
@@ -8,6 +9,7 @@ using R3;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -32,10 +34,10 @@ namespace CCEnvs.Saves
         }
 
         [JsonProperty("version", Order = -2)]
-        public long Version { get; init; }
+        public long Version { get; private set; }
 
         [JsonProperty("groupName", Order = -1)]
-        public string GroupName { get; init; }
+        public string GroupName { get; private set; }
 
         public SaveData(string groupName, long version = 0L)
         {

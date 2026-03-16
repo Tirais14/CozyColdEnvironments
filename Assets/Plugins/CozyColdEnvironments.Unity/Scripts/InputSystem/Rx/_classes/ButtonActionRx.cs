@@ -7,14 +7,29 @@ namespace CCEnvs.Unity.InputSystem.Rx
 {
     public class ButtonActionRx : InputActionRx<bool>
     {
-        public override Observable<bool> TRaw => Raw.Select(ctx => ctx.ReadValueAsButton());
-        public override Observable<bool> TStarted => Started.Select(ctx => ctx.ReadValueAsButton());
-        public override Observable<bool> TPerformed => Performed.Select(ctx => ctx.ReadValueAsButton());
-        public override Observable<bool> TCanceled => Canceled.Select(ctx => ctx.ReadValueAsButton());
-
         [Preserve]
         public ButtonActionRx(InputAction inputAction) : base(inputAction)
         {
+        }
+
+        public override Observable<bool> ObserveRawValue()
+        {
+            return ObserveRaw().Select(static ctx => ctx.ReadValueAsButton());
+        }
+
+        public override Observable<bool> ObserveStartedValue()
+        {
+            return ObserveStarted().Select(static ctx => ctx.ReadValueAsButton());
+        }
+
+        public override Observable<bool> ObservePerformedValue()
+        {
+            return ObservePerformed().Select(static ctx => ctx.ReadValueAsButton());
+        }
+
+        public override Observable<bool> ObserveCanceledValue()
+        {
+            return ObserveCanceled().Select(static ctx => ctx.ReadValueAsButton());
         }
     }
 }

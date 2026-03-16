@@ -55,9 +55,14 @@ namespace Core
                 });
         }
 
+        public static SaveArchive GetSaveArchive()
+        {
+            return SaveSystem.Archives[GetArchivePath(SAVE_ARCHIVE_NAME)];
+        }
+
         public static SaveGroupIncremental GetPlayerDataGroup()
         {
-            return SaveSystem.Archives[GetArchivePath(SAVE_ARCHIVE_NAME)][PLAYER_CATALOG_PATH][PLAYER_GROUP_NAME, true];
+            return GetSaveArchive()[PLAYER_CATALOG_PATH][PLAYER_GROUP_NAME, true];
         }
     }
 }

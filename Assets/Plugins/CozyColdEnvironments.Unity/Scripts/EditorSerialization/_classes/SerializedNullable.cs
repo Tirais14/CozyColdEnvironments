@@ -7,7 +7,11 @@ using UnityEngine;
 namespace CCEnvs.Unity.EditorSerialization
 {
     [Serializable]
-    public struct SerializedNullable<T> : IEditorSerialized<T?>, IEquatable<SerializedNullable<T>> where T : struct
+    public struct SerializedNullable<T> :
+        IEditorSerialized<T?>,
+        IEquatable<SerializedNullable<T>>,
+        ISerializationCallbackReceiver
+        where T : struct
     {
         [SerializeField]
         [JsonProperty("value")]
@@ -35,6 +39,11 @@ namespace CCEnvs.Unity.EditorSerialization
         }
 
         public static implicit operator SerializedNullable<T>(T instance)
+        {
+            return new SerializedNullable<T>(instance);
+        }
+
+        public static implicit operator SerializedNullable<T>(T? instance)
         {
             return new SerializedNullable<T>(instance);
         }
@@ -82,6 +91,18 @@ namespace CCEnvs.Unity.EditorSerialization
                 return StringHelper.EMPTY_OBJECT;
 
             return $"({nameof(value)}: {value}; {nameof(hasValue)}: {hasValue})";
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            if (value.IsNotDefault())
+                hasValue = true;
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            if (value.IsNotDefault())
+                hasValue = true;
         }
     }
 }

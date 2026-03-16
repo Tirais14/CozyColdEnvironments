@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using CCEnvs.Disposables;
 using R3;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
@@ -24,20 +26,6 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public InputAction Action { get; }
 
-        public Observable<CallbackContext> Raw => raw;
-
-        public Observable<CallbackContext> Started {
-            get => started;
-        }
-
-        public Observable<CallbackContext> Performed {
-            get => performed;
-        }
-
-        public Observable<CallbackContext> Canceled {
-            get => canceled;
-        }
-
         public string ActionName => Action.name;
 
         public bool IsEnabled => isEnabled.Value && Action.enabled;
@@ -53,6 +41,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
             Setup();
         }
 
+        ~InputActionRx() => Dispose();
+
         public static explicit operator InputAction(InputActionRx inputActionReactive)
         {
             return inputActionReactive.Action;
@@ -62,7 +52,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public void Enable()
         {
-            ValidateDisposed();
+            if (CCDisposable.IsDisposed(disposed))
+                return;
 
             Action.Enable();
             isEnabled.Value = true;
@@ -70,7 +61,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public void Disable()
         {
-            ValidateDisposed();
+            if (CCDisposable.IsDisposed(disposed))
+                return;
 
             Action.Disable();
             isEnabled.Value = false;
@@ -78,25 +70,52 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public Observable<bool> ObserveEnabled()
         {
-            ValidateDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             return isEnabled.Where(static x => x);
         }
 
         public Observable<bool> ObserveDisabled()
         {
-            ValidateDisposed();
+            CCDisposable.ThrowIfDisposed(this, disposed);
 
             return isEnabled.Where(static x => !x);
         }
 
-        private bool disposed;
+        public Observable<CallbackContext> ObserveRaw()
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            return raw;
+        }
+
+        public Observable<CallbackContext> ObserveStarted()
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            return started;
+        }
+
+        public Observable<CallbackContext> ObservePerformed()
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            return performed;
+        }
+
+        public Observable<CallbackContext> ObserveCanceled()
+        {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
+            return canceled;
+        }
+
+        private int disposed;
 
         public void Dispose() => Dispose(disposing: true);
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
-                return;
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
 
             if (disposing)
             {
@@ -117,13 +136,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 isEnabled.Dispose();
             }
 
-            disposed = true;
-        }
-
-        protected void ValidateDisposed()
-        {
-            if (disposed)
-                throw new ObjectDisposedException(GetType().ToString());
+            GC.SuppressFinalize(this);
         }
 
         private void Setup()
@@ -139,21 +152,33 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         private void OnRaw(CallbackContext context)
         {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
+
             raw.Execute(context);
         }
 
         private void OnStarted(CallbackContext context)
         {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
+
             started.Execute(context);
         }
 
         private void OnPerformed(CallbackContext context)
         {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
+
             performed.Execute(context);
         }
 
         private void OnCanceled(CallbackContext context)
         {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
+
             canceled.Execute(context);
         }
     }
@@ -166,22 +191,34 @@ namespace CCEnvs.Unity.InputSystem.Rx
     {
         public T InputValue { get; private set; }
 
-        public virtual Observable<T> TRaw { get; }
-        public virtual Observable<T> TStarted { get; }
-        public virtual Observable<T> TPerformed { get; }
-        public virtual Observable<T> TCanceled { get; }
-
         [Preserve]
         public InputActionRx(InputAction inputAction)
             :
             base(inputAction)
         {
-            TRaw = Raw.Select(static x => x.ReadValue<T>());
-            TStarted = Started.Select(static x => x.ReadValue<T>());
-            TPerformed = Performed.Select(static x => x.ReadValue<T>());
-            TCanceled = Canceled.Select(static x => x.ReadValue<T>());
+            ObserveRawValue().Subscribe(this,
+                static (x, @this) => @this.InputValue = x)
+                .AddTo(disposables);
+        }
 
-            TRaw.Subscribe(x => InputValue = x).AddTo(disposables);
+        public virtual Observable<T> ObserveRawValue()
+        {
+            return ObserveRaw().Select(static x => x.ReadValue<T>());
+        }
+
+        public virtual Observable<T> ObserveStartedValue()
+        {
+            return ObserveStarted().Select(static x => x.ReadValue<T>());
+        }
+
+        public virtual Observable<T> ObservePerformedValue()
+        {
+            return ObservePerformed().Select(static x => x.ReadValue<T>());
+        }
+
+        public virtual Observable<T> ObserveCanceledValue()
+        {
+            return ObserveCanceled().Select(static x => x.ReadValue<T>());
         }
     }
 }

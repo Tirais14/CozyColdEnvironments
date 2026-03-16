@@ -294,11 +294,16 @@ namespace CCEnvs.Unity
                         FindObjectsInactive.Exclude;
 
             return Object.FindObjectsByType<Transform>(includeInactiveState, sortMode)
+#if ZLINQ_PLUGIN
                 .AsValueEnumerable()
+#endif
                 .Select(static transform => transform.gameObject)
                 .Select(go => ComponentsInternal(go, type))
                 .SelectMany(static x => x)
-                .AsEnumerable();
+#if ZLINQ_PLUGIN
+                .AsEnumerable()
+#endif
+                ;
         }
 
         [DebuggerStepThrough]

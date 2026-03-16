@@ -26,15 +26,24 @@ namespace Core
 
         private void InstallSaveSystem()
         {
-            SaveSystem.GetOrCreateArchive(Saves.GetArchivePath(Saves.SETTINGS_ARCHIVE_NAME))
-                .GetOrCreateCatalog(Saves.SETTINGS_CATALOG_PATH)
-                .GetOrCreateIncrementalGroup(Saves.SETTINGS_GROUP_NAME);
+            var archives = SaveSystem.GetOrCreateArchives(
+                Saves.GetArchivePath(Saves.SETTINGS_ARCHIVE_NAME),
+                Saves.GetArchivePath(Saves.SAVE_ARCHIVE_NAME)
+                );
 
-            var saveArchive = SaveSystem.GetOrCreateArchive(Saves.GetArchivePath(Saves.SAVE_ARCHIVE_NAME));
+            archives[0].GetOrCreateCatalog(
+                Saves.SETTINGS_CATALOG_PATH
+                )
+                .GetOrCreateIncrementalGroup(
+                Saves.DefaultCreateGroupParams.WithGroupName(Saves.SETTINGS_GROUP_NAME)
+                );
 
-            var playerCatalog = saveArchive.GetOrCreateCatalog(Saves.PLAYER_CATALOG_PATH);
-
-            playerCatalog.CreateIncrementalGroup(Saves.DefaultCreateGroupParams.WithGroupName(Saves.PLAYER_GROUP_NAME));
+            archives[1].GetOrCreateCatalog(
+                Saves.PLAYER_CATALOG_PATH
+                )
+                .GetOrCreateIncrementalGroup(
+                Saves.DefaultCreateGroupParams.WithGroupName(Saves.PLAYER_GROUP_NAME)
+                );
         }
     }
 }
