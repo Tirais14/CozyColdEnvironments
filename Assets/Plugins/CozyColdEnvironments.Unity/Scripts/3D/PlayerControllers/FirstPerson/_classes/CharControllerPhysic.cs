@@ -61,6 +61,8 @@ namespace CCEnvs.Unity.D3.PlayerControllers
 
         private Vector3? onJumpVelocity;
 
+        private bool isGrounded;
+
         public new Rigidbody rigidbody => _rigidBody;
 
         public new CapsuleCollider collider { get; private set; } = null!;
@@ -118,10 +120,10 @@ namespace CCEnvs.Unity.D3.PlayerControllers
 
         protected virtual void FixedUpdate()
         {
+            RaycastSurface();
+
             if (IsGrounded())
             {
-                rigidbody.useGravity = false;
-
                 if (IsMoving)
                 {
                     StopMoving();
@@ -130,8 +132,6 @@ namespace CCEnvs.Unity.D3.PlayerControllers
 
                 OnGrounded();
             }
-            else
-                rigidbody.useGravity = true;
         }
 
         protected override void OnDestroy()
@@ -225,6 +225,7 @@ namespace CCEnvs.Unity.D3.PlayerControllers
 
         public bool IsGrounded()
         {
+            return isGrounded;
             return GetDistanceFromGround() < flyThreshold;
         }
 
@@ -285,9 +286,16 @@ namespace CCEnvs.Unity.D3.PlayerControllers
 
                 if (CCDebug.Instance.IsEnabled && hit.transform == rigidbody.transform)
                     this.PrintError("Self raycasting");
+
+                isGrounded = true;
             }
             else
+            {
                 surfaceCastHit = null;
+                isGrounded = false;
+            }
+
+            DebugDrawCapsule(startPoint1, startPoint2, radius, surfaceCastHit.HasValue ? Color.green : Color.red);
 
             lastSurfaceCastPos = rigidbody.position;
         }
@@ -317,7 +325,6 @@ namespace CCEnvs.Unity.D3.PlayerControllers
         private void OnGrounded()
         {
             StopJumping();
-            rigidbody.useGravity = false;
             onGrounded?.Execute(this);
         }
 
@@ -330,8 +337,33 @@ namespace CCEnvs.Unity.D3.PlayerControllers
 
             var pos = rigidbody.position;
 
-            rigidbody.MovePosition(Vector3.Lerp(rigidbody.position, new Vector3(pos.x, surfaceCastHit.Value.point.y, pos.z), 0.015f));
+            //rigidbody.MovePosition(Vector3.Lerp(rigidbody.position, new Vector3(pos.x, surfaceCastHit.Value.point.y, pos.z), 0.015f));
             //rigidbody.AddForce(new Vector3(0f, -230f), ForceMode.Impulse);
         }
+#if UNITY_EDITOR
+        private void DebugDrawCapsule(Vector3 point1, Vector3 point2, float radius, Color color)
+        {
+            // Рисуем основную линию каста (путь луча)
+            Debug.DrawLine(point1, point2, color, 15f);
+
+            // Рисуем "крестовины" в точках начала и конца капсулы
+            // Это поможет видеть границы проверки в Scene view
+            float crossSize = radius * 2f;
+
+            // Крест в точке 1 (верх)
+            Debug.DrawLine(point1 - Vector3.right * crossSize, point1 + Vector3.right * crossSize, color, 15f);
+            Debug.DrawLine(point1 - Vector3.forward * crossSize, point1 + Vector3.forward * crossSize, color, 15f);
+
+            // Крест в точке 2 (низ)
+            Debug.DrawLine(point2 - Vector3.right * crossSize, point2 + Vector3.right * crossSize, color, 15f);
+            Debug.DrawLine(point2 - Vector3.forward * crossSize, point2 + Vector3.forward * crossSize, color, 15f);
+
+            // Соединяем границы (визуализация стенок капсулы)
+            Debug.DrawLine(point1 + Vector3.right * radius, point2 + Vector3.right * radius, color, 15f);
+            Debug.DrawLine(point1 - Vector3.right * radius, point2 - Vector3.right * radius, color, 15f);
+            Debug.DrawLine(point1 + Vector3.forward * radius, point2 + Vector3.forward * radius, color, 15f);
+            Debug.DrawLine(point1 - Vector3.forward * radius, point2 - Vector3.forward * radius, color, 15f);
+        }
+#endif
     }
 }
