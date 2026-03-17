@@ -81,6 +81,7 @@ namespace CCEnvs.Unity.D3.Controllers
             base.Start();
 
             TryResolveInputActions();
+            TryBindJumpInputAction();
         }
 
         protected virtual void Update()
@@ -230,6 +231,8 @@ namespace CCEnvs.Unity.D3.Controllers
         {
             MoveIA = CCDependecyContainer.TryResolve<InputActionRx<Vector2>>(CCDependecyContainer.MOVE_INPUT_ACTION_CONTAINER_KEY);
             JumpIA = CCDependecyContainer.TryResolve<ButtonActionRx>(CCDependecyContainer.JUMP_INPUT_ACTION_CONTAINER_KEY);
+
+            hasMoveIA = MoveIA != null;
         }
 
         private void TryBindJumpInputAction()

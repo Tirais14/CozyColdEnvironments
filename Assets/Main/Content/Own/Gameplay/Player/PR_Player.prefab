@@ -121,9 +121,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19a0bc71c3e314e4aa17fa583b96a0a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CCEnvs.Unity.D3::CCEnvs.Unity.D3.Controllers.CharControllerSimple
-  moveSpeed: 3
-  airSpeedModifier: 0.5
-  jumpHeight: 5.5
+  moveSpeed: 6
+  airSpeedModifier: 0.75
+  jumpHeight: 3
   surfaceCastPoint: {fileID: 3506304358858895107}
   surfaceLayers:
     default:
