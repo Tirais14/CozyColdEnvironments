@@ -9,6 +9,9 @@ namespace CCEnvs.Dependencies
 {
     public static class CCDependecyContainer
     {
+        public const string JUMP_INPUT_ACTION_CONTAINER_KEY = "JumpInputAction";
+        public const string MOVE_INPUT_ACTION_CONTAINER_KEY = "MoveInputAction";
+
         [OnInstallResetable]
         private static readonly Dictionary<(Type type, object? id), object> bindings = new();
 

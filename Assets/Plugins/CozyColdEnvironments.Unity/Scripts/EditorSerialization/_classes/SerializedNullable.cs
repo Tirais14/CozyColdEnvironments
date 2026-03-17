@@ -14,6 +14,10 @@ namespace CCEnvs.Unity.EditorSerialization
         where T : struct
     {
         [SerializeField]
+        [HideInInspector]
+        private T @default;
+
+        [SerializeField]
         [JsonProperty("value")]
         private T value;
 
@@ -32,10 +36,12 @@ namespace CCEnvs.Unity.EditorSerialization
             }
         }
 
-        public SerializedNullable(T? defaultValue)
+        public SerializedNullable(T? initialValue)
+            :
+            this()
         {
-            value = defaultValue.GetValueOrDefault();
-            hasValue = defaultValue.HasValue;
+            value = initialValue.GetValueOrDefault();
+            hasValue = initialValue.HasValue;
         }
 
         public static implicit operator SerializedNullable<T>(T instance)
@@ -95,13 +101,13 @@ namespace CCEnvs.Unity.EditorSerialization
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            if (value.IsNotDefault())
+            if (!value.Equals(@default))
                 hasValue = true;
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            if (value.IsNotDefault())
+            if (!value.Equals(@default))
                 hasValue = true;
         }
     }

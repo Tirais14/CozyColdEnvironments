@@ -1,4 +1,4 @@
-using CCEnvs.Unity.D3.PlayerControllers;
+using CCEnvs.Unity.D3.Controllers;
 using CCEnvs.Unity.InputSystem.Rx;
 using Core.InputSystem;
 using R3;
@@ -9,7 +9,7 @@ using Zenject;
 #nullable enable
 namespace Core.Playables
 {
-    public class CharacterController : CharControllerPhysic
+    public class CharacterController : CharControllerSimple
     {
         private PlayerInputHandler playerInputHandler = null!;
 
@@ -32,10 +32,12 @@ namespace Core.Playables
             BindJumpInput();
         }
 
-        protected override void FixedUpdate()
+        protected override void Update()
         {
-            base.FixedUpdate();
-            MoveByInput(moveInput.Action.ReadValue<Vector2>());
+            base.Update();
+
+            if (moveInput.Action.IsPressed())
+                MoveByInput(moveInput.Action.ReadValue<Vector2>());
         }
 
         protected override void OnDestroy()

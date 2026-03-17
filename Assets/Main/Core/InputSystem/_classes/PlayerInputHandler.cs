@@ -1,3 +1,4 @@
+using CCEnvs.Dependencies;
 using CCEnvs.Unity.InputSystem.Rx;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,6 +19,8 @@ namespace Core.InputSystem
                 autoSetProps: true
                 )
         {
+            CCDependecyContainer.Bind(Move, CCDependecyContainer.MOVE_INPUT_ACTION_CONTAINER_KEY);
+            CCDependecyContainer.Bind(Jump, CCDependecyContainer.JUMP_INPUT_ACTION_CONTAINER_KEY);
         }
     }
 }

@@ -11,10 +11,9 @@ GameObject:
   - component: {fileID: 7752504034707108010}
   - component: {fileID: 4622165630002842118}
   - component: {fileID: 4745601392662565127}
-  - component: {fileID: -2078742860236122527}
-  - component: {fileID: 572295368500055510}
   - component: {fileID: 9132372625560763372}
-  - component: {fileID: 4678283896788326771}
+  - component: {fileID: 4771442633130429300}
+  - component: {fileID: 7830115418223518646}
   m_Layer: 3
   m_Name: PR_Player
   m_TagString: Untagged
@@ -36,6 +35,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4273910283164272857}
+  - {fileID: 3506304358858895107}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &4622165630002842118
@@ -95,56 +95,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2761154102300475726}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
---- !u!54 &-2078742860236122527
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2761154102300475726}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 1
-  m_Constraints: 112
-  m_CollisionDetection: 2
---- !u!136 &572295368500055510
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2761154102300475726}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &9132372625560763372
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,7 +109,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Tests::Tests.SubSystems.Players.Player
   <Health>k__BackingField: 100
   <Drunkness>k__BackingField: 0.1
---- !u!114 &4678283896788326771
+--- !u!114 &4771442633130429300
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -168,21 +118,79 @@ MonoBehaviour:
   m_GameObject: {fileID: 2761154102300475726}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 282bb3eccb8c6fd489d171fa02187378, type: 3}
+  m_Script: {fileID: 11500000, guid: 19a0bc71c3e314e4aa17fa583b96a0a2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Core::Core.Playables.FirstPersonController
-  _rigidBody: {fileID: 0}
-  surfaceCastLayerMask:
+  m_EditorClassIdentifier: CCEnvs.Unity.D3::CCEnvs.Unity.D3.Controllers.CharControllerSimple
+  moveSpeed: 3
+  airSpeedModifier: 0.5
+  jumpHeight: 5.5
+  surfaceCastPoint: {fileID: 3506304358858895107}
+  surfaceLayers:
+    default:
+      serializedVersion: 2
+      m_Bits: 0
     value:
       serializedVersion: 2
       m_Bits: 1
     hasValue: 1
-  surfaceCastDistance: 100
-  moveSpeed: 7
-  flyMoveSpeed: 1.2
-  jumpForce: 5.5
-  flyThreshold: 0.06
-  canJumpInFly: 0
+  surfaceCastDistance: 0.4
+  gravity: -35
+--- !u!143 &7830115418223518646
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2761154102300475726}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &4772491137698844038
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3506304358858895107}
+  m_Layer: 3
+  m_Name: surfaceCastPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3506304358858895107
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4772491137698844038}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -1.01, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7752504034707108010}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5985594014824664200
 GameObject:
   m_ObjectHideFlags: 0

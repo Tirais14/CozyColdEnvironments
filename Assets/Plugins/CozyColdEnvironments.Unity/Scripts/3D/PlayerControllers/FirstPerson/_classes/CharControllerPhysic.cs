@@ -1,369 +1,234 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.Patterns.Commands;
-using CCEnvs.Unity.Async;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.EditorSerialization;
-using CCEnvs.Unity.Injections;
-using Cysharp.Threading.Tasks;
-using R3;
-using System.IO.Pipelines;
-using UnityEngine;
-
 #nullable enable
 namespace CCEnvs.Unity.D3.PlayerControllers
 {
-    public abstract class CharControllerPhysic : CCBehaviour
-    {
-        public const float SURFACE_CAST_DISTANCE_MIN = 1f;
-        public const float MOVE_SPEED_MIN = 0f;
-        public const float JUMP_FORCE_MIN = 0f;
-        public const float FLY_MOVE_SPEED_MIN = 0f;
-        public const float FLY_THRESHOLD_MIN = 0.06f;
+    //public abstract class CharControllerPhysic : CCBehaviour
+    //{
+    //    public const float SURFACE_CAST_DISTANCE_MIN = 1f;
+    //    public const float MOVE_SPEED_MIN = 0f;
+    //    public const float JUMP_FORCE_MIN = 0f;
+    //    public const float FLY_MOVE_SPEED_MIN = 0f;
+    //    public const float FLY_THRESHOLD_MIN = 0.06f;
 
-        [SerializeField, GetBySelf]
-        protected Rigidbody _rigidBody = null!;
+    //    [SerializeField, GetBySelf]
+    //    protected Rigidbody _rigidBody = null!;
 
-        [SerializeField]
-        protected SerializedNullable<LayerMask> surfaceCastLayerMask;
+    //    [SerializeField]
+    //    protected SerializedNullable<LayerMask> surfaceCastLayerMask;
+
+    //    [SerializeField]
+    //    protected float acceleration = 10f;
 
-        [SerializeField, Min(SURFACE_CAST_DISTANCE_MIN)]
-        protected float surfaceCastDistance = 100f;
+    //    [SerializeField]
+    //    protected float deceleration = 15f;
 
-        [SerializeField, Min(MOVE_SPEED_MIN)]
-        protected float moveSpeed = 3f;
-
-        [SerializeField, Min(FLY_MOVE_SPEED_MIN)]
-        protected float flyMoveSpeed = 1.2f;
-
-        [SerializeField, Min(JUMP_FORCE_MIN)]
-        protected float jumpForce = 5.5f;
-
-        [SerializeField, Min(FLY_THRESHOLD_MIN)]
-        protected float flyThreshold = FLY_THRESHOLD_MIN;
-
-        [SerializeField]
-        protected bool canJumpInFly;
-
-        [SerializeField]
-        protected float skinWidth = 0.05f;
-
-        //protected readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(CharControllerPhysic));
-
-        protected RaycastHit? surfaceCastHit;
-
-        protected Vector3 lastSurfaceCastPos;
-
-        private ReactiveCommand<CharControllerPhysic>? onGrounded;
-
-        private long? jumpFrame;
-
-        private long? moveFrame;
-
-        private Vector3? onJumpVelocity;
-
-        private bool isGrounded;
-
-        public new Rigidbody rigidbody => _rigidBody;
-
-        public new CapsuleCollider collider { get; private set; } = null!;
-
-        public RaycastHit? SurfaceCastHit => surfaceCastHit;
-
-        public LayerMask? SurfaceCastLayerMask {
-            get => surfaceCastLayerMask;
-            set => surfaceCastLayerMask = value;
-        }
-
-        public float SurfaceCastDistance {
-            get => surfaceCastDistance;
-            set => surfaceCastDistance = Mathf.Max(SURFACE_CAST_DISTANCE_MIN, value);
-        }
-
-        public float MoveSpeed {
-            get => moveSpeed;
-            set => moveSpeed = Mathf.Max(MOVE_SPEED_MIN, value);
-        }
-
-        public float FlyMoveSpeed {
-            get => flyMoveSpeed;
-            set => Mathf.Max(FLY_MOVE_SPEED_MIN, value);
-        }
-
-        public float JumpForce {
-            get => jumpForce;
-            set => jumpForce = Mathf.Max(JUMP_FORCE_MIN, value);
-        }
-
-        public float FlyThreshold {
-            get => flyThreshold;
-            set => flyThreshold = Mathf.Max(FLY_THRESHOLD_MIN, value);
-        }
-
-        public bool CanJumpInFly {
-            get => canJumpInFly;
-            set => canJumpInFly = value;
-        }
-
-        public bool IsMoving { get; private set; }
-
-        public bool IsJumping { get; private set; }
-
-        protected override void Start()
-        {
-            base.Start();
-            collider = rigidbody.Q().Component<CapsuleCollider>().Strict();
-        }
-
-        protected virtual void Update()
-        {
-        }
-
-        protected virtual void FixedUpdate()
-        {
-            RaycastSurface();
-
-            if (IsGrounded())
-            {
-                if (IsMoving)
-                {
-                    StopMoving();
-                    SnapToGround();
-                }
-
-                OnGrounded();
-            }
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            onGrounded?.Dispose();
-        }
-
-        public CharControllerPhysic StopMoving()
-        {
-            rigidbody.linearVelocity = rigidbody.linearVelocity.WithX(0f).WithZ(0f);
-
-            IsMoving = false;
-
-            return this;
-        }
-
-        public CharControllerPhysic StopJumping()
-        {
-            rigidbody.linearVelocity = rigidbody.linearVelocity.WithY(0f);
-
-            //IsJumping = false;
-
-            return this;
-        }
-
-        public void Move(
-            Vector3 dir
-            )
-        {
-            if (dir == Vector3.zero)
-            {
-                StopMoving();
-                return;
-            }
-
-            if (IsGrounded())
-            {
-                RaycastSurfaceIfExpired();
-
-                dir = Vector3.ProjectOnPlane(dir, surfaceCastHit!.Value.normal);
-
-                rigidbody.linearVelocity = (dir * moveSpeed).WithY(rigidbody.linearVelocity.y);
-            }
-            else
-                rigidbody.linearVelocity = (dir * flyMoveSpeed).WithY(rigidbody.linearVelocity.y);
-
-            lastSurfaceCastPos = rigidbody.position;
-
-            IsMoving = true;
-        }
-
-        public void MoveByInput(Vector2 inputValue)
-        {
-            var dir = new Vector3(inputValue.x, 0f, inputValue.y);
-
-            Move(dir);
-        }
-
-        public void Jump(Vector3? dir = null)
-        {
-            if (IsJumping)
-                return;
-
-            if (jumpForce.NearlyEquals(0f))
-                return;
-
-            if (!canJumpInFly && !IsGrounded())
-                return;
-
-            dir ??= rigidbody.transform.up.normalized;
-
-            var directedForce = jumpForce * dir.Value;
-
-            if (directedForce == Vector3.zero)
-                return;
-
-            rigidbody.linearVelocity = rigidbody.linearVelocity.WithY(0f);
-            rigidbody.AddForce(directedForce, ForceMode.Impulse);
-        }
-
-        public float GetDistanceFromGround()
-        {
-            RaycastSurfaceIfExpired();
-
-            if (!surfaceCastHit.HasValue)
-                return surfaceCastDistance;
-
-            return surfaceCastHit.Value.distance;
-        }
-
-        public bool IsGrounded()
-        {
-            return isGrounded;
-            return GetDistanceFromGround() < flyThreshold;
-        }
-
-        public Observable<CharControllerPhysic> ObserveOnGrounded()
-        {
-            onGrounded ??= new ReactiveCommand<CharControllerPhysic>();
-
-            return onGrounded;
-        }
-
-        private void RaycastSurface()
-        {
-            //var rayOrigin = collider.bounds.min + Vector3.up * 0.05f;
-
-            //if (Physics.Raycast(
-            //     rayOrigin,
-            //     -rigidbody.transform.up,
-            //     out var hit,
-            //     surfaceCastDistance,
-            //     surfaceCastLayerMask.Deserialized ?? Physics.AllLayers,
-            //     QueryTriggerInteraction.Ignore
-            //     ))
-            //{
-            //     surfaceCastHit = hit;
-
-            //    if (CCDebug.Instance.IsEnabled && hit.transform == rigidbody.transform)
-            //        this.PrintError("Self raycasting");
-            //}
-            //else
-            //    surfaceCastHit = null;
-
-
-            var colliderCenter = collider.transform.position;
-
-            float radius = collider.radius;
-            float height = collider.height;
-
-            float spehereOffset = (height / 2) - radius;
-
-            var point1 = colliderCenter + Vector3.up * spehereOffset;
-            var point2 = colliderCenter - Vector3.down * spehereOffset;
-
-            var startPoint1 = point1 + Vector3.up * skinWidth;
-            var startPoint2 = point2 + Vector3.up * skinWidth;
-
-            if (Physics.CapsuleCast(
-                startPoint1,
-                startPoint2,
-                radius,
-                Vector3.down,
-                out var hit,
-                surfaceCastDistance,
-                surfaceCastLayerMask.Deserialized ?? Physics.AllLayers,
-                QueryTriggerInteraction.Ignore
-                ))
-            {
-                surfaceCastHit = hit;
-
-                if (CCDebug.Instance.IsEnabled && hit.transform == rigidbody.transform)
-                    this.PrintError("Self raycasting");
-
-                isGrounded = true;
-            }
-            else
-            {
-                surfaceCastHit = null;
-                isGrounded = false;
-            }
-
-            DebugDrawCapsule(startPoint1, startPoint2, radius, surfaceCastHit.HasValue ? Color.green : Color.red);
-
-            lastSurfaceCastPos = rigidbody.position;
-        }
-
-        private void RaycastSurfaceIfExpired()
-        {
-            if (IsSurfaceCastExpired())
-                RaycastSurface();
-        }
-
-        private bool IsSurfaceCastExpired()
-        {
-            if (!surfaceCastHit.HasValue)
-                return true;
-
-            var epsilon = 0.07f;
-
-            var pos = rigidbody.position;
-
-            return lastSurfaceCastPos.x.NotNearlyEquals(pos.x, epsilon)
-                   ||
-                   lastSurfaceCastPos.y.NotNearlyEquals(pos.y, epsilon)
-                   ||
-                   lastSurfaceCastPos.z.NotNearlyEquals(pos.z, epsilon);
-        }
-
-        private void OnGrounded()
-        {
-            StopJumping();
-            onGrounded?.Execute(this);
-        }
-
-        private void SnapToGround()
-        {
-            RaycastSurfaceIfExpired();
-
-            if (!surfaceCastHit.HasValue)
-                return;
-
-            var pos = rigidbody.position;
-
-            //rigidbody.MovePosition(Vector3.Lerp(rigidbody.position, new Vector3(pos.x, surfaceCastHit.Value.point.y, pos.z), 0.015f));
-            //rigidbody.AddForce(new Vector3(0f, -230f), ForceMode.Impulse);
-        }
-#if UNITY_EDITOR
-        private void DebugDrawCapsule(Vector3 point1, Vector3 point2, float radius, Color color)
-        {
-            // Рисуем основную линию каста (путь луча)
-            Debug.DrawLine(point1, point2, color, 15f);
-
-            // Рисуем "крестовины" в точках начала и конца капсулы
-            // Это поможет видеть границы проверки в Scene view
-            float crossSize = radius * 2f;
-
-            // Крест в точке 1 (верх)
-            Debug.DrawLine(point1 - Vector3.right * crossSize, point1 + Vector3.right * crossSize, color, 15f);
-            Debug.DrawLine(point1 - Vector3.forward * crossSize, point1 + Vector3.forward * crossSize, color, 15f);
-
-            // Крест в точке 2 (низ)
-            Debug.DrawLine(point2 - Vector3.right * crossSize, point2 + Vector3.right * crossSize, color, 15f);
-            Debug.DrawLine(point2 - Vector3.forward * crossSize, point2 + Vector3.forward * crossSize, color, 15f);
-
-            // Соединяем границы (визуализация стенок капсулы)
-            Debug.DrawLine(point1 + Vector3.right * radius, point2 + Vector3.right * radius, color, 15f);
-            Debug.DrawLine(point1 - Vector3.right * radius, point2 - Vector3.right * radius, color, 15f);
-            Debug.DrawLine(point1 + Vector3.forward * radius, point2 + Vector3.forward * radius, color, 15f);
-            Debug.DrawLine(point1 - Vector3.forward * radius, point2 - Vector3.forward * radius, color, 15f);
-        }
-#endif
-    }
+    //    [SerializeField, Min(SURFACE_CAST_DISTANCE_MIN)]
+    //    protected float surfaceCastDistance = 100f;
+
+    //    [SerializeField, Min(MOVE_SPEED_MIN)]
+    //    protected float moveSpeed = 3f;
+
+    //    [SerializeField, Min(FLY_MOVE_SPEED_MIN)]
+    //    protected float airMoveModifier = 1.2f;
+
+    //    [SerializeField, Min(JUMP_FORCE_MIN)]
+    //    protected float jumpForce = 5.5f;
+
+    //    [SerializeField]
+    //    protected float maxSlopeAngle = 45f;
+
+    //    [SerializeField]
+    //    protected float coyoteTime = 0.1f;
+
+    //    private bool isGrounded;
+    //    private bool jumpRequested;
+
+    //    private Vector3 moveDirection;
+
+    //    private float coyoteTimeCounter;
+    //    private float originalLinearDampging;
+
+    //    public new Rigidbody rigidbody => _rigidBody;
+
+    //    public new CapsuleCollider collider { get; private set; } = null!;
+
+    //    public LayerMask? SurfaceCastLayerMask {
+    //        get => surfaceCastLayerMask;
+    //        set => surfaceCastLayerMask = value;
+    //    }
+
+    //    public float SurfaceCastDistance {
+    //        get => surfaceCastDistance;
+    //        set => surfaceCastDistance = Mathf.Max(SURFACE_CAST_DISTANCE_MIN, value);
+    //    }
+
+    //    public float MoveSpeed {
+    //        get => moveSpeed;
+    //        set => moveSpeed = Mathf.Max(MOVE_SPEED_MIN, value);
+    //    }
+
+    //    public float FlyMoveSpeed {
+    //        get => airMoveModifier;
+    //        set => Mathf.Max(FLY_MOVE_SPEED_MIN, value);
+    //    }
+
+    //    public float JumpForce {
+    //        get => jumpForce;
+    //        set => jumpForce = Mathf.Max(JUMP_FORCE_MIN, value);
+    //    }
+
+    //    protected float gravity => Physics.gravity.y;
+
+    //    protected override void Awake()
+    //    {
+    //        base.Awake();
+    //        collider = rigidbody.Q().Component<CapsuleCollider>().Strict();
+    //        originalLinearDampging = rigidbody.linearDamping;
+    //    }
+
+    //    protected virtual void FixedUpdate()
+    //    {
+    //        RaycastSurface();
+    //        HandleMovement();
+    //    }
+
+    //    public void Move(
+    //        Vector3 dir
+    //        )
+    //    {
+    //        moveDirection = dir;
+    //    }
+
+    //    public void MoveByInput(Vector2 inputValue)
+    //    {
+    //        var dir = new Vector3(inputValue.x, 0f, inputValue.y);
+
+    //        Move(dir);
+    //    }
+
+    //    public void Jump()
+    //    {
+    //        jumpRequested = true;
+    //    }
+
+    //    private void RaycastSurface()
+    //    {
+    //        Vector3 colliderCenter = transform.TransformPoint(collider.center);
+    //        float rayStartOffset = (collider.height * 0.5f) - collider.radius;
+    //        Vector3 rayStart = colliderCenter + Vector3.up * rayStartOffset;
+
+    //        float castRadius = Mathf.Max(0.01f, collider.radius * 0.9f);
+    //        float rayLength = collider.radius + surfaceCastDistance;
+
+    //        if (Physics.SphereCast(
+    //            rayStart,
+    //            castRadius,
+    //            Vector3.down,
+    //            out RaycastHit hit,
+    //            rayLength, 
+    //            surfaceCastLayerMask.Deserialized ?? Physics.AllLayers
+    //            ))
+    //        {
+    //            float angle = Vector3.Angle(hit.normal, Vector3.up);
+
+    //            if (angle <= maxSlopeAngle)
+    //            {
+    //                coyoteTimeCounter = coyoteTime;
+    //                if (!isGrounded) isGrounded = true;
+    //                return;
+    //            }
+    //        }
+
+    //        if (isGrounded)
+    //        {
+    //            coyoteTimeCounter -= Time.fixedDeltaTime;
+    //            if (coyoteTimeCounter <= 0)
+    //            {
+    //                isGrounded = false;
+    //                coyoteTimeCounter = 0;
+    //            }
+    //        }
+    //    }
+
+    //    private void OnDrawGizmos()
+    //    {
+    //        if (collider == null) return;
+
+    //        Vector3 colliderCenter = transform.TransformPoint(collider.center);
+    //        float rayStartOffset = (collider.height * 0.5f) - collider.radius;
+    //        Vector3 rayStart = colliderCenter + Vector3.up * rayStartOffset;
+    //        float rayLength = collider.radius + surfaceCastDistance;
+
+    //        // Рисуем точку начала луча (Красная сфера)
+    //        Gizmos.color = Color.red;
+    //        Gizmos.DrawSphere(rayStart, 0.1f);
+
+    //        // Рисуем сам луч (Желтая линия)
+    //        Gizmos.color = Color.yellow;
+    //        Gizmos.DrawLine(rayStart, rayStart + Vector3.down * rayLength);
+
+    //        // Рисуем зону проверки земли (Зеленая сфера внизу)
+    //        Gizmos.color = Color.green;
+    //        Gizmos.DrawWireSphere(rayStart + Vector3.down * rayLength, 1f);
+    //    }
+
+    //    private void HandleMovement()
+    //    {
+    //        var velocity = rigidbody.linearVelocity;
+
+    //        if (float.IsNaN(velocity.x)
+    //            ||
+    //            float.IsNaN(velocity.y)
+    //            ||
+    //            float.IsNaN(velocity.z))
+    //        {
+    //            rigidbody.linearVelocity = Vector3.zero;
+    //            return;
+    //        }
+
+    //        if (isGrounded)
+    //        {
+    //            if (velocity.y < 0.5f)
+    //                velocity = velocity.WithY(0f);
+
+    //            rigidbody.linearVelocity = velocity;
+    //            rigidbody.linearDamping = originalLinearDampging;
+    //        }
+    //        else
+    //        {
+    //            velocity += gravity * Time.fixedDeltaTime * Vector3.up;
+
+    //            if (velocity.y < 0f)
+    //                velocity += gravity * 0.5f * Time.fixedDeltaTime * Vector3.up;
+
+    //            rigidbody.linearVelocity = velocity;
+    //            rigidbody.linearDamping = originalLinearDampging * 2f;
+    //        }
+
+    //        float moveDirMagnitude;
+
+    //        if (moveDirection.sqrMagnitude > 1f)
+    //        {
+    //            moveDirection.Normalize();
+    //            moveDirMagnitude = 1f;
+    //        }
+    //        else
+    //            moveDirMagnitude = moveDirection.magnitude;
+
+    //        var targetSpeed = moveDirMagnitude * moveSpeed;
+    //        var currenAccl = moveDirMagnitude > 0f ? acceleration : deceleration;
+
+    //        if (!isGrounded)
+    //            currenAccl *= airMoveModifier;
+
+    //        var targetVelocity = moveDirection * moveSpeed;
+
+    //        var newHorVelocity = Vector3.Lerp(
+    //            velocity.WithY(0f),
+    //            targetVelocity,
+    //            currenAccl * Time.fixedDeltaTime
+    //            );
+
+    //        rigidbody.linearVelocity = newHorVelocity.WithY(velocity.y);
+    //    }
+    //}
 }
