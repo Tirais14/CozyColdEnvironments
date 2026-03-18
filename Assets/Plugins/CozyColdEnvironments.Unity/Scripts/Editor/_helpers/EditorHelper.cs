@@ -10,11 +10,12 @@ using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace CCEnvs.UnityEditor
+namespace CCEnvs.Unity.UnityEditor
 {
     public static class EditorHelper
     {
-        public const string CCEnvs = "CCEnvs";
+        public const string ASSETS_TAB = "Assets";
+        public const string CCENVS_TAB = "CCEnvs";
         public const string EDITOR_TAB_NAME = "Editor";
         public const string TOOLS_TAB_NAME = "Tools";
         public const string COMPILING_TAB_NAME = "Compiling";
@@ -25,6 +26,7 @@ namespace CCEnvs.UnityEditor
         public const string CONTEXT_MENU_CREATE_TAB = "Create";
         public const string CONTEXT_MENU_CREATE_PATH = CONTEXT_MENU_TAB + "/" + CONTEXT_MENU_CREATE_TAB;
         public const string DEBUG_TAB = "Debug";
+        public const string CREATE_TAB = "Create";
 
         [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>

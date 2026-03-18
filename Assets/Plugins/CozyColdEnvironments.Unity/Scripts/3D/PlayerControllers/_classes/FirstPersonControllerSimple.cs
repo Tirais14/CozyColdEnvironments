@@ -4,7 +4,6 @@ using CCEnvs.Unity.InputSystem.Rx;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
-using Unity.Cinemachine;
 using UnityEngine;
 
 #nullable enable
@@ -21,10 +20,13 @@ namespace CCEnvs.Unity.D3.Controllers
         protected Transform cameraProxy = null!;
 
         [SerializeField, Min(CAMERA_SENSIVITY_MIN)]
-        protected float horizontalCameraSensivity = 100f;
+        protected float horizontalCameraSensivity = 13f;
 
         [SerializeField, Min(CAMERA_SENSIVITY_MIN)]
-        protected float verticalCameraSensivity = 100f;
+        protected float verticalCameraSensivity = 13f;
+
+        //[SerializeField]
+        //protected AnimationCurve sensivityCurve = null!;
 
         private InputActionRx<Vector2>? lookIA;
 
@@ -47,6 +49,7 @@ namespace CCEnvs.Unity.D3.Controllers
                 throw new MissingComponentException(nameof(cameraProxy));
 
             TryResolveLookInputAction();
+            //TrySetupSensivityCurve();
         }
 
         protected override void OnDestroy()
@@ -94,9 +97,6 @@ namespace CCEnvs.Unity.D3.Controllers
             if (moveInput == Vector2.zero)
                 return;
 
-            if (moveInput.magnitude > 1f)
-                moveInput.Normalize();
-
             moveInput.x *= verticalCameraSensivity * Time.deltaTime;
             moveInput.y *= horizontalCameraSensivity * Time.deltaTime;  
 
@@ -129,5 +129,18 @@ namespace CCEnvs.Unity.D3.Controllers
 
             TryBindLookInputAction();
         }
+
+        //private void TrySetupSensivityCurve()
+        //{
+        //    if (sensivityCurve != null && sensivityCurve.length != 0)
+        //        return;
+
+        //    sensivityCurve = new AnimationCurve(
+        //        new Keyframe(0f, 0f),
+        //        new Keyframe(5f, 0.2f),
+        //        new Keyframe(20f, 0.8f),
+        //        new Keyframe(50f, 1f)
+        //        );
+        //}
     }
 }

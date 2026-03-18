@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.D3.Controllers
         protected float airSpeedModifier = 0.5f;
 
         [SerializeField, Min(JUMP_HEIGHT_MIN)]
-        protected float jumpHeight = 2.7f;
+        protected float jumpHeight = 1.6f;
 
         [Header("Physics")]
         [Space(6f)]
@@ -59,14 +59,14 @@ namespace CCEnvs.Unity.D3.Controllers
 
         private IDisposable? jumpIABinding;
 
-        [field: GetBySelf]
-        public CharacterController core { get; private set; } = null!;
-
         public float MoveSpeed => moveSpeed;
         public float AirSpeedModifier => airSpeedModifier;
         public float JumpHeight => jumpHeight;
         public float SurfaceCastDistance => surfaceCastDistance;
         public float Gravity => gravity;
+
+        [field: GetBySelf]
+        public CharacterController core { get; private set; } = null!;
 
         public Transform SurfaceCastPoint => surfaceCastPoint;
 

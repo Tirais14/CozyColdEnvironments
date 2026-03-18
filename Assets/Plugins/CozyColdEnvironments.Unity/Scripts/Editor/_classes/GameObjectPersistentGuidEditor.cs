@@ -5,7 +5,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     [CustomEditor(typeof(PersistentGuid))]
     public class GameObjectPersistentGuidEditor : global::UnityEditor.Editor

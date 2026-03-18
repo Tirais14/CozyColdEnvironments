@@ -8,11 +8,11 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     public static class VisualStudioClearCacheTool
     {
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.IDE_TAB_NAME + "/Visual Studio/Clear Cache")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/" + EditorHelper.IDE_TAB_NAME + "/Visual Studio/Clear Cache")]
         public static void Execute()
         {
             try

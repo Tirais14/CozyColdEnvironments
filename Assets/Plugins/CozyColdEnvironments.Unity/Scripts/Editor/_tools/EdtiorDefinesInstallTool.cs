@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     public static class EdtiorDefinesInstallTool
     {
@@ -31,7 +31,7 @@ namespace CCEnvs.Unity.EditorC
             { ZENJECT, Range.From(ZENJECT_SYMBOL) }
         };
 
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Install", priority = -1)]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Install", priority = -1)]
         public static void AddDefines()
         {
             var nspaces = GetInstalledPluginNamespaces();
@@ -59,7 +59,7 @@ namespace CCEnvs.Unity.EditorC
                 PlayerSettingsHelper.AddScriptingDefineSymbols(Range.From(bTarget), symbol);
         }
 
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Uninstall", priority = -1)]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Uninstall", priority = -1)]
         public static void RemoveDefines()
         {
             foreach (var targetGroup in GetTargetGroupDefineSymbols())

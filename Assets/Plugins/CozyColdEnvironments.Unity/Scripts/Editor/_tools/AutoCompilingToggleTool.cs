@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Editor
+namespace CCEnvs.Unity.UnityEditor
 {
     [InitializeOnLoad]
     public static class AutoCompilingToggleTool
@@ -24,13 +24,13 @@ namespace CCEnvs.Unity.Editor
                 EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/Enable &e")]
         public static void EnableAutoCompiling()
         {
             EnableAutoCompiling(isInternal: false);
         }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/" + EditorHelper.COMPILING_TAB_NAME + "/Disable &d")]
         public static void DisableAutoCompiling()
         {
             DisableAutoCompiling(isInternal: false);

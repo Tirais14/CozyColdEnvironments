@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     [InitializeOnLoad]
     public sealed class PlaceObjectsBulkEditorWindow : CCEditorWindow
@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.EditorC
 
         //private ListView objectsListView = null!;
 
-        [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Place Objects Bulk")]
+        [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Place Objects Bulk")]
         public static EditorWindow Open()
         {
             return GetWindow<PlaceObjectsBulkEditorWindow>("Place Objects Bulk");

@@ -6,11 +6,11 @@ using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     public static class DebugModeToggleTool
     {
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.DEBUG_TAB + "/Enable")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/" + EditorHelper.DEBUG_TAB + "/Enable")]
         public static void EnableDebugMode()
         {
             var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(
@@ -51,7 +51,7 @@ namespace CCEnvs.Unity.EditorC
 
         }
 
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/" + EditorHelper.DEBUG_TAB + "/Disable")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/" + EditorHelper.DEBUG_TAB + "/Disable")]
         public static void DisableDebugMode()
         {
             var targetGroups = EnumCache<BuildTargetGroup>.Values.Select(

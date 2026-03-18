@@ -9,13 +9,13 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     public static class RestartGameTool
     {
         public static bool IsRestarted { get; }
 
-        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCEnvs + "/Restart Scene f5")]
+        [MenuItem(EditorHelper.EDITOR_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Restart Scene f5")]
         public static void Execute()
         {
             if (!Application.isPlaying)

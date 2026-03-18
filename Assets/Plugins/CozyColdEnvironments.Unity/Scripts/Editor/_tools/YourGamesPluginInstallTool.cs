@@ -5,11 +5,11 @@ using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorC
+namespace CCEnvs.Unity.UnityEditor
 {
     public static class YourGamesPluginInstallTool
     {
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/YG2/Uninstall")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/YG2/Uninstall")]
         public static void Disable()
         {
             var defineSymbols = PlayerSettingsHelper.GetNamedBuildTargets()
@@ -26,7 +26,7 @@ namespace CCEnvs.Unity.EditorC
                 );
         }
 
-        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCEnvs + "/YG2/Install")]
+        [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/YG2/Install")]
         public static void Enable()
         {
             PlayerSettingsHelper.AddScriptingDefineSymbols(
