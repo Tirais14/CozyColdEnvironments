@@ -40,12 +40,12 @@ namespace CCEnvs.Unity.CommonAPIs
         public static CommonAPIProvider CreateFromBuiltInDependecyContainer()
         {
             return new CommonAPIProvider(
-                CCDependecyContainer.Resolve<IGeneralAPI>(),
-                CCDependecyContainer.TryResolve<IPlayerAPI>(),
-                CCDependecyContainer.TryResolve<IAdvertisementAPI>(),
-                CCDependecyContainer.TryResolve<ISavingAPI>(),
-                CCDependecyContainer.TryResolve<ILocalizationAPI>(),
-                CCDependecyContainer.TryResolve<ILeaderboardAPI>()
+                CCServices.Resolve<IGeneralAPI>(),
+                CCServices.TryResolve<IPlayerAPI>(),
+                CCServices.TryResolve<IAdvertisementAPI>(),
+                CCServices.TryResolve<ISavingAPI>(),
+                CCServices.TryResolve<ILocalizationAPI>(),
+                CCServices.TryResolve<ILeaderboardAPI>()
                 );
         }
     }

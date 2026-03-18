@@ -3,16 +3,20 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Json;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
+using CCEnvs.Reflection;
+using CCEnvs.Saves.Json;
 using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using ObservableCollections;
 using R3;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
-using CCEnvs.Saves.Json;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -26,7 +30,7 @@ namespace CCEnvs.Saves
             2;
 #endif
 
-        private readonly static Dictionary<Type, SnapshotFactory> converters = new();
+        private readonly static ConcurrentDictionary<Type, SnapshotFactory> converters = new();
 
         private readonly static object convertersGate = new();
 
@@ -119,8 +123,7 @@ namespace CCEnvs.Saves
             Guard.IsNotNull(type, nameof(type));
             Guard.IsNotNull(converter, nameof(converter));
 
-            lock (convertersGate)
-                converters[type] = converter;
+            converters[type] = converter;
         }
         public static void RegisterType<T>(SnapshotFactory<T> converter)
         {
@@ -140,8 +143,7 @@ namespace CCEnvs.Saves
         {
             Guard.IsNotNull(type, nameof(type));
 
-            lock (convertersGate)
-                return converters.Remove(type);
+            return converters.TryRemove(type, out _);
         }
 
         public static bool UnregisterType<T>()
@@ -153,7 +155,7 @@ namespace CCEnvs.Saves
         {
             Guard.IsNotNull(type, nameof(type));
 
-            if (!Converters.TryGetValue(type, out var converter))
+            if (!converters.TryGetValue(type, out var converter))
             {
                 if (CCDebug.Instance.IsEnabled)
                     typeof(SaveSystem).PrintWarning($"Cannot resolve the converter for: {type}. The default converter is used");
@@ -226,6 +228,59 @@ namespace CCEnvs.Saves
 
             lock (convertersGate)
                 converters.Clear();
+        }
+
+        private readonly static Stack<object[]> registerByAttributesBuffers = new();
+
+        [OnInstallExecutable]
+        private static void RegisterTypeByAttributes(MemberInfo[] domainMembers)
+        {
+            (from member in domainMembers.AsParallel()
+             where member.MemberType.IsFlagSetted(MemberTypes.TypeInfo) || member.MemberType.IsFlagSetted(MemberTypes.NestedType)
+             select (Type)member into type
+             where type.IsDefined<RegisterInSaveSystemAttribute>(inherit: false)
+             select type
+             )
+             .ForAll(
+                static type =>
+                {
+                    try
+                    {
+                        var ctor = Snapshot.GetConstructorByAttribute(type);
+
+                        var factory = CreateSnapshotFactory(ctor);
+
+                        RegisterType(type, factory);
+                    }
+                    catch (Exception ex)
+                    {
+                        typeof(SaveSystem).PrintException(ex);
+                    }
+                });
+        }
+
+        private static SnapshotFactory CreateSnapshotFactory(ConstructorInfo ctor)
+        {
+            return (obj) =>
+            {
+                if (!registerByAttributesBuffers.TryPop(out var buffer))
+                    buffer = new object[0];
+
+                try
+                {
+                    buffer[0] = obj;
+                    return (ISnapshot)ctor.Invoke(buffer);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally
+                {
+                    buffer[0] = null!;
+                    registerByAttributesBuffers.Push(buffer);
+                }
+            };
         }
     }
 }

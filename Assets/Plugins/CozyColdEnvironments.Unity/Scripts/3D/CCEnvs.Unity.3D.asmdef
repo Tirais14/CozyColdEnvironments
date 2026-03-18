@@ -5,7 +5,8 @@
         "CCEnvs",
         "CCEnvs.Unity",
         "Unity.InputSystem",
-        "UniTask"
+        "UniTask",
+        "Unity.Cinemachine"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

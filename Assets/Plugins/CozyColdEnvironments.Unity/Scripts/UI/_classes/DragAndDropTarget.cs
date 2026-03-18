@@ -30,7 +30,7 @@ namespace CCEnvs.Unity.UI
         /// <summary>
         /// It's cached result of the <see cref="DragAllowedPredicate(out Maybe{string})"/>
         /// </summary>
-        protected Lazy<Maybe<Canvas>> highPriorityCanvas = new(() => new Catched(logType: CCEnvs.Diagnostics.LogType.Error).Do(() => CCDependecyContainer.Resolve<Canvas>(UnityDependecyID.HighPriorityCanvas)));
+        protected Lazy<Maybe<Canvas>> highPriorityCanvas = new(() => new Catched(logType: CCEnvs.Diagnostics.LogType.Error).Do(() => CCServices.Resolve<Canvas>(UnityDependecyID.HighPriorityCanvas)));
 
         int IDragAndDropTarget.BindingCount => dragAndDrop.Value.BindingCount;
 

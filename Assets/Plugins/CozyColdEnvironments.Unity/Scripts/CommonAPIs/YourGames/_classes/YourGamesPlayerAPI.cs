@@ -55,8 +55,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
             Instance = this;
 
-            CCDependecyContainer.Bind<IPlayerAPI>(this);
-            CCDependecyContainer.Bind(this);
+            CCServices.Bind<IPlayerAPI>(this);
+            CCServices.Bind(this);
         }
 
         public void Authorize()
@@ -65,7 +65,14 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                 return;
 
 #if Authorization_yg
-            YG2.OpenAuthDialog();
+            try
+            {
+                YG2.OpenAuthDialog();
+            }
+            catch (System.Exception ex)
+            {
+                this.PrintException(ex);
+            }
 #endif
         }
 
@@ -75,8 +82,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             if (disposed)
                 return;
 
-            CCDependecyContainer.Unbind<IPlayerAPI>();
-            CCDependecyContainer.Unbind(GetType());
+            CCServices.Unbind<IPlayerAPI>();
+            CCServices.Unbind(GetType());
 
             unauthorizedProfile.Dispose();
             authorizedProfile?.Dispose();

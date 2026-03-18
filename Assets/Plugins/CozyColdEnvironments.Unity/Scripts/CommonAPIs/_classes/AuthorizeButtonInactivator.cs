@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.CommonAPIs
         {
             base.Start();
 
-            var playerAPi = CCDependecyContainer.TryResolve<IPlayerAPI>();
+            var playerAPi = CCServices.TryResolve<IPlayerAPI>();
 
             if (playerAPi.IsNull())
             {

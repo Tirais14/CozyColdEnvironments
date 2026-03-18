@@ -12,6 +12,8 @@ namespace Core.InputSystem
 
         public ButtonActionRx Jump { get; private set; } = null!;
 
+        public InputActionRx<Vector2> Look { get; private set; } = null!;
+
         public PlayerInputHandler(InputActionMap actionMap) 
             :
             base(
@@ -19,8 +21,9 @@ namespace Core.InputSystem
                 autoSetProps: true
                 )
         {
-            CCDependecyContainer.Bind(Move, CCDependecyContainer.MOVE_INPUT_ACTION_CONTAINER_KEY);
-            CCDependecyContainer.Bind(Jump, CCDependecyContainer.JUMP_INPUT_ACTION_CONTAINER_KEY);
+            CCServices.Bind(Move, CCServices.MOVE_INPUT_ACTION_CONTAINER_KEY);
+            CCServices.Bind(Jump, CCServices.JUMP_INPUT_ACTION_CONTAINER_KEY);
+            CCServices.Bind(Look, CCServices.LOOK_INPUT_ACTION_CONTAINER_KEY);
         }
     }
 }

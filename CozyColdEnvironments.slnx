@@ -1,5 +1,6 @@
 ﻿<Solution>
   <Project Path="CCEnvs.Unity.csproj" />
+  <Project Path="CCEnvs.Unity.D3.csproj" />
   <Project Path="Plugins.Neonalig.SceneToolbar.csproj" />
   <Project Path="UniTask.csproj" />
   <Project Path="CCEnvs.csproj" />
@@ -24,7 +25,6 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Zenject-PoolMonitor-Editor.csproj" />
   <Project Path="FastScriptReload.Runtime.csproj" />
-  <Project Path="CCEnvs.Unity.D3.csproj" />
   <Project Path="R3.Unity.XRInteractionToolkit.csproj" />
   <Project Path="UniTask.Editor.csproj" />
   <Project Path="SRDemo-Editor.csproj" />

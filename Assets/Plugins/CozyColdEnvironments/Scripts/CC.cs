@@ -35,7 +35,8 @@ namespace CCEnvs
 
         public static JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.GetDefault(
             new DescriptedObjectJsonConverter(),
-            new TypeSerializationDescriptorJsonConverter()
+            new TypeSerializationDescriptorJsonConverter(),
+            new MemberInfoJsonConverter()
             );
 
         [field: OnInstallResetable]

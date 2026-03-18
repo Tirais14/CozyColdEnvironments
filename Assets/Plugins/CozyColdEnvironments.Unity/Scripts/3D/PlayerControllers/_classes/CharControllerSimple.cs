@@ -4,7 +4,6 @@ using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
-using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using UnityEngine;
@@ -22,17 +21,20 @@ namespace CCEnvs.Unity.D3.Controllers
         public const float JUMP_HEIGHT_MIN = 0f;
         public const float FLY_MOVE_SPEED_MIN = 0f;
 
+        public const float SURFACE_CAST_DISTANCE_DEFAULT = 0.4f;
+        public const float GRAVITY_DEFAULT = -35f;
+
         [Header("Settings")]
         [Space(6f)]
 
         [SerializeField, Min(MOVE_SPEED_MIN)]
-        protected float moveSpeed = 3f;
+        protected float moveSpeed = 6f;
 
         [SerializeField, Min(FLY_MOVE_SPEED_MIN)]
         protected float airSpeedModifier = 0.5f;
 
         [SerializeField, Min(JUMP_HEIGHT_MIN)]
-        protected float jumpHeight = 5.5f;
+        protected float jumpHeight = 2.7f;
 
         [Header("Physics")]
         [Space(6f)]
@@ -44,10 +46,10 @@ namespace CCEnvs.Unity.D3.Controllers
         protected SerializedNullable<LayerMask> surfaceLayers;
 
         [SerializeField, Min(SURFACE_CAST_DISTANCE_MIN)]
-        protected float surfaceCastDistance = 0.4f;
+        protected float surfaceCastDistance = SURFACE_CAST_DISTANCE_DEFAULT;
 
         [SerializeField]
-        protected float gravity = -35f;
+        protected float gravity = GRAVITY_DEFAULT;
 
         private Vector3 velocity;
         private Vector3 moveDirection;
@@ -229,8 +231,8 @@ namespace CCEnvs.Unity.D3.Controllers
 
         private void TryResolveInputActions()
         {
-            MoveIA = CCDependecyContainer.TryResolve<InputActionRx<Vector2>>(CCDependecyContainer.MOVE_INPUT_ACTION_CONTAINER_KEY);
-            JumpIA = CCDependecyContainer.TryResolve<ButtonActionRx>(CCDependecyContainer.JUMP_INPUT_ACTION_CONTAINER_KEY);
+            MoveIA = CCServices.TryResolve<InputActionRx<Vector2>>(CCServices.MOVE_INPUT_ACTION_CONTAINER_KEY);
+            JumpIA = CCServices.TryResolve<ButtonActionRx>(CCServices.JUMP_INPUT_ACTION_CONTAINER_KEY);
 
             hasMoveIA = MoveIA != null;
         }

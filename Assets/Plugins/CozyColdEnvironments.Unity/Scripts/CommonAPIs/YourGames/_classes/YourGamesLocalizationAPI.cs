@@ -38,8 +38,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
             Instance = this;
 
-            CCDependecyContainer.Bind<ILocalizationAPI>(this);
-            CCDependecyContainer.Bind(this);
+            CCServices.Bind<ILocalizationAPI>(this);
+            CCServices.Bind(this);
         }
 
         public void SetLocale(string code)
@@ -53,8 +53,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             if (disposed)
                 return;
 
-            CCDependecyContainer.Unbind<ILocalizationAPI>();
-            CCDependecyContainer.Unbind(GetType());
+            CCServices.Unbind<ILocalizationAPI>();
+            CCServices.Unbind(GetType());
 
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
@@ -91,7 +91,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
         private void OnLanguageSwitched(string code)
         {
             Command.Builder.WithName(nameof(OnLanguageSwitched), this)
-                .SetSingle()
+                .AsSingle()
                 .WithState((@this: this, code))
                 .Asynchronously()
                 .WithExecuteAction(

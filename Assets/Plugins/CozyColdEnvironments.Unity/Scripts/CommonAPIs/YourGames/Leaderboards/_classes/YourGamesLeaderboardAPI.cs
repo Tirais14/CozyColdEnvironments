@@ -66,8 +66,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             BindLeaderboardView();
             BindSavingSystem();
 
-            CCDependecyContainer.Bind<ILeaderboardAPI>(this, lboardname);
-            CCDependecyContainer.Bind(this, lboardname);
+            CCServices.Bind<ILeaderboardAPI>(this, lboardname);
+            CCServices.Bind(this, lboardname);
         }
 
         public void PullLeaderboard()
@@ -78,7 +78,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                 );
 
             Command.Builder.WithName(cmdName)
-                .SetSingle()
+                .AsSingle()
                 .WithState(this)
                 .WithExecutePredicate(
                 static @this => @this.IsLeaderboardAPIReadyToInvoke())
@@ -110,7 +110,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                 );
 
             Command.Builder.WithName(cmdName)
-                .SetSingle()
+                .AsSingle()
                 .WithState(this)
                 .WithExecutePredicate(
                 static @this => @this.IsLeaderboardAPIReadyToInvoke())
@@ -152,8 +152,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             if (disposed)
                 return;
 
-            CCDependecyContainer.Unbind<ILeaderboardAPI>(lboardname);
-            CCDependecyContainer.Unbind(GetType(), lboardname);
+            CCServices.Unbind<ILeaderboardAPI>(lboardname);
+            CCServices.Unbind(GetType(), lboardname);
 
             disposeCancellationTokenSource.CancelAndDispose();
 

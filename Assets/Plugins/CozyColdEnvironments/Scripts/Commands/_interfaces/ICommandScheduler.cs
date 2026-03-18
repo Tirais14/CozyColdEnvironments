@@ -24,8 +24,8 @@ namespace CCEnvs.Patterns.Commands
 
         Observable<ICommandBase> ObserveScheduleCommand();
 
-        Observable<bool> ObserveIsRunningFinsihed();
+        Observable<bool> ObserveRunningFinsihed();
 
-        Observable<bool> ObserveIsRunningStarted();
+        Observable<bool> ObserveRunningStarted();
     }
 }

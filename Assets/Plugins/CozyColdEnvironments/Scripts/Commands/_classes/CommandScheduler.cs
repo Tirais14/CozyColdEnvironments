@@ -277,12 +277,12 @@ namespace CCEnvs.Patterns.Commands
             return scheduleCommandRxCmd;
         }
 
-        public Observable<bool> ObserveIsRunningFinsihed()
+        public Observable<bool> ObserveRunningFinsihed()
         {
             return isRunning.Where(static x => !x);
         }
 
-        public Observable<bool> ObserveIsRunningStarted()
+        public Observable<bool> ObserveRunningStarted()
         {
             return isRunning.Where(static x => x);
         }

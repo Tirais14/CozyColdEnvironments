@@ -23,8 +23,8 @@ namespace CCEnvs.Unity.CommonAPIs
 
             Instance = this;
 
-            CCDependecyContainer.Bind<ISavingAPI>(this);
-            CCDependecyContainer.Bind(this);
+            CCServices.Bind<ISavingAPI>(this);
+            CCServices.Bind(this);
         }
 
         public async UniTask SaveGameAsync(
@@ -58,8 +58,8 @@ namespace CCEnvs.Unity.CommonAPIs
             if (disposed)
                 return;
 
-            CCDependecyContainer.Unbind<ISavingAPI>();
-            CCDependecyContainer.Unbind(GetType());
+            CCServices.Unbind<ISavingAPI>();
+            CCServices.Unbind(GetType());
 
             disposed = true;
         }

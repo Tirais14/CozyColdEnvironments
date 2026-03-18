@@ -7,6 +7,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using YG;
 
 #nullable enable
@@ -41,8 +42,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
             Instance = this;
 
-            CCDependecyContainer.Bind<IAdvertisementAPI>(this);
-            CCDependecyContainer.Bind(this);
+            CCServices.Bind<IAdvertisementAPI>(this);
+            CCServices.Bind(this);
         }
 
         public void ShowAdvertisement(AdvertisementTypes advertisementType, object? key = null)
@@ -98,8 +99,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             if (disposed)
                 return;
 
-            CCDependecyContainer.Unbind<IAdvertisementAPI>();
-            CCDependecyContainer.Unbind(GetType());
+            CCServices.Unbind<IAdvertisementAPI>();
+            CCServices.Unbind(GetType());
 
             UnbindEvents();
 
@@ -152,14 +153,12 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
 
         private void OnCloseAnyAdv()
         {
-            advertisementCount.Value--;
-
-            if (advertisementCount.Value < 0)
-                advertisementCount.Value = 0;
+            advertisementCount.Value = Mathf.Max(0, advertisementCount.Value - 1);
         }
 
         private void OnErrorAnyAdv()
         {
+            OnCloseAnyAdv();
             showAdvertisementErrorCmd?.Execute(AdvertisementTypes.Any);
         }
 

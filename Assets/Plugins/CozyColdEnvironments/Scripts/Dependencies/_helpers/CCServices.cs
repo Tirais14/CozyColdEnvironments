@@ -7,10 +7,11 @@ using CommunityToolkit.Diagnostics;
 #nullable enable
 namespace CCEnvs.Dependencies
 {
-    public static class CCDependecyContainer
+    public static class CCServices
     {
         public const string JUMP_INPUT_ACTION_CONTAINER_KEY = "JumpInputAction";
         public const string MOVE_INPUT_ACTION_CONTAINER_KEY = "MoveInputAction";
+        public const string LOOK_INPUT_ACTION_CONTAINER_KEY = "LookInputAction";
 
         [OnInstallResetable]
         private static readonly Dictionary<(Type type, object? id), object> bindings = new();

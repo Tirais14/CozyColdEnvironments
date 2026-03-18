@@ -45,8 +45,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             BindEvents();
 
             Instance = this;
-            CCDependecyContainer.Bind<IGeneralAPI>(this);
-            CCDependecyContainer.Bind(this);
+            CCServices.Bind<IGeneralAPI>(this);
+            CCServices.Bind(this);
         }
 
         public void GameplayStart()
@@ -111,8 +111,8 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
             if (disposed)
                 return;
 
-            CCDependecyContainer.Unbind<IGeneralAPI>();
-            CCDependecyContainer.Unbind(GetType());
+            CCServices.Unbind<IGeneralAPI>();
+            CCServices.Unbind(GetType());
 
             UnbindEvents();
 
@@ -142,7 +142,7 @@ namespace CCEnvs.Unity.CommonAPIs.YourGames
                     return YG2.isGameplaying;
                 });
 
-            return Observable.Return(IsGameplayMode).Concat(isGameplayModeObservable);
+            return isGameplayModeObservable;
         }
 
         public Observable<bool> ObserveGamePaused()

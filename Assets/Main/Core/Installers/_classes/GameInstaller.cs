@@ -1,7 +1,6 @@
 using CCEnvs;
 using CCEnvs.Saves;
 using Core.InputSystem;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;

@@ -101,7 +101,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
         public virtual void SortEntries()
         {
             Command.Builder.WithName(nameof(SortEntries), this)
-               .SetSingle()
+               .AsSingle()
                .WithState(this)
                .Asynchronously()
                .WithExecuteAction(
@@ -277,7 +277,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 );
 
             Command.Builder.WithName(cmdName)
-                .SetSingle()
+                .AsSingle()
                 .WithState((@this: this, entry))
                 .Asynchronously()
                 .WithExecuteAction(
