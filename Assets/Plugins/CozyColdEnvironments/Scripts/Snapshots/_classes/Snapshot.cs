@@ -1,12 +1,13 @@
 using CCEnvs.Reflection;
-using CCEnvs.Saves;
 using CCEnvs.Serialization;
 using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
+using Humanizer;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 
 #nullable enable
@@ -14,58 +15,70 @@ namespace CCEnvs.Snapshots
 {
     public abstract record Snapshot
     {
-        public static bool TryGetConstructor(Type snapshotType, [NotNullWhen(true)] out ConstructorInfo? ctor)
+        private static readonly Dictionary<Type, ConstructorInfo> ctors = new(0);
+        private static readonly Dictionary<Type, SnapshotConvertibleAttribute> attributes = new(0);
+
+        private static object ctorsGate = new();
+        private static object attributesGate = new();
+
+        public static ConstructorInfo GetConstructor(
+            Type snapshotType,
+            bool throwIfNotFound = true
+            )
         {
             Guard.IsNotNull(snapshotType, nameof(snapshotType));
 
-            ctor = (from ctr in snapshotType.GetConstructors(BindingFlagsDefault.InstanceAll)
-                    let prms = ctr.GetParameters()
-                    where prms.Count(param => !param.HasDefaultValue) == 1
-                    select ctr)
-                    .FirstOrDefault();
+            ConstructorInfo? ctor;
 
-            return ctor != null;
-        }
-
-        public static bool TryResolveSnapshotType(Type type, [NotNullWhen(true)] out Type? snapshotType)
-        {
-            if (type.GetCustomAttribute<SnapshotConvertibleAttribute>(inherit: true).IsNull(out var snapshotConvertibleAttribute))
+            lock (ctorsGate)
             {
-                snapshotType = null;
-                return false;
+                if (!ctors.TryGetValue(snapshotType, out ctor))
+                {
+                    ctor = snapshotType.GetConstructor(
+                        BindingFlagsDefault.InstanceAll,
+                        null,
+                        Type.EmptyTypes,
+                        Array.Empty<ParameterModifier>()
+                        );
+
+                    ctors.Add(snapshotType, ctor);
+                }
             }
 
-            snapshotType = snapshotConvertibleAttribute.SnapshotType;
-            return snapshotType != null;
-        }
-
-        public static bool TryGetConstructorByAttribute(Type type, [NotNullWhen(true)] out ConstructorInfo? ctor)
-        {
-            Guard.IsNotNull(type, nameof(type));
-
-            ctor = null;
-
-            return TryResolveSnapshotType(type, out var snapshotType)
-                   &&
-                   TryGetConstructor(snapshotType, out ctor);
-        }
-
-        public static ConstructorInfo GetConstructor(Type snapshotType)
-        {
-            if (!TryGetConstructor(snapshotType, out var ctor))
-                throw new InvalidOperationException($"Not found snapshot constructor with only one required parameter. Type: {snapshotType.Name}");
+            if (throwIfNotFound && ctor is null)
+                throw new InvalidOperationException($"Cannot find empty constructor. SnapshotType: {snapshotType}");
 
             return ctor;
         }
 
-        public static ConstructorInfo GetConstructorByAttribute(Type type)
+        public static ConstructorInfo GetConstructorByAttribute(
+            Type type,
+            bool throwIfNotFound = true
+            )
         {
             Guard.IsNotNull(type, nameof(type));
 
-            if (!TryResolveSnapshotType(type, out var snapshotType))
-                throw new InvalidOperationException($"Cannot resolve snapshot type. Type: {type}");
+            SnapshotConvertibleAttribute? attribute;
 
-            return GetConstructor(snapshotType);
+            lock (attributesGate)
+            {
+                if (!attributes.TryGetValue(type, out attribute))
+                {
+                    attribute = type.GetCustomAttribute<SnapshotConvertibleAttribute>(inherit: true);
+
+                    attributes.Add(type, attribute);
+                }
+            }
+
+            if (attribute is null || attribute.SnapshotType is null)
+            {
+                if (throwIfNotFound)
+                    throw new InvalidOperationException($"Cannot find {nameof(SnapshotConvertibleAttribute).Humanize()} attribute. Type: {type}");
+
+                return null!;
+            }
+
+            return GetConstructor(attribute.SnapshotType, throwIfNotFound);
         }
     }
 

@@ -1,3 +1,5 @@
+using CCEnvs.Attributes.Serialization;
+using CCEnvs.Serialization;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using System;
@@ -6,8 +8,8 @@ using System.Reflection;
 #nullable enable
 namespace CCEnvs.Snapshots
 {
-    [Serializable]
-    public sealed class SnapshotProperty
+    [Serializable, PolymorphSerializable, SerializationDescriptor("AnonymousSnapshotMember", "45e4fc3b-62b0-4c5f-b39e-2adb6f303d91")]
+    public abstract class AnonymousSnapshotMember
     {
         [JsonIgnore]
         public FieldInfo? FieldInfo => MemberInfo as FieldInfo;
@@ -18,17 +20,14 @@ namespace CCEnvs.Snapshots
         [JsonProperty("memberInfo")]
         public MemberInfo MemberInfo { get; private set; }
 
-        [JsonProperty("capturedValue")]
-        public object? CapturedValue { get; private set; }
-
-        public SnapshotProperty(FieldInfo fieldInfo)
+        public AnonymousSnapshotMember(FieldInfo fieldInfo)
         {
             Guard.IsNotNull(fieldInfo, nameof(fieldInfo));
 
             MemberInfo = fieldInfo;
         }
 
-        public SnapshotProperty(PropertyInfo propInfo)
+        public AnonymousSnapshotMember(PropertyInfo propInfo)
         {
             Guard.IsNotNull(propInfo, nameof(propInfo));
 
@@ -41,17 +40,7 @@ namespace CCEnvs.Snapshots
             MemberInfo = propInfo;
         }
 
-        public void SetValue(object target, object? value)
-        {
-            CC.Guard.IsNotNullTarget(target);
-
-            if (FieldInfo is not null)
-                FieldInfo.SetValue(target, value);
-            else
-                PropInfo!.SetValue(target, value);
-        }
-
-        public object GetValue(object target)
+        public object? GetValue(object target)
         {
             CC.Guard.IsNotNullTarget(target);
 
@@ -61,11 +50,20 @@ namespace CCEnvs.Snapshots
                 return PropInfo!.GetValue(target);
         }
 
-        internal void CaptureValueFrom(object target)
+        internal virtual void SetValue(object target, object? value)
         {
-            CapturedValue = GetValue(target);
+            CC.Guard.IsNotNullTarget(target);
+
+            if (FieldInfo is not null)
+                FieldInfo.SetValue(target, value);
+            else
+                PropInfo!.SetValue(target, value);
         }
 
-        internal void ResetCapturedValue() => CapturedValue = null;
+        internal abstract void CaptureValueFrom(object target);
+
+        internal abstract void ResetCapturedValue();
+
+        internal abstract void RestoreFromCaptured(object target);
     }
 }

@@ -16,6 +16,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         bool IsButtonPressed();
 
+        T ReadValue<T>() where T : struct;
+
         Observable<CallbackContext> ObserveRaw();
 
         Observable<CallbackContext> ObserveStarted();
@@ -28,6 +30,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
         where T : struct
     {
         T InputValue { get; }
+
+        T ReadValue();
 
         Observable<T> ObserveRawValue();
 

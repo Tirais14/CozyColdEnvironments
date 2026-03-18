@@ -9,14 +9,16 @@ namespace Game
 {
     public static class AssetNameHelper
     {
-        public static void Parse(string assetName,
-                                 out string name,
-                                 out int id)
+        public static void Parse(
+            string assetName,
+            out string name,
+            out int id
+            )
         {
             if (assetName is null)
                 throw new ArgumentNullException(nameof(assetName));
 
-            string[] parts = assetName.Split('-');
+            string[] parts = assetName.Split('_');
 
             if (parts.Length == 1)
             {
@@ -27,6 +29,28 @@ namespace Game
 
             id = int.Parse(parts[0]);
             name = parts[1];
+        }
+
+        public static void ParseReversed(
+            string assetName,
+            out string name,
+            out int id
+            )
+        {
+            if (assetName is null)
+                throw new ArgumentNullException(nameof(assetName));
+
+            string[] parts = assetName.Split('_');
+
+            if (parts.Length == 1)
+            {
+                name = assetName;
+                id = default!;
+                return;
+            }
+
+            id = int.Parse(parts[^1]);
+            name = parts[^2];
         }
 
 #if UNITY_2017_1_OR_NEWER

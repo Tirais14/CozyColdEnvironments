@@ -50,6 +50,12 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         public bool IsButtonPressed() => Action.IsPressed();
 
+        public T ReadValue<T>()
+            where T : struct
+        {
+            return Action.ReadValue<T>();
+        }
+
         public void Enable()
         {
             if (CCDisposable.IsDisposed(disposed))
@@ -200,6 +206,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 static (x, @this) => @this.InputValue = x)
                 .AddTo(disposables);
         }
+
+        public T ReadValue() => Action.ReadValue<T>();
 
         public virtual Observable<T> ObserveRawValue()
         {

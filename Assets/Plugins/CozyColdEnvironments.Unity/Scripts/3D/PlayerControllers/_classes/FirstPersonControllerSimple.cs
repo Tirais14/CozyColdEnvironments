@@ -25,9 +25,6 @@ namespace CCEnvs.Unity.D3.Controllers
         [SerializeField, Min(CAMERA_SENSIVITY_MIN)]
         protected float verticalCameraSensivity = 13f;
 
-        //[SerializeField]
-        //protected AnimationCurve sensivityCurve = null!;
-
         private InputActionRx<Vector2>? lookIA;
 
         private IDisposable? lookIABinding;
@@ -49,7 +46,6 @@ namespace CCEnvs.Unity.D3.Controllers
                 throw new MissingComponentException(nameof(cameraProxy));
 
             TryResolveLookInputAction();
-            //TrySetupSensivityCurve();
         }
 
         protected override void OnDestroy()
@@ -129,18 +125,5 @@ namespace CCEnvs.Unity.D3.Controllers
 
             TryBindLookInputAction();
         }
-
-        //private void TrySetupSensivityCurve()
-        //{
-        //    if (sensivityCurve != null && sensivityCurve.length != 0)
-        //        return;
-
-        //    sensivityCurve = new AnimationCurve(
-        //        new Keyframe(0f, 0f),
-        //        new Keyframe(5f, 0.2f),
-        //        new Keyframe(20f, 0.8f),
-        //        new Keyframe(50f, 1f)
-        //        );
-        //}
     }
 }
