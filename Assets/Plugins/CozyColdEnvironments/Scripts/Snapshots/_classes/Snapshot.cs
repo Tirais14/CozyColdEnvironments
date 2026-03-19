@@ -5,7 +5,6 @@ using CommunityToolkit.Diagnostics;
 using Humanizer;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -18,8 +17,8 @@ namespace CCEnvs.Snapshots
         private static readonly Dictionary<Type, ConstructorInfo> ctors = new(0);
         private static readonly Dictionary<Type, SnapshotConvertibleAttribute> attributes = new(0);
 
-        private static object ctorsGate = new();
-        private static object attributesGate = new();
+        private static readonly object ctorsGate = new();
+        private static readonly object attributesGate = new();
 
         public static ConstructorInfo GetConstructor(
             Type snapshotType,
@@ -128,18 +127,25 @@ namespace CCEnvs.Snapshots
             return targetNotNull;
         }
 
+        public bool TryRestore(T? target) => TryRestore(target, out _);
+
+        public ISnapshot<T> TryRestoreQ(T? target)
+        {
+            TryRestore(target);
+            return this;
+        }
+
         public virtual bool CanRestore(T? target)
         {
             if (!TypeofCache<T>.Type.IsValueType && target.IsNull())
                 return false;
 
-            return true!;
+            return true;
         }
 
         public ISnapshot<T> Reset()
         {
             OnReset();
-
             return this;
         }
 
@@ -158,6 +164,34 @@ namespace CCEnvs.Snapshots
         protected virtual void OnReset()
         {
 
+        }
+    }
+
+    public abstract record Snapshot<T, TSelf> : Snapshot<T>, ISnapshot<T, TSelf>
+        where TSelf : Snapshot<T>
+    {
+        protected Snapshot()
+        {
+        }
+
+        protected Snapshot(Snapshot<T> original) : base(original)
+        {
+        }
+
+        protected Snapshot(T target) : base(target)
+        {
+        }
+
+        public new TSelf TryRestoreQ(T? target) => (TSelf)base.TryRestoreQ(target);
+
+        public new TSelf CaptureFrom(T target)
+        {
+            return (TSelf)base.CaptureFrom(target);
+        }
+
+        public new TSelf Reset()
+        {
+            return (TSelf)base.Reset();
         }
     }
 }

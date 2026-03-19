@@ -48,6 +48,14 @@ namespace CCEnvs.Snapshots
             return Snapshot.TryRestore(target, out restored);
         }
 
+        public readonly bool TryRestore(object? target) => TryRestore(target, out _);
+
+        public readonly ISnapshot TryRestoreQ(object? target)
+        {
+            TryRestore(target);
+            return this;
+        }
+
         public readonly bool CanRestore(object? target)
         {
             return Snapshot.CanRestore(target);

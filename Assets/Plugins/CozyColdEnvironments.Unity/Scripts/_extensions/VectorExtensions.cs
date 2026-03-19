@@ -115,6 +115,13 @@ namespace CCEnvs.Unity
 
             return Direction2D.None;
         }
+
+        public static bool IsFinite(this Vector2 source)
+        {
+            return !float.IsNaN(source.x)
+                   &&
+                   !float.IsNaN(source.y);
+        }
     }
 
     public static class Vector2IntExtensions
@@ -165,6 +172,13 @@ namespace CCEnvs.Unity
         public static Direction2D ToDirection2D(this Vector2Int value)
         {
             return new Vector2(value.x, value.y).ToDirection2D();
+        }
+
+        public static bool IsFinite(this Vector2Int source)
+        {
+            return !float.IsNaN(source.x)
+                   &&
+                   !float.IsNaN(source.y);
         }
     }
 
@@ -254,6 +268,15 @@ namespace CCEnvs.Unity
                                   Mathf.RoundToInt(vector.y),
                                   Mathf.RoundToInt(vector.z));
         }
+
+        public static bool IsFinite(this Vector3 source)
+        {
+            return !float.IsNaN(source.x)
+                   &&
+                   !float.IsNaN(source.y)
+                   &&
+                   !float.IsNaN(source.z);
+        }
     }
 
     public static class Vector3IntExtensions
@@ -323,6 +346,15 @@ namespace CCEnvs.Unity
         public static Vector2Int ToVector2(this Vector3Int vector3Int)
         {
             return new(vector3Int.x, vector3Int.y);
+        }
+
+        public static bool IsFinite(this Vector3Int source)
+        {
+            return !float.IsNaN(source.x)
+                   &&
+                   !float.IsNaN(source.y)
+                   &&
+                   !float.IsNaN(source.z);
         }
     }
 }
