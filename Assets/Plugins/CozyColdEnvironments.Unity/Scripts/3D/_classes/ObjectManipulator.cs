@@ -105,7 +105,7 @@ namespace CCEnvs.Unity.D3
 
         public VelocityOptions VelocitySettings => velocitySettings;
 
-        public LayerMask? SurfaceCastMask => surfaceCastMask.Deserialized;
+        public LayerMask SurfaceCastMask => surfaceCastMask.Deserialized ?? Physics.AllLayers;
 
         public float ObjectMoveSensitivity => objectMoveSensivity;
         public float ObjectMoveDamping => objectMoveDamping;
@@ -238,7 +238,7 @@ namespace CCEnvs.Unity.D3
                 transform.forward,
                 out var hit,
                 maxCastDistance,
-                SurfaceCastMask ?? Physics.AllLayers,
+                SurfaceCastMask,
                 QueryTriggerInteraction.Ignore
                 ))
             {
@@ -255,33 +255,33 @@ namespace CCEnvs.Unity.D3
             var moveDir = targetPos - Object.position;
             var moveDirNormalized = moveDir.normalized;
             var moveDistance = moveDir.magnitude;
+            var objRadius = GetObjectRadius();
+            var minCastDistance = objRadius * 0.5f;
 
-            float minCastDistance = GetObjectRadius() * 0.5f;
             if (moveDistance < minCastDistance)
                 return;
 
-            var objRadius = GetObjectRadius();
-            float castDistance = moveDistance + objRadius * 0.1f;
+            float maxCastDistance = moveDistance + objRadius * 0.7f;
 
             if (Physics.SphereCast(
                 Object.position,
-                GetObjectRadius(),
+                objRadius,
                 moveDirNormalized,
                 out var hit,
-                castDistance,
-                surfaceCastMask.Deserialized ?? Physics.AllLayers,
+                maxCastDistance,
+                SurfaceCastMask,
                 QueryTriggerInteraction.Ignore
                 ))
             {
                 targetPos = hit.point + hit.normal * (objRadius * 1.02f);
 
-                float traveled = hit.distance;
-                float remaining = moveDistance - traveled;
+                float toSurfaceDistance = hit.distance;
+                float remainingMoveDistance = moveDistance - toSurfaceDistance;
 
-                if (remaining > 0.01f)
+                if (remainingMoveDistance > 0.01f)
                 {
                     Vector3 slideDir = Vector3.ProjectOnPlane(moveDirNormalized, hit.normal);
-                    targetPos += slideDir * (remaining * 0.9f);
+                    targetPos += slideDir * (remainingMoveDistance * 0.9f);
 
                     HandleCollisions(ref targetPos);
                 }
@@ -365,7 +365,7 @@ namespace CCEnvs.Unity.D3
                 targetPos,
                 radius,
                 _colliderBuffer,
-                surfaceCastMask.Deserialized ?? Physics.AllLayers,
+                SurfaceCastMask,
                 QueryTriggerInteraction.Ignore
                 );
 
@@ -452,6 +452,18 @@ namespace CCEnvs.Unity.D3
                    binormal * manipulatorObjectVerticalOffset;
         }
 
+        //private bool TrySurfaceCast(out RaycastHit hit)
+        //{
+        //    return Physics.Raycast(
+
+        //        );
+        //}
+
+        //private void ClampObjectMoveDistanceBySurface(ref Vector3 targetPos)
+        //{
+        //    if (TrySurfaceCast())
+        //}
+
         private Vector3 ResolveTargetPosition()
         {
             if (settings.IsFlagSetted(Options.CollideWithSurface)
@@ -497,7 +509,7 @@ namespace CCEnvs.Unity.D3
                 return;
             }
 
-            if (Time.frameCount % 20L == 0)
+            if (Time.frameCount % 20L == 0) //Reset calcualtions error to avoid NaN
                 objRot.Normalize();
 
             Object.Move(ojbPos, objRot);

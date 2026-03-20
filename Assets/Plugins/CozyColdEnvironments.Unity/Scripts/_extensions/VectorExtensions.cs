@@ -122,6 +122,18 @@ namespace CCEnvs.Unity
                    &&
                    !float.IsNaN(source.y);
         }
+
+        public static bool NearlyEquals(this Vector2 source, Vector2 other, float? epsilon = null)
+        {
+            return source.x.NearlyEquals(other.x, epsilon)
+                   &&
+                   source.y.NearlyEquals(other.y, epsilon);
+        }
+
+        public static bool NotNearlyEquals(this Vector2 source, Vector2 other, float? epsilon = null)
+        {
+            return !source.NearlyEquals(other, epsilon);
+        }
     }
 
     public static class Vector2IntExtensions
@@ -276,6 +288,20 @@ namespace CCEnvs.Unity
                    !float.IsNaN(source.y)
                    &&
                    !float.IsNaN(source.z);
+        }
+
+        public static bool NearlyEquals(this Vector3 source, Vector3 other, float? epsilon = null)
+        {
+            return source.x.NearlyEquals(other.x, epsilon)
+                   &&
+                   source.y.NearlyEquals(other.y, epsilon)
+                   &&
+                   source.z.NearlyEquals(other.z, epsilon);
+        }
+
+        public static bool NotNearlyEquals(this Vector3 source, Vector3 other, float? epsilon = null)
+        {
+            return !source.NearlyEquals(other, epsilon);
         }
     }
 
