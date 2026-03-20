@@ -1,18 +1,11 @@
-using CCEnvs.Dependencies;
-using CCEnvs.Disposables;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.InputSystem.Rx;
-using R3;
-using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3.Controllers
+namespace CCEnvs.Unity.D3
 {
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(CharacterController))]
     public class CharControllerSimple : CCBehaviour
     {
         public const float SURFACE_CAST_DISTANCE_MIN = 0.01f;
@@ -55,9 +48,6 @@ namespace CCEnvs.Unity.D3.Controllers
         private Vector3 moveDirection;
 
         private bool jumpRequested;
-        private bool hasMoveIA;
-
-        private IDisposable? jumpIABinding;
 
         public float MoveSpeed => moveSpeed;
         public float AirSpeedModifier => airSpeedModifier;
@@ -70,10 +60,6 @@ namespace CCEnvs.Unity.D3.Controllers
 
         public Transform SurfaceCastPoint => surfaceCastPoint;
 
-        public ButtonActionRx? JumpIA { get; private set; }
-
-        public InputActionRx<Vector2>? MoveIA { get; private set; }
-
         public LayerMask? SurfaceLayers => surfaceLayers;
 
         public bool IsGrounded { get; private set; }
@@ -81,15 +67,11 @@ namespace CCEnvs.Unity.D3.Controllers
         protected override void Start()
         {
             base.Start();
-
-            TryResolveInputActions();
-            TryBindJumpInputAction();
         }
 
         protected virtual void Update()
         {
-            if (hasMoveIA && MoveIA!.Action.IsPressed())
-                MoveByInput(MoveIA.Action.ReadValue<Vector2>());
+            // Movement is now handled by CharacterControllerInputBinder via MoveByInput
         }
 
         protected virtual void LateUpdate()
@@ -101,73 +83,48 @@ namespace CCEnvs.Unity.D3.Controllers
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            CCDisposable.Dispose(ref jumpIABinding);
         }
 
         public CharControllerSimple SetMoveSpeed(float value)
         {
             moveSpeed = Mathf.Max(MOVE_SPEED_MIN, value);
-
             return this;
         }
 
         public CharControllerSimple SetAirSpeedModifier(float value)
         {
             airSpeedModifier = Mathf.Max(AIR_MOVE_SPEED_MIN, value);
-
             return this;
         }
 
         public CharControllerSimple SetJumpHeight(float value)
         {
             jumpHeight = Mathf.Max(JUMP_HEIGHT_MIN, value);
-
             return this;
         }
 
         public CharControllerSimple SetSurfaceCastPoint(Transform value)
         {
             CC.Guard.IsNotNull(value, nameof(value));
-
+            surfaceCastPoint = value;
             return this;
         }
 
         public CharControllerSimple SetGravity(float value)
         {
             gravity = value;
-
             return this;
         }
 
         public CharControllerSimple SetSurfaceLayers(LayerMask? value)
         {
             surfaceLayers = value;
-
             return this;
         }
 
         public CharControllerSimple SetSurfaceCastDistance(float value)
         {
             surfaceCastDistance = Mathf.Max(SURFACE_CAST_DISTANCE_MIN, value);
-
-            return this;
-        }
-
-        public CharControllerSimple SetMoveInputAction(InputActionRx<Vector2>? value)
-        {
-            MoveIA = value;
-
-            hasMoveIA = value != null;
-
-            return this;
-        }
-
-        public CharControllerSimple SetMoveInputAction(ButtonActionRx? value)
-        {
-            JumpIA = value;
-
-            TryBindJumpInputAction();
-
             return this;
         }
 
@@ -179,7 +136,6 @@ namespace CCEnvs.Unity.D3.Controllers
         public void MoveByInput(Vector2 inputValue)
         {
             var dir = new Vector3(inputValue.x, 0f, inputValue.y).normalized;
-
             Move(dir);
         }
 
@@ -206,7 +162,6 @@ namespace CCEnvs.Unity.D3.Controllers
                 return;
 
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
             jumpRequested = false;
         }
 
@@ -227,29 +182,6 @@ namespace CCEnvs.Unity.D3.Controllers
             core.Move(velocity * Time.deltaTime);
 
             moveDirection = default;
-        }
-
-        private void TryResolveInputActions()
-        {
-            MoveIA = CCServices.TryResolve<InputActionRx<Vector2>>(CCServices.MOVE_INPUT_ACTION_CONTAINER_KEY);
-            JumpIA = CCServices.TryResolve<ButtonActionRx>(CCServices.JUMP_INPUT_ACTION_CONTAINER_KEY);
-
-            hasMoveIA = MoveIA != null;
-        }
-
-        private void TryBindJumpInputAction()
-        {
-            CCDisposable.Dispose(ref jumpIABinding);
-
-            if (JumpIA is not null)
-            {
-                jumpIABinding = JumpIA.ObservePerformed()
-                    .Subscribe(this,
-                    static (_, @this) =>
-                    {
-                        @this.Jump();
-                    });
-            }
         }
     }
 }

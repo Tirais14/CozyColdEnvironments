@@ -25,13 +25,7 @@ namespace CCEnvs.Unity.D3.Controllers
         [SerializeField, Min(CAMERA_SENSIVITY_MIN)]
         protected float verticalCameraSensivity = 13f;
 
-        private InputActionRx<Vector2>? lookIA;
-
-        private IDisposable? lookIABinding;
-
         private float xRotation;
-
-        public InputActionRx<Vector2>? LookIA => lookIA;
 
         public Transform CameraProxy => cameraProxy;
 
@@ -44,25 +38,11 @@ namespace CCEnvs.Unity.D3.Controllers
 
             if (cameraProxy == null)
                 throw new MissingComponentException(nameof(cameraProxy));
-
-            TryResolveLookInputAction();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            CCDisposable.Dispose(ref lookIABinding);
-        }
-
-        public FirstPersonControllerSimple SetLookInputAction(InputActionRx<Vector2> value)
-        {
-            Guard.IsNotNull(value);
-
-            lookIA = value;
-
-            TryBindLookInputAction();
-
-            return this;
         }
 
         public FirstPersonControllerSimple SetCameraProxy(Transform value)
@@ -88,13 +68,13 @@ namespace CCEnvs.Unity.D3.Controllers
             return this;
         }
 
-        private void MoveCamera(Vector2 moveInput)
+        public void MoveCamera(Vector2 moveInput)
         {
             if (moveInput == Vector2.zero)
                 return;
 
-            moveInput.x *= verticalCameraSensivity * Time.deltaTime;
-            moveInput.y *= horizontalCameraSensivity * Time.deltaTime;  
+            moveInput.x *= horizontalCameraSensivity * Time.deltaTime;
+            moveInput.y *= verticalCameraSensivity * Time.deltaTime;
 
             xRotation -= moveInput.y;
             xRotation = Mathf.Clamp(xRotation, -90f, 90f);
@@ -102,28 +82,6 @@ namespace CCEnvs.Unity.D3.Controllers
             cameraProxy.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
             transform.Rotate(Vector3.up * moveInput.x);
-        }
-
-        private void TryBindLookInputAction()
-        {
-            CCDisposable.Dispose(ref lookIABinding);
-
-            if (lookIA != null)
-            {
-                lookIABinding = lookIA.ObservePerformedValue()
-                    .Subscribe(this,
-                    static (inputValue, @this) =>
-                    {
-                        @this.MoveCamera(inputValue);
-                    });
-            }
-        }
-
-        private void TryResolveLookInputAction()
-        {
-            lookIA = CCServices.TryResolve<InputActionRx<Vector2>>(CCServices.LOOK_INPUT_ACTION_CONTAINER_KEY);
-
-            TryBindLookInputAction();
         }
     }
 }

@@ -2,7 +2,7 @@
 using CCEnvs.Unity.EditorSerialization;
 using System;
 using UnityEngine;
-using Options = CCEnvs.Unity.D3.ObjectManipulatorSettings;
+using Options = CCEnvs.Unity.D3.ObjectManipulatorObjectSettings;
 using OffsetOptions = CCEnvs.Unity.D3.ObjectManipulatorOffsetSettings;
 using VelocityOptions = CCEnvs.Unity.D3.ObjectManipulatorVelocitySettings;
 using CommunityToolkit.Diagnostics;
@@ -145,7 +145,7 @@ namespace CCEnvs.Unity.D3
 
         public ObjectManipulator SetSettings(Options value)
         {
-            settings = value;
+            objectSettings = value;
             return this;
         }
 

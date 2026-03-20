@@ -4,11 +4,12 @@ using System;
 namespace CCEnvs.Unity.D3
 {
     [Flags]
-    public enum ObjectManipulatorSettings
+    public enum ObjectManipulatorObjectSettings
     {
         None,
         CollideWithSurface,
         ObjectSizeChangeable,
+        SlideOnSurface,
         Default = CollideWithSurface
     }
 }

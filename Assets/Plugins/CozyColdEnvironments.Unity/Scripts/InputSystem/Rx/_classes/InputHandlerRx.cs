@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CCEnvs.Collections;
+using CCEnvs.Dependencies;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
@@ -47,6 +48,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 SetProperties();
 
             Enable();
+
+            CCServices.Bind(GetType(), this, null);
         }
 
         /// <exception cref="EmptyStringArgumentException"></exception>

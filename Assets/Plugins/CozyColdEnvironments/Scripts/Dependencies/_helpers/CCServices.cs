@@ -3,23 +3,20 @@ using System.Collections.Generic;
 using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
+using UnityEngine.UIElements;
 
 #nullable enable
 namespace CCEnvs.Dependencies
 {
     public static class CCServices
     {
-        public const string JUMP_INPUT_ACTION_CONTAINER_KEY = "JumpInputAction";
-        public const string MOVE_INPUT_ACTION_CONTAINER_KEY = "MoveInputAction";
-        public const string LOOK_INPUT_ACTION_CONTAINER_KEY = "LookInputAction";
-
         [OnInstallResetable]
         private static readonly Dictionary<(Type type, object? id), object> bindings = new();
 
         public static void Bind(
             Type? contractType,
             object obj,
-            object? id = null
+            object? id
             )
         {
             CC.Guard.IsNotNull(obj, nameof(obj));
@@ -34,6 +31,8 @@ namespace CCEnvs.Dependencies
 
         public static void Bind<TContract>(TContract obj, object? id = null)
         {
+            CC.Guard.IsNotNull(obj, nameof(obj));
+
             Bind(typeof(TContract), obj!, id);
         }
 

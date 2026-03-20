@@ -1,15 +1,15 @@
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
 using CCEnvs.Unity.Snapshots;
-using Unity.Cinemachine;
 using UnityEngine;
+using ObjectOptions = CCEnvs.Unity.D3.ObjectManipulatorObjectSettings;
 using OffsetOptions = CCEnvs.Unity.D3.ObjectManipulatorOffsetSettings;
-using Options = CCEnvs.Unity.D3.ObjectManipulatorSettings;
 using VelocityOptions = CCEnvs.Unity.D3.ObjectManipulatorVelocitySettings;
 
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
+    [DisallowMultipleComponent]
     public sealed partial class ObjectManipulator : CCBehaviour
     {
         public const float OBJECT_MOVE_SENSIVITY_MIN = 0f;
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.D3
         private long collisionDetectionEveryFrame = 2L;
 
         [SerializeField]
-        private Options settings = Options.Default;
+        private ObjectOptions objectSettings = ObjectOptions.Default;
 
         [SerializeField]
         private OffsetOptions offsetSettings = OffsetOptions.Default;
@@ -99,7 +99,7 @@ namespace CCEnvs.Unity.D3
 
         public Collider? ObjectCollider { get; private set; }
 
-        public Options Settings => settings;
+        public ObjectOptions ObjectSettings => objectSettings;
 
         public OffsetOptions OffsetSettings => offsetSettings;
 
@@ -156,7 +156,7 @@ namespace CCEnvs.Unity.D3
         {
             if (objRadius != null
                 &&
-                settings.IsFlagSetted(Options.ObjectSizeChangeable))
+                objectSettings.IsFlagSetted(ObjectOptions.ObjectSizeChangeable))
             {
                 return objRadius.Value;
             }
@@ -226,32 +226,14 @@ namespace CCEnvs.Unity.D3
             SetObjectCollider();
         }
 
-        private bool TrySurfaceCast(out Vector3 surfacePoint, out Vector3 surfaceNormal)
+        private void HandleCollisions(ref Vector3 targetPos, int recursionDepth = 0)
         {
-            surfacePoint = transform.position;
-            surfaceNormal = transform.forward;
-
-            var maxCastDistance = manipulatorObjectDistanceOffset + 0.5f;
-
-            if (Physics.Raycast(
-                transform.position,
-                transform.forward,
-                out var hit,
-                maxCastDistance,
-                SurfaceCastMask,
-                QueryTriggerInteraction.Ignore
-                ))
+            if (recursionDepth > 6)
             {
-                surfacePoint = hit.point;
-                surfaceNormal = hit.normal;
-                return true;
+                this.PrintWarning($"Prevented recursion call of {nameof(HandleCollisions)}");
+                return;
             }
 
-            return false;
-        }
-
-        private void HandleCollisions(ref Vector3 targetPos)
-        {
             var moveDir = targetPos - Object.position;
             var moveDirNormalized = moveDir.normalized;
             var moveDistance = moveDir.magnitude;
@@ -261,11 +243,13 @@ namespace CCEnvs.Unity.D3
             if (moveDistance < minCastDistance)
                 return;
 
-            float maxCastDistance = moveDistance + objRadius * 0.7f;
+            float maxCastDistance = moveDistance + objRadius * 0.5f;
+
+            const float SURFACE_PENETRATION_PREVENT_RADIUS_OFFSET = 0.99f;
 
             if (Physics.SphereCast(
                 Object.position,
-                objRadius,
+                objRadius * SURFACE_PENETRATION_PREVENT_RADIUS_OFFSET,
                 moveDirNormalized,
                 out var hit,
                 maxCastDistance,
@@ -283,108 +267,48 @@ namespace CCEnvs.Unity.D3
                     Vector3 slideDir = Vector3.ProjectOnPlane(moveDirNormalized, hit.normal);
                     targetPos += slideDir * (remainingMoveDistance * 0.9f);
 
-                    HandleCollisions(ref targetPos);
+                    HandleCollisions(ref targetPos, recursionDepth++);
                 }
             }
-        }
-
-        private readonly Collider[] _colliderBuffer = new Collider[32];
-
-        private bool TryCompurePentration(
-            in Vector3 targetPos,
-            Collider col,
-            out Vector3 pushDir,
-            out float depth
-            )
-        {
-            return Physics.ComputePenetration(
-                ObjectCollider,
-                targetPos,
-                Object.transform.rotation,
-                col,
-                col.transform.position,
-                col.transform.rotation,
-                out pushDir,
-                out depth
-                );
-        }
-
-        private Vector3 GetPushDirection(
-            in Vector3 targetPos,
-            int overlappedCount
-            )
-        {
-            if (overlappedCount < 1)
-                return Vector3.zero;
-
-            Vector3 combinedNormal = Vector3.zero;
-
-            Collider col;
-
-            for (int i = 0; i < overlappedCount; i++)
-            {
-                col = _colliderBuffer[i];
-
-                if (TryCompurePentration(
-                    targetPos,
-                    col,
-                    out var pushDir,
-                    out var depth
-                    ))
-                {
-                    combinedNormal += pushDir;
-                }
-            }
-
-            if (combinedNormal != Vector3.zero)
-                combinedNormal.Normalize();
-
-            return combinedNormal;
-        }
-
-        private void PushObjectFromOther(
-            ref Vector3 targetPos,
-            float radius,
-            in Vector3 pushDir
-            )
-        {
-            if (pushDir == Vector3.zero)
-                return;
-
-            const float PUSH_OFFSET = 0.1f;
-            targetPos += pushDir * (radius * PUSH_OFFSET);
-        }
-
-        private bool TryOverlapNearestObjects(
-            in Vector3 targetPos,
-            float radius,
-            out int overlappedCount
-            )
-        {
-            overlappedCount = Physics.OverlapSphereNonAlloc(
-                targetPos,
-                radius,
-                _colliderBuffer,
-                SurfaceCastMask,
-                QueryTriggerInteraction.Ignore
-                );
-
-            return overlappedCount > 0;
-        }
-
-        private void TryPushObjectFromOther(ref Vector3 targetPos)
-        {
-            float radius = GetObjectRadius() * 0.95f;
-
-            if (!TryOverlapNearestObjects(targetPos, radius, out var overlappedCount))
-                return;
-
-            Vector3 pushDir = GetPushDirection(targetPos, overlappedCount);
-
-            PushObjectFromOther(ref targetPos, radius, pushDir);
         }
 
 #nullable enable warnings
+
+        private void HandleObjectTransform()
+        {
+            if (Object == null)
+                return;
+
+            Vector3 targetPos = transform.position + transform.TransformDirection(ManipulatorObjectPositionOffset + objPosOffset);
+            Quaternion targetRot = transform.rotation * Quaternion.Euler(ManipulatorObjectRotationOffset) * objRotOffset;
+
+            if (objectSettings.IsFlagSetted(ObjectOptions.CollideWithSurface))
+                HandleCollisions(ref targetPos);
+
+            float moveT = 1f - Mathf.Exp(-objectMoveDamping * Time.fixedDeltaTime);
+            float rotT = 1f - Mathf.Exp(-objectRotationDamping * Time.fixedDeltaTime);
+
+            ojbPos = Vector3.Lerp(ojbPos, targetPos, moveT);
+
+            if (!ValidateObjectPosition())
+            {
+                ojbPos = Object.position;
+                return;
+            }
+
+            objRot = Quaternion.Slerp(objRot, targetRot, rotT);
+
+            if (!ValidateObjectRotation())
+            {
+                objRot = Object.rotation;
+                return;
+            }
+
+            if (Time.frameCount % 20L == 0) //Reset calcualtions error to avoid NaN
+                objRot.Normalize();
+
+            Object.Move(ojbPos, objRot);
+        }
 
         private bool ValidateVector3(in Vector3 value, string? name = null)
         {
@@ -433,86 +357,6 @@ namespace CCEnvs.Unity.D3
         private bool ValidateObjectRotation()
         {
             return ValidateQuaternion(objRot, nameof(objRot));
-        }
-
-        private Vector3 CalcutaeTargetPositionRelativeToSurface(
-            in Vector3 surfacePoint,
-            in Vector3 surfaceNormal
-            )
-        {
-            var tangent = Vector3.ProjectOnPlane(transform.right, surfaceNormal).normalized;
-            var binormal = Vector3.ProjectOnPlane(transform.up, surfaceNormal).normalized;
-
-            return surfacePoint
-                   +
-                   surfaceNormal * manipulatorObjectDistanceOffset
-                   +
-                   tangent * manipulatorObjectHorizontalOffset
-                   +
-                   binormal * manipulatorObjectVerticalOffset;
-        }
-
-        //private bool TrySurfaceCast(out RaycastHit hit)
-        //{
-        //    return Physics.Raycast(
-
-        //        );
-        //}
-
-        //private void ClampObjectMoveDistanceBySurface(ref Vector3 targetPos)
-        //{
-        //    if (TrySurfaceCast())
-        //}
-
-        private Vector3 ResolveTargetPosition()
-        {
-            if (settings.IsFlagSetted(Options.CollideWithSurface)
-                &&
-                TrySurfaceCast(out var surfacePoint, out var surfaceNormal))
-            {
-                return CalcutaeTargetPositionRelativeToSurface(surfacePoint, surfaceNormal);
-            }
-
-            return transform.position + transform.TransformDirection(ManipulatorObjectPositionOffset + objPosOffset);
-        }
-
-        private void HandleObjectTransform()
-        {
-            if (Object == null)
-                return;
-
-            Vector3 targetPos = ResolveTargetPosition();
-            Quaternion targetRot = transform.rotation * Quaternion.Euler(ManipulatorObjectRotationOffset) * objRotOffset;
-
-            if (settings.IsFlagSetted(Options.CollideWithSurface))
-            {
-                TryPushObjectFromOther(ref targetPos);
-                HandleCollisions(ref targetPos);
-            }
-
-            float moveT = 1f - Mathf.Exp(-objectMoveDamping * Time.fixedDeltaTime);
-            float rotT = 1f - Mathf.Exp(-objectRotationDamping * Time.fixedDeltaTime);
-
-            ojbPos = Vector3.Lerp(ojbPos, targetPos, moveT);
-
-            if (!ValidateObjectPosition())
-            {
-                ojbPos = Object.position;
-                return;
-            }
-
-            objRot = Quaternion.Slerp(objRot, targetRot, rotT);
-
-            if (!ValidateObjectRotation())
-            {
-                objRot = Object.rotation;
-                return;
-            }
-
-            if (Time.frameCount % 20L == 0) //Reset calcualtions error to avoid NaN
-                objRot.Normalize();
-
-            Object.Move(ojbPos, objRot);
         }
     }
 }
