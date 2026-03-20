@@ -53,7 +53,7 @@ namespace CCEnvs.Unity
         private readonly static Lazy<Sprite> anonymousProfileImage = new(
             static () =>
             {
-                const string PATH = "CC/Profiles/Textures/AnonymousProfileImage";
+                const string PATH = "CC/ThridParty/Textures/AnonymousProfileImage";
 
                 return Resources.Load<Sprite>(PATH)
                     .Maybe()
