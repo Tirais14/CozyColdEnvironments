@@ -1,0 +1,47 @@
+{
+    "name": "CCEnvs.Unity.VContainer",
+    "rootNamespace": "CCEnvs.Unity.VContainer",
+    "references": [
+        "CCEnvs",
+        "CCEnvs.Unity",
+        "VContainer",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        "System.Linq.Async.dll",
+        "System.Collections.Immutable.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll",
+        "Microsoft.Bcl.TimeProvider.dll",
+        "Microsoft.Extensions.Caching.Abstractions.dll",
+        "Microsoft.Extensions.Caching.Memory.dll",
+        "Microsoft.Extensions.Options.dll",
+        "Microsoft.Extensions.Logging.Abstractions.dll",
+        "SuperLinq.dll",
+        "SuperLinq.Async.dll",
+        "ZLinq.dll",
+        "ZLinq.FileSystem.dll",
+        "ZString.dll",
+        "StringExtensions.dll",
+        "Humanizer.dll",
+        "DOTween.dll",
+        "CommunityToolkit.Common.dll",
+        "CommunityToolkit.Diagnostics.dll",
+        "C5.dll",
+        "ConcurrentCollections.dll",
+        "R3.dll",
+        "ObservableCollections.dll",
+        "ObservableCollections.R3.dll",
+        "Newtonsoft.Json.dll",
+        "ICSharpCode.SharpZipLib.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "VCONTAINER_PLUGIN"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

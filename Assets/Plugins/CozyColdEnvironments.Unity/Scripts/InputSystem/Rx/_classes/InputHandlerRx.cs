@@ -152,7 +152,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
             if (props.IsNullOrEmpty())
             {
-                CCDebug.Instance.PrintError("Cannot find any input action properties.");
+                CCDebug.Instance.PrintWarning("Cannot find any input action properties.");
                 return;
             }
 

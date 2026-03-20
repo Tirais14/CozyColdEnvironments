@@ -17,18 +17,21 @@ namespace CCEnvs.Unity.UnityEditor
         private const string ZLINQ = "ZLinq";
         private const string ADDRESSABLES = "AddressableAssets";
         private const string ZENJECT = "Zenject";
+        private const string VCONTAINER = "VContainer";
 
         private const string UNITASK_SYMBOL = "UNITASK_PLUGIN";
         private const string ZLINQ_SYMBOL = "ZLINQ_PLUGIN";
         private const string ADDRESSABLES_SYMBOL = "ADDRESSABLES_PLUGIN";
         private const string ZENJECT_SYMBOL = "ZENJECT_PLUGIN";
+        private const string VCONTAINER_SYMBOL = "VCONTAINER_PLUGIN";
 
         private readonly static Dictionary<string, string[]> nspaceDefineSymbols = new()
         {
             { UNITASK, Range.From(UNITASK_SYMBOL) },
             { ZLINQ, Range.From(ZLINQ_SYMBOL) },
             { ADDRESSABLES, Range.From(ADDRESSABLES_SYMBOL) },
-            { ZENJECT, Range.From(ZENJECT_SYMBOL) }
+            { ZENJECT, Range.From(ZENJECT_SYMBOL) },
+            { VCONTAINER, Range.From(VCONTAINER_SYMBOL) }
         };
 
         [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Install", priority = -1)]

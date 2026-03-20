@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 using UnityEngine.InputSystem;
 
 #nullable enable
@@ -12,14 +11,12 @@ namespace CCEnvs.Unity.InputSystem.Rx
     public static class InputHandlerRxFactory
     {
         public static IList<IInputHandlerRx> CreateInputHandlers(
-            string resourcesInputAcitonAssetPath,
+            InputActionAsset inputActionAsset,
             (string ActionMapName, Type InputHandlerType)[] inputHandlerInfos
             )
         {
-            Guard.IsNotNull(resourcesInputAcitonAssetPath, nameof(resourcesInputAcitonAssetPath));
+            CC.Guard.IsNotNull(inputActionAsset, nameof(inputActionAsset));
             Guard.IsNotNull(inputHandlerInfos, nameof(inputHandlerInfos));
-
-            var inputActionAsset = Resources.Load<InputActionAsset>(resourcesInputAcitonAssetPath);
 
             var handlerCtors =
                 from info in inputHandlerInfos
