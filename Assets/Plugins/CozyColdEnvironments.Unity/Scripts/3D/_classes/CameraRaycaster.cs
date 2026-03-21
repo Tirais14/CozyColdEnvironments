@@ -1,5 +1,4 @@
 using CCEnvs.Unity.EditorSerialization;
-using CCEnvs.Unity.Injections;
 using R3;
 using UnityEngine;
 
@@ -11,8 +10,6 @@ namespace CCEnvs.Unity.D3
     {
         public const float MAX_DISTANCE_MIN = 0.01f;
 
-        protected readonly ReactiveProperty<Collider?> objectCollider = new();
-
         [Header("Base Settings")]
         [Space(6f)]
 
@@ -22,21 +19,27 @@ namespace CCEnvs.Unity.D3
         [SerializeField]
         protected SerializedNullable<LayerMask> layerMask;
 
-        [SerializeField, GetBySelf]
+        [SerializeField]
         protected new Camera camera;
 
         [SerializeField]
         protected QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
 
-        public float MaxDistance => maxDistance;
+        private readonly ReactiveProperty<Collider?> objectCollider = new();
 
-        public LayerMask LayerMask => layerMask.Deserialized ?? Physics.AllLayers;
+        private RaycastHit? lastHit;
 
-        public Camera Camera => camera;
+        public override float MaxDistance => maxDistance;
 
-        public QueryTriggerInteraction TriggerInteraction => triggerInteraction;
+        public override LayerMask LayerMask => layerMask.Deserialized ?? Physics.AllLayers;
 
-        public Collider? ObjectCollider => objectCollider.Value;
+        public override Camera Camera => camera;
+
+        public override QueryTriggerInteraction TriggerInteraction => triggerInteraction;
+
+        public override Collider? ObjectCollider => objectCollider.Value;
+
+        public override RaycastHit? LastHit => lastHit;
 
         public TSelf SetMaxDistance(float value)
         {
@@ -65,11 +68,12 @@ namespace CCEnvs.Unity.D3
             return this.CastTo<TSelf>();
         }
 
-        public abstract bool TryRaycast(Vector2 screenPoint);
+        public override abstract bool TryRaycast(Vector2 screenPoint);
 
-        public Observable<Collider?> ObserveObjectCollider() => objectCollider;
+        public override Observable<Collider?> ObserveObjectCollider() => objectCollider;
 
-        public Observable<T?> ObserveObjectComponent<T>()
+        public override Observable<T?> ObserveObjectComponent<T>()
+            where T : class
         {
             return objectCollider.Select(col =>
             {
@@ -78,6 +82,22 @@ namespace CCEnvs.Unity.D3
 
                 return col.transform.GetComponent<T>();
             });
+        }
+
+        protected bool SetObject(RaycastHit? hit)
+        {
+            if (hit == null || hit.Value.collider == null)
+            {
+                lastHit = null;
+                objectCollider.Value = null;
+            }
+            else
+            {
+                lastHit = hit;
+                objectCollider.Value = hit.Value.collider;
+            }
+
+            return objectCollider.Value != null;
         }
     }
 }

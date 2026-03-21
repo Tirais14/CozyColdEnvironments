@@ -16,12 +16,10 @@ namespace CCEnvs.Unity.D3
                 triggerInteraction
                 ))
             {
-                objectCollider.Value = hit.collider;
-                return true;
+                return SetObject(hit);
             }
 
-            objectCollider.Value = null;
-            return false;
+            return SetObject(null);
         }
     }
 }
