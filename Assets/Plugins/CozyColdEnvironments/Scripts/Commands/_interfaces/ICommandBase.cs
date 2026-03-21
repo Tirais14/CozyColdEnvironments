@@ -21,6 +21,7 @@ namespace CCEnvs.Patterns.Commands
         bool ExecuteOnThreadPool { get;}
 
         string Name { get; }
+        string Tag { get; }
 
         CommandStatus Status { get; }
 

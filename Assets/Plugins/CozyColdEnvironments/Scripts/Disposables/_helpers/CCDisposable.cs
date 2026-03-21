@@ -74,5 +74,16 @@ namespace CCEnvs.Disposables
             disposable.Dispose();
             disposable = null;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Dispose<T>(ref T? disposable)
+            where T : IDisposable
+        {
+            if (disposable.IsNull())
+                return;
+
+            disposable.Dispose();
+            disposable = default;
+        }
     }
 }

@@ -7,6 +7,7 @@ using CCEnvs.Attributes;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
+using UnityEngine.LightTransport;
 
 #nullable enable
 #pragma warning disable S3218
@@ -15,6 +16,7 @@ namespace CCEnvs.Patterns.Commands
     public struct CommandBuilder
     {
         public string? Name;
+        public string? Tag;
 
         public bool IsSingle;
         public bool ExecuteOnThreadPool;
@@ -31,6 +33,15 @@ namespace CCEnvs.Patterns.Commands
         public CommandBuilder WithName(string? name = null)
         {
             Name = name;
+
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CommandBuilder WithTag(string? tag = null)
+        {
+            Tag = tag;
 
             return this;
         }
@@ -242,7 +253,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
                     CancelAction = intermediate.CancelAction,
-                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool,
+                    Tag = builder.Tag,
                 };
             }
 
@@ -275,6 +287,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
                 cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
+                cmd.Tag = builder.Tag;
 
                 return pooledCmd;
             }
@@ -320,7 +333,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
                     CancelAction = intermediate.CancelAction,
-                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool,
+                    Tag = builder.Tag
                 };
             }
 
@@ -354,6 +368,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
                 cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
+                cmd.Tag = builder.Tag;
 
                 return pooledCmd;
             }
@@ -398,7 +413,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
                     CancelAction = intermediate.CancelAction,
-                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool,
+                    Tag = builder.Tag
                 };
             }
 
@@ -432,6 +448,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
                 cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
+                cmd.Tag = builder.Tag;
 
                 return pooledCmd;
             }
@@ -477,7 +494,8 @@ namespace CCEnvs.Patterns.Commands
                     ExecutePredicate = intermediate.ExecutePredicate,
                     ResetAction = intermediate.ResetAction,
                     CancelAction = intermediate.CancelAction,
-                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool
+                    ExecuteOnThreadPool = builder.ExecuteOnThreadPool,
+                    Tag = builder.Tag
                 };
             }
 
@@ -511,6 +529,7 @@ namespace CCEnvs.Patterns.Commands
                 cmd.ResetAction = intermediate.ResetAction;
                 cmd.CancelAction = intermediate.CancelAction;
                 cmd.ExecuteOnThreadPool = builder.ExecuteOnThreadPool;
+                cmd.Tag = builder.Tag;
 
                 return pooledCmd;
             }

@@ -39,6 +39,8 @@ namespace CCEnvs.Patterns.Commands
             set => name = value ?? DEFAULT_NAME;
         }
 
+        public string? Tag { get; set; }
+
         public virtual bool IsReadyToExecute => !IsRunning && !IsDone;
         public virtual bool IsCancelled => status.Value == CommandStatus.Canceled;
         public virtual bool IsFaulted => status.Value == CommandStatus.Faulted;

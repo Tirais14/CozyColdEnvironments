@@ -24,6 +24,7 @@ namespace CCEnvs.Patterns.Commands
         public bool ExecuteOnThreadPool => false;
 
         public string Name => "Completed";
+        public string Tag => string.Empty;
 
         public CommandStatus Status => CommandStatus.Completed;
 
