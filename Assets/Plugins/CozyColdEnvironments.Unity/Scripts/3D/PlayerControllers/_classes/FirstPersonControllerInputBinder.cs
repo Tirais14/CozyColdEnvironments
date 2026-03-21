@@ -8,16 +8,13 @@ using UnityEngine;
 namespace CCEnvs.Unity.D3.Controllers
 {
     [DisallowMultipleComponent]
-    public sealed class FirstPersonControllerInputBinder : CharControllerSimplenputBinder
+    public sealed class FirstPersonControllerInputBinder : CharControllerInputBinder
     {
-        [Header("Look Input Actions")]
-        [Space(6f)]
-
         [SerializeField]
         private InputActionRxReference<Vector2> lookInputAction;
 
         [GetBySelf]
-        private FirstPersonControllerSimple firstPersonController = null!;
+        private FirstPersonController firstPersonController = null!;
 
         private IDisposable? lookIABinding;
 

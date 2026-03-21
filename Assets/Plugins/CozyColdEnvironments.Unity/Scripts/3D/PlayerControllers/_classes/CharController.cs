@@ -6,13 +6,14 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    public class CharControllerSimple : CCBehaviour
+    public class CharController : CCBehaviour
     {
         public const float SURFACE_CAST_DISTANCE_MIN = 0.01f;
         public const float MOVE_SPEED_MIN = 0f;
         public const float AIR_MOVE_SPEED_MIN = 0f;
         public const float JUMP_HEIGHT_MIN = 0f;
         public const float FLY_MOVE_SPEED_MIN = 0f;
+        public const float RUN_SPEED_MODIFIER_MIN = 0f;
 
         public const float SURFACE_CAST_DISTANCE_DEFAULT = 0.4f;
         public const float GRAVITY_DEFAULT = -35f;
@@ -28,6 +29,9 @@ namespace CCEnvs.Unity.D3
 
         [SerializeField, Min(JUMP_HEIGHT_MIN)]
         protected float jumpHeight = 1.6f;
+
+        [SerializeField, Min(RUN_SPEED_MODIFIER_MIN)]
+        protected float runSpeedModifier = 1.45f;
 
         [Header("Physics")]
         [Space(6f)]
@@ -52,6 +56,7 @@ namespace CCEnvs.Unity.D3
         public float MoveSpeed => moveSpeed;
         public float AirSpeedModifier => airSpeedModifier;
         public float JumpHeight => jumpHeight;
+        public float RunSpeedModifier => runSpeedModifier;
         public float SurfaceCastDistance => surfaceCastDistance;
         public float Gravity => gravity;
 
@@ -63,6 +68,7 @@ namespace CCEnvs.Unity.D3
         public LayerMask? SurfaceLayers => surfaceLayers;
 
         public bool IsGrounded { get; private set; }
+        public bool IsRunning { get; private set; }
 
         protected override void Start()
         {
@@ -85,66 +91,84 @@ namespace CCEnvs.Unity.D3
             base.OnDestroy();
         }
 
-        public CharControllerSimple SetMoveSpeed(float value)
+        public CharController SetMoveSpeed(float value)
         {
             moveSpeed = Mathf.Max(MOVE_SPEED_MIN, value);
             return this;
         }
 
-        public CharControllerSimple SetAirSpeedModifier(float value)
+        public CharController SetAirSpeedModifier(float value)
         {
             airSpeedModifier = Mathf.Max(AIR_MOVE_SPEED_MIN, value);
             return this;
         }
 
-        public CharControllerSimple SetJumpHeight(float value)
+        public CharController SetJumpHeight(float value)
         {
             jumpHeight = Mathf.Max(JUMP_HEIGHT_MIN, value);
             return this;
         }
 
-        public CharControllerSimple SetSurfaceCastPoint(Transform value)
+        public CharController SetRunSpeedModifier(float value)
+        {
+            runSpeedModifier = Mathf.Max(value, RUN_SPEED_MODIFIER_MIN);
+            return this;
+        }
+
+        public CharController SetSurfaceCastPoint(Transform value)
         {
             CC.Guard.IsNotNull(value, nameof(value));
             surfaceCastPoint = value;
             return this;
         }
 
-        public CharControllerSimple SetGravity(float value)
+        public CharController SetGravity(float value)
         {
             gravity = value;
             return this;
         }
 
-        public CharControllerSimple SetSurfaceLayers(LayerMask? value)
+        public CharController SetSurfaceLayers(LayerMask? value)
         {
             surfaceLayers = value;
             return this;
         }
 
-        public CharControllerSimple SetSurfaceCastDistance(float value)
+        public CharController SetSurfaceCastDistance(float value)
         {
             surfaceCastDistance = Mathf.Max(SURFACE_CAST_DISTANCE_MIN, value);
             return this;
         }
 
-        public void Move(Vector3 dir)
+        public CharController Run(bool state = true)
+        {
+            if (state && IsGrounded)
+                IsRunning = true;
+            else
+                IsRunning = false;
+
+            return this;
+        }
+
+        public CharController Move(Vector3 dir)
         {
             moveDirection = dir;
+            return this;
         }
 
-        public void MoveByInput(Vector2 inputValue)
+        public CharController MoveByInput(Vector2 inputValue)
         {
             var dir = new Vector3(inputValue.x, 0f, inputValue.y).normalized;
-            Move(dir);
+
+            return Move(dir);
         }
 
-        public void Jump()
+        public CharController Jump()
         {
-            if (jumpRequested || !IsGrounded)
-                return;
+            if (!jumpRequested && IsGrounded)
+                jumpRequested = true;
 
-            jumpRequested = true;
+            return this;
         }
 
         private void RaycastSurface()
@@ -165,12 +189,23 @@ namespace CCEnvs.Unity.D3
             jumpRequested = false;
         }
 
+        private float ResolveMoveSpeed()
+        {
+            if (IsRunning)
+                return moveSpeed * RunSpeedModifier;
+            else if (!IsGrounded)
+                return moveSpeed * airSpeedModifier;
+
+            return moveSpeed;
+        }
+
         private void HandlePhysics()
         {
             if (IsGrounded && velocity.y < 0f)
                 velocity.y = -2f;
 
             var motion = transform.right * moveDirection.x + transform.forward * moveDirection.z;
+            var moveSpeed = ResolveMoveSpeed();
 
             core.Move(moveSpeed * Time.deltaTime * motion);
 
@@ -182,6 +217,7 @@ namespace CCEnvs.Unity.D3
             core.Move(velocity * Time.deltaTime);
 
             moveDirection = default;
+            IsRunning = false;
         }
     }
 }

@@ -1,15 +1,9 @@
-using CCEnvs.Dependencies;
-using CCEnvs.Disposables;
-using CCEnvs.Unity.InputSystem.Rx;
-using CommunityToolkit.Diagnostics;
-using R3;
-using System;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.D3.Controllers
 {
-    public class FirstPersonControllerSimple : CharControllerSimple
+    public class FirstPersonController : CharController
     {
         public const float CAMERA_SENSIVITY_MIN = 0f;
 
@@ -45,7 +39,7 @@ namespace CCEnvs.Unity.D3.Controllers
             base.OnDestroy();
         }
 
-        public FirstPersonControllerSimple SetCameraProxy(Transform value)
+        public FirstPersonController SetCameraProxy(Transform value)
         {
             CC.Guard.IsNotNull(value);
 
@@ -54,14 +48,14 @@ namespace CCEnvs.Unity.D3.Controllers
             return this;
         }
 
-        public FirstPersonControllerSimple SetHorizontalCameraSensivity(float value)
+        public FirstPersonController SetHorizontalCameraSensivity(float value)
         {
             horizontalCameraSensivity = Mathf.Max(CAMERA_SENSIVITY_MIN, value);
 
             return this;
         }
 
-        public FirstPersonControllerSimple SetVerticalCameraSensivity(float value)
+        public FirstPersonController SetVerticalCameraSensivity(float value)
         {
             verticalCameraSensivity = Mathf.Max(CAMERA_SENSIVITY_MIN, value);
 

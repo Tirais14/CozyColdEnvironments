@@ -119,6 +119,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         }
     }
 
+    [Serializable]
     public class ButtonActionRxReference : InputActionRxReference<bool>
     {
         public new ButtonActionRx Value => (ButtonActionRx)base.Value;

@@ -23,13 +23,10 @@ namespace CCEnvs.Unity.D3
         public const float MANIPULATOR_OBJECT_YAW_OFFSET_MIN = 0f;
         public const float MANIPULATOR_OBJECT_ROLL_OFFSET_MIN = 0f;
 
-        public const long COLLISTION_DETECTION_EVERY_FRAME_MIN = 1L;
+        private readonly RigidBodySnapshot objectSnapshot = new();
 
         [Header("Behaviour Settings")]
         [Space(6f)]
-
-        [SerializeField, Min(COLLISTION_DETECTION_EVERY_FRAME_MIN)]
-        private long collisionDetectionEveryFrame = 2L;
 
         [SerializeField]
         private ObjectOptions objectSettings = ObjectOptions.Default;
@@ -93,8 +90,6 @@ namespace CCEnvs.Unity.D3
 
         private float? objRadius;
 
-        private RigidBodySnapshot objectSnapshot = new();
-
         public Rigidbody? Object { get; private set; }
 
         public Collider? ObjectCollider { get; private set; }
@@ -111,8 +106,6 @@ namespace CCEnvs.Unity.D3
         public float ObjectMoveDamping => objectMoveDamping;
         public float ObjectRotationSensitivity => objectRotationSensivity;
         public float ObjectRotationDamping => objectRotationDamping;
-
-        public long UpdateEveryFrame => collisionDetectionEveryFrame;
 
         public Vector3 ManipulatorObjectPositionOffset {
             get
@@ -212,7 +205,9 @@ namespace CCEnvs.Unity.D3
 
             Object.useGravity = false;
             Object.isKinematic = true;
+            Object.excludeLayers = 1 << gameObject.layer;
             Object.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            Object.interpolation = RigidbodyInterpolation.Interpolate;
 
             if (velocitySettings.IsFlagSetted(VelocityOptions.ResetOnSet))
             {
@@ -226,7 +221,10 @@ namespace CCEnvs.Unity.D3
             SetObjectCollider();
         }
 
-        private void HandleCollisions(ref Vector3 targetPos, int recursionDepth = 0)
+        private void HandleCollisions(
+            ref Vector3 targetPos,
+            int recursionDepth = 0
+            )
         {
             if (recursionDepth > 6)
             {
@@ -265,11 +263,46 @@ namespace CCEnvs.Unity.D3
                 if (remainingMoveDistance > 0.01f)
                 {
                     Vector3 slideDir = Vector3.ProjectOnPlane(moveDirNormalized, hit.normal);
+
                     targetPos += slideDir * (remainingMoveDistance * 0.9f);
 
-                    HandleCollisions(ref targetPos, recursionDepth++);
+                    HandleCollisions(ref targetPos, ++recursionDepth);
                 }
             }
+        }
+
+        private bool EnsureObjectIsVisible(ref Vector3 targetPos)
+        {
+            var dirToObj = targetPos - transform.position;
+            var distanceToObj = dirToObj.magnitude;
+
+            if (distanceToObj < 0.01f)
+                return false;
+
+            var dirToObjNormalized = dirToObj.normalized;
+            var objRadius = GetObjectRadius();
+
+            if (Physics.SphereCast(
+                transform.position,
+                objRadius * 0.5f,
+                dirToObjNormalized,
+                out var hit,
+                distanceToObj,
+                SurfaceCastMask,
+                QueryTriggerInteraction.Ignore
+                )
+                &&
+                hit.rigidbody != Object
+                &&
+                !hit.transform.IsChildOf(Object.transform)
+                )
+            {
+                targetPos = hit.point + hit.normal * (objRadius * 1.02f);
+
+                return true;
+            }
+
+            return false;
         }
 
 #nullable enable warnings
@@ -304,7 +337,7 @@ namespace CCEnvs.Unity.D3
                 return;
             }
 
-            if (Time.frameCount % 20L == 0) //Reset calcualtions error to avoid NaN
+            if (Time.frameCount % 20L == 0) //Reset calcualtion errors to avoid NaN
                 objRot.Normalize();
 
             Object.Move(ojbPos, objRot);

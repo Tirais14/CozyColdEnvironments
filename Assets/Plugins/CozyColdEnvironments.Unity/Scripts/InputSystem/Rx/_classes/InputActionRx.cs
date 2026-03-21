@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using CCEnvs.Disposables;
+using CCEnvs.Threading;
+using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
@@ -17,6 +19,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
     {
         protected readonly List<IDisposable> disposables = new();
 
+        private readonly CancellationTokenSource disposeCancellationTokeSource = new();
+
         private readonly ReactiveCommand<CallbackContext> raw = new();
         private readonly ReactiveCommand<CallbackContext> started = new();
         private readonly ReactiveCommand<CallbackContext> performed = new();
@@ -29,6 +33,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public string ActionName => Action.name;
 
         public bool IsEnabled => isEnabled.Value && Action.enabled;
+        public bool IsHolding { get; private set; }
+
+        protected CancellationToken DisposeCancellationToken => disposeCancellationTokeSource.Token;
 
         [Preserve]
         public InputActionRx(InputAction inputAction)
@@ -109,6 +116,29 @@ namespace CCEnvs.Unity.InputSystem.Rx
             return performed;
         }
 
+        //public Observable<CallbackContext> ObservePerformedContinuous(
+        //    FrameProvider frameProvider,
+        //    CancellationToken cancellationToken = default
+        //    )
+        //{
+        //    CCDisposable.ThrowIfDisposed(this, disposed);
+
+        //    var tokenSource = DisposeCancellationToken.TryLinkTokens(cancellationToken, out cancellationToken);
+
+        //    var everyUpdate = Observable.EveryUpdate(frameProvider, cancellationToken);
+
+        //    if (tokenSource != null)
+        //    {
+        //        everyUpdate.Subscribe(tokenSource,
+        //            onNext: static (_, _) => { },
+        //            onCompleted: static (_, tokenSource) => tokenSource.CancelAndDispose()
+        //            )
+        //            .AddTo(disposables);
+        //    }
+
+        //    everyUpdate.
+        //}
+
         public Observable<CallbackContext> ObserveCanceled()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -126,6 +156,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
             if (disposing)
             {
                 disposables.DisposeEachAndClear();
+
+                disposeCancellationTokeSource.CancelAndDispose();
 
                 Action.started -= OnRaw;
                 Action.performed -= OnRaw;
@@ -170,6 +202,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 return;
 
             started.Execute(context);
+            IsHolding = true;
         }
 
         private void OnPerformed(CallbackContext context)
@@ -186,6 +219,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
                 return;
 
             canceled.Execute(context);
+            IsHolding = false;
         }
     }
     public class InputActionRx<T>

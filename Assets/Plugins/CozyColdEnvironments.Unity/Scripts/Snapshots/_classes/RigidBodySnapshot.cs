@@ -74,100 +74,180 @@ namespace CCEnvs.Unity.Snapshots
         [SerializeField]
         protected float? sleepThreshold;
 
-        [JsonProperty("linearVelocity")]
+        [JsonIgnore]
+        [SerializeField]
+        protected bool? detectCollisions;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected int? solverIterations;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected int? solverVelocityIterations;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected LayerMask? includeLayers;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected LayerMask? excludeLayers;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected bool? automaticCenterOfMass;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected bool? automaticInertiaTensor;
+
+        [JsonIgnore]
+        [SerializeField]
+        protected float? maxLinearVelocity;
+
+        [JsonProperty("linearVelocity", NullValueHandling = NullValueHandling.Ignore)]
         public Vector3? LinearVelocity {
             get => linearVelocity;
             protected set => linearVelocity = value;
         }
 
-        [JsonProperty("angularVelocity")]
+        [JsonProperty("angularVelocity", NullValueHandling = NullValueHandling.Ignore)]
         public Vector3? AngularVelocity {
             get => angularVelocity;
             protected set => angularVelocity = value;
         }
 
-        [JsonProperty("linearDamping")]
+        [JsonProperty("linearDamping", NullValueHandling = NullValueHandling.Ignore)]
         public float? LinearDamping {
             get => linearDamping;
             protected set => linearDamping = value;
         }
 
-        [JsonProperty("angularDamping")]
+        [JsonProperty("angularDamping", NullValueHandling = NullValueHandling.Ignore)]
         public float? AngularDamping {
             get => angularDamping;
             protected set => angularDamping = value;
         }
 
-        [JsonProperty("mass")]
+        [JsonProperty("mass", NullValueHandling = NullValueHandling.Ignore)]
         public float? Mass {
             get => mass;
             protected set => mass = value;
         }
 
-        [JsonProperty("useGravity")]
+        [JsonProperty("useGravity", NullValueHandling = NullValueHandling.Ignore)]
         public bool? UseGravity {
             get => useGravity;
             protected set => useGravity = value;
         }
 
-        [JsonProperty("isKinematic")]
+        [JsonProperty("isKinematic", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsKinematic {
             get => isKinematic;
             protected set => isKinematic = value;
         }
 
-        [JsonProperty("interpolation")]
+        [JsonProperty("interpolation", NullValueHandling = NullValueHandling.Ignore)]
         public RigidbodyInterpolation? Interpolation {
             get => interpolation;
             protected set => interpolation = value;
         }
 
-        [JsonProperty("collisionDetectionMode")]
+        [JsonProperty("collisionDetectionMode", NullValueHandling = NullValueHandling.Ignore)]
         public CollisionDetectionMode? CollisionDetectionMode {
             get => collisionDetectionMode;
             protected set => collisionDetectionMode = value;
         }
 
-        [JsonProperty("constraints")]
+        [JsonProperty("constraints", NullValueHandling = NullValueHandling.Ignore)]
         public RigidbodyConstraints? Constraints {
             get => constraints;
             protected set => constraints = value;
         }
 
-        [JsonProperty("centerOfMass")]
+        [JsonProperty("centerOfMass", NullValueHandling = NullValueHandling.Ignore)]
         public Vector3? CenterOfMass {
             get => centerOfMass;
             protected set => centerOfMass = value;
         }
 
-        [JsonProperty("inertiaTensor")]
+        [JsonProperty("inertiaTensor", NullValueHandling = NullValueHandling.Ignore)]
         public Vector3? InertiaTensor {
             get => inertiaTensor;
             protected set => inertiaTensor = value;
         }
 
-        [JsonProperty("inertiaTensorRotation")]
+        [JsonProperty("inertiaTensorRotation", NullValueHandling = NullValueHandling.Ignore)]
         public Quaternion? InertiaTensorRotation {
             get => inertiaTensorRotation;
             protected set => inertiaTensorRotation = value;
         }
 
-        [JsonProperty("maxAngularVelocity")]
+        [JsonProperty("maxAngularVelocity", NullValueHandling = NullValueHandling.Ignore)]
         public float? MaxAngularVelocity {
             get => maxAngularVelocity;
             protected set => maxAngularVelocity = value;
         }
 
-        [JsonProperty("maxDepenetrationVelocity")]
+        [JsonProperty("maxDepenetrationVelocity", NullValueHandling = NullValueHandling.Ignore)]
         public float? MaxDepenetrationVelocity {
             get => maxDepenetrationVelocity;
             protected set => maxDepenetrationVelocity = value;
         }
 
-        [JsonProperty("sleepThreshold")]
+        [JsonProperty("sleepThreshold", NullValueHandling = NullValueHandling.Ignore)]
         public float? SleepThreshold {
             get => sleepThreshold;
             protected set => sleepThreshold = value;
+        }
+
+        [JsonProperty("detectCollisions", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? DetectCollisions {
+            get => detectCollisions;
+            protected set => detectCollisions = value;
+        }
+
+        [JsonProperty("solverIterations", NullValueHandling = NullValueHandling.Ignore)]
+        public int? SolverIterations {
+            get => solverIterations;
+            protected set => solverIterations = value;
+        }
+
+        [JsonProperty("solverVelocityIterations", NullValueHandling = NullValueHandling.Ignore)]
+        public int? SolverVelocityIterations {
+            get => solverVelocityIterations;
+            protected set => solverVelocityIterations = value;
+        }
+
+        [JsonProperty("includeLayers", NullValueHandling = NullValueHandling.Ignore)]
+        public LayerMask? IncludeLayers {
+            get => includeLayers;
+            protected set => includeLayers = value;
+        }
+
+        [JsonProperty("excludeLayers", NullValueHandling = NullValueHandling.Ignore)]
+        public LayerMask? ExcludeLayers {
+            get => excludeLayers;
+            protected set => excludeLayers = value;
+        }
+
+        [JsonProperty("automaticCenterOfMass", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? AutomaticCenterOfMass {
+            get => automaticCenterOfMass;
+            protected set => automaticCenterOfMass = value;
+        }
+
+        [JsonProperty("automaticInertiaTensor", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? AutomaticInertiaTensor {
+            get => automaticInertiaTensor;
+            protected set => automaticInertiaTensor = value;
+        }
+
+        [JsonProperty("maxLinearVelocity", NullValueHandling = NullValueHandling.Ignore)]
+        public float? MaxLinearVelocity {
+            get => maxLinearVelocity;
+            protected set => maxLinearVelocity = value;
         }
 
         public RigidBodySnapshot()
@@ -278,6 +358,54 @@ namespace CCEnvs.Unity.Snapshots
             return this;
         }
 
+        public RigidBodySnapshot<T> SetDetectCollisions(bool? value)
+        {
+            DetectCollisions = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetSolverIterations(int? value)
+        {
+            SolverIterations = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetSolverVelocityIterations(int? value)
+        {
+            SolverVelocityIterations = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetIncludeLayers(LayerMask? value)
+        {
+            IncludeLayers = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetExcludeLayers(LayerMask? value)
+        {
+            ExcludeLayers = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetAutomaticCenterOfMass(bool? value)
+        {
+            AutomaticCenterOfMass = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetAutomaticInertiaTensor(bool? value)
+        {
+            AutomaticInertiaTensor = value;
+            return this;
+        }
+
+        public RigidBodySnapshot<T> SetMaxLinearVelocity(float? value)
+        {
+            MaxLinearVelocity = value;
+            return this;
+        }
+
         protected override void OnRestore(ref T target)
         {
             base.OnRestore(ref target);
@@ -329,6 +457,30 @@ namespace CCEnvs.Unity.Snapshots
 
             if (sleepThreshold.HasValue)
                 target.sleepThreshold = sleepThreshold.Value;
+
+            if (detectCollisions.HasValue)
+                target.detectCollisions = detectCollisions.Value;
+
+            if (solverIterations.HasValue)
+                target.solverIterations = solverIterations.Value;
+
+            if (solverVelocityIterations.HasValue)
+                target.solverVelocityIterations = solverVelocityIterations.Value;
+
+            if (includeLayers.HasValue)
+                target.includeLayers = includeLayers.Value;
+
+            if (excludeLayers.HasValue)
+                target.excludeLayers = excludeLayers.Value;
+
+            if (automaticCenterOfMass.HasValue)
+                target.automaticCenterOfMass = automaticCenterOfMass.Value;
+
+            if (automaticInertiaTensor.HasValue)
+                target.automaticInertiaTensor = automaticInertiaTensor.Value;
+
+            if (maxLinearVelocity.HasValue)
+                target.maxLinearVelocity = maxLinearVelocity.Value;
         }
 
         protected override void OnCapture(T target)
@@ -351,6 +503,14 @@ namespace CCEnvs.Unity.Snapshots
             MaxAngularVelocity = target.maxAngularVelocity;
             MaxDepenetrationVelocity = target.maxDepenetrationVelocity;
             SleepThreshold = target.sleepThreshold;
+            DetectCollisions = target.detectCollisions;
+            SolverIterations = target.solverIterations;
+            SolverVelocityIterations = target.solverVelocityIterations;
+            IncludeLayers = target.includeLayers;
+            ExcludeLayers = target.excludeLayers;
+            AutomaticCenterOfMass = target.automaticCenterOfMass;
+            AutomaticInertiaTensor = target.automaticInertiaTensor;
+            MaxLinearVelocity = target.maxLinearVelocity;
         }
 
         protected override void OnReset()
@@ -373,6 +533,14 @@ namespace CCEnvs.Unity.Snapshots
             MaxAngularVelocity = null;
             MaxDepenetrationVelocity = null;
             SleepThreshold = null;
+            DetectCollisions = null;
+            SolverIterations = null;
+            SolverVelocityIterations = null;
+            IncludeLayers = null;
+            ExcludeLayers = null;
+            AutomaticCenterOfMass = null;
+            AutomaticInertiaTensor = null;
+            MaxLinearVelocity = null;
         }
     }
 

@@ -24,6 +24,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
 
         Observable<CallbackContext> ObservePerformed();
 
+        //Observable<CallbackContext> ObservePerformedContinuous();
+
         Observable<CallbackContext> ObserveCanceled();
     }
     public interface IInputActionRx<T> : IInputActionRx
@@ -38,6 +40,8 @@ namespace CCEnvs.Unity.InputSystem.Rx
         Observable<T> ObserveStartedValue();
 
         Observable<T> ObservePerformedValue();
+
+        //Observable<T> ObservePerformedValueContinuous();
 
         Observable<T> ObserveCanceledValue();
     }
