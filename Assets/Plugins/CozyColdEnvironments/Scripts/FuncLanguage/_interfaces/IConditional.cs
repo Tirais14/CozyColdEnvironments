@@ -54,7 +54,7 @@ namespace CCEnvs.FuncLanguage
         object? IConditional.GetValue() => GetValue();
         object IConditional.GetValue(object defaultValue)
         {
-            return GetValue(defaultValue.To<T>())!;
+            return GetValue(defaultValue.CastTo<T>())!;
         }
         object IConditional.GetValue(Func<object> defaultValueFactory)
         {

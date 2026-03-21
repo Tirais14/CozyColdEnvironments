@@ -46,6 +46,7 @@ namespace CCEnvs.Unity.D3
         private IDisposable? rollOffsetIABinding;
 
         public InputActionRx<Vector2>? DistanceOffsetIA { get; private set; }
+
         public InputActionRx<float>? HorizontalOffsetIA { get; private set; }
         public InputActionRx<float>? VerticalOffsetIA { get; private set; }
         public InputActionRx<float>? PitchOffsetIA { get; private set; }

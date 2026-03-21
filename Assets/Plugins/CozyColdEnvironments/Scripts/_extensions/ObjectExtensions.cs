@@ -97,7 +97,7 @@ namespace CCEnvs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T To<T>(this object? obj)
+        public static T CastTo<T>(this object? obj)
         {
             if (obj.IsNull())
                 return default!;

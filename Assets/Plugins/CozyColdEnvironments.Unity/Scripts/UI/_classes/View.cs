@@ -79,13 +79,13 @@ namespace CCEnvs.Unity.UI
 
         public T GetModel<T>()
         {
-            return modelUnsafe.To<T>();
+            return modelUnsafe.CastTo<T>();
         }
 
         public T GetViewModel<T>()
             where T : IViewModel
         {
-            return viewModelUnsafe.To<T>();
+            return viewModelUnsafe.CastTo<T>();
         }
 
         /// <summary>

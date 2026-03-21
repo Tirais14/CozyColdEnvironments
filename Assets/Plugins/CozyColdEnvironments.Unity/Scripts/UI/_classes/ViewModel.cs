@@ -33,7 +33,7 @@ namespace CCEnvs.Unity.UI
             DisposeCancellationToken.Register(
                 static @this =>
                 {
-                    var typed = @this.To<ViewModel<TModel>>();
+                    var typed = @this.CastTo<ViewModel<TModel>>();
 
                     typed.Dispose();
                 },

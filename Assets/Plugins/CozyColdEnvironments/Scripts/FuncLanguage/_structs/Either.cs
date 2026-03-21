@@ -251,7 +251,7 @@ namespace CCEnvs.FuncLanguage
             if (x.IsNull())
                 return default;
 
-            return x.To<T>();
+            return x.CastTo<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

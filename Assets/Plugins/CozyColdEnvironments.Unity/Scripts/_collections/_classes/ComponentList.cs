@@ -64,7 +64,7 @@ namespace CCEnvs.Unity.Collections
 
         private void OnComponentAdd(T item)
         {
-            var cmp = item.To<Component>();
+            var cmp = item.CastTo<Component>();
 
             if (cmp.transform.parent == cTransform)
                 return;
@@ -74,7 +74,7 @@ namespace CCEnvs.Unity.Collections
 
         private void OnComponentRemove(T item)
         {
-            var cmp = item.To<Component>();
+            var cmp = item.CastTo<Component>();
 
             if (IsDestroyOnRemove)
             {

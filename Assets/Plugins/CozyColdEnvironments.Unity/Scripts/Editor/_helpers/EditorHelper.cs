@@ -73,7 +73,7 @@ namespace CCEnvs.Unity.UnityEditor
         {
             foreach (var item in from field in instance.Reflect().IncludeNonPublic().Fields()
                                  where field.FieldType.IsType<VisualElement>()
-                                 select field.GetValue(instance).To<VisualElement>())
+                                 select field.GetValue(instance).CastTo<VisualElement>())
             {
                 if (root.Contains(item))
                     continue;

@@ -98,52 +98,52 @@ namespace CCEnvs.Unity._2D.Locations
 
         void ILocationLayer.SetCell(Vector3Int pos, ICell cell)
         {
-            SetCell(pos, cell.To<T>());
+            SetCell(pos, cell.CastTo<T>());
         }
         void ILocationLayer.SetCell(Vector2Int pos, ICell cell)
         {
-            SetCell(pos, cell.To<T>());
+            SetCell(pos, cell.CastTo<T>());
         }
         void ILocationLayer.SetCell(Vector3 pos, ICell cell)
         {
-            SetCell(pos, cell.To<T>());
+            SetCell(pos, cell.CastTo<T>());
         }
         void ILocationLayer.SetCell(Vector2 pos, ICell cell)
         {
-            SetCell(pos, cell.To<T>());
+            SetCell(pos, cell.CastTo<T>());
         }
         void ILocationLayer.SetCell(int x, int y, ICell cell)
         {
-            SetCell(x, y, cell.To<T>());
+            SetCell(x, y, cell.CastTo<T>());
         }
         void ILocationLayer.SetCell(float x, float y, ICell cell)
         {
-            SetCell(x, y, cell.To<T>());
+            SetCell(x, y, cell.CastTo<T>());
         }
 
         void ILocationLayer.MoveCell(ICell cell, Vector3Int to)
         {
-            MoveCell(cell.To<T>(), to);
+            MoveCell(cell.CastTo<T>(), to);
         }
         void ILocationLayer.MoveCell(ICell cell, Vector2Int to)
         {
-            MoveCell(cell.To<T>(), to);
+            MoveCell(cell.CastTo<T>(), to);
         }
         void ILocationLayer.MoveCell(ICell cell, Vector3 to)
         {
-            MoveCell(cell.To<T>(), to);
+            MoveCell(cell.CastTo<T>(), to);
         }
         void ILocationLayer.MoveCell(ICell cell, Vector2 to)
         {
-            MoveCell(cell.To<T>(), to);
+            MoveCell(cell.CastTo<T>(), to);
         }
         void ILocationLayer.MoveCell(ICell cell, int toX, int toY)
         {
-            MoveCell(cell.To<T>(), toX, toY);
+            MoveCell(cell.CastTo<T>(), toX, toY);
         }
         void ILocationLayer.MoveCell(ICell cell, float toX, float toY)
         {
-            MoveCell(cell.To<T>(), toX, toY);
+            MoveCell(cell.CastTo<T>(), toX, toY);
         }
     }
 }

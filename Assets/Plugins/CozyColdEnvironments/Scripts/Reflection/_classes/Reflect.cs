@@ -47,7 +47,7 @@ namespace CCEnvs.Reflection
         public Maybe<Type[]> genericTypes { get; set; }
         public Maybe<Type[]> attributes { get; private set; }
 
-        protected Type type => member.To<Type>();
+        protected Type type => member.CastTo<Type>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Reflect From(object instance)
@@ -564,7 +564,7 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TReturn InvokeMethod<TReturn>() => WithTypeFilter<TReturn>().InvokeMethod().To<TReturn>();
+        public TReturn InvokeMethod<TReturn>() => WithTypeFilter<TReturn>().InvokeMethod().CastTo<TReturn>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object CreateInstance()
@@ -585,7 +585,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TCasted CreateInstance<TCasted>()
         {
-            return CreateInstance().To<TCasted>();
+            return CreateInstance().CastTo<TCasted>();
         }
 
         [DebuggerStepThrough]
@@ -599,7 +599,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetFieldValue<T>()
         {
-            return WithTypeFilter<T>().GetFieldValue().Cast<T>().RightTarget.To<T>();
+            return WithTypeFilter<T>().GetFieldValue().Cast<T>().RightTarget.CastTo<T>();
         }
 
         [DebuggerStepThrough]

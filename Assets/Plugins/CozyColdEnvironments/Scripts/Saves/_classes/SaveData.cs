@@ -234,7 +234,7 @@ namespace CCEnvs.Saves
 
         public IEnumerator<SaveEntry> GetEnumerator()
         {
-            return saveEntries.To<IDictionary<string, SaveEntry>>().Values.GetEnumerator();
+            return saveEntries.CastTo<IDictionary<string, SaveEntry>>().Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -77,7 +77,7 @@ namespace CCEnvs.Saves.Json
 
             writer.WriteStartObject();
 
-            foreach (var item in value.To<IEnumerable>())
+            foreach (var item in value.CastTo<IEnumerable>())
                 serializer.Serialize(writer, item);
 
             writer.WriteEndObject();

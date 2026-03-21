@@ -11,7 +11,7 @@ namespace CCEnvs.Unity.AddrsAssets
         {
             CC.Guard.IsNotNull(cmp, nameof(cmp));
 
-            Addressables.Release(cmp.To<Component>().gameObject);
+            Addressables.Release(cmp.CastTo<Component>().gameObject);
         }
 
         //public static void IsAssetLoaded(object asset)

@@ -271,40 +271,6 @@ namespace CCEnvs.Unity.D3
             }
         }
 
-        private bool EnsureObjectIsVisible(ref Vector3 targetPos)
-        {
-            var dirToObj = targetPos - transform.position;
-            var distanceToObj = dirToObj.magnitude;
-
-            if (distanceToObj < 0.01f)
-                return false;
-
-            var dirToObjNormalized = dirToObj.normalized;
-            var objRadius = GetObjectRadius();
-
-            if (Physics.SphereCast(
-                transform.position,
-                objRadius * 0.5f,
-                dirToObjNormalized,
-                out var hit,
-                distanceToObj,
-                SurfaceCastMask,
-                QueryTriggerInteraction.Ignore
-                )
-                &&
-                hit.rigidbody != Object
-                &&
-                !hit.transform.IsChildOf(Object.transform)
-                )
-            {
-                targetPos = hit.point + hit.normal * (objRadius * 1.02f);
-
-                return true;
-            }
-
-            return false;
-        }
-
 #nullable enable warnings
 
         private void HandleObjectTransform()

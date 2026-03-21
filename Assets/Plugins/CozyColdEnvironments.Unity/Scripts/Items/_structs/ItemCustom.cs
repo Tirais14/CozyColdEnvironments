@@ -27,7 +27,7 @@ namespace CCEnvs.Unity.Items
 
         public bool Equals(IItem? other)
         {
-            return this.To<IItem>() == other;
+            return this.CastTo<IItem>() == other;
         }
 
         public override bool Equals(object? obj)

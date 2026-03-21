@@ -30,12 +30,12 @@ namespace CCEnvs.Unity.UI
 
         void IView.SetViewModel(object viewModel)
         {
-            SetViewModel(viewModel.To<TViewModel>());
+            SetViewModel(viewModel.CastTo<TViewModel>());
         }
 
         void IView.SetViewModelFactory(Func<object> factory)
         {
-            SetViewModelFactory(() => factory().To<TViewModel>());
+            SetViewModelFactory(() => factory().CastTo<TViewModel>());
         }
     }
 }

@@ -47,7 +47,7 @@ namespace CCEnvs.Dependencies
         }
         public static T Resolve<T>(object? id = null)
         {
-            return Resolve(typeof(T), id).To<T>();
+            return Resolve(typeof(T), id).CastTo<T>();
         }
 
         public static object? TryResolve(

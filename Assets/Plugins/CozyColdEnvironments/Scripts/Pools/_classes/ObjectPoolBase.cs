@@ -293,9 +293,9 @@ namespace CCEnvs.Pools
             go = null;
 
             if (TypeCache<T>.IsUnityGameObject)
-                go = obj.To<UnityEngine.GameObject>();
+                go = obj.CastTo<UnityEngine.GameObject>();
             else if (TypeCache<T>.IsUnityComponent)
-                go = obj.To<UnityEngine.Component>().gameObject;
+                go = obj.CastTo<UnityEngine.Component>().gameObject;
 
             return go != null;
         }

@@ -292,7 +292,7 @@ namespace CCEnvs.Linq
         public static IEnumerable<TResult> CastCustom<TResult>(this IEnumerable source)
         {
             foreach (var item in source)
-                yield return item.To<TResult>();
+                yield return item.CastTo<TResult>();
         }
 
         public static T Single<T>(

@@ -143,7 +143,7 @@ namespace CCEnvs.Patterns.Commands
 
             TryReset();
 
-            return this.To<TThis>();
+            return this.CastTo<TThis>();
         }
 
         public override string ToString()
@@ -198,7 +198,7 @@ namespace CCEnvs.Patterns.Commands
             if (!CancellationToken.CanBeCanceled)
             {
                 CancellationToken = cancellationToken;
-                return this.To<TThis>();
+                return this.CastTo<TThis>();
             }
 
             var linkedTokenSource = CancellationToken.TryLinkTokens(
@@ -207,7 +207,7 @@ namespace CCEnvs.Patterns.Commands
                 );
 
             if (linkedTokenSource is null)
-                return this.To<TThis>();
+                return this.CastTo<TThis>();
 
             lock (SyncRoot)
                 cancellationTokenSources.Add(linkedTokenSource);
@@ -216,7 +216,7 @@ namespace CCEnvs.Patterns.Commands
 
             RegisterCancellationTokenToCancel(CancellationToken);
 
-            return this.To<TThis>();
+            return this.CastTo<TThis>();
         }
 
         public async ValueTask WaitForDone(CancellationToken cancellationTokenAdditional = default)
@@ -341,7 +341,7 @@ namespace CCEnvs.Patterns.Commands
             var reg = cancellationToken.Register(
                 static @this =>
                 {
-                    var typed = @this.To<CommandBase<TThis>>();
+                    var typed = @this.CastTo<CommandBase<TThis>>();
 
                     if (typed.isCancellation
                         ||

@@ -16,7 +16,7 @@ namespace CCEnvs
             var handle = new PooledObject<T[]>(rented, source,
                 static (arr, args) =>
                 {
-                    args.To<ArrayPool<T>>().Return(arr);
+                    args.CastTo<ArrayPool<T>>().Return(arr);
                 });
 
             return handle;

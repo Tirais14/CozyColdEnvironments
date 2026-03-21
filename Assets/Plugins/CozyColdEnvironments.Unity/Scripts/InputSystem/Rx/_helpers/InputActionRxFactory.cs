@@ -12,7 +12,7 @@ namespace CCEnvs.Unity.InputSystem.Rx
         public static T Create<T>(InputAction inputAction)
             where T : IInputActionRx
         {
-            return Create(typeof(T), inputAction).To<T>();
+            return Create(typeof(T), inputAction).CastTo<T>();
         }
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>

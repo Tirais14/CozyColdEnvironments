@@ -1,48 +1,71 @@
-using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
+using CCEnvs.Unity.Injections;
 using R3;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    public sealed class CameraRaycaster : CCBehaviour
+    public abstract class CameraRaycaster<TSelf> : ICameraRaycaster
+        where TSelf : ICameraRaycaster
     {
-        private readonly ReactiveProperty<Collider?> objectCollider = new();
+        public const float MAX_DISTANCE_MIN = 0.01f;
+
+        protected readonly ReactiveProperty<Collider?> objectCollider = new();
+
+        [Header("Base Settings")]
+        [Space(6f)]
+
+        [SerializeField, Min(MAX_DISTANCE_MIN)]
+        protected float maxDistance = 10f;
 
         [SerializeField]
-        private float maxDistance = 10f;
+        protected SerializedNullable<LayerMask> layerMask;
+
+        [SerializeField, GetBySelf]
+        protected new Camera camera;
 
         [SerializeField]
-        private SerializedNullable<LayerMask> layerMask;
+        protected QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
 
-        [SerializeField]
-        private new Camera camera;
-
-        [SerializeField]
-        private QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
+        public float MaxDistance => maxDistance;
 
         public LayerMask LayerMask => layerMask.Deserialized ?? Physics.AllLayers;
 
-        public Collider? ObjectCollider => objectCollider.Value;    
+        public Camera Camera => camera;
 
-        public bool TryRaycast(Vector2 screenPoint)
+        public QueryTriggerInteraction TriggerInteraction => triggerInteraction;
+
+        public Collider? ObjectCollider => objectCollider.Value;
+
+        public TSelf SetMaxDistance(float value)
         {
-            if (Physics.Raycast(
-                camera.ScreenPointToRay(screenPoint),
-                out var hit,
-                maxDistance,
-                LayerMask,
-                triggerInteraction
-                ))
-            {
-                objectCollider.Value = hit.collider;
-                return true;
-            }
-
-            objectCollider.Value = null;
-            return false;
+            maxDistance = Mathf.Max(value, MAX_DISTANCE_MIN);
+            return this.CastTo<TSelf>();
         }
+
+        public TSelf SetLayerMask(LayerMask? value)
+        {
+            layerMask = new SerializedNullable<LayerMask>(value);
+            return this.CastTo<TSelf>();
+        }
+
+        public TSelf SetCamera(Camera value)
+        {
+            CC.Guard.IsNotNull(value);
+
+            camera = value;
+
+            return this.CastTo<TSelf>();
+        }
+
+        public TSelf SetTriggerInteraction(QueryTriggerInteraction value)
+        {
+            triggerInteraction = value;
+            return this.CastTo<TSelf>();
+        }
+
+        public abstract bool TryRaycast(Vector2 screenPoint);
 
         public Observable<Collider?> ObserveObjectCollider() => objectCollider;
 

@@ -37,12 +37,6 @@ namespace CCEnvs.Unity.D3
             return this;
         }
 
-        public ObjectManipulator SetCollisionDetectionEveryFrame(long value)
-        {
-            collisionDetectionEveryFrame = Math.Max(value, COLLISTION_DETECTION_EVERY_FRAME_MIN);
-            return this;
-        }
-
         public ObjectManipulator SetManipulatorObjectPitchOffset(float value)
         {
             manipulatorObjectPitchOffset = Mathf.Max(value, MANIPULATOR_OBJECT_PITCH_OFFSET_MIN);
