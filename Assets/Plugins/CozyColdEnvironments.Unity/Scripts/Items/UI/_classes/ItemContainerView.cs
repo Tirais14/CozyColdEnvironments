@@ -1,9 +1,10 @@
+using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,48 +22,67 @@ namespace CCEnvs.Unity.Storages.UI
     {
         [SerializeField]
         [GetByChildren(IsOptional = true)]
-        protected Maybe<TextMeshProUGUI> counterMesh;
+        protected TextMeshProUGUI counterMesh;
 
-        [SerializeField]
-        protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Equals | CompareTypes.Bigger);
+        private IDisposable? iconBinding;
+        private IDisposable? counterBinding;
 
-        protected override void Init()
+        protected override void InitViewModel(TViewModel vm)
         {
-            base.Init();
+            base.InitViewModel(vm);
 
-            if (viewModel.IsNotNull(out var vm))
-                vm.ShowCounterTextPredicate = ShowCounterTextPredicate;
-
-            BindItemIcon();
-            BindItemCount();
+            BindItemIcon(vm);
+            BindCounter(vm);
         }
 
-        private void BindItemIcon()
+        protected override void OnSetViewModel(TViewModel? vm)
         {
-            image.Maybe().IfSome(img =>
-            {
-                viewModelUnsafe.IconView.Subscribe(img,
-                     static (sprite, img) => img.sprite = sprite)
-                    .AddDisposableTo(this);
-            });
+            CCDisposable.Dispose(ref iconBinding);
+            CCDisposable.Dispose(ref counterBinding);
         }
 
-        private void BindItemCount()
+        private void BindItemIcon(TViewModel vm)
         {
-            counterMesh.IfSome(mesh =>
-            {
-                viewModelUnsafe.CounterView.Subscribe(mesh,
-                    static (text, mesh) => mesh.text = text)
-                    .AddDisposableTo(this);
-            });
+            if (image == null)
+                return;
+
+            iconBinding = vm.Icon.Subscribe(OnIcongChanged);
+        }
+
+        private void OnIcongChanged(Sprite icon)
+        {
+            CC.Guard.IsNotNull(image, nameof(image));
+
+            image.sprite = icon;
+        }
+
+        private void BindCounter(TViewModel vm)
+        {
+            if (counterMesh == null)
+                return;
+
+            counterBinding = vm.CounterView.Subscribe(OnCounterChanged);
+        }
+
+        private void OnCounterChanged(string counterView)
+        {
+            CC.Guard.IsNotNull(counterMesh, nameof(counterMesh));
+
+            counterMesh.text = counterView;
         }
     }
     public class ItemContainerView : ItemContainerView<ItemContainerViewModel<IItemContainer>>
     {
+        [SerializeField]
+        protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Equals | CompareTypes.Bigger);
+
         protected override Maybe<ItemContainerViewModel<IItemContainer>> CreateViewModel()
         {
             var cnt = new ItemContainer();
-            return new ItemContainerViewModel<IItemContainer>(cnt, destroyCancellationToken);
+            return new ItemContainerViewModel<IItemContainer>(cnt, destroyCancellationToken)
+            {
+                ShowCounterTextPredicate = ShowCounterTextPredicate
+            };
         }
     }
 }

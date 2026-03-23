@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         public ReadOnlyReactiveProperty<string> Position { get; }
 
-        public string ProfileName => model.Profile.Name;
+        public string ProfileName => Model.Profile.Name;
 
         public LeaderboardEntryViewModel(
             ILeaderboardEntry model,

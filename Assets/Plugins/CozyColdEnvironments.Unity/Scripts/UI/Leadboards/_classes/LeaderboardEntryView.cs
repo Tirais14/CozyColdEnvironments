@@ -28,9 +28,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
         [SerializeField]
         protected TMP_Text? positionView;
 
-        protected override void Init()
+        protected override void InitViewModel()
         {
-            base.Init();
+            base.InitViewModel();
             ResetRecordViews();
             SetRecordViews();
             BindScoreRecordAdd();

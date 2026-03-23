@@ -10,30 +10,23 @@ using R3;
 namespace CCEnvs.Unity.UI
 {
     public abstract class View<TViewModel>
-        : Showable,
+        : 
+        Showable,
         IView<TViewModel>
 
         where TViewModel : IViewModel
     {
-        protected readonly List<IDisposable> viewModelDisposables = new();
+        private readonly Lazy<List<IDisposable>> viewModelDisposables = new(() => new List<IDisposable>());
 
-        protected Lazy<TViewModel?> _viewModel = new(static () => default);
+        private Lazy<TViewModel?> viewModel = new(static () => default);
 
-        public TViewModel? viewModel => _viewModel.Value;
+        private IDisposable? modelBinding;
 
-        public object model => viewModelUnsafe.model;
+        public TViewModel? ViewModel => viewModel.Value;
 
-        protected TViewModel viewModelUnsafe {
-            get
-            {
-                if (viewModel.IsNull())
-                    throw new InvalidOperationException("View model is not setted.");
+        public object? Model => ViewModel.Maybe().Map(static vm => vm.Model);
 
-                return viewModel;
-            }
-        }
-
-        protected object modelUnsafe => viewModelUnsafe.model;
+        protected ICollection<IDisposable> ViewModelDisposables => viewModelDisposables.Value;
 
         protected override void Awake()
         {
@@ -50,17 +43,19 @@ namespace CCEnvs.Unity.UI
         }
 
         /// <summary>
-        /// Don't use previous <see cref="viewModel"/>, it has been disposed and don't use cached <see cref="viewModel"/> by the same reason.
+        /// Don't use previous <see cref="ViewModel"/>, it has been disposed and don't use cached <see cref="ViewModel"/> by the same reason.
         /// </summary>
         /// <param name="viewModel"></param>
         public void SetViewModel(TViewModel? viewModel)
         {
             TryDisposeViewModel();
 
-            _viewModel = new Lazy<TViewModel?>(viewModel);
+            OnSetViewModel(viewModel);
 
-            if (_viewModel.Value.IsNotNull())
-                Init();
+            this.viewModel = new Lazy<TViewModel?>(viewModel);
+
+            if (viewModel.IsNotNull())
+                InitViewModel(viewModel);
         }
 
         /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
@@ -71,60 +66,69 @@ namespace CCEnvs.Unity.UI
 
             TryDisposeViewModel();
 
-            _viewModel = new Lazy<TViewModel?>(() => factory());
+            viewModel = new Lazy<TViewModel?>(() =>
+            {
+                var vm = factory();
 
-            if (_viewModel.Value.IsNotNull())
-                Init();
+                if (vm.IsNotNull())
+                    InitViewModel(vm);
+
+                return vm;
+            });
         }
 
         public T GetModel<T>()
         {
-            return modelUnsafe.CastTo<T>();
+            return Model.CastTo<T>();
         }
 
         public T GetViewModel<T>()
             where T : IViewModel
         {
-            return viewModelUnsafe.CastTo<T>();
+            return ViewModel.CastTo<T>();
         }
 
         /// <summary>
         /// Invokes in <see cref="Start"/>, <see cref="SetViewModel(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
-        protected virtual void Init()
+        protected virtual void InitViewModel(TViewModel vm)
         {
-            if (viewModelUnsafe is not ViewModelBehaviour viewModelBehaviour)
-                return;
+            BindModel(vm);
+        }
 
-            viewModelBehaviour.ObserveModel()
-                .Where(this,
-                static (model, @this) =>
-                {
-                    return @this.model != model;
-                })
-                .Subscribe(this,
-                static (_, @this) =>
-                {
-                    var vm = @this.viewModelUnsafe;
-
-                    @this.SetViewModel(default);
-                    @this.SetViewModel(vm);
-                })
-                .AddTo(viewModelDisposables);
+        protected virtual void OnSetViewModel(TViewModel? vm)
+        {
+            throw new NotImplementedException(nameof(OnSetViewModel));
         }
 
         protected abstract Maybe<TViewModel> CreateViewModel();
 
         protected void TryDisposeViewModel()
         {
-            if (_viewModel.IsValueCreated
+            if (viewModel.IsValueCreated
                 &&
-                _viewModel.Value.Is<IDisposable>(out var disp))
+                ViewModel is IDisposable disposable)
             {
-                viewModelDisposables.DisposeEachAndClear();
-
-                disp.Dispose();
+                disposable?.Dispose();
             }
+
+            if (viewModelDisposables.IsValueCreated)
+                ViewModelDisposables.DisposeEachAndClear(bufferized: true);
+
+            modelBinding?.Dispose();
+        }
+
+        private void BindModel(TViewModel vm)
+        {
+            modelBinding = vm.ObserveModel()
+                .Subscribe(OnModelChanged);
+        }
+
+        private void OnModelChanged(object? model)
+        {
+            CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
+
+            InitViewModel(ViewModel);
         }
     }
 }

@@ -1,15 +1,19 @@
-using System.Threading;
+using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
+using CCEnvs.R3;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;
+using System;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
     public class ItemContainerViewModel<T>
-        : ViewModel<T>,
+        :
+        ViewModel<T>,
         IItemContainerViewModel
 
         where T : IItemContainer
@@ -17,56 +21,84 @@ namespace CCEnvs.Unity.Storages.UI
         private readonly ReactiveProperty<Sprite> iconView = new(UCC.Transparent.Value);
         private readonly ReactiveProperty<string> counterView = new();
 
-        public ReadOnlyReactiveProperty<Sprite> IconView { get; private set; }
-        public ReadOnlyReactiveProperty<string> CounterView { get; private set; }
-        public Maybe<CompareAction<int>> ShowCounterTextPredicate { get; set; }
+        private IDisposable? iconBinding;
+        private IDisposable? counterBinding;
+
+        public ReadOnlyReactiveProperty<Sprite> Icon => iconView;
+        public ReadOnlyReactiveProperty<string> CounterView => counterView;
+        public CompareAction<int>? ShowCounterTextPredicate { get; set; }
 
         public ItemContainerViewModel(T model, CancellationToken cancellationToken)
             :
             base(model, cancellationToken)
         {
-            counterView.AddTo(disposables);
-
-            IconView = iconView.ToReadOnlyReactiveProperty();
-            CounterView = counterView.ToReadOnlyReactiveProperty();
-
-            BindItemView();
-            BindCounterText();
         }
 
-        private void BindItemView()
-        {
-            model.ObserveItem()
-                .Subscribe(iconView,
-                    static (x, prop) => prop.Value = x.Map(item => item.Icon)
-                        .GetValue(UCC.Transparent.Value))
-                .AddTo(disposables);
+        ~ItemContainerViewModel() => Dispose();
 
-            iconView.AddTo(disposables);
+        protected override void OnSetModel(T? model)
+        {
+            CCDisposable.Dispose(ref iconBinding);
+            CCDisposable.Dispose(ref counterBinding);
+
+            iconView.Value = UCC.Transparent.Value;
+            counterView.Value = string.Empty;
         }
 
-        private void BindCounterText()
+        protected override void InitModel(T model)
         {
-            model.ObserveItemCount()
-                .Subscribe(this,
-                static (itemCount, @this) =>
-                {
-                    if (@this.ShowCounterTextPredicate.TryGetValue(out var predicate))
-                    {
-                        if (predicate.Invoke(itemCount))
-                            @this.counterView.Value = itemCount.ToString();
-                        else
-                            @this.counterView.Value = string.Empty;
+            BindItem(model);
+            BindCounterText(model);
+        }
 
-                        return;
-                    }
-                    else if (itemCount > 0)
-                        @this.counterView.Value = itemCount.ToString();
-                    else
-                        @this.counterView.Value = string.Empty;
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
 
-                })
-                .AddTo(disposables);
+            if (disposing)
+            {
+                OnSetModel(default);
+            }
+        }
+
+        private void BindItem(T model)
+        {
+            iconBinding = model.ObserveItem()
+                .Unmaybe()
+                .Subscribe(OnItemChanged);
+        }
+
+        private void OnItemChanged(IItem? item)
+        {
+            if (item.IsNull())
+                iconView.Value = UCC.Transparent.Value;
+
+            iconView.Value = item.Maybe()
+                .Map(static item => item.Icon)
+                .GetValue(UCC.Transparent.Value);
+        }
+
+        private void BindCounterText(T model)
+        {
+            counterBinding = model.ObserveItemCount()
+                .Subscribe(OnCounterText);
+        }
+
+        private void OnCounterText(int itemCount)
+        {
+            if (ShowCounterTextPredicate.HasValue)
+            {
+                if (ShowCounterTextPredicate.Value.Invoke(itemCount))
+                    counterView.Value = itemCount.ToString();
+                else
+                    counterView.Value = string.Empty;
+
+                return;
+            }
+            else if (itemCount > 0)
+                counterView.Value = itemCount.ToString();
+            else
+                counterView.Value = string.Empty;
         }
     }
 }

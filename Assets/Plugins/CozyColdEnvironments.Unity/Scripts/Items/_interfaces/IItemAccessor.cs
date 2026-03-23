@@ -5,15 +5,15 @@ namespace CCEnvs.Unity.Items
 {
     public interface IItemAccessor
     {
-        Maybe<IItemContainer> PutItem(IItem? item, int count = 1);
-        Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer, int count);
-        Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer);
+        Maybe<IItemContainerInfo> PutItem(IItem? item, int count = 1);
+        Maybe<IItemContainerInfo> PutItemFrom(IItemContainer itemContainer, int count);
+        Maybe<IItemContainerInfo> PutItemFrom(IItemContainer itemContainer);
 
-        Maybe<IItemContainer> TakeItem(int count);
-        Maybe<IItemContainer> TakeItem();
-        Maybe<IItemContainer> TakeItem(IItem item, int count);
+        Maybe<IItemContainerInfo> TakeItem(int count);
+        Maybe<IItemContainerInfo> TakeItem();
+        Maybe<IItemContainerInfo> TakeItem(IItem item, int count);
 
-        void CopyFrom(IItemContainerInfo itemContainer);
+        void CopyItemFrom(IItemContainerInfo itemContainer);
 
         void Reset();
     }

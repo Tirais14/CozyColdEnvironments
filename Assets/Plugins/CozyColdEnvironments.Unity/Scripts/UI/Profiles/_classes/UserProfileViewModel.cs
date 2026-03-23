@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.UI.Profiles
     public class UserProfileViewModel : ViewModel<IUserProfile>
     {
         public ReadOnlyReactiveProperty<Sprite?> Icon { get; }
-        public string Name => model.Name;
+        public string Name => Model.Name;
 
         public UserProfileViewModel(
             IUserProfile model,

@@ -1,5 +1,7 @@
 using System;
+using System.Threading;
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using R3;
 using UnityEngine;
@@ -40,7 +42,8 @@ namespace CCEnvs.Unity.Items
                 capacity = value;
             }
         }
-        public int FreeSpace => Math.Clamp(Capacity - ItemCount, min: 0, max: int.MaxValue);
+        public int FreeSpace => Math.Max(Capacity - ItemCount, 0);
+
         public bool IsEmpty => !ContainsItem();
         public bool IsFull => ItemCount >= Capacity;
         public bool IsActive => isActive.Value;
@@ -64,7 +67,12 @@ namespace CCEnvs.Unity.Items
         {
         }
 
-        public ItemContainer(IItem? item = null, int count = 1, int capacity = 0, bool isReadOnlyContainer = false)
+        public ItemContainer(
+            IItem? item = null,
+            int count = 1,
+            int capacity = 0,
+            bool isReadOnlyContainer = false
+            )
         {
             this.item.Value = item.Maybe()!;
             Capacity = capacity;
@@ -75,6 +83,8 @@ namespace CCEnvs.Unity.Items
 
             itemCount.Value = count;
         }
+
+        ~ItemContainer() => Dispose();
 
         public bool ContainsItem()
         {
@@ -95,54 +105,76 @@ namespace CCEnvs.Unity.Items
             return ItemCount >= count;
         }
 
-        public Maybe<IItemContainer> PutItem(IItem? item, int count = 1)
+        public Maybe<IItemContainerInfo> PutItem(IItem? inputItem, int count = 1)
         {
-            if (item.IsNull() || count <= 0)
-                return Maybe<IItemContainer>.None;
+            if (inputItem.IsNull() || count <= 0)
+                return Maybe<IItemContainerInfo>.None;
 
-            if (IsFull || (!IsEmpty && !ContainsItem(item)) || IsReadOnlyContainer)
-                return new ItemContainer(item, count);
+            if (IsFull
+                ||
+                (this.item.Value.TryGetValue(out var item) && item.ID != inputItem.ID))
+            {
+                return new ItemContainer(
+                    inputItem,
+                    count: count,
+                    capacity: int.MaxValue,
+                    isReadOnlyContainer: true
+                    );
+            }
 
-            int addedCount = Math.Clamp(count, 0, Capacity - itemCount.Value);
-            this.item.Value.IfNone(() => this.item.Value = item.Maybe());
+            var restCount = FreeSpace - count;
 
-            ItemContainer? restItems = null;
-            if (count - addedCount is int deltaCount && deltaCount > 0)
-                restItems = new ItemContainer(item, deltaCount);
+            ItemContainer? restItems = null!;
 
-            itemCount.Value += addedCount;
+            if (restCount < 0)
+            {
+                restItems = new ItemContainer(
+                    inputItem,
+                    count: Math.Abs(restCount),
+                    capacity: int.MaxValue,
+                    isReadOnlyContainer: true
+                    );
+            }
+
+            itemCount.Value += count;
+
+            if (Item.IsNone)
+                this.item.Value = inputItem.Maybe();
+
             return restItems;
         }
 
-        public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer, int count)
+        public Maybe<IItemContainerInfo> PutItemFrom(IItemContainer cnt, int count)
         {
-            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
+            CC.Guard.IsNotNull(cnt, nameof(cnt));
 
-            if (itemContainer.Equals(this))
-                return null!;
+            if (cnt.Equals(this)
+                ||
+                !cnt.TakeItem(count).TryGetValue(out var takedItems))
+            {
+                return Maybe<IItemContainerInfo>.None;
+            }
 
-            if (!itemContainer.TakeItem(count).TryGetValue(out var taked))
-                return Maybe<IItemContainer>.None;
-
-            return PutItem(taked.Item.Raw, taked.ItemCount);
+            return PutItem(takedItems.Item.GetValue(), takedItems.ItemCount);
         }
 
-        public Maybe<IItemContainer> PutItemFrom(IItemContainer itemContainer)
+        public Maybe<IItemContainerInfo> PutItemFrom(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
 
             return PutItemFrom(itemContainer, itemContainer.ItemCount);
         }
 
-        public Maybe<IItemContainer> TakeItem(int count)
+        public Maybe<IItemContainerInfo> TakeItem(int count)
         {
             if (Item.IsNone || count <= 0)
-                return null!;
+                return Maybe<IItemContainerInfo>.None;
 
             if (IsReadOnlyContainer)
-                return ShallowClone().Maybe();
+                throw new InvalidOperationException($"Cannot take item from readonly container. Container: {this}");
 
             int taked = Math.Clamp(count, 1, ItemCount);
+
             itemCount.Value -= taked;
 
             var result = new ItemContainer(Item.GetValue(), taked);
@@ -153,9 +185,9 @@ namespace CCEnvs.Unity.Items
             return result;
         }
 
-        public Maybe<IItemContainer> TakeItem() => TakeItem(itemCount.Value);
+        public Maybe<IItemContainerInfo> TakeItem() => TakeItem(itemCount.Value);
 
-        public Maybe<IItemContainer> TakeItem(IItem item, int count)
+        public Maybe<IItemContainerInfo> TakeItem(IItem item, int count)
         {
             if (!ContainsItem(item))
                 return Empty;
@@ -168,7 +200,7 @@ namespace CCEnvs.Unity.Items
             return new ItemContainer(Item.GetValue(), ItemCount, Capacity, IsReadOnlyContainer);
         }
 
-        public void CopyFrom(IItemContainerInfo itemContainer)
+        public void CopyItemFrom(IItemContainerInfo itemContainer)
         {
             item.Value = itemContainer.Item;
             itemCount.Value = itemContainer.ItemCount;
@@ -183,7 +215,7 @@ namespace CCEnvs.Unity.Items
 
         public Maybe<int> GetContainerID()
         {
-            return parentInventory.Map(inv => inv.GetKey(this)).Raw;
+            return parentInventory.Map(inv => GetContainerID()).GetValue();
         }
 
         public override string ToString()
@@ -198,14 +230,16 @@ namespace CCEnvs.Unity.Items
 
             isActive.Value = true;
 
-            this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
         public void Deactivate()
         {
             isActive.Value = false;
 
-            this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
         }
 
         public bool SwitchActiveState()
@@ -237,42 +271,19 @@ namespace CCEnvs.Unity.Items
 
         public Observable<Maybe<IItem>> ObserveItem() => item;
 
-        public Observable<bool> ObserveActiveState()
+        public Observable<bool> ObserveIsActive() => isActive;
+
+        public Observable<int> ObserveItemCount() => itemCount;
+
+        private int disposed;
+        public void Dispose()
         {
-            return isActive;
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
-
-        public Observable<bool> ObserveDeactivate()
-        {
-            return isActive.Where(x => !x);
-        }
-
-        public Observable<bool> ObserveActivate()
-        {
-            return isActive.Where(x => x);
-        }
-
-        public Observable<int> ObserveItemCount()
-        {
-            return itemCount;
-        }
-
-        public Observable<(int Previous, int Current)> ObserveDecreasedItemCount()
-        {
-            return itemCount.Pairwise().Where(pair => pair.Current < pair.Previous);
-        }
-
-        public Observable<(int Previous, int Current)> ObserveIncreaseItemCount()
-        {
-            return itemCount.Pairwise().Where(pair => pair.Current > pair.Previous);
-        }
-
-        public void Dispose() => Dispose(disposing: true);
-
-        private bool disposed;
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             if (disposing)
@@ -281,8 +292,6 @@ namespace CCEnvs.Unity.Items
                 itemCount.Dispose();
                 isActive.Dispose();
             }
-
-            disposed = true;
         }
 
     }

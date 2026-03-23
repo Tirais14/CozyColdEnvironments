@@ -251,5 +251,33 @@ namespace CCEnvs
 
             return source;
         }
+
+        public static T IfNull<T>(this T? source, T other)
+        {
+            if (!source.IsNull())
+                return source;
+
+            return other;
+        }
+
+        public static T IfNull<T>(this T? source, Func<T> factory)
+        {
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!source.IsNull())
+                return source;
+
+            return factory();
+        }
+
+        public static T IfNull<T, TState>(this T? source, TState state, Func<TState, T> factory)
+        {
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!source.IsNull())
+                return source;
+
+            return factory(state);
+        }
     }
 }

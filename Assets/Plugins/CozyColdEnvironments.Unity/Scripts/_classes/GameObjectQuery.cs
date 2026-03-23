@@ -378,7 +378,7 @@ namespace CCEnvs.Unity
             bool anyType = type is null;
 
             return from view in Views(type)
-                   select view.viewModel into viewModel
+                   select view.ViewModel into viewModel
                    where viewModel.IsNotNull()
                    where anyType || viewModel.IsInstanceOfType(type!)
                    select viewModel;
@@ -431,8 +431,8 @@ namespace CCEnvs.Unity
             var cmps = Components();
 
             var models = from view in cmps.OfType<IView>()
-                         where view.viewModel.IsNotNull()
-                         select view.model into model
+                         where view.ViewModel.IsNotNull()
+                         select view.Model into model
                          where model.IsNotNull()
                          where anyType || model.IsInstanceOfType(type)
                          select model;

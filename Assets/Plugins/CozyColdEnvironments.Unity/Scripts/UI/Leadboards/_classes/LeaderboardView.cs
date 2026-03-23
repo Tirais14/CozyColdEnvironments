@@ -11,13 +11,14 @@ namespace CCEnvs.Unity.UI.Leaderboards
 {
     public class LeaderboardView : View<LeaderboardViewModel>
     {
-        protected override void Init()
+        protected override void InitViewModel(LeaderboardViewModel vm)
         {
-            base.Init();
-            BindEntryClear();
-            BindEntryRemove();
-            BindEntryAdd();
-            BindSortedEntries();
+            base.InitViewModel(vm);
+
+            BindEntryClear(vm);
+            BindEntryRemove(vm);
+            BindEntryAdd(vm);
+            BindSortedEntries(vm);
         }
 
         protected override Maybe<LeaderboardViewModel> CreateViewModel()
@@ -26,51 +27,43 @@ namespace CCEnvs.Unity.UI.Leaderboards
                 .IncludeInactive()
                 .Component<LeaderboardViewModel>()
                 .Lax()
-                .IfSome(vm => ViewModelBehaviourExtensions.SetModel(vm, new Leaderboard()));
+                .IfSome(static vm => vm.SetModel(new Leaderboard()));
         }
 
-        private void BindEntryAdd()
+        private void BindEntryAdd(LeaderboardViewModel vm)
         {
-            viewModelUnsafe.Entries.ObserveDictionaryAdd(viewModelUnsafe.DisposeCancellationToken)
+            vm.Entries.ObserveDictionaryAdd(vm.DisposeCancellationToken)
                 .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (entry, @this) =>
-                {
-                    @this.viewModelUnsafe.OnEntryAdd(entry);
-                })
-                .AddTo(viewModelDisposables);
+                .Subscribe(vm.OnEntryAdd)
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindEntryRemove()
+        private void BindEntryRemove(LeaderboardViewModel vm)
         {
-            viewModelUnsafe.Entries.ObserveDictionaryRemove(viewModelUnsafe.DisposeCancellationToken)
+            vm.Entries.ObserveDictionaryRemove(vm.DisposeCancellationToken)
                 .Select(static ev => ev.Value)
-                .Subscribe(this,
-                static (entry, @this) =>
-                {
-                    @this.viewModelUnsafe.OnEntryRemove(entry);
-                })
-                .AddTo(viewModelDisposables);
+                .Subscribe(vm.OnEntryRemove)
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindEntryClear()
+        private void BindEntryClear(LeaderboardViewModel vm)
         {
-            viewModelUnsafe.Entries.ObserveClear(viewModelUnsafe.DisposeCancellationToken)
-                .Subscribe(this,
-                static (_, @this) => @this.viewModelUnsafe.OnEntriesClear())
-                .AddTo(viewModelDisposables);
+            vm.Entries.ObserveClear(vm.DisposeCancellationToken)
+                .Subscribe(vm,
+                static (_, vm) => vm.OnEntriesClear())
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindSortedEntries()
+        private void BindSortedEntries(LeaderboardViewModel vm)
         {
-            viewModelUnsafe.SortedEntries.ObserveChanged(viewModelUnsafe.DisposeCancellationToken)
+            vm.SortedEntries.ObserveChanged(vm.DisposeCancellationToken)
                 .ThrottleLastFrame(1)
-                .Subscribe(this,
-                static (_, @this) =>
+                .Subscribe(vm,
+                static (_, vm) =>
                 {
-                    @this.viewModelUnsafe.SortEntries();
+                    vm.SortEntries();
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
     }
 }

@@ -1,91 +1,52 @@
-using System.Collections.Generic;
-using System.Threading;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
+using CommunityToolkit.Diagnostics;
 using ObservableCollections;
-using R3;
+using System;
+using System.Threading;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
 {
-    public class InventoryViewModel<TModel> : ViewModel<TModel>, IInventoryViewModel
+    public class InventoryViewModel<TModel>
+        :
+        ViewModel<TModel>, 
+        IInventoryViewModel
 
         where TModel : IInventory
     {
-        private readonly ReactiveCommand<KeyValuePair<int, IItemContainer>> add = new();
-        private readonly ReactiveCommand<int> remove = new();
-        private readonly ReactiveCommand<KeyValuePair<int, IItemContainer>> replace = new();
+        private readonly Func<IItemContainerViewModel> cntViewModelFactory;
 
-        public ISynchronizedView<KeyValuePair<int, IItemContainer>> Containers { get; private set; }
+        private IDisposable? addContainerBinding;
+        private IDisposable? removeContainerBinding;
+        private IDisposable? replaceContainerBinding;
 
-        public InventoryViewModel(TModel model, CancellationToken cancellationToken)
+        public IReadOnlyObservableDictionary<int, IItemContainer> Containers => Model.Containers;
+
+        public GameObject ContainerPrefab { get; }
+
+        public InventoryViewModel(
+            TModel model,
+            CancellationToken cancellationToken,
+            GameObject containerPrefab,
+            Func<IItemContainerViewModel> cntViewModelFactory
+            )
             :
             base(model, cancellationToken)
         {
-            BindAdd();
-            BindRemove();
-            BindReplace();
+            CC.Guard.IsNotNull(containerPrefab, nameof(containerPrefab));
+            Guard.IsNotNull(cntViewModelFactory, nameof(cntViewModelFactory));
 
-            Containers = model.Containers.
+            ContainerPrefab = containerPrefab;
+            this.cntViewModelFactory = cntViewModelFactory;
         }
 
-        public void Add(int key, IItemContainer value)
+        public void OnAddContainer(ItemContainerView cntView)
         {
-            throw new System.NotImplementedException();
-        }
+            CC.Guard.IsNotNull(cntView, nameof(cntView));
 
-        public void Remove(int key)
-        {
-            throw new System.NotImplementedException();
-        }
 
-        public void Remove(int key, IItemContainer value)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAdd()
-        {
-            return model.ObserveAddContainer();
-        }
-
-        public Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemove()
-        {
-            return model.ObserveRemoveContainer();
-        }
-
-        public Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplace()
-        {
-            return model.ObserveReplaceContainer();
-        }
-
-        public Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveReset()
-        {
-            return model.ObserveReset();
-        }
-
-        private void BindAdd()
-        {
-            add.Subscribe(this,
-                static (cnt, @this) => @this.model.AddContainer(cnt.Key, cnt.Value))
-                .AddTo(disposables);
-        }
-
-        private void BindRemove()
-        {
-            remove.Subscribe(this,
-                   static (id, @this) => @this.model.RemoveContainer(id))
-                   .AddTo(disposables);
-        }
-
-        private void BindReplace()
-        {
-            replace.Subscribe(this,
-                    static (cnt, @this) =>
-                    {
-                        @this.model.CastTo<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value;
-                    })
-                    .AddTo(disposables);
         }
     }
 }

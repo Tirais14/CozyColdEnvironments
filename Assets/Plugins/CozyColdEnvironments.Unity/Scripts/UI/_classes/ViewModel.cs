@@ -1,83 +1,100 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using CCEnvs.Reflection;
 using CCEnvs.Threading;
 using R3;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 #pragma warning disable S1699
 namespace CCEnvs.Unity.UI
 {
-    public abstract class ViewModel<TModel> : IViewModel<TModel>, IDisposable
+    public abstract class ViewModel<TModel> 
+        :
+        IViewModel<TModel>,
+        IDisposable
     {
-        protected readonly List<IDisposable> disposables = new();
+        private readonly ReactiveProperty<TModel?> model = new();
+
+        private readonly Lazy<List<IDisposable>> modelDisposables = new(() => new List<IDisposable>());
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+        private readonly CancellationTokenSource? linkedCancellationTokenSource;
 
-        public TModel model { get; }
+        private readonly CancellationTokenRegistration disposeCancellationTokenRegistration;
 
-        public CancellationToken DisposeCancellationToken { get; }
+        public TModel? Model => model.Value;
 
-        protected ViewModel(TModel model, CancellationToken cancellationToken)
-        {
-            this.model = model;
+        protected ICollection<IDisposable> ModelDisposables => modelDisposables.Value;
 
-            var linkedTokenSource = cancellationToken.LinkTokens(disposeCancellationTokenSource.Token);
-
-            linkedTokenSource.AddTo(disposables);
-
-            DisposeCancellationToken = linkedTokenSource.Token;
-
-            DisposeCancellationToken.Register(
-                static @this =>
-                {
-                    var typed = @this.CastTo<ViewModel<TModel>>();
-
-                    typed.Dispose();
-                },
-                this
-                )
-                .AddTo(disposables);
-
-            AddDisposableViewModelDataToList();
+        public CancellationToken DisposeCancellationToken {
+            get => linkedCancellationTokenSource?.Token ?? disposeCancellationTokenSource.Token;
         }
 
-        private bool disposed;
-        public void Dispose() => Dispose(disposing: true);
+        protected ViewModel(TModel? model, CancellationToken cancellationToken)
+        {
+            this.model.Value = model;
+
+            linkedCancellationTokenSource = cancellationToken.LinkTokens(disposeCancellationTokenSource.Token);
+
+            disposeCancellationTokenRegistration = DisposeCancellationToken.Register(
+                static @this => @this.CastTo<ViewModel<TModel>>().Dispose(),
+                this
+                );
+        }
+
+        ~ViewModel() => Dispose();
+
+        public virtual void SetModel(TModel? model)
+        {
+            if (modelDisposables.IsValueCreated)
+                ModelDisposables.DisposeEachAndClear(bufferized: true);
+
+            OnSetModel(model);
+
+            this.model.Value = model;
+
+            if (model.IsNotNull())
+                InitModel(model);
+        }
+
+        public Observable<TModel?> ObserveModel() => model;
+
+        private int disposed;
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
             if (disposing)
             {
-                disposeCancellationTokenSource.Cancel();
-                disposeCancellationTokenSource.Dispose();
+                if (linkedCancellationTokenSource != null)
+                {
+                    linkedCancellationTokenSource.CancelAndDispose();
+                    disposeCancellationTokenSource.Dispose();
+                }
+                else
+                    disposeCancellationTokenSource.CancelAndDispose();
 
-                disposables.DisposeEach();
-                disposables.Clear();
+                disposeCancellationTokenRegistration.Dispose();
+
+                if (modelDisposables.IsValueCreated)
+                    modelDisposables.Value.DisposeEachAndClear(bufferized: true);
             }
-
-            disposed = true;
         }
 
-        [Obsolete]
-        protected virtual void AddDisposableViewModelDataToList()
+        protected virtual void OnSetModel(TModel? model)
         {
-            foreach (var item in this.Reflect()
-                .Cache()
-                .Fields()
-                .Where(field =>
-                {
-                    return field.Name != nameof(disposables);
-                })
-                .Select(field => field.GetValue(this))
-                .OfType<IDisposable>())
-            {
-                disposables.Add(item);
-            }
+            throw new NotImplementedException(nameof(OnSetModel));
+        }
+
+        protected virtual void InitModel(TModel model)
+        {
+            throw new NotImplementedException(nameof(InitModel));
         }
     }
 }

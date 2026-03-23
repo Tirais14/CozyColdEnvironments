@@ -74,9 +74,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
             set => maxVisibleCount = value;
         }
 
-        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => model.Entries;
+        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => Model.Entries;
 
-        public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => model.SortedEntries;
+        public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => Model.SortedEntries;
 
         public ReadOnlyReactiveProperty<ILeaderboardEntry?> SpecialEntry { get; set; } = null!;
 
@@ -92,10 +92,10 @@ namespace CCEnvs.Unity.UI.Leaderboards
             commandScheduler.Dispose();
         }
 
-        protected override void Init()
+        protected override void InitModel(ILeaderboard model)
         {
-            base.Init();
-            SetSpecialEntry();
+            base.InitModel(model);
+            SetSpecialEntry(model);
         }
 
         public virtual void SortEntries()
@@ -319,12 +319,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
             sortingBuffer = sortingBufferGO.transform;
         }
 
-        private void SetSpecialEntry()
+        private void SetSpecialEntry(ILeaderboard model)
         {
             SpecialEntry = model.ObserveSpecialEntry()
                 .ToReadOnlyReactiveProperty(model.SpecialEntry);
 
-            SpecialEntry.AddTo(modelDisposables);
+            SpecialEntry.AddTo(ModelDisposables);
         }
 
         private void MoveEntryViewsToSortingBuffer(

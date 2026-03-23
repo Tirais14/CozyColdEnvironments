@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
 using ObservableCollections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -8,14 +9,11 @@ namespace CCEnvs.Unity.Items
     public interface IInventory
         : IItemAccessor,
         IItemContainerInfoItemless,
-        IEnumerable<KeyValuePair<int, IItemContainer>>
+        IEnumerable<IItemContainer>
     {
         bool AutoSize { get; set; }
 
-        IEnumerable<int> IDs { get; }
-        IEnumerable<IItemContainer> Containers { get; }
-
-        IReadOnlyObservableDictionary<int, IItemContainer> ContainersRX { get; }
+        IReadOnlyObservableDictionary<int, IItemContainer> Containers { get; }
 
         int ContainerCount { get; }
 
@@ -38,6 +36,8 @@ namespace CCEnvs.Unity.Items
         int GetItemCount(IItem? item);
 
         int GetFreeSpace(IItem? item);
+
+        Maybe<int> GetContainerID(IItemContainer cnt);
 
         IList<IItemContainer> InstantiateContainers(int count, IItemContainer? cloneExample = null);
 

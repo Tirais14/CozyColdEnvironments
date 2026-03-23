@@ -6,8 +6,8 @@ namespace CCEnvs.Unity.UI
 {
     public interface IView : IShowable
     {
-        IViewModel? viewModel { get; }
-        object? model { get; }
+        IViewModel? ViewModel { get; }
+        object? Model { get; }
 
         void SetViewModel(object viewModel);
 
@@ -20,9 +20,9 @@ namespace CCEnvs.Unity.UI
     public interface IView<TViewModel> : IView
         where TViewModel : IViewModel
     {
-        new TViewModel? viewModel { get; }
+        new TViewModel? ViewModel { get; }
 
-        IViewModel? IView.viewModel => viewModel;
+        IViewModel? IView.ViewModel => ViewModel;
 
         void SetViewModel(TViewModel viewModel);
 

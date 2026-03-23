@@ -14,9 +14,9 @@ namespace CCEnvs.Unity.UI.Profiles
         [SerializeField]
         private TMP_Text nameView;
 
-        protected override void Init()
+        protected override void InitViewModel()
         {
-            base.Init();
+            base.InitViewModel();
             BindIcon();
             SetName();
         }
