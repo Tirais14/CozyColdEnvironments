@@ -1,7 +1,7 @@
 #nullable enable
-using System.Collections.Generic;
 using ObservableCollections;
-using R3;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Unity.Items
 {
@@ -15,29 +15,34 @@ namespace CCEnvs.Unity.Items
         IEnumerable<int> IDs { get; }
         IEnumerable<IItemContainer> Containers { get; }
 
+        IReadOnlyObservableDictionary<int, IItemContainer> ContainersRX { get; }
+
         int ContainerCount { get; }
 
-        Result<IItemContainer> this[int id] { get; }
+        IItemContainer this[int id] { get; }
+
+        bool TryGetContainer(int id, [NotNullWhen(true)] out IItemContainer? container);
 
         void ResetContainers();
 
-        void AddContainer(int id, IItemContainer itemContainer);
         void AddContainer(IItemContainer itemContainer);
 
         bool RemoveContainer(int id);
 
-        T[] AddCount<T>(int count) where T : IItemContainer, new();
+        void EnsureFreeSpace(
+            int targetSpace,
+            IItem? item = null,
+            IItemContainer? cloneExample = null
+            );
 
-        IItemContainer[] SetCount<T>(int count) where T : IItemContainer, new();
+        int GetItemCount(IItem? item);
 
-        IItemContainer[] RemoveCount(int count);
+        int GetFreeSpace(IItem? item);
 
-        Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAddContainer();
+        IList<IItemContainer> InstantiateContainers(int count, IItemContainer? cloneExample = null);
 
-        Observable<DictionaryRemoveEvent<int, IItemContainer>> ObserveRemoveContainer();
+        IList<IItemContainer> SetContainerCount(int count, IItemContainer? cloneExample = null);
 
-        Observable<DictionaryReplaceEvent<int, IItemContainer>> ObserveReplaceContainer();
-
-        Observable<CollectionResetEvent<KeyValuePair<int, IItemContainer>>> ObserveReset();
+        IList<IItemContainer> RemoveCount(int count);
     }
 }

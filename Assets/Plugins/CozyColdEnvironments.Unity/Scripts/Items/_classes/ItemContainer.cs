@@ -165,7 +165,7 @@ namespace CCEnvs.Unity.Items
 
         public IItemContainer ShallowClone()
         {
-            return new ItemContainer(Item.GetValue(), ItemCount);
+            return new ItemContainer(Item.GetValue(), ItemCount, Capacity, IsReadOnlyContainer);
         }
 
         public void CopyFrom(IItemContainerInfo itemContainer)

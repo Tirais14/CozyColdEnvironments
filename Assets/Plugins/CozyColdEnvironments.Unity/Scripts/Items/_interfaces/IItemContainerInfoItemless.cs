@@ -10,7 +10,9 @@ namespace CCEnvs.Unity.Items
         int ItemCount { get; }
         int Capacity { get; set; }
         int FreeSpace { get; }
+
         Maybe<IInventory> ParentInventory { get; set; }
+
         bool IsEmpty { get; }
         bool IsFull { get; }
 
@@ -25,9 +27,5 @@ namespace CCEnvs.Unity.Items
         Maybe<int> GetContainerID();
 
         Observable<int> ObserveItemCount();
-
-        Observable<(int Previous, int Current)> ObserveDecreasedItemCount();
-
-        Observable<(int Previous, int Current)> ObserveIncreaseItemCount();
     }
 }

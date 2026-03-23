@@ -16,15 +16,32 @@ namespace CCEnvs.Unity.Storages.UI
         private readonly ReactiveCommand<int> remove = new();
         private readonly ReactiveCommand<KeyValuePair<int, IItemContainer>> replace = new();
 
-        public ReactiveCommand<KeyValuePair<int, IItemContainer>> Add => add;
-        public ReactiveCommand<int> Remove => remove;
-        public ReactiveCommand<KeyValuePair<int, IItemContainer>> Replace => replace;
+        public ISynchronizedView<KeyValuePair<int, IItemContainer>> Containers { get; private set; }
 
         public InventoryViewModel(TModel model, CancellationToken cancellationToken)
             :
             base(model, cancellationToken)
         {
-            InstallBindings();
+            BindAdd();
+            BindRemove();
+            BindReplace();
+
+            Containers = model.Containers.
+        }
+
+        public void Add(int key, IItemContainer value)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Remove(int key)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Remove(int key, IItemContainer value)
+        {
+            throw new System.NotImplementedException();
         }
 
         public Observable<DictionaryAddEvent<int, IItemContainer>> ObserveAdd()
@@ -47,19 +64,28 @@ namespace CCEnvs.Unity.Storages.UI
             return model.ObserveReset();
         }
 
-        private void InstallBindings()
+        private void BindAdd()
         {
             add.Subscribe(this,
-                    static (cnt, @this) => @this.model.AddContainer(cnt.Key, cnt.Value))
+                static (cnt, @this) => @this.model.AddContainer(cnt.Key, cnt.Value))
                 .AddTo(disposables);
+        }
 
+        private void BindRemove()
+        {
             remove.Subscribe(this,
-                    static (id, @this) => @this.model.RemoveContainer(id))
-                .AddTo(disposables);
+                   static (id, @this) => @this.model.RemoveContainer(id))
+                   .AddTo(disposables);
+        }
 
+        private void BindReplace()
+        {
             replace.Subscribe(this,
-                    static (cnt, @this) => @this.model.CastTo<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value)
-                .AddTo(disposables);
+                    static (cnt, @this) =>
+                    {
+                        @this.model.CastTo<IDictionary<int, IItemContainer>>()[cnt.Key] = cnt.Value;
+                    })
+                    .AddTo(disposables);
         }
     }
 }

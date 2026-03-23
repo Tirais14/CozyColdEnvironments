@@ -9,11 +9,11 @@ namespace CCEnvs.Unity.UI
     [Obsolete]
     public interface IReactiveDictionaryViewModel<TKey, TValue> : IViewModel
     {
-        ReactiveCommand<KeyValuePair<TKey, TValue>> Add { get; }
+        void Add(TKey key, TValue value);
 
-        ReactiveCommand<TKey> Remove { get; }
+        void Remove(TKey key);
 
-        ReactiveCommand<KeyValuePair<TKey, TValue>> Replace { get; }
+        void Remove(TKey key, TValue value);
 
         Observable<DictionaryAddEvent<TKey, TValue>> ObserveAdd();
 
