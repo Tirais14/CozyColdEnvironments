@@ -460,6 +460,7 @@ namespace CCEnvs.Unity.Items
                 itemCount?.Dispose();
                 containerAddBinding?.Dispose();
                 containerRemoveBinding?.Dispose();
+                containerReplaceBinding?.Dispose();
 
                 containers?.Clear();
                 occupiedContainers?.Clear();
