@@ -1,29 +1,30 @@
 #if UNITY_EDITOR
+using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CCEnvs.UnityEditor;
-using SuperLinq;
 using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
 namespace CCEnvs.Unity.UnityEditor
 {
-    public static class EdtiorDefinesInstallTool
+    public static class EditorDefinesInstallTool
     {
         private const string UNITASK = "Cysharp.Threading";
         private const string ZLINQ = "ZLinq";
         private const string ADDRESSABLES = "AddressableAssets";
         private const string ZENJECT = "Zenject";
         private const string VCONTAINER = "VContainer";
+        private const string BIN_PACKER_EB_AFIT = "CromulentBisgetti";
 
         private const string UNITASK_SYMBOL = "UNITASK_PLUGIN";
         private const string ZLINQ_SYMBOL = "ZLINQ_PLUGIN";
         private const string ADDRESSABLES_SYMBOL = "ADDRESSABLES_PLUGIN";
         private const string ZENJECT_SYMBOL = "ZENJECT_PLUGIN";
         private const string VCONTAINER_SYMBOL = "VCONTAINER_PLUGIN";
+        private const string BIN_PACKER_EB_AFIT_SYMBOL = "BIN_PACKER_EB_PLUGIN";
 
         private readonly static Dictionary<string, string[]> nspaceDefineSymbols = new()
         {
@@ -31,7 +32,8 @@ namespace CCEnvs.Unity.UnityEditor
             { ZLINQ, Range.From(ZLINQ_SYMBOL) },
             { ADDRESSABLES, Range.From(ADDRESSABLES_SYMBOL) },
             { ZENJECT, Range.From(ZENJECT_SYMBOL) },
-            { VCONTAINER, Range.From(VCONTAINER_SYMBOL) }
+            { VCONTAINER, Range.From(VCONTAINER_SYMBOL) },
+            { BIN_PACKER_EB_AFIT, Range.From(BIN_PACKER_EB_AFIT_SYMBOL) }
         };
 
         [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Install", priority = -1)]
@@ -118,8 +120,12 @@ namespace CCEnvs.Unity.UnityEditor
                         results.Add(ADDRESSABLES);
                     else if (type.Namespace.StartsWith(ZENJECT))
                         results.Add(ZENJECT);
+                    else if (type.Namespace.StartsWith(VCONTAINER))
+                        results.Add(VCONTAINER);
+                    else if (type.Namespace.StartsWith(BIN_PACKER_EB_AFIT))
+                        results.Add(BIN_PACKER_EB_AFIT);
 
-                    if (results.Count == 4)
+                    if (results.Count == nspaceDefineSymbols.Count)
                         loopState.Break();
                 });
 

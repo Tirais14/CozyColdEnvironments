@@ -6,20 +6,20 @@ namespace CCEnvs.Unity.D3
 
     public class CameraRaycasterRay : CameraRaycaster<CameraRaycasterRay>
     {
-        public override bool TryRaycast(Vector2 screenPoint)
+        public override bool TryRaycast(Ray ray)
         {
             if (Physics.Raycast(
-                camera.ScreenPointToRay(screenPoint),
+                ray,
                 out var hit,
                 maxDistance,
                 LayerMask,
                 triggerInteraction
                 ))
             {
-                return SetObject(hit);
+                return OnRaycast(hit);
             }
 
-            return SetObject(null);
+            return OnRaycast(null);
         }
     }
 }

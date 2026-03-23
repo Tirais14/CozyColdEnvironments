@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using R3;
 
 #nullable enable
 #pragma warning disable IDE0251
@@ -11,19 +9,18 @@ namespace CCEnvs
     /// <summary>
     /// 
     /// </summary>
-    public struct LoopFuse : IDisposable, IEquatable<LoopFuse>
+    public struct LoopFuse : IEquatable<LoopFuse>
     {
-        public const int DEFAULT_ITERATION_LIMIT = 1000000;
+        public const long DEFAULT_ITERATION_LIMIT = 1000000;
 
-        private ReactiveCommand<int>? onLimitReachedCmd;
-        private bool isNotDefault;
+        private bool isInititalized;
 
         /// <summary>
         /// Triggered before the exception
         /// </summary>
-        public event Action<int>? OnLimitReached;
+        public event Action<long>? OnLimitReached;
 
-        public int IterationPosition {
+        public long IterationPosition {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get;
 
@@ -31,7 +28,7 @@ namespace CCEnvs
             private set;
         }
 
-        public int IterationCount {
+        public long IterationCount {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get;
 
@@ -39,7 +36,7 @@ namespace CCEnvs
             private set;
         }
 
-        public int IterationLimit {
+        public long IterationLimit {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get;
 
@@ -58,14 +55,15 @@ namespace CCEnvs
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static LoopFuse Create(
-            int iterationLimit = DEFAULT_ITERATION_LIMIT,
-            bool throwOnLimitReached = true)
+            long iterationLimit = DEFAULT_ITERATION_LIMIT,
+            bool throwOnLimitReached = true
+            )
         {
             return new LoopFuse()
             {
                 IterationLimit = iterationLimit,
                 ThrowOnLimitReached = throwOnLimitReached,
-                isNotDefault = true,
+                isInititalized = true,
             };
         }
 
@@ -82,7 +80,7 @@ namespace CCEnvs
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            if (!isNotDefault
+            if (!isInititalized
                 &&
                 this.IsDefault())
             {
@@ -90,7 +88,7 @@ namespace CCEnvs
                 IterationLimit = DEFAULT_ITERATION_LIMIT;
                 ThrowOnLimitReached = true;
 
-                isNotDefault = true;
+                isInititalized = true;
             }
 
             IterationCount++;
@@ -99,7 +97,6 @@ namespace CCEnvs
             if (IterationCount > IterationLimit)
             {
                 OnLimitReached?.Invoke(IterationPosition);
-                onLimitReachedCmd?.Execute(IterationPosition);
 
                 var ex = CC.ThrowHelper.EndlessLoopException(IterationCount);
 
@@ -137,17 +134,6 @@ namespace CCEnvs
             return this;
         }
 
-        private bool disposed;
-        public void Dispose()
-        {
-            if (disposed)
-                return;
-
-            onLimitReachedCmd?.Dispose();
-
-            disposed = true;
-        }
-
         public readonly override bool Equals(object? obj)
         {
             return obj is LoopFuse fuse && Equals(fuse);
@@ -155,9 +141,7 @@ namespace CCEnvs
 
         public readonly bool Equals(LoopFuse other)
         {
-            return EqualityComparer<ReactiveCommand<int>?>.Default.Equals(onLimitReachedCmd, other.onLimitReachedCmd)
-                   &&
-                   IterationPosition == other.IterationPosition
+            return IterationPosition == other.IterationPosition
                    &&
                    IterationCount == other.IterationCount
                    &&
@@ -169,7 +153,6 @@ namespace CCEnvs
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(
-                onLimitReachedCmd,
                 IterationPosition,
                 IterationCount,
                 IterationLimit,
@@ -183,19 +166,6 @@ namespace CCEnvs
                 return StringHelper.EMPTY_OBJECT;
 
             return $"({nameof(IterationPosition)}: {IterationPosition}; {nameof(IterationLimit)}: {IterationLimit})";
-        }
-
-        /// <summary>
-        /// Triggered before the exception
-        /// </summary>
-        public Observable<int> ObserveLimitReached()
-        {
-            if (this.IsDefault())
-                return Observable.Empty<int>();
-
-            onLimitReachedCmd ??= new ReactiveCommand<int>();
-
-            return onLimitReachedCmd;
         }
     }
 }

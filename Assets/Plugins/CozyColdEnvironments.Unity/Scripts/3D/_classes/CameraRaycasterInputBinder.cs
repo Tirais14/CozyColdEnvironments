@@ -1,3 +1,5 @@
+using CCEnvs.Attributes;
+using CCEnvs.Disposables;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
@@ -16,20 +18,18 @@ namespace CCEnvs.Unity.D3
         [Space(6f)]
 
         [SerializeField]
-        private InputActionRxReference<Vector2> pointInputAction;
-
-        [SerializeField]
         private ButtonActionRxReference raycastInputAction;
+
+        [SerializeField, OptionalField]
+        private InputActionRxReference<Vector2> pointInputAction;
 
         [GetBySelf]
         private ICameraRaycaster raycaster = null!;
 
-        private IDisposable? pointIABinding;
         private IDisposable? raycastIABinding;
 
-        private Vector2? currentPoint;
-
         public InputActionRx<Vector2>? PointIA { get; private set; }
+
         public ButtonActionRx? RaycastIA { get; private set; }
 
         protected override void Start()
@@ -39,7 +39,6 @@ namespace CCEnvs.Unity.D3
             if (PointIA == null && pointInputAction != null && pointInputAction.IsValid)
             {
                 PointIA = pointInputAction.Value;
-                TryBindPointIA();
             }
 
             if (RaycastIA == null && raycastInputAction != null && raycastInputAction.IsValid)
@@ -52,14 +51,12 @@ namespace CCEnvs.Unity.D3
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            pointIABinding?.Dispose();
-            raycastIABinding?.Dispose();
+            CCDisposable.Dispose(ref raycastIABinding);
         }
 
         public CameraRaycasterInputBinder SetPointIA(InputActionRx<Vector2>? ia)
         {
             PointIA = ia;
-            TryBindPointIA();
             return this;
         }
 
@@ -70,22 +67,9 @@ namespace CCEnvs.Unity.D3
             return this;
         }
 
-        private void TryBindPointIA()
-        {
-            pointIABinding?.Dispose();
-            pointIABinding = null;
-
-            if (PointIA == null)
-                return;
-
-            pointIABinding = PointIA.ObservePerformedValue()
-                .Subscribe(OnPointIA);
-        }
-
         private void TryBindRaycastIA()
         {
-            raycastIABinding?.Dispose();
-            raycastIABinding = null;
+            CCDisposable.Dispose(ref raycastIABinding);
 
             if (RaycastIA == null)
                 return;
@@ -94,15 +78,24 @@ namespace CCEnvs.Unity.D3
                 .Subscribe(OnRaycastIA);
         }
 
-        private void OnPointIA(Vector2 inputValue)
-        {
-            currentPoint = inputValue;
-        }
-
         private void OnRaycastIA(InputAction.CallbackContext _)
         {
-            if (currentPoint.HasValue)
-                raycaster.TryRaycast(currentPoint.Value);
+            if (TryGetPointValue(out var screePoint))
+                raycaster.TryRaycast(screePoint);
+            else
+                raycaster.TryRaycast();
+        }
+
+        private bool TryGetPointValue(out Vector2 screePoint)
+        {
+            if (PointIA == null)
+            {
+                screePoint = Vector2.zero;  
+                return false;
+            }
+
+            screePoint = PointIA.ReadValue();
+            return true;
         }
     }
 }

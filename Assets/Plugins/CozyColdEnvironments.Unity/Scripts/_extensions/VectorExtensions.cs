@@ -1,3 +1,5 @@
+using CommunityToolkit.Diagnostics;
+using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -134,6 +136,45 @@ namespace CCEnvs.Unity
         {
             return !source.NearlyEquals(other, epsilon);
         }
+
+        public static Vector2 MultiplyBy(this Vector2 source, in Vector2 other)
+        {
+            var result = source;
+            result.x *= other.x;
+            result.y *= other.y;
+            return result;
+        }
+
+        public static Vector3 DivideBy(this in Vector3 source, in Vector3 other)
+        {
+            var result = source;
+
+            result.x /= other.x == 0 ? 0.001f : other.x;
+            result.y /= other.y == 0 ? 0.001f : other.y;
+            result.z /= other.z == 0 ? 0.001f : other.z;
+
+            return result;
+        }
+
+        public static Vector2 ForEach(this ref Vector2 source, Func<float, int, float> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 2; i++)
+                source[i] = action(source[i], i);
+
+            return source;
+        }
+
+        public static Vector2 ForEach<TState>(this ref Vector2 source, TState state, Func<float, int, TState, float> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 2; i++)
+                source[i] = action(source[i], i, state);
+
+            return source;
+        }
     }
 
     public static class Vector2IntExtensions
@@ -191,6 +232,44 @@ namespace CCEnvs.Unity
             return !float.IsNaN(source.x)
                    &&
                    !float.IsNaN(source.y);
+        }
+
+        public static Vector2Int DivideBy(this in Vector2Int source, in Vector2Int other)
+        {
+            var result = source;
+
+            result.x /= other.x == 0 ? 0 : other.x;
+            result.y /= other.y == 0 ? 0 : other.y;
+
+            return result;
+        }
+
+        public static Vector2Int MultiplyBy(this in Vector2Int source, in Vector2Int other)
+        {
+            var result = source;
+            result.x *= other.x;
+            result.y *= other.y;
+            return result;
+        }
+
+        public static Vector2Int ForEach(this ref Vector2Int source, Func<int, int, int> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 2; i++)
+                source[i] = action(source[i], i);
+
+            return source;
+        }
+
+        public static Vector2Int ForEach<TState>(this ref Vector2Int source, TState state, Func<int, int, TState, int> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 2; i++)
+                source[i] = action(source[i], i, state);
+
+            return source;
         }
     }
 
@@ -303,6 +382,46 @@ namespace CCEnvs.Unity
         {
             return !source.NearlyEquals(other, epsilon);
         }
+
+        public static Vector3 DivideBy(this Vector3 source, in Vector3 other)
+        {
+            var result = source;
+
+            result.x /= other.x == 0f ? 0.001f : other.x;
+            result.y /= other.y == 0f ? 0.001f : other.y;
+            result.z /= other.z == 0f ? 0.001f : other.z;
+
+            return result;
+        }
+
+        public static Vector3 MultiplyBy(this Vector3 source, in Vector3 other)
+        {
+            var result = source;
+            result.x *= other.x;
+            result.y *= other.y;
+            result.z *= other.z;
+            return result;
+        }
+
+        public static Vector3 ForEach(this ref Vector3 source, Func<float, int, float> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 3; i++)
+                source[i] = action(source[i], i);
+
+            return source;
+        }
+
+        public static Vector3 ForEach<TState>(this ref Vector3 source, TState state, Func<float, int, TState, float> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 3; i++)
+                source[i] = action(source[i], i, state);
+
+            return source;
+        }
     }
 
     public static class Vector3IntExtensions
@@ -381,6 +500,46 @@ namespace CCEnvs.Unity
                    !float.IsNaN(source.y)
                    &&
                    !float.IsNaN(source.z);
+        }
+
+        public static Vector3Int DivideBy(this in Vector3Int source, in Vector3Int other)
+        {
+            var result = source;
+
+            result.x /= other.x == 0 ? 0 : other.x;
+            result.y /= other.y == 0 ? 0 : other.y;
+            result.z /= other.z == 0 ? 0 : other.z;
+
+            return result;
+        }
+
+        public static Vector3Int MultiplyBy(this in Vector3Int source, in Vector3Int other)
+        {
+            var result = source;
+            result.x *= other.x;
+            result.y *= other.y;
+            result.z *= other.z;
+            return result;
+        }
+
+        public static Vector3Int ForEach(this ref Vector3Int source, Func<int, int, int> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 3; i++)
+                source[i] = action(source[i], i);
+
+            return source;
+        }
+
+        public static Vector3Int ForEach<TState>(this ref Vector3Int source, TState state, Func<int, int, TState, int> action)
+        {
+            Guard.IsNotNull(action, nameof(action));
+
+            for (int i = 0; i < 3; i++)
+                source[i] = action(source[i], i, state);
+
+            return source;
         }
     }
 }

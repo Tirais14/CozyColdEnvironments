@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Unity.EditorSerialization;
 using R3;
 using UnityEngine;
@@ -20,26 +21,55 @@ namespace CCEnvs.Unity.D3
         protected SerializedNullable<LayerMask> layerMask;
 
         [SerializeField]
-        protected new Camera camera;
+        protected Camera _camera;
 
         [SerializeField]
         protected QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
 
-        private readonly ReactiveProperty<Collider?> objectCollider = new();
+        private readonly ReactiveCommand<Collider?> onRaycast = new();
+
+        private Collider? objCollider;
 
         private RaycastHit? lastHit;
 
-        public override float MaxDistance => maxDistance;
+        public override float MaxDistance {
+            get => maxDistance;
+            set => SetMaxDistance(value);
+        }
 
-        public override LayerMask LayerMask => layerMask.Deserialized ?? Physics.AllLayers;
+        public override LayerMask LayerMask {
+            get => layerMask.Deserialized ?? Physics.AllLayers;
+            set => SetLayerMask(value); 
+        }
 
-        public override Camera Camera => camera;
+        public override Camera camera {
+            get => _camera;
+            set => SetCamera(value);
+        }
 
-        public override QueryTriggerInteraction TriggerInteraction => triggerInteraction;
+        public override QueryTriggerInteraction TriggerInteraction {
+            get => triggerInteraction;
+            set => SetTriggerInteraction(value);
+        }
 
-        public override Collider? ObjectCollider => objectCollider.Value;
+        public override Collider? ObjectCollider => objCollider;
 
         public override RaycastHit? LastHit => lastHit;
+
+        protected override void Start()
+        {
+            base.Start();
+
+            if (_camera == null)
+            {
+                if (CCDebug.Instance.IsEnabled)
+                    this.PrintWarning("Camera not setted. Will be used main camera");
+
+                _camera = Camera.main;
+            }
+
+            CC.Guard.IsNotMissing(_camera);
+        }
 
         public TSelf SetMaxDistance(float value)
         {
@@ -57,7 +87,7 @@ namespace CCEnvs.Unity.D3
         {
             CC.Guard.IsNotNull(value);
 
-            camera = value;
+            _camera = value;
 
             return this.CastTo<TSelf>();
         }
@@ -68,14 +98,12 @@ namespace CCEnvs.Unity.D3
             return this.CastTo<TSelf>();
         }
 
-        public override abstract bool TryRaycast(Vector2 screenPoint);
-
-        public override Observable<Collider?> ObserveObjectCollider() => objectCollider;
+        public override Observable<Collider?> ObserveRaycast() => onRaycast;
 
         public override Observable<T?> ObserveObjectComponent<T>()
             where T : class
         {
-            return objectCollider.Select(col =>
+            return onRaycast.Select(col =>
             {
                 if (col == null)
                     return default;
@@ -84,20 +112,22 @@ namespace CCEnvs.Unity.D3
             });
         }
 
-        protected bool SetObject(RaycastHit? hit)
+        protected bool OnRaycast(RaycastHit? hit)
         {
             if (hit == null || hit.Value.collider == null)
             {
                 lastHit = null;
-                objectCollider.Value = null;
+                objCollider = null;
             }
             else
             {
                 lastHit = hit;
-                objectCollider.Value = hit.Value.collider;
+                objCollider = hit.Value.collider;
+
             }
 
-            return objectCollider.Value != null;
+            onRaycast.Execute(objCollider);
+            return objCollider != null;
         }
     }
 }

@@ -187,6 +187,15 @@ namespace CCEnvs
             {
                 return new NotSupportedException($"Collection {collection} is read only");
             }
+
+#if UNITY_EDITOR
+            public static UnityEngine.MissingComponentException MissingComponentException(Type componentType)
+            {
+                Guard.IsNotNull(componentType, nameof(componentType));
+
+                return new UnityEngine.MissingComponentException($"Missing component. Type  : {componentType}");
+            }
+#endif
         }
 
 
@@ -241,6 +250,14 @@ namespace CCEnvs
                 if (value.IsDefault())
                     throw new ArgumentException($"{paramName} is default");
             }
+
+#if UNITY_EDITOR
+            public static void IsNotMissing<T>(T instance)
+            {
+                if (instance.IsNull())
+                    ThrowHelper.MissingComponentException(typeof(T));
+            }
+#endif
         }
 
         public static class Platform

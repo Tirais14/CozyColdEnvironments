@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Patterns.Factories;
+using System;
 
 #pragma warning disable S108
 namespace CCEnvs.Pools

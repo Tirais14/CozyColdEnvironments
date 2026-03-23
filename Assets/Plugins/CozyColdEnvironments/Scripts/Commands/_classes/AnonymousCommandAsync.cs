@@ -88,10 +88,7 @@ namespace CCEnvs.Patterns.Commands
 
             Guard.IsNotNull(State, nameof(State));
 
-            var task = ExecuteAction(State, cancellationToken);
-
-            if (!task.IsCompleted)
-                await task;
+            await ExecuteAction(State, cancellationToken);
         }
 
         protected override void OnReset()

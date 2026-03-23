@@ -73,5 +73,21 @@ namespace CCEnvs.Unity
             CC.Guard.IsNotNullSource(source);
             return source.GetHierarchyPath() == hierarchyPath;
         }
+
+        //public static void SetLocalPositionIgnoreScale(this Transform source, Vector3 position)
+        //{
+        //    CC.Guard.IsNotNullSource(source);
+        //    source.localPosition = position.DivideBy(source.lossyScale);
+        //}
+
+        //public static void SetLocalPositionAndRotationIgnoreScale(
+        //    this Transform source,
+        //    Vector3 position,
+        //    Quaternion rotation
+        //    )
+        //{
+        //    CC.Guard.IsNotNullSource(source);
+        //    source.SetLocalPositionAndRotation(position.DivideBy(source.lossyScale), rotation);
+        //}
     }
 }
