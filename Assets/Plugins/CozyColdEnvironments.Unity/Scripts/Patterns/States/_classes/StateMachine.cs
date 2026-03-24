@@ -1,4 +1,3 @@
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.States;
 using CommunityToolkit.Diagnostics;
@@ -21,7 +20,7 @@ namespace CCEnvs.Unity.States
         public void Tick()
         {
             if (ResolveTransition().IsNotNull(out var transition))
-                SetState(transition.NextState.ID);
+                SetState(transition.NextState);
 
             currentNode?.State.Tick();
         }
@@ -33,7 +32,7 @@ namespace CCEnvs.Unity.States
 
         public void LateTick()
         {
-            currentNode?.State?.LateTick();
+            currentNode?.State.LateTick();
         }
 
         public IStateTransition? ResolveTransition()
@@ -49,10 +48,8 @@ namespace CCEnvs.Unity.States
             return null;
         }
 
-        public void SetState(string id)
+        public void SetState(string? id)
         {
-            Guard.IsNotNull(id);
-
             if (currentNode.IsNotNull())
             {
                 currentNode.State.Exit();
@@ -62,6 +59,9 @@ namespace CCEnvs.Unity.States
             }
 
             currentNode = null;
+
+            if (id is null)
+                return;
 
             var nextNode = nodes[id];
 
@@ -76,32 +76,17 @@ namespace CCEnvs.Unity.States
             currentNode = nextNode;    
         }
 
-        public IStateNode GetOrCreateNode(
-            IState state,
-            IEnumerable<IStateTransition>? transitions = null
-            )
+        public void SetState(IState? state)
         {
-            CC.Guard.IsNotNull(state, nameof(state));
-            CC.Guard.IsNotNull(transitions, nameof(transitions));
-
-            if (!nodes.TryGetValue(state.ID, out var node))
-            {
-                if (transitions.IsNullOrEmpty())
-                    node = new StateNode(state);
-                else
-                    node = new StateNode(state, transitions);
-
-                nodes[state.ID] = node;
-            }
-
-            return node;
+            SetState(state?.ID);
         }
 
-        public void AddNode(IStateNode node)
+        public IStateMachine AddNode(IStateNode node)
         {
             CC.Guard.IsNotNull(node, nameof(node));
 
             nodes[node.State.ID] = node;
+            return this;
         }
 
         public bool RemoveNode(string id)
@@ -119,11 +104,12 @@ namespace CCEnvs.Unity.States
             return nodes.ContainsKey(id);
         }
 
-        public void AddTransition(IStateTransition transition)
+        public IStateMachine AddTransition(IStateTransition transition)
         {
             CC.Guard.IsNotNull(transition, nameof(transition));
 
             anyTransitions.Add(transition);
+            return this;
         }
 
         public bool RemoveTransition(IStateTransition transition)

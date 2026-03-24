@@ -11,10 +11,8 @@ namespace CCEnvs.Patterns.States
         private List<IStateTransitionPredicate>? predicates;
         private IState? nextState;
 
-        public StateTransitionBuilder WithNextState(IState nextState)
+        public StateTransitionBuilder WithNextState(IState? nextState)
         {
-            CC.Guard.IsNotNull(nextState, nameof(nextState));
-
             this.nextState = nextState;
             return this;
         }
@@ -46,11 +44,53 @@ namespace CCEnvs.Patterns.States
             return this;
         }
 
+        public StateTransitionBuilder WithPredicate<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, Func<TArg1, TArg2, bool> predicateFunc)
+        {
+            Guard.IsNotNull(predicateFunc, nameof(predicateFunc));
+
+            var predicate = new AnonymousStateTransitionPredicate<TArg1, TArg2>(arg1, arg2, predicateFunc);
+            WithPredicate(predicate);
+            return this;
+        }
+
+        public StateTransitionBuilder WithPredicate<TArg1, TArg2, TArg3>(TArg1 arg1, TArg2 arg2, TArg3 arg3, Func<TArg1, TArg2, TArg3, bool> predicateFunc)
+        {
+            Guard.IsNotNull(predicateFunc, nameof(predicateFunc));
+
+            var predicate = new AnonymousStateTransitionPredicate<TArg1, TArg2, TArg3>(arg1, arg2, arg3, predicateFunc);
+            WithPredicate(predicate);
+            return this;
+        }
+
+        public StateTransitionBuilder WithPredicate<TArg1, TArg2, TArg3, TArg4>(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, Func<TArg1, TArg2, TArg3, TArg4, bool> predicateFunc)
+        {
+            Guard.IsNotNull(predicateFunc, nameof(predicateFunc));
+
+            var predicate = new AnonymousStateTransitionPredicate<TArg1, TArg2, TArg3, TArg4>(arg1, arg2, arg3, arg4, predicateFunc);
+            WithPredicate(predicate);
+            return this;
+        }
+
+        public StateTransitionBuilder WithPredicate<TArg1, TArg2, TArg3, TArg4, TArg5>(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5, Func<TArg1, TArg2, TArg3, TArg4, TArg5, bool> predicateFunc)
+        {
+            Guard.IsNotNull(predicateFunc, nameof(predicateFunc));
+
+            var predicate = new AnonymousStateTransitionPredicate<TArg1, TArg2, TArg3, TArg4, TArg5>(arg1, arg2, arg3, arg4, arg5, predicateFunc);
+            WithPredicate(predicate);
+            return this;
+        }
+
+        public StateTransitionBuilder WithPredicate<TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5, TArg6 arg6, Func<TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, bool> predicateFunc)
+        {
+            Guard.IsNotNull(predicateFunc, nameof(predicateFunc));
+
+            var predicate = new AnonymousStateTransitionPredicate<TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>(arg1, arg2, arg3, arg4, arg5, arg6, predicateFunc);
+            WithPredicate(predicate);
+            return this;
+        }
+
         public readonly IStateTransition Build()
         {
-            if (nextState.IsNull())
-                throw new InvalidOperationException("Cannot create state transition without next state");
-
             IStateTransitionPredicate predicate;
 
             if (predicates.IsNullOrEmpty())

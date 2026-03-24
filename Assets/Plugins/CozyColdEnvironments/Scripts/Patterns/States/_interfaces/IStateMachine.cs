@@ -15,18 +15,13 @@ namespace CCEnvs.Patterns.States
 
         void SetState(string id);
 
-        IStateNode GetOrCreateNode(
-            IState state,
-            IEnumerable<IStateTransition>? transitions = null
-            );
-
-        void AddNode(IStateNode node);
+        IStateMachine AddNode(IStateNode node);
 
         bool RemoveNode(string id);
 
         bool ContainsNode(string? id);
 
-        void AddTransition(IStateTransition transition);
+        IStateMachine AddTransition(IStateTransition transition);
 
         bool RemoveTransition(IStateTransition transition);
 

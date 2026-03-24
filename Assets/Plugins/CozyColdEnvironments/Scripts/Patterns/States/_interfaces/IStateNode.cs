@@ -9,8 +9,8 @@ namespace CCEnvs.Patterns.States
 
         IReadOnlyList<IStateTransition> Transitions { get; }
 
-        void AddTransition(IStateTransition transition);
+        IStateNode AddTransition(IStateTransition transition);
 
-        void RemoveTransition(IStateTransition transition);
+        IStateNode RemoveTransition(IStateTransition transition);
     }
 }

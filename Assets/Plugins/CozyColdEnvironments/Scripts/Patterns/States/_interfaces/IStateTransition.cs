@@ -5,7 +5,7 @@ namespace CCEnvs.Patterns.States
 {
     public interface IStateTransition
     {
-        IState NextState { get; }
+        IState? NextState { get; }
 
         IStateTransitionPredicate Condition { get; }
     }

@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using System.Collections.Generic;
 
 #nullable enable
@@ -11,11 +12,18 @@ namespace CCEnvs.Patterns.States
 
         public IReadOnlyList<IStateTransition> Transitions => transitions;
 
-        public StateNode(IState state)
+        public StateNode(IState? state)
         {
-            CC.Guard.IsNotNull(state, nameof(state));
-
             State = state;
+        }
+
+        public StateNode(IState state, params IStateTransition[] transitions)
+            :
+            this(state)
+        {
+            Guard.IsNotNull(state, nameof(state));
+
+            this.transitions.AddRange(transitions);
         }
 
         public StateNode(IState state, IEnumerable<IStateTransition> transitions)
@@ -27,18 +35,25 @@ namespace CCEnvs.Patterns.States
             this.transitions.AddRange(transitions);
         }
 
-        public void AddTransition(IStateTransition transition)
+        public IStateNode AddTransition(IStateTransition transition)
         {
             CC.Guard.IsNotNull(transition, nameof(transition));
 
             transitions.Add(transition);
+            return this;
         }
 
-        public void RemoveTransition(IStateTransition transition)
+        public IStateNode RemoveTransition(IStateTransition transition)
         {
             CC.Guard.IsNotNull(transition, nameof(transition));
 
             transitions.Remove(transition);
+            return this;
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(State)}: {State}";
         }
     }
 }

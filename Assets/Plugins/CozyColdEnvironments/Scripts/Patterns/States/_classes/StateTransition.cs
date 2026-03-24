@@ -3,20 +3,26 @@ using CommunityToolkit.Diagnostics;
 #nullable enable
 namespace CCEnvs.Patterns.States
 {
-    public class StateTransition : IStateTransition
+    public partial class StateTransition
     {
-        public static StateTransitionBuilder Builder => new();
+        public static IStateTransition Empty => Builder.WithNextState(null)
+            .WithPredicate(StateTransitionPredicate.True)
+            .Build();
 
-        public IState NextState { get; }
+        public static StateTransitionBuilder Builder => new();
+    }
+
+    public partial class StateTransition : IStateTransition
+    {
+        public IState? NextState { get; }
 
         public IStateTransitionPredicate Condition { get; }
 
         public StateTransition(
-            IState nextState,
+            IState? nextState,
             IStateTransitionPredicate predicate
             )
         {
-            CC.Guard.IsNotNull(nextState, nameof(nextState));
             Guard.IsNotNull(predicate, nameof(predicate));
 
             NextState = nextState;
