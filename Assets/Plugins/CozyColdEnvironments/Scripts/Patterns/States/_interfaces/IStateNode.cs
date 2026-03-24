@@ -7,7 +7,7 @@ namespace CCEnvs.Patterns.States
     {
         IState State { get; }
 
-        IReadOnlyCollection<IStateTransition> Transitions { get; }
+        IReadOnlyList<IStateTransition> Transitions { get; }
 
         void AddTransition(IStateTransition transition);
 

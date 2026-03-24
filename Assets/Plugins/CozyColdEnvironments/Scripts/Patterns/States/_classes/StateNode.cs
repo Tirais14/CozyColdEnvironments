@@ -9,13 +9,22 @@ namespace CCEnvs.Patterns.States
 
         public IState State { get; }
 
-        public IReadOnlyCollection<IStateTransition> Transitions => transitions;
+        public IReadOnlyList<IStateTransition> Transitions => transitions;
 
         public StateNode(IState state)
         {
             CC.Guard.IsNotNull(state, nameof(state));
 
             State = state;
+        }
+
+        public StateNode(IState state, IEnumerable<IStateTransition> transitions)
+            :
+            this(state)
+        {
+            CC.Guard.IsNotNull(transitions, nameof(transitions));
+
+            this.transitions.AddRange(transitions);
         }
 
         public void AddTransition(IStateTransition transition)
