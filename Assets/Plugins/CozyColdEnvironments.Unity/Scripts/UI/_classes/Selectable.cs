@@ -85,7 +85,7 @@ namespace CCEnvs.Unity.UI
             SelectionOverlay.enabled = false;
         }
 
-        public void SetSelectionOverlay(Image image)
+        public Selectable SetSelectionOverlay(Image image)
         {
             CC.Guard.IsNotNull(image, nameof(image));
 
@@ -93,6 +93,8 @@ namespace CCEnvs.Unity.UI
             image.transform.SetParent(transform);
 
             m_SelectionOverlay = image;
+
+            return this;
         }
 
         public Observable<bool> ObserveIsSelected() => isSelected;

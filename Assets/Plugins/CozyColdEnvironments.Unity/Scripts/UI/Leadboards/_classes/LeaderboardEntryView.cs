@@ -28,18 +28,18 @@ namespace CCEnvs.Unity.UI.Leaderboards
         [SerializeField]
         protected TMP_Text? positionView;
 
-        protected override void InitViewModel()
+        protected override void InitViewModel(LeaderboardEntryViewModel vm)
         {
-            base.InitViewModel();
-            ResetRecordViews();
-            SetRecordViews();
-            BindScoreRecordAdd();
-            BindScoreRecordRemove();
-            BindScoreRecordsClear();
-            BindScoreRecordReplaced();
-            BindProfileIconView();
-            BindPositionView();
-            SetProfileNameView();
+            base.InitViewModel(vm);
+            ResetRecordViews(vm);
+            SetRecordViews(vm);
+            BindScoreRecordAdd(vm);
+            BindScoreRecordRemove(vm);
+            BindScoreRecordsClear(vm);
+            BindScoreRecordReplaced(vm);
+            BindProfileIconView(vm);
+            BindPositionView(vm);
+            SetProfileNameView(vm);
         }
 
         protected override Maybe<LeaderboardEntryViewModel> CreateViewModel()
@@ -52,9 +52,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
             scoreRecrodViews.Deserialized[key].text = scoreView;
         }
 
-        private void SetRecordViews()
+        private void SetRecordViews(LeaderboardEntryViewModel vm)
         {
-            foreach (var item in viewModelUnsafe.ScoreRecords.Unfiltered)
+            foreach (var item in vm.ScoreRecords.Unfiltered)
             {
                 if (!scoreRecrodViews.Deserialized.ContainsKey(item.Value.Key))
                     continue;
@@ -63,9 +63,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
             }
         }
 
-        private void ResetRecordViews()
+        private void ResetRecordViews(LeaderboardEntryViewModel vm)
         {
-            foreach (var item in viewModelUnsafe.ScoreRecords.Unfiltered)
+            foreach (var item in vm.ScoreRecords.Unfiltered)
             {
                 if (!scoreRecrodViews.Deserialized.ContainsKey(item.Value.Key))
                     continue;
@@ -74,85 +74,85 @@ namespace CCEnvs.Unity.UI.Leaderboards
             }
         }
 
-        private void BindScoreRecordAdd()
+        private void BindScoreRecordAdd(LeaderboardEntryViewModel vm)
         {
-            viewModelUnsafe.ScoreRecords.ObserveAdd(destroyCancellationToken)
+            vm.ScoreRecords.ObserveAdd(destroyCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (item, @this) =>
                 {
                     @this.UpdateScoreValueView(item.Value.Key, item.View);
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindScoreRecordRemove()
+        private void BindScoreRecordRemove(LeaderboardEntryViewModel vm)
         {
-            viewModelUnsafe.ScoreRecords.ObserveRemove(destroyCancellationToken)
+            vm.ScoreRecords.ObserveRemove(destroyCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(this,
                 static (item, @this) =>
                 {
                     @this.UpdateScoreValueView(item.Value.Key, UNBINDED_SCORE_RECORD_VALUE);
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindScoreRecordsClear()
+        private void BindScoreRecordsClear(LeaderboardEntryViewModel vm)
         {
-            viewModelUnsafe.ScoreRecords.ObserveClear(destroyCancellationToken)
+            vm.ScoreRecords.ObserveClear(destroyCancellationToken)
                 .Subscribe(this,
                 static (_, @this) =>
                 {
                     foreach (var scoreView in @this.scoreRecrodViews.Deserialized)
                         scoreView.Value.text = UNBINDED_SCORE_RECORD_VALUE;
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindScoreRecordReplaced()
+        private void BindScoreRecordReplaced(LeaderboardEntryViewModel vm)
         {
-            viewModelUnsafe.ScoreRecords.ObserveReplace(destroyCancellationToken)
+            vm.ScoreRecords.ObserveReplace(destroyCancellationToken)
                 .Subscribe(this,
                 static (item, @this) =>
                 {
                     @this.UpdateScoreValueView(item.NewValue.Value.Key, item.NewValue.View);
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindProfileIconView()
+        private void BindProfileIconView(LeaderboardEntryViewModel vm)
         {
             if (profileIconView == null)
                 return;
 
-            viewModelUnsafe.ProfileIcon.Subscribe(this,
+            vm.ProfileIcon.Subscribe(this,
                 static (icon, @this) =>
                 {
                     @this.profileIconView!.sprite = icon;
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void BindPositionView()
+        private void BindPositionView(LeaderboardEntryViewModel vm)
         {
             if (positionView == null)
                 return;
 
-            viewModelUnsafe.Position.Subscribe(this,
+            vm.Position.Subscribe(this,
                 static (pos, @this) =>
                 {
                     @this.positionView!.text = pos;
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void SetProfileNameView()
+        private void SetProfileNameView(LeaderboardEntryViewModel vm)
         {
             if (profileNameView == null)
                 return;
 
-            profileNameView.text = viewModelUnsafe.ProfileName;
+            profileNameView.text = vm.ProfileName;
         }
     }
 }

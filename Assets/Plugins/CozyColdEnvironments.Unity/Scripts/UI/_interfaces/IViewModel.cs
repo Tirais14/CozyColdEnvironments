@@ -13,6 +13,9 @@ namespace CCEnvs.Unity.UI
 
         CancellationToken DisposeCancellationToken { get; }
 
+        bool HasModel();
+        bool HasModel<T>();
+
         Observable<object?> ObserveModel();
     }
     public interface IViewModel<TModel> : IViewModel

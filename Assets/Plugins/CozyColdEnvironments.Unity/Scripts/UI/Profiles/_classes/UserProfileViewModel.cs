@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.UI.Profiles
         {
             Icon = model.ObserveIcon()
                 .ToReadOnlyReactiveProperty(model.Icon)
-                .AddTo(disposables);
+                .AddTo(ModelDisposables);
         }
     }
 }

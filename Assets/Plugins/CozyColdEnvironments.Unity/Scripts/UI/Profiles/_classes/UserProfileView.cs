@@ -14,26 +14,26 @@ namespace CCEnvs.Unity.UI.Profiles
         [SerializeField]
         private TMP_Text nameView;
 
-        protected override void InitViewModel()
+        protected override void InitViewModel(UserProfileViewModel vm)
         {
-            base.InitViewModel();
-            BindIcon();
-            SetName();
+            base.InitViewModel(vm);
+            BindIcon(vm);
+            SetName(vm);
         }
 
-        private void BindIcon()
+        private void BindIcon(UserProfileViewModel vm)
         {
-            viewModelUnsafe.Icon.Subscribe(this,
+            vm.Icon.Subscribe(this,
                 static (icon, @this) =>
                 {
                     @this.iconView.sprite = icon;
                 })
-                .AddTo(viewModelDisposables);
+                .AddTo(ViewModelDisposables);
         }
 
-        private void SetName()
+        private void SetName(UserProfileViewModel vm)
         {
-            nameView.text = viewModelUnsafe.Name;
+            nameView.text = vm.Name;
         }
     }
 }

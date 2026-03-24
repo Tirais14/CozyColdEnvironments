@@ -1,16 +1,8 @@
 #nullable enable
-using System;
-using System.Runtime.CompilerServices;
-using CCEnvs.Dependencies;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Patterns.Commands;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Dependencies;
 using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.InputSystem.Rx;
-using R3;
+using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 #pragma warning disable S4144
@@ -18,7 +10,9 @@ namespace CCEnvs.Unity.UI
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Showable))]
-    public partial class GUITab : CCBehaviour
+    public partial class GUITab
+        :
+        CCBehaviour
     {
         [Header("Tab Settings")]
         [Space(8)]
@@ -26,24 +20,11 @@ namespace CCEnvs.Unity.UI
         [SerializeField]
         protected bool switchSelectable = true;
 
-        private readonly CommandScheduler commandScheduler = new(UnityFrameProvider.Update);
+        [field: GetBySelf(IsOptional = true)]
+        public Button? button { get; private set; }
 
         [field: GetBySelf(IsOptional = true)]
-        public Maybe<Button> button { get; private set; }
-
-        [field: GetBySelf(IsOptional = true)]
-        public Maybe<Selectable> selectable { get; private set; }
-
-        [field: GetBySelf(IsOptional = true)]
-        public Maybe<DragAndDropTarget> dragAndDropTarget { get; private set; }
-
-        protected Lazy<InputActionRx<Vector2>> pointerInput { get; private set; } = null!;
-
-        protected override void Awake()
-        {
-            base.Awake();
-            SetPointerInput();
-        }
+        public Selectable? selectable { get; private set; }
 
         protected override void Start()
         {
@@ -63,57 +44,36 @@ namespace CCEnvs.Unity.UI
         protected override void OnDestroy()
         {
             base.OnDestroy();
-
-            commandScheduler.Dispose();
-
-            if (button.TryGetValue(out var btn))
+            if (button.IsNotNull(out var btn))
                 btn.onClick.RemoveAllListeners();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual bool SelectableDoSelectPredicate() => true;
+        public virtual bool CanSelected() => true;
 
         private void BindSelectable()
         {
-            if (!this.button.TryGetValue(out Button? button))
+            if (this.button.IsNull(out Button? button))
                 return;
 
-            if (selectable.TryGetValue(out var slct))
-            {
-                void onClick()
-                {
-                    if (!slct.IsSelected
-                        &&
-                        !SelectableDoSelectPredicate()
-                        )
-                    {
-                        return;
-                    }
+            if (selectable.IsNotNull(out var slct))
+                button.onClick.AddListener(onClick);
 
-                    if (switchSelectable)
-                        slct.SwitchSelectionState();
-                    else
-                        slct.DoSelect();
+            void onClick()
+            {
+                if (!slct.IsSelected
+                    &&
+                    !CanSelected()
+                    )
+                {
+                    return;
                 }
 
-                Disposable.Create((button, onClick: (UnityAction)onClick),
-                    static input =>
-                    {
-                        input.button.onClick.RemoveListener(input.onClick);
-                    })
-                    .AddDisposableTo(this);
-
-                button.onClick.AddListener(onClick);
+                if (switchSelectable)
+                    slct.SwitchSelectionState();
+                else
+                    slct.DoSelect();
             }
-        }
-
-        private void SetPointerInput()
-        {
-            pointerInput = new Lazy<InputActionRx<Vector2>>(
-                static () =>
-                {
-                    return CCServices.Resolve<InputActionRx<Vector2>>(UnityDependecyID.PointerInput);
-                });
         }
     }
 }

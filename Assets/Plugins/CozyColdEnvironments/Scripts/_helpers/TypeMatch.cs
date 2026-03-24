@@ -61,5 +61,17 @@ namespace CCEnvs.TypeMatching
         {
             return !obj.Is(out result);
         }
+
+        public static bool IsNullOrType<T>(this object? source)
+        {
+            return source.IsNull() || source.Is<T>();
+        }
+
+        public static bool IsNullOrType<T>(this object? source, [NotNullWhen(true)] out T? result)
+        {
+            result = default;
+
+            return source.IsNull() || source.Is(out result);
+        }
     }
 }

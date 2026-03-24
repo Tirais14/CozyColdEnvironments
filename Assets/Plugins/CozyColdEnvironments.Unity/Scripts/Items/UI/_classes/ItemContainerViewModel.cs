@@ -1,6 +1,6 @@
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.R3;
+using CCEnvs.Rx;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;

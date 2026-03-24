@@ -1,3 +1,4 @@
+using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using R3;
 using System;
@@ -44,6 +45,9 @@ namespace CCEnvs.Unity.UI
             if (model.IsNotNull())
                 InitModel(model);
         }
+
+        public bool HasModel() => Model.IsNotNull();
+        public bool HasModel<T>() => Model.Is<T>();
 
         public Observable<TModel?> ObserveModel() => model;
 

@@ -1,5 +1,7 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CCEnvs.Threading;
+using CCEnvs.TypeMatching;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -25,6 +27,8 @@ namespace CCEnvs.Unity.UI
         public TModel? Model => model.Value;
 
         protected ICollection<IDisposable> ModelDisposables => modelDisposables.Value;
+
+        protected TModel GuardedModel => Model.ThrowIfNull(nameof(Model));
 
         public CancellationToken DisposeCancellationToken {
             get => linkedCancellationTokenSource?.Token ?? disposeCancellationTokenSource.Token;
@@ -56,6 +60,9 @@ namespace CCEnvs.Unity.UI
             if (model.IsNotNull())
                 InitModel(model);
         }
+
+        public bool HasModel() => Model.IsNotNull();
+        public bool HasModel<T>() => Model.Is<T>();
 
         public Observable<TModel?> ObserveModel() => model;
 

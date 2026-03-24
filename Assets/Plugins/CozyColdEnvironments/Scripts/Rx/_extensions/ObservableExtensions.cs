@@ -2,7 +2,7 @@ using CCEnvs.FuncLanguage;
 using R3;
 
 #nullable enable
-namespace CCEnvs.R3
+namespace CCEnvs.Rx
 {
     public static class ObservableExtensions
     {

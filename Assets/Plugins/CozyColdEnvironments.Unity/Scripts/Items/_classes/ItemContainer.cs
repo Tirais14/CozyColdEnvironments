@@ -1,9 +1,8 @@
-using System;
-using System.Threading;
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using R3;
+using System;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -13,13 +12,13 @@ namespace CCEnvs.Unity.Items
 {
     public class ItemContainer : IItemContainer, IDisposable
     {
+        public static ItemContainer Empty { get; } = new(isReadOnlyContainer: true);
+
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
         private readonly ReactiveProperty<bool> isActive = new();
         private Maybe<IInventory> parentInventory;
         private int capacity;
-
-        public static ItemContainer Empty => new();
 
         public Maybe<IItem> Item => item.Value;
         public int ItemCount => itemCount.Value;
@@ -180,7 +179,7 @@ namespace CCEnvs.Unity.Items
             var result = new ItemContainer(Item.GetValue(), taked);
 
             if (itemCount.Value <= 0)
-                Reset();
+                Clear();
 
             return result;
         }
@@ -190,7 +189,7 @@ namespace CCEnvs.Unity.Items
         public Maybe<IItemContainerInfo> TakeItem(IItem item, int count)
         {
             if (!ContainsItem(item))
-                return Empty;
+                return Maybe<IItemContainerInfo>.None;
 
             return TakeItem(count);
         }
@@ -207,7 +206,7 @@ namespace CCEnvs.Unity.Items
             capacity = itemContainer.Capacity;
         }
 
-        public void Reset()
+        public void Clear()
         {
             item.Value = null;
             itemCount.Value = 0;

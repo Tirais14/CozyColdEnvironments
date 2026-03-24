@@ -1,17 +1,21 @@
-using System;
-using System.Collections.Generic;
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
-using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using R3;
+using System;
+using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.Unity.UI
 {
+    public abstract class View : Showable
+    {
+
+    }
     public abstract class View<TViewModel>
         : 
-        Showable,
+        View,
         IView<TViewModel>
 
         where TViewModel : IViewModel
@@ -26,13 +30,17 @@ namespace CCEnvs.Unity.UI
 
         public object? Model => ViewModel.Maybe().Map(static vm => vm.Model);
 
+        public bool SuppressViewModelCreation { get; set; }
+
+        protected TViewModel GuardedViewModel => ViewModel.ThrowIfNull(nameof(ViewModel));
+
         protected ICollection<IDisposable> ViewModelDisposables => viewModelDisposables.Value;
 
-        protected override void Awake()
+        protected override void Start()
         {
-            base.Awake();
+            base.Start();
 
-            if (CreateViewModel().TryGetValue(out var vm))
+            if (!SuppressViewModelCreation && CreateViewModel().TryGetValue(out var vm))
                 SetViewModel(vm);
         }
 
@@ -40,6 +48,13 @@ namespace CCEnvs.Unity.UI
         {
             base.OnDestroy();
             TryDisposeViewModel();
+            OnSetViewModel(default);
+        }
+
+        public View<TViewModel> SetSuppressViewModelCreation(bool value)
+        {
+            SuppressViewModelCreation = value;
+            return this;
         }
 
         /// <summary>

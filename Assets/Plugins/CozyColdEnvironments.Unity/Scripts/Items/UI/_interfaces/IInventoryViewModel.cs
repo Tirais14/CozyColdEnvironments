@@ -1,6 +1,7 @@
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using ObservableCollections;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -10,5 +11,6 @@ namespace CCEnvs.Unity.Storages.UI
         IViewModel
     {
         IReadOnlyObservableDictionary<int, IItemContainer> Containers { get; }
+        IReadOnlyObservableDictionary<IItemContainer, GameObject> ContainerViews { get; }
     }
 }

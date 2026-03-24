@@ -1,7 +1,8 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
-using CCEnvs.R3;
+using CCEnvs.Rx;
+using CCEnvs.Threading;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
@@ -27,9 +28,12 @@ namespace CCEnvs.Unity.Items
 
         private readonly ReactiveProperty<int> itemCount = new();
 
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
         private IDisposable? containerAddBinding;
         private IDisposable? containerRemoveBinding;
         private IDisposable? containerReplaceBinding;
+        private IDisposable? containersClearBinding;
 
         public IItemContainer this[int id] => containers[id];
 
@@ -42,6 +46,8 @@ namespace CCEnvs.Unity.Items
         public int ItemCount => itemCount.Value;
 
         public IReadOnlyObservableDictionary<int, IItemContainer> Containers => containers;
+
+        protected CancellationToken DisposeCancellationToken => disposeCancellationTokenSource.Token;
 
         Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
 
@@ -110,7 +116,7 @@ namespace CCEnvs.Unity.Items
         public void ResetContainers()
         {
             foreach (var (_, cnt) in containers)
-                cnt.Reset();
+                cnt.Clear();
         }
 
         public Maybe<IItemContainerInfo> PutItem(IItem? item, int count = 1)
@@ -132,7 +138,7 @@ namespace CCEnvs.Unity.Items
                 {
                     restItemsMaybe = cnt.PutItem(item, count);
 
-                    if (!restItemsMaybe.TryGetValue(out restItems))
+                    if (!restItemsMaybe.TryGetValue(out restItems) || restItems.IsEmpty)
                         return Maybe<IItemContainerInfo>.None;
 
                     count = restItems.ItemCount;
@@ -277,7 +283,7 @@ namespace CCEnvs.Unity.Items
             CC.Guard.IsNotNull(cnt, nameof(cnt));
 
             if (cnt.IsReadOnlyContainer)
-                throw new ArgumentException($"Container cannot be read only. Container: {cnt}");
+                throw new ArgumentException($"Container cannot be readonly. Container: {cnt}");
 
             var id = ResolveID(cnt);
 
@@ -298,6 +304,9 @@ namespace CCEnvs.Unity.Items
 
             cloneExmaple ??= containers.FirstOrDefault().Value ?? new ItemContainer();
 
+            if (cloneExmaple.IsReadOnlyContainer)
+                throw new ArgumentException($"Item container cannot be readonly. Container: {cloneExmaple}");
+
             IItemContainer cloned;
 
             var results = new IItemContainer[count];
@@ -305,7 +314,7 @@ namespace CCEnvs.Unity.Items
             for (int i = 0; i < count; i++)
             {
                 cloned = cloneExmaple.ShallowClone();
-                cloned.Reset();
+                cloned.Clear();
 
                 AddContainer(cloned);
 
@@ -389,7 +398,7 @@ namespace CCEnvs.Unity.Items
             return id;
         }
 
-        public void Reset() => containers.Clear();
+        public void Clear() => containers.Clear();
 
         private int disposed;
         public void Dispose()
@@ -397,7 +406,6 @@ namespace CCEnvs.Unity.Items
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
         protected virtual void Dispose(bool disposing)
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)
@@ -405,6 +413,8 @@ namespace CCEnvs.Unity.Items
 
             if (disposing)
             {
+                disposeCancellationTokenSource.CancelAndDispose();
+
                 try
                 {
                     containerDisposables?.SelectValue().DisposeEach(bufferized: true);
@@ -431,6 +441,7 @@ namespace CCEnvs.Unity.Items
                     containerAddBinding?.Dispose();
                     containerRemoveBinding?.Dispose();
                     containerReplaceBinding?.Dispose();
+                    containersClearBinding?.Dispose();
 
                     containers?.Clear();
                     occupiedContainers?.Clear();
@@ -466,7 +477,7 @@ namespace CCEnvs.Unity.Items
 
         private void BindContainerAdd()
         {
-            containerAddBinding = containers.ObserveDictionaryAdd()
+            containerAddBinding = containers.ObserveDictionaryAdd(DisposeCancellationToken)
                 .Subscribe(OnContainerAdd);
         }
 
@@ -476,8 +487,9 @@ namespace CCEnvs.Unity.Items
             var cnt = addEv.Value;
 
             BindContainerItemCount(cnt);
-            AddFreeSpace(cnt);
             ResolveOccupied(cnt);
+
+            FreeSpace += cnt.FreeSpace;
             containerIDs[cnt] = id;
         }
 
@@ -490,11 +502,6 @@ namespace CCEnvs.Unity.Items
                 .SelectDelta()
                 .Subscribe(OnContainerItemCount)
                 .AddTo(disposables);
-        }
-
-        private void AddFreeSpace(IItemContainer cnt)
-        {
-            FreeSpace += cnt.FreeSpace;
         }
 
         private void ResolveOccupied(IItemContainer cnt)
@@ -515,7 +522,7 @@ namespace CCEnvs.Unity.Items
             var disposables = containerDisposables.GetOrCreateNew(cnt);
 
             cnt.ObserveItem()
-                .Select(x => x.GetValue())
+                .Unmaybe()
                 .Pairwise()
                 .Subscribe(cnt, OnContainerItem)
                 .AddTo(disposables);
@@ -538,7 +545,7 @@ namespace CCEnvs.Unity.Items
 
         private void BindContainerRemove()
         {
-           containerRemoveBinding = containers.ObserveDictionaryRemove()
+           containerRemoveBinding = containers.ObserveDictionaryRemove(DisposeCancellationToken)
                 .Subscribe(OnContainerRemove);
         }
 
@@ -566,7 +573,7 @@ namespace CCEnvs.Unity.Items
 
         private void BindContainerReplace()
         {
-            containerReplaceBinding = containers.ObserveDictionaryReplace()
+            containerReplaceBinding = containers.ObserveDictionaryReplace(DisposeCancellationToken)
                 .Subscribe(OnContainerReplace);
         }
 
@@ -581,6 +588,22 @@ namespace CCEnvs.Unity.Items
 
             var addEv = new DictionaryAddEvent<int, IItemContainer>(id, newCnt);
             OnContainerAdd(addEv);
+        }
+
+        private void BindContaiersClear()
+        {
+            containersClearBinding = containers.ObserveClear(DisposeCancellationToken)
+                .Subscribe(OnContainersClear);
+        }
+
+        private void OnContainersClear(Unit _)
+        {
+            occupiedContainers.Clear();
+            containerIDs.Clear();
+            containerDisposables.SelectValue().DisposeEach(bufferized: true);
+            containerDisposables.Clear();
+            FreeSpace = 0;
+            itemCount.Value = 0;
         }
 
         Maybe<IItemContainerInfo> IItemAccessor.TakeItem(int count) => Maybe<IItemContainerInfo>.None;

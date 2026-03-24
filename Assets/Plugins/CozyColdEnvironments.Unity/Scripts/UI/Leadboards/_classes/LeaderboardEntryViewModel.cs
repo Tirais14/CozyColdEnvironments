@@ -21,7 +21,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         public ReadOnlyReactiveProperty<string> Position { get; }
 
-        public string ProfileName => Model.Profile.Name;
+        public string ProfileName => GuardedModel.Profile.Name;
 
         public LeaderboardEntryViewModel(
             ILeaderboardEntry model,
@@ -32,12 +32,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
         {
             ScoreRecords = model.ScoreRecords.CreateView(
                 static item => item.Value.ToString())
-                .AddTo(disposables);
+                .AddTo(ModelDisposables);
 
             Score = model.ObserveScore()
                 .Select(score => score.ToString())
                 .ToReadOnlyReactiveProperty(model.Score.ToString())
-                .AddTo(disposables);
+                .AddTo(ModelDisposables);
 
             ProfileIcon = model.Profile.ObserveIcon()
                 .Select(
@@ -46,7 +46,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                     return sprite.Maybe().GetValue(static () => UCC.AnonymousProfileImage);
                 })
                 .ToReadOnlyReactiveProperty(model.Profile.Icon.Maybe().GetValue(static () => UCC.AnonymousProfileImage))
-                .AddTo(disposables)!;
+                .AddTo(ModelDisposables)!;
 
             Position = model.ObservePosition()
                 .Select(
@@ -55,7 +55,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
                     return pos.GetValueOrDefault().ToString();
                 })
                 .ToReadOnlyReactiveProperty(model.Position.GetValueOrDefault().ToString())
-                .AddTo(disposables);
+                .AddTo(ModelDisposables);
         }
     }
 }

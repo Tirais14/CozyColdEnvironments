@@ -101,12 +101,12 @@ namespace CCEnvs.Unity.InputSystem.Rx
             }
         }
 
-        public R3.Observable<bool> ObserveEnabled()
+        public Observable<bool> ObserveEnabled()
         {
             return isEnabled.Where(static x => x);
         }
 
-        public R3.Observable<bool> ObserveDisabled()
+        public Observable<bool> ObserveDisabled()
         {
             return isEnabled.Where(static x => !x);
         }
