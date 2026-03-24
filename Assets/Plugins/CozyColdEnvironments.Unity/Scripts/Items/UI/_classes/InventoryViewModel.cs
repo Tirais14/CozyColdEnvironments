@@ -2,6 +2,7 @@ using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
+using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Items;
@@ -30,6 +31,7 @@ namespace CCEnvs.Unity.Storages.UI
         where TModel : IInventory
     {
         private readonly ObservableDictionary<IItemContainer, GameObject> containerViews = new();
+        private readonly Lazy<HashSet<IItemContainer>> fromViewContainers = new(() => new HashSet<IItemContainer>());
 
         private IDisposable? addContainerBinding;
         private IDisposable? removeContainerBinding;
@@ -63,9 +65,16 @@ namespace CCEnvs.Unity.Storages.UI
                 SetModel(model);
         }
 
+        public void AddContainer(IItemContainer cnt)
+        {
+            fromViewContainers.Value.Add(cnt);
+            GuardedModel.AddContainer(cnt);
+        }
+
+        public void RemoveContainer(int id) => GuardedModel.RemoveContainer(id);
+
         protected override void OnSetModel(TModel? model)
         {
-            base.OnSetModel(model);
             CCDisposable.Dispose(ref addContainerBinding);
             CCDisposable.Dispose(ref removeContainerBinding);
             CCDisposable.Dispose(ref replaceContainerBinding);
@@ -74,7 +83,6 @@ namespace CCEnvs.Unity.Storages.UI
 
         protected override void InitModel(TModel model)
         {
-            base.InitModel(model);
             BindContainerAdd();
             BindContainerRemove();
             BindContainerReplace();
@@ -93,24 +101,35 @@ namespace CCEnvs.Unity.Storages.UI
             if (addEvs.IsEmpty())
                 return;
 
-            using var cnts = ListPool<IItemContainer>.Shared.Get();
-
-            cnts.Value.TryIncreaseCapacity(addEvs.Length);
-
-            foreach (var addEv in addEvs)
-                cnts.Value.Add(addEv.Value);
-
-            OnAddContainersCore(cnts.Value, DisposeCancellationToken).ForgetByPrintException();
+            OnAddContainersCore(addEvs, DisposeCancellationToken).ForgetByPrintException();
         }
 
         private async UniTask OnAddContainersCore(
-            IList<IItemContainer> cnts, 
+            DictionaryAddEvent<int, IItemContainer>[] addEvs, 
             CancellationToken cancellationToken
             )
         {
-            var cntViewModels = await InstantiateContainers(cnts.Count, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var (cnt, cntVM) in cnts.EquiZip(cntViewModels))
+            using var cnts = ListPool<IItemContainer>.Shared.Get();
+            cnts.Value.TryIncreaseCapacity(addEvs.Length);
+
+            foreach (var addEv in addEvs)
+            {
+                if (fromViewContainers.TryGetValue(out var fromViewCnts)
+                    &&
+                    fromViewCnts.Contains(addEv.Value))
+                {
+                    fromViewContainers.Value.Remove(addEv.Value);
+                    //continue;
+                }
+
+                cnts.Value.Add(addEv.Value);
+            }
+
+            var cntViewModels = await InstantiateContainers(cnts.Value.Count, cancellationToken);
+
+            foreach (var (cnt, cntVM) in cnts.Value.EquiZip(cntViewModels))
                 cntVM.SetModel(cnt);
         }
 
@@ -120,6 +139,9 @@ namespace CCEnvs.Unity.Storages.UI
             )
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (count <= 0)
+                return Array.Empty<IItemContainerViewModel>();
 
             var instParams = new InstantiateParameters()
             {
@@ -157,9 +179,7 @@ namespace CCEnvs.Unity.Storages.UI
             catch (Exception ex)
             {
                 this.PrintException(ex);
-            }
-            finally
-            {
+
                 foreach (var go in instances)
                     UnityEngine.Object.Destroy(go);
 

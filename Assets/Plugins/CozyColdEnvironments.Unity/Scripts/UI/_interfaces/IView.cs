@@ -7,11 +7,19 @@ namespace CCEnvs.Unity.UI
     public interface IView : IShowable
     {
         IViewModel? ViewModel { get; }
+
         object? Model { get; }
+
+        Type ViewModelType { get; }
 
         void SetViewModel(object viewModel);
 
         void SetViewModelFactory(Func<object> factory);
+
+        bool HasModel();
+        bool HasModel<T>();
+        bool HasViewModel();
+        bool HasViewModel<T>();
 
         T GetModel<T>();
 

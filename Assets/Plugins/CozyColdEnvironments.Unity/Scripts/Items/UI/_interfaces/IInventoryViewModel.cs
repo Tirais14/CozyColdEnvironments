@@ -12,5 +12,9 @@ namespace CCEnvs.Unity.Storages.UI
     {
         IReadOnlyObservableDictionary<int, IItemContainer> Containers { get; }
         IReadOnlyObservableDictionary<IItemContainer, GameObject> ContainerViews { get; }
+
+        void AddContainer(IItemContainer cnt);
+
+        void RemoveContainer(int id);
     }
 }

@@ -1,5 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -32,16 +34,20 @@ namespace CCEnvs.Unity.UI
 
         public bool SuppressViewModelCreation { get; set; }
 
+        public Type ViewModelType => TypeofCache<TViewModel>.Type;
+
         protected TViewModel GuardedViewModel => ViewModel.ThrowIfNull(nameof(ViewModel));
 
         protected ICollection<IDisposable> ViewModelDisposables => viewModelDisposables.Value;
 
+        protected override void Awake()
+        {
+            base.Awake();
+        }
+
         protected override void Start()
         {
             base.Start();
-
-            if (!SuppressViewModelCreation && CreateViewModel().TryGetValue(out var vm))
-                SetViewModel(vm);
         }
 
         protected override void OnDestroy()
@@ -60,17 +66,20 @@ namespace CCEnvs.Unity.UI
         /// <summary>
         /// Don't use previous <see cref="ViewModel"/>, it has been disposed and don't use cached <see cref="ViewModel"/> by the same reason.
         /// </summary>
-        /// <param name="viewModel"></param>
-        public void SetViewModel(TViewModel? viewModel)
+        /// <param name="vm"></param>
+        public void SetViewModel(TViewModel? vm)
         {
             TryDisposeViewModel();
 
-            OnSetViewModel(viewModel);
+            OnSetViewModel(vm);
 
-            this.viewModel = new Lazy<TViewModel?>(viewModel);
+            viewModel = new Lazy<TViewModel?>(vm);
 
-            if (viewModel.IsNotNull())
-                InitViewModel(viewModel);
+            if (vm.IsNotNull())
+            {
+                InitViewModel(vm);
+                BindModel(vm);
+            }
         }
 
         /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
@@ -81,16 +90,29 @@ namespace CCEnvs.Unity.UI
 
             TryDisposeViewModel();
 
+            OnSetViewModel(default);
+
             viewModel = new Lazy<TViewModel?>(() =>
             {
                 var vm = factory();
 
+                OnSetViewModel(vm);
+
                 if (vm.IsNotNull())
+                {
                     InitViewModel(vm);
+                    BindModel(vm);
+                }
 
                 return vm;
             });
         }
+
+        public bool HasModel() => Model.IsNotNull();
+        public bool HasModel<T>() => Model.Is<T>();
+
+        public bool HasViewModel() => ViewModel.IsNotNull();
+        public bool HasViewModel<T>() => ViewModel.Is<T>();
 
         public T GetModel<T>()
         {
@@ -108,7 +130,7 @@ namespace CCEnvs.Unity.UI
         /// </summary>
         protected virtual void InitViewModel(TViewModel vm)
         {
-            BindModel(vm);
+            throw new NotImplementedException(nameof(InitViewModel));
         }
 
         protected virtual void OnSetViewModel(TViewModel? vm)
@@ -136,6 +158,8 @@ namespace CCEnvs.Unity.UI
         private void BindModel(TViewModel vm)
         {
             modelBinding = vm.ObserveModel()
+                .Skip(1)
+                .WhereNotNull()
                 .Subscribe(OnModelChanged);
         }
 
@@ -143,7 +167,7 @@ namespace CCEnvs.Unity.UI
         {
             CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
 
-            InitViewModel(ViewModel);
+            SetViewModel(ViewModel);
         }
     }
 }

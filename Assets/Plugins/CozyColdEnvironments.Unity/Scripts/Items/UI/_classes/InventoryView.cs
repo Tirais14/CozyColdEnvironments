@@ -1,8 +1,18 @@
 using CCEnvs.FuncLanguage;
+using CCEnvs.Pools;
+using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
+using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
+using NUnit.Framework;
 using System;
+using System.Linq;
 using UnityEngine;
+
+#if ZLINQ_PLUGIN
+using ZLinq;
+#endif
 
 #nullable enable
 namespace CCEnvs.Unity.Storages.UI
@@ -20,9 +30,12 @@ namespace CCEnvs.Unity.Storages.UI
         protected GameObject containerPrefab;
 
         [SerializeField]
-        protected Transform? containersRoot;
+        protected Transform containersRoot;
 
-        public ISelectableController<IItemContainer> SelectableController { get; private set; } = null!;
+        [SerializeField, GetByChildren(IsOptional = true)]
+        protected ItemContainerViewSelectableController? containerSelectableController;
+
+        public ItemContainerViewSelectableController? ContainerSelectableController => containerSelectableController;
 
         public GameObject ContainerPrefab {
             get => containerPrefab;
@@ -32,16 +45,6 @@ namespace CCEnvs.Unity.Storages.UI
         public Transform? ContainersRoot {
             get => containersRoot;
             set => SetContainersRoot(value);
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            SelectableController = this.QueryTo()
-                .Component<ISelectableController<IItemContainer>>()
-                .Lax()
-                .GetValue(() => gameObject.AddComponent<ItemContainerViewSelectableObserver>());
         }
 
         protected override void Start()
@@ -61,6 +64,45 @@ namespace CCEnvs.Unity.Storages.UI
         {
             containersRoot = value.IfNull(transform);
             return this;
+        }
+
+        protected override void OnSetViewModel(TViewModel? vm)
+        {
+        }
+
+        protected override void InitViewModel(TViewModel vm)
+        {
+            base.InitViewModel(vm);
+            InitItemContainers(vm);
+        }
+
+        private void InitItemContainers(TViewModel vm)
+        {
+            var cntViews = containersRoot.Q()
+                .FromChildrens()
+                .ExcludeSelf()
+                .IncludeInactive()
+                .Components<IView>()
+                .ToArray();
+//#if ZLINQ_PLUGIN
+//                .AsValueEnumerable();
+//#endif
+
+            using var cnts = ListPool<IItemContainer>.Shared.Get();
+
+            foreach (var cntView in cntViews)
+            {
+                if (!cntView.Model.Is<IItemContainer>(out var cnt))
+                    cnt = new ItemContainer();
+
+                cnts.Value.Add(cnt);
+            }
+
+            foreach (var cmp in cntViews.OfType<Component>())
+                Destroy(cmp);
+
+            foreach (var cnt in cnts.Value)
+                vm.AddContainer(cnt);
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<IInventory>>
@@ -101,7 +143,7 @@ namespace CCEnvs.Unity.Storages.UI
                 inv, 
                 destroyCancellationToken,
                 containerPrefab,
-                containersRoot.IfNull(transform)
+                containersRoot
                 );
         }
     }
