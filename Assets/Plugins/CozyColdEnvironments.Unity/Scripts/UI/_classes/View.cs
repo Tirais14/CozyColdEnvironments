@@ -24,13 +24,18 @@ namespace CCEnvs.Unity.UI
     {
         private readonly Lazy<List<IDisposable>> viewModelDisposables = new(() => new List<IDisposable>());
 
-        private Lazy<TViewModel?> viewModel = new(static () => default);
+        private TViewModel? viewModel;
+
+        private Func<TViewModel?>? viewModelFactory;
+
+        private bool viewModelFactoryReturnsValue = true;
+        private bool viewModelCreated;
 
         private IDisposable? modelBinding;
 
-        public TViewModel? ViewModel => viewModel.Value;
+        public TViewModel? ViewModel => GetViewModel();
 
-        public object? Model => ViewModel.Maybe().Map(static vm => vm.Model);
+        public object? Model => ViewModel.Maybe().Map(static vm => vm.Model).GetValue();
 
         public bool SuppressViewModelCreation { get; set; }
 
@@ -40,14 +45,10 @@ namespace CCEnvs.Unity.UI
 
         protected ICollection<IDisposable> ViewModelDisposables => viewModelDisposables.Value;
 
-        protected override void Awake()
-        {
-            base.Awake();
-        }
-
         protected override void Start()
         {
             base.Start();
+            _ = GetViewModel();
         }
 
         protected override void OnDestroy()
@@ -63,6 +64,33 @@ namespace CCEnvs.Unity.UI
             return this;
         }
 
+        public TViewModel? GetViewModel()
+        {
+            if (viewModel.IsNotNull())
+                return viewModel;
+
+            if (viewModelCreated
+                ||
+                !viewModelFactoryReturnsValue)
+            {
+                return default;
+            }
+
+            if (viewModelFactory == null)
+                SetViewModelFactory(CreateViewModel);
+
+            viewModel = viewModelFactory!();
+
+            if (viewModel.IsNull())
+            {
+                viewModelFactoryReturnsValue = false;
+                return default;
+            }
+
+            viewModelCreated = true;
+            return viewModel;
+        }
+
         /// <summary>
         /// Don't use previous <see cref="ViewModel"/>, it has been disposed and don't use cached <see cref="ViewModel"/> by the same reason.
         /// </summary>
@@ -71,29 +99,36 @@ namespace CCEnvs.Unity.UI
         {
             TryDisposeViewModel();
 
+            viewModelFactoryReturnsValue = true;
+
             OnSetViewModel(vm);
 
-            viewModel = new Lazy<TViewModel?>(vm);
+            viewModel = vm;
 
             if (vm.IsNotNull())
             {
                 InitViewModel(vm);
                 BindModel(vm);
+                viewModelCreated = true;
             }
+            else viewModelCreated = false;
         }
 
         /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
         /// <param name="factory"></param>
-        public void SetViewModelFactory(Func<TViewModel?> factory)
+        public void SetViewModelFactory(Func<TViewModel?>? factory)
         {
-            Guard.IsNotNull(factory);
-
             TryDisposeViewModel();
+
+            viewModelFactoryReturnsValue = true;
+            viewModelCreated = false;
 
             OnSetViewModel(default);
 
-            viewModel = new Lazy<TViewModel?>(() =>
+            viewModelFactory = () =>
             {
+                factory ??= CreateViewModel;
+
                 var vm = factory();
 
                 OnSetViewModel(vm);
@@ -105,7 +140,7 @@ namespace CCEnvs.Unity.UI
                 }
 
                 return vm;
-            });
+            };
         }
 
         public bool HasModel() => Model.IsNotNull();
@@ -138,13 +173,11 @@ namespace CCEnvs.Unity.UI
             throw new NotImplementedException(nameof(OnSetViewModel));
         }
 
-        protected abstract Maybe<TViewModel> CreateViewModel();
+        protected abstract TViewModel? CreateViewModel();
 
         protected void TryDisposeViewModel()
         {
-            if (viewModel.IsValueCreated
-                &&
-                ViewModel is IDisposable disposable)
+            if (viewModel is IDisposable disposable)
             {
                 disposable?.Dispose();
             }

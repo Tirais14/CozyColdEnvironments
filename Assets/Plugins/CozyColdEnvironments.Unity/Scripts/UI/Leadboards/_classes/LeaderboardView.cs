@@ -21,13 +21,14 @@ namespace CCEnvs.Unity.UI.Leaderboards
             BindSortedEntries(vm);
         }
 
-        protected override Maybe<LeaderboardViewModel> CreateViewModel()
+        protected override LeaderboardViewModel? CreateViewModel()
         {
             return this.Q()
                 .IncludeInactive()
                 .Component<LeaderboardViewModel>()
                 .Lax()
-                .IfSome(static vm => vm.SetModel(new Leaderboard()));
+                .IfSome(static vm => vm.SetModel(new Leaderboard()))
+                .GetValue();
         }
 
         private void BindEntryAdd(LeaderboardViewModel vm)

@@ -5,9 +5,7 @@ using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
-using NUnit.Framework;
 using System;
-using System.Linq;
 using UnityEngine;
 
 #if ZLINQ_PLUGIN
@@ -72,7 +70,6 @@ namespace CCEnvs.Unity.Storages.UI
 
         protected override void InitViewModel(TViewModel vm)
         {
-            base.InitViewModel(vm);
             InitItemContainers(vm);
         }
 
@@ -82,11 +79,7 @@ namespace CCEnvs.Unity.Storages.UI
                 .FromChildrens()
                 .ExcludeSelf()
                 .IncludeInactive()
-                .Components<IView>()
-                .ToArray();
-//#if ZLINQ_PLUGIN
-//                .AsValueEnumerable();
-//#endif
+                .Components<IView>();
 
             using var cnts = ListPool<IItemContainer>.Shared.Get();
 
@@ -97,9 +90,6 @@ namespace CCEnvs.Unity.Storages.UI
 
                 cnts.Value.Add(cnt);
             }
-
-            foreach (var cmp in cntViews.OfType<Component>())
-                Destroy(cmp);
 
             foreach (var cnt in cnts.Value)
                 vm.AddContainer(cnt);
@@ -135,7 +125,7 @@ namespace CCEnvs.Unity.Storages.UI
             return this;
         }
 
-        protected override Maybe<InventoryViewModel<IInventory>> CreateViewModel()
+        protected override InventoryViewModel<IInventory> CreateViewModel()
         {
             var inv = new Inventory(containerCount);
 

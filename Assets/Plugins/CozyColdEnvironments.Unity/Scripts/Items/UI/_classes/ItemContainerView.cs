@@ -16,7 +16,8 @@ namespace CCEnvs.Unity.Storages.UI
 {
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel>
-        : View<TViewModel>
+        :
+        View<TViewModel>
 
         where TViewModel : IItemContainerViewModel
     {
@@ -29,8 +30,6 @@ namespace CCEnvs.Unity.Storages.UI
 
         protected override void InitViewModel(TViewModel vm)
         {
-            base.InitViewModel(vm);
-
             BindItemIcon(vm);
             BindCounter(vm);
         }
@@ -76,7 +75,7 @@ namespace CCEnvs.Unity.Storages.UI
         [SerializeField]
         protected CompareAction<int> ShowCounterTextPredicate = new(1, CompareTypes.Equals | CompareTypes.Bigger);
 
-        protected override Maybe<ItemContainerViewModel<IItemContainer>> CreateViewModel()
+        protected override ItemContainerViewModel<IItemContainer> CreateViewModel()
         {
             var cnt = new ItemContainer();
             return new ItemContainerViewModel<IItemContainer>(cnt, destroyCancellationToken)

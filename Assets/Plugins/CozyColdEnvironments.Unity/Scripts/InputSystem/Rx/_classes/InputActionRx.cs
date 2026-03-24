@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using CCEnvs.Disposables;
+using CCEnvs.Rx;
 using CCEnvs.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
@@ -27,6 +28,10 @@ namespace CCEnvs.Unity.InputSystem.Rx
         private readonly ReactiveCommand<CallbackContext> canceled = new();
 
         private readonly ReactiveProperty<bool> isEnabled;
+
+        //private Observable<Unit>? everyUpdateThread;
+
+        //private bool performedState;
 
         public InputAction Action { get; }
 
@@ -113,38 +118,35 @@ namespace CCEnvs.Unity.InputSystem.Rx
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 
+            //performedState = true;
+
             return performed;
         }
-
-        //public Observable<CallbackContext> ObservePerformedContinuous(
-        //    FrameProvider frameProvider,
-        //    CancellationToken cancellationToken = default
-        //    )
-        //{
-        //    CCDisposable.ThrowIfDisposed(this, disposed);
-
-        //    var tokenSource = DisposeCancellationToken.TryLinkTokens(cancellationToken, out cancellationToken);
-
-        //    var everyUpdate = Observable.EveryUpdate(frameProvider, cancellationToken);
-
-        //    if (tokenSource != null)
-        //    {
-        //        everyUpdate.Subscribe(tokenSource,
-        //            onNext: static (_, _) => { },
-        //            onCompleted: static (_, tokenSource) => tokenSource.CancelAndDispose()
-        //            )
-        //            .AddTo(disposables);
-        //    }
-
-        //    everyUpdate.
-        //}
 
         public Observable<CallbackContext> ObserveCanceled()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
 
+            //performedState = false;
+
             return canceled;
         }
+
+        //public Observable<Unit> ObserveIsPressed()
+        //{
+        //    CCDisposable.ThrowIfDisposed(this, disposed);
+
+        //    everyUpdateThread ??= Observable.EveryUpdate(UnityFrameProvider.EarlyUpdate);
+
+        //    return everyUpdateThread.Where(Action, static (_, action) => action.IsPressed());
+        //}
+
+        //public Observable<Unit> ObserveContinuousPerformed()
+        //{
+        //    CCDisposable.ThrowIfDisposed(this, disposed);
+
+        //    return ObserveIsPressed().Where(Action, (_, action) => action.WasPerformedThisFrame());
+        //}
 
         private int disposed;
 

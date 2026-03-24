@@ -12,7 +12,7 @@ namespace CCEnvs
         {
             CC.Guard.IsNotNullSource(source);
 
-            if (source.IsValueCreated)
+            if (!source.IsValueCreated)
             {
                 result = default!;
                 return false;

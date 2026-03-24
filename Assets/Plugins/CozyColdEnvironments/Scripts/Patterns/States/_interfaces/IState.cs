@@ -3,6 +3,8 @@ namespace CCEnvs.Patterns.States
 {
     public interface IState
     {
+        string ID { get; }
+
         void Enter()
         {
         }

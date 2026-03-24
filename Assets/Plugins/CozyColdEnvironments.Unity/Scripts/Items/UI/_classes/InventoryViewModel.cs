@@ -83,10 +83,23 @@ namespace CCEnvs.Unity.Storages.UI
 
         protected override void InitModel(TModel model)
         {
+            InitExistingContainers();
             BindContainerAdd();
             BindContainerRemove();
             BindContainerReplace();
             BindContainersClear();
+        }
+
+        private void InitExistingContainers()
+        {
+            var existsingCnts = Containers
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
+                .Select(cnt => new DictionaryAddEvent<int, IItemContainer>(cnt.Key, cnt.Value))
+                .ToArray();
+
+            OnContainersAdd(existsingCnts);
         }
 
         private void BindContainerAdd()
@@ -121,7 +134,7 @@ namespace CCEnvs.Unity.Storages.UI
                     fromViewCnts.Contains(addEv.Value))
                 {
                     fromViewContainers.Value.Remove(addEv.Value);
-                    //continue;
+                    continue;
                 }
 
                 cnts.Value.Add(addEv.Value);
@@ -161,7 +174,12 @@ namespace CCEnvs.Unity.Storages.UI
             {
                 foreach (var go in instances)
                 {
-                    if (!go.Q().Component<IView>().Lax().TryGetValue(out var view)
+                    if (!go.Q()
+                        .IncludeInactive()
+                        .FromChildrens()
+                        .Component<IView>()
+                        .Lax()
+                        .TryGetValue(out var view)
                         ||
                         view.ViewModel.IsNot<IItemContainerViewModel>(out var cntViewModel)
                         ||

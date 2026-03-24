@@ -30,7 +30,6 @@ namespace CCEnvs.Unity.UI.Leaderboards
 
         protected override void InitViewModel(LeaderboardEntryViewModel vm)
         {
-            base.InitViewModel(vm);
             ResetRecordViews(vm);
             SetRecordViews(vm);
             BindScoreRecordAdd(vm);
@@ -42,7 +41,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
             SetProfileNameView(vm);
         }
 
-        protected override Maybe<LeaderboardEntryViewModel> CreateViewModel()
+        protected override LeaderboardEntryViewModel? CreateViewModel()
         {
             return new LeaderboardEntryViewModel(LeaderboardEntry.Empty, destroyCancellationToken);
         }
