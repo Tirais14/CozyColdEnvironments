@@ -5,8 +5,10 @@ namespace CCEnvs.Unity.Injections
 {
     public abstract class GetComponentAttribute : Attribute
     {
-        public string? ObjectName { get; init; }
-        public string? UnityTag { get; init; }
+        public string? NameFilter { get; init; }
+        public string? TagFilter { get; init; }
+        public StringMatchSettings? NameMatchSettings { get; set; }
+
         public bool IsOptional { get; init; }
     }
 }

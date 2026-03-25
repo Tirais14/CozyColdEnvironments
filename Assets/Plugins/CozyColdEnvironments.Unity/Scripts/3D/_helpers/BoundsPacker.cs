@@ -11,6 +11,61 @@ namespace CCEnvs.Unity.D3
         //    () => new Dictionary<PackCacheKey, Bounds[]>()
         //    );
 
+        public static IReadOnlyList<Bounds> Pack(
+            Bounds container,
+            Bounds item,
+            Axis axis1,
+            Axis? axis2 = null,
+            Axis? axis3 = null,
+            Vector3 margin = default
+            )
+        {
+            int axisCount = (axis2 == null ? 0 : 1) + (axis3 == null ? 0 : 1) + 1;
+
+            switch (axisCount)
+            {
+                case 1:
+                    {
+                        return PackByAxis(
+                            container,
+                            item,   
+                            axis1,
+                            margin[(int)axis1]
+                            );
+                    }
+                case 2:
+                    {
+                        Axis secondAxis;
+
+                        if (axis2 == null)
+                            secondAxis = axis3!.Value;
+                        else
+                            secondAxis = axis2.Value;
+
+                        return PackByTwoAxes(
+                            container,
+                            item,
+                            axis1,
+                            secondAxis,
+                            margin
+                            );
+                    }
+                case 3:
+                    {
+                        return PackByThreeAxes(
+                            container,
+                            item,
+                            axis1,
+                            axis2!.Value,
+                            axis3!.Value,
+                            margin
+                            );
+                    }
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
         public static IReadOnlyList<Bounds> PackByAxis(
             Bounds container,
             Bounds item,

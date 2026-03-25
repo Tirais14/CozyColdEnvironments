@@ -24,11 +24,8 @@ namespace CCEnvs.Unity.UI.Leaderboards
         public string ProfileName => GuardedModel.Profile.Name;
 
         public LeaderboardEntryViewModel(
-            ILeaderboardEntry model,
-            CancellationToken cancellationToken
+            ILeaderboardEntry model
             )
-            :
-            base(model, cancellationToken)
         {
             ScoreRecords = model.ScoreRecords.CreateView(
                 static item => item.Value.ToString())

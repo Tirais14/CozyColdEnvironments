@@ -5,7 +5,6 @@ using CCEnvs.Unity.Items;
 using CCEnvs.Unity.UI;
 using R3;
 using System;
-using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -28,10 +27,13 @@ namespace CCEnvs.Unity.Storages.UI
         public ReadOnlyReactiveProperty<string> CounterView => counterView;
         public CompareAction<int>? ShowCounterTextPredicate { get; set; }
 
-        public ItemContainerViewModel(T model, CancellationToken cancellationToken)
-            :
-            base(model, cancellationToken)
+        public ItemContainerViewModel()
         {
+        }
+
+        public ItemContainerViewModel(T? model)
+        {
+            SetModel(model);
         }
 
         ~ItemContainerViewModel() => Dispose();
@@ -49,16 +51,6 @@ namespace CCEnvs.Unity.Storages.UI
         {
             BindItem(model);
             BindCounterText(model);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                OnSetModel(default);
-            }
         }
 
         private void BindItem(T model)

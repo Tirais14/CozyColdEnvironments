@@ -74,8 +74,7 @@ namespace CCEnvs.Unity.UI
         [field: GetBySelf(IsOptional = true)]
         public Graphic? graphic { get; private set; } = null!;
 
-        [field: GetBySelf(IsOptional = true)]
-        public Image? image { get; private set; } = null!;
+        public Image? image => graphic.As<Image>();
 
         [field: GetBySelf(IsOptional = true)]
         public CanvasGroup? canvasGroup { get; private set; }

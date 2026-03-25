@@ -9,14 +9,11 @@ namespace CCEnvs.Unity.UI.Profiles
     public class UserProfileViewModel : ViewModel<IUserProfile>
     {
         public ReadOnlyReactiveProperty<Sprite?> Icon { get; }
-        public string Name => Model.Name;
+        public string Name => GuardedModel.Name;
 
         public UserProfileViewModel(
-            IUserProfile model,
-            CancellationToken cancellationToken = default
+            IUserProfile model
             )
-            :
-            base(model, cancellationToken)
         {
             Icon = model.ObserveIcon()
                 .ToReadOnlyReactiveProperty(model.Icon)

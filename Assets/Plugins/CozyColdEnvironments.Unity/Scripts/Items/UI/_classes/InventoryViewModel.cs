@@ -2,7 +2,6 @@ using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
-using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Items;
@@ -48,21 +47,16 @@ namespace CCEnvs.Unity.Storages.UI
 
         public InventoryViewModel(
             TModel? model,
-            CancellationToken cancellationToken,
             GameObject containerPrefab,
-            Transform containersRoot,
-            bool initModel = true
+            Transform containersRoot
             )
-            :
-            base(model, cancellationToken)
         {
             CC.Guard.IsNotNull(containerPrefab, nameof(containerPrefab));
 
             ContainerPrefab = containerPrefab;
             ContainersRoot = containersRoot;
 
-            if (initModel)
-                SetModel(model);
+            SetModel(model);
         }
 
         public void AddContainer(IItemContainer cnt)

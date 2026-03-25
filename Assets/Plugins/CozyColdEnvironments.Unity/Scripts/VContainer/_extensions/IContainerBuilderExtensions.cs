@@ -1,3 +1,4 @@
+#if VCONTAINER_PLUGIN
 using CCEnvs.Unity.InputSystem.Rx;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -68,3 +69,4 @@ namespace CCEnvs.Unity.VContainer
         }
     }
 }
+#endif

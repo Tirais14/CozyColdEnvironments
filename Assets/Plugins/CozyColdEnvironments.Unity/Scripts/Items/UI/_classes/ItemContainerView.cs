@@ -45,10 +45,10 @@ namespace CCEnvs.Unity.Storages.UI
             if (image == null)
                 return;
 
-            iconBinding = vm.Icon.Subscribe(OnIcongChanged);
+            iconBinding = vm.Icon.Subscribe(OnIconChanged);
         }
 
-        private void OnIcongChanged(Sprite icon)
+        private void OnIconChanged(Sprite icon)
         {
             CC.Guard.IsNotNull(image, nameof(image));
 
@@ -78,7 +78,7 @@ namespace CCEnvs.Unity.Storages.UI
         protected override ItemContainerViewModel<IItemContainer> CreateViewModel()
         {
             var cnt = new ItemContainer();
-            return new ItemContainerViewModel<IItemContainer>(cnt, destroyCancellationToken)
+            return new ItemContainerViewModel<IItemContainer>(cnt)
             {
                 ShowCounterTextPredicate = ShowCounterTextPredicate
             };

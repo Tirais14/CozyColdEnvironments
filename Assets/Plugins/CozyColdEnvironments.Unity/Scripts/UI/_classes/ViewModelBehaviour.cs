@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity.Components;
 using R3;
@@ -27,6 +28,8 @@ namespace CCEnvs.Unity.UI
 
         protected ICollection<IDisposable> ModelDisposables => modelDisposables.Value;
 
+        protected TModel GuardedModel => Model.ThrowIfNull(nameof(Model));
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
@@ -53,11 +56,12 @@ namespace CCEnvs.Unity.UI
 
         protected virtual void OnSetModel(TModel? model)
         {
+            throw new NotImplementedException();
         }
 
         protected virtual void InitModel(TModel model)
         {
-
+            throw new NotImplementedException();
         }
     }
 }

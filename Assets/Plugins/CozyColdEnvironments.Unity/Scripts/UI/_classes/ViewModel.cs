@@ -20,7 +20,6 @@ namespace CCEnvs.Unity.UI
         private readonly Lazy<List<IDisposable>> modelDisposables = new(() => new List<IDisposable>());
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
-        private readonly CancellationTokenSource? linkedCancellationTokenSource;
 
         private readonly CancellationTokenRegistration disposeCancellationTokenRegistration;
 
@@ -31,15 +30,11 @@ namespace CCEnvs.Unity.UI
         protected TModel GuardedModel => Model.ThrowIfNull(nameof(Model));
 
         public CancellationToken DisposeCancellationToken {
-            get => linkedCancellationTokenSource?.Token ?? disposeCancellationTokenSource.Token;
+            get => disposeCancellationTokenSource.Token;
         }
 
-        protected ViewModel(TModel? model, CancellationToken cancellationToken)
+        protected ViewModel()
         {
-            this.model.Value = model;
-
-            linkedCancellationTokenSource = cancellationToken.LinkTokens(disposeCancellationTokenSource.Token);
-
             disposeCancellationTokenRegistration = DisposeCancellationToken.Register(
                 static @this => @this.CastTo<ViewModel<TModel>>().Dispose(),
                 this
@@ -79,18 +74,13 @@ namespace CCEnvs.Unity.UI
 
             if (disposing)
             {
-                if (linkedCancellationTokenSource != null)
-                {
-                    linkedCancellationTokenSource.CancelAndDispose();
-                    disposeCancellationTokenSource.Dispose();
-                }
-                else
-                    disposeCancellationTokenSource.CancelAndDispose();
-
+                disposeCancellationTokenSource.CancelAndDispose();
                 disposeCancellationTokenRegistration.Dispose();
 
                 if (modelDisposables.IsValueCreated)
                     modelDisposables.Value.DisposeEachAndClear(bufferized: true);
+
+                OnSetModel(default);
             }
         }
 

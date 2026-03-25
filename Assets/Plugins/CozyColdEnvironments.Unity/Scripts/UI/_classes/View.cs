@@ -2,7 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
-using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -48,7 +48,9 @@ namespace CCEnvs.Unity.UI
         protected override void Start()
         {
             base.Start();
-            _ = GetViewModel();
+
+            if (!SuppressViewModelCreation)
+                _ = GetViewModel();
         }
 
         protected override void OnDestroy()
@@ -107,8 +109,11 @@ namespace CCEnvs.Unity.UI
 
             if (vm.IsNotNull())
             {
-                InitViewModel(vm);
-                BindModel(vm);
+                if (!didStart)
+                    InitViewModelCoreAsync(vm).Forget();
+                else
+                    InitViewModelCore(vm);
+
                 viewModelCreated = true;
             }
             else viewModelCreated = false;
@@ -135,8 +140,10 @@ namespace CCEnvs.Unity.UI
 
                 if (vm.IsNotNull())
                 {
-                    InitViewModel(vm);
-                    BindModel(vm);
+                    if (!didStart)
+                        InitViewModelCoreAsync(vm).Forget();
+                    else
+                        InitViewModelCore(vm);
                 }
 
                 return vm;
@@ -178,9 +185,7 @@ namespace CCEnvs.Unity.UI
         protected void TryDisposeViewModel()
         {
             if (viewModel is IDisposable disposable)
-            {
-                disposable?.Dispose();
-            }
+                disposable.Dispose();
 
             if (viewModelDisposables.IsValueCreated)
                 ViewModelDisposables.DisposeEachAndClear(bufferized: true);
@@ -201,6 +206,32 @@ namespace CCEnvs.Unity.UI
             CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
 
             SetViewModel(ViewModel);
+        }
+
+        private async UniTaskVoid InitViewModelCoreAsync(TViewModel vm)
+        {
+            await UniTask.WaitUntil(
+                this,
+                @this => @this.didStart,
+                timing: PlayerLoopTiming.LastInitialization,
+                cancellationToken: destroyCancellationToken
+                );
+
+            try
+            {
+                InitViewModel(vm);
+                BindModel(vm);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
+        }
+
+        private void InitViewModelCore(TViewModel vm)
+        {
+            InitViewModel(vm);
+            BindModel(vm);
         }
     }
 }

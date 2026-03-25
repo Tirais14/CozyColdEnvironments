@@ -131,7 +131,6 @@ namespace CCEnvs.Unity.Storages.UI
 
             return new InventoryViewModel<IInventory>(
                 inv, 
-                destroyCancellationToken,
                 containerPrefab,
                 containersRoot
                 );

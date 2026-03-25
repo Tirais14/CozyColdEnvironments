@@ -68,15 +68,11 @@ namespace CCEnvs.Unity.UnityEditor
         public static void RemoveDefines()
         {
             foreach (var targetGroup in GetTargetGroupDefineSymbols())
-            {
                 foreach (var defineSymbol in nspaceDefineSymbols.Values.SelectMany(x => x))
                 {
                     targetGroup.Value.Remove(defineSymbol);
+                    PlayerSettingsHelper.RemoveScriptingDefineSymbols(Range.From(targetGroup.Key), defineSymbol);
                 }
-            }
-
-            foreach (var (bTarget, symbol) in GetPlatformDefineSymbols())
-                PlayerSettingsHelper.RemoveScriptingDefineSymbols(Range.From(bTarget), symbol);
         }
 
         private static (NamedBuildTarget bTarget, string symbol)[] GetPlatformDefineSymbols()
@@ -89,47 +85,17 @@ namespace CCEnvs.Unity.UnityEditor
             };
         }
 
-        private static Type[] GetAssemblyTypes()
+        private static string[] GetInstalledPluginNamespaces()
         {
             return (from assembly in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
                     select assembly.GetTypes() into types
                     from type in types
                     where type.Namespace is not null
-                    select type
+                    where nspaceDefineSymbols.Keys.Any(nspace => type.Namespace.StartsWith(nspace))
+                    select type.Namespace
                     )
+                    .DistinctBy(nspace => nspace.Split('.')[0])
                     .ToArray();
-        }
-
-        private static HashSet<string> GetInstalledPluginNamespaces()
-        {
-            var types = GetAssemblyTypes();
-
-            var results = new HashSet<string>();
-
-            Parallel.ForEach(types,
-                (type, loopState) =>
-                {
-                    if (type.Namespace is null)
-                        return;
-
-                    if (type.Namespace.StartsWith(UNITASK))
-                        results.Add(UNITASK);
-                    else if (type.Namespace.StartsWith(ZLINQ))
-                        results.Add(ZLINQ);
-                    else if (type.Namespace.StartsWith(ADDRESSABLES))
-                        results.Add(ADDRESSABLES);
-                    else if (type.Namespace.StartsWith(ZENJECT))
-                        results.Add(ZENJECT);
-                    else if (type.Namespace.StartsWith(VCONTAINER))
-                        results.Add(VCONTAINER);
-                    else if (type.Namespace.StartsWith(BIN_PACKER_EB_AFIT))
-                        results.Add(BIN_PACKER_EB_AFIT);
-
-                    if (results.Count == nspaceDefineSymbols.Count)
-                        loopState.Break();
-                });
-
-            return results;
         }
 
         private static Dictionary<NamedBuildTarget, HashSet<string>> GetTargetGroupDefineSymbols()

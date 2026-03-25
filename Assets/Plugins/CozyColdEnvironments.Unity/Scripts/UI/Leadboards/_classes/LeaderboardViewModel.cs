@@ -74,9 +74,9 @@ namespace CCEnvs.Unity.UI.Leaderboards
             set => maxVisibleCount = value;
         }
 
-        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => Model.Entries;
+        public IReadOnlyObservableDictionary<Identifier, ILeaderboardEntry> Entries => GuardedModel.Entries;
 
-        public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => Model.SortedEntries;
+        public IReadOnlyObservableList<ILeaderboardEntry> SortedEntries => GuardedModel.SortedEntries;
 
         public ReadOnlyReactiveProperty<ILeaderboardEntry?> SpecialEntry { get; set; } = null!;
 
@@ -92,9 +92,12 @@ namespace CCEnvs.Unity.UI.Leaderboards
             commandScheduler.Dispose();
         }
 
+        protected override void OnSetModel(ILeaderboard? model)
+        {
+        }
+
         protected override void InitModel(ILeaderboard model)
         {
-            base.InitModel(model);
             SetSpecialEntry(model);
         }
 
@@ -259,7 +262,7 @@ namespace CCEnvs.Unity.UI.Leaderboards
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void setupEntryView(LeaderboardEntryView entryView, ILeaderboardEntry entry)
             {
-                var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry, entryView.destroyCancellationToken);
+                var entryViewModel = new LeaderboardEntryViewModel((LeaderboardEntry)entry);
 
                 entryView.SetViewModel(entryViewModel);
             }
