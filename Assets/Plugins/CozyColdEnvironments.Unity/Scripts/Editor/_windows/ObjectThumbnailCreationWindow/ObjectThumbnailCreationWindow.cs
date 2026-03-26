@@ -20,7 +20,10 @@ public class ObjectThumbnailCreationWindow : EditorWindow
     private VisualTreeAsset m_VisualTreeAsset = default!;
 
     [SerializeField]
-    private Texture2D previewTexture;
+    private Texture2D? previewTexture;
+
+    [SerializeField]
+    private SceneAsset? previewSceneAsset;
 
     [SerializeField]
     private Object? selectedAsset;
@@ -181,10 +184,10 @@ public class ObjectThumbnailCreationWindow : EditorWindow
     {
         assets.Clear();
 
-        string assetFilter = typeNameView.value.IsNullOrWhiteSpace() || isComponentToggle.value ? "GameObject" : typeNameView.value;
+        string typeFilter = typeNameView.value.IsNullOrWhiteSpace() || isComponentToggle.value ? "GameObject" : typeNameView.value;
 
         var dbAssets =
-            from guid in AssetDatabase.FindAssets($"t:{assetFilter}")
+            from guid in AssetDatabase.FindAssets($"t:{typeFilter}")
             where guid is not null
             select AssetDatabase.GUIDToAssetPath(guid) into path
             where path is not null
@@ -200,7 +203,9 @@ public class ObjectThumbnailCreationWindow : EditorWindow
                 from cmp in cmps
                 let cmpType = cmp.GetType()
                 where cmpType.FullName.StartsWith(typeNameView.value) || cmpType.Name.StartsWith(typeNameView.value)
-                select cmp;
+                select PrefabUtility.GetOutermostPrefabInstanceRoot(cmp) into prefab
+                where prefab != null
+                select prefab;
         }
 
         foreach (var asset in dbAssets)
@@ -253,12 +258,13 @@ public class ObjectThumbnailCreationWindow : EditorWindow
         sceneCamera.aspect = 1f;
         sceneCamera.backgroundColor = Color.black;
         sceneCamera.clearFlags = CameraClearFlags.SolidColor;
+        sceneCamera.allowHDR = false;
 
         sceneCamera.targetTexture = new RenderTexture(
             previewSize,
             previewSize,
             32,
-            RenderTextureFormat.ARGBFloat
+            RenderTextureFormat.ARGB32
             );
 
         SceneManager.MoveGameObjectToScene(cameraObj, previewScene);
@@ -273,16 +279,10 @@ public class ObjectThumbnailCreationWindow : EditorWindow
 
         try
         {
-            GameObject? prefab;
-
-            if (previewAsset.IsNot<GameObject>(out prefab))
-                if (previewAsset.Is<Component>(out var cmp))
-                    prefab = cmp.gameObject;
-
-            if (prefab == null)
+            if (!GetPreviewAssetTransform().TryGetValue(out var previewTransform))
                 return;
 
-            previewAsset = PrefabUtility.InstantiatePrefab(prefab, previewScene);
+            previewAsset = PrefabUtility.InstantiatePrefab(previewTransform, previewScene);
         }
         catch (System.Exception ex)
         {
@@ -305,7 +305,7 @@ public class ObjectThumbnailCreationWindow : EditorWindow
             previewTexture = new Texture2D(
                 previewSize,
                 previewSize,
-                TextureFormat.RGBAFloat,
+                TextureFormat.RGBA32,
                 false
                 );
         }
