@@ -17,6 +17,8 @@ using UnityEngine;
 
 #if ZLINQ_PLUGIN
 using ZLinq;
+#else
+using System.Linq;
 #endif
 
 #nullable enable

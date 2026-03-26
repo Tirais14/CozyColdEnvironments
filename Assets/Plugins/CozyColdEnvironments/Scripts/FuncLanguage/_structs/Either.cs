@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +15,7 @@ namespace CCEnvs.FuncLanguage
 #if !UNITY_2017_1_OR_NEWER
         readonly 
 #endif
-        partial struct Either<L, R> : IEquatable<Either<L, R>>
+        partial struct Either<L, R> : IEquatable<Either<L, R>>, IEnumerable<R>
     {
         public readonly static Either<L, R> None = default;
 
@@ -366,8 +367,8 @@ namespace CCEnvs.FuncLanguage
         public readonly Either<LOut, ROut> Cast<LOut, ROut>()
         {
             return new Either<LOut, ROut>(
-                (LOut?)left.AsObsolete<LOut>(),
-                (ROut?)right.AsObsolete<ROut>()
+                left.As<LOut>(),
+                right.As<ROut>()
                 );
         }
 
@@ -439,5 +440,13 @@ namespace CCEnvs.FuncLanguage
         {
             return HashCode.Combine(left, right, IsLeft, IsRight);
         }
+
+        public readonly IEnumerator<R> GetEnumerator()
+        {
+            if (IsRight)
+                yield return RightTarget!;
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

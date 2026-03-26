@@ -1,11 +1,9 @@
 using System;
-using System.Buffers;
 using System.Threading.Tasks;
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs
+namespace CCEnvs.Threading.Tasks
 {
     public static class ValueTaskHelper
     {
@@ -187,6 +185,32 @@ namespace CCEnvs
                 else
                     caller.PrintException(ex);
             }
+        }
+
+        public static async void ForgetByPrintException<TCaller>(
+            this ValueTask task,
+            TCaller? caller,
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(caller, suppresCancellationThrow);
+        }
+
+        public static async void ForgetByPrintException<T>(
+            this ValueTask<T> task,
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(suppresCancellationThrow);
+        }
+
+        public static async void ForgetByPrintException<T, TCaller>(
+            this ValueTask<T> task,
+            TCaller? caller,
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(caller, suppresCancellationThrow);
         }
     }
 }

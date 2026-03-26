@@ -2,6 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using CCEnvs.Attributes;
 using CCEnvs.Attributes.Serialization;
 using CommunityToolkit.Diagnostics;
 
@@ -14,7 +15,8 @@ namespace CCEnvs.Serialization
 
         public static ImmutableDictionary<TypeSerializationDescriptor, Type> DescriptedTypes { get; private set; } = null!;
 
-        public static void Install(MemberInfo[] domainMembers)
+        [OnInstallExecutable]
+        private static void Install(MemberInfo[] domainMembers)
         {
             Guard.IsNotNull(domainMembers, nameof(domainMembers));
 

@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     public abstract class CCPropertyDrawer : PropertyDrawer
     {

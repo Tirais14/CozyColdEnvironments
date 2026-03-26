@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     [InitializeOnLoad]
     public static class AutoCompilingToggleTool

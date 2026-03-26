@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     [Obsolete("Use CCEditorWindow")]
     public abstract class CCEditorWindowObsolete : EditorWindow

@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     [InitializeOnLoad]
     public sealed class PlaceObjectsBulkEditorWindow : CCEditorWindow

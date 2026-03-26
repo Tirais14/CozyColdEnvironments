@@ -4,7 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     //[CustomPropertyDrawer(typeof(SerializedDictionary<,>))]
     public sealed class SerializedDictionaryDrawer : CCPropertyDrawer

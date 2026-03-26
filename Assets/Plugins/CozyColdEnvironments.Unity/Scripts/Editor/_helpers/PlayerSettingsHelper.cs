@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     public static class PlayerSettingsHelper
     {

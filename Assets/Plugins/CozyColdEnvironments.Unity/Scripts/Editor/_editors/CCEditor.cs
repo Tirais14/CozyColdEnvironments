@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     public class CCEditor : global::UnityEditor.Editor
     {

@@ -16,6 +16,9 @@ namespace CCEnvs.Collections
             CC.Guard.IsNotNullSource(source);
             CC.Guard.IsNotNull(value, nameof(value));
 
+            if (source.IsReadOnly)
+                return false;
+
             if (source.Contains(value))
                 return false;
 

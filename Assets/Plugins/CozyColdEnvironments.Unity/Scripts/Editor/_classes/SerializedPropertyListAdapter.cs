@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     public class SerializedPropertyListAdapter : IList
     {

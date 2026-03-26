@@ -14,7 +14,6 @@ namespace CCEnvs.Unity.D3
     {
         public static List<Vector3> Pack(
             Vector3 containerSize,
-            Vector3 entrySize,
             int entryQuantity,
             Vector3 padding = default
             )

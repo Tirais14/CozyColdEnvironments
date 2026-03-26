@@ -6,6 +6,11 @@ MonoImporter:
   defaultReferences:
   - m_ViewDataDictionary: {instanceID: 0}
   - m_VisualTreeAsset: {fileID: 9197481963319205126, guid: 4c0e408a9529d954ca0a8a2657d78d86, type: 3}
+  - previewTexture: {instanceID: 0}
+  - previewSceneAsset: {instanceID: 0}
+  - lightPrefab: {fileID: 8950540855958079365, guid: 5350e9d7a67c344479900d778367ef44, type: 3}
+  - volumePrefab: {fileID: 361238047033555116, guid: 2a07e4a135753a84dba7754c8fc4a316, type: 3}
+  - selectedAsset: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

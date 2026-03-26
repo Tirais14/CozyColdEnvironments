@@ -1,4 +1,11 @@
 #nullable enable
+using CCEnvs.Attributes;
+using CCEnvs.Json;
+using CCEnvs.Patterns.Commands;
+using CCEnvs.Reflection;
+using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
+using R3;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -6,16 +13,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using CCEnvs.Attributes;
-using CCEnvs.Json;
-using CCEnvs.Json.Converters;
-using CCEnvs.Patterns.Commands;
-using CCEnvs.Reflection;
-using CCEnvs.Saves;
-using CCEnvs.Serialization;
-using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
-using R3;
 
 namespace CCEnvs
 {
@@ -33,11 +30,7 @@ namespace CCEnvs
         public static Func<bool> TrueFactory { get; } = static () => true;
         public static Func<bool> FalseFactory { get; } = static () => false;
 
-        public static JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.GetDefault(
-            new DescriptedObjectJsonConverter(),
-            new TypeSerializationDescriptorJsonConverter(),
-            new MemberInfoJsonConverter()
-            );
+        public static JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
 
         [field: OnInstallResetable]
         public static CommandScheduler CommandScheduler { get; private set; } = null!;
@@ -71,10 +64,18 @@ namespace CCEnvs
                 );
 
             CCProjectHelper.Install(domainMembers);
-            TypeSerializationHelper.Install(domainMembers);
 
             MainThreadID = Thread.CurrentThread.ManagedThreadId;
         }
+
+#if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+        private static void InstallInternal()
+        {
+            //Range.From("CCEnvs*")
+            Install(null);
+        }
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsMainThread(this Thread thread)

@@ -3,9 +3,11 @@ using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.Reflection.Caching;
+using CCEnvs.Threading.Tasks;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using UnityEngine;
+using CCEnvs.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Unity
@@ -32,6 +34,7 @@ namespace CCEnvs.Unity
 
             var factory = CreateFactory();
             Pool = new ObjectPool<T>(factory);
+            TryPreheatPool();
         }
 
         private IFactory<T> CreateFactory()

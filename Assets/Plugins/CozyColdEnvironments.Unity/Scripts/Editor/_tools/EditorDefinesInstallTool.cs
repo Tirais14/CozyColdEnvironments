@@ -8,8 +8,9 @@ using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
+    [InitializeOnLoad]
     public static class EditorDefinesInstallTool
     {
         private const string UNITASK = "Cysharp.Threading";
@@ -36,6 +37,11 @@ namespace CCEnvs.Unity.UnityEditor
             { BIN_PACKER_EB_AFIT, Range.From(BIN_PACKER_EB_AFIT_SYMBOL) }
         };
 
+        static EditorDefinesInstallTool()
+        {
+
+        }
+
         [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Install", priority = -1)]
         public static void AddDefines()
         {
@@ -45,23 +51,30 @@ namespace CCEnvs.Unity.UnityEditor
 
             RemoveDefines();
 
-            foreach (var nspace in nspaces)
+            try
             {
-                foreach (var targetGroup in groupDefineSymbols.Keys)
+                foreach (var nspace in nspaces)
                 {
-                    var symbols = groupDefineSymbols[targetGroup];
-
-                    foreach (var defineSymbol in nspaceDefineSymbols[nspace])
+                    foreach (var targetGroup in groupDefineSymbols.Keys)
                     {
-                        symbols.Add(defineSymbol);
+                        var symbols = groupDefineSymbols[targetGroup];
+
+                        foreach (var defineSymbol in nspaceDefineSymbols[nspace])
+                        {
+                            symbols.Add(defineSymbol);
+                        }
+
+                        PlayerSettings.SetScriptingDefineSymbols(targetGroup, symbols.JoinStrings(';'));
                     }
-
-                    PlayerSettings.SetScriptingDefineSymbols(targetGroup, symbols.JoinStrings(';'));
                 }
-            }
 
-            foreach (var (bTarget, symbol) in GetPlatformDefineSymbols())
-                PlayerSettingsHelper.AddScriptingDefineSymbols(Range.From(bTarget), symbol);
+                foreach (var (bTarget, symbol) in GetPlatformDefineSymbols())
+                    PlayerSettingsHelper.AddScriptingDefineSymbols(Range.From(bTarget), symbol);
+            }
+            catch (Exception ex)
+            {
+                typeof(EditorDefinesInstallTool).PrintException(ex);
+            }
         }
 
         [MenuItem(EditorHelper.TOOLS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Uninstall", priority = -1)]
@@ -91,8 +104,9 @@ namespace CCEnvs.Unity.UnityEditor
                     select assembly.GetTypes() into types
                     from type in types
                     where type.Namespace is not null
-                    where nspaceDefineSymbols.Keys.Any(nspace => type.Namespace.StartsWith(nspace))
-                    select type.Namespace
+                    select nspaceDefineSymbols.Select(nspace => type.Namespace.StartsWith(nspace.Key) ? nspace.Key : null).FirstOrDefault(nspace => nspace is not null) into nspace
+                    where nspace is not null
+                    select nspace
                     )
                     .DistinctBy(nspace => nspace.Split('.')[0])
                     .ToArray();

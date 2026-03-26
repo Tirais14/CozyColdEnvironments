@@ -1,6 +1,10 @@
-using System.Linq;
+using CCEnvs.Collections;
+using CCEnvs.Json.Converters;
+using CCEnvs.Saves;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Globalization;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -15,6 +19,14 @@ namespace CCEnvs.Json
                 settings = new JsonSerializerSettings(JsonConvert.DefaultSettings());
             else
                 settings = new JsonSerializerSettings();
+
+            converters = converters.ConcatToArray(
+                Range.From<JsonConverter>(
+                    new DescriptedObjectJsonConverter(),
+                    new TypeSerializationDescriptorJsonConverter(),
+                    new MemberInfoJsonConverter()
+                    )
+                );
 
             if (settings.Converters.IsReadOnly)
                 settings.Converters = settings.Converters.Concat(converters).ToList();
@@ -37,6 +49,7 @@ namespace CCEnvs.Json
             settings.Formatting = Formatting.Indented;
             settings.MaxDepth = 64;
             settings.ObjectCreationHandling = ObjectCreationHandling.Auto;
+            settings.Culture = CultureInfo.InvariantCulture;
 
             var ccContractResolver = new CCContractResolver
             {

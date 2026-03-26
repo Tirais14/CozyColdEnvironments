@@ -66,22 +66,24 @@ namespace CCEnvs.Json
 
         public static JsonSerializerSettings AddConverters(
             this JsonSerializerSettings source,
-            params JsonConverter[] converters)
+            params JsonConverter[] converters
+            )
         {
             Guard.IsNotNull(source, nameof(source));
             Guard.IsNotNull(converters, nameof(converters));
 
             if (source.Converters.IsReadOnly)
-            {
-                var options = new JsonSerializerSettings(source);
-                foreach (var conv in converters)
-                    options.Converters.Add(conv);
+                source.Converters = source.Converters.ToList();
 
-                return options;
-            }
+            var existingConverterTypes = source.Converters.Select(conv => conv.GetType()).ToHashSet();
 
             foreach (var conv in converters)
+            {
+                if (existingConverterTypes.Contains(conv.GetType()))
+                    continue;
+
                 source.Converters.Add(conv);
+            }
 
             return source;
         }

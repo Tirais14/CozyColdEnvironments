@@ -29,7 +29,9 @@ namespace CCEnvs.Unity
         {
             var go = new GameObject($"___{nameof(CCBehaviourStatic)}Instances");
 
-            DontDestroyOnLoad(go);
+
+            if (!Application.isEditor || Application.isPlaying)
+                DontDestroyOnLoad(go);
 
             return go;
         });

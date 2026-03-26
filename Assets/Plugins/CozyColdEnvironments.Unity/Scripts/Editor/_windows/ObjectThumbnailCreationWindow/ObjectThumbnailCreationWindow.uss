@@ -25,7 +25,7 @@
 }
 
 .buttons {
-    background-color: rgb(142, 142, 142);
+    background-color: rgb(108, 108, 108);
     border-top-width: 2px;
     border-right-width: 2px;
     border-bottom-width: 2px;

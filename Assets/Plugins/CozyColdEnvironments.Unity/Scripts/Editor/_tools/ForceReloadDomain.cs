@@ -4,7 +4,7 @@ using CCEnvs.UnityEditor;
 using UnityEditor;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     public static class ForceReloadDomain
     {

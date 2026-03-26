@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UnityEditor
+namespace CCEnvs.Unity.Editr
 {
     public static class VisualStudioClearCacheTool
     {
