@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
+using System.Linq;
 using System.Reflection;
+using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CCEnvs.Serialization;
 using Newtonsoft.Json;
@@ -16,10 +19,19 @@ namespace CCEnvs.Json
         public override bool CanConvert(Type objectType)
         {
             if (TypeSerializationHelper.TypeDescriptors.ContainsKey(objectType))
+            {
                 return true;
+            }
 
-            if (objectType.GetCustomAttribute<PolymorphSerializableAttribute>(inherit: true) is not null)
+            if (objectType.IsDefined<PolymorphSerializableAttribute>(inherit: true)
+                ||
+                objectType == TypeofCache<object>.Type
+                ||
+                objectType.IsAbstract || objectType.IsInterface
+                )
+            {
                 return true;
+            }
 
             return false;
         }
@@ -36,8 +48,25 @@ namespace CCEnvs.Json
 
             var jToken = JToken.Load(reader);
 
-            if (jToken is not JObject jObj)
-                throw new JsonSerializationException($"Expected JObject. Current: {jToken.Type}: type: {objectType}");
+            //if (jToken is not JObject jObj)
+            //    throw new JsonSerializationException($"Expected JObject. Current: {jToken.Type}: type: {objectType}");
+
+            if (jToken is not JObject jObj
+                ||
+                !jObj.Properties().Any(prop => prop.Name == DESCRIPTOR_PROPERTY_NAME))
+            {
+                if (CCDebug.Instance.IsEnabled)
+                    this.PrintLog("Is not JsonObject or not container descriptor property. Try to deserialize by other converters");
+
+                var tSerializer = JsonSerializer.Create(serializer.GetSerializerSettings().ExcludeConverters(this));
+
+                var result = tSerializer.Deserialize(jToken.CreateReader(), objectType);
+
+                if (result is JToken && objectType.IsNotType<JToken>())
+                    throw new InvalidOperationException($"Cannot deserialize abstract type by other converters. Type: {objectType}");
+
+                return result;
+            }
 
             if (jObj.Property(DESCRIPTOR_PROPERTY_NAME).IsNull(out var descriptorProp))
                 return OnDescriptorPropertyNotFound(jObj, objectType, serializer);
@@ -96,21 +125,19 @@ namespace CCEnvs.Json
 
                 writer.WriteEndObject();
             }
-            //else if (contract is JsonPrimitiveContract jPrimitiveContract)
-            //{
-            //    //var serializerSettings = serializer.GetSerializerSettings()
-            //    //    .ExcludeConverters(typeof(DescriptedObjectJsonConverter));
-
-            //    //var primitiveSerializer = JsonSerializer.Create(serializerSettings);
-            //    writer.WriteStartObject();
-            //    writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
-            //    serializer.Serialize(writer, descriptor);
-            //    writer.WritePropertyName("value");
-            //    writer.WriteValue(value);
-            //    writer.WriteEndObject();
-            //}
             else
-                throw new NotImplementedException(objType.ToString());
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
+                serializer.Serialize(writer, descriptor);
+                writer.WritePropertyName("value");
+
+                var tSerializer = JsonSerializer.Create(serializer.GetSerializerSettings().ExcludeConverters(this));
+                tSerializer.Serialize(writer, value);
+                writer.WriteEndObject();
+            }
+            //else
+            //    throw new NotImplementedException(objType.ToString());
         }
 
         protected virtual object? OnDescriptorPropertyNotFound(

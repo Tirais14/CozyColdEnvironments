@@ -1,6 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Json.Converters;
 using CCEnvs.Saves;
+using CCEnvs.Snapshots.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Globalization;
@@ -22,9 +23,10 @@ namespace CCEnvs.Json
 
             converters = converters.ConcatToArray(
                 Range.From<JsonConverter>(
-                    new DescriptedObjectJsonConverter(),
+                    new AnonymousSnapshotMemberJsonConverter(),
                     new TypeSerializationDescriptorJsonConverter(),
-                    new MemberInfoJsonConverter()
+                    new MemberInfoJsonConverter(),
+                    new DescriptedObjectJsonConverter()
                     )
                 );
 

@@ -1,10 +1,14 @@
 using CCEnvs.Attributes;
 using CCEnvs.Caching;
+using CCEnvs.Collections;
+using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 #nullable enable
@@ -116,6 +120,21 @@ namespace CCEnvs
             return null;
         }
 
+        public static string AddTypePrefixToPath(Type type, string path)
+        {
+            var name = Path.GetFileName(path);
+
+            var changedName = AddTypePrefix(type, name);
+
+            if (name == changedName)
+                return path;
+
+            var pathParts = path.Split('/', '\\');
+
+            path = Path.Combine(pathParts[..^1].AppendToArray(changedName));
+            return path;
+        }
+
         public static string AddTypePrefix(Type type, string name)
         {
             if (ResolvePrefix(type).IsNull(out var prefix)
@@ -126,6 +145,22 @@ namespace CCEnvs
             }
 
             return $"{prefix}{name}";
+        }
+
+        public static string RemoveTypePrefixFromPath(Type type, string path)
+        {
+            var name = Path.GetFileName(path);
+
+            var changedName = RemoveTypePrefix(type, name);
+
+            if (name == changedName)
+                return path;
+
+            var pathParts = path.Split('/', '\\');
+
+            path = Path.Combine(pathParts[..^1].AppendToArray(changedName));
+
+            return path;
         }
 
         public static string RemoveTypePrefix(Type type, string name)

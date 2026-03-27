@@ -1,8 +1,11 @@
 using C5;
 using CCEnvs.Attributes;
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Linq;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -71,6 +74,10 @@ namespace CCEnvs.Serialization
 
         private static void AddBaseTypes()
         {
+            //SetMany(
+            //    (typeof(Dictionary<,>), new TypeSerializationDescriptor("Dictionary", "731abc8b-d9a8-49cd-87de-c24c50f853f0"))
+            //    );
+
             //Set<byte>(new TypeSerializationDescriptor("byte", "8cf9c587-bc39-48e4-a8a8-2096d57e1733"));
             //Set<short>(new TypeSerializationDescriptor("short", "72109447-909c-48d7-a6b2-b646a4ccc7f9"));
             //Set<ushort>(new TypeSerializationDescriptor("ushort", "9950b1cd-d1db-4d89-a1f5-9c055a222542"));
@@ -98,6 +105,10 @@ namespace CCEnvs.Serialization
 
             if (type.IsGenericType)
             {
+                //var t = TypeDescriptors.FirstOrDefault(type, (item, type) => item.Key.IsType(type.GetGenericTypeDefinition()));
+                //result = t.Value;
+                //return t.Value.IsNotNull();
+
                 result = default;
                 return false;
             }

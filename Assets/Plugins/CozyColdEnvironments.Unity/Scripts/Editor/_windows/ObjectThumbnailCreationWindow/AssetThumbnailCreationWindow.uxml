@@ -1,6 +1,7 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/_windows/ObjectThumbnailCreationWindow/AssetThumbnailCreationWindow.uss?fileID=7433441132597879392&amp;guid=b03c38d2b6b463c4383586ef0e39eff7&amp;type=3#AssetThumbnailCreationWindow"/>
     <ui:VisualElement name="Controls" class="header" style="flex-grow: 0; position: relative; height: 4%; width: 100%; flex-direction: row; flex-shrink: 1; flex-wrap: nowrap; align-self: flex-start; align-items: center;">
+        <ui:Button text="Save" name="Save" class="header buttons" style="flex-shrink: 1;"/>
         <ui:Button text="Refresh" name="RefreshButton" class="header buttons" style="width: 69px; height: 24px; flex-shrink: 1; flex-grow: 0;"/>
         <ui:Button text="Export Selected" name="ExportSelected" class="header buttons" style="flex-shrink: 1;"/>
     </ui:VisualElement>

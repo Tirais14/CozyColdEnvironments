@@ -31,16 +31,22 @@ namespace CCEnvs.Snapshots
         }
 #nullable disable warnings
 
-        internal override void CaptureValueFrom(object target)
+        public override void ResetCapturedValue() => CapturedValue = null;
+
+        public override void CaptureValueFrom(object target)
         {
             CapturedValue = GetValue(target);
         }
 
-        internal override void ResetCapturedValue() => CapturedValue = null;
-
-        internal override void RestoreFromCaptured(object target)
+        public override void RestoreFromCaptured(object target)
         {
             SetValue(target, CapturedValue);
+        }
+
+        internal AnonymousSnapshotProperty SetUnderlyingValue(object? value)
+        {
+            CapturedValue = value;
+            return this;
         }
     }
 }

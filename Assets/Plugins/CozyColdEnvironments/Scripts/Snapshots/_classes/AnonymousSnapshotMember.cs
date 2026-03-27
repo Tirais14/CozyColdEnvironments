@@ -58,13 +58,19 @@ namespace CCEnvs.Snapshots
                 return PropInfo!.GetValue(target);
         }
 
+        public abstract void ResetCapturedValue();
+
+        public abstract void CaptureValueFrom(object target);
+
+        public abstract void RestoreFromCaptured(object target);
+
         internal virtual void SetValue(object target, object? value)
         {
             CC.Guard.IsNotNullTarget(target);
 
             if (FieldInfo is not null)
             {
-                value = convertIfNotType(FieldInfo.FieldType, value);   
+                value = convertIfNotType(FieldInfo.FieldType, value);
                 FieldInfo.SetValue(target, value);
             }
             else
@@ -81,8 +87,9 @@ namespace CCEnvs.Snapshots
                 if (targetType.IsPrimitiveNumber())
                     return TypeHelper.ConvertNumber(value, targetType);
 
-                if (value is JObject jObj)
-                    return jObj.ToObject(targetType, JsonSerializer.Create(CC.SerializerSettings));
+                ////TODO: Fix bug where JsonObject inject in field
+                //if (value is JObject jObj)
+                //    return jObj.ToObject(targetType, JsonSerializer.Create(CC.SerializerSettings));
 
                 if (!targetType.GetType().IsAssignableFrom(value.GetType()))
                     value = value.MutateType(targetType);
@@ -90,11 +97,5 @@ namespace CCEnvs.Snapshots
                 return value;
             }
         }
-
-        internal abstract void CaptureValueFrom(object target);
-
-        internal abstract void ResetCapturedValue();
-
-        internal abstract void RestoreFromCaptured(object target);
     }
 }

@@ -53,6 +53,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
     private Button refreshButton = null!;
     private Button exportSelectedButton = null!;
+    private Button saveButton = null!;
 
     private Label assetNameView = null!;
 
@@ -86,6 +87,9 @@ public class AssetThumbnailCreationWindow : EditorWindow
     private Light? previewLight;
 
     private GameObject? previewVolume;
+
+    [SnapshotProperty("33548307-d33e-4082-ab00-62a6fc213edb")]
+    private Dictionary<string, AnonymousSnapshot> perAssetSettings = new();
     #endregion Data
 
     [SnapshotProperty("1817f9df-957a-48ff-9bde-daa40b3dc3df")]
@@ -156,6 +160,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
         ResolveAssetsView();
         ResolveRefreshButton();
         ResolveExportSelectedButton();
+        ResolveSaveButton();
         ResolvePreviewImage();
         ResolvePositionOffsetView();
         ResolveRotationOffsetView();
@@ -250,6 +255,12 @@ public class AssetThumbnailCreationWindow : EditorWindow
     {
         exportInSourceDirectoryToggle = contentContainer.Q<Toggle>("ExportInSourceDirectory");
     }
+
+    private void ResolveSaveButton()
+    {
+        saveButton = rootVisualElement.Q<Button>("Save");
+        saveButton.clicked += SaveData;
+    }
     #endregion ResolveViews
 
     #region Callbacks
@@ -295,7 +306,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
             return;
         }
 
-        selectedAsset = assets[firstIdx];
+        SetSelectedAsset(assets[firstIdx]);
         ResolvePreviewScene();
         ResolveCamera();
         ResolvePreviewAsset();
@@ -314,18 +325,51 @@ public class AssetThumbnailCreationWindow : EditorWindow
     }
     #endregion Callbacks
 
+    private void SetSelectedAsset(Object? asset)
+    {
+        if (selectedAsset != null)
+            SaveWindowStateByAsset(selectedAsset);
+
+        if (asset != null && selectedAsset != asset)
+            RestoreWindowStateByAsset(asset);
+
+        selectedAsset = asset;
+    }
+
+    private void RestoreWindowStateByAsset(Object asset)
+    {
+        var assetGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
+
+        if (!perAssetSettings.TryGetValue(assetGuid, out var winSnapshot))
+            return;
+
+        winSnapshot.TryRestore(this);
+    }
+
+    private void SaveWindowStateByAsset(Object asset)
+    {
+        var assetGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
+
+        var winSnapshot = perAssetSettings.GetOrCreate(assetGuid, () => Snapshot.Create(this));
+
+        winSnapshot.CaptureFrom(this);
+        winSnapshot.RemoveMemberByName(nameof(TypeNameFilter), out _);
+        winSnapshot.RemoveMemberByName(nameof(IsComponent), out _);
+        winSnapshot.RemoveMemberByName(nameof(ExportInSourceDirectory), out _);
+        winSnapshot.RemoveMemberByName(nameof(perAssetSettings), out _);
+    }
+
     private void RestoreSavedData()
     {
         EditorLibrary.Load<ISnapshot>(SAVE_PATH)?.TryRestore(this);
-        //EditorLibrary.Load<AssetThumbnailCreationWindowSnapshot>(SAVE_PATH)?.TryRestore(this);
     }
 
     private void SaveData()
     {
-        //var snapshot = new AssetThumbnailCreationWindowSnapshot().CaptureFrom(this);
         var snapshot = Snapshot.Create(this);
 
         EditorLibrary.Save(SAVE_PATH, snapshot);
+
     }
 
     private void FindAssets()
@@ -549,20 +593,23 @@ public class AssetThumbnailCreationWindow : EditorWindow
             sceneCamera.depthTextureMode = DepthTextureMode.Depth;
             sceneCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
 
-            var saveDir = GetSaveDirectory();
-
-            if (saveDir.IsNullOrWhiteSpace())
-                return;
-
-            if (!exportInSourceDirectoryToggle.value
-                &&
-                (!Directory.Exists(saveDir) || saveDir == Application.dataPath))
+            if (!exportInSourceDirectoryToggle.value)
             {
-                typeof(AssetThumbnailCreationWindow).PrintError($"Cannot find part of path. Path: {saveDir}");
-                return;
-            }
+                var saveDir = GetSaveDirectory();
 
-            await CreatePNGsAsync(saveDir);
+                if (saveDir.IsNullOrWhiteSpace())
+                    return;
+
+                if (!Directory.Exists(saveDir) || saveDir == Application.dataPath)
+                {
+                    typeof(AssetThumbnailCreationWindow).PrintError($"Cannot find part of path. Path: {saveDir}");
+                    return;
+                }
+
+                await CreatePNGsAsync(saveDir);
+            }
+            else
+                await CreatePNGsAsync(null);
 
             sceneCamera.depthTextureMode = DepthTextureMode.None;
             sceneCamera.backgroundColor = Color.black;
@@ -617,13 +664,16 @@ public class AssetThumbnailCreationWindow : EditorWindow
         {
             foreach (var asset in selectedAssets)
             {
-                selectedAsset = asset;
+                SetSelectedAsset(asset);
                 ResolvePreviewAsset();
                 RenderPreviewScene();
-                await CreatePNGAsync(previewTexture, dirPath ?? AssetDatabase.GetAssetPath(asset), asset!.name);
+
+                var path = dirPath ?? Path.GetDirectoryName(AssetDatabase.GetAssetPath(asset));
+
+                await CreatePNGAsync(previewTexture, path, asset!.name);
             }
 
-            selectedAsset = selectedAssetCached;
+            SetSelectedAsset(selectedAssetCached);
         }
         finally
         {
@@ -641,6 +691,13 @@ public class AssetThumbnailCreationWindow : EditorWindow
         var bytes = texture.EncodeToPNG();
 
         var filePath = Path.ChangeExtension(Path.Join(dirPath, fileName), ".png");
+
+        AssetDatabase.LoadAssetAtPath<Texture2D>(filePath).Maybe().IfSome(tx =>
+        {
+            tx.alphaIsTransparency = true;
+
+            AssetDatabase.SaveAssetIfDirty(tx);
+        });
 
         await File.WriteAllBytesAsync(filePath, bytes);
     }

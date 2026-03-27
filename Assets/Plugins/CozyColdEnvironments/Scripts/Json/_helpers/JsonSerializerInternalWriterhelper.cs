@@ -19,6 +19,16 @@ namespace CCEnvs.Json
             return Type.GetType($"Newtonsoft.Json.Serialization.JsonSerializerInternalWriter, Newtonsoft.Json", throwOnError: true);
         });
 
+        private static Lazy<MethodInfo> serializeValueMethod => new (
+            static () =>
+            {
+                var method = jsonInternalWriterType.Value.GetMethods(BindingFlagsDefault.InstanceNonPublic)
+                    .Where(method => method.GetParameters().Length == 6)
+                    .Single();
+
+                return method;
+            }); 
+
         private static ConstructorInfo? jsonInternalWriterCtor;
 
         private static MethodInfo? calculatePropertyValuesMethod;
@@ -93,6 +103,34 @@ namespace CCEnvs.Json
             memberValue = prms[6];
 
             return result;
+        }
+
+        public static void SerializeValue(
+            JsonSerializer serializer,
+            JsonWriter writer,
+            object? value,
+            JsonContract? valueContract,
+            JsonProperty? member,
+            JsonContainerContract? containerContract,
+            JsonProperty? containerProperty
+            )
+        {
+            Guard.IsNotNull(serializer);
+            Guard.IsNotNull(writer);
+
+            var prms = new object?[]
+            {
+                writer,
+                value,
+                valueContract,
+                member,
+                containerContract,
+                containerProperty
+            };
+
+            var internalWriter = CreateJsonInternalWriter(serializer);
+
+            serializeValueMethod.Value.Invoke(internalWriter, prms);
         }
 
         private static object CreateJsonInternalWriter(JsonSerializer serializer)

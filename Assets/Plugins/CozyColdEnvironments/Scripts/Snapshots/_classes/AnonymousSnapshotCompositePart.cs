@@ -1,4 +1,5 @@
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.TypeMatching;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
@@ -42,7 +43,9 @@ namespace CCEnvs.Snapshots
         }
 #nullable enable warnings
 
-        internal override void CaptureValueFrom(object target)
+        public override void ResetCapturedValue() => Snapshot.Reset();
+
+        public override void CaptureValueFrom(object target)
         {
             if (GetValue(target).IsNull(out var value))
             {
@@ -53,12 +56,7 @@ namespace CCEnvs.Snapshots
             Snapshot.CaptureFrom(value);
         }
 
-        internal override void ResetCapturedValue()
-        {
-            Snapshot.Reset();
-        }
-
-        internal override void RestoreFromCaptured(object target)
+        public override void RestoreFromCaptured(object target)
         {
             var value = GetValue(target);
 
@@ -69,6 +67,13 @@ namespace CCEnvs.Snapshots
             }
 
             SetValue(target, value);
+        }
+
+        internal void SetUnderlyingSnapshot(ISnapshot snapshot)
+        {
+            CC.Guard.IsNotNull(snapshot, nameof(snapshot));
+
+            Snapshot = snapshot;
         }
     }
 }
