@@ -86,6 +86,452 @@ namespace CCEnvs.Reflection
             }
         }
 
+        public static object ConvertNumber(object number, Type targetNumberType, bool @unchecked = true)
+        {
+            CC.Guard.IsNotNull(number, nameof(number));
+            Guard.IsNotNull(targetNumberType);
+
+            if (!targetNumberType.IsPrimitiveNumber())
+                throw new ArgumentException($"Unexpected type: {targetNumberType}");
+
+            switch (number)
+            {
+                case long value:
+                    {
+                        if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (uint)value;
+                            else
+                                return checked((uint)value);
+                        }
+                        else if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                case ulong value:
+                    {
+                        if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (uint)value;
+                            else
+                                return checked((uint)value);
+                        }
+                        else if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+
+                        return number;
+                    }
+                case int value:
+                    {
+                        if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (uint)value;
+                            else
+                                return checked((uint)value);
+                        }
+                        else if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                case uint value:
+                    {
+                        if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                case short value:
+                    {
+                        if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (uint)value;
+                            else
+                                return checked((uint)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                case ushort value:
+                    {
+                        if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (uint)value;
+                            else
+                                return checked((uint)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                case byte value:
+                    {
+                        if (targetNumberType == TypeofCache<sbyte>.Type)
+                        {
+                            if (@unchecked)
+                                return (sbyte)value;
+                            else
+                                return checked((sbyte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                case sbyte value:
+                    {
+                        if (targetNumberType == TypeofCache<byte>.Type)
+                        {
+                            if (@unchecked)
+                                return (byte)value;
+                            else
+                                return checked((byte)value);
+                        }
+                        else if (targetNumberType == TypeofCache<short>.Type)
+                        {
+                            if (@unchecked)
+                                return (short)value;
+                            else
+                                return checked((short)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ushort>.Type)
+                        {
+                            if (@unchecked)
+                                return (ushort)value;
+                            else
+                                return checked((ushort)value);
+                        }
+                        else if (targetNumberType == TypeofCache<int>.Type)
+                        {
+                            if (@unchecked)
+                                return (int)value;
+                            else
+                                return checked((int)value);
+                        }
+                        else if (targetNumberType == TypeofCache<uint>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+                        else if (targetNumberType == TypeofCache<long>.Type)
+                        {
+                            if (@unchecked)
+                                return (long)value;
+                            else
+                                return checked((long)value);
+                        }
+                        else if (targetNumberType == TypeofCache<ulong>.Type)
+                        {
+                            if (@unchecked)
+                                return (ulong)value;
+                            else
+                                return checked((ulong)value);
+                        }
+
+                        return number;
+                    }
+                default:
+                    return number;
+            }
+        }
         public static string GetTypeReference(this Type source)
         {
             Guard.IsNotNull(source);

@@ -53,7 +53,9 @@ namespace CCEnvs.Json
 
             jObj.Remove(DESCRIPTOR_PROPERTY_NAME);
 
-            return OnReadJson(jObj, resultType, serializer);
+            var readed = OnReadJson(jObj, resultType, serializer);
+
+            return readed;
         }
 
         public override void WriteJson(
@@ -94,6 +96,19 @@ namespace CCEnvs.Json
 
                 writer.WriteEndObject();
             }
+            //else if (contract is JsonPrimitiveContract jPrimitiveContract)
+            //{
+            //    //var serializerSettings = serializer.GetSerializerSettings()
+            //    //    .ExcludeConverters(typeof(DescriptedObjectJsonConverter));
+
+            //    //var primitiveSerializer = JsonSerializer.Create(serializerSettings);
+            //    writer.WriteStartObject();
+            //    writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
+            //    serializer.Serialize(writer, descriptor);
+            //    writer.WritePropertyName("value");
+            //    writer.WriteValue(value);
+            //    writer.WriteEndObject();
+            //}
             else
                 throw new NotImplementedException(objType.ToString());
         }

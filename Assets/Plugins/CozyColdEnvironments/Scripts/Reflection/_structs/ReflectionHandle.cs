@@ -260,7 +260,7 @@ namespace CCEnvs.Reflection
             if (cachedMemberKeys.TryAdd(this, new MemberKey(member), out var entry))
                 entry.ExpirationTimeRelativeToNow = GetCacheExpirationTimeRelativeToNowOrDefault();
 
-            CachedMembers.TryAddMemberUntyped(member, GetCacheExpirationTimeRelativeToNowOrDefault());
+            CachedMembers.TryAddMemberUntyped(member, out _, GetCacheExpirationTimeRelativeToNowOrDefault());
         }
 
         private readonly void CacheMembers(MemberInfo[] members)
@@ -269,7 +269,7 @@ namespace CCEnvs.Reflection
                 entry.ExpirationTimeRelativeToNow = GetCacheExpirationTimeRelativeToNowOrDefault();
 
             for (int i = 0; i < members.Length; i++)
-                CachedMembers.TryAddMemberUntyped(members[i], GetCacheExpirationTimeRelativeToNowOrDefault());
+                CachedMembers.TryAddMemberUntyped(members[i], out _, GetCacheExpirationTimeRelativeToNowOrDefault());
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace CCEnvs.Unity.Snapshots
@@ -10,12 +11,15 @@ namespace CCEnvs.Unity.Snapshots
     public sealed record Vector3Snapshot : Snapshot<Vector3>
     {
         [field: SerializeField]
+        [JsonProperty("x")]
         public float? X { get; set; }
 
         [field: SerializeField]
+        [JsonProperty("y")]
         public float? Y { get; set; }
 
         [field: SerializeField]
+        [JsonProperty("z")]
         public float? Z { get; set; }
 
         public Vector3Snapshot()

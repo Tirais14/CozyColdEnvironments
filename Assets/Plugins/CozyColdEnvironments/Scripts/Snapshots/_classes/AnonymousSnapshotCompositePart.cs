@@ -36,6 +36,12 @@ namespace CCEnvs.Snapshots
             Snapshot = snapshot;
         }
 
+#nullable disable warnings
+        private AnonymousSnapshotCompositePart()
+        {
+        }
+#nullable enable warnings
+
         internal override void CaptureValueFrom(object target)
         {
             if (GetValue(target).IsNull(out var value))

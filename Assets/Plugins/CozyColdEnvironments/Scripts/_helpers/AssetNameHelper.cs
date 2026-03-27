@@ -120,7 +120,7 @@ namespace CCEnvs
         {
             if (ResolvePrefix(type).IsNull(out var prefix)
                 ||
-                !name.StartsWith(prefix))
+                name.StartsWith(prefix))
             {
                 return name;
             }

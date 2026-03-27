@@ -144,7 +144,7 @@ namespace CCEnvs.Reflection
             if (cachedPropKeys.TryAdd(this, new PropertyKey(prop), out var entry))
                 entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
-            CachedMembers.TryAddProperty(prop);
+            CachedMembers.TryAddProperty(prop, out _);
         }
 
         public struct PropertyEnumerator

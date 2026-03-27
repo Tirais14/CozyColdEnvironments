@@ -145,7 +145,7 @@ namespace CCEnvs.Reflection
             if (cachedFieldKeys.TryAdd(this, new FieldKey(field), out var entry))
                 entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
-            CachedMembers.TryAddField(field);
+            CachedMembers.TryAddField(field, out _);
         }
 
         public struct FieldEnumerator

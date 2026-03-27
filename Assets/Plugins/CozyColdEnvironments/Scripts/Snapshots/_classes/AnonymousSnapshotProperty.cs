@@ -1,4 +1,5 @@
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Json;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
@@ -7,7 +8,7 @@ using System.Reflection;
 namespace CCEnvs.Snapshots
 {
     [Serializable, SerializationDescriptor("SnapshotProperty", "1f75ed73-b959-43be-823c-63c89f80918c")]
-    public sealed class AnonymousSnapshotProperty :AnonymousSnapshotMember
+    public sealed class AnonymousSnapshotProperty : AnonymousSnapshotMember
     {
         [JsonProperty("capturedValue")]
         public object? CapturedValue { get; private set; }
@@ -23,6 +24,12 @@ namespace CCEnvs.Snapshots
             base(propInfo)
         {
         }
+
+#nullable disable warnings
+        private AnonymousSnapshotProperty()
+        {
+        }
+#nullable disable warnings
 
         internal override void CaptureValueFrom(object target)
         {

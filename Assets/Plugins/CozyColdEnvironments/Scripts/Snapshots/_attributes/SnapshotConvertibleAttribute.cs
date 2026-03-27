@@ -19,7 +19,7 @@ namespace CCEnvs.Snapshots
     {
         public Type? SnapshotType { get; }
 
-        public SnapshotConvertibleAttribute(Type? snapshotType)
+        public SnapshotConvertibleAttribute(Type? snapshotType = null)
         {
             SnapshotType = snapshotType;
         }

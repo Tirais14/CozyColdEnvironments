@@ -20,7 +20,7 @@ namespace CCEnvs.Snapshots
         private static readonly object ctorsGate = new();
         private static readonly object attributesGate = new();
 
-        public static ConstructorInfo GetConstructor(
+        public static ConstructorInfo GetEmptyConstructor(
             Type snapshotType,
             bool throwIfNotFound = true
             )
@@ -69,15 +69,37 @@ namespace CCEnvs.Snapshots
                 }
             }
 
-            if (attribute is null || attribute.SnapshotType is null)
+            if (attribute is null)
             {
                 if (throwIfNotFound)
                     throw new InvalidOperationException($"Cannot find {nameof(SnapshotConvertibleAttribute).Humanize()} attribute. Type: {type}");
 
                 return null!;
             }
+            else if (attribute.SnapshotType is null)
+            {
+                if (throwIfNotFound)
+                    throw new InvalidOperationException($"Snapshot type in attribute {nameof(SnapshotConvertibleAttribute).Humanize()} cannot be null. Type: {type}");
 
-            return GetConstructor(attribute.SnapshotType, throwIfNotFound);
+                return null!;
+            }
+
+            return GetEmptyConstructor(attribute.SnapshotType, throwIfNotFound);
+        }
+
+        public static AnonymousSnapshot Create<T>()
+        {
+            return new AnonymousSnapshot(TypeofCache<T>.Type);
+        }
+
+        public static AnonymousSnapshot Create(Type type)
+        {
+            return new AnonymousSnapshot(type);
+        }
+
+        public static AnonymousSnapshot Create(object target)
+        {
+            return (AnonymousSnapshot)new AnonymousSnapshot(target).CaptureFrom(target);
         }
     }
 
@@ -124,6 +146,7 @@ namespace CCEnvs.Snapshots
             if (targetNotNull)
                 OnRestore(ref target!);
 
+            restored = target;
             return targetNotNull;
         }
 

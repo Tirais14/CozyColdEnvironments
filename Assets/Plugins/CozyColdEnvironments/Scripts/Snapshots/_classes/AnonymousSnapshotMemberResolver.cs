@@ -1,5 +1,6 @@
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -105,9 +106,9 @@ namespace CCEnvs.Snapshots
 
             ISnapshot? snapshot;
 
-            if (attribute.SnapshotType == null)
+            if (attribute.SnapshotType == null || attribute.SnapshotType.IsType<AnonymousSnapshot>())
                 snapshot = new AnonymousSnapshot(fieldInfo.FieldType);
-            else if (Snapshot.GetConstructor(attribute.SnapshotType, throwIfNotFound: false).IsNotNull(out var ctor))
+            else if (Snapshot.GetEmptyConstructor(attribute.SnapshotType, throwIfNotFound: false).IsNotNull(out var ctor))
             {
                 try
                 {
@@ -142,7 +143,7 @@ namespace CCEnvs.Snapshots
 
             if (attribute.SnapshotType == null)
                 snapshot = new AnonymousSnapshot(propInfo.PropertyType);
-            else if (Snapshot.GetConstructor(attribute.SnapshotType, throwIfNotFound: false).IsNotNull(out var ctor))
+            else if (Snapshot.GetEmptyConstructor(attribute.SnapshotType, throwIfNotFound: false).IsNotNull(out var ctor))
             {
                 try
                 {

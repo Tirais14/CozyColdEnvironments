@@ -22,6 +22,16 @@ namespace CCEnvs.Serialization
             ID = id;
         }
 
+        public static implicit operator TypeSerializationDescriptor(string name)
+        {
+            return new TypeSerializationDescriptor(name);
+        }
+
+        public static implicit operator TypeSerializationDescriptor((string Name, string? ID) item)
+        {
+            return new TypeSerializationDescriptor(item.Name, item.ID);
+        }
+
         public static bool operator ==(TypeSerializationDescriptor left, TypeSerializationDescriptor right)
         {
             return left.Equals(right);

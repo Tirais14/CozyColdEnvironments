@@ -17,18 +17,7 @@ namespace CCEnvs.Json
             Guard.IsNotNull(converterTypes, nameof(converterTypes));
 
             if (source.Converters.IsReadOnly)
-            {
-                var options = new JsonSerializerSettings(source);
-                foreach (var conv in source.Converters)
-                {
-                    if (!isToRemove(conv, converterTypes))
-                        continue;
-
-                    options.Converters.Remove(conv);
-                }
-
-                return options;
-            }
+                source.Converters = source.Converters.ToList();
 
             using var converters = source.Converters.ToArrayPooled();
             foreach (var conv in converters.Value)

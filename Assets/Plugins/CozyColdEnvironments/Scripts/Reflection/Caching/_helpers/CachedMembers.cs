@@ -248,12 +248,15 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool TryAddMember(
             MemberInfo member,
+            out MemberKey key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(member, nameof(member));
 
-            if (!members.TryAdd(member, member, out var entry))
+            key = member;
+
+            if (!members.TryAdd(key, member, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
@@ -262,12 +265,15 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool TryAddField(
             FieldInfo field,
+            out FieldKey key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(field, nameof(field));
 
-            if (!fields.TryAdd(field, field, out var entry))
+            key = field;
+
+            if (!fields.TryAdd(key, field, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
@@ -276,26 +282,32 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool TryAddProperty(
             PropertyInfo prop,
+            out PropertyKey key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(prop, nameof(prop));
 
-            if (!props.TryAdd(prop, prop, out var entry))
+            key = prop;
+
+            if (!props.TryAdd(key, prop, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
-        public static bool TRyAddParameter(
+        public static bool TryAddParameter(
             ParameterInfo param,
+            out ParameterKey key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(param, nameof(param));
 
-            if (!parameters.TryAdd(param, param, out var entry))
+            key = param;
+
+            if (!parameters.TryAdd(key, param, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
@@ -304,12 +316,15 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool TryAddMethod(
             MethodInfo method,
+            out MethodKey key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(method, nameof(method));
 
-            if (!methods.TryAdd(method, method, out var entry))
+            key = method;
+
+            if (!methods.TryAdd(key, method, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
@@ -318,12 +333,15 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool TryAddConstructor(
             ConstructorInfo ctor,
+            out MethodKey key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
             Guard.IsNotNull(ctor, nameof(ctor));
 
-            if (!methods.TryAdd(ctor, ctor, out var entry))
+            key = ctor;
+
+            if (!methods.TryAdd(key, ctor, out var entry))
                 return false;
 
             entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
@@ -332,6 +350,7 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool TryAddMemberUntyped(
             MemberInfo member,
+            out object key,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
@@ -339,15 +358,41 @@ namespace CCEnvs.Reflection.Caching
 
             expirationTimeRelativeToNow ??= 20.Minutes();
 
-            return member switch
+            if (member is MethodInfo method
+                &&
+                TryAddMethod(method, out var methodKey, expirationTimeRelativeToNow))
             {
-                MethodInfo method => TryAddMethod(method, expirationTimeRelativeToNow),
-                ConstructorInfo ctor => TryAddConstructor(ctor, expirationTimeRelativeToNow),
-                FieldInfo field => TryAddField(field, expirationTimeRelativeToNow),
-                PropertyInfo prop => TryAddProperty(prop, expirationTimeRelativeToNow),
-                MemberInfo => TryAddMember(member, expirationTimeRelativeToNow),
-                _ => throw new InvalidOperationException(member.GetType().Name),
-            };
+                key = methodKey;
+                return true;
+            }
+            else if (member is ConstructorInfo ctor
+                &&
+                TryAddConstructor(ctor, out var ctorKey, expirationTimeRelativeToNow))
+            {
+                key = ctorKey;
+                return true;
+            }
+            else if (member is FieldInfo field
+                &&
+                TryAddField(field, out var fieldKey, expirationTimeRelativeToNow))
+            {
+                key = fieldKey;
+                return true;
+            }
+            else if (member is PropertyInfo prop
+                &&
+                TryAddProperty(prop, out var propKey, expirationTimeRelativeToNow))
+            {
+                key = propKey;
+                return true;
+            }
+            else if (TryAddMember(member, out var memberKey, expirationTimeRelativeToNow))
+            {
+                key = memberKey;
+                return true;
+            }
+
+            throw new InvalidOperationException(member.GetType().FullName);
         }
 
         #endregion AddMethods

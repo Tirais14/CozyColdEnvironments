@@ -236,7 +236,7 @@ namespace CCEnvs.Reflection
             if (cachedMethodKeys.TryAdd(this, new MethodKey(method), out var entry))
                 entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
-            CachedMembers.TryAddMethod(method);
+            CachedMembers.TryAddMethod(method, out _);
         }
 
         private readonly void CacheConstructor(ConstructorInfo ctor)
@@ -244,7 +244,7 @@ namespace CCEnvs.Reflection
             if (cachedCtorKeys.TryAdd(this, new MethodKey(ctor), out var entry))
                 entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
-            CachedMembers.TryAddConstructor(ctor);
+            CachedMembers.TryAddConstructor(ctor, out _);
         }
 
         public struct MethodsEnumerator : IEnumerator<MethodInfo?>, IEnumerable<MethodInfo>

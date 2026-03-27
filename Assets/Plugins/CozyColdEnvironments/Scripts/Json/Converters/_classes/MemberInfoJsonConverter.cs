@@ -11,7 +11,7 @@ namespace CCEnvs.Json.Converters
     {
         public override bool CanConvert(Type objectType)
         {
-            return objectType.IsDefined<MemberIDAttribute>(inherit: true);
+            return objectType.IsType<MemberInfo>();
         }
 
         public override object? ReadJson(
@@ -24,11 +24,14 @@ namespace CCEnvs.Json.Converters
             if (reader.TokenType == JsonToken.Null)
                 return null;
 
+            if (reader.TokenType != JsonToken.String)
+                throw new JsonSerializationException($"Unexpected readr token. Token: {reader.TokenType}");
+
             string? id;
 
             try
             {
-                id = reader.ReadAsString();
+                id = (string?)reader.Value;
             }
             catch (Exception ex)
             {
@@ -57,13 +60,13 @@ namespace CCEnvs.Json.Converters
             JsonSerializer serializer
             )
         {
-            if (value is null)
+            if (value is not MemberInfo memberInfo)
             {
                 writer.WriteNull();
                 return;
             }
 
-            if (value.GetType().GetCustomAttribute<MemberIDAttribute>().IsNull(out var memberIDAttribute))
+            if (memberInfo.GetCustomAttribute<MemberIDAttribute>().IsNull(out var memberIDAttribute))
                 throw new JsonSerializationException($"Cannot find {nameof(MemberIDAttribute).Humanize()}");
 
             writer.WriteValue(memberIDAttribute.ID);

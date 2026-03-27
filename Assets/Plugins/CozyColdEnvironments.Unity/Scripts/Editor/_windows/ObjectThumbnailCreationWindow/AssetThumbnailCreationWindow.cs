@@ -4,6 +4,7 @@ using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
+using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity;
 using CCEnvs.Unity.Editr;
@@ -16,14 +17,16 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 #nullable enable
-public class ObjectThumbnailCreationWindow : EditorWindow
+[SnapshotConvertible]
+public class AssetThumbnailCreationWindow : EditorWindow
 {
-    public const string SAVE_PATH = nameof(ObjectThumbnailCreationWindow) + "/data.json";
+    public const string SAVE_PATH = "ObjectThumbnailCreationWindow" + "/data.json";
 
     #region Serialized
     [SerializeField]
@@ -53,13 +56,16 @@ public class ObjectThumbnailCreationWindow : EditorWindow
 
     private Label assetNameView = null!;
 
-    private TextField typeNameView = null!;
-
     private VisualElement contentContainer = null!;
 
     private Image previewImage = null!;
 
     private Toggle isComponentToggle = null!;
+    private Toggle exportInSourceDirectoryToggle = null!;
+
+    private TextField typeNameView = null!;
+
+    private IntegerField previewSizeView = null!;
 
     private Vector3Field positionOffsetView = null!;
     private Vector3Field rotationOffsetView = null!;
@@ -68,8 +74,6 @@ public class ObjectThumbnailCreationWindow : EditorWindow
 
     #region Data
     private List<Object> assets = new();
-
-    private int previewSize = 512;
 
     private Scene previewScene;
 
@@ -84,10 +88,52 @@ public class ObjectThumbnailCreationWindow : EditorWindow
     private GameObject? previewVolume;
     #endregion Data
 
+    [SnapshotProperty("1817f9df-957a-48ff-9bde-daa40b3dc3df")]
+    public int PreviewSize {
+        get => previewSizeView.value;
+        set => previewSizeView.value = Math.Max(value, 8);
+    }
+
+    [SnapshotProperty("566bc544-a15e-46c2-be16-4647291b9c0c")]
+    public string? TypeNameFilter {
+        get => typeNameView.value;
+        set => typeNameView.value = value;
+    }
+
+    [SnapshotProperty("3269315d-0c3c-4ac0-8d97-6e96fe0d6ab5")]
+    public bool IsComponent {
+        get => isComponentToggle.value;
+        set => isComponentToggle.value = value;
+    }
+
+    [SnapshotProperty("50398fa4-053e-475b-b2f0-551aea05aba7")]
+    public bool ExportInSourceDirectory {
+        get => exportInSourceDirectoryToggle.value;
+        set => exportInSourceDirectoryToggle.value = value;
+    }
+
+    [SnapshotProperty("35404730-841f-4442-a67e-48a82e110301")]
+    public Vector3 PositionOffset {
+        get => positionOffsetView.value;
+        set => positionOffsetView.value = value;
+    }
+
+    [SnapshotProperty("6d549084-37bf-483c-8f32-d1744b872613")]
+    public Vector3 RotationOffset {
+        get => rotationOffsetView.value;
+        set => rotationOffsetView.value = value;
+    }
+
+    [SnapshotProperty("faf7df89-2422-40bf-b68d-0a1047bd1f60")]
+    public Vector3 LightRotationOffset {
+        get => lightRotationOffsetView.value;
+        set => lightRotationOffsetView.value = value;
+    }
+
     [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Thumbnail Creator")]
     public static void ShowExample()
     {
-        ObjectThumbnailCreationWindow wnd = GetWindow<ObjectThumbnailCreationWindow>("Asset Thumbnail Creator");
+        AssetThumbnailCreationWindow wnd = GetWindow<AssetThumbnailCreationWindow>("Asset Thumbnail Creator");
         wnd.titleContent = new GUIContent("Asset Thumbnail Creator");
     }
 
@@ -115,9 +161,13 @@ public class ObjectThumbnailCreationWindow : EditorWindow
         ResolveRotationOffsetView();
         ResolveTypeNameView();
         ResolveIsComponentToggle();
+        ResolveExportInSourceDirectoryToggle();
         ResolveLightRotationOffsetView();
+        ResolvePreviewSizeView();
+        ResolvePreviewSizeView();
         RestoreSavedData();
         FindAssets();
+        RenderPreviewScene();
     }
 
     #region ResolveViews
@@ -182,6 +232,24 @@ public class ObjectThumbnailCreationWindow : EditorWindow
         lightRotationOffsetView = contentContainer.Q<Vector3Field>("LightRotationOffset");
         lightRotationOffsetView.RegisterValueChangedCallback(OnLightRotationOffsetChanged);
     }
+
+    private void ResolvePreviewSizeView()
+    {
+        previewSizeView = contentContainer.Q<IntegerField>("PreviewSize");
+        previewSizeView.value = 512;
+        previewSizeView.RegisterValueChangedCallback(OnPreviewSizeChanged);
+    }
+
+    private void ResolveAssetNameView()
+    {
+        assetNameView = contentContainer.Q<Label>("AssetName");
+        assetNameView.dataSource = this;
+    }
+
+    private void ResolveExportInSourceDirectoryToggle()
+    {
+        exportInSourceDirectoryToggle = contentContainer.Q<Toggle>("ExportInSourceDirectory");
+    }
     #endregion ResolveViews
 
     #region Callbacks
@@ -238,16 +306,24 @@ public class ObjectThumbnailCreationWindow : EditorWindow
     {
         FindAssets();
     }
+
+    private void OnPreviewSizeChanged(ChangeEvent<int> ev)
+    {
+        ResolveRenderTexture();
+        RenderPreviewScene();
+    }
     #endregion Callbacks
 
     private void RestoreSavedData()
     {
-        EditorLibrary.Load<Snapshot>(SAVE_PATH)?.TryRestore(this);
+        EditorLibrary.Load<ISnapshot>(SAVE_PATH)?.TryRestore(this);
+        //EditorLibrary.Load<AssetThumbnailCreationWindowSnapshot>(SAVE_PATH)?.TryRestore(this);
     }
 
     private void SaveData()
     {
-        var snapshot = new Snapshot().CaptureFrom(this);
+        //var snapshot = new AssetThumbnailCreationWindowSnapshot().CaptureFrom(this);
+        var snapshot = Snapshot.Create(this);
 
         EditorLibrary.Save(SAVE_PATH, snapshot);
     }
@@ -281,7 +357,7 @@ public class ObjectThumbnailCreationWindow : EditorWindow
                 select prefab;
         }
 
-        foreach (var asset in dbAssets)
+        foreach (var asset in dbAssets.Distinct())
             assets.Add(asset);
 
         assetsView.RefreshItems();
@@ -300,6 +376,28 @@ public class ObjectThumbnailCreationWindow : EditorWindow
     private void ApplyLightRotationOffset()
     {
         previewLight.Maybe().IfSome(light => light.transform.rotation = Quaternion.Euler(lightRotationOffsetView.value));
+    }
+
+    private void ResolveRenderTexture()
+    {
+        if (sceneCamera == null
+            ||
+            (sceneCamera.targetTexture != null
+            &&
+            sceneCamera.targetTexture.width == PreviewSize
+            &&
+            sceneCamera.targetTexture.height == PreviewSize
+            ))
+        {
+            return;
+        }
+
+        sceneCamera.targetTexture = new RenderTexture(
+            PreviewSize,
+            PreviewSize,
+            32,
+            RenderTextureFormat.ARGB32
+            );
     }
 
     private Maybe<Transform> GetPreviewAssetTransform()
@@ -362,14 +460,16 @@ public class ObjectThumbnailCreationWindow : EditorWindow
         sceneCamera.aspect = 1f;
         sceneCamera.backgroundColor = Color.black;
         sceneCamera.clearFlags = CameraClearFlags.SolidColor;
-        sceneCamera.allowHDR = false;
+        sceneCamera.allowHDR = true;
+        sceneCamera.allowMSAA = true;
 
-        sceneCamera.targetTexture = new RenderTexture(
-            previewSize,
-            previewSize,
-            32,
-            RenderTextureFormat.ARGB32
-            );
+        var cameraData = cameraObj.AddComponent<UniversalAdditionalCameraData>();
+
+        cameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+        cameraData.antialiasingQuality = AntialiasingQuality.High;
+        cameraData.renderPostProcessing = true;
+
+        ResolveRenderTexture();
 
         SceneManager.MoveGameObjectToScene(cameraObj, previewScene);
 
@@ -401,22 +501,34 @@ public class ObjectThumbnailCreationWindow : EditorWindow
 
         sceneCamera.Render();
 
-        if (previewTexture == null)
-        {
-            previewTexture = new Texture2D(
-                previewSize,
-                previewSize,
-                TextureFormat.RGBA32,
-                false
-                );
-        }
+        ResolvePreviewTexture();
 
         RenderTexture.active = sceneCamera.targetTexture;
 
-        previewTexture.ReadPixels(new Rect(0f, 0f, previewSize, previewSize), 0, 0);
-        previewTexture.Apply();
+        previewTexture!.ReadPixels(new Rect(0f, 0f, PreviewSize, PreviewSize), 0, 0);
+        previewTexture!.Apply();
 
         RenderTexture.active = null;    
+    }
+
+    private void ResolvePreviewTexture()
+    {
+        if (previewTexture != null
+            &&
+            previewTexture.width == PreviewSize
+            &&
+            previewTexture.height == PreviewSize
+            )
+        {
+            return;
+        }
+
+        previewTexture = new Texture2D(
+            PreviewSize,
+            PreviewSize,
+            TextureFormat.RGBA32,
+            false
+            );
     }
 
     private bool isExporting;
@@ -442,9 +554,11 @@ public class ObjectThumbnailCreationWindow : EditorWindow
             if (saveDir.IsNullOrWhiteSpace())
                 return;
 
-            if (!Directory.Exists(saveDir) || saveDir == Application.dataPath)
+            if (!exportInSourceDirectoryToggle.value
+                &&
+                (!Directory.Exists(saveDir) || saveDir == Application.dataPath))
             {
-                typeof(ObjectThumbnailCreationWindow).PrintError($"Cannot find part of path. Path: {saveDir}");
+                typeof(AssetThumbnailCreationWindow).PrintError($"Cannot find part of path. Path: {saveDir}");
                 return;
             }
 
@@ -457,7 +571,7 @@ public class ObjectThumbnailCreationWindow : EditorWindow
         }
         catch (Exception ex)
         {
-            typeof(ObjectThumbnailCreationWindow).PrintException(ex);
+            typeof(AssetThumbnailCreationWindow).PrintException(ex);
         }
         finally
         {
@@ -482,7 +596,7 @@ public class ObjectThumbnailCreationWindow : EditorWindow
         return result;
     }
 
-    private async ValueTask CreatePNGsAsync(string dirPath)
+    private async ValueTask CreatePNGsAsync(string? dirPath)
     {
         if (sceneCamera == null
             ||
@@ -506,7 +620,7 @@ public class ObjectThumbnailCreationWindow : EditorWindow
                 selectedAsset = asset;
                 ResolvePreviewAsset();
                 RenderPreviewScene();
-                await CreatePNGAsync(previewTexture, dirPath, asset!.name);
+                await CreatePNGAsync(previewTexture, dirPath ?? AssetDatabase.GetAssetPath(asset), asset!.name);
             }
 
             selectedAsset = selectedAssetCached;
@@ -521,49 +635,13 @@ public class ObjectThumbnailCreationWindow : EditorWindow
     {
         CC.Guard.IsNotNull(selectedAsset, nameof(selectedAsset));
 
-        AssetNameHelper.RemoveTypePrefix(selectedAsset.GetType(), fileName);
-        AssetNameHelper.AddTypePrefix(TypeofCache<Texture2D>.Type, fileName);
+        fileName = AssetNameHelper.RemoveTypePrefix(selectedAsset.GetType(), fileName);
+        fileName = AssetNameHelper.AddTypePrefix(TypeofCache<Texture2D>.Type, fileName);
 
         var bytes = texture.EncodeToPNG();
 
         var filePath = Path.ChangeExtension(Path.Join(dirPath, fileName), ".png");
 
         await File.WriteAllBytesAsync(filePath, bytes);
-    }
-
-    [Serializable, SerializationDescriptor("ObjectThumbnailCreationWindow.Snapshot", "adc8d658-0cca-4bf5-8ca8-67ac798d2194")]
-    public record Snapshot : CCEnvs.Snapshots.Snapshot<ObjectThumbnailCreationWindow>
-    {
-        [JsonProperty("previewPositionOffset")]
-        public Vector3 PreviewPositionOffset { get; set; }
-
-        [JsonProperty("previewRotationOffset")]
-        public Vector3 PreviewRotationOffset { get; set; }
-
-        [JsonProperty("lightRotationOffset")]
-        public Vector3 LightRotationOffset { get; set; }
-
-        protected override void OnRestore(ref ObjectThumbnailCreationWindow target)
-        {
-            target.positionOffsetView.value = PreviewPositionOffset;
-            target.rotationOffsetView.value = PreviewRotationOffset;
-            target.lightRotationOffsetView.value = LightRotationOffset;
-        }
-
-        protected override void OnCapture(ObjectThumbnailCreationWindow target)
-        {
-            base.OnCapture(target);
-            PreviewPositionOffset = target.positionOffsetView.value;
-            PreviewRotationOffset = target.rotationOffsetView.value;
-            LightRotationOffset = target.lightRotationOffsetView.value;
-        }
-
-        protected override void OnReset()
-        {
-            base.OnReset();
-            PreviewPositionOffset = default;
-            PreviewPositionOffset = default;
-            LightRotationOffset = default;
-        }
     }
 }

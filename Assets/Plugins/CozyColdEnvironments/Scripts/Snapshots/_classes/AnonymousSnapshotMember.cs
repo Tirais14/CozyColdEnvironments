@@ -1,7 +1,9 @@
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Reflection;
 using CCEnvs.Serialization;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Reflection;
 
@@ -20,14 +22,14 @@ namespace CCEnvs.Snapshots
         [JsonProperty("memberInfo")]
         public MemberInfo MemberInfo { get; private set; }
 
-        public AnonymousSnapshotMember(FieldInfo fieldInfo)
+        protected AnonymousSnapshotMember(FieldInfo fieldInfo)
         {
             Guard.IsNotNull(fieldInfo, nameof(fieldInfo));
 
             MemberInfo = fieldInfo;
         }
 
-        public AnonymousSnapshotMember(PropertyInfo propInfo)
+        protected AnonymousSnapshotMember(PropertyInfo propInfo)
         {
             Guard.IsNotNull(propInfo, nameof(propInfo));
 
@@ -39,6 +41,12 @@ namespace CCEnvs.Snapshots
 
             MemberInfo = propInfo;
         }
+
+#nullable disable warnings
+        protected AnonymousSnapshotMember()
+        {
+        }
+#nullable enable warnings
 
         public object? GetValue(object target)
         {
@@ -55,9 +63,32 @@ namespace CCEnvs.Snapshots
             CC.Guard.IsNotNullTarget(target);
 
             if (FieldInfo is not null)
+            {
+                value = convertIfNotType(FieldInfo.FieldType, value);   
                 FieldInfo.SetValue(target, value);
+            }
             else
+            {
+                value = convertIfNotType(PropInfo!.PropertyType, value);
                 PropInfo!.SetValue(target, value);
+            }
+
+            static object? convertIfNotType(Type targetType, object? value)
+            {
+                if (value.IsNull())
+                    return value;
+
+                if (targetType.IsPrimitiveNumber())
+                    return TypeHelper.ConvertNumber(value, targetType);
+
+                if (value is JObject jObj)
+                    return jObj.ToObject(targetType, JsonSerializer.Create(CC.SerializerSettings));
+
+                if (!targetType.GetType().IsAssignableFrom(value.GetType()))
+                    value = value.MutateType(targetType);
+
+                return value;
+            }
         }
 
         internal abstract void CaptureValueFrom(object target);
