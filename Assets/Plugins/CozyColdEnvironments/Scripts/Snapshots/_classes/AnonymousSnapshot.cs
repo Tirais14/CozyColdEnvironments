@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
@@ -91,7 +92,15 @@ namespace CCEnvs.Snapshots
                 return false;
 
             lock (MembersGate)
+            {
                 members.RemoveAt(idx);
+
+                if (this.memberIdxByNames.TryGetValue(out var memberIdxByNames))
+                    memberIdxByNames.Clear();
+
+                if (CCDebug.Instance.IsEnabled)
+                    this.PrintLog($"Remove snapshot member. Member: {removed}");
+            }
 
             return true;
         }
@@ -107,7 +116,10 @@ namespace CCEnvs.Snapshots
                     memberIdxByNames.TryGetValue(name, out idx))
                 {
                     if (idx >= members.Count)
+                    {
+                        idx = -1;
                         return null;
+                    }
 
                     return members[idx];
                 }

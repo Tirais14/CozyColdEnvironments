@@ -43,6 +43,11 @@ namespace CCEnvs.Snapshots
             SetValue(target, CapturedValue);
         }
 
+        public override string ToString()
+        {
+            return base.ToString().Format(CapturedValue);
+        }
+
         internal AnonymousSnapshotProperty SetUnderlyingValue(object? value)
         {
             CapturedValue = value;

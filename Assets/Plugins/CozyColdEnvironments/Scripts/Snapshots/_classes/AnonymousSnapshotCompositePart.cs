@@ -69,6 +69,11 @@ namespace CCEnvs.Snapshots
             SetValue(target, value);
         }
 
+        public override string ToString()
+        {
+            return base.ToString().Format(Snapshot);
+        }
+
         internal void SetUnderlyingSnapshot(ISnapshot snapshot)
         {
             CC.Guard.IsNotNull(snapshot, nameof(snapshot));

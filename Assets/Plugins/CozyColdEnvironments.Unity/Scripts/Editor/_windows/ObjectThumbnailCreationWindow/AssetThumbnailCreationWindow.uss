@@ -35,3 +35,8 @@
     border-bottom-right-radius: 6px;
     border-bottom-left-radius: 6px;
 }
+
+.title {
+    font-size: 20px;
+    -unity-font-style: bold;
+}

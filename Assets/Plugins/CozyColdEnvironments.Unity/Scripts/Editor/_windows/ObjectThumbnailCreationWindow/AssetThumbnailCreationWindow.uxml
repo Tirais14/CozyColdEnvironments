@@ -8,7 +8,7 @@
     <ui:VisualElement name="Container" class="header" style="flex-grow: 1; background-color: rgb(75, 75, 75); position: relative; flex-shrink: 1; height: 674px; flex-direction: row;">
         <ui:ListView name="Assets" show-border="true" header-title="Elements" allow-remove="false" allow-add="false" show-bound-collection-size="false" show-foldout-header="true" fixed-item-height="26" selection-type="Multiple" class="bordered header" style="flex-direction: column; align-self: flex-start; flex-grow: 0; width: 100%; height: 100%; flex-shrink: 1;"/>
         <ui:VisualElement name="Content" data-source-type="ObjectThumbnailCreationWindow, CCEnvs.Unity" data-source-path="" class="header" style="flex-grow: 0; width: 63%; height: 100%; flex-direction: column; flex-shrink: 0;">
-            <ui:Label text="None" name="AssetName">
+            <ui:Label text="None" name="AssetName" class="title" style="align-self: center;">
                 <Bindings>
                     <ui:DataBinding property="text" data-source-path="selectedAsset" data-source-type="AssetThumbnailCreationWindow, CCEnvs.Unity" binding-mode="ToTarget"/>
                 </Bindings>
@@ -19,10 +19,11 @@
                 </Bindings>
             </ui:Image>
             <ui:IntegerField label="Integer Field" value="512" name="PreviewSize" class="header" style="flex-shrink: 0;"/>
-            <ui:TextField label="Type Name" placeholder-text="GameObject" name="TypeName" hide-placeholder-on-focus="true" is-delayed="true" class="header bordered" style="width: 99%; height: 6%; flex-shrink: 0;"/>
+            <ui:TextField label="Type Filter" placeholder-text="GameObject" name="TypeName" hide-placeholder-on-focus="true" is-delayed="true" class="header" style="width: 99%; height: 6%; flex-shrink: 0;"/>
+            <ui:TextField label="Asset Name Filter" placeholder-text="None" name="AssetNameFilter" hide-placeholder-on-focus="true" is-delayed="true" class="header" style="width: 99%; height: 6%; flex-shrink: 0;"/>
             <ui:Toggle label="Is Component" name="IsComponent"/>
             <ui:Toggle label="Export in Source Directory" name="ExportInSourceDirectory" class="header"/>
-            <ui:Vector3Field label="Position" name="PositionOffset" class="bordered header" style="width: auto; height: auto; flex-shrink: 0; flex-grow: 0; flex-direction: row;"/>
+            <ui:Vector3Field label="Position" name="PositionOffset" class="header" style="width: auto; height: auto; flex-shrink: 0; flex-grow: 0; flex-direction: row;"/>
             <ui:Vector3Field label="Rotation" name="RotationOffset" style="flex-shrink: 0;"/>
             <ui:Vector3Field label="Light Angle" name="LightRotationOffset" value="50,30,0" style="flex-shrink: 0;"/>
         </ui:VisualElement>

@@ -1,5 +1,4 @@
 using CCEnvs;
-using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
@@ -8,7 +7,6 @@ using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity;
 using CCEnvs.Unity.Editr;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,9 +62,10 @@ public class AssetThumbnailCreationWindow : EditorWindow
     private Toggle isComponentToggle = null!;
     private Toggle exportInSourceDirectoryToggle = null!;
 
-    private TextField typeNameView = null!;
+    private TextField typeNameFilterField = null!;
+    private TextField assetNameFilterField = null!;
 
-    private IntegerField previewSizeView = null!;
+    private IntegerField previewSizeField = null!;
 
     private Vector3Field positionOffsetView = null!;
     private Vector3Field rotationOffsetView = null!;
@@ -88,20 +87,28 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
     private GameObject? previewVolume;
 
+    private AnonymousSnapshot defaultState = null!;
+
     [SnapshotProperty("33548307-d33e-4082-ab00-62a6fc213edb")]
     private Dictionary<string, AnonymousSnapshot> perAssetSettings = new();
     #endregion Data
 
     [SnapshotProperty("1817f9df-957a-48ff-9bde-daa40b3dc3df")]
     public int PreviewSize {
-        get => previewSizeView.value;
-        set => previewSizeView.value = Math.Max(value, 8);
+        get => previewSizeField.value;
+        set => previewSizeField.value = Math.Max(value, 8);
     }
 
     [SnapshotProperty("566bc544-a15e-46c2-be16-4647291b9c0c")]
     public string? TypeNameFilter {
-        get => typeNameView.value;
-        set => typeNameView.value = value;
+        get => typeNameFilterField.value;
+        set => typeNameFilterField.value = value;
+    }
+
+    [SnapshotProperty("287076ba-e929-40a6-a8d4-6101a699518e")]
+    public string? AssetNameFilter {
+        get => assetNameFilterField.value;
+        set => assetNameFilterField.value = value;
     }
 
     [SnapshotProperty("3269315d-0c3c-4ac0-8d97-6e96fe0d6ab5")]
@@ -169,9 +176,13 @@ public class AssetThumbnailCreationWindow : EditorWindow
         ResolveExportInSourceDirectoryToggle();
         ResolveLightRotationOffsetView();
         ResolvePreviewSizeView();
-        ResolvePreviewSizeView();
+        ResolveAssetNameFilterField();
+
+        defaultState = Snapshot.Create(this).SetIgnoreNullOnRestore(false);
+
         RestoreSavedData();
         FindAssets();
+        ApplyLightRotationOffset();
         RenderPreviewScene();
     }
 
@@ -210,8 +221,8 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
     private void ResolveTypeNameView()
     {
-        typeNameView = rootVisualElement.Q<TextField>("TypeName");
-        typeNameView.RegisterValueChangedCallback(OnTypeNameChanged);
+        typeNameFilterField = rootVisualElement.Q<TextField>("TypeName");
+        typeNameFilterField.RegisterValueChangedCallback(OnTypeNameChanged);
     }
 
     private void ResolvePositionOffsetView()
@@ -240,9 +251,9 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
     private void ResolvePreviewSizeView()
     {
-        previewSizeView = contentContainer.Q<IntegerField>("PreviewSize");
-        previewSizeView.value = 512;
-        previewSizeView.RegisterValueChangedCallback(OnPreviewSizeChanged);
+        previewSizeField = contentContainer.Q<IntegerField>("PreviewSize");
+        previewSizeField.value = 512;
+        previewSizeField.RegisterValueChangedCallback(OnPreviewSizeChanged);
     }
 
     private void ResolveAssetNameView()
@@ -261,12 +272,19 @@ public class AssetThumbnailCreationWindow : EditorWindow
         saveButton = rootVisualElement.Q<Button>("Save");
         saveButton.clicked += SaveData;
     }
+
+    private void ResolveAssetNameFilterField()
+    {
+        assetNameFilterField = contentContainer.Q<TextField>("AssetNameFilter");
+        assetNameFilterField.RegisterValueChangedCallback(OnAssetNameFilterChanged);
+    }
     #endregion ResolveViews
 
     #region Callbacks
     private void OnTypeNameChanged(ChangeEvent<string> ev)
     {
         FindAssets();
+        SaveData();
     }
 
     private void OnPositionOffsetChanged(ChangeEvent<Vector3> ev)
@@ -276,6 +294,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
         ApplyPreviewPositionOffset();
         RenderPreviewScene();
+        SaveData();
     }
 
     private void OnRotationOffsetChanged(ChangeEvent<Vector3> ev)
@@ -285,12 +304,14 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
         ApplyPreviewRotationOffset();
         RenderPreviewScene();
+        SaveData();
     }
 
     private void OnLightRotationOffsetChanged(ChangeEvent<Vector3> ev)
     {
         ApplyLightRotationOffset();
         RenderPreviewScene();
+        SaveData();
     }
 
     private void OnSelectItem(IEnumerable<object> item)
@@ -316,12 +337,20 @@ public class AssetThumbnailCreationWindow : EditorWindow
     private void OnIsComponentToggleChanged(ChangeEvent<bool> ev)
     {
         FindAssets();
+        SaveData();
     }
 
     private void OnPreviewSizeChanged(ChangeEvent<int> ev)
     {
         ResolveRenderTexture();
         RenderPreviewScene();
+        SaveData();
+    }
+
+    private void OnAssetNameFilterChanged(ChangeEvent<string> ev)
+    {
+        FindAssets();
+        SaveData();
     }
     #endregion Callbacks
 
@@ -341,7 +370,10 @@ public class AssetThumbnailCreationWindow : EditorWindow
         var assetGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
 
         if (!perAssetSettings.TryGetValue(assetGuid, out var winSnapshot))
+        {
+            defaultState.TryRestore(this);
             return;
+        }
 
         winSnapshot.TryRestore(this);
     }
@@ -350,13 +382,13 @@ public class AssetThumbnailCreationWindow : EditorWindow
     {
         var assetGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
 
-        var winSnapshot = perAssetSettings.GetOrCreate(assetGuid, () => Snapshot.Create(this));
+        var winSnapshot = perAssetSettings.GetOrCreate(assetGuid, () => Snapshot.Create(this.GetType()));
 
-        winSnapshot.CaptureFrom(this);
-        winSnapshot.RemoveMemberByName(nameof(TypeNameFilter), out _);
-        winSnapshot.RemoveMemberByName(nameof(IsComponent), out _);
-        winSnapshot.RemoveMemberByName(nameof(ExportInSourceDirectory), out _);
+        //winSnapshot.RemoveMemberByName(nameof(TypeNameFilter), out _);
+        //winSnapshot.RemoveMemberByName(nameof(IsComponent), out _);
+        //winSnapshot.RemoveMemberByName(nameof(ExportInSourceDirectory), out _);
         winSnapshot.RemoveMemberByName(nameof(perAssetSettings), out _);
+        winSnapshot.CaptureFrom(this);
     }
 
     private void RestoreSavedData()
@@ -376,7 +408,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
     {
         assets.Clear();
 
-        string typeFilter = typeNameView.value.IsNullOrWhiteSpace() || isComponentToggle.value ? "GameObject" : typeNameView.value;
+        string typeFilter = typeNameFilterField.value.IsNullOrWhiteSpace() || isComponentToggle.value ? "GameObject" : typeNameFilterField.value;
 
         var dbAssets =
             from guid in AssetDatabase.FindAssets($"t:{typeFilter}")
@@ -395,11 +427,14 @@ public class AssetThumbnailCreationWindow : EditorWindow
                 from cmp in cmps
                 where cmp != null
                 let cmpType = cmp.GetType()
-                where cmpType.FullName.StartsWith(typeNameView.value) || cmpType.Name.StartsWith(typeNameView.value)
+                where cmpType.FullName.StartsWith(typeNameFilterField.value) || cmpType.Name.StartsWith(typeNameFilterField.value)
                 select PrefabUtility.GetOutermostPrefabInstanceRoot(cmp) into prefab
                 where prefab != null
                 select prefab;
         }
+
+        if (assetNameFilterField.value.IsNotNullOrWhiteSpace())
+            dbAssets = dbAssets.Where(asset => asset.name.Contains(assetNameFilterField.value, StringComparison.OrdinalIgnoreCase));
 
         foreach (var asset in dbAssets.Distinct())
             assets.Add(asset);

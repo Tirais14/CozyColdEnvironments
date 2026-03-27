@@ -64,6 +64,11 @@ namespace CCEnvs.Snapshots
 
         public abstract void RestoreFromCaptured(object target);
 
+        public override string ToString()
+        {
+            return $"({MemberInfo.Name}: {{0}})";
+        }
+
         internal virtual void SetValue(object target, object? value)
         {
             CC.Guard.IsNotNullTarget(target);
