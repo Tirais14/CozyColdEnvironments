@@ -66,7 +66,7 @@ namespace CCEnvs.Snapshots
 
         public override string ToString()
         {
-            return $"({MemberInfo.Name}: {{0}})";
+            return $"({MemberInfo.Name} : {{0}})";
         }
 
         internal virtual void SetValue(object target, object? value)

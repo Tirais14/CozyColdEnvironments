@@ -143,6 +143,9 @@ namespace CCEnvs.Unity
         [OnInstallExecutable]
         private static void InstallSavingSystem()
         {
+            if (Application.isEditor && !Application.isPlaying)
+                return;
+
             SavingSystem.Self.RegisterType<GameObject>(
                 static (go) =>
                 {

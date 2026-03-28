@@ -99,7 +99,7 @@ namespace CCEnvs.Snapshots
                     memberIdxByNames.Clear();
 
                 if (CCDebug.Instance.IsEnabled)
-                    this.PrintLog($"Remove snapshot member. Member: {removed}");
+                    this.PrintLog($"Removed snapshot member. Member: {removed}");
             }
 
             return true;

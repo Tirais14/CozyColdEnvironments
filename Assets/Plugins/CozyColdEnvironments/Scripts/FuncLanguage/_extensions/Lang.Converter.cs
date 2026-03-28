@@ -77,6 +77,16 @@ namespace CCEnvs.FuncLanguage
             return new Maybe<TValue>(source, isSome).IfSome(ifSome);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TValue? AsNullable<TValue>(this Maybe<TValue> source)
+            where TValue : struct
+        {
+            if (source.IsNone)
+                return null;
+
+            return source.GetValue();
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IfElse Resolve(this bool source) => source;

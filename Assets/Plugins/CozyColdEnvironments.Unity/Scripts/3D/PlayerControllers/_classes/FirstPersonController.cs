@@ -67,8 +67,8 @@ namespace CCEnvs.Unity.D3.Controllers
             if (moveInput == Vector2.zero)
                 return;
 
-            moveInput.x *= horizontalCameraSensivity * Time.deltaTime;
-            moveInput.y *= verticalCameraSensivity * Time.deltaTime;
+            moveInput.x *= horizontalCameraSensivity * Mathf.Min(Time.deltaTime, 0.1f);
+            moveInput.y *= verticalCameraSensivity * Mathf.Min(Time.deltaTime, 0.1f);
 
             xRotation -= moveInput.y;
             xRotation = Mathf.Clamp(xRotation, -90f, 90f);

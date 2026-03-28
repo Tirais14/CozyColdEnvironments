@@ -7,6 +7,7 @@ using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
 using CCEnvs.Unity;
 using CCEnvs.Unity.Editr;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,6 +71,8 @@ public class AssetThumbnailCreationWindow : EditorWindow
     private Vector3Field positionOffsetView = null!;
     private Vector3Field rotationOffsetView = null!;
     private Vector3Field lightRotationOffsetView = null!;
+
+    private EnumField exportTypeField = null!;
     #endregion View
 
     #region Data
@@ -177,11 +180,11 @@ public class AssetThumbnailCreationWindow : EditorWindow
         ResolveLightRotationOffsetView();
         ResolvePreviewSizeView();
         ResolveAssetNameFilterField();
-
-        defaultState = Snapshot.Create(this).SetIgnoreNullOnRestore(false);
+        ResolveExportTypeField();
 
         RestoreSavedData();
         FindAssets();
+        ResolvePreviewScene();
         ApplyLightRotationOffset();
         RenderPreviewScene();
     }
@@ -278,6 +281,11 @@ public class AssetThumbnailCreationWindow : EditorWindow
         assetNameFilterField = contentContainer.Q<TextField>("AssetNameFilter");
         assetNameFilterField.RegisterValueChangedCallback(OnAssetNameFilterChanged);
     }
+
+    private void ResolveExportTypeField()
+    {
+        exportTypeField = rootVisualElement.Q<EnumField>("ExportType");
+    }
     #endregion ResolveViews
 
     #region Callbacks
@@ -354,6 +362,16 @@ public class AssetThumbnailCreationWindow : EditorWindow
     }
     #endregion Callbacks
 
+    private void CaptureDefaultState()
+    {
+        defaultState = Snapshot.Create(this).SetIgnoreNullOnRestore(false);
+        defaultState.RemoveMemberByName(nameof(ExportInSourceDirectory), out _);
+        defaultState.RemoveMemberByName(nameof(IsComponent), out _);
+        defaultState.RemoveMemberByName(nameof(perAssetSettings), out _);
+        defaultState.RemoveMemberByName(nameof(TypeNameFilter), out _);
+        defaultState.RemoveMemberByName(nameof(AssetNameFilter), out _);
+    }
+
     private void SetSelectedAsset(Object? asset)
     {
         if (selectedAsset != null)
@@ -382,12 +400,13 @@ public class AssetThumbnailCreationWindow : EditorWindow
     {
         var assetGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
 
-        var winSnapshot = perAssetSettings.GetOrCreate(assetGuid, () => Snapshot.Create(this.GetType()));
+        var winSnapshot = perAssetSettings.GetOrCreate(assetGuid, () => Snapshot.Create(GetType()));
 
-        //winSnapshot.RemoveMemberByName(nameof(TypeNameFilter), out _);
-        //winSnapshot.RemoveMemberByName(nameof(IsComponent), out _);
-        //winSnapshot.RemoveMemberByName(nameof(ExportInSourceDirectory), out _);
         winSnapshot.RemoveMemberByName(nameof(perAssetSettings), out _);
+        winSnapshot.RemoveMemberByName(nameof(ExportInSourceDirectory), out _);
+        winSnapshot.RemoveMemberByName(nameof(IsComponent), out _);
+        winSnapshot.RemoveMemberByName(nameof(TypeNameFilter), out _);
+        winSnapshot.RemoveMemberByName(nameof(AssetNameFilter), out _);
         winSnapshot.CaptureFrom(this);
     }
 
@@ -501,7 +520,11 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
             if (previewVolume != null)
                 DestroyImmediate(previewVolume);
+
             previewLight = (Light)PrefabUtility.InstantiatePrefab(lightPrefab, previewScene);
+
+            ApplyLightRotationOffset();
+
             previewVolume = (GameObject)PrefabUtility.InstantiatePrefab(volumePrefab, previewScene);
         }
         catch (System.Exception ex)
@@ -539,14 +562,12 @@ public class AssetThumbnailCreationWindow : EditorWindow
         sceneCamera.aspect = 1f;
         sceneCamera.backgroundColor = Color.black;
         sceneCamera.clearFlags = CameraClearFlags.SolidColor;
-        sceneCamera.allowHDR = true;
-        sceneCamera.allowMSAA = true;
 
         var cameraData = cameraObj.AddComponent<UniversalAdditionalCameraData>();
 
         cameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         cameraData.antialiasingQuality = AntialiasingQuality.High;
-        cameraData.renderPostProcessing = true;
+        cameraData.renderPostProcessing = false;
 
         ResolveRenderTexture();
 
@@ -727,13 +748,23 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
         var filePath = Path.ChangeExtension(Path.Join(dirPath, fileName), ".png");
 
-        AssetDatabase.LoadAssetAtPath<Texture2D>(filePath).Maybe().IfSome(tx =>
-        {
-            tx.alphaIsTransparency = true;
-
-            AssetDatabase.SaveAssetIfDirty(tx);
-        });
+        AssetImporter.GetAtPath(filePath)
+                     .Maybe()
+                     .Cast<TextureImporter>()
+                     .IfRight(importer =>
+                     {
+                         importer.alphaIsTransparency = true;
+                         importer.textureType = (TextureImporterType)exportTypeField.value;
+                         importer.spriteImportMode = SpriteImportMode.Single;
+                         importer.SaveAndReimport();
+                     });
 
         await File.WriteAllBytesAsync(filePath, bytes);
+    }
+
+    public enum TextureExportType
+    {
+        Texture,
+        Sprite
     }
 }

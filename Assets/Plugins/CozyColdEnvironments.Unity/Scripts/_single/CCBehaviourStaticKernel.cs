@@ -47,6 +47,9 @@ namespace CCEnvs.Unity
 
         public static CCBehaviourStatic GetOrCreateInstance(Type type)
         {
+            if (Application.isEditor && !Application.isPlaying)
+                throw new InvalidOperationException($"Cannot access to ant {nameof(CCBehaviourStatic)} in editor mode");
+
             Guard.IsTrue(!type.IsAbstract && !type.IsInterface, nameof(type), "Type is abstract.");
 
             if (!GetInstance(type).TryGetValue(out var instance))
