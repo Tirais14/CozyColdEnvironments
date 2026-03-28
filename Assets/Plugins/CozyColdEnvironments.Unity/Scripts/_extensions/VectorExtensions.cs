@@ -9,29 +9,29 @@ namespace CCEnvs.Unity
 {
     public static class Vector2Extensions
     {
-        public static Direction2D ToDirection(this Vector2 source)
+        public static Directions2D ToDirection(this Vector2 source)
         {
             float x = source.normalized.x;
             float y = source.normalized.y;
             if (x.NotNearlyEquals(0) && y.NotNearlyEquals(0))
             {
-                if (x > 0 && y > 0) { return Direction2D.RightUp; }
-                else if (x < 0 && y > 0) { return Direction2D.LeftUp; }
-                else if (x > 0 && y < 0) { return Direction2D.RightDown; }
-                else if (x < 0 && y < 0) { return Direction2D.LeftDown; }
+                if (x > 0 && y > 0) { return Directions2D.RightUp; }
+                else if (x < 0 && y > 0) { return Directions2D.LeftUp; }
+                else if (x > 0 && y < 0) { return Directions2D.RightDown; }
+                else if (x < 0 && y < 0) { return Directions2D.LeftDown; }
             }
             else if (x.NotNearlyEquals(0) && y.NearlyEquals(0))
             {
-                if (x > 0) { return Direction2D.Right; }
-                else if (x < 0) { return Direction2D.Left; }
+                if (x > 0) { return Directions2D.Right; }
+                else if (x < 0) { return Directions2D.Left; }
             }
             else if (x.NearlyEquals(0) && y.NotNearlyEquals(0))
             {
-                if (y > 0) { return Direction2D.Up; }
-                else if (y < 0) { return Direction2D.Down; }
+                if (y > 0) { return Directions2D.Up; }
+                else if (y < 0) { return Directions2D.Down; }
             }
 
-            return Direction2D.None;
+            return Directions2D.None;
         }
 
         public static Vector2 WithX(this Vector2 source, float value)
@@ -87,35 +87,35 @@ namespace CCEnvs.Unity
             return new Vector3(value.x, value.y, z);
         }
 
-        public static Direction2D ToDirection2D(this Vector2 value)
+        public static Directions2D ToDirection2D(this Vector2 value)
         {
             if (!value.x.NearlyEquals(0) && !value.y.NearlyEquals(0))
             {
                 if (value.x > 0 && value.y > 0)
-                    return Direction2D.RightUp;
+                    return Directions2D.RightUp;
                 else if (value.x < 0 && value.y > 0)
-                    return Direction2D.LeftUp;
+                    return Directions2D.LeftUp;
                 else if (value.x > 0 && value.y < 0)
-                    return Direction2D.RightDown;
+                    return Directions2D.RightDown;
                 else if (value.x < 0 && value.y < 0)
-                    return Direction2D.LeftDown;
+                    return Directions2D.LeftDown;
             }
             else if (!value.x.NearlyEquals(0) && value.y.NearlyEquals(0))
             {
                 if (value.x > 0)
-                    return Direction2D.Right;
+                    return Directions2D.Right;
                 else if (value.x < 0)
-                    return Direction2D.Left;
+                    return Directions2D.Left;
             }
             else if (!value.y.NearlyEquals(0) && value.x.NearlyEquals(0))
             {
                 if (value.y > 0)
-                    return Direction2D.Up;
+                    return Directions2D.Up;
                 else if (value.y < 0)
-                    return Direction2D.Down;
+                    return Directions2D.Down;
             }
 
-            return Direction2D.None;
+            return Directions2D.None;
         }
 
         public static bool IsFinite(this Vector2 source)
@@ -222,7 +222,7 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Direction2D ToDirection2D(this Vector2Int value)
+        public static Directions2D ToDirection2D(this Vector2Int value)
         {
             return new Vector2(value.x, value.y).ToDirection2D();
         }
@@ -329,7 +329,7 @@ namespace CCEnvs.Unity
             return source;
         }
 
-        public static Direction2D ToDirection2D(this Vector3 value)
+        public static Directions2D ToDirection2D(this Vector3 value)
         {
             return new Vector2(value.x, value.y).ToDirection2D();
         }
@@ -482,7 +482,7 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Direction2D ToDirection2D(this Vector3Int value)
+        public static Directions2D ToDirection2D(this Vector3Int value)
         {
             return new Vector2(value.x, value.y).ToDirection2D();
         }

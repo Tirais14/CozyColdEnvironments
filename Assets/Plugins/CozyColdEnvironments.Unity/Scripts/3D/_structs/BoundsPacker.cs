@@ -81,24 +81,6 @@ namespace CCEnvs.Unity.D3
             Item = item;
             Axis1 = axis1;
         }
-        public static IReadOnlyList<Bounds> TransformItemPositions(Bounds container, IReadOnlyList<Bounds> items)
-        {
-            if (container.center == Vector3.zero)
-                return items;
-
-            var results = new Bounds[items.Count];
-
-            Bounds transformedItem;
-
-            for (int i = 0; i < items.Count; i++)
-            {
-                transformedItem = items[i];
-                transformedItem.center += container.center;
-                results[i] = transformedItem;
-            }
-
-            return results;
-        }
 
         #region Setters
         [DebuggerHidden]
@@ -520,7 +502,7 @@ namespace CCEnvs.Unity.D3
                 &&
                 cache.Value.TryGetValue(local, out var positions))
             {
-                results = TransformItemPositions(Container, positions);
+                results = BoundsHelper.InverseTransformBounds(Container, positions);
                 return true;
             }
 

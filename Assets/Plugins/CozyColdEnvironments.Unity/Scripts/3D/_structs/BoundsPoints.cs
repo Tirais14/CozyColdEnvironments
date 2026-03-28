@@ -9,6 +9,8 @@ namespace CCEnvs.Unity.D3
     [Equatable]
     public readonly partial struct BoundsPoints : IReadOnlyList<Vector3>
     {
+        public const int CENTER_POINT_OFFSET = 1;
+
         public Bounds Source { get; }
 
         [ReferenceEquality]

@@ -1,4 +1,7 @@
 using CommunityToolkit.Diagnostics;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -6,12 +9,47 @@ namespace CCEnvs.Unity.D3
 {
     public static class BoundsHelper
     {
-        public static BoundsPoints GetBoundsPoints(Bounds bounds, Vector3 offset = default)
+        private readonly static Lazy<ConcurrentDictionary<(Bounds Bounds, Vector3 Padding), BoundsPoints>> boundsPoints = new(() => new());
+
+        /// <summary>
+        /// For non alloc and faster using cached values - bounds must be with center == Vector3.zero (Local)
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <param name="padding"></param>
+        /// <param name="cache"></param>
+        /// <returns></returns>
+        public static BoundsPoints GetBoundsPoints(
+            Bounds bounds,
+            in Vector3 padding = default,
+            bool cache = false
+            )
         {
             Guard.IsNotDefault(bounds);
 
-            Vector3 c = bounds.center + offset;
-            Vector3 e = bounds.extents;
+            var boundsLocal = bounds.GetLocal();
+
+            if (boundsPoints.IsValueCreated
+                &&
+                boundsPoints.Value.TryGetValue((boundsLocal, padding), out var points))
+            {
+                BoundsPoints trPoints;
+
+                if (bounds.center != Vector3.zero)
+                {
+                    var trCorners = TransformPoints(bounds, points.Corners);
+                    var trFaces = TransformPoints(bounds, points.Faces);
+                    var trEdges = TransformPoints(bounds, points.Edges);
+
+                    trPoints = new BoundsPoints(bounds, trCorners, trFaces, trEdges);
+
+                    return trPoints;
+                }
+
+                return points;
+            }
+
+            Vector3 c = bounds.center;
+            Vector3 e = bounds.extents + padding;
 
             var corners = new Vector3[8];
 
@@ -55,9 +93,153 @@ namespace CCEnvs.Unity.D3
                 for (int z = -1; z <= 1; z += 2)
                     edges[idx++] = c + new Vector3(0, y * e.y, z * e.z);
 
-            var points = new BoundsPoints(bounds, corners, faces, edges);
+            points = new BoundsPoints(bounds, corners, faces, edges);
+
+            if (cache)
+            {
+                if (!boundsPoints.IsValueCreated
+                    ||
+                    !boundsPoints.Value.ContainsKey((boundsLocal, padding)))
+                {
+                    if (bounds.center != Vector3.zero)
+                    {
+                        var trCorners = InverseTransformPoints(bounds, corners);
+                        var trFaces = InverseTransformPoints(bounds, faces);
+                        var trEdges = InverseTransformPoints(bounds, edges);
+
+                        var trPoints = new BoundsPoints(
+                            boundsLocal,
+                            trCorners,
+                            trFaces,
+                            trEdges
+                            );
+
+                        boundsPoints.Value.TryAdd((boundsLocal, padding), trPoints);
+                    }
+                    else
+                        boundsPoints.Value.TryAdd((boundsLocal, padding), points);
+                }
+            }
 
             return points;
+        }
+
+        public static Bounds GetLocal(this Bounds source)
+        {
+            source.center = Vector3.zero;
+            return source;
+        }
+
+        public static IReadOnlyList<Bounds> TransformBounds(in Bounds source, IReadOnlyList<Bounds> other)
+        {
+            if (source.center == Vector3.zero)
+                return other;
+
+            Bounds transformedItem;
+
+            var results = new Bounds[other.Count];
+
+            for (int i = 0; i < other.Count; i++)
+            {
+                transformedItem = other[i];
+                transformedItem.center += source.center;
+                results[i] = transformedItem;
+            }
+
+            return results;
+        }
+
+        public static void TransformBoundsNonAlloc(in Bounds source, Span<Bounds> other)
+        {
+            if (source.center == Vector3.zero)
+                return;
+
+            Bounds transformedItem;
+
+            for (int i = 0; i < other.Length; i++)
+            {
+                transformedItem = other[i];
+                transformedItem.center += source.center;
+                other[i] = transformedItem;
+            }
+        }
+
+        public static IReadOnlyList<Vector3> TransformPoints(Bounds source, IReadOnlyList<Vector3> other)
+        {
+            if (source.center == Vector3.zero)
+                return other;
+
+            var results = new Vector3[other.Count];
+
+            for (int i = 0; i < other.Count; i++)
+                results[i] = other[i] + source.center;
+
+            return results;
+        }
+
+        public static void TransformPointsNonAlloc(in Bounds source, Span<Vector3> other)
+        {
+            if (source.center == Vector3.zero)
+                return;
+
+            for (int i = 0; i < other.Length; i++)
+                other[i] += source.center;
+        }
+
+        public static IReadOnlyList<Bounds> InverseTransformBounds(in Bounds source, IReadOnlyList<Bounds> other)
+        {
+            if (source.center == Vector3.zero)
+                return other;
+
+            Bounds transformedItem;
+
+            var results = new Bounds[other.Count];
+
+            for (int i = 0; i < other.Count; i++)
+            {
+                transformedItem = other[i];
+                transformedItem.center -= source.center;
+                results[i] = transformedItem;
+            }
+
+            return results;
+        }
+
+        public static void InverseTransformBoundsNonAlloc(in Bounds source, Span<Bounds> other)
+        {
+            if (source.center == Vector3.zero)
+                return;
+
+            Bounds transformedItem;
+
+            for (int i = 0; i < other.Length; i++)
+            {
+                transformedItem = other[i];
+                transformedItem.center -= source.center;
+                other[i] = transformedItem;
+            }
+        }
+
+        public static IReadOnlyList<Vector3> InverseTransformPoints(Bounds source, IReadOnlyList<Vector3> other)
+        {
+            if (source.center == Vector3.zero)
+                return other;
+
+            var results = new Vector3[other.Count];
+
+            for (int i = 0; i < other.Count; i++)
+                results[i] = other[i] - source.center;
+
+            return results;
+        }
+
+        public static void InverseTransformPointsNonAlloc(in Bounds source, Span<Vector3> other)
+        {
+            if (source.center == Vector3.zero)
+                return;
+
+            for (int i = 0; i < other.Length; i++)
+                other[i] -= source.center;
         }
     }
 }

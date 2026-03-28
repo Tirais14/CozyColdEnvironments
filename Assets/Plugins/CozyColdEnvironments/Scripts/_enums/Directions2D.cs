@@ -3,7 +3,7 @@ using System;
 namespace CCEnvs
 {
     [Flags]
-    public enum Direction2D
+    public enum Directions2D
     {
         None,
         Down,
@@ -18,22 +18,22 @@ namespace CCEnvs
 
     public static class Direction2DExtensions
     {
-        public static Relative2DPosition GetRelativePosition(this Direction2D direction)
+        public static Relative2DPosition GetRelativePosition(this Directions2D direction)
         {
-            const Direction2D CENTER = Direction2D.Left | Direction2D.Right
-                | Direction2D.Down | Direction2D.Up;
+            const Directions2D CENTER = Directions2D.Left | Directions2D.Right
+                | Directions2D.Down | Directions2D.Up;
 
-            const Direction2D TOP = Direction2D.Left | Direction2D.Right | Direction2D.Down;
+            const Directions2D TOP = Directions2D.Left | Directions2D.Right | Directions2D.Down;
 
-            const Direction2D BOTTOM = Direction2D.Left | Direction2D.Right | Direction2D.Up;
+            const Directions2D BOTTOM = Directions2D.Left | Directions2D.Right | Directions2D.Up;
 
-            const Direction2D LEFT = Direction2D.Right | Direction2D.Down | Direction2D.Up;
-            const Direction2D LEFT_TOP = Direction2D.Right | Direction2D.Down;
-            const Direction2D LEFT_BOTTOM = Direction2D.Right | Direction2D.Up;
+            const Directions2D LEFT = Directions2D.Right | Directions2D.Down | Directions2D.Up;
+            const Directions2D LEFT_TOP = Directions2D.Right | Directions2D.Down;
+            const Directions2D LEFT_BOTTOM = Directions2D.Right | Directions2D.Up;
 
-            const Direction2D RIGHT = Direction2D.Left | Direction2D.Down | Direction2D.Up;
-            const Direction2D RIGHT_TOP = Direction2D.Left | Direction2D.Down;
-            const Direction2D RIGHT_BOTTOM = Direction2D.Left | Direction2D.Up;
+            const Directions2D RIGHT = Directions2D.Left | Directions2D.Down | Directions2D.Up;
+            const Directions2D RIGHT_TOP = Directions2D.Left | Directions2D.Down;
+            const Directions2D RIGHT_BOTTOM = Directions2D.Left | Directions2D.Up;
 
             Relative2DPosition position = Relative2DPosition.None;
             if (direction == CENTER)
@@ -58,13 +58,13 @@ namespace CCEnvs
             return position;
         }
 
-        public static bool IsDiagonal(this Direction2D direction) =>
+        public static bool IsDiagonal(this Directions2D direction) =>
             direction switch
             {
-                Direction2D.LeftUp => true,
-                Direction2D.LeftDown => true,
-                Direction2D.RightUp => true,
-                Direction2D.RightDown => true,
+                Directions2D.LeftUp => true,
+                Directions2D.LeftDown => true,
+                Directions2D.RightUp => true,
+                Directions2D.RightDown => true,
                 _ => false,
             };
     }
