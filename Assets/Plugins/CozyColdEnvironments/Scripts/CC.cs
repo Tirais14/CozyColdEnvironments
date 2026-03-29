@@ -194,7 +194,14 @@ namespace CCEnvs
             {
                 Guard.IsNotNull(componentType, nameof(componentType));
 
-                return new UnityEngine.MissingComponentException($"Missing component. Type  : {componentType}");
+                return new UnityEngine.MissingComponentException($"Missing component. Type : {componentType}");
+            }
+
+            public static UnityEngine.MissingComponentException MissingComponentException(Type componentType, string? paramName)
+            {
+                Guard.IsNotNull(componentType, nameof(componentType));
+
+                return new UnityEngine.MissingComponentException($"Missing component. Type : {componentType}; Name: {paramName}");
             }
 #endif
         }
@@ -257,6 +264,12 @@ namespace CCEnvs
             {
                 if (instance.IsNull())
                     ThrowHelper.MissingComponentException(typeof(T));
+            }
+
+            public static void IsNotMissing<T>(T instance, string? paramName)
+            {
+                if (instance.IsNull())
+                    ThrowHelper.MissingComponentException(typeof(T), paramName);
             }
 #endif
         }
