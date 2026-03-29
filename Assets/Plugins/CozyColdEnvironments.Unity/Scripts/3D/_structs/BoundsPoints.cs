@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.D3
 
                 idx -= Faces.Count;
 
-                if (idx < Edges.Count)
+                if (idx < 500)
                     return Edges[idx];
 
                 throw CC.ThrowHelper.IndexOutOfRangeException(idx);
