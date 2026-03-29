@@ -34,7 +34,7 @@ namespace CCEnvs.Unity.D3
             {
                 BoundsPoints trPoints;
 
-                if (bounds.center != Vector3.zero)
+                if (!bounds.IsLocal())
                 {
                     var trCorners = TransformPoints(bounds, points.Corners);
                     var trFaces = TransformPoints(bounds, points.Faces);
@@ -101,7 +101,7 @@ namespace CCEnvs.Unity.D3
                     ||
                     !boundsPoints.Value.ContainsKey((boundsLocal, padding)))
                 {
-                    if (bounds.center != Vector3.zero)
+                    if (!bounds.IsLocal())
                     {
                         var trCorners = InverseTransformPoints(bounds, corners);
                         var trFaces = InverseTransformPoints(bounds, faces);
@@ -128,6 +128,11 @@ namespace CCEnvs.Unity.D3
         {
             source.center = Vector3.zero;
             return source;
+        }
+
+        public static bool IsLocal(this Bounds source)
+        {
+            return source.center == Vector3.zero;
         }
 
         public static IReadOnlyList<Bounds> TransformBounds(in Bounds source, IReadOnlyList<Bounds> other)

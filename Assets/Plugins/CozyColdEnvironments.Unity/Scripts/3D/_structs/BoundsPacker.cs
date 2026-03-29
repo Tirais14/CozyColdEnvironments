@@ -17,7 +17,6 @@ namespace CCEnvs.Unity.D3
         private readonly static Lazy<ConcurrentDictionary<BoundsPacker, IReadOnlyList<Bounds>>> cache = new(() => new());
 
         public Bounds Container { get; private init; }
-
         public Bounds Item { get; private init; }
 
         public Axis Axis1 { get; private init; }
@@ -26,8 +25,8 @@ namespace CCEnvs.Unity.D3
 
         public Vector3 Margin { get; init; }
 
-        public bool MarginByVolume { get; init; }
-        public bool CacheCalculations { get; init; }
+        public bool MarginToFit { get; init; }
+        public bool CacheResults { get; init; }
 
         public BoundsPacker Local {
             get
@@ -40,8 +39,8 @@ namespace CCEnvs.Unity.D3
                     Axis2 = Axis2,
                     Axis3 = Axis3,
                     Margin = Margin,
-                    MarginByVolume = MarginByVolume,
-                    CacheCalculations = CacheCalculations
+                    MarginToFit = MarginToFit,
+                    CacheResults = CacheResults
                 };
             }
         }
@@ -98,8 +97,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = Axis3,
                 Margin = value,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = CacheCalculations
+                MarginToFit = MarginToFit,
+                CacheResults = CacheResults
             };
         }
 
@@ -118,8 +117,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = Axis3,
                 Margin = Margin,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = CacheCalculations
+                MarginToFit = MarginToFit,
+                CacheResults = CacheResults
             };
         }
 
@@ -138,8 +137,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = Axis3,
                 Margin = Margin,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = CacheCalculations
+                MarginToFit = MarginToFit,
+                CacheResults = CacheResults
             };
         }
 
@@ -158,8 +157,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = Axis3,
                 Margin = Margin,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = CacheCalculations
+                MarginToFit = MarginToFit,
+                CacheResults = CacheResults
             };
         }
 
@@ -178,8 +177,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = value,
                 Axis3 = Axis3,
                 Margin = Margin,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = CacheCalculations
+                MarginToFit = MarginToFit,
+                CacheResults = CacheResults
             };
         }
 
@@ -198,16 +197,16 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = value,
                 Margin = Margin,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = CacheCalculations
+                MarginToFit = MarginToFit,
+                CacheResults = CacheResults
             };
         }
 
         [DebuggerHidden]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BoundsPacker WithMarginByVolume(bool value)
+        public BoundsPacker WithMarginToFit(bool value)
         {
-            if (MarginByVolume == value)
+            if (MarginToFit == value)
                 return this;
 
             return new BoundsPacker()
@@ -218,8 +217,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = Axis3,
                 Margin = Margin,
-                MarginByVolume = value,
-                CacheCalculations = CacheCalculations
+                MarginToFit = value,
+                CacheResults = CacheResults
             };
         }
 
@@ -228,7 +227,7 @@ namespace CCEnvs.Unity.D3
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BoundsPacker WithCacheCalculations(bool value)
         {
-            if (CacheCalculations == value)
+            if (CacheResults == value)
                 return this;
 
             return new BoundsPacker()
@@ -239,8 +238,8 @@ namespace CCEnvs.Unity.D3
                 Axis2 = Axis2,
                 Axis3 = Axis3,
                 Margin = Margin,
-                MarginByVolume = MarginByVolume,
-                CacheCalculations = value
+                MarginToFit = MarginToFit,
+                CacheResults = value
             };
         }
         #endregion Setters
@@ -279,7 +278,7 @@ namespace CCEnvs.Unity.D3
         {
             var local = Local;
 
-            if (TryGetCachedItems(local, out var cachedResults))
+            if (TryGetCachedItems(local, out var cachedResults, !Container.IsLocal()))
                 return cachedResults;
 
             var axisPointer = (int)Axis1;
@@ -310,7 +309,7 @@ namespace CCEnvs.Unity.D3
                 testItem.center = testItemCenter;
             }
 
-            TryCacheItems(local, results);
+            TryCacheItems(local, results, !Container.IsLocal());
             return results;
         }
 
@@ -318,7 +317,7 @@ namespace CCEnvs.Unity.D3
         {
             var local = Local;
 
-            if (TryGetCachedItems(local, out var cachedResults))
+            if (TryGetCachedItems(local, out var cachedResults, !Container.IsLocal()))
                 return cachedResults;
 
             var axis1 = (int)Axis1;
@@ -356,7 +355,7 @@ namespace CCEnvs.Unity.D3
                 {
                     if (!loopFuse.MoveNext())
                     {
-                        TryCacheItems(local, results);
+                        TryCacheItems(local, results, !Container.IsLocal());
                         return results;
                     }
 
@@ -373,7 +372,7 @@ namespace CCEnvs.Unity.D3
                     {
                         if (i1 == 0)
                         {
-                            TryCacheItems(local, results);
+                            TryCacheItems(local, results, !Container.IsLocal());
                             return results;
                         }
 
@@ -407,7 +406,7 @@ namespace CCEnvs.Unity.D3
 
             var local = Local;
 
-            if (TryGetCachedItems(local, out var cachedResults))
+            if (TryGetCachedItems(local, out var cachedResults, !Container.IsLocal()))
                 return cachedResults;
 
             var axis1 = (int)Axis1;
@@ -454,7 +453,7 @@ namespace CCEnvs.Unity.D3
                     {
                         if (!loopFuse.MoveNext())
                         {
-                            TryCacheItems(local, results);
+                            TryCacheItems(local, results, !Container.IsLocal());
                             return results;
                         }
 
@@ -474,7 +473,7 @@ namespace CCEnvs.Unity.D3
                             else if (i3 != 0) breakI3 = true;
                             else
                             {
-                                TryCacheItems(local, results);
+                                TryCacheItems(local, results, !Container.IsLocal());
                                 return results;
                             }
 
@@ -495,14 +494,19 @@ namespace CCEnvs.Unity.D3
 
         private readonly bool TryGetCachedItems(
             BoundsPacker local,
-            [NotNullWhen(true)] out IReadOnlyList<Bounds>? results
+            [NotNullWhen(true)] out IReadOnlyList<Bounds>? results,
+            bool mustTransformed
             )
         {
             if (cache.IsValueCreated
                 &&
                 cache.Value.TryGetValue(local, out var positions))
             {
-                results = BoundsHelper.InverseTransformBounds(Container, positions);
+                if (mustTransformed)
+                    results = BoundsHelper.TransformBounds(Container, positions);
+                else
+                    results = positions;
+
                 return true;
             }
 
@@ -512,15 +516,23 @@ namespace CCEnvs.Unity.D3
 
         private readonly void TryCacheItems(
             BoundsPacker local,
-            IReadOnlyList<Bounds> items
+            IReadOnlyList<Bounds> items,
+            bool mustTransformed
             )
         {
-            if (!CacheCalculations
+            if (!CacheResults
                 ||
-                cache.IsValueCreated && cache.Value.ContainsKey(local))
+                (cache.IsValueCreated
+                &&
+                cache.Value.ContainsKey(local)))
             {
                 return;
             }
+
+            Transform t;
+
+            if (mustTransformed)
+                items = BoundsHelper.InverseTransformBounds(Container, items);
 
             cache.Value[local] = items;
         }
