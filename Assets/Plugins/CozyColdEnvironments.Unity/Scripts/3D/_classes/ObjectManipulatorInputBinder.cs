@@ -156,6 +156,7 @@ namespace CCEnvs.Unity.D3
                 return;
 
             distanceOffsetIABinding = DistanceOffsetIA.ObservePerformedValue()
+                .Where(InputPredicate)
                 .Subscribe(OnDistanceOffsetIA);
         }
 
@@ -168,6 +169,7 @@ namespace CCEnvs.Unity.D3
                 return;
 
             horizontalOffsetIABinding = HorizontalOffsetIA.ObservePerformedValue()
+                .Where(InputPredicate)
                 .Subscribe(OnHorizontalOffsetIA);
         }
 
@@ -180,6 +182,7 @@ namespace CCEnvs.Unity.D3
                 return;
 
             verticalOffsetIABinding = VerticalOffsetIA.ObservePerformedValue()
+                .Where(InputPredicate)
                 .Subscribe(OnVerticalOffsetIA);
         }
 
@@ -192,6 +195,7 @@ namespace CCEnvs.Unity.D3
                 return;
 
             pitchOffsetIABinding = PitchOffsetIA.ObservePerformedValue()
+                .Where(InputPredicate)
                 .Subscribe(OnPitchOffsetIA);
         }
 
@@ -204,6 +208,7 @@ namespace CCEnvs.Unity.D3
                 return;
 
             yawOffsetIABinding = YawOffsetIA.ObservePerformedValue()
+                .Where(InputPredicate)
                 .Subscribe(OnYawOffsetIA);
         }
 
@@ -216,6 +221,7 @@ namespace CCEnvs.Unity.D3
                 return;
 
             rollOffsetIABinding = RollOffsetIA.ObservePerformedValue()
+                .Where(InputPredicate)
                 .Subscribe(OnRollOffsetIA);
         }
 
@@ -265,6 +271,11 @@ namespace CCEnvs.Unity.D3
                 return;
 
             objManipulator.ApplyRotation(new Vector3(0f, 0f, inputValue));
+        }
+
+        private bool InputPredicate<T>(T _)
+        {
+            return isActiveAndEnabled && objManipulator.Object != null;
         }
     }
 }

@@ -682,7 +682,7 @@ namespace CCEnvs.Reflection
                 return Enumerable.Empty<Type>();
 
             IReadOnlyCollection<Type> types;
-            if (settings.IsFlagSetted(Settings.IncludeBaseTypes))
+            if (settings.HasFlagT(Settings.IncludeBaseTypes))
                 types = GetBaseTypes();
             else
                 types = Range.From(type);
@@ -756,14 +756,14 @@ namespace CCEnvs.Reflection
             if (!this.name.TryGetValue(out var name))
                 return true;
 
-            if (settings.IsFlagSetted(Settings.ByFullName))
+            if (settings.HasFlagT(Settings.ByFullName))
             {
                 return other.EqualsOrdinal(name,
-                    bindingFlags.IsFlagSetted(BindingFlags.IgnoreCase));
+                    bindingFlags.HasFlagT(BindingFlags.IgnoreCase));
             }
 
             return other.ContainsOrdinal(name,
-                bindingFlags.IsFlagSetted(BindingFlags.IgnoreCase));
+                bindingFlags.HasFlagT(BindingFlags.IgnoreCase));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

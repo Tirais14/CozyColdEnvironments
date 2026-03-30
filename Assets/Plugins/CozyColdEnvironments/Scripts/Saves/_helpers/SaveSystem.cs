@@ -236,7 +236,7 @@ namespace CCEnvs.Saves
         private static void RegisterTypeByAttributes(MemberInfo[] domainMembers)
         {
             (from member in domainMembers.AsParallel()
-             where member.MemberType.IsFlagSetted(MemberTypes.TypeInfo) || member.MemberType.IsFlagSetted(MemberTypes.NestedType)
+             where member.MemberType.HasFlagT(MemberTypes.TypeInfo) || member.MemberType.HasFlagT(MemberTypes.NestedType)
              select (Type)member into type
              where type.IsDefined<RegisterInSaveSystemAttribute>(inherit: false)
              select type

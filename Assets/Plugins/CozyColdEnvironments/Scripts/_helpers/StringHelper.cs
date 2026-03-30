@@ -25,20 +25,20 @@ namespace CCEnvs
             if (left is null || right is null)
                 return false;
 
-            if (settings.IsFlagSetted(StringMatchSettings.Partial))
+            if (settings.HasFlagT(StringMatchSettings.Partial))
             {
-                if (settings.IsFlagSetted(StringMatchSettings.Culture))
+                if (settings.HasFlagT(StringMatchSettings.Culture))
                     throw new NotImplementedException();
-                else if (settings.IsFlagSetted(StringMatchSettings.Invariant))
+                else if (settings.HasFlagT(StringMatchSettings.Invariant))
                 {
-                    if (settings.IsFlagSetted(StringMatchSettings.IgnoreCase))
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
                         return left.ContainsInvariant(right, ignoreCase: true);
                     else
                         return left.ContainsInvariant(right, ignoreCase: false);
                 }
                 else
                 {
-                    if (settings.IsFlagSetted(StringMatchSettings.IgnoreCase))
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
                         return left.ContainsOrdinal(right, ignoreCase: true);
                     else
                         return left.ContainsOrdinal(right, ignoreCase: false);
@@ -46,18 +46,18 @@ namespace CCEnvs
             }
             else
             {
-                if (settings.IsFlagSetted(StringMatchSettings.Culture))
+                if (settings.HasFlagT(StringMatchSettings.Culture))
                     throw new NotImplementedException();
-                else if (settings.IsFlagSetted(StringMatchSettings.Invariant))
+                else if (settings.HasFlagT(StringMatchSettings.Invariant))
                 {
-                    if (settings.IsFlagSetted(StringMatchSettings.IgnoreCase))
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
                         return left.EqualsInvariant(right, ignoreCase: true);
                     else
                         return left.EqualsInvariant(right, ignoreCase: false);
                 }
                 else
                 {
-                    if (settings.IsFlagSetted(StringMatchSettings.IgnoreCase))
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
                         return left.EqualsOrdinal(right, ignoreCase: true);
                     else
                         return left.EqualsOrdinal(right, ignoreCase: false);

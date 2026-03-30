@@ -130,7 +130,7 @@ namespace CCEnvs
         }
 
         /// <exception cref="InvalidOperationException"></exception>
-        public unsafe static bool IsFlagSetted<T>(this T value, T flag)
+        public unsafe static bool HasFlagT<T>(this T value, T flag)
             where T : unmanaged, Enum
         {
 #if UNITY_2017_1_OR_NEWER
@@ -213,7 +213,7 @@ namespace CCEnvs
             {
                 current = values[i];
 
-                if (!value.IsFlagSetted(current))
+                if (!value.HasFlagT(current))
                     continue;
 
                 if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName!))
@@ -235,7 +235,7 @@ namespace CCEnvs
 
             foreach (var flag in flags)
             {
-                if (!value.IsFlagSetted(flag))
+                if (!value.HasFlagT(flag))
                     return false;
             }
 
@@ -252,13 +252,13 @@ namespace CCEnvs
             int flagsCount = flags.Length;
             for (int i = 0; i < flagsCount; i++)
             {
-                if (!value.IsFlagSetted(flags[i]))
+                if (!value.HasFlagT(flags[i]))
                     return false;
             }
 
             return true;
         }
-        public static bool IsFlagsSetted<T>(this T value, T flags)
+        public static bool HasFlagsT<T>(this T value, T flags)
             where T : unmanaged, Enum
         {
             return value.IsFlagsSetted(flags.ToArrayByFlags());

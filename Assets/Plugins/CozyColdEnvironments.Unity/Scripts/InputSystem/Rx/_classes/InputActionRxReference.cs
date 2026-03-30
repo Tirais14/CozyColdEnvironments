@@ -28,9 +28,9 @@ namespace CCEnvs.Unity.InputSystem.Rx
         {
             handlerTypes =
                 (from member in domainMembers.AsParallel()
-                 where member.MemberType.IsFlagSetted(MemberTypes.TypeInfo)
+                 where member.MemberType.HasFlagT(MemberTypes.TypeInfo)
                  ||
-                 member.MemberType.IsFlagSetted(MemberTypes.NestedType)
+                 member.MemberType.HasFlagT(MemberTypes.NestedType)
                  select (Type)member into type
                  where type.IsType<InputHandlerRx>()
                  select type

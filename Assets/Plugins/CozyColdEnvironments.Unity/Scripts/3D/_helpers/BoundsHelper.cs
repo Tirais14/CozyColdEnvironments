@@ -9,8 +9,6 @@ namespace CCEnvs.Unity.D3
 {
     public static class BoundsHelper
     {
-        private readonly static Lazy<ConcurrentDictionary<(Bounds Bounds, Vector3 Padding), BoundsPoints>> boundsPoints = new(() => new());
-
         /// <summary>
         /// For non alloc and faster using cached values - bounds must be with center == Vector3.zero (Local)
         /// </summary>
@@ -20,33 +18,10 @@ namespace CCEnvs.Unity.D3
         /// <returns></returns>
         public static BoundsPoints GetBoundsPoints(
             Bounds bounds,
-            in Vector3 padding = default,
-            bool cache = false
+            in Vector3 padding = default
             )
         {
             Guard.IsNotDefault(bounds);
-
-            var boundsLocal = bounds.GetLocal();
-
-            if (boundsPoints.IsValueCreated
-                &&
-                boundsPoints.Value.TryGetValue((boundsLocal, padding), out var points))
-            {
-                BoundsPoints trPoints;
-
-                if (!bounds.IsLocal())
-                {
-                    var trCorners = TransformPoints(bounds, points.Corners);
-                    var trFaces = TransformPoints(bounds, points.Faces);
-                    var trEdges = TransformPoints(bounds, points.Edges);
-
-                    trPoints = new BoundsPoints(bounds, trCorners, trFaces, trEdges);
-
-                    return trPoints;
-                }
-
-                return points;
-            }
 
             Vector3 c = bounds.center;
             Vector3 e = bounds.extents + padding;
@@ -93,33 +68,7 @@ namespace CCEnvs.Unity.D3
                 for (int z = -1; z <= 1; z += 2)
                     edges[idx++] = c + new Vector3(0, y * e.y, z * e.z);
 
-            points = new BoundsPoints(bounds, corners, faces, edges);
-
-            if (cache)
-            {
-                if (!boundsPoints.IsValueCreated
-                    ||
-                    !boundsPoints.Value.ContainsKey((boundsLocal, padding)))
-                {
-                    if (!bounds.IsLocal())
-                    {
-                        var trCorners = InverseTransformPoints(bounds, corners);
-                        var trFaces = InverseTransformPoints(bounds, faces);
-                        var trEdges = InverseTransformPoints(bounds, edges);
-
-                        var trPoints = new BoundsPoints(
-                            boundsLocal,
-                            trCorners,
-                            trFaces,
-                            trEdges
-                            );
-
-                        boundsPoints.Value.TryAdd((boundsLocal, padding), trPoints);
-                    }
-                    else
-                        boundsPoints.Value.TryAdd((boundsLocal, padding), points);
-                }
-            }
+            var points = new BoundsPoints(bounds, corners, faces, edges);
 
             return points;
         }

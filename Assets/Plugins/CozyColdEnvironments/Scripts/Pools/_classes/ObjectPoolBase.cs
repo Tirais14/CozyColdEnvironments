@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
-using CCEnvs.Reflection.Caching;
 using CCEnvs.TypeMatching;
 using R3;
 
@@ -138,10 +137,6 @@ namespace CCEnvs.Pools
         {
             T obj = handledObj.Value;
 
-#if UNITY_2017_1_OR_NEWER
-            TryProcessUnityObjectOnGet(obj);
-#endif
-
             TryProcessPoolableObjectOnGet(handledObj);
 
             activeItems.TryAdd(obj, handledObj);
@@ -155,11 +150,6 @@ namespace CCEnvs.Pools
         protected virtual void ReturnCore(T obj)
         {
             activeItems.TryRemove(obj, out _);
-
-#if UNITY_2017_1_OR_NEWER
-
-            TryProcessUnityObjectOnReturn(obj);
-#endif
 
             TryProcessPoolableObjectOnReturn(obj);
         }
@@ -242,63 +232,11 @@ namespace CCEnvs.Pools
         {
             foreach (var item in inactiveItems)
             {
-#if UNITY_2017_1_OR_NEWER
-                if (TryGetGameObject(item, out var go))
-                    UnityEngine.Object.Destroy(go);
-#endif
-
                 if (item is IDisposable objDispsoable)
                     objDispsoable.Dispose();
             }
 
             inactiveItems.Clear();
         }
-
-#if UNITY_2017_1_OR_NEWER
-
-        protected void TryProcessUnityObjectOnGet(T obj)
-        {
-            if (TypeCache<T>.IsUnityObject
-                &&
-                TryGetGameObject(obj, out var go))
-            {
-                OnGameObjectGet(go);
-            }
-        }
-
-        protected void TryProcessUnityObjectOnReturn(T obj)
-        {
-            if (TypeCache<T>.IsUnityObject
-                &&
-                TryGetGameObject(obj, out var go))
-            {
-                OnGameObjectReturn(go);
-            }
-        }
-
-        private void OnGameObjectReturn(UnityEngine.GameObject go)
-        {
-            go.transform.position = new UnityEngine.Vector3(0f, -100000f);
-            go.SetActive(false);
-        }
-
-        private void OnGameObjectGet(UnityEngine.GameObject go)
-        {
-            go.transform.position = new UnityEngine.Vector3(0f, -100000f);
-            go.SetActive(true);
-        }
-
-        private bool TryGetGameObject(T obj, [NotNullWhen(true)] out UnityEngine.GameObject? go)
-        {
-            go = null;
-
-            if (TypeCache<T>.IsUnityGameObject)
-                go = obj.CastTo<UnityEngine.GameObject>();
-            else if (TypeCache<T>.IsUnityComponent)
-                go = obj.CastTo<UnityEngine.Component>().gameObject;
-
-            return go != null;
-        }
-#endif
     }
 }

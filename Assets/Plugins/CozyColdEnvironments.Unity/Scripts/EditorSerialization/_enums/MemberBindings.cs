@@ -18,9 +18,9 @@ namespace CCEnvs.Unity.EditorSerialization
         {
             if (source.IsFlagsSetted(MemberBindings.NonPublic, MemberBindings.Static))
                 return BindingFlagsDefault.All;
-            else if (source.IsFlagSetted(MemberBindings.Static))
+            else if (source.HasFlagT(MemberBindings.Static))
                 return BindingFlagsDefault.StaticPublic;
-            else if (source.IsFlagSetted(MemberBindings.NonPublic))
+            else if (source.HasFlagT(MemberBindings.NonPublic))
                 return BindingFlagsDefault.InstanceAll;
 
             return BindingFlags.Default;

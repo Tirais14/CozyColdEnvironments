@@ -374,7 +374,7 @@ namespace CCEnvs.Unity.D3
         {
             if (objRadius != null
                 &&
-                objectSettings.IsFlagSetted(ObjectOptions.ObjectSizeChangeable))
+                objectSettings.HasFlagT(ObjectOptions.ObjectSizeChangeable))
             {
                 return objRadius.Value;
             }
@@ -404,7 +404,7 @@ namespace CCEnvs.Unity.D3
         {
             objectSnapshot.TryRestore(Object);
 
-            if (velocitySettings.IsFlagSetted(VelocityOptions.ResetOnDrop))
+            if (velocitySettings.HasFlagT(VelocityOptions.ResetOnDrop))
             {
                 Object.linearVelocity = Vector3.zero;
                 Object.angularVelocity = Vector3.zero;
@@ -433,13 +433,13 @@ namespace CCEnvs.Unity.D3
             Object.collisionDetectionMode = CollisionDetectionMode.Continuous;
             Object.interpolation = RigidbodyInterpolation.Interpolate;
 
-            if (velocitySettings.IsFlagSetted(VelocityOptions.ResetOnSet))
+            if (velocitySettings.HasFlagT(VelocityOptions.ResetOnSet))
             {
                 Object.linearVelocity = Vector3.zero;
                 Object.angularVelocity = Vector3.zero;
             }
 
-            if (offsetSettings.IsFlagSetted(OffsetOptions.ResetOnObjectChanged))
+            if (offsetSettings.HasFlagT(OffsetOptions.ResetOnObjectChanged))
                 ResetPositionOffset().ResetRotationOffset();
 
             SetObjectComponents();
@@ -463,7 +463,7 @@ namespace CCEnvs.Unity.D3
 
             Vector3 targetColliderPos = targetPivotPos + colliderOffset;
 
-            if (objectSettings.IsFlagSetted(ObjectOptions.CollideWithSurface))
+            if (objectSettings.HasFlagT(ObjectOptions.CollideWithSurface))
                 HandleCollisions(ref targetColliderPos);
 
             float moveT = 1f - Mathf.Exp(-moveDamping * Time.fixedDeltaTime);

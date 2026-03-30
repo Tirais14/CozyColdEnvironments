@@ -75,7 +75,7 @@ namespace CCEnvs.Unity.Components
 
         public AudioSource[] Materialize()
         {
-            if (settings.IsFlagSetted(Settings.IncludeInactive))
+            if (settings.HasFlagT(Settings.IncludeInactive))
             {
                 RawAudioSourceEntries = RawAudioSourceEntries.Where(entry =>
                 {

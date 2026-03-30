@@ -1,108 +1,86 @@
 using System;
+using System.Runtime.Serialization;
 using CCEnvs.Attributes.Serialization;
+using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Snapshots
 {
-    [Serializable]
+    [Serializable, DataContract]
     public record RigidBodySnapshot<T> : ComponentSnapshot<T>
         where T : Rigidbody
     {
-        [JsonIgnore]
         [SerializeField]
         protected Vector3? linearVelocity;
 
-        [JsonIgnore]
         [SerializeField]
         protected Vector3? angularVelocity;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? linearDamping;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? angularDamping;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? mass;
 
-        [JsonIgnore]
         [SerializeField]
         protected bool? useGravity;
 
-        [JsonIgnore]
         [SerializeField]
         protected bool? isKinematic;
 
-        [JsonIgnore]
         [SerializeField]
         protected RigidbodyInterpolation? interpolation;
 
-        [JsonIgnore]
         [SerializeField]
         protected CollisionDetectionMode? collisionDetectionMode;
 
-        [JsonIgnore]
         [SerializeField]
         protected RigidbodyConstraints? constraints;
 
-        [JsonIgnore]
         [SerializeField]
         protected Vector3? centerOfMass;
 
-        [JsonIgnore]
         [SerializeField]
         protected Vector3? inertiaTensor;
 
-        [JsonIgnore]
         [SerializeField]
         protected Quaternion? inertiaTensorRotation;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? maxAngularVelocity;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? maxDepenetrationVelocity;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? sleepThreshold;
 
-        [JsonIgnore]
         [SerializeField]
         protected bool? detectCollisions;
 
-        [JsonIgnore]
         [SerializeField]
         protected int? solverIterations;
 
-        [JsonIgnore]
         [SerializeField]
         protected int? solverVelocityIterations;
 
-        [JsonIgnore]
         [SerializeField]
         protected LayerMask? includeLayers;
 
-        [JsonIgnore]
         [SerializeField]
         protected LayerMask? excludeLayers;
 
-        [JsonIgnore]
         [SerializeField]
         protected bool? automaticCenterOfMass;
 
-        [JsonIgnore]
         [SerializeField]
         protected bool? automaticInertiaTensor;
 
-        [JsonIgnore]
         [SerializeField]
         protected float? maxLinearVelocity;
 
@@ -260,6 +238,28 @@ namespace CCEnvs.Unity.Snapshots
 
         protected RigidBodySnapshot(ComponentSnapshot<T> original) : base(original)
         {
+        }
+
+        private int configureDepth;
+        public RigidBodySnapshot<T> Configure(Action<RigidBodySnapshot<T>> configurer)
+        {
+            Guard.IsNotNull(configurer, nameof(configurer));
+
+            if (configureDepth != 0)
+                throw new InvalidOperationException($"Cannot call {nameof(Configure)} twice");
+
+            configureDepth++;
+
+            try
+            {
+                configurer(this);
+            }
+            finally
+            {
+                configureDepth--;
+            }
+
+            return this;
         }
 
         public RigidBodySnapshot<T> SetLinearVelocity(Vector3? value)

@@ -640,7 +640,7 @@ namespace CCEnvs.Reflection
 
             if (!result
                 &&
-                (settings.IsFlagSetted(TypeMatchingSettings.ByBaseGenericTypeDefinition)
+                (settings.HasFlagT(TypeMatchingSettings.ByBaseGenericTypeDefinition)
                 ||
                 source.IsGenericTypeDefinition)
                 &&
@@ -707,7 +707,7 @@ namespace CCEnvs.Reflection
         {
             if (type == null) return "null";
 
-            if (attributes.IsFlagSetted(TypeNameConvertingAttributes.ShortName)
+            if (attributes.HasFlagT(TypeNameConvertingAttributes.ShortName)
                 &&
                 type.IsBasicType()
                 )
@@ -715,7 +715,7 @@ namespace CCEnvs.Reflection
 
             if (type.IsGenericType)
             {
-                if (attributes.IsFlagSetted(TypeNameConvertingAttributes.IncludeGenericArguments))
+                if (attributes.HasFlagT(TypeNameConvertingAttributes.IncludeGenericArguments))
                     return ConvertGenericArgumentsToString(type);
                 else
                     return type.Name[..^2];

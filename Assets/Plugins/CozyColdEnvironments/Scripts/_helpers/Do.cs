@@ -61,18 +61,18 @@ namespace CCEnvs
 
         public static bool Compare(int value, CompareTypes compareTypes)
         {
-            if (compareTypes.IsFlagSetted(CompareTypes.Equals))
+            if (compareTypes.HasFlagT(CompareTypes.Equals))
             {
-                if (compareTypes.IsFlagSetted(CompareTypes.Smaller))
+                if (compareTypes.HasFlagT(CompareTypes.Smaller))
                     return value <= 0;
-                else if (compareTypes.IsFlagSetted(CompareTypes.Bigger))
+                else if (compareTypes.HasFlagT(CompareTypes.Bigger))
                     return value >= 0;
                 else
                     return value == 0;
             }
-            else if (compareTypes.IsFlagSetted(CompareTypes.Smaller))
+            else if (compareTypes.HasFlagT(CompareTypes.Smaller))
                 return value < 0;
-            else if (compareTypes.IsFlagSetted(CompareTypes.Bigger))
+            else if (compareTypes.HasFlagT(CompareTypes.Bigger))
                 return value > 0;
 
             throw CC.ThrowHelper.InvalidOperationException(compareTypes, nameof(compareTypes));

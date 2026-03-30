@@ -287,7 +287,7 @@ namespace CCEnvs.Unity
             if (Target.TryGetValue(out var target))
                 return ComponentsInternal(target, type);
 
-            var includeInactiveState = settings.IsFlagSetted(Settings.IncludeInactive)
+            var includeInactiveState = settings.HasFlagT(Settings.IncludeInactive)
                         ?
                         FindObjectsInactive.Include
                         :
@@ -614,12 +614,12 @@ namespace CCEnvs.Unity
             GameObject target,
             Type type)
         {
-            bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
+            bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
             bool hasDepthLimiter = depthLimiter.IsSome;
-            bool firstComponentsOnBranch = settings.IsFlagSetted(Settings.FirstComponentsOnBranch);
+            bool firstComponentsOnBranch = settings.HasFlagT(Settings.FirstComponentsOnBranch);
             Transform current;
 
-            if (!settings.IsFlagSetted(Settings.ExcludeSelf))
+            if (!settings.HasFlagT(Settings.ExcludeSelf))
                 current = target.transform;
             else
             {
@@ -674,13 +674,13 @@ namespace CCEnvs.Unity
             Type type
             )
         {
-            bool includeInactive = settings.IsFlagSetted(Settings.IncludeInactive);
+            bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
             var toProcess = new Queue<Transform>(getNextTransforms(target.transform, includeInactive));
-            bool firstComponentsOnBranch = settings.IsFlagSetted(Settings.FirstComponentsOnBranch);
+            bool firstComponentsOnBranch = settings.HasFlagT(Settings.FirstComponentsOnBranch);
             bool hasDepthLimiter = depthLimiter.IsSome;
 
             List<Component> cmps;
-            if (!settings.IsFlagSetted(Settings.ExcludeSelf))
+            if (!settings.HasFlagT(Settings.ExcludeSelf))
             {
                 cmps = new List<Component>();
                 cmps.AddRange(target.Q().Components(type));
@@ -752,8 +752,8 @@ namespace CCEnvs.Unity
             bool anyType
             )
         {
-            bool isNotRecursive = settings.IsFlagSetted(Settings.NotRecursive);
-            bool excludeSelf = settings.IsFlagSetted(Settings.ExcludeSelf);
+            bool isNotRecursive = settings.HasFlagT(Settings.NotRecursive);
+            bool excludeSelf = settings.HasFlagT(Settings.ExcludeSelf);
 
             if (findMode == FindMode.Self)
             {

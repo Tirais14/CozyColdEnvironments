@@ -158,12 +158,12 @@ namespace CCEnvs.Unity.UI
         {
             Transform goTransform = go.transform;
 
-            if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            if (settings.HasFlagT(Settings.ReparentByRootMarker))
                 goTransform = go.QueryTo().RootTransform();
 
             goTransform.SetParent(transform);
 
-            if (settings.IsFlagSetted(Settings.ActivateOnAdd))
+            if (settings.HasFlagT(Settings.ActivateOnAdd))
                 goTransform.gameObject.SetActive(true);
 
             go.OnDestroyAsObservable()
@@ -180,29 +180,29 @@ namespace CCEnvs.Unity.UI
             if (go == null)
                 return;
 
-            if (settings.IsFlagSetted(Settings.ReparentByRootMarker))
+            if (settings.HasFlagT(Settings.ReparentByRootMarker))
             {
                 var root = go.QueryTo().RootRaw();
 
                 root.IfRight(x =>
                 {
-                    if (settings.IsFlagSetted(Settings.DestroyOnRemove))
+                    if (settings.HasFlagT(Settings.DestroyOnRemove))
                         Destroy(x.gameObject);
                     else
                         x.transform.SetParent(null);
 
-                    if (settings.IsFlagSetted(Settings.DeactivateOnRemove))
+                    if (settings.HasFlagT(Settings.DeactivateOnRemove))
                         x.gameObject.SetActive(false);
                 });
             }
             else
             {
-                if (settings.IsFlagSetted(Settings.DestroyOnRemove))
+                if (settings.HasFlagT(Settings.DestroyOnRemove))
                     Destroy(go);
                 else
                     go.transform.SetParent(null);
 
-                if (settings.IsFlagSetted(Settings.DeactivateOnRemove)
+                if (settings.HasFlagT(Settings.DeactivateOnRemove)
                     &&
                     go != null)
                 {

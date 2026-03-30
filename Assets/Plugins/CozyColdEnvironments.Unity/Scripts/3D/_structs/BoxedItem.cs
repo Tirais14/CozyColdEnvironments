@@ -2,36 +2,30 @@ using CCEnvs.Disposables;
 using CCEnvs.Pools;
 using CCEnvs.Reflection.Caching;
 using CCEnvs.Unity.Snapshots;
-using Generator.Equals;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    [Equatable]
-    public partial struct BoxedItem<T> : IDisposable
-        where T : IBoxItem
+    public partial struct BoxedItem : IDisposable, IEquatable<BoxedItem>
     {
-        [DefaultEquality]
         private readonly PooledObject<RigidBodySnapshot> rigidbodySnapshotHandle;
-
-        [DefaultEquality]
         private readonly PooledObject<ColliderSnapshot> colliderSnapshotHandle;
 
-        [DefaultEquality]
-        public readonly T Value { get; }
+        private bool isRestored;
+        private bool isSetuped;
 
-        [DefaultEquality]
+        public readonly IBoxItem Value { get; }
+
         public Vector3 Slot { get; }
 
-        [IgnoreEquality]
         private readonly RigidBodySnapshot? rigidbodySnapshot => rigidbodySnapshotHandle.Value;
 
-        [IgnoreEquality]
         private readonly ColliderSnapshot colliderSnapshot => colliderSnapshotHandle.Value;
 
-        public BoxedItem(T value, Vector3 position)
+        public BoxedItem(IBoxItem value, Vector3 position)
             :
             this()
         {
@@ -46,6 +40,16 @@ namespace CCEnvs.Unity.D3
 
             Value = value;
             Slot = position;
+        }
+
+        public static bool operator ==(BoxedItem left, BoxedItem right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(BoxedItem left, BoxedItem right)
+        {
+            return !(left == right);
         }
 
         private bool disposed;
@@ -69,10 +73,10 @@ namespace CCEnvs.Unity.D3
             disposed = true;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             if (Equals(default))
-                return TypeCache<BoxedItem<T>>.FullName;
+                return TypeCache<BoxedItem>.FullName;
 
             return $"({nameof(Value)}: {Value}; {nameof(Slot)}: {Slot})";
         }
@@ -87,18 +91,21 @@ namespace CCEnvs.Unity.D3
                 Value.transform.position = position;
         }
 
-        private bool isSetuped;
         internal void Setup(
+            Transform parent,
             bool collisionEnabled = false
             )
-        {
+        {   
             CCDisposable.ThrowIfDisposed(this, disposed);
+            CC.Guard.IsNotNull(parent, nameof(parent));
 
             if (isSetuped)
                 return;
 
-            var rb = Value.rigidbody;
+            var tr = Value.transform;
+            tr.SetParent(parent);
 
+            var rb = Value.rigidbody;
             if (rb != null && rigidbodySnapshot is not null)
             {
                 rigidbodySnapshot.CaptureFrom(rb);
@@ -109,7 +116,13 @@ namespace CCEnvs.Unity.D3
                 rb.angularVelocity = Vector3.zero;
                 rb.isKinematic = true;
                 rb.useGravity = false;
+
+                rb.MoveRotation(Quaternion.identity);
+
+                rb.Sleep();
             }
+            else
+                tr.localRotation = Quaternion.identity;
 
             var col = Value.collider;
             colliderSnapshot.CaptureFrom(col);
@@ -119,7 +132,6 @@ namespace CCEnvs.Unity.D3
             isRestored = false;
         }
 
-        private bool isRestored;
         internal void Restore()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
@@ -130,13 +142,57 @@ namespace CCEnvs.Unity.D3
             var rb = Value.rigidbody;
 
             if (rb != null && rigidbodySnapshot is not null)
+            {
                 rigidbodySnapshot.TryRestore(rb);
+                rb.Sleep();
+            }
 
             var col = Value.collider;
             colliderSnapshot.TryRestore(col);
 
             isRestored = true;
             isSetuped = false;
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is BoxedItem item && Equals(item);
+        }
+
+        public readonly bool Equals(BoxedItem other)
+        {
+            return rigidbodySnapshotHandle.Equals(other.rigidbodySnapshotHandle)
+                   &&
+                   colliderSnapshotHandle.Equals(other.colliderSnapshotHandle)
+                   &&
+                   isRestored == other.isRestored
+                   &&
+                   isSetuped == other.isSetuped
+                   &&
+                   EqualityComparer<IBoxItem>.Default.Equals(Value, other.Value)
+                   &&
+                   Slot.Equals(other.Slot) 
+                   &&
+                   EqualityComparer<RigidBodySnapshot?>.Default.Equals(rigidbodySnapshot, other.rigidbodySnapshot)
+                   &&
+                   EqualityComparer<ColliderSnapshot>.Default.Equals(colliderSnapshot, other.colliderSnapshot)
+                   &&
+                   disposed == other.disposed;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(rigidbodySnapshotHandle);
+            hash.Add(colliderSnapshotHandle);
+            hash.Add(isRestored);
+            hash.Add(isSetuped);
+            hash.Add(Value);
+            hash.Add(Slot);
+            hash.Add(rigidbodySnapshot);
+            hash.Add(colliderSnapshot);
+            hash.Add(disposed);
+            return hash.ToHashCode();
         }
     }
 }
