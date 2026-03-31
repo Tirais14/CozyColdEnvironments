@@ -92,7 +92,12 @@ namespace CCEnvs.Unity.D3
 
         private float? objRadius;
 
-        public Rigidbody? Object { get; private set; }
+        private Rigidbody? obj;
+
+        public Rigidbody? Object {
+            get => obj;
+            set => SetObject(value);
+        }
 
         public Collider? ObjectCollider { get; private set; }
 
@@ -200,15 +205,18 @@ namespace CCEnvs.Unity.D3
 
         public ObjectManipulator SetObject(Rigidbody? value)
         {
-            if (value == null && Object != null)
+            if (Object != null && value == Object)
+                return this;
+
+            if (Object != null)
             {
                 OnDropObject();
-                Object = null!;
+                obj = null;
             }
-            else if (value != null)
-            {
 
-                Object = value;
+            if (value != null)
+            {
+                obj = value;
                 OnSetObject();
             }
 
@@ -472,7 +480,7 @@ namespace CCEnvs.Unity.D3
             objPos = Vector3.Lerp(objPos, targetColliderPos, moveT);
             objRot = Quaternion.Slerp(objRot, targetRot, rotT);
 
-            if (Time.frameCount % 20L == 0)
+            if (Time.frameCount % 20L == 0) 
                 objRot.Normalize();
 
             Vector3 finalPivotPos = objPos - colliderOffset;

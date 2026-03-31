@@ -186,8 +186,7 @@ namespace CCEnvs.Unity.Injections
             if (item.Attribute.NameFilter.IsNotNull(out var goName))
                 query.WithName(goName);
 
-            if (item.Attribute.NameMatchSettings.HasValue)
-                query.stringMatchSettings = item.Attribute.NameMatchSettings.Value;
+            query.stringMatchSettings = item.Attribute.NameMatchSettings;
 
             if (item.Attribute.TagFilter.IsNotNull(out var goTag))
                 query.WithTag(goTag);

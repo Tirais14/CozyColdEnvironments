@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
@@ -130,6 +131,9 @@ namespace CCEnvs.Snapshots
 
             OnCapture(target);
 
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"State captured. Target: {target}; snapshot: {this}");
+
             return this;
         }
 
@@ -140,16 +144,20 @@ namespace CCEnvs.Snapshots
             if (!CanRestore(target))
                 return false;
 
-            if (target.IsNull() && CreateValue().IsNot(out target))
+            var targetIsNull = target.IsNull();
+
+            if (targetIsNull && CreateValue().IsNot(out target))
                 return false;
 
-            var targetNotNull = target.IsNotNull();
-
-            if (targetNotNull)
+            if (!targetIsNull)
                 OnRestore(ref target!);
 
             restored = target;
-            return targetNotNull;
+
+            if (CCDebug.Instance.IsEnabled)
+                this.PrintLog($"State restored. Target: {target}; snapshot: {this}");
+
+            return !targetIsNull;
         }
 
         public bool TryRestore(T? target) => TryRestore(target, out _);

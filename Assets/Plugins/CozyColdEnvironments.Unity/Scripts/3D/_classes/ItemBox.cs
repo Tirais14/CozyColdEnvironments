@@ -23,7 +23,7 @@ namespace CCEnvs.Unity.D3
 
         private readonly List<BoxedItem> _items = new();
 
-        private readonly Stack<Vector3> _emptySlots = new();
+        private readonly C5.IntervalHeap<Vector3> _emptySlots = new(Comparer<Vector3>.Create((left, right) => left.y.CompareTo(right.y)));
 
         private readonly HashSet<IBoxItem> _pushedItems = new();
 
@@ -64,18 +64,50 @@ namespace CCEnvs.Unity.D3
         }
 
 #if UNITY_EDITOR
+        [Header("Debug")]
+        [Space(6f)]
+
+        [SerializeField]
+        private bool emptyPositionSearchDebugEnabled;
+
+        [SerializeField]
+        private bool slotsDebugEnabled;
+
         private void OnDrawGizmos()
         {
             if (_items.IsEmpty())
                 return;
 
-            Gizmos.color = Color.red;
-
             var item = _items.First().Value;
-            var radius = Mathf.Max(item.bounds.size.magnitude / 2f, 0.2f);
 
-            foreach (var pos in FindEmptyPositions(item))
-                Gizmos.DrawSphere(pos, radius);
+            if (emptyPositionSearchDebugEnabled)
+            {
+                Gizmos.color = Color.green;
+
+                var radius = Mathf.Max(item.GetBounds().size.magnitude / 2f, 0.2f);
+
+                foreach (var pos in FindEmptyPositions(item))
+                    Gizmos.DrawSphere(pos, radius);
+            }
+
+            if (slotsDebugEnabled)
+            {
+                Gizmos.color = Color.yellow;
+
+                var itemSize = _itemSlotExtents!.Value * 2f;
+                var itemBounds = item.GetBounds();
+                itemBounds.size = itemSize;
+
+                var packer = new BoundsPacker(packZone.bounds, itemBounds)
+                {
+                    Axis2 = Axis.Y,
+                    Axis3 = Axis.Z,
+                    IsAutoPaddingToFit = true
+                };
+
+                foreach (var slot in packer.Pack())
+                    Gizmos.DrawCube(slot.center, slot.size);
+            }
         }
 #endif
 
@@ -94,14 +126,15 @@ namespace CCEnvs.Unity.D3
 
             if (_itemSlotExtents == null
                 ||
-                item.bounds.extents.NotNearlyEquals(_itemSlotExtents.Value, 0.01f))
+                item.GetBounds().extents.NotNearlyEquals(_itemSlotExtents.Value, 0.01f))
             {
                 ResolveSlots(item);
             }
 
-            if (!_emptySlots.TryPop(out var slot))
+            if (_emptySlots.Count == 0)
                 return false;
 
+            var slot = _emptySlots.DeleteMin();
             var boxedItem = new BoxedItem(item, slot);
 
             PushItem(boxedItem);
@@ -110,8 +143,7 @@ namespace CCEnvs.Unity.D3
             CCEventBus.Publish(new ItemBoxBoxedEvent(this, item));
 
             boxedItem.Setup(cTransform);
-            var worldSlot = cTransform.TransformPoint(slot.DivideBy(transform.lossyScale));
-            boxedItem.MoveTo(worldSlot);
+            MoveItemToSlot(boxedItem, slot);
             return true;
         }
 
@@ -150,27 +182,54 @@ namespace CCEnvs.Unity.D3
             RestoreItemState(boxedItem);
 
             var itemPos = item.transform.position;
-            boxedItem.MoveTo(itemPos.AddY(item.bounds.size.y * 0.1f));
+            boxedItem.MoveTo(itemPos.AddY(item.GetBounds().size.y * 0.1f));
 
             RemoveItem(boxedItem);
 
             _onPoppedItem?.Execute(item);
             CCEventBus.Publish(new ItemBoxUnboxedEvent(this, item));
+
+            boxedItem.Restore();
+            boxedItem.Dispose();
             return true;
         }
 
         public bool CanPushItem(IBoxItem? item)
         {
-            return item.IsNotNull()
+            if (item.IsNull())
+                return false;
+
+            var itemBounds = item.GetBounds();
+
+            return itemBounds.extents.sqrMagnitude > 0f
                    &&
-                   item.bounds.extents.sqrMagnitude > 0f
+                   !_pushedItems.Contains(item)
                    &&
                    (_itemSlotExtents == null
                    ||
                    _items.IsEmpty()
                    ||
-                   item.bounds.extents.NearlyEquals(_itemSlotExtents.Value, 0.01f)
+                   itemBounds.extents.NearlyEquals(_itemSlotExtents.Value, 0.01f)
                    );
+        }
+
+        public bool ContainsItem(Transform transform)
+        {
+            for (int i = 0; i < _items.Count; i++)
+                if (_items[i].Value.transform == transform)
+                    return true;
+
+            return false;
+        }
+
+        public bool ContainsItem(Collider collider)
+        {
+            return ContainsItem(collider.transform);
+        }
+
+        public bool ContainsItem(Rigidbody rigidbody)
+        {
+            return ContainsItem(rigidbody.transform);
         }
 
         public Observable<BoxedItem> ObservePushItem()
@@ -201,6 +260,16 @@ namespace CCEnvs.Unity.D3
             _pushedItems.Add(boxedItem.Value);
         }
 
+        private void MoveItemToSlot(
+            BoxedItem boxedItem,
+            Vector3 slot
+            )
+        {
+            var worldSlot = cTransform.TransformPoint(slot);
+
+            boxedItem.MoveTo(worldSlot);
+        }
+
         private bool TrySpawnItemCore(
             in BoxedItem boxedItem,
             in Vector3? relativeToPoint
@@ -224,7 +293,7 @@ namespace CCEnvs.Unity.D3
 
         private IReadOnlyList<Vector3> FindEmptyPositions(IBoxItem item)
         {
-            var itemBounds = item.bounds;
+            var itemBounds = item.GetBounds();
             var itemRadius = itemBounds.size.magnitude / 2f;
             var boxBounds = packZone.bounds;
             var boxCenter = boxBounds.center;
@@ -258,7 +327,8 @@ namespace CCEnvs.Unity.D3
                     if (excludeZ && localPoint.z != boxCenter.z)
                         continue;
 
-                    worldPoint = cTransform.TransformPoint(localPoint.DivideBy(transform.lossyScale));
+                    localPoint = localPoint.DivideBy(transform.lossyScale); //Unscale
+                    worldPoint = cTransform.TransformPoint(localPoint);
 
                     if (!Physics.CheckSphere(
                         worldPoint,
@@ -282,48 +352,45 @@ namespace CCEnvs.Unity.D3
         {
             _items.Remove(boxedItem);
             _pushedItems.Remove(boxedItem.Value);
-
-            boxedItem.Dispose();
         }
 
         private void ResolveSlots(IBoxItem item)
         {
-            var itemSize = item.collider.bounds.size;
-            var margin = itemSize * 0.05f;
-
             var packZoneBoundsLocal = packZone.bounds.GetLocal();
 
-            var boundsPacker = new BoundsPacker(packZoneBoundsLocal, item.collider.bounds)
+            var boundsPacker = new BoundsPacker(packZone.bounds, item.collider.bounds)
             {
                 Axis2 = Axis.Y,
                 Axis3 = Axis.Z,
-                Margin = itemSize * 0.15f,
-                MarginToFit = true,
+                IsAutoPaddingToFit = true,
             };
 
             var positions = boundsPacker.Pack();
 
-            _emptySlots.Clear();
+            for (int i = 0; i < _emptySlots.Count; i++)
+                _emptySlots.DeleteMax();
 
             Vector3 slot;
-            Vector3 itemBoundsOffset = item.bounds.center - item.transform.position;
+            Bounds itemBounds = item.GetBounds();
+            Vector3 itemBoundsOffset = itemBounds.center - item.transform.position;
 
             for (int i = 0; i < positions.Count; i++)
             {
                 slot = positions[i].center;
                 slot -= itemBoundsOffset;
+                slot = cTransform.InverseTransformPoint(slot);
 
-                _emptySlots.Push(slot);
+                _emptySlots.Add(slot);
             }
 
-            _itemSlotExtents = item.bounds.extents;
+            _itemSlotExtents = itemBounds.extents;
         }
 
         private void RestoreItemState(in BoxedItem boxedItem)
         {
             boxedItem.Value.transform.SetParent(null);
 
-            _emptySlots.Push(boxedItem.Slot);
+            _emptySlots.Add(boxedItem.Slot);
 
             boxedItem.Restore();
         }

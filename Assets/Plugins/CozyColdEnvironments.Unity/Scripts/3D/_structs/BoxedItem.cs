@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Pools;
 using CCEnvs.Reflection.Caching;
@@ -144,7 +145,7 @@ namespace CCEnvs.Unity.D3
             if (rb != null && rigidbodySnapshot is not null)
             {
                 rigidbodySnapshot.TryRestore(rb);
-                rb.Sleep();
+                rb.WakeUp();
             }
 
             var col = Value.collider;

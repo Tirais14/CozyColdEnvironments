@@ -7,7 +7,7 @@ namespace CCEnvs.Unity.Injections
     {
         public string? NameFilter { get; init; }
         public string? TagFilter { get; init; }
-        public StringMatchSettings? NameMatchSettings { get; set; }
+        public StringMatchSettings NameMatchSettings { get; set; } = StringMatchSettings.Default;
 
         public bool IsOptional { get; init; }
     }
