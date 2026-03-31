@@ -356,8 +356,6 @@ namespace CCEnvs.Unity.D3
 
         private void ResolveSlots(IBoxItem item)
         {
-            var packZoneBoundsLocal = packZone.bounds.GetLocal();
-
             var boundsPacker = new BoundsPacker(packZone.bounds, item.collider.bounds)
             {
                 Axis2 = Axis.Y,

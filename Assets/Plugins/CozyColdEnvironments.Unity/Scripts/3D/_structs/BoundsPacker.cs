@@ -444,6 +444,7 @@ namespace CCEnvs.Unity.D3
                 Mathf.FloorToInt(axis3ItemCount)
                 );
 
+
             for (int i2 = 0; i2 < axis2ItemCountFloored; i2++)
             {
                 nextAxis2Pos = i2 * (item.size[axis2] + gap[axis2]);
@@ -456,7 +457,6 @@ namespace CCEnvs.Unity.D3
                     {
                         if (!loopFuse.MoveNext())
                             return results;
-
                         nextAxis1Pos = i1 * (item.size[axis1] + gap[axis1]);
 
                         nextCenter = startCenter;

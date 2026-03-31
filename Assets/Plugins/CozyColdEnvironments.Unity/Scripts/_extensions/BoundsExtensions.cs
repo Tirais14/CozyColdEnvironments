@@ -5,14 +5,14 @@ namespace CCEnvs.Unity
 {
     public static class BoundsExtensions
     {
-        public static bool Contains(this Bounds outer, Bounds inner)
+        public static bool Contains(this Bounds outer, Bounds inner, float epsilon = 0.001f)
         {
             return
-                outer.min.x <= inner.min.x && outer.max.x >= inner.max.x 
+                outer.min.x - epsilon <= inner.min.x && outer.max.x + epsilon >= inner.max.x
                 &&
-                outer.min.y <= inner.min.y && outer.max.y >= inner.max.y
+                outer.min.y - epsilon <= inner.min.y && outer.max.y + epsilon >= inner.max.y
                 &&
-                outer.min.z <= inner.min.z && outer.max.z >= inner.max.z;
+                outer.min.z - epsilon <= inner.min.z && outer.max.z + epsilon >= inner.max.z;
         }
     }
 }
