@@ -16,51 +16,66 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(Collider), typeof(ExternalSize))]
     public class ItemBox: CCBehaviour, IEnumerable<BoxedItem>
     {
         public const int EMPTY_POSITION_SEARCH_STEP_COUNT_MIN = 1;
 
-        private readonly List<BoxedItem> _items = new();
-
-        private readonly C5.IntervalHeap<Vector3> _emptySlots = new(Comparer<Vector3>.Create((left, right) => left.y.CompareTo(right.y)));
-
-        private readonly HashSet<IBoxItem> _pushedItems = new();
-
-        [Header("Spawn Settings")]
+        [Header("Packed Item")]
         [Space(6f)]
 
         [SerializeField]
-        private SerializedNullable<LayerMask> _spawnObstaclesMask;
+        protected Vector3 itemRotation;
 
-        [SerializeField, Min(EMPTY_POSITION_SEARCH_STEP_COUNT_MIN)]
-        private int _emptyPositionSearchStepCount = 1;
+        [Header("Spawn")]
+        [Space(6f)]
 
         [SerializeField]
-        private Axes _emptyPositionSearchExcludeAxes = Axes.None;
+        protected SerializedNullable<LayerMask> spawnObstaclesMask;
 
-        private Vector3? _itemSlotExtents;
+        [SerializeField, Min(EMPTY_POSITION_SEARCH_STEP_COUNT_MIN)]
+        protected int spawnPointSeacrhSteps = 1;
 
-        private ReactiveCommand<BoxedItem>? _onPushedItem;
-        private ReactiveCommand<IBoxItem>? _onSpawnedItem;
-        private ReactiveCommand<IBoxItem>? _onPoppedItem;
+        [SerializeField]
+        protected Axes spawnPointSearchExcludeAxes = Axes.None;
+
+        private readonly List<BoxedItem> items = new();
+        private readonly List<Bounds> resolvedSlotsBuffer = new();
+
+        private readonly C5.IntervalHeap<Vector3> emptySlots = new(Comparer<Vector3>.Create((left, right) => left.y.CompareTo(right.y)));
+
+        private readonly HashSet<IBoxItem> pushedItems = new();
+
+        private Vector3? itemSlotExtents;
+
+        private ReactiveCommand<BoxedItem>? onPushedItem;
+        private ReactiveCommand<IBoxItem>? onSpawnedItem;
+        private ReactiveCommand<IBoxItem>? onPoppedItem;
+
+        public IReadOnlyCollection<BoxedItem> Items => items;
 
         [field: GetBySelf]
-        public Collider packZone { get; private set; } = null!;
+        public Collider PackZone { get; private set; } = null!;
 
-        public IReadOnlyCollection<BoxedItem> Items => _items;
+        [field: GetBySelf]
+        public ExternalSize sizeInfo { get; private set; } = null!;
 
-        public bool IsEmpty => _items.IsEmpty();
-        public bool HasEmptySlots => _emptySlots.IsNotEmpty();
+        public bool IsEmpty => items.IsEmpty();
+        public bool HasEmptySlots => emptySlots.IsNotEmpty();
 
-        public LayerMask SpawnObstaclesMask => _spawnObstaclesMask.Deserialized ?? Physics.AllLayers;
+        public LayerMask SpawnObstaclesMask => spawnObstaclesMask.Deserialized ?? Physics.AllLayers;
+
+        public Vector3 ItemRotation {
+            get => itemRotation;
+            set => itemRotation = value;
+        }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            CCDisposable.Dispose(ref _onPushedItem);
-            CCDisposable.Dispose(ref _onPoppedItem);
-            CCDisposable.Dispose(ref _onSpawnedItem);
+            CCDisposable.Dispose(ref onPushedItem);
+            CCDisposable.Dispose(ref onPoppedItem);
+            CCDisposable.Dispose(ref onSpawnedItem);
         }
 
 #if UNITY_EDITOR
@@ -68,52 +83,58 @@ namespace CCEnvs.Unity.D3
         [Space(6f)]
 
         [SerializeField]
-        private bool emptyPositionSearchDebugEnabled;
+        private bool spawnPointDebugEnabled;
 
         [SerializeField]
         private bool slotsDebugEnabled;
 
         private void OnDrawGizmos()
         {
-            if (_items.IsEmpty())
+            if (items.IsEmpty())
                 return;
 
-            var item = _items.First().Value;
+            var item = items.First().Value;
 
-            if (emptyPositionSearchDebugEnabled)
-            {
-                Gizmos.color = Color.green;
-
-                var radius = Mathf.Max(item.GetBounds().size.magnitude / 2f, 0.2f);
-
-                foreach (var pos in FindEmptyPositions(item))
-                    Gizmos.DrawSphere(pos, radius);
-            }
+            if (spawnPointDebugEnabled)
+                DrawSpawnPoints(item);
 
             if (slotsDebugEnabled)
+                DrawGhostMeshes(item);
+        }
+
+        private void DrawSpawnPoints(IBoxItem item)
+        {
+            Gizmos.color = Color.green;
+
+            var radius = Mathf.Max(item.sizeInfo.localBounds.size.magnitude / 2f, 0.2f);
+
+            foreach (var pos in FindEmptyPositions(item))
+                Gizmos.DrawSphere(pos, radius);
+        }
+
+        private void DrawGhostMeshes(IBoxItem item)
+        {
+            Gizmos.color = Color.yellow;
+
+            var itemSize = itemSlotExtents!.Value * 2f;
+            var itemBounds = item.sizeInfo.localBounds;
+            itemBounds.size = itemSize;
+
+            var packer = new BoundsPacker(PackZone.bounds, itemBounds)
             {
-                Gizmos.color = Color.yellow;
+                Axis2 = Axis.Y,
+                Axis3 = Axis.Z,
+                IsAutoPaddingToFit = true
+            };
 
-                var itemSize = _itemSlotExtents!.Value * 2f;
-                var itemBounds = item.GetBounds();
-                itemBounds.size = itemSize;
-
-                var packer = new BoundsPacker(packZone.bounds, itemBounds)
-                {
-                    Axis2 = Axis.Y,
-                    Axis3 = Axis.Z,
-                    IsAutoPaddingToFit = true
-                };
-
-                foreach (var slot in packer.Pack())
-                    Gizmos.DrawCube(slot.center, slot.size);
-            }
+            foreach (var slot in packer.Pack())
+                Gizmos.DrawCube(cTransform.rotation * slot.center, slot.size);
         }
 #endif
 
         public void Clear()
         {
-            foreach (var item in _items)
+            foreach (var item in items)
                 RestoreItemState(item);
         }
 
@@ -124,26 +145,26 @@ namespace CCEnvs.Unity.D3
             if (!CanPushItem(item))
                 return false;
 
-            if (_itemSlotExtents == null
+            if (itemSlotExtents == null
                 ||
-                item.GetBounds().extents.NotNearlyEquals(_itemSlotExtents.Value, 0.01f))
+                item.sizeInfo.localBounds.extents.NotNearlyEquals(itemSlotExtents.Value, 0.01f))
             {
                 ResolveSlots(item);
             }
 
-            if (_emptySlots.Count == 0)
+            if (emptySlots.Count == 0)
                 return false;
 
-            var slot = _emptySlots.DeleteMin();
-            var boxedItem = new BoxedItem(item, slot);
+            var slot = emptySlots.DeleteMin();
+            var boxedItem = new BoxedItem(this, item, slot);
 
             PushItem(boxedItem);
 
-            _onPushedItem?.Execute(boxedItem);
+            onPushedItem?.Execute(boxedItem);
             CCEventBus.Publish(new ItemBoxBoxedEvent(this, item));
 
-            boxedItem.Setup(cTransform);
-            MoveItemToSlot(boxedItem, slot);
+            boxedItem.Setup();
+
             return true;
         }
 
@@ -154,7 +175,7 @@ namespace CCEnvs.Unity.D3
         {
             item = default;
 
-            var boxedItem = _items.LastOrDefault();
+            var boxedItem = items.LastOrDefault();
 
             if (boxedItem == default)
                 return false;
@@ -165,14 +186,14 @@ namespace CCEnvs.Unity.D3
             item = boxedItem.Value;
             RemoveItem(boxedItem);
 
-            _onSpawnedItem?.Execute(item);
+            onSpawnedItem?.Execute(item);
             CCEventBus.Publish(new ItemBoxUnboxedEvent(this, item));
             return true;
         }
 
         public bool TryPopItem([NotNullWhen(true)] out IBoxItem? item)
         {
-            if (!_items.RemoveLast(out var boxedItem))
+            if (!items.RemoveLast(out var boxedItem))
             {
                 item = default;
                 return false;
@@ -182,11 +203,11 @@ namespace CCEnvs.Unity.D3
             RestoreItemState(boxedItem);
 
             var itemPos = item.transform.position;
-            boxedItem.MoveTo(itemPos.AddY(item.GetBounds().size.y * 0.1f));
+            boxedItem.MoveTo(itemPos.AddY(item.sizeInfo.localBounds.size.y * 0.1f));
 
             RemoveItem(boxedItem);
 
-            _onPoppedItem?.Execute(item);
+            onPoppedItem?.Execute(item);
             CCEventBus.Publish(new ItemBoxUnboxedEvent(this, item));
 
             boxedItem.Restore();
@@ -199,55 +220,72 @@ namespace CCEnvs.Unity.D3
             if (item.IsNull())
                 return false;
 
-            var itemBounds = item.GetBounds();
+            var itemBounds = item.sizeInfo.localBounds;
 
             return itemBounds.extents.sqrMagnitude > 0f
                    &&
-                   !_pushedItems.Contains(item)
+                   !pushedItems.Contains(item)
                    &&
-                   (_itemSlotExtents == null
+                   (itemSlotExtents == null
                    ||
-                   _items.IsEmpty()
+                   items.IsEmpty()
                    ||
-                   itemBounds.extents.NearlyEquals(_itemSlotExtents.Value, 0.01f)
+                   itemBounds.extents.NearlyEquals(itemSlotExtents.Value, 0.01f)
                    );
         }
 
-        public bool ContainsItem(Transform transform)
+        public bool ContainsItem(IBoxItem? item)
         {
-            for (int i = 0; i < _items.Count; i++)
-                if (_items[i].Value.transform == transform)
+            if (item.IsNull())
+                return false;
+
+            return pushedItems.Contains(item);
+        }
+
+        public bool ContainsItem(Transform? transform)
+        {
+            if (transform == null)
+                return false;
+
+            for (int i = 0; i < items.Count; i++)
+                if (items[i].Value.transform == transform)
                     return true;
 
             return false;
         }
 
-        public bool ContainsItem(Collider collider)
+        public bool ContainsItem(Collider? collider)
         {
+            if (collider == null)
+                return false;
+
             return ContainsItem(collider.transform);
         }
 
-        public bool ContainsItem(Rigidbody rigidbody)
+        public bool ContainsItem(Rigidbody? rigidbody)
         {
+            if (rigidbody == null)
+                return false;
+
             return ContainsItem(rigidbody.transform);
         }
 
         public Observable<BoxedItem> ObservePushItem()
         {
-            _onPushedItem ??= new ReactiveCommand<BoxedItem>();
-            return _onPushedItem;
+            onPushedItem ??= new ReactiveCommand<BoxedItem>();
+            return onPushedItem;
         }
 
         public Observable<IBoxItem> ObserveSpawnItem()
         {
-            _onSpawnedItem ??= new ReactiveCommand<IBoxItem>();
-            return _onSpawnedItem;
+            onSpawnedItem ??= new ReactiveCommand<IBoxItem>();
+            return onSpawnedItem;
         }
 
         public Observable<IBoxItem> ObservePopItem()
         {
-            _onPoppedItem ??= new ReactiveCommand<IBoxItem>();
-            return _onPoppedItem;
+            onPoppedItem ??= new ReactiveCommand<IBoxItem>();
+            return onPoppedItem;
         }
 
         public IEnumerator<BoxedItem> GetEnumerator() => Items.GetEnumerator();
@@ -256,8 +294,8 @@ namespace CCEnvs.Unity.D3
 
         private void PushItem(BoxedItem boxedItem)
         {
-            _items.Add(boxedItem);
-            _pushedItems.Add(boxedItem.Value);
+            items.Add(boxedItem);
+            pushedItems.Add(boxedItem.Value);
         }
 
         private void MoveItemToSlot(
@@ -293,9 +331,9 @@ namespace CCEnvs.Unity.D3
 
         private IReadOnlyList<Vector3> FindEmptyPositions(IBoxItem item)
         {
-            var itemBounds = item.GetBounds();
+            var itemBounds = item.sizeInfo.bounds;
             var itemRadius = itemBounds.size.magnitude / 2f;
-            var boxBounds = packZone.bounds;
+            var boxBounds = sizeInfo.bounds;
             var boxCenter = boxBounds.center;
 
             var boundsPoints = BoundsHelper.GetBoundsPoints(
@@ -308,11 +346,11 @@ namespace CCEnvs.Unity.D3
 
             var results = new List<Vector3>(boundsPoints.Count);
 
-            var excludeX = _emptyPositionSearchExcludeAxes.HasFlagT(Axes.X);
-            var excludeY = _emptyPositionSearchExcludeAxes.HasFlagT(Axes.Y);
-            var excludeZ = _emptyPositionSearchExcludeAxes.HasFlagT(Axes.Z);
+            var excludeX = spawnPointSearchExcludeAxes.HasFlagT(Axes.X);
+            var excludeY = spawnPointSearchExcludeAxes.HasFlagT(Axes.Y);
+            var excludeZ = spawnPointSearchExcludeAxes.HasFlagT(Axes.Z);
 
-            for (int i = 0; i < _emptyPositionSearchStepCount; i++)
+            for (int i = 0; i < spawnPointSeacrhSteps; i++)
             {
                 for (int j = 0; j < boundsPoints.Count; j++)
                 {
@@ -350,45 +388,46 @@ namespace CCEnvs.Unity.D3
 
         private void RemoveItem(in BoxedItem boxedItem)
         {
-            _items.Remove(boxedItem);
-            _pushedItems.Remove(boxedItem.Value);
+            items.Remove(boxedItem);
+            pushedItems.Remove(boxedItem.Value);
         }
 
         private void ResolveSlots(IBoxItem item)
         {
-            var boundsPacker = new BoundsPacker(packZone.bounds, item.collider.bounds)
+            var boundsPacker = new BoundsPacker(sizeInfo.bounds, item.sizeInfo.bounds)
             {
                 Axis2 = Axis.Y,
                 Axis3 = Axis.Z,
                 IsAutoPaddingToFit = true,
             };
 
-            var positions = boundsPacker.Pack();
+            boundsPacker.PackNonAlloc(resolvedSlotsBuffer);
 
-            for (int i = 0; i < _emptySlots.Count; i++)
-                _emptySlots.DeleteMax();
+            for (int i = 0; i < emptySlots.Count; i++)
+                emptySlots.DeleteMin();
 
             Vector3 slot;
-            Bounds itemBounds = item.GetBounds();
+            Bounds itemBounds = item.sizeInfo.bounds;
             Vector3 itemBoundsOffset = itemBounds.center - item.transform.position;
 
-            for (int i = 0; i < positions.Count; i++)
+            for (int i = 0; i < resolvedSlotsBuffer.Count; i++)
             {
-                slot = positions[i].center;
-                slot -= itemBoundsOffset;
+                slot = resolvedSlotsBuffer[i].center;
+                //slot -= itemBoundsOffset;
                 slot = cTransform.InverseTransformPoint(slot);
 
-                _emptySlots.Add(slot);
+                emptySlots.Add(slot);
             }
 
-            _itemSlotExtents = itemBounds.extents;
+            itemSlotExtents = itemBounds.extents;
+            resolvedSlotsBuffer.Clear();
         }
 
         private void RestoreItemState(in BoxedItem boxedItem)
         {
             boxedItem.Value.transform.SetParent(null);
 
-            _emptySlots.Add(boxedItem.Slot);
+            emptySlots.Add(boxedItem.Slot);
 
             boxedItem.Restore();
         }

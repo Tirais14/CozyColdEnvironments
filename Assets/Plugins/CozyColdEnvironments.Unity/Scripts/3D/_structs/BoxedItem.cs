@@ -3,6 +3,7 @@ using CCEnvs.Disposables;
 using CCEnvs.Pools;
 using CCEnvs.Reflection.Caching;
 using CCEnvs.Unity.Snapshots;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,9 +11,9 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    public partial struct BoxedItem : IDisposable, IEquatable<BoxedItem>
+    public struct BoxedItem : IDisposable, IEquatable<BoxedItem>
     {
-        private readonly PooledObject<RigidBodySnapshot> rigidbodySnapshotHandle;
+        private readonly PooledObject<RigidbodySnapshot> rigidbodySnapshotHandle;
         private readonly PooledObject<ColliderSnapshot> colliderSnapshotHandle;
 
         private bool isRestored;
@@ -22,25 +23,29 @@ namespace CCEnvs.Unity.D3
 
         public Vector3 Slot { get; }
 
-        private readonly RigidBodySnapshot? rigidbodySnapshot => rigidbodySnapshotHandle.Value;
+        public ItemBox ItemBox { get; }
+
+        private readonly RigidbodySnapshot? rigidbodySnapshot => rigidbodySnapshotHandle.Value;
 
         private readonly ColliderSnapshot colliderSnapshot => colliderSnapshotHandle.Value;
 
-        public BoxedItem(IBoxItem value, Vector3 position)
+        public BoxedItem(ItemBox itemBox, IBoxItem value, Vector3 slot)
             :
             this()
         {
+            CC.Guard.IsNotNull(itemBox, nameof(itemBox));
             CC.Guard.IsNotNull(value, nameof(value));
 
             var rb = value.rigidbody;
 
             if (rb != null)
-                rigidbodySnapshotHandle = SnapshotPool<RigidBodySnapshot>.Shared.Get();
+                rigidbodySnapshotHandle = SnapshotPool<RigidbodySnapshot>.Shared.Get();
 
             colliderSnapshotHandle = SnapshotPool<ColliderSnapshot>.Shared.Get();
 
             Value = value;
-            Slot = position;
+            Slot = slot;
+            ItemBox = itemBox;
         }
 
         public static bool operator ==(BoxedItem left, BoxedItem right)
@@ -82,6 +87,47 @@ namespace CCEnvs.Unity.D3
             return $"({nameof(Value)}: {Value}; {nameof(Slot)}: {Slot})";
         }
 
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is BoxedItem item && Equals(item);
+        }
+
+        public readonly bool Equals(BoxedItem other)
+        {
+            return rigidbodySnapshotHandle.Equals(other.rigidbodySnapshotHandle)
+                   &&
+                   colliderSnapshotHandle.Equals(other.colliderSnapshotHandle)
+                   &&
+                   isRestored == other.isRestored
+                   &&
+                   isSetuped == other.isSetuped
+                   &&
+                   EqualityComparer<IBoxItem>.Default.Equals(Value, other.Value)
+                   &&
+                   Slot.Equals(other.Slot) 
+                   &&
+                   EqualityComparer<RigidbodySnapshot?>.Default.Equals(rigidbodySnapshot, other.rigidbodySnapshot)
+                   &&
+                   EqualityComparer<ColliderSnapshot>.Default.Equals(colliderSnapshot, other.colliderSnapshot)
+                   &&
+                   disposed == other.disposed;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(rigidbodySnapshotHandle);
+            hash.Add(colliderSnapshotHandle);
+            hash.Add(isRestored);
+            hash.Add(isSetuped);
+            hash.Add(Value);
+            hash.Add(Slot);
+            hash.Add(rigidbodySnapshot);
+            hash.Add(colliderSnapshot);
+            hash.Add(disposed);
+            return hash.ToHashCode();
+        }
+
         internal readonly void MoveTo(Vector3 position)
         {
             var rb = Value.rigidbody;
@@ -93,37 +139,25 @@ namespace CCEnvs.Unity.D3
         }
 
         internal void Setup(
-            Transform parent,
             bool collisionEnabled = false
             )
-        {   
+        {
             CCDisposable.ThrowIfDisposed(this, disposed);
-            CC.Guard.IsNotNull(parent, nameof(parent));
 
             if (isSetuped)
                 return;
 
             var tr = Value.transform;
-            tr.SetParent(parent);
+            tr.SetParent(ItemBox.cTransform);
 
             var rb = Value.rigidbody;
             if (rb != null && rigidbodySnapshot is not null)
             {
-                rigidbodySnapshot.CaptureFrom(rb);
-                rigidbodySnapshot.SetAngularVelocity(null)
-                    .SetLinearVelocity(null);
-
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-                rb.isKinematic = true;
-                rb.useGravity = false;
-
-                rb.MoveRotation(Quaternion.identity);
-
-                rb.Sleep();
+                SetupRigidbody();
+                MoveRigidbodyAsync().Forget();
             }
             else
-                tr.localRotation = Quaternion.identity;
+                MoveTransform();
 
             var col = Value.collider;
             colliderSnapshot.CaptureFrom(col);
@@ -155,45 +189,84 @@ namespace CCEnvs.Unity.D3
             isSetuped = false;
         }
 
-        public readonly override bool Equals(object? obj)
+        private readonly void SetupRigidbody()
         {
-            return obj is BoxedItem item && Equals(item);
+            var rb = Value.rigidbody;
+            var snapshot = rigidbodySnapshot;
+
+            if (snapshot == null || rb == null)
+                return;
+
+            snapshot.CaptureFrom(rb);
+            snapshot.SetAngularVelocity(null)
+                .SetLinearVelocity(null);
+
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            rb.useGravity = false;
         }
 
-        public readonly bool Equals(BoxedItem other)
+        private readonly Vector3 GetWorldSlot()
         {
-            return rigidbodySnapshotHandle.Equals(other.rigidbodySnapshotHandle)
-                   &&
-                   colliderSnapshotHandle.Equals(other.colliderSnapshotHandle)
-                   &&
-                   isRestored == other.isRestored
-                   &&
-                   isSetuped == other.isSetuped
-                   &&
-                   EqualityComparer<IBoxItem>.Default.Equals(Value, other.Value)
-                   &&
-                   Slot.Equals(other.Slot) 
-                   &&
-                   EqualityComparer<RigidBodySnapshot?>.Default.Equals(rigidbodySnapshot, other.rigidbodySnapshot)
-                   &&
-                   EqualityComparer<ColliderSnapshot>.Default.Equals(colliderSnapshot, other.colliderSnapshot)
-                   &&
-                   disposed == other.disposed;
+            var itemBox = ItemBox;
+            var item = Value;
+            var slot = Slot;
+
+            var worldSlot = itemBox.cTransform.TransformPoint(slot);
+
+            var itemOffset = item.sizeInfo.bounds.center - item.transform.position;
+
+            var rotationPivot = worldSlot - itemOffset - itemBox.sizeInfo.bounds.center;
+
+            var rotation = itemBox.cTransform.rotation * Quaternion.Euler(itemBox.ItemRotation);
+
+            var rotatedSlot = rotation * rotationPivot + itemBox.sizeInfo.bounds.center + itemOffset;
+
+            return rotatedSlot - itemOffset;
         }
 
-        public readonly override int GetHashCode()
+        private readonly async UniTaskVoid MoveRigidbodyAsync()
         {
-            var hash = new HashCode();
-            hash.Add(rigidbodySnapshotHandle);
-            hash.Add(colliderSnapshotHandle);
-            hash.Add(isRestored);
-            hash.Add(isSetuped);
-            hash.Add(Value);
-            hash.Add(Slot);
-            hash.Add(rigidbodySnapshot);
-            hash.Add(colliderSnapshot);
-            hash.Add(disposed);
-            return hash.ToHashCode();
+            try
+            {
+                await UniTask.WaitForFixedUpdate();
+
+                var itemBox = ItemBox;
+                var item = Value;
+                var slot = Slot;
+
+                if (!itemBox.ContainsItem(item)
+                    ||
+                    item.rigidbody == null)
+                {
+                    return;
+                }
+
+                var worldSlot = GetWorldSlot();
+
+                item.rigidbody.Move(
+                    worldSlot,
+                    ItemBox.cTransform.rotation * Quaternion.Euler(ItemBox.ItemRotation)
+                    );
+
+                item.rigidbody.Sleep();
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsCancellationException())
+                    return;
+
+                this.PrintException(ex);
+            }
+        }
+
+        private readonly void MoveTransform()
+        {
+            var worldSlot = GetWorldSlot();
+            var item = Value;
+
+            item.transform.SetPositionAndRotation(worldSlot, ItemBox.cTransform.rotation * Quaternion.Euler(ItemBox.ItemRotation));
         }
     }
 }

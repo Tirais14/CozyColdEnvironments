@@ -1,4 +1,4 @@
-using Generator.Equals;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,20 +6,14 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    [Equatable]
-    public readonly partial struct BoundsPoints : IReadOnlyList<Vector3>
+    public readonly struct BoundsPoints : IReadOnlyList<Vector3>, IEquatable<BoundsPoints>
     {
         public const int CENTER_POINT_OFFSET = 1;
 
         public Bounds Source { get; }
 
-        [ReferenceEquality]
         public IReadOnlyList<Vector3> Corners { get; }
-
-        [ReferenceEquality]
         public IReadOnlyList<Vector3> Faces { get; }
-
-        [ReferenceEquality]
         public IReadOnlyList<Vector3> Edges { get; }
 
         public Vector3 this[int idx] {
@@ -45,6 +39,16 @@ namespace CCEnvs.Unity.D3
 
                 throw CC.ThrowHelper.IndexOutOfRangeException(idx);
             }
+        }
+
+        public static bool operator ==(BoundsPoints left, BoundsPoints right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(BoundsPoints left, BoundsPoints right)
+        {
+            return !(left == right);
         }
 
         public int Count => Corners.Count + Faces.Count + Edges.Count + 1;
@@ -73,5 +77,24 @@ namespace CCEnvs.Unity.D3
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is BoundsPoints points && Equals(points);
+        }
+
+        public readonly bool Equals(BoundsPoints other)
+        {
+            return Source.Equals(other.Source) &&
+                   EqualityComparer<IReadOnlyList<Vector3>>.Default.Equals(Corners, other.Corners) &&
+                   EqualityComparer<IReadOnlyList<Vector3>>.Default.Equals(Faces, other.Faces) &&
+                   EqualityComparer<IReadOnlyList<Vector3>>.Default.Equals(Edges, other.Edges) &&
+                   Count == other.Count;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(Source, Corners, Faces, Edges, Count);
+        }
     }
 }

@@ -25,7 +25,7 @@ namespace CCEnvs.Unity.D3
         public const float PIVOT_YAW_OFFSET_MIN = 0f;
         public const float PIVOT_ROLL_OFFSET_MIN = 0f;
 
-        private readonly RigidBodySnapshot objectSnapshot = new();
+        private readonly RigidbodySnapshot objectSnapshot = new();
 
         [Header("Behaviour Settings")]
         [Space(6f)]

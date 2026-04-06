@@ -9,7 +9,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Snapshots
 {
     [Serializable, DataContract]
-    public record RigidBodySnapshot<T> : ComponentSnapshot<T>
+    public record RigidbodySnapshot<T> : ComponentSnapshot<T>
         where T : Rigidbody
     {
         [SerializeField]
@@ -228,20 +228,20 @@ namespace CCEnvs.Unity.Snapshots
             protected set => maxLinearVelocity = value;
         }
 
-        public RigidBodySnapshot()
+        public RigidbodySnapshot()
         {
         }
 
-        public RigidBodySnapshot(T target) : base(target)
+        public RigidbodySnapshot(T target) : base(target)
         {
         }
 
-        protected RigidBodySnapshot(ComponentSnapshot<T> original) : base(original)
+        protected RigidbodySnapshot(ComponentSnapshot<T> original) : base(original)
         {
         }
 
         private int configureDepth;
-        public RigidBodySnapshot<T> Configure(Action<RigidBodySnapshot<T>> configurer)
+        public RigidbodySnapshot<T> Configure(Action<RigidbodySnapshot<T>> configurer)
         {
             Guard.IsNotNull(configurer, nameof(configurer));
 
@@ -262,145 +262,145 @@ namespace CCEnvs.Unity.Snapshots
             return this;
         }
 
-        public RigidBodySnapshot<T> SetLinearVelocity(Vector3? value)
+        public RigidbodySnapshot<T> SetLinearVelocity(Vector3? value)
         {
             LinearVelocity = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetAngularVelocity(Vector3? value)
+        public RigidbodySnapshot<T> SetAngularVelocity(Vector3? value)
         {
             AngularVelocity = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetLinearDamping(float? value)
+        public RigidbodySnapshot<T> SetLinearDamping(float? value)
         {
             LinearDamping = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetAngularDamping(float? value)
+        public RigidbodySnapshot<T> SetAngularDamping(float? value)
         {
             AngularDamping = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetMass(float? value)
+        public RigidbodySnapshot<T> SetMass(float? value)
         {
             Mass = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetUseGravity(bool? value)
+        public RigidbodySnapshot<T> SetUseGravity(bool? value)
         {
             UseGravity = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetIsKinematic(bool? value)
+        public RigidbodySnapshot<T> SetIsKinematic(bool? value)
         {
             IsKinematic = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetInterpolation(RigidbodyInterpolation? value)
+        public RigidbodySnapshot<T> SetInterpolation(RigidbodyInterpolation? value)
         {
             Interpolation = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetCollisionDetectionMode(CollisionDetectionMode? value)
+        public RigidbodySnapshot<T> SetCollisionDetectionMode(CollisionDetectionMode? value)
         {
             CollisionDetectionMode = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetConstraints(RigidbodyConstraints? value)
+        public RigidbodySnapshot<T> SetConstraints(RigidbodyConstraints? value)
         {
             Constraints = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetCenterOfMass(Vector3? value)
+        public RigidbodySnapshot<T> SetCenterOfMass(Vector3? value)
         {
             CenterOfMass = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetInertiaTensor(Vector3? value)
+        public RigidbodySnapshot<T> SetInertiaTensor(Vector3? value)
         {
             InertiaTensor = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetInertiaTensorRotation(Quaternion? value)
+        public RigidbodySnapshot<T> SetInertiaTensorRotation(Quaternion? value)
         {
             InertiaTensorRotation = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetMaxAngularVelocity(float? value)
+        public RigidbodySnapshot<T> SetMaxAngularVelocity(float? value)
         {
             MaxAngularVelocity = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetMaxDepenetrationVelocity(float? value)
+        public RigidbodySnapshot<T> SetMaxDepenetrationVelocity(float? value)
         {
             MaxDepenetrationVelocity = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetSleepThreshold(float? value)
+        public RigidbodySnapshot<T> SetSleepThreshold(float? value)
         {
             SleepThreshold = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetDetectCollisions(bool? value)
+        public RigidbodySnapshot<T> SetDetectCollisions(bool? value)
         {
             DetectCollisions = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetSolverIterations(int? value)
+        public RigidbodySnapshot<T> SetSolverIterations(int? value)
         {
             SolverIterations = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetSolverVelocityIterations(int? value)
+        public RigidbodySnapshot<T> SetSolverVelocityIterations(int? value)
         {
             SolverVelocityIterations = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetIncludeLayers(LayerMask? value)
+        public RigidbodySnapshot<T> SetIncludeLayers(LayerMask? value)
         {
             IncludeLayers = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetExcludeLayers(LayerMask? value)
+        public RigidbodySnapshot<T> SetExcludeLayers(LayerMask? value)
         {
             ExcludeLayers = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetAutomaticCenterOfMass(bool? value)
+        public RigidbodySnapshot<T> SetAutomaticCenterOfMass(bool? value)
         {
             AutomaticCenterOfMass = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetAutomaticInertiaTensor(bool? value)
+        public RigidbodySnapshot<T> SetAutomaticInertiaTensor(bool? value)
         {
             AutomaticInertiaTensor = value;
             return this;
         }
 
-        public RigidBodySnapshot<T> SetMaxLinearVelocity(float? value)
+        public RigidbodySnapshot<T> SetMaxLinearVelocity(float? value)
         {
             MaxLinearVelocity = value;
             return this;
@@ -412,9 +412,6 @@ namespace CCEnvs.Unity.Snapshots
 
             if (linearVelocity.HasValue)
                 target.linearVelocity = linearVelocity.Value;
-
-            if (angularVelocity.HasValue)
-                target.angularVelocity = angularVelocity.Value;
 
             if (linearDamping.HasValue)
                 target.linearDamping = linearDamping.Value;
@@ -430,6 +427,9 @@ namespace CCEnvs.Unity.Snapshots
 
             if (isKinematic.HasValue)
                 target.isKinematic = isKinematic.Value;
+
+            if (angularVelocity.HasValue && !target.isKinematic)
+                target.angularVelocity = angularVelocity.Value;
 
             if (interpolation.HasValue)
                 target.interpolation = interpolation.Value;
@@ -546,21 +546,21 @@ namespace CCEnvs.Unity.Snapshots
 
     [Serializable]
     [SerializationDescriptor("RigidBodySnapshot", "93662e04-2ce4-4ea1-8761-60efc7d50534")]
-    public record RigidBodySnapshot : RigidBodySnapshot<Rigidbody>
+    public record RigidbodySnapshot : RigidbodySnapshot<Rigidbody>
     {
-        public RigidBodySnapshot()
+        public RigidbodySnapshot()
         {
         }
 
-        public RigidBodySnapshot(Rigidbody target) : base(target)
+        public RigidbodySnapshot(Rigidbody target) : base(target)
         {
         }
 
-        protected RigidBodySnapshot(RigidBodySnapshot<Rigidbody> original) : base(original)
+        protected RigidbodySnapshot(RigidbodySnapshot<Rigidbody> original) : base(original)
         {
         }
 
-        protected RigidBodySnapshot(ComponentSnapshot<Rigidbody> original) : base(original)
+        protected RigidbodySnapshot(ComponentSnapshot<Rigidbody> original) : base(original)
         {
         }
     }

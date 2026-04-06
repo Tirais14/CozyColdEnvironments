@@ -261,7 +261,7 @@ namespace CCEnvs.Unity
             SaveSystem.RegisterType<Rigidbody>(
                 static rb =>
                 {
-                    return new RigidBodySnapshot(rb);
+                    return new RigidbodySnapshot(rb);
                 });
 
             SaveSystem.RegisterType<Material>(

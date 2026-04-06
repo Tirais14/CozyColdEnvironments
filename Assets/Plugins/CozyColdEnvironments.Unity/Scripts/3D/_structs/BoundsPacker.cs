@@ -8,9 +8,6 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.D3
 {
-    /// <summary>
-    /// To avoid allocations initiated by TransformBounds while cache, container must have center == Vector3.zero (Local) 
-    /// </summary>
     public readonly partial struct BoundsPacker : IEquatable<BoundsPacker>
     {
         public Bounds Container { get; private init; }
@@ -38,7 +35,6 @@ namespace CCEnvs.Unity.D3
             }
         }
 
-        /// <inheritdoc cref="BoundsPacker"/>
         public BoundsPacker(
             Bounds container,
             Bounds item,
@@ -246,21 +242,33 @@ namespace CCEnvs.Unity.D3
         #endregion Setters
 
 
-        /// <inheritdoc cref="BoundsPacker"/>
         public readonly IReadOnlyList<Bounds> Pack()
         {
             int axisCount = (Axis2 == null ? 0 : 1) + (Axis3 == null ? 0 : 1) + 1;
 
             return axisCount switch
             {
-                1 => PackByAxis(),
-                2 => PackByTwoAxes(),
-                3 => PackByThreeAxes(),
+                1 => PackByAxis(null),
+                2 => PackByTwoAxes(null),
+                3 => PackByThreeAxes(null),
+                _ => throw new InvalidOperationException(axisCount.ToString()),
+            };
+        }
+        public readonly void PackNonAlloc(List<Bounds> results)
+        {
+            int axisCount = (Axis2 == null ? 0 : 1) + (Axis3 == null ? 0 : 1) + 1;
+            results.Clear();
+
+            _ = axisCount switch
+            {
+                1 => PackByAxis(results),
+                2 => PackByTwoAxes(results),
+                3 => PackByThreeAxes(results),
                 _ => throw new InvalidOperationException(axisCount.ToString()),
             };
         }
 
-        private readonly IReadOnlyList<Bounds> PackByAxis()
+        private readonly IReadOnlyList<Bounds> PackByAxis(List<Bounds>? results)
         {
             var axisPointer = (int)Axis1;
 
@@ -281,7 +289,7 @@ namespace CCEnvs.Unity.D3
 
             var loopFuse = LoopFuse.Create(iterationLimit: int.MaxValue / 10);
 
-            var results = new List<Bounds>(Mathf.FloorToInt(packedCount));
+            results ??= new List<Bounds>(Mathf.FloorToInt(packedCount));
 
             while (Container.Contains(testItem)
                    &&
@@ -297,7 +305,7 @@ namespace CCEnvs.Unity.D3
             return results;
         }
 
-        private readonly IReadOnlyList<Bounds> PackByTwoAxes()
+        private readonly IReadOnlyList<Bounds> PackByTwoAxes(List<Bounds>? results)
         {
             var resolvedAxis2 = GetSecondAxis();
 
@@ -340,7 +348,7 @@ namespace CCEnvs.Unity.D3
             var axis1ItemCountFloored = Mathf.FloorToInt(axis1ItemCount);
             var axis2ItemCountFloored = Mathf.FloorToInt(axis2ItemCount);
 
-            var results = new List<Bounds>(
+            results ??= new List<Bounds>(
                 axis1ItemCountFloored 
                 * 
                 axis2ItemCountFloored
@@ -384,7 +392,7 @@ namespace CCEnvs.Unity.D3
             return Axis2.Value;
         }
 
-        private readonly IReadOnlyList<Bounds> PackByThreeAxes()
+        private readonly IReadOnlyList<Bounds> PackByThreeAxes(List<Bounds>? results)
         {
             if (Axis2 == null)
                 throw new InvalidOperationException("Missing second axis");
@@ -436,7 +444,7 @@ namespace CCEnvs.Unity.D3
             var axis2ItemCountFloored = Mathf.FloorToInt(axis2ItemCount);
             var axis3ItemCountFloored = Mathf.FloorToInt(axis3ItemCount);
 
-            var results = new List<Bounds>(
+            results ??= new List<Bounds>(
                 Mathf.FloorToInt(axis1ItemCount)
                 *
                 Mathf.FloorToInt(axis2ItemCount)
