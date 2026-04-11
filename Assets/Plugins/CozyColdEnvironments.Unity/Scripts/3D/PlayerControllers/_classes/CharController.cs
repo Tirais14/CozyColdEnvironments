@@ -1,6 +1,8 @@
+using CCEnvs.Disposables;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.EditorSerialization;
 using CCEnvs.Unity.Injections;
+using R3;
 using UnityEngine;
 
 #nullable enable
@@ -48,6 +50,8 @@ namespace CCEnvs.Unity.D3
         [SerializeField]
         protected float gravity = GRAVITY_DEFAULT;
 
+        private readonly ReactiveProperty<Vector3> lastTravelDistance = new();
+
         private Vector3 velocity;
         private Vector3 moveDirection;
 
@@ -66,6 +70,8 @@ namespace CCEnvs.Unity.D3
         public Transform SurfaceCastPoint => surfaceCastPoint;
 
         public LayerMask? SurfaceLayers => surfaceLayers;
+
+        public Vector3 LastTravelDistance => lastTravelDistance.Value;
 
         public bool IsGrounded { get; private set; }
         public bool IsRunning { get; private set; }
@@ -89,6 +95,7 @@ namespace CCEnvs.Unity.D3
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            lastTravelDistance.Dispose();
         }
 
         public CharController SetMoveSpeed(float value)
@@ -171,6 +178,8 @@ namespace CCEnvs.Unity.D3
             return this;
         }
 
+        public Observable<Vector3> ObserveTravelDistance() => lastTravelDistance;
+
         private void RaycastSurface()
         {
             IsGrounded = Physics.CheckSphere(
@@ -204,20 +213,39 @@ namespace CCEnvs.Unity.D3
             if (IsGrounded && velocity.y < 0f)
                 velocity.y = -2f;
 
-            var motion = transform.right * moveDirection.x + transform.forward * moveDirection.z;
-            var moveSpeed = ResolveMoveSpeed();
+            if (moveDirection != Vector3.zero)
+            {
+                ApplyMoveDirection();
 
-            core.Move(moveSpeed * Time.deltaTime * motion);
+            }
 
             if (jumpRequested)
                 TryJump();
 
-            velocity.y += gravity * Time.deltaTime;
-
-            core.Move(velocity * Time.deltaTime);
+            ApplyGravity();
 
             moveDirection = default;
             IsRunning = false;
+        }
+
+        private void ApplyMoveDirection()
+        {
+            var dir = cTransform.right * moveDirection.x + cTransform.forward * moveDirection.z;
+            var moveSpeed = ResolveMoveSpeed();
+            var motion = moveSpeed * Time.deltaTime * dir;
+            var preivousPos = cTransform.position;
+
+            core.Move(motion);
+
+            var travelDistance = preivousPos - cTransform.position;
+            lastTravelDistance.Value = travelDistance;
+        }
+
+        private void ApplyGravity()
+        {
+            velocity.y += gravity * Time.deltaTime;
+
+            core.Move(velocity * Time.deltaTime);
         }
     }
 }

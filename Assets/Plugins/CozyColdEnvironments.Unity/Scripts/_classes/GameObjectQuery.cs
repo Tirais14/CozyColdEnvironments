@@ -40,7 +40,7 @@ namespace CCEnvs.Unity
         /// </summary>
         public Maybe<GameObject> Target { get; set; } = null!;
         public Settings settings { get; set; }
-        public StringMatchSettings stringMatchSettings { get; set; }
+        public StringMatchSettings nameMatchSettings { get; set; }
         public FindMode findMode { get; set; }
         public FindObjectsSortMode sortMode { get; set; }
         public Maybe<string> name { get; set; }
@@ -125,15 +125,23 @@ namespace CCEnvs.Unity
             this.name = name;
 
             if (byFullName)
-                stringMatchSettings &= ~StringMatchSettings.Partial;
+                nameMatchSettings &= ~StringMatchSettings.Partial;
             else
-                stringMatchSettings |= StringMatchSettings.Partial;
+                nameMatchSettings |= StringMatchSettings.Partial;
 
             if (ignoreCase)
-                stringMatchSettings |= StringMatchSettings.IgnoreCase;
+                nameMatchSettings |= StringMatchSettings.IgnoreCase;
             else
-                stringMatchSettings &= ~StringMatchSettings.IgnoreCase;
+                nameMatchSettings &= ~StringMatchSettings.IgnoreCase;
 
+            return this;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery WithNameMatchSettings(StringMatchSettings value = StringMatchSettings.Default)
+        {
+            nameMatchSettings = value;
             return this;
         }
 
@@ -812,7 +820,7 @@ namespace CCEnvs.Unity
                 components = components.Where(cmp => layerMask.ContainsFlag(cmp.gameObject.layer));
 
             if (this.name.TryGetValue(out var name))
-                components = components.Where(cmp => cmp.gameObject.name.Match(name, stringMatchSettings));
+                components = components.Where(cmp => cmp.gameObject.name.Match(name, nameMatchSettings));
 
             if (this.tag.TryGetValue(out var tag))
                 components = components.Where(cmp => cmp.gameObject.CompareTag(tag));

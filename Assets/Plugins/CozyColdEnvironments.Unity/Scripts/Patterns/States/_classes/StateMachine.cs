@@ -89,6 +89,28 @@ namespace CCEnvs.Unity.States
             return this;
         }
 
+        public IStateMachine AddState(IState state, IStateTransition transition)
+        {
+            CC.Guard.IsNotNull(state, nameof(state));
+            CC.Guard.IsNotNull(transition, nameof(transition));
+
+            var node = new StateNode(state, transition);
+            AddNode(node);
+
+            return this;
+        }
+
+        public IStateMachine AddState(IState state, params IStateTransition[] transitions)
+        {
+            CC.Guard.IsNotNull(state, nameof(state));
+            CC.Guard.IsNotNull(transitions, nameof(transitions));
+
+            var node = new StateNode(state, transitions);
+            AddNode(node);
+
+            return this;
+        }
+
         public bool RemoveNode(string id)
         {
             Guard.IsNotNull(id, nameof(id));

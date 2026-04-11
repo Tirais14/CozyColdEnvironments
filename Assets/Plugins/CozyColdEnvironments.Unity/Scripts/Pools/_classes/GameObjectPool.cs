@@ -5,11 +5,10 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.Unity.Pools
 {
-    public class ComponentPool<T> : ObjectPool<T>
-        where T : Component
+    public class GameObjectPool : ObjectPool<GameObject>
     {
-        public ComponentPool(
-            IFactory<T>? factory = null,
+        public GameObjectPool(
+            IFactory<GameObject>? factory = null,
             int capacity = 4,
             int? maxSize = null
             )
@@ -22,20 +21,19 @@ namespace CCEnvs.Unity.Pools
 
         }
 
-        protected override void OnGet(PooledObject<T> handledObj)
+        protected override void OnGet(PooledObject<GameObject> handledObj)
         {
             base.OnGet(handledObj);
-            handledObj.Value.gameObject.SetActive(true);
+            handledObj.Value.SetActive(true);
         }
 
-        protected override void OnReturn(T obj)
+        protected override void OnReturn(GameObject obj)
         {
             base.OnReturn(obj);
-
             var pos = new Vector3(0f, -100000f);
 
             obj.transform.MovePositionSafe(pos);
-            obj.gameObject.SetActive(false);
+            obj.SetActive(false);
         }
     }
 }

@@ -25,7 +25,26 @@ namespace CCEnvs
             if (left is null || right is null)
                 return false;
 
-            if (settings.HasFlagT(StringMatchSettings.Partial))
+            if (settings.HasFlagsT(StringMatchSettings.PartialFromStart))
+            {
+                if (settings.HasFlagsT(StringMatchSettings.Culture))
+                    throw new NotImplementedException();
+                else if (settings.HasFlagT(StringMatchSettings.Invariant))
+                {
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
+                        return left.StartsWithInvariant(right, ignoreCase: true);
+                    else
+                        return left.StartsWithInvariant(right, ignoreCase: false);
+                }
+                else
+                {
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
+                        return left.StartsWithOrdinal(right, ignoreCase: true);
+                    else
+                        return left.StartsWithOrdinal(right, ignoreCase: false);
+                }
+            }
+            else if (settings.HasFlagT(StringMatchSettings.Partial))
             {
                 if (settings.HasFlagT(StringMatchSettings.Culture))
                     throw new NotImplementedException();
@@ -121,6 +140,34 @@ namespace CCEnvs
             CC.Guard.IsNotNull(value, nameof(value));
 
             return value.Contains(other, ignoreCase ?
+                StringComparison.OrdinalIgnoreCase
+                :
+                StringComparison.Ordinal);
+        }
+
+        public static bool StartsWithInvariant(
+            this string value,
+            string other,
+            bool ignoreCase = false
+            )
+        {
+            CC.Guard.IsNotNull(value, nameof(value));
+
+            return value.Contains(other, ignoreCase ?
+                StringComparison.InvariantCultureIgnoreCase
+                :
+                StringComparison.InvariantCulture);
+        }
+
+        public static bool StartsWithOrdinal(
+            this string value,
+            string other,
+            bool ignoreCase = false
+            )
+        {
+            CC.Guard.IsNotNull(value, nameof(value));
+
+            return value.StartsWith(other, ignoreCase ?
                 StringComparison.OrdinalIgnoreCase
                 :
                 StringComparison.Ordinal);

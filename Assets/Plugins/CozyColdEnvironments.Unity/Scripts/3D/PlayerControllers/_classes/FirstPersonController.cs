@@ -1,9 +1,11 @@
+using CCEnvs.Unity.Components;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.D3.Controllers
 {
-    public class FirstPersonController : CharController
+    [RequireComponent(typeof(CharController))]
+    public class FirstPersonController : CCBehaviour
     {
         public const float CAMERA_SENSIVITY_MIN = 0f;
 

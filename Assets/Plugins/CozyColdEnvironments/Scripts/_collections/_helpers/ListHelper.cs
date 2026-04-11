@@ -127,5 +127,67 @@ namespace CCEnvs.Collections
 
             return source;
         }
+
+        public static IList<T> ShuffleNonAlloc<T>(this IList<T> source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.IsEmpty())
+                return source;
+
+#if !UNITY_2017_1_OR_NEWER
+            var r = new System.Random();
+#endif
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                int j =
+#if UNITY_2017_1_OR_NEWER
+                    UnityEngine.Random.Range(0, i + 1);
+
+#else
+                    r.Next(0, i + 1);
+#endif
+
+                (source[i], source[j]) = (source[j], source[i]);
+            }
+
+            return source;
+        }
+
+        public static IList<T> ShuffleNonAlloc<T>(this IList<T> source, int seed)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.IsEmpty())
+                return source;
+
+#if !UNITY_2017_1_OR_NEWER
+            var r = new System.Random(seed);
+#else
+            var sourceState = UnityEngine.Random.state;
+            UnityEngine.Random.InitState(seed);
+#endif
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                int j =
+#if UNITY_2017_1_OR_NEWER
+                    
+                    UnityEngine.Random.Range(0, i + 1);
+
+#else
+                    r.Next(0, i + 1);
+#endif
+
+                (source[i], source[j]) = (source[j], source[i]);
+            }
+
+#if UNITY_2017_1_OR_NEWER
+            UnityEngine.Random.state = sourceState;
+#endif
+
+            return source;
+        }
     }
 }

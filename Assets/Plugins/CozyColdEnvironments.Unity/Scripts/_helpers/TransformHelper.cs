@@ -74,6 +74,18 @@ namespace CCEnvs.Unity
             return source.GetHierarchyPath() == hierarchyPath;
         }
 
+        public static Transform MovePositionSafe(this Transform source, Vector3 newPos)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.GetComponent<Rigidbody>().IsNotNull(out var rb))
+                rb.MovePosition(newPos);
+            else
+                source.position = newPos;
+
+            return source;
+        }
+
         //public static void SetLocalPositionIgnoreScale(this Transform source, Vector3 position)
         //{
         //    CC.Guard.IsNotNullSource(source);
