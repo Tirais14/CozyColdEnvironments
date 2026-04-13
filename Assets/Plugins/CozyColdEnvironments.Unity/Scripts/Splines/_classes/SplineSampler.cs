@@ -1,8 +1,11 @@
 #if SPLINES_PLUGIN
+using CCEnvs.Disposables;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using CommunityToolkit.Diagnostics;
+using R3;
+using System.Collections.Generic;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Splines;
 
@@ -14,47 +17,93 @@ namespace CCEnvs.Unity.Splines
     public class SplineSampler : CCBehaviour
     {
         [SerializeField]
-        protected int splineIndex;
+        protected int splineIndex = 0;
 
-        [SerializeField, Range(0f, 1f)]
-        protected float time;
+        [SerializeField, Min(0.01f)]
+        protected float resolution = 3f;
 
-        [SerializeField, Min(0f)]
-        protected float resolution;
+        private readonly List<float3> segments = new();
+        private readonly List<float3> tangents = new();
+        private readonly List<float3> upVectors = new();
+
+        private ReactiveCommand<Unit>? onRecalcuate;
 
         [GetBySelf]
-        protected SplineContainer splineContainer = null!;
+        private SplineContainer splineContainer = null!;
 
-        protected float3 position;
-        protected float3 forward;
-        protected float3 upVector;
+        public IReadOnlyList<float3> Segments => segments;
+        public IReadOnlyList<float3> Tangents => tangents;
+        public IReadOnlyList<float3> UpVectors => upVectors;
 
-        protected virtual void Update()
+        protected override void OnDestroy()
         {
-            splineContainer.Evaluate(
-                splineIndex,
-                time,
-                out position,
-                out forward,
-                out upVector
-                );
+            base.OnDestroy();
+            CCDisposable.Dispose(ref onRecalcuate);
+        }
 
-            splineContainer.CalculateLength();
+        private void Update()
+        {
+            Recalcuate();
         }
 
 #if UNITY_EDITOR
-        protected virtual void OnDrawGizmos()
+        protected virtual void OnDrawGizmosSelected()
         {
-            Handles.matrix = transform.localToWorldMatrix;
-            Handles.SphereHandleCap(
-                0,
-                position,
-                Quaternion.identity,
-                1f,
-                EventType.Repaint
-                );
+            Gizmos.color = Color.white;
+
+            for (int i = 0; i < segments.Count; i++)
+                Gizmos.DrawSphere(segments[i], 0.05f);
         }
 #endif
+
+        public void Recalcuate()
+        {
+            Guard.IsGreaterThan(splineIndex, -1, nameof(splineIndex));
+
+            segments.Clear();
+            tangents.Clear();
+            upVectors.Clear();
+
+            if (splineContainer.Splines.Count == 0)
+                return;
+
+            float segmentCount = GetSegmentCount();
+            float t;
+
+            Spline spline = splineContainer[splineIndex];
+
+            for (int i = 0; i <= segmentCount; i++)
+            {
+                t = i / (float)segmentCount;
+
+                spline.Evaluate(
+                    t,
+                    out var pos,
+                    out var tangent,
+                    out var upVector
+                    );
+
+                segments.Add(pos);
+                tangents.Add(tangent);
+                upVectors.Add(upVector);
+            }
+
+            OnRecalculate();
+            onRecalcuate?.Execute(Unit.Default);
+        }
+
+        public float GetSegmentCount()
+        {
+            return resolution * splineContainer.CalculateLength();
+        }
+
+        public Observable<Unit> ObserveRecalculate()
+        {
+            onRecalcuate ??= new ReactiveCommand<Unit>();
+            return onRecalcuate;
+        }
+
+        protected virtual void OnRecalculate() { }
     }
 }
 #endif
