@@ -52,7 +52,7 @@ namespace CCEnvs.Unity.Splines
             if (this == default)
                 return TypeCache<SplineSamplerSegment>.FullName;
 
-            return new ToStringBuilder()
+            return new ToStringBuilder(null)
                 .Add(nameof(Position), Position)
                 .Add(nameof(Tangent), Tangent)
                 .Add(nameof(UpVector), UpVector)

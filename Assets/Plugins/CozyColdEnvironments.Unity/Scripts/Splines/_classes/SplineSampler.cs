@@ -35,6 +35,7 @@ namespace CCEnvs.Unity.Splines
         {
             base.Start();
             Spline.Changed += OnSplineChanged;
+            Recalcuate();
         }
 
         protected override void OnDestroy()

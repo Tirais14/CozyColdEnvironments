@@ -2,7 +2,6 @@ using CCEnvs.Pools;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs
@@ -59,16 +58,9 @@ namespace CCEnvs
             return this;
         }
 
-        private int disposed;
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
+        public readonly void Dispose() => stringBuilderHandle.Dispose();
 
-            stringBuilderHandle.Dispose();
-        }
-
-        public ToStringBuilder DisposeQ()
+        public readonly ToStringBuilder DisposeQ()
         {
             Dispose();
             return this;
@@ -92,7 +84,7 @@ namespace CCEnvs
         }
 
         public readonly override string ToString() => stringBuilder.ToString();
-        public string ToStringAndDispose()
+        public readonly string ToStringAndDispose()
         {
             var str = ToString();
             Dispose();
