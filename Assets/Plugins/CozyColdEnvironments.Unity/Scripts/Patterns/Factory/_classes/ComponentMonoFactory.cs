@@ -22,11 +22,11 @@ namespace CCEnvs.Unity.Patterns.Factory
 
         public override T Create() => Instantiate(prefab, transform);
 
-        public virtual T Create(Transform? parent) => Instantiate(prefab, parent);
+        public virtual T Create(Transform? parent) => Instantiate(prefab, parent.IfNull(cTransform));
 
         public virtual T Create(InstantiateParameters prms) => Instantiate(prefab, prms);
 
-        public object Create(params object[] args)
+        public override object Create(params object[] args)
         {
             Guard.IsNotNull(args);
 

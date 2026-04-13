@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.Patterns.Factory
 
         public override GameObject Create() => Instantiate(prefab, transform);
 
-        public GameObject Create(Transform? parent) => Instantiate(prefab, parent);
+        public GameObject Create(Transform? parent) => Instantiate(prefab, parent.IfNull(cTransform));
 
         public GameObject Create(InstantiateParameters prms) => Instantiate(prefab, prms);
 
