@@ -20,29 +20,41 @@ namespace CCEnvs.Unity.Splines
         protected int splineIndex = 0;
 
         [SerializeField, Min(0.01f)]
-        protected float resolution = 3f;
+        protected float resolution = 1f;
 
-        private readonly List<float3> segments = new();
-        private readonly List<float3> tangents = new();
-        private readonly List<float3> upVectors = new();
+        private readonly List<SplineSamplerSegment> segments = new();
 
         private ReactiveCommand<Unit>? onRecalcuate;
 
         [GetBySelf]
         private SplineContainer splineContainer = null!;
 
-        public IReadOnlyList<float3> Segments => segments;
-        public IReadOnlyList<float3> Tangents => tangents;
-        public IReadOnlyList<float3> UpVectors => upVectors;
+        public IReadOnlyList<SplineSamplerSegment> Segments => segments;
+
+        protected override void Start()
+        {
+            base.Start();
+            Spline.Changed += OnSplineChanged;
+        }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
             CCDisposable.Dispose(ref onRecalcuate);
+            Spline.Changed -= OnSplineChanged;
         }
 
-        private void Update()
+        private void OnSplineChanged(Spline spline, int idx, SplineModification modType)
         {
+            var splines = splineContainer.Splines;
+
+            if (idx >= splines.Count
+                ||
+                splines[idx] != spline)
+            {
+                return;
+            }
+
             Recalcuate();
         }
 
@@ -52,7 +64,15 @@ namespace CCEnvs.Unity.Splines
             Gizmos.color = Color.white;
 
             for (int i = 0; i < segments.Count; i++)
-                Gizmos.DrawSphere(segments[i], 0.05f);
+                Gizmos.DrawSphere(cTransform.TransformPoint(segments[i].Position), 0.15f);
+        }
+
+        protected virtual void OnValidate()
+        {
+            if (splineIndex >= splineContainer.Splines.Count)
+                splineIndex = splineContainer.Splines.Count - 1;
+
+            Recalcuate();
         }
 #endif
 
@@ -61,16 +81,15 @@ namespace CCEnvs.Unity.Splines
             Guard.IsGreaterThan(splineIndex, -1, nameof(splineIndex));
 
             segments.Clear();
-            tangents.Clear();
-            upVectors.Clear();
 
             if (splineContainer.Splines.Count == 0)
                 return;
 
-            float segmentCount = GetSegmentCount();
+            int segmentCount = CalculateSegmentCount();
             float t;
 
             Spline spline = splineContainer[splineIndex];
+            SplineSamplerSegment segment;
 
             for (int i = 0; i <= segmentCount; i++)
             {
@@ -83,18 +102,20 @@ namespace CCEnvs.Unity.Splines
                     out var upVector
                     );
 
-                segments.Add(pos);
-                tangents.Add(tangent);
-                upVectors.Add(upVector);
+                segment = new SplineSamplerSegment(pos, tangent, upVector);
+
+                segments.Add(segment);
             }
 
             OnRecalculate();
             onRecalcuate?.Execute(Unit.Default);
         }
 
-        public float GetSegmentCount()
+        public int CalculateSegmentCount()
         {
-            return resolution * splineContainer.CalculateLength();
+            var segmentCountRaw = resolution * splineContainer.CalculateLength();
+
+            return (int)math.floor(segmentCountRaw);
         }
 
         public Observable<Unit> ObserveRecalculate()

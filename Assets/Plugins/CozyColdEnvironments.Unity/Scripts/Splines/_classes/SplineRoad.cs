@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Splines
     [ExecuteInEditMode]
     public class SplineRoad : SplineSampler
     {
-        [SerializeField]
+        [SerializeField, Min(0.01f)]
         protected float width;
 
         private readonly List<(float3 LeftPoint, float3 RightPoint)> sidePoints = new();
@@ -23,8 +23,8 @@ namespace CCEnvs.Unity.Splines
 
             for (int i = 0; i < sidePoints.Count; i++)
             {
-                Gizmos.DrawSphere(sidePoints[i].LeftPoint, 0.05f);
-                Gizmos.DrawSphere(sidePoints[i].RightPoint, 0.05f);
+                Gizmos.DrawSphere(cTransform.TransformPoint(sidePoints[i].LeftPoint), 0.15f);
+                Gizmos.DrawSphere(cTransform.TransformPoint(sidePoints[i].RightPoint), 0.15f);
             }
         }
 #endif
@@ -61,9 +61,10 @@ namespace CCEnvs.Unity.Splines
             )
         {
             var right = math.cross(tangent, upVector);
+            right = math.normalize(right);
 
-            leftPoint = width * right + segment;
-            rightPoint = width * -right + segment;
+            rightPoint = width * right + segment;
+            leftPoint = width * -right + segment;
         }
 
         private void CalucalateVertices()
