@@ -145,7 +145,7 @@ namespace CCEnvs.Patterns.Commands
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly Sync Syncronously() => new(builder, this);
+            public readonly Sync Synchronously() => new(builder, this);
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
