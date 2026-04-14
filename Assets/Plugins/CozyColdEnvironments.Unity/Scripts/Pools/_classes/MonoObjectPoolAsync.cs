@@ -5,19 +5,21 @@ using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Patterns.Factory;
 using R3;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Pools
 {
-    public abstract class MonoObjectPool<T, TCore, TFactory> 
+    public abstract class MonoObjectPoolAsync<T, TCore, TFactory>
         :
         CCBehaviour,
-        IObjectPool<T>
+        IObjectPoolAsync<T>
 
-        where T : class
-        where TCore : IObjectPool<T>
-        where TFactory : MonoBehaviour, IFactory<T>
+        where T : UnityEngine.Object
+        where TCore : IObjectPoolAsync<T>
+        where TFactory : MonoBehaviour, IFactory<CancellationToken, ValueTask<T>>
     {
         [Header("Pool Settings")]
         [Space(6f)]
@@ -48,7 +50,7 @@ namespace CCEnvs.Unity.Pools
 
         public bool HasFactory => initedSelf.core.HasFactory;
 
-        protected MonoObjectPool<T, TCore, TFactory> initedSelf {
+        protected MonoObjectPoolAsync<T, TCore, TFactory> initedSelf {
             get
             {
                 if (core is null)
@@ -68,7 +70,7 @@ namespace CCEnvs.Unity.Pools
                 var preheatOp = new ObjectPoolPreheatOperation<T>(
                     core,
                     preheatCount,
-                    batchSize: preheatBatchSize, 
+                    batchSize: preheatBatchSize,
                     delayFrameCountBetweenBatches: preheatDelayFrameCountBetweenBatches
                     );
 
@@ -82,17 +84,20 @@ namespace CCEnvs.Unity.Pools
             core.Dispose();
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
             if (preheatCount > capacity)
                 capacity = preheatCount;
         }
-#endif
+    #endif
 
         public void Clear() => initedSelf.core.Clear();
 
-        public PooledObject<T> Get() => initedSelf.core.Get();
+        public async ValueTask<PooledObject<T>> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return await initedSelf.core.GetAsync(cancellationToken);
+        }
 
         public void Return(T? obj) => initedSelf.core.Return(obj);
 

@@ -149,7 +149,7 @@ namespace CCEnvs.Patterns.Commands
             lock (SyncRoot)
                 commandSet.Add(queueCmd);
 
-            if (CCDebug.Instance.IsEnabled)
+            if (CCDebug.IsTypeEnabled<CommandScheduler>())
                 this.PrintLog($"Command: {cmd} scheduled");
 
             scheduleCommandRxCmd?.Execute(cmd);
@@ -169,7 +169,7 @@ namespace CCEnvs.Patterns.Commands
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            if (CCDebug.Instance.IsEnabled)
+            if (CCDebug.IsTypeEnabled<CommandScheduler>())
                 this.PrintLog("Disposing");
 
             try
@@ -350,7 +350,7 @@ namespace CCEnvs.Patterns.Commands
                     continue;
                 }
 
-                if (CCDebug.Instance.IsEnabled)
+                if (CCDebug.IsTypeEnabled<CommandScheduler>())
                     this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
 
                 garbageCmdCount++;
@@ -402,7 +402,7 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnCommandDone(QueueCommand cmd)
         {
-            if (CCDebug.Instance.IsEnabled)
+            if (CCDebug.IsTypeEnabled<CommandScheduler>())
                 this.PrintLog($"Command: {cmd} completion");
 
             if (cmd.Value is null)
@@ -459,7 +459,7 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExecuteCommand()
         {
-            if (CCDebug.Instance.IsEnabled)
+            if (CCDebug.IsTypeEnabled<CommandScheduler>())
                 this.PrintLog($"Command: {cmd} will be executed");
 
             switch (cmd!.Value)

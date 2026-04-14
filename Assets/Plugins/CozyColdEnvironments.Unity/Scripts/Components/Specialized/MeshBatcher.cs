@@ -53,7 +53,7 @@ namespace CCEnvs.Unity.Components.Specialized
             }
         }
 
-        private void BatchMeshFiltersCore()
+        internal void BatchMeshFiltersCore()
         {
             RestoreDisabledMeshFilters();
             FindTopologyMeshFilterDuplcates();
@@ -75,7 +75,7 @@ namespace CCEnvs.Unity.Components.Specialized
                 .ScheduleBy(commandScheduler);
         }
 
-        private void RestoreMeshFiltersCore()
+        internal void RestoreMeshFiltersCore()
         {
             DestroyInsatntiatedMeshFilters();
             RestoreDisabledMeshFilters();
@@ -97,7 +97,7 @@ namespace CCEnvs.Unity.Components.Specialized
                 .ScheduleBy(commandScheduler);
         }
 
-        private IReadOnlyList<MeshFilter> GetOriginalMeshFiltersCore()
+        public IReadOnlyList<MeshFilter> GetOriginalMeshFilters()
         {
             return this.Q()
                 .FromChildrens()
@@ -107,33 +107,7 @@ namespace CCEnvs.Unity.Components.Specialized
                 .ToArray();
         }
 
-        public IReadOnlyList<MeshFilter> GetOriginalMeshFilters()
-        {
-            var cmdName = NameFactory.CreateFromCaller(this, nameof(GetOriginalMeshFilters));
-
-            var result = new ValueReference<IReadOnlyList<MeshFilter>>();
-
-            Command.Builder.WithName(cmdName)
-                .AsSingle()
-                .WithState((@this: this, result))
-                .Synchronously()
-                .WithExecuteAction(
-                static (args) =>
-                {
-                    var @this = args.@this;
-                    var result = args.result;
-
-                    result.Value = @this.GetOriginalMeshFiltersCore();
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
-                .ScheduleBy(commandScheduler);
-
-            return result.Value;
-        }
-
-        private void ClearMeshFiltersCore()
+        internal void ClearMeshFiltersCore()
         {
             DestroyDisabledMeshFilters();
         }
@@ -153,7 +127,7 @@ namespace CCEnvs.Unity.Components.Specialized
                 .ScheduleBy(commandScheduler);
         }
 
-        private async UniTask ClearMeshFiltersAsyncCore(CancellationToken cancellationToken)
+        internal async UniTask ClearMeshFiltersAsyncCore(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -196,6 +170,7 @@ namespace CCEnvs.Unity.Components.Specialized
                 MeshFilter instantiatedMeshFilter;
 
                 Vector3 replacePos;
+                Quaternion replaceRot;
                 Transform? replaceParent;
 
                 for (int i = 0; i < duplcateMeshFilters.Count; i++)
@@ -203,13 +178,14 @@ namespace CCEnvs.Unity.Components.Specialized
                     duplicateMeshFilter = duplcateMeshFilters[i];
 
                     replacePos = duplicateMeshFilter.transform.position;
+                    replaceRot = duplicateMeshFilter.transform.rotation;
                     replaceParent = duplicateMeshFilter.transform.parent;
 
                     duplicateMeshFilter.gameObject.SetActive(false);
                     disabledMeshFilters.Add(duplicateMeshFilter);
 
                     instantiatedMeshFilter = Instantiate(originalMeshFilter, replaceParent);
-                    instantiatedMeshFilter.transform.position = replacePos;
+                    instantiatedMeshFilter.transform.SetPositionAndRotation(replacePos, replaceRot);
                     instantiatedMeshFilters.Add(instantiatedMeshFilter);
                 }
             }

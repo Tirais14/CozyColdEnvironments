@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.Pools
 {
     public abstract class GameObjectMonoPool<TFactory> : MonoObjectPool<GameObject, GameObjectPool, TFactory>
-        where TFactory : MonoFactory<GameObject>
+        where TFactory : UnityObjectFactory<GameObject>
     {
         protected override GameObjectPool CreatePool()
         {
@@ -13,7 +13,7 @@ namespace CCEnvs.Unity.Pools
         }
     }
 
-    public class GameObjectMonoPool : GameObjectMonoPool<GameObjectMonoFactory>
+    public class GameObjectMonoPool : GameObjectMonoPool<UnityObjectFactory<GameObject>>
     {
         protected override GameObjectPool CreatePool()
         {

@@ -9,7 +9,7 @@ namespace CCEnvs.Unity.Pools
         MonoObjectPool<TComponent, ComponentPool<TComponent>, TFactory>
 
         where TComponent : Component
-        where TFactory : MonoFactory<TComponent>
+        where TFactory : UnityObjectFactory<TComponent>
     {
         protected override ComponentPool<TComponent> CreatePool()
         {
@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Pools
         }
     }
 
-    public abstract class ComponentMonoPool<TComponent> : ComponentMonoPool<TComponent, ComponentMonoFactory<TComponent>>
+    public abstract class ComponentMonoPool<TComponent> : ComponentMonoPool<TComponent, UnityObjectFactory<TComponent>>
         where TComponent : Component
     {
 

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CCEnvs.Pools;
+using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using UnityEngine;
 
 using Object = UnityEngine.Object;
@@ -13,6 +15,8 @@ namespace CCEnvs.Diagnostics
     {
         public static IDebugLogger Instance { get; private set; } = new CCDebug();
 
+        private static readonly HashSet<Type> disabledTypes = new();
+
         public bool IsEnabled { get; set; }
 #if CC_DEBUG_ENABLED
          = true;
@@ -22,6 +26,34 @@ namespace CCEnvs.Diagnostics
         {
             CC.Guard.IsNotNull(logger, nameof(logger));
             Instance = logger;
+        }
+
+        public static bool IsTypeEnabled(Type type)
+        {
+            Guard.IsNotNull(type);
+
+            return Instance.IsEnabled && !disabledTypes.Contains(type);
+        }
+
+        public static bool IsTypeEnabled<T>()
+        {
+            return Instance.IsEnabled && !disabledTypes.Contains(TypeofCache<T>.Type);
+        }
+
+        public static void DisableTypes(params Type[] types)
+        {
+            Guard.IsNotNull(types);
+
+            for (int i = 0; i < types.Length; i++)
+                disabledTypes.Add(types[i]);
+        }
+
+        public void EnableTypes(params Type[] types)
+        {
+            Guard.IsNotNull(types);
+
+            for (int i = 0; i < types.Length; i++)
+                disabledTypes.Remove(types[i]);
         }
 
         public void PrintLog(object message, object? context = null)

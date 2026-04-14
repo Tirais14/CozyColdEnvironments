@@ -31,8 +31,8 @@ namespace CCEnvs.Unity.Injections
         {
             List<string>? debugInfo = null;
 
-            if (CCDebug.Instance.IsEnabled)
-                debugInfo = new List<string>();
+            if (CCDebug.Instance.IsEnabled && CCDebug.IsTypeEnabled(typeof(ComponentInjector)))
+                debugInfo = ListPool<string>.Shared.Get().Value;   
 
             var injectableItems = GetInjectableItems(target, debugInfo);
 
@@ -60,6 +60,8 @@ namespace CCEnvs.Unity.Injections
                     var debugString = sb.Value.ToString();
 
                     typeof(ComponentInjector).PrintLog(debugString);
+
+                    ListPool<string>.Shared.Return(debugInfo);
                 }
             }
         }

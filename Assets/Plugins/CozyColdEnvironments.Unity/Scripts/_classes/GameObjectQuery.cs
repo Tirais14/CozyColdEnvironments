@@ -844,6 +844,11 @@ namespace CCEnvs.Unity
                 layer: layerMask.GetValue(-1),
                 componentFilter: hasType.Raw);
         }
+
+        public struct ComponentsEumerator : IEnumerator<>
+        {
+
+        }
     }
 
     public static class GameObjectSearchExtensions

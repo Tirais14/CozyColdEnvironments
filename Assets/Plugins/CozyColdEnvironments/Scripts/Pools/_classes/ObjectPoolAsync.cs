@@ -1,5 +1,6 @@
 #nullable enable
 using System.Threading;
+using System.Threading.Tasks;
 using CCEnvs.Patterns.Factories;
 
 namespace CCEnvs.Pools
@@ -7,13 +8,7 @@ namespace CCEnvs.Pools
     public class ObjectPoolAsync<T> : ObjectPoolBase<T>, IObjectPoolAsync<T>
         where T : class
     {
-        private readonly IFactory<CancellationToken,
-#if UNITASK_PLUGIN
-        Cysharp.Threading.Tasks.UniTask<T>
-#else
-        System.Threading.Tasks.ValueTask<T>
-#endif
-            >? factory;
+        private readonly IFactory<CancellationToken, ValueTask<T>>? factory;
 
         private readonly bool hasFactory;
 
@@ -21,14 +16,7 @@ namespace CCEnvs.Pools
 
         public ObjectPoolAsync(
 
-            IFactory<CancellationToken,
-#if UNITASK_PLUGIN
-        Cysharp.Threading.Tasks.UniTask<T>
-#else
-        System.Threading.Tasks.ValueTask<T>
-#endif
-                >? factory = null,
-
+            IFactory<CancellationToken, ValueTask<T>>? factory = null,
             int capacity = 4,
             int? maxSize = null)
             :
@@ -38,13 +26,7 @@ namespace CCEnvs.Pools
             hasFactory = factory.IsNotNull();
         }
 
-        public async
-#if UNITASK_PLUGIN
-        Cysharp.Threading.Tasks.UniTask<PooledObject<T>>
-#else
-        System.Threading.Tasks.ValueTask<PooledObject<T>>
-#endif
-            GetAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<PooledObject<T>> GetAsync(CancellationToken cancellationToken = default)
         {
             T? obj;
 

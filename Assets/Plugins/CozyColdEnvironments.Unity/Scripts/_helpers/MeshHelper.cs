@@ -1,3 +1,4 @@
+using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
 using System.Collections.Generic;
@@ -19,8 +20,20 @@ namespace CCEnvs.Unity
             using var leftMeshVertexDistances = ListPool<float>.Shared.Get();
             using var rightMeshVertexDistances = ListPool<float>.Shared.Get();
 
-            GetVertexDistances(left, leftMeshVertexDistances.Value);
-            GetVertexDistances(right, rightMeshVertexDistances.Value);
+            using var leftMeshVertices = ListPool<Vector3>.Shared.Get();
+            using var rightMeshVertices = ListPool<Vector3>.Shared.Get();
+
+            GetVertexDistances(
+                left,
+                leftMeshVertexDistances.Value,
+                leftMeshVertices.Value
+                );
+
+            GetVertexDistances(
+                right,
+                rightMeshVertexDistances.Value,
+                rightMeshVertices.Value
+                );
 
             if (leftMeshVertexDistances.Value.Count != rightMeshVertexDistances.Value.Count
                 ||
@@ -46,24 +59,27 @@ namespace CCEnvs.Unity
             return true;
         }
 
-        public static void GetVertexDistances(Mesh mesh, IList<float> distances)
+        public static void GetVertexDistances(
+            Mesh mesh,
+            List<float> distances,
+            List<Vector3>? vertices
+            )
         {
             CC.Guard.IsNotNull(mesh, nameof(mesh));
             Guard.IsNotNull(distances);
+            Guard.IsNotNull(vertices);
 
-            if (distances.IsReadOnly)
-                throw CC.ThrowHelper.ReadOnlyCollection(distances);
+            using var verticesHandle = ListPool<Vector3>.Shared.Get();
 
-            using var vertices = ListPool<Vector3>.Shared.Get();
-
-            mesh.GetVertices(vertices.Value);
+            if (vertices.Count == 0)
+                mesh.GetVertices(vertices);
 
             Vector3 distance;
 
-            for (int i = 0; i < vertices.Value.Count; i++)
+            for (int i = 0; i < vertices.Count; i++)
             {
-                if (i < vertices.Value.Count - 1)
-                    distance = vertices.Value[i + 1] - vertices.Value[i];
+                if (i < vertices.Count - 1)
+                    distance = vertices[i + 1] - vertices[i];
                 else
                     distance = Vector3.zero;
 

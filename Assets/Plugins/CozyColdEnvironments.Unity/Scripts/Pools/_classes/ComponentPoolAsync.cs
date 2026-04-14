@@ -1,26 +1,17 @@
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity.Pools
 {
-    public static class ComponentPool
-    {
-        public static void OnTransfomrReturn(Transform cmp)
-        {
-            var pos = new Vector3(0f, -100000f);
-
-            cmp.MovePositionSafe(pos);
-            cmp.gameObject.SetActive(false);
-        }
-    }
-
-    public class ComponentPool<T> : ObjectPool<T>
+    public class ComponentPoolAsync<T> : ObjectPoolAsync<T>
         where T : Component
     {
-        public ComponentPool(
-            IFactory<T>? factory = null,
+        public ComponentPoolAsync(
+            IFactory<CancellationToken, ValueTask<T>>? factory = null,
             int capacity = 4,
             int? maxSize = null
             )
@@ -28,9 +19,8 @@ namespace CCEnvs.Unity.Pools
             base(factory: factory,
                 capacity: capacity,
                 maxSize: maxSize
-                )
+        )
         {
-
         }
 
         protected override void OnGet(PooledObject<T> handledObj)

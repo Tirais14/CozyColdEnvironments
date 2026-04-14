@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.Editr
                 return;
 
             Undo.RecordObject(meshBatcher, nameof(MeshBatcher.BatchMeshFilters).Humanize());
-            meshBatcher.BatchMeshFilters();
+            meshBatcher.BatchMeshFiltersCore();
         }
 
         private void OnRestoreButton()
@@ -49,7 +49,7 @@ namespace CCEnvs.Unity.Editr
                 return;
 
             Undo.RecordObject(meshBatcher, nameof(meshBatcher.RestoreMeshFilters).Humanize());
-            meshBatcher.RestoreMeshFilters();
+            meshBatcher.RestoreMeshFiltersCore();
         }
     }
 }
