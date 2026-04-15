@@ -303,28 +303,33 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ComponentsEnumerator<T> Components<T>()
         {
-            return ComponentsInternal(TypeofCache<T>.Type).Cast<T>();
+            return ComponentsInternal(typeof(T)).Cast<T>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<Component> Component(Type type)
+        public Result<Component, object, (GameObjectQuery Query, Type ComponentType)> Component(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
             var cmp = Components(type).FirstOrDefault();
 
             if (cmp == null)
-                return new Result<Component>(GetException("Component not found", type));
+                return new Result<Component, object, (GameObjectQuery Query, Type ComponentType)>(static args => args.Query.GetException("Component not found", args.ComponentType), (this, type));
 
-            return new Result<Component>(cmp);
+            return new Result<Component, object, (GameObjectQuery Query, Type ComponentType)>(cmp);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T> Component<T>()
+        public Result<T, object, GameObjectQuery> Component<T>()
         {
-            return Component(typeof(T)).Cast<T>();
+            var cmp = Components(typeof(T)).FirstOrDefault();
+
+            if (cmp == null)
+                return new Result<T, object, GameObjectQuery>(static @this => @this.GetException("Component not found", typeof(T)), this);
+
+            return new Result<T, object, GameObjectQuery>(cmp.CastTo<T>());
         }
 
         [DebuggerStepThrough]
@@ -467,14 +472,14 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<Transform> Transform()
+        public Result<Transform, object, GameObjectQuery> Transform()
         {
             var transform = Transforms().FirstOrDefault();
 
             if (transform == null)
-                return Result.Exception((@this) => )
+                return new Result<Transform, object, GameObjectQuery>(exceptionFactory: (@this) => @this.GetException("Transform not found", TypeofCache<Transform>.Type), this);
 
-            return (transform, null);
+            return new Result<Transform, object, GameObjectQuery>(transform);
         }
 
         [DebuggerStepThrough]

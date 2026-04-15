@@ -1,5 +1,4 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
 using CCEnvs.Reflection.Caching;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -21,15 +20,14 @@ namespace CCEnvs
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> ExceptionLazy<T>(
-            Func<object?, Exception?> exceptionFactory,
-            object? exceptionFactoryState
+        public static Result<TValue, object, TState> ExceptionLazy<TValue, TState>(
+            Func<TState?, Exception> exceptionFactory,
+            TState? exceptionFactoryState = default
             )
         {
-            return new Result<T>(
-                valueFactory: null,
+            return new Result<TValue, object, TState>(
                 exceptionFactory,
-                exceptionFactoryState: exceptionFactoryState
+                exceptionFactoryState
                 );
         }
 
@@ -72,12 +70,12 @@ namespace CCEnvs
         }
     }
 
-    public struct Result<TValue> : IEquatable<Result<TValue>>
+    public readonly struct Result<TValue> : IEquatable<Result<TValue>>
     {
         public readonly static Result<TValue> Empty = new();
 
-        private TValue? value;
-        private Exception? exception;
+        private readonly TValue? value;
+        private readonly Exception? exception;
 
         public readonly TValue? Raw => value;
 
@@ -101,26 +99,6 @@ namespace CCEnvs
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Result<TValue>((TValue? value, Exception? exception) input)
-        {
-            if (input.value.IsNotNull())
-                return new Result<TValue>(input.value!);
-
-            if (input.exception is not null)
-                return new Result<TValue>(input.exception!);
-
-            throw new ArgumentException("Value and exception cannot be null");
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Maybe<TValue>(Result<TValue> source)
-        {
-            return source.Lax();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator TValue(Result<TValue> source)
         {
             return source.Strict();
@@ -138,30 +116,15 @@ namespace CCEnvs
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<TValue> Lax() => GetValue();
+        public readonly Maybe<TValue> Lax() => value;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TValue Strict()
+        public readonly TValue Strict()
         {
-            var value = GetValue();
-
             if (value.IsNull())
                 ThrowException();
 
             return value!;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<TOut> Cast<TOut>()
-        {
-            if (value.IsNotNull())
-                return new Result<TOut>(value.CastTo<TOut>());
-
-            if (exception is not null)
-                return new Result<TOut>(exception);
-
-            throw new InvalidOperationException();
         }
 
         public readonly override string ToString()
@@ -190,42 +153,13 @@ namespace CCEnvs
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(
-                valueFactory,
-                exceptionFactory,
-                valueFactoryState,
-                exceptionFactoryState,
                 value,
-                exception,
-                valueCreated,
-                exceptionCreated
+                exception
                 );
         }
 
-        private TValue? GetValue()
+        private readonly void ThrowException()
         {
-            if (!valueCreated)
-            {
-                if (valueFactory is null)
-                    throw new InvalidOperationException("Not found value factory");
-
-                value = valueFactory(valueFactoryState);
-                valueCreated = true;
-            }
-
-            return value;
-        }
-
-        private void ThrowException()
-        {
-            if (!exceptionCreated)
-            {
-                if (exceptionFactory is null)
-                    throw new InvalidOperationException("Not found exception factory");
-
-                exception = exceptionFactory(exceptionFactoryState);
-                exceptionCreated = true;
-            }
-
             if (exception is null)
                 throw new InvalidOperationException("Not found exception");
 
@@ -307,9 +241,11 @@ namespace CCEnvs
             TValueFactoryState? valueFactoryState = default,
             TExceptionFactoryState? exceptionFactoryState = default
             )
+            :
+            this()
         {
-            if (valueFactory is null && exceptionFactory is null)
-                throw new ArgumentException("Value factory and exception factory is null");
+            Guard.IsNotNull(valueFactory);
+            Guard.IsNotNull(exceptionFactory);
 
             this.valueFactory = valueFactory;
             this.exceptionFactory = exceptionFactory;
@@ -319,37 +255,17 @@ namespace CCEnvs
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Result<TValue>((TValue? value, Exception? exception) input)
-        {
-            if (input.value.IsNotNull())
-                return new Result<TValue>(input.value!);
-
-            if (input.exception is not null)
-                return new Result<TValue>(input.exception!);
-
-            throw new ArgumentException("Value and exception cannot be null");
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Maybe<TValue>(Result<TValue> source)
-        {
-            return source.Lax();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator TValue(Result<TValue> source)
+        public static explicit operator TValue(Result<TValue, TValueFactoryState, TExceptionFactoryState> source)
         {
             return source.Strict();
         }
 
-        public static bool operator ==(Result<TValue> left, Result<TValue> right)
+        public static bool operator ==(Result<TValue, TValueFactoryState, TExceptionFactoryState> left, Result<TValue, TValueFactoryState, TExceptionFactoryState> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Result<TValue> left, Result<TValue> right)
+        public static bool operator !=(Result<TValue, TValueFactoryState, TExceptionFactoryState> left, Result<TValue, TValueFactoryState, TExceptionFactoryState> right)
         {
             return !(left == right);
         }
@@ -367,33 +283,6 @@ namespace CCEnvs
                 ThrowException();
 
             return value!;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<TOut> Cast<TOut>()
-        {
-            if (value.IsNotNull())
-                return new Result<TOut>(value.CastTo<TOut>());
-
-            if (exception is not null)
-                return new Result<TOut>(exception);
-
-            if (exceptionFactory is not null && valueFactory is not null)
-            {
-                return new Result<TOut>((argsUntyped) =>
-                {
-                    var args = argsUntyped.CastTo<(object? valueFactoryState, Func<object?, TValue> valueFactory)>();
-
-                    return args.valueFactory.Invoke(args.valueFactoryState).CastTo<TOut>();
-                },
-                exceptionFactory,
-                (valueFactoryState, valueFactory),
-                exceptionFactoryState
-                );
-            }
-
-            throw new InvalidOperationException();
         }
 
         public readonly override string ToString()
