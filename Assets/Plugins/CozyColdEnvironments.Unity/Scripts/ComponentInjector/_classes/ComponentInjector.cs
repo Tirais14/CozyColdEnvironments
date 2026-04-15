@@ -181,7 +181,8 @@ namespace CCEnvs.Unity.Injections
 
         private static bool TryGetDependecy(InjectableItem item, [NotNullWhen(true)] out object? result)
         {
-            var query = item.Target.Q();
+            var query = item.Target.Q()
+                .IncludeInactive();
 
             query.findMode = item.ResolveFindMode();
 

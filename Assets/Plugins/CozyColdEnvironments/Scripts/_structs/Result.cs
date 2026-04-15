@@ -282,10 +282,15 @@ namespace CCEnvs
             if (!valueCreated)
             {
                 if (valueFactory is null)
-                    throw new InvalidOperationException("Not found value factory");
-
-                value = valueFactory(valueFactoryState);
-                valueCreated = true;
+                {
+                    if (exceptionFactory is null)
+                        throw new InvalidOperationException("Not found value factory");
+                }
+                else
+                {
+                    value = valueFactory(valueFactoryState);
+                    valueCreated = true;
+                }
             }
 
             return value;

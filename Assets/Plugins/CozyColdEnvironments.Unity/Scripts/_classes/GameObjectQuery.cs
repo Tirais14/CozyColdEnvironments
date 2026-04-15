@@ -576,7 +576,7 @@ namespace CCEnvs.Unity
         public readonly bool HasDepthLimiter(Transform target)
         {
             if (DepthLimiterType is null)
-                return true;
+                return false;
 
             return target.HasComponent(DepthLimiterType);
         }
