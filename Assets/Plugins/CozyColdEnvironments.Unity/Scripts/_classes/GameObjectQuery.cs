@@ -1,5 +1,4 @@
 using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
@@ -65,13 +64,7 @@ namespace CCEnvs.Unity
             return new GameObjectQuery().Reset();
         }
 
-        public bool FilterByDepthLimiter(Transform target)
-        {
-            if (DepthLimiterType is null)
-                return true;
-
-            return target.GetComponent(DepthLimiterType) != null;
-        }
+        #region Setup
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -259,22 +252,6 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery Reset()
-        {
-            Target = default!;
-            settings = Settings.Default;
-            findMode = FindMode.Self;
-            sortMode = FindObjectsSortMode.None;
-            NameFilter = null;
-            TagFilter = null;
-            LayerMaskFilter = default;
-            RequieredTypeFilter = null;
-
-            return this;
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery RequireComponent(Type? componentType = null)
         {
             RequieredTypeFilter = componentType;
@@ -289,25 +266,44 @@ namespace CCEnvs.Unity
             return RequireComponent(typeof(T));
         }
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameObjectQuery Reset()
+        {
+            Target = default!;
+            settings = Settings.Default;
+            findMode = FindMode.Self;
+            sortMode = FindObjectsSortMode.None;
+            NameFilter = null;
+            TagFilter = null;
+            LayerMaskFilter = default;
+            RequieredTypeFilter = null;
+
+            return this;
+        }
+
+        #endregion Setup
+
         #region Components
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ComponentsEnumerator Components(Type? type = null)
+        public readonly ComponentsEnumerator Components(Type? type = null)
         {
-            return ComponentsInternal(type);
+            IList<Component> components = GetComponents(type);
+            return new ComponentsEnumerator(this, components);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ComponentsEnumerator<T> Components<T>()
+        public readonly ComponentsEnumerator<T> Components<T>()
         {
-            return ComponentsInternal(typeof(T)).Cast<T>();
+            return Components(typeof(T)).Cast<T>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<Component, object, (GameObjectQuery Query, Type ComponentType)> Component(Type type)
+        public readonly Result<Component, object, (GameObjectQuery Query, Type ComponentType)> Component(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
 
@@ -321,7 +317,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T, object, GameObjectQuery> Component<T>()
+        public readonly Result<T, object, GameObjectQuery> Component<T>()
         {
             var cmp = Components<T>().FirstOrDefault();
 
@@ -337,7 +333,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ComponentsEnumerator<IView> Views(Type? type = null)
+        public readonly ComponentsEnumerator<IView> Views(Type? type = null)
         {
             type ??= typeof(IView);
 
@@ -346,7 +342,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ComponentsEnumerator<T> Views<T>()
+        public readonly ComponentsEnumerator<T> Views<T>()
             where T : IView
         {
             return Components(typeof(T)).Cast<T>();
@@ -354,7 +350,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IView, object, (GameObjectQuery Query, Type ViewType)> View(Type? type = null)
+        public readonly Result<IView, object, (GameObjectQuery Query, Type ViewType)> View(Type? type = null)
         {
             type ??= TypeofCache<IView>.Type;
 
@@ -368,7 +364,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T, object, GameObjectQuery> View<T>()
+        public readonly Result<T, object, GameObjectQuery> View<T>()
             where T : IView
         {
             var view = Views<T>().FirstOrDefault();
@@ -384,14 +380,14 @@ namespace CCEnvs.Unity
         #region ViewModels
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ViewModelsEnumerator ViewModels(Type? type = null)
+        public readonly ViewModelsEnumerator ViewModels(Type? type = null)
         {
             return Components(TypeofCache<IView>.Type).ViewModels(type);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ViewModelsEnumerator<T> ViewModels<T>()
+        public readonly ViewModelsEnumerator<T> ViewModels<T>()
             where T : IViewModel
         {
             return Components(TypeofCache<IView>.Type).ViewModels(typeof(T)).Cast<T>();
@@ -399,7 +395,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<IViewModel, object, (GameObjectQuery Query, Type ViewModelType)> ViewModel(Type? type)
+        public readonly Result<IViewModel, object, (GameObjectQuery Query, Type ViewModelType)> ViewModel(Type? type)
         {
             type ??= TypeofCache<IViewModel>.Type;
 
@@ -413,7 +409,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T, object, GameObjectQuery> ViewModel<T>()
+        public readonly Result<T, object, GameObjectQuery> ViewModel<T>()
             where T : IViewModel
         {
             var viewModel = ViewModels<T>().FirstOrDefault();
@@ -432,7 +428,7 @@ namespace CCEnvs.Unity
         /// Also include <see cref="Components(Type?)"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ModelsEnumerator Models(Type? type = null, bool includeComponents = true)
+        public readonly ModelsEnumerator Models(Type? type = null, bool includeComponents = true)
         {
             return Components().Models(type, includeComponents);
         }
@@ -440,7 +436,7 @@ namespace CCEnvs.Unity
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ModelsEnumerator<T> Models<T>(bool includeComponents = true)
+        public readonly ModelsEnumerator<T> Models<T>(bool includeComponents = true)
         {
             return Components().Models(typeof(T), includeComponents).Cast<T>();
         }
@@ -448,7 +444,7 @@ namespace CCEnvs.Unity
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<object, object, (GameObjectQuery Query, Type ModelType)> Model(Type? type, bool includeComponents = true)
+        public readonly Result<object, object, (GameObjectQuery Query, Type ModelType)> Model(Type? type, bool includeComponents = true)
         {
             type ??= TypeofCache<object>.Type;
 
@@ -463,7 +459,7 @@ namespace CCEnvs.Unity
         /// <inheritdoc cref="Models"/>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<T, object, GameObjectQuery> Model<T>(bool includeComponents = true)
+        public readonly Result<T, object, GameObjectQuery> Model<T>(bool includeComponents = true)
         {
             var model = Models<T>(includeComponents).FirstOrDefault();
 
@@ -479,11 +475,11 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ComponentsEnumerator<Transform> Transforms() => Components<Transform>();
+        public readonly ComponentsEnumerator<Transform> Transforms() => Components<Transform>();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<Transform, object, GameObjectQuery> Transform()
+        public readonly Result<Transform, object, GameObjectQuery> Transform()
         {
             var transform = Transforms().FirstOrDefault();
 
@@ -528,14 +524,14 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectsEnumerator GameObjects()
+        public readonly GameObjectsEnumerator GameObjects()
         {
             return new GameObjectsEnumerator(Transforms());
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<GameObject, object, GameObjectQuery> GameObject()
+        public readonly Result<GameObject, object, GameObjectQuery> GameObject()
         {
             var go = GameObjects().FirstOrDefault();
 
@@ -561,7 +557,10 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectsEnumerator ParentGameObjects() => FromParents().ExcludeSelf().GameObjects();
+        public GameObjectsEnumerator ParentGameObjects()
+        {
+            return FromParents().ExcludeSelf().GameObjects();
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -572,29 +571,15 @@ namespace CCEnvs.Unity
 
         #endregion GameObjects
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Transform? RootTransform()
+        #region Filters
+
+        public readonly bool HasDepthLimiter(Transform target)
         {
-            CC.Guard.IsNotNullTarget(Target);
+            if (DepthLimiterType is null)
+                return true;
 
-            var root = Target.transform.root;
-
-            if (root == Target.transform)
-                return Target.transform;
-
-            if (root == null)
-                return null;
-
-            if (Target.GetComponentInParent<RootMarker>().IsNotNull(out var rootMarker))
-                return rootMarker.transform;
-
-            return root;
+            return target.HasComponent(DepthLimiterType);
         }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly GameObjectQuery ShallowClone() => this;
 
         public readonly bool IsMatchLayerMaskFilter(GameObject? go)
         {
@@ -603,7 +588,7 @@ namespace CCEnvs.Unity
 
             return !LayerMaskFilter.HasValue
                    ||
-                   (go.layer & 1 << LayerMaskFilter.Value) != 0;
+                   (LayerMaskFilter.Value & 1 << go.layer) != 0;
         }
 
         public readonly bool IsMatchNameFilter(GameObject? go)
@@ -659,7 +644,35 @@ namespace CCEnvs.Unity
                    HasRequiredType(go);
         }
 
-        private IList<Component> CustomParentSearch(
+        #endregion Filters
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Transform? RootTransform()
+        {
+            CC.Guard.IsNotNullTarget(Target);
+
+            var root = Target.transform.root;
+
+            if (root == Target.transform)
+                return Target.transform;
+
+            if (root == null)
+                return null;
+
+            if (Target.GetComponentInParent<RootMarker>().IsNotNull(out var rootMarker))
+                return rootMarker.transform;
+
+            return root;
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly GameObjectQuery ShallowClone() => this;
+
+        #region SearchAlgorytms
+
+        private readonly IList<Component> CustomParentSearch(
             GameObject target,
             Type? type
             )
@@ -691,7 +704,7 @@ namespace CCEnvs.Unity
                     continue;
                 }
 
-                if (!FilterByDepthLimiter(current))
+                if (HasDepthLimiter(current))
                     return cmps;
 
                 bool foundAny = false;
@@ -715,7 +728,7 @@ namespace CCEnvs.Unity
             return cmps;
         }
 
-        private IList<Component> CustomBfsChildSearch(
+        private readonly IList<Component> CustomBfsChildSearch(
             GameObject target,
             Type? type
             )
@@ -741,10 +754,10 @@ namespace CCEnvs.Unity
             {
                 child = toProcess.Dequeue();
 
-                if (!FilterByDepthLimiter(child))
+                if (HasDepthLimiter(child))
                     continue;
 
-                bool cmpsFound = target.GetComponentsNonAlloc(type, ref cmps) != 0;
+                bool cmpsFound = child.GetComponentsNonAlloc(type, ref cmps) != 0;
 
                 if (firstComponentsOnBranch && cmpsFound)
                     continue;
@@ -774,7 +787,7 @@ namespace CCEnvs.Unity
             }
         }
 
-        private IList<Component> GetComponentsFrom(Type? type)
+        private readonly IList<Component> GetComponents(Type? type)
         {
             if (Target == null)
             {
@@ -801,6 +814,8 @@ namespace CCEnvs.Unity
                         includeInactive
                         );
                 }
+
+                return cmps ?? (IList<Component>)Array.Empty<Component>();
             }
             else if (findMode == FindMode.Self)
             {
@@ -835,12 +850,7 @@ namespace CCEnvs.Unity
             throw CC.ThrowHelper.InvalidOperationException(findMode, nameof(findMode));
         }
 
-        private ComponentsEnumerator ComponentsInternal(Type? type)
-        {
-            IList<Component> components = GetComponentsFrom(type);
-
-            return new ComponentsEnumerator(this, components);
-        }
+        #endregion SearchAlgorytms
 
         private readonly GameObjectQueryException GetException(
             string msg, 
@@ -859,6 +869,8 @@ namespace CCEnvs.Unity
                 componentFilter: RequieredTypeFilter
                 );
         }
+
+        #region Enumerators
 
         public struct ComponentsEnumerator 
             :
@@ -919,7 +931,7 @@ namespace CCEnvs.Unity
 
                 var loopFuse = LoopFuse.Create();
 
-                while (++pointer >= components.Count && loopFuse.MoveNext())
+                while (++pointer < components.Count && loopFuse.MoveNext())
                 {
                     Current = components[pointer];
                     currentGO = Current.gameObject;
@@ -1056,7 +1068,7 @@ namespace CCEnvs.Unity
                 {
                     viewModel = view.ViewModel;
 
-                    if (!hasViewModelType || viewModel.IsNotInstanceOfType(viewModelType!))
+                    if (hasViewModelType && viewModel.IsNotInstanceOfType(viewModelType!))
                         continue;
 
                     if (viewModel.Is<Component>(out var cmp))
@@ -1332,6 +1344,8 @@ namespace CCEnvs.Unity
             public readonly IEnumerator<GameObject> GetEnumerator() => this;
             readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
+
+        #endregion Enumerators
     }
 
     public static class GameObjectSearchExtensions

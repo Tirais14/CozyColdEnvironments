@@ -1,12 +1,14 @@
+using CCEnvs.Collections;
+using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
-using CCEnvs.Reflection;
-using CCEnvs.TypeMatching;
+using UnityEditor;
+using UnityEditor.AddressableAssets.Build.Layout;
 using ZLinq;
 
 #nullable enable
@@ -122,18 +124,42 @@ namespace CCEnvs.Unity.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<IAssetDatabase> Database(Type? assetType = null, Type? type = null)
+        public readonly Result<IAssetDatabase, object, (AssetDatabaseQuery Query, Type? AssetType)> Database(Type? assetType = null, Type? type = null)
         {
-            var dbs = Databases(type, assetType);
+            var db = Databases(type, assetType).FirstOrDefault();
 
-            return (dbs.SingleOrDefault(), new DatabaseNotFoundException(ID, (IAssetDatabaseRegistry)Target!, assetType));
+            if (db.IsNull())
+            {
+                return new Result<IAssetDatabase, object, (AssetDatabaseQuery Query, Type? AssetType)>(
+                    static args =>
+                    {
+                        return new DatabaseNotFoundException(args.Query.ID, (IAssetDatabaseRegistry)args.Query.Target!, args.AssetType);
+                    },
+                    (this, assetType)
+                    );
+            }
+
+            return new Result<IAssetDatabase, object, (AssetDatabaseQuery Query, Type? AssetType)>(db);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<IAssetDatabase<TAssetType>> Database<TAssetType>(Type? dbType = null)
+        public readonly Result<IAssetDatabase<TAssetType>, object, (AssetDatabaseQuery Query, Type? AssetType)> Database<TAssetType>(Type? dbType = null)
         {
-            return Database(assetType: typeof(TAssetType), type: dbType).Cast<IAssetDatabase<TAssetType>>();
+            var db = (IAssetDatabase<TAssetType>)Databases(assetType: typeof(TAssetType), type: dbType).FirstOrDefault();
+
+            if (db.IsNull())
+            {
+                return new Result<IAssetDatabase<TAssetType>, object, (AssetDatabaseQuery Query, Type? AssetType)>(
+                    static args =>
+                    {
+                        return new DatabaseNotFoundException(args.Query.ID, (IAssetDatabaseRegistry)args.Query.Target!, args.AssetType);
+                    },
+                    (this, typeof(TAssetType))
+                    );
+            }
+
+            return new Result<IAssetDatabase<TAssetType>, object, (AssetDatabaseQuery Query, Type? AssetType)>(db);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -150,16 +176,42 @@ namespace CCEnvs.Unity.Databases
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<object> Asset(Type? type = null)
+        public readonly Result<object, object, (AssetDatabaseQuery Query, Type Type)> Asset(Type? type = null)
         {
-            return (Assets(type).FirstOrDefault(), new AssetNotFoundException((IAssetDatabase)Target!, ID, type));
+            var asset = Assets(type).FirstOrDefault();
+
+            if (asset.IsNull())
+            {
+                return new Result<object, object, (AssetDatabaseQuery Query, Type Type)>(
+                    static args =>
+                    {
+                        return new AssetNotFoundException((IAssetDatabase)args.Query.Target!, args.Query.ID, args.Type);
+                    },
+                    (this, type!)
+                    );
+            }
+
+            return new Result<object, object, (AssetDatabaseQuery Query, Type Type)>(asset);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Result<T> Asset<T>()
+        public readonly Result<T, object, AssetDatabaseQuery> Asset<T>()
         {
-            return Asset(typeof(T)).Cast<T>();
+            var asset = Assets<T>().FirstOrDefault();
+
+            if (asset.IsNull())
+            {
+                return new Result<T, object, AssetDatabaseQuery>(
+                    static @this =>
+                    {
+                        return new AssetNotFoundException((IAssetDatabase)@this.Target!, @this.ID, typeof(T));
+                    },
+                    this
+                    );
+            }
+
+            return new Result<T, object, AssetDatabaseQuery>(asset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

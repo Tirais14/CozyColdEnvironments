@@ -407,15 +407,27 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<MemberInfo> Members() => FindMembers();
 
-        public Result<MemberInfo> Member()
+        public Result<MemberInfo, object, Reflect> Member()
         {
-            return (Members().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(
-                name: name.Raw,
-                memberType: MemberTypes.Custom,
-                reflectedType: type,
-                bindingFlags: bindingFlags,
-                argumentTypes: argumentTypes.Raw,
-                binder: binder.Raw));
+            var member = Members().FirstOrDefault();
+
+            if (member is null)
+            {
+                return new Result<MemberInfo, object, Reflect>(static @this =>
+                {
+                    return CC.ThrowHelper.MemberNotFoundException(
+                        name: @this!.name.Raw,
+                        memberType: MemberTypes.Custom,
+                        reflectedType: @this!.type,
+                        bindingFlags: @this!.bindingFlags,
+                        argumentTypes: @this!.argumentTypes.Raw,
+                        binder: @this!.binder.Raw);
+                },
+                this
+                );
+            }
+
+            return new Result<MemberInfo, object, Reflect>(member);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -429,15 +441,29 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<ConstructorInfo> Constructor()
+        public Result<ConstructorInfo, object, Reflect> Constructor()
         {
-            return (Constructors().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(
-                name: name.Raw,
-                memberType: MemberTypes.Constructor,
-                reflectedType: type,
-                bindingFlags: bindingFlags,
-                argumentTypes: argumentTypes.Raw,
-                binder: binder.Raw));
+            var ctor = Constructors().FirstOrDefault();
+
+            if (ctor is null)
+            {
+                return new Result<ConstructorInfo, object, Reflect>(
+                    static @this =>
+                    {
+                        return CC.ThrowHelper.MemberNotFoundException(
+                            name: @this!.name.Raw,
+                            memberType: MemberTypes.Constructor,
+                            reflectedType: @this!.type,
+                            bindingFlags: @this!.bindingFlags,
+                            argumentTypes: @this!.argumentTypes.Raw,
+                            binder: @this!.binder.Raw
+                            );
+                    },
+                    this
+                    );
+            }
+
+            return new Result<ConstructorInfo, object, Reflect>(ctor);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -459,15 +485,29 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<ValuedMemberInfo> ValuedMember()
+        public Result<ValuedMemberInfo, object, Reflect> ValuedMember()
         {
-            return (ValuedMembers().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(
-                name: name.Raw,
-                memberType: MemberTypes.Field | MemberTypes.Property,
-                reflectedType: type,
-                bindingFlags: bindingFlags,
-                argumentTypes: argumentTypes.Raw,
-                binder: binder.Raw));
+            var member = ValuedMembers().FirstOrDefault();
+
+            if (member is null)
+            {
+                return new Result<ValuedMemberInfo, object, Reflect>(
+                    static @this =>
+                    {
+                        return CC.ThrowHelper.MemberNotFoundException(
+                            name: @this!.name.Raw,
+                            memberType: MemberTypes.Field | MemberTypes.Property,
+                            reflectedType: @this!.type,
+                            bindingFlags: @this!.bindingFlags,
+                            argumentTypes: @this!.argumentTypes.Raw,
+                            binder: @this!.binder.Raw
+                            );
+                    },
+                    this
+                    );
+            }
+
+            return new Result<ValuedMemberInfo, object, Reflect>(member);
         }
 
         [DebuggerStepThrough]
@@ -479,18 +519,32 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<FieldInfo> Field()
+        public Result<FieldInfo, object, Reflect> Field()
         {
             if (name.IsNone && extraType.IsNone)
                 throw new InvalidOperationException($"{nameof(name)} and/or {nameof(extraType)} must be setted.");
 
-            return (Fields().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(
-                name: name.Raw,
-                memberType: MemberTypes.Field,
-                reflectedType: type,
-                bindingFlags: bindingFlags,
-                argumentTypes: argumentTypes.Raw,
-                binder: binder.Raw));
+            var field = Fields().FirstOrDefault();
+
+            if (field is null)
+            {
+                return new Result<FieldInfo, object, Reflect>(
+                    static @this =>
+                    {
+                        return CC.ThrowHelper.MemberNotFoundException(
+                            name: @this!.name.Raw,
+                            memberType: MemberTypes.Field,
+                            reflectedType: @this!.type,
+                            bindingFlags: @this!.bindingFlags,
+                            argumentTypes: @this!.argumentTypes.Raw,
+                            binder: @this!.binder.Raw
+                            );
+                    },
+                    this
+                    );
+            }
+
+            return new Result<FieldInfo, object, Reflect>(field);
         }
 
         [DebuggerStepThrough]
@@ -502,18 +556,32 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<PropertyInfo> Property()
+        public Result<PropertyInfo, object, Reflect> Property()
         {
             if (name.IsNone && extraType.IsNone)
                 throw new InvalidOperationException($"{nameof(name)} and/or {nameof(extraType)} must be setted.");
 
-            return (Properties().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(
-                name: name.Raw,
-                memberType: MemberTypes.Property,
-                reflectedType: type,
-                bindingFlags: bindingFlags,
-                argumentTypes: argumentTypes.Raw,
-                binder: binder.Raw));
+            var prop = Properties().FirstOrDefault();
+
+            if (prop is null)
+            {
+                return new Result<PropertyInfo, object, Reflect>(
+                    static @this =>
+                    {
+                        return CC.ThrowHelper.MemberNotFoundException(
+                            name: @this!.name.Raw,
+                            memberType: MemberTypes.Property,
+                            reflectedType: @this!.type,
+                            bindingFlags: @this!.bindingFlags,
+                            argumentTypes: @this!.argumentTypes.Raw,
+                            binder: @this!.binder.Raw
+                            );
+                    },
+                    this
+                    );
+            }
+
+            return new Result<PropertyInfo, object, Reflect>(prop);
         }
 
         [DebuggerStepThrough]
@@ -539,15 +607,29 @@ namespace CCEnvs.Reflection
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<MethodInfo> Method()
+        public Result<MethodInfo, object, Reflect> Method()
         {
-            return (Methods().FirstOrDefault(), CC.ThrowHelper.MemberNotFoundException(
-                name: name.Raw,
-                memberType: MemberTypes.Method,
-                reflectedType: type,
-                bindingFlags: bindingFlags,
-                argumentTypes: argumentTypes.Raw,
-                binder: binder.Raw));
+            var method = Methods().FirstOrDefault();
+
+            if (method is null)
+            {
+                return new Result<MethodInfo, object, Reflect>(
+                    static @this =>
+                    {
+                        return CC.ThrowHelper.MemberNotFoundException(
+                            name: @this!.name.Raw,
+                            memberType: MemberTypes.Method,
+                            reflectedType: @this!.type,
+                            bindingFlags: @this!.bindingFlags,
+                            argumentTypes: @this!.argumentTypes.Raw,
+                            binder: @this!.binder.Raw
+                            );
+                    },
+                    this
+                    );
+            }
+
+            return new Result<MethodInfo, object, Reflect>(method);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

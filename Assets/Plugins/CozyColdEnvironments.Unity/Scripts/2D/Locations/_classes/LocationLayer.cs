@@ -23,53 +23,41 @@ namespace CCEnvs.Unity._2D.Locations
         /// <summary>
         /// When accessing an uninitialized cell and its position is within the boundaries, it is initialized.
         /// </summary>
-        public Result<T> this[Vector3Int pos] {
+        public T this[Vector3Int pos] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (!cells.TryGetValue(pos, out var cell))
-                {
-                    if (!Contains(pos))
-                        return new Result<T>(default, new PointOutOfBoundsException(pos));
-
-                    cell = CreateCell(pos);
-                    cells.Add(pos, cell);
-                }
-
-                return Result.Create(cell);
-            }
+            get => cells[pos];
         }
 
         /// <inheritdoc cref="this[Vector3Int]"/>
-        public Result<T> this[Vector2Int pos] {
+        public T this[Vector2Int pos] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[(Vector3Int)pos];
         }
 
         /// <inheritdoc cref="this[Vector3Int]"/>
-        public Result<T> this[Vector3 pos] {
+        public T this[Vector3 pos] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[ConvertPosition(pos)];
         }
 
         /// <inheritdoc cref="this[Vector3Int]"/>
-        public Result<T> this[Vector2 pos] {
+        public T this[Vector2 pos] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[ConvertPosition(pos)];
         }
 
         /// <inheritdoc cref="this[Vector3Int]"/>
-        public Result<T> this[int x, int y] {
+        public T this[int x, int y] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[new Vector3Int(x, y)];
         }
 
         /// <inheritdoc cref="this[Vector3Int]"/>
-        public Result<T> this[float x, float y] {
+        public T this[float x, float y] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[new Vector2(x, y)];
@@ -201,7 +189,7 @@ namespace CCEnvs.Unity._2D.Locations
                 )
                 return;
 
-            T replacedCell = this[to].Strict();
+            T replacedCell = this[to];
             if (replacedCell.Is<Tile>(out var basicTile)
                 &&
                 basicTile.gameObject != null)

@@ -11,12 +11,12 @@ namespace CCEnvs.Unity._2D.Locations
 {
     public interface ILocationLayer : IEnumerable
     {
-        Result<ICell> this[Vector3Int pos] { get; }
-        Result<ICell> this[Vector2Int pos] { get; }
-        Result<ICell> this[Vector3 pos] { get; }
-        Result<ICell> this[Vector2 pos] { get; }
-        Result<ICell> this[int x, int y] { get; }
-        Result<ICell> this[float x, float y] { get; }
+        ICell this[Vector3Int pos] { get; }
+        ICell this[Vector2Int pos] { get; }
+        ICell this[Vector3 pos] { get; }
+        ICell this[Vector2 pos] { get; }
+        ICell this[int x, int y] { get; }
+        ICell this[float x, float y] { get; }
 
         Tilemap tilemap { get; }
         ILocation Location { get; }
@@ -61,19 +61,19 @@ namespace CCEnvs.Unity._2D.Locations
     public interface ILocationLayer<T> : ILocationLayer, IEnumerable<T>
         where T : ICell
     {
-        new Result<T> this[Vector3Int pos] { get; }
-        new Result<T> this[Vector2Int pos] { get; }
-        new Result<T> this[Vector3 pos] { get; }
-        new Result<T> this[Vector2 pos] { get; }
-        new Result<T> this[int x, int y] { get; }
-        new Result<T> this[float x, float y] { get; }
+        new T this[Vector3Int pos] { get; }
+        new T this[Vector2Int pos] { get; }
+        new T this[Vector3 pos] { get; }
+        new T this[Vector2 pos] { get; }
+        new T this[int x, int y] { get; }
+        new T this[float x, float y] { get; }
 
-        Result<ICell> ILocationLayer.this[Vector3Int pos] => this[pos].Cast<ICell>();
-        Result<ICell> ILocationLayer.this[Vector2Int pos] => this[pos].Cast<ICell>();
-        Result<ICell> ILocationLayer.this[Vector3 pos] => this[pos].Cast<ICell>();
-        Result<ICell> ILocationLayer.this[Vector2 pos] => this[pos].Cast<ICell>();
-        Result<ICell> ILocationLayer.this[int x, int y] => this[x, y].Cast<ICell>();
-        Result<ICell> ILocationLayer.this[float x, float y] => this[x, y].Cast<ICell>();
+        ICell ILocationLayer.this[Vector3Int pos] => this[pos];
+        ICell ILocationLayer.this[Vector2Int pos] => this[pos];
+        ICell ILocationLayer.this[Vector3 pos] => this[pos];
+        ICell ILocationLayer.this[Vector2 pos] => this[pos];
+        ICell ILocationLayer.this[int x, int y] => this[x, y];
+        ICell ILocationLayer.this[float x, float y] => this[x, y];
 
         bool Contains(T? cell);
 

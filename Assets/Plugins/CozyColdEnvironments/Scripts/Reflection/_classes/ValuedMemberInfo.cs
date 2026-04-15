@@ -83,13 +83,19 @@ namespace CCEnvs.Reflection
             return member.ToProperty().Strict();
         }
 
-        public Result<FieldInfo> ToField()
+        public Result<FieldInfo, object, MemberInfo> ToField()
         {
-            return (Member as FieldInfo, CC.ThrowHelper.InvalidCastException(Member.GetType(), typeof(FieldInfo)));
+            if (Member is not FieldInfo field)
+                return new Result<FieldInfo, object, MemberInfo>(static member => CC.ThrowHelper.InvalidCastException(member!.GetType(), TypeofCache<FieldInfo>.Type), Member);
+
+            return new Result<FieldInfo, object, MemberInfo>(field);
         }
-        public Result<PropertyInfo> ToProperty()
+        public Result<PropertyInfo, object, MemberInfo> ToProperty()
         {
-            return (Member as PropertyInfo, CC.ThrowHelper.InvalidCastException(Member.GetType(), typeof(PropertyInfo)));
+            if (Member is not PropertyInfo prop)
+                return new Result<PropertyInfo, object, MemberInfo>(static member => CC.ThrowHelper.InvalidCastException(member!.GetType(), TypeofCache<PropertyInfo>.Type), Member);
+
+            return new Result<PropertyInfo, object, MemberInfo>(prop);
         }
     }
 

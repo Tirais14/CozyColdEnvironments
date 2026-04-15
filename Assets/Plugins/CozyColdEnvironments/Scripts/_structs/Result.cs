@@ -9,67 +9,6 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs
 {
-    public static class Result
-    {
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Exception<T>(Exception exception)
-        {
-            return new Result<T>(exception);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<TValue, object, TState> ExceptionLazy<TValue, TState>(
-            Func<TState?, Exception> exceptionFactory,
-            TState? exceptionFactoryState = default
-            )
-        {
-            return new Result<TValue, object, TState>(
-                exceptionFactory,
-                exceptionFactoryState
-                );
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> ValueLazy<T>(
-            Func<object?, T> valueFactory,
-            object? valueFactoryState
-            )
-        {
-            return new Result<T>(
-                valueFactory: valueFactory,
-                exceptionFactory: null,
-                valueFactoryState: valueFactoryState
-                );
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Value<T>(T value)
-        {
-            return new Result<T>(value);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Lazy<T>(
-            Func<object?, T?> valueFactory,
-            Func<object?, Exception?> exceptionFactory,
-            object? valueFactoryState = null,
-            object? exceptionFactoryState = null
-            )
-        {
-            return new Result<T>(
-                valueFactory,
-                exceptionFactory,
-                valueFactoryState,
-                exceptionFactoryState
-                );
-        }
-    }
-
     public readonly struct Result<TValue> : IEquatable<Result<TValue>>
     {
         public readonly static Result<TValue> Empty = new();

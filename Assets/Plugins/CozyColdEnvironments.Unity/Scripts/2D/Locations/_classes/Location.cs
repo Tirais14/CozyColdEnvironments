@@ -20,18 +20,12 @@ namespace CCEnvs.Unity
         [SerializeField]
         protected SerializedBoundsInt m_CellBounds;
 
-        public Result<ILocationLayer> this[string name] {
+        public ILocationLayer this[string name] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (!layers.TryGetValue(name, out ILocationLayer layer))
-                    return (null, new KeyNotFoundException($"{nameof(name)}: {name}."));
-
-                return (layer, null);
-            }
+            get => layers[name];
         }
 
-        public Result<ILocationLayer> this[Enum key] {
+        public ILocationLayer this[Enum key] {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this[key.ToString()];
@@ -94,7 +88,7 @@ namespace CCEnvs.Unity
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<ILocationLayer> GetLocationLayer<T>(T key) where T : unmanaged, Enum
+        public ILocationLayer GetLocationLayer<T>(T key) where T : unmanaged, Enum
         {
             return this[key.ToString()];
         }

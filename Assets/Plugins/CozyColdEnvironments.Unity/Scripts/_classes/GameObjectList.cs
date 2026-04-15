@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Unity.Components;
 using ObservableCollections;
 using R3;
@@ -182,7 +183,7 @@ namespace CCEnvs.Unity.UI
 
             if (settings.HasFlagT(Settings.ReparentByRootMarker))
             {
-                var root = go.QueryTo().RootRaw();
+                var root = new Either<Transform, RootMarker>(go.transform.root, go.GetComponent<RootMarker>());
 
                 root.IfRight(x =>
                 {
