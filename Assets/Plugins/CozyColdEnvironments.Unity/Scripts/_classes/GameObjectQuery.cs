@@ -3,6 +3,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CCEnvs.Unity.UI;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -11,6 +12,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ZLinq;
@@ -275,7 +278,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery HasComponent(Type? componentType = null)
+        public GameObjectQuery RequireComponent(Type? componentType = null)
         {
             RequieredTypeFilter = componentType;
 
@@ -284,42 +287,23 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery HasComponent<T>()
+        public GameObjectQuery RequireComponent<T>()
         {
-            return HasComponent(typeof(T));
+            return RequireComponent(typeof(T));
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<Component> Components(Type? type = null)
+        public ComponentsEnumerator Components(Type? type = null)
         {
-            if (Target.TryGetValue(out var target))
-                return ComponentsInternal(target, type);
-
-            var includeInactiveState = settings.HasFlagT(Settings.IncludeInactive)
-                        ?
-                        FindObjectsInactive.Include
-                        :
-                        FindObjectsInactive.Exclude;
-
-            return Object.FindObjectsByType<Transform>(includeInactiveState, sortMode)
-#if ZLINQ_PLUGIN
-                .AsValueEnumerable()
-#endif
-                .Select(static transform => transform.gameObject)
-                .Select(go => ComponentsInternal(go, type))
-                .SelectMany(static x => x)
-#if ZLINQ_PLUGIN
-                .AsEnumerable()
-#endif
-                ;
+            return ComponentsInternal(type);
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<T> Components<T>()
+        public ComponentsEnumerator<T> Components<T>()
         {
-            return Components(typeof(T)).Cast<T>();
+            return ComponentsInternal(TypeofCache<T>.Type).Cast<T>();
         }
 
         [DebuggerStepThrough]
@@ -331,19 +315,9 @@ namespace CCEnvs.Unity
             var cmp = Components(type).FirstOrDefault();
 
             if (cmp == null)
-                return ()
+                return new Result<Component>(GetException("Component not found", type));
 
-            return (Components(type).FirstOrDefault(), new GameObjectQueryException(
-                Target.Raw,
-                settings,
-                findMode,
-                message: $"Component not found.",
-                seekingComponentType: type,
-                name: NameFilter.Raw,
-                tag: TagFilter.Raw,
-                layer: LayerMaskFilter.GetValue(-1),
-                componentFilter: RequieredTypeFilter.Raw)
-                );
+            return new Result<Component>(cmp);
         }
 
         [DebuggerStepThrough]
@@ -355,16 +329,16 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<IView> Views(Type? type = null)
+        public ComponentsEnumerator<IViewModel> Views(Type? type = null)
         {
             type ??= typeof(IView);
 
-            return Components(type).Cast<IView>();
+            return Components(type).Convert<IViewModel>();
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<T> Views<T>()
+        public ComponentsEnumerator<T> Views<T>()
         {
             return Views(typeof(T)).Cast<T>();
         }
@@ -373,7 +347,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<IView> View(Type? type = null)
         {
-            return Component(type ?? typeof(IView)).Cast<IView>();
+            return Component(type ?? TypeofCache<IView>.Type).Cast<IView>();
         }
 
         [DebuggerStepThrough]
@@ -381,21 +355,13 @@ namespace CCEnvs.Unity
         public Result<T> View<T>()
             where T : IView
         {
-            return View(typeof(T)).Cast<T>();
+            return View(TypeofCache<T>.Type).Cast<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<IViewModel> ViewModels(Type? type = null)
         {
-            type ??= typeof(IViewModel);
-
-            bool anyType = type is null;
-
-            return from view in Views(type)
-                   select view.ViewModel into viewModel
-                   where viewModel.IsNotNull()
-                   where anyType || viewModel.IsInstanceOfType(type!)
-                   select viewModel;
+            return Components(TypeofCache<IView>.Type).ViewModels(type);
         }
 
         [DebuggerStepThrough]
@@ -403,7 +369,7 @@ namespace CCEnvs.Unity
         public IEnumerable<T> ViewModels<T>()
             where T : IViewModel
         {
-            return ViewModels(typeof(T)).Cast<T>();
+            return Components(TypeofCache<IView>.Type).ViewModels(TypeofCache<T>.Type).Cast<T>();
         }
 
         [DebuggerStepThrough]
@@ -506,7 +472,7 @@ namespace CCEnvs.Unity
             var transform = Transforms().FirstOrDefault();
 
             if (transform == null)
-                return (null, GetException("Transform not found", TypeofCache<Transform>.Type));
+                return Result.Exception((@this) => )
 
             return (transform, null);
         }
@@ -576,9 +542,69 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery ShallowClone()
+        public readonly GameObjectQuery ShallowClone() => this;
+
+        public readonly bool IsMatchLayerMaskFilter(GameObject? go)
         {
-            throw new NotImplementedException();
+            if (go == null)
+                return false;
+
+            return !LayerMaskFilter.HasValue
+                   ||
+                   (go.layer & 1 << LayerMaskFilter.Value) != 0;
+        }
+
+        public readonly bool IsMatchNameFilter(GameObject? go)
+        {
+            if (go == null)
+                return false;
+
+            return NameFilter is null
+                   ||
+                   go.name.Match(NameFilter, nameMatchSettings);
+        }
+
+        public readonly bool IsMatchTagFilter(GameObject? go)
+        {
+            if (go == null)
+                return false;
+
+            return TagFilter is null
+                   ||
+                   go.CompareTag(TagFilter);
+        }
+
+        public readonly bool IsMatchGUIDFilter(GameObject? go)
+        {
+            if (go == null)
+                return false;
+
+            return GUID.IsNullOrWhiteSpace()
+                   ||
+                   go.GetPersistentGuid() == GUID;
+        }
+
+        public readonly bool HasRequiredType(GameObject? go)
+        {
+            if (go == null)
+                return false;
+
+            return RequieredTypeFilter is null
+                   ||
+                   go.HasComponent(RequieredTypeFilter);
+        }
+
+        public readonly bool IsGameObjectMatch(GameObject? go)
+        {
+            return IsMatchLayerMaskFilter(go)
+                   &&
+                   IsMatchNameFilter(go)
+                   &&
+                   IsMatchTagFilter(go)
+                   &&
+                   IsMatchGUIDFilter(go)
+                   &&
+                   HasRequiredType(go);
         }
 
         private IList<Component> CustomParentSearch(
@@ -696,41 +722,38 @@ namespace CCEnvs.Unity
             }
         }
 
-        private IList<Component> GetComponentsFrom(
-            GameObject target,
-            Type? type
-            )
+        private IList<Component> GetComponentsFrom(Type? type)
         {
-            if (findMode == FindMode.Self)
+            if (Target == null)
             {
                 List<Component>? cmps = null;
 
-                if (Target == null)
+                int sceneCount = SceneManager.sceneCount;
+                using var sceneRoots = new PooledList<GameObject>(null);
+
+                Scene scene;
+
+                for (int i = 0; i < sceneCount; i++)
                 {
-                    int sceneCount = SceneManager.sceneCount;
-                    using var sceneRoots = new PooledList<GameObject>(null);
-
-                    Scene scene;
-
-                    for (int i = 0; i < sceneCount; i++)
-                    {
-                        scene = SceneManager.GetSceneAt(i);
-                        scene.GetRootGameObjects(sceneRoots);
-                    }
-
-                    bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
-
-                    for (int i = 0; i < sceneRoots.Value.Count; i++)
-                    {
-                        sceneRoots[i].GetComponentsInChildrenNonAlloc(
-                            type,
-                            ref cmps,
-                            includeInactive
-                            );
-                    }
+                    scene = SceneManager.GetSceneAt(i);
+                    scene.GetRootGameObjects(sceneRoots);
                 }
-                else
-                    target.GetComponentsNonAlloc(type, ref cmps);
+
+                bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
+
+                for (int i = 0; i < sceneRoots.Value.Count; i++)
+                {
+                    sceneRoots[i].GetComponentsInChildrenNonAlloc(
+                        type,
+                        ref cmps,
+                        includeInactive
+                        );
+                }
+            }
+            else if (findMode == FindMode.Self)
+            {
+                List<Component>? cmps = null;
+                Target.GetComponentsNonAlloc(type, ref cmps);
 
                 return cmps ?? (IList<Component>)Array.Empty<Component>();
             }
@@ -744,40 +767,27 @@ namespace CCEnvs.Unity
                     List<Component>? cmps = null;
 
                     if (!excludeSelf)
-                        target.GetComponentsNonAlloc(type, ref cmps);
+                        Target.GetComponentsNonAlloc(type, ref cmps);
 
-                    foreach (var child in target.transform)
+                    foreach (var child in Target.transform)
                         ((Transform)child).GetComponentsNonAlloc(type, ref cmps);
 
                     return cmps ?? (IList<Component>)Array.Empty<Component>();
                 }
                 else
-                    return CustomBfsChildSearch(target, type);
+                    return CustomBfsChildSearch(Target, type);
             }
             else if (findMode == FindMode.InParents)
-                return CustomParentSearch(target, type);
+                return CustomParentSearch(Target, type);
 
             throw CC.ThrowHelper.InvalidOperationException(findMode, nameof(findMode));
         }
 
-        private ComponentsEnumerator ComponentsInternal(
-            GameObject target,
-            Type? type
-            )
+        private ComponentsEnumerator ComponentsInternal(Type? type)
         {
-            IList<Component> components = GetComponentsFrom(target, type);
+            IList<Component> components = GetComponentsFrom(type);
 
             return new ComponentsEnumerator(this, components);
-        }
-
-        private ComponentsEnumerator<T> ComponentsInternal<T>(
-            GameObject target,
-            Type? type
-            )
-        {
-            IList<Component> components = GetComponentsFrom(target, type);
-
-            return new ComponentsEnumerator<T>(new ComponentsEnumerator(this, components));
         }
 
         private readonly GameObjectQueryException GetException(
@@ -798,19 +808,23 @@ namespace CCEnvs.Unity
                 );
         }
 
-        public struct ComponentsEnumerator : IEnumerator<Component>
+        public struct ComponentsEnumerator 
+            :
+            IEnumerator<Component>, 
+            IEnumerable<Component>,
+            IGameObjectQueryEnumerator
         {
-            private readonly GameObjectQuery query;
+            internal readonly PooledObject<HashSet<GameObject>> excludedGameObjects;
 
             private readonly IList<Component> components;
-
-            private readonly PooledObject<HashSet<GameObject>> excludedGameObjects;
 
             private int pointer;
 
             private GameObject currentGO;
 
             public Component Current { get; private set; }
+
+            public readonly GameObjectQuery Query { get; }
 
             readonly object IEnumerator.Current => Current;
 
@@ -821,13 +835,23 @@ namespace CCEnvs.Unity
             {
                 CC.Guard.IsNotNull(components, nameof(components));
 
-                this.query = query;
+                this.Query = query;
                 this.components = components;
 
                 Current = null!;
                 currentGO = null!;
                 pointer = -1;
                 excludedGameObjects = HashSetPool<GameObject>.Shared.Get();
+            }
+
+            public readonly ViewModelsEnumerator ViewModels(Type? viewModelType = null)
+            {
+                return new ViewModelsEnumerator(Cast<IView>(), viewModelType);
+            }
+
+            public readonly ModelsEnumerator Models(Type? modelType = null)
+            {
+                return new ModelsEnumerator(ViewModels(), modelType);
             }
 
             public bool MoveNext()
@@ -842,15 +866,7 @@ namespace CCEnvs.Unity
                     if (IsExcludedGameObject())
                         continue;
 
-                    if (!IsMatchLayerMaskFilter()
-                        ||
-                        !IsMatchNameFilter()
-                        ||
-                        !IsMatchTagFilter()
-                        ||
-                        !IsMatchGUIDFilter()
-                        ||
-                        !HasRequiredType())
+                    if (!Query.IsGameObjectMatch(currentGO))
                     {
                         excludedGameObjects.Value.Add(currentGO);
                         continue;
@@ -864,90 +880,318 @@ namespace CCEnvs.Unity
 
             public readonly void Dispose() => excludedGameObjects.Dispose();
 
+            public readonly IEnumerator<Component> GetEnumerator() => this;
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
             public void Reset()
             {
                 pointer = -1;
                 excludedGameObjects.Value.Clear();
             }
 
-            public readonly ComponentsEnumerator<T> Convert<T>()
+            public readonly ComponentsEnumerator<T> Cast<T>()
             {
                 return new ComponentsEnumerator<T>(this);
             }
 
-            private readonly bool IsExcludedGameObject()
+            internal readonly bool IsExcludedGameObject()
             {
                 return excludedGameObjects.Value.Contains(currentGO); 
             }
-
-            private readonly bool IsMatchLayerMaskFilter()
-            {
-                return !query.LayerMaskFilter.HasValue
-                       ||
-                       (currentGO.layer & 1 << query.LayerMaskFilter.Value) != 0;
-            }
-
-            private readonly bool IsMatchNameFilter()
-            {
-                return query.NameFilter is null
-                       ||
-                       currentGO.name.Match(query.NameFilter, query.nameMatchSettings);
-            }
-
-            private readonly bool IsMatchTagFilter()
-            {
-                return query.TagFilter is null
-                       ||
-                       currentGO.CompareTag(query.TagFilter);
-            }
-
-            private readonly bool IsMatchGUIDFilter()
-            {
-                return query.GUID.IsNullOrWhiteSpace()
-                       ||
-                       currentGO.GetPersistentGuid() == query.GUID;
-            }
-
-            private readonly bool HasRequiredType()
-            {
-                return query.RequieredTypeFilter is null
-                       ||
-                       currentGO.HasComponent(query.RequieredTypeFilter);
-            }
         }
 
-        public struct ComponentsEnumerator<T> : IEnumerator<T>
+        public struct ComponentsEnumerator<T>
+            :
+            IEnumerator<T>,
+            IEnumerable<T>
         {
-            private ComponentsEnumerator core;
+            private ComponentsEnumerator componentEtor;
 
-            public T Current { get; private set; }
+            public T Current { readonly get; private set; }
+
+            public readonly ComponentsEnumerator ComponentsEtor => componentEtor;
+
+            public readonly GameObjectQuery Query => componentEtor.Query;
 
             readonly object IEnumerator.Current => Current!;
 
-            public ComponentsEnumerator(ComponentsEnumerator core)
+            public ComponentsEnumerator(ComponentsEnumerator componentsEtor)
             {
-                this.core = core;
+                this.componentEtor = componentsEtor;
 
                 Current = default!;
             }
 
             public static implicit operator ComponentsEnumerator(ComponentsEnumerator<T> instance)
             {
-                return instance.core;
+                return instance.componentEtor;
             }
 
             public bool MoveNext()
             {
-                if (!core.TryMoveNextStruct<ComponentsEnumerator, Component>(out var current))
+                if (!componentEtor.TryMoveNextStruct<ComponentsEnumerator, Component>(out var cmp))
                     return false;
 
-                Current = current.CastTo<T>();
+                Current = cmp.CastTo<T>();
                 return true;
             }
 
-            public readonly void Dispose() => core.Dispose();
+            public readonly void Dispose() => componentEtor.Dispose();
 
-            public readonly void Reset() => core.Reset();
+            public readonly void Reset() => componentEtor.Reset();
+
+            public readonly IEnumerator<T> GetEnumerator() => this;
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public struct ViewModelsEnumerator 
+            :
+            IEnumerator<IViewModel>,
+            IEnumerable<IViewModel>,
+            IGameObjectQueryEnumerator
+        {
+            private readonly Type? viewModelType;
+
+            private ComponentsEnumerator<IView> viewsEtor;
+
+            public IViewModel Current { readonly get; private set; }
+
+            public readonly ComponentsEnumerator<IView> ViewsEtor => viewsEtor;
+
+            public readonly GameObjectQuery Query => viewsEtor.Query;
+
+            internal readonly HashSet<GameObject> excludedGameObjects => viewsEtor.ComponentsEtor.excludedGameObjects.Value;
+
+            readonly object IEnumerator.Current => Current;
+
+            public ViewModelsEnumerator(
+                in ComponentsEnumerator<IView> viewsEtor, 
+                Type? viewModelType
+                )
+            {
+                this.viewsEtor = viewsEtor;
+                this.viewModelType = viewModelType;
+
+                Current = null!;
+            }
+
+            public readonly ViewModelsEnumerator<T> Cast<T>()
+                where T : IViewModel
+            {
+                return new ViewModelsEnumerator<T>(this);
+            }
+
+            public bool MoveNext()
+            {
+                IViewModel? viewModel;
+
+                var loopFuse = LoopFuse.Create();
+
+                bool hasViewModelType = viewModelType is not null;
+
+                while (viewsEtor.TryMoveNextStruct<ComponentsEnumerator<IView>, IView>(out var view)
+                       &&
+                       loopFuse.MoveNext())
+                {
+                    viewModel = view.ViewModel;
+
+                    if (!hasViewModelType || viewModel.IsNotInstanceOfType(viewModelType!))
+                        continue;
+
+                    if (viewModel.Is<Component>(out var cmp))
+                    {
+                        var viewGO = cmp.gameObject;
+
+                        if (excludedGameObjects.Contains(viewGO)
+                            ||
+                            !Query.IsGameObjectMatch(viewGO))
+                        {
+                            excludedGameObjects.Add(viewGO);
+                            continue;
+                        }
+                    }
+
+                    Current = viewModel!;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public readonly void Dispose() => viewsEtor.Dispose();
+
+            public readonly void Reset() => viewsEtor.Reset();
+
+            public readonly IEnumerator<IViewModel> GetEnumerator() => this;
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public struct ViewModelsEnumerator<T>
+            :
+            IEnumerator<T>,
+            IEnumerable<T>
+
+            where T : IViewModel
+        {
+            private ViewModelsEnumerator viewModelsEtor;
+
+            public T Current { readonly get; private set; }
+
+            public readonly ViewModelsEnumerator ViewModelsEtor => viewModelsEtor;
+
+            public readonly GameObjectQuery Query => viewModelsEtor.Query;
+
+            readonly object IEnumerator.Current => Current;
+
+            public ViewModelsEnumerator(ViewModelsEnumerator viewModelsEtor)
+            {
+                this.viewModelsEtor = viewModelsEtor;
+
+                Current = default!;
+            }
+
+            public static implicit operator ViewModelsEnumerator(ViewModelsEnumerator<T> instance)
+            {
+                return instance.viewModelsEtor;
+            }
+
+            public bool MoveNext()
+            {
+                if (!viewModelsEtor.TryMoveNextStruct<ViewModelsEnumerator, IViewModel>(out var viewModel))
+                    return false;
+
+                Current = (T)viewModel;
+                return true;
+            }
+
+            public readonly void Dispose() => viewModelsEtor.Dispose();
+
+            public readonly void Reset() => viewModelsEtor.Reset();
+
+            public readonly IEnumerator<T> GetEnumerator() => this;
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public struct ModelsEnumerator 
+            :
+            IEnumerator<object>,
+            IEnumerable<object>
+        {
+            internal readonly HashSet<GameObject> excludedGameObjects => ViewModelsEtor.excludedGameObjects;
+
+            private readonly Type? modelType;
+
+            private ViewModelsEnumerator viewModelsEtor;
+
+            public object Current { get; private set; }
+
+            public readonly ViewModelsEnumerator ViewModelsEtor => viewModelsEtor;
+
+            public readonly GameObjectQuery Query => viewModelsEtor.Query;
+
+            public ModelsEnumerator(
+                in ViewModelsEnumerator viewModelsEtor,
+                Type? modelType
+                )
+            {
+                this.viewModelsEtor = viewModelsEtor;
+                this.modelType = modelType;
+
+                Current = default!;
+            }
+
+            public readonly ModelsEnumerator<T> Cast<T>()
+            {
+                return new ModelsEnumerator<T>(this);
+            }
+
+            public bool MoveNext()
+            {
+                var loopFuse = LoopFuse.Create();
+
+                object? model;
+
+                bool hasModelType = modelType is not null;
+
+                while (viewModelsEtor.TryMoveNextStruct<ViewModelsEnumerator, IViewModel>(out var viewModel)
+                       &&
+                       loopFuse.MoveNext())
+                {
+                    model = viewModel.Model;
+
+                    if (!hasModelType || model.IsNotInstanceOfType(modelType!))
+                        continue;
+
+                    if (model.Is<Component>(out var cmp))
+                    {
+                        var modelGO = cmp.gameObject;
+
+                        if (excludedGameObjects.Contains(modelGO)
+                            ||
+                            !Query.IsGameObjectMatch(modelGO))
+                        {
+                            excludedGameObjects.Add(modelGO);
+                            continue;
+                        }
+                    }
+
+                    Current = model!;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public readonly void Dispose() => viewModelsEtor.Dispose();
+
+            public readonly void Reset() => viewModelsEtor.Reset();
+
+            public readonly IEnumerator<object> GetEnumerator() => this;
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public struct ModelsEnumerator<T>
+            :
+            IEnumerator<T>,
+            IEnumerable<T>
+        {
+            private ModelsEnumerator modelsEtor;
+
+            public T Current { readonly get; private set; }
+
+            public readonly ModelsEnumerator ModelsEtor => modelsEtor;
+
+            public readonly GameObjectQuery Query => modelsEtor.Query;
+
+            readonly object IEnumerator.Current => Current!;
+
+            public ModelsEnumerator(ModelsEnumerator modelsEtor)
+            {
+                this.modelsEtor = modelsEtor;
+
+                Current = default!;
+            }
+
+            public static implicit operator ModelsEnumerator(ModelsEnumerator<T> instance)
+            {
+                return instance.modelsEtor;
+            }
+
+            public bool MoveNext()
+            {
+                if (!modelsEtor.TryMoveNextStruct<ModelsEnumerator, object>(out var model))
+                    return false;
+
+                Current = (T)model;
+                return true;
+            }
+
+            public readonly void Dispose() => modelsEtor.Dispose();
+
+            public readonly void Reset() => modelsEtor.Reset();
+
+            public readonly IEnumerator<T> GetEnumerator() => this;
+            readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 
