@@ -1,16 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.Unity.Components;
 using CommunityToolkit.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Pool;
+using UnityEngine.TextCore.Text;
 using ZLinq;
 using Object = UnityEngine.Object;
 
@@ -278,7 +281,7 @@ namespace CCEnvs.Unity
                     return attributes.Count;
                 });
 
-            using var _ = HashSetPool<Type>.Get(out var componentTypeSet);
+            using var _ = UnityEngine.Pool.HashSetPool<Type>.Get(out var componentTypeSet);
             componentTypeSet.AddRange(componentTypes);
 
             foreach (var (cmp, type, _) in cmpInfos)
@@ -341,6 +344,395 @@ namespace CCEnvs.Unity
             //}
 
             //return go;
+        }
+
+        #region GetComponentsNonAlloc
+
+        #region Self
+
+        public static int GetComponentsNonAlloc(
+            this GameObject source,
+            Type? type,
+            ref List<Component>? results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            bool hasResults = results is not null;
+            bool capacityIncresed = false;
+
+            int resultCount = hasResults ? results!.Count : 0;
+            int cmpCount = source.GetComponentCount();
+
+            Component cmp;
+
+            for (int i = 0; i < cmpCount; i++)
+            {
+                cmp = source.GetComponentAtIndex(i);
+
+                if (type != null && cmp.IsNotInstanceOfType(type))
+                    continue;
+
+                if (!hasResults)
+                {
+                    results ??= new List<Component>(cmpCount);
+                    capacityIncresed = true;
+                    hasResults = true;
+                }
+                else if (!capacityIncresed)
+                {
+                    results!.TryIncreaseCapacity(cmpCount);
+                    capacityIncresed = true;
+                }
+
+                results!.Add(cmp);
+            }
+
+            return (hasResults ? results!.Count : 0) - resultCount;
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsNonAlloc<T>(
+            this GameObject source,
+            ref List<Component>? results
+            )
+        {
+            return source.GetComponentsNonAlloc(TypeofCache<T>.Type, ref results);
+        }
+
+        public static int GetComponentsNonAlloc(
+            this GameObject source,
+            Type? type,
+            List<Component> results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(results);
+
+            int resultCount = results.Count;
+            int cmpCount = source.GetComponentCount();
+
+            results.TryIncreaseCapacity(cmpCount);
+
+            Component cmp;
+
+            for (int i = 0; i < cmpCount; i++)
+            {
+                cmp = source.GetComponentAtIndex(i);
+
+                if (type != null && cmp.IsNotInstanceOfType(type))
+                    continue;
+
+                results.Add(cmp);
+            }
+
+            return results.Count - resultCount;
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsNonAlloc<T>(
+            this GameObject source,
+            List<Component> results
+            )
+        {
+            return source.GetComponentsNonAlloc(TypeofCache<T>.Type, results);
+        }
+
+        #endregion Self
+
+        #region InChildren
+
+        #region RefList
+
+        public static int GetComponentsInChildrenNonAlloc(
+            this GameObject source,
+            Type? type,
+            ref List<Component>? results,
+            bool includeInactive = false
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return CollectComponentsInChildren(
+                source.transform,
+                type,
+                ref results,
+                includeInactive
+                );
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsInChildrenNonAlloc<T>(
+            this GameObject source,
+            ref List<Component>? results,
+            bool includeInactive = false
+            )
+        {
+            return source.GetComponentsInChildrenNonAlloc(
+                TypeofCache<T>.Type,
+                ref results,
+                includeInactive
+                );
+        }
+
+        private static int CollectComponentsInChildren(
+            Transform current,
+            Type? type,
+            ref List<Component>? results,
+            bool includeInactive,
+            int depth = 0
+            )
+        {
+            if (!includeInactive && !current.gameObject.activeInHierarchy)
+                return 0;
+
+            int foundCount = 0;
+            int childCount = current.childCount;
+
+            if (depth >= 256)
+            {
+                using var toProcess = QueuePool<Transform>.Shared.Get();
+
+                toProcess.Value.Enqueue(current);
+
+                var loopFuse = LoopFuse.Create();
+
+                Transform child;
+
+                while (toProcess.Value.TryDequeue(out current) && loopFuse.MoveNext())
+                {
+                    childCount = current.childCount;
+
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        child = current.GetChild(i);
+
+                        if (!includeInactive && !child.gameObject.activeInHierarchy)
+                            continue;
+
+                        foundCount += child.GetComponentsNonAlloc(type, ref results!);
+
+                        toProcess.Value.Enqueue(child);
+                    }
+                }
+            }
+            else
+            {
+                foundCount += current.GetComponentsNonAlloc(type, ref results);
+
+                for (int i = 0; i < childCount; i++)
+                {
+                    foundCount += CollectComponentsInChildren(
+                        current.GetChild(i),
+                        type,
+                        ref results,
+                        includeInactive,
+                        depth + 1
+                        );
+                }
+            }
+
+            return foundCount;
+        }
+
+        #endregion RefList
+
+        #region NonRefList
+
+        public static int GetComponentsInChildrenNonAlloc(
+            this GameObject source,
+            Type? type,
+            List<Component> results,
+            bool includeInactive = false
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(results);
+
+            int resultCount = results.Count;
+
+            results.TryIncreaseCapacity(source.GetComponentCount());
+
+            CollectComponentsInChildrenNonAlloc(
+                source.transform,
+                type,
+                results,
+                includeInactive
+                );
+
+            return results.Count - resultCount;
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsInChildrenNonAlloc<T>(
+            this GameObject source,
+            List<Component> results,
+            bool includeInactive = false
+            )
+        {
+            return source.GetComponentsInChildrenNonAlloc(
+                TypeofCache<T>.Type,
+                results,
+                includeInactive
+                );
+        }
+
+        private static int CollectComponentsInChildrenNonAlloc(
+            Transform current,
+            Type? type,
+            List<Component> results,
+            bool includeInactive = false,
+            int depth = 0
+            )
+        {
+            if (!includeInactive && !current.gameObject.activeInHierarchy)
+                return 0;
+
+            int foundCount = 0;
+            int childCount = current.childCount;
+
+            if (depth >= 256)
+            {
+                using var toProcess = QueuePool<Transform>.Shared.Get();
+
+                toProcess.Value.Enqueue(current);
+
+                var loopFuse = LoopFuse.Create();
+
+                Transform child;
+
+                while (toProcess.Value.TryDequeue(out current) && loopFuse.MoveNext())
+                {
+                    childCount = current.childCount;
+
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        child = current.GetChild(i);
+
+                        if (!includeInactive && !child.gameObject.activeInHierarchy)
+                            continue;
+
+                        foundCount += child.GetComponentsNonAlloc(type, results);
+
+                        toProcess.Value.Enqueue(child);
+                    }
+                }
+            }
+            else
+            {
+                foundCount += current.GetComponentsNonAlloc(type, results);
+
+                for (int i = 0; i < childCount; i++)
+                {
+                    foundCount += CollectComponentsInChildrenNonAlloc(
+                        current.GetChild(i),
+                        type,
+                        results,
+                        includeInactive,
+                        depth + 1
+                        );
+                }
+            }
+
+            return foundCount;
+        }
+
+        #endregion NonRefList
+
+        #endregion InChildren
+
+        #region InParent
+
+        public static int GetComponentsInParentNonAlloc(
+             this GameObject source,
+             Type? type,
+             ref List<Component>? results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            int foundCount = 0;
+
+            Transform current = source.transform;
+            while (current != null)
+            {
+                foundCount += current.GetComponentsNonAlloc(type, ref results);
+                current = current.parent;
+            }
+
+            return foundCount;
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsInParentNonAlloc<T>(
+            this GameObject source,
+            ref List<Component>? results)
+        {
+            return source.GetComponentsInParentNonAlloc(TypeofCache<T>.Type, ref results);
+        }
+
+        public static int GetComponentsInParentNonAlloc(
+            this GameObject source,
+            Type? type,
+            List<Component> results)
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(results);
+
+            int foundCount = 0;
+
+            results.TryIncreaseCapacity(16); // Эвристика для цепи родителей
+
+            Transform current = source.transform;
+            while (current != null)
+            {
+                foundCount += current.GetComponentsNonAlloc(type, results);
+                current = current.parent;
+            }
+
+            return foundCount;
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsInParentNonAlloc<T>(
+            this GameObject source,
+            List<Component> results)
+        {
+            return source.GetComponentsInParentNonAlloc(TypeofCache<T>.Type, results);
+        }
+
+        #endregion InParent
+
+        #endregion GetComponentsNonAlloc
+
+        public static bool HasComponent(this GameObject source, Type type)
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(type);
+
+            var cmpCount = source.GetComponentCount();
+
+            if (source.GetComponentAtIndex(cmpCount-- - 1).IsInstanceOfType(type))
+                return true;
+
+            for (int i = 0; i < cmpCount; i++)
+                if (source.GetComponentAtIndex(i).IsInstanceOfType(type))
+                    return true;
+
+            return false;
+        }
+
+        public static bool HasComponent<T>(this GameObject source)
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            return source.HasComponent(TypeofCache<T>.Type);
         }
     }
 }

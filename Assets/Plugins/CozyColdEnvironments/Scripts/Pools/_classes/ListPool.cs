@@ -36,6 +36,12 @@ namespace CCEnvs.Pools
         {
             UnityEngine.Pool.ListPool<T>.Release(obj);
         }
+#else
+        protected override void OnReturn(List<T> obj)
+        {
+            base.OnReturn(obj);
+            obj.Clear();
+        }
 #endif
     }
 }

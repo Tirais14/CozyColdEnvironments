@@ -20,7 +20,7 @@ namespace CCEnvs
 
     public struct LazyLight<T>
     {
-        private readonly Func<T> factory;
+        private readonly Func<T>? factory;
         private T value;
 
         public T Value => GetValue();
@@ -36,10 +36,21 @@ namespace CCEnvs
             value = default!;
         }
 
+        public LazyLight(T value)
+            :
+            this()
+        {
+            HasValue = true;
+            this.value = value;
+        }
+
         private T GetValue()
         {
             if (HasValue)
                 return value;
+
+            if (factory is null)
+                throw new InvalidOperationException();
 
             value = factory();
             HasValue = true;

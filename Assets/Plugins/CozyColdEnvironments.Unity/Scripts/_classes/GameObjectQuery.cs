@@ -1,22 +1,25 @@
+using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
+using CCEnvs.Pools;
+using CCEnvs.Reflection;
+using CCEnvs.Unity.UI;
+using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
-using CCEnvs.FuncLanguage;
-using CCEnvs.Linq;
-using CCEnvs.Reflection;
-using CCEnvs.Unity.UI;
-using CommunityToolkit.Diagnostics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
-    public record GameObjectQuery : IShallowCloneable<GameObjectQuery>
+    public struct GameObjectQuery : IShallowCloneable<GameObjectQuery>
     {
         [Flags]
         public enum Settings
@@ -38,32 +41,36 @@ namespace CCEnvs.Unity
         /// <summary>
         /// May be null
         /// </summary>
-        public Maybe<GameObject> Target { get; set; } = null!;
+        public GameObject? Target { get; set; }
+
         public Settings settings { get; set; }
         public StringMatchSettings nameMatchSettings { get; set; }
         public FindMode findMode { get; set; }
         public FindObjectsSortMode sortMode { get; set; }
-        public Maybe<string> name { get; set; }
+
+        public string? NameFilter { get; set; }
         /// <summary>
         /// <see cref="Settings.ByFullName"/>, <see cref="Settings.IgnoreCase"/> doesn' affect
         /// </summary>
-        public Maybe<string> tag { get; set; }
-        public Maybe<IntBitMask> layerMask { get; set; }
-        public Maybe<Type> hasType { get; set; }
-        public Maybe<Type> depthLimiter { get; set; }
-        public Maybe<string> guid { get; set; }
+        public string? TagFilter { get; set; }
+        public string? GUID { get; set; }
 
-        public GameObjectQuery()
+        public int? LayerMaskFilter { get; set; }
+
+        public Type? RequieredTypeFilter { get; set; }
+        public Type? DepthLimiterType { get; set; }
+
+        public static GameObjectQuery Create()
         {
-            Reset();
+            return new GameObjectQuery().Reset();
         }
 
-        public static bool FilterByDepthLimiter(Transform target, Type limiterType, bool includeInactive)
+        public bool FilterByDepthLimiter(Transform target)
         {
-            return target.Q()
-                .IncludeInactive(includeInactive)
-                .Component(limiterType)
-                .Lax().IsNone;
+            if (DepthLimiterType is null)
+                return true;
+
+            return target.GetComponent(DepthLimiterType) != null;
         }
 
         [DebuggerStepThrough]
@@ -122,7 +129,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery WithName(string? name = null, bool ignoreCase = false, bool byFullName = false)
         {
-            this.name = name;
+            this.NameFilter = name;
 
             if (byFullName)
                 nameMatchSettings &= ~StringMatchSettings.Partial;
@@ -147,32 +154,26 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery WithTag(string? tag = null)
+        public GameObjectQuery WithTag(string? value = null)
         {
-            this.tag = tag;
+            this.TagFilter = value;
 
             return this;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery WithLayerMask(int? layerMask = null)
+        public GameObjectQuery WithLayerMask(int? value = null)
         {
-            if (layerMask is null)
-                this.layerMask = Maybe<IntBitMask>.None;
-            else
-                this.layerMask = layerMask.Value.ToBitMask();
+            LayerMaskFilter = value;
 
             return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery WithGuid(string? guid = null)
+        public GameObjectQuery WithGuid(string? value = null)
         {
-            if (guid.IsNullOrWhiteSpace())
-                this.guid = Maybe<string>.None;
-            else
-                this.guid = guid;
+            GUID = value;
 
             return this;
         }
@@ -242,18 +243,18 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery DepthLimiter(Type? type = null)
+        public GameObjectQuery WithDepthLimiter(Type? type = null)
         {
-            depthLimiter = type;
+            DepthLimiterType = type;
 
             return this;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery DepthLimiter<T>()
+        public GameObjectQuery WithDepthLimiter<T>()
         {
-            return DepthLimiter(typeof(T));
+            return WithDepthLimiter(typeof(T));
         }
 
         [DebuggerStepThrough]
@@ -264,10 +265,10 @@ namespace CCEnvs.Unity
             settings = Settings.Default;
             findMode = FindMode.Self;
             sortMode = FindObjectsSortMode.None;
-            name = Maybe<string>.None;
-            tag = Maybe<string>.None;
-            layerMask = default;
-            hasType = null;
+            NameFilter = null;
+            TagFilter = null;
+            LayerMaskFilter = default;
+            RequieredTypeFilter = null;
 
             return this;
         }
@@ -276,7 +277,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery HasComponent(Type? componentType = null)
         {
-            hasType = componentType;
+            RequieredTypeFilter = componentType;
 
             return this;
         }
@@ -327,16 +328,21 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
+            var cmp = Components(type).FirstOrDefault();
+
+            if (cmp == null)
+                return ()
+
             return (Components(type).FirstOrDefault(), new GameObjectQueryException(
                 Target.Raw,
                 settings,
                 findMode,
                 message: $"Component not found.",
                 seekingComponentType: type,
-                name: name.Raw,
-                tag: tag.Raw,
-                layer: layerMask.GetValue(-1),
-                componentFilter: hasType.Raw)
+                name: NameFilter.Raw,
+                tag: TagFilter.Raw,
+                layer: LayerMaskFilter.GetValue(-1),
+                componentFilter: RequieredTypeFilter.Raw)
                 );
         }
 
@@ -412,10 +418,10 @@ namespace CCEnvs.Unity
                 findMode,
                 message: "View model not found.",
                 seekingComponentType: type,
-                name: name.Raw,
-                tag: tag.Raw,
-                layer: layerMask.GetValue(-1),
-                componentFilter: hasType.Raw)
+                name: NameFilter.Raw,
+                tag: TagFilter.Raw,
+                layer: LayerMaskFilter.GetValue(-1),
+                componentFilter: RequieredTypeFilter.Raw)
                 );
         }
 
@@ -475,10 +481,10 @@ namespace CCEnvs.Unity
                 findMode,
                 message: "Model not found.",
                 seekingComponentType: type,
-                name: name.Raw,
-                tag: tag.Raw,
-                layer: layerMask.GetValue(-1),
-                componentFilter: hasType.Raw));
+                name: NameFilter.Raw,
+                tag: TagFilter.Raw,
+                layer: LayerMaskFilter.GetValue(-1),
+                componentFilter: RequieredTypeFilter.Raw));
         }
 
         /// <inheritdoc cref="Models"/>
@@ -497,17 +503,12 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Result<Transform> Transform()
         {
-            return (Transforms().FirstOrDefault(), new GameObjectQueryException(
-                Target.Raw,
-                settings,
-                findMode,
-                message: "Transform not found.",
-                seekingComponentType: typeof(Transform),
-                name: name.Raw,
-                tag: tag.Raw,
-                layer: layerMask.GetValue(-1),
-                componentFilter: hasType.Raw)
-                );
+            var transform = Transforms().FirstOrDefault();
+
+            if (transform == null)
+                return (null, GetException("Transform not found", TypeofCache<Transform>.Type));
+
+            return (transform, null);
         }
 
         [DebuggerStepThrough]
@@ -516,21 +517,7 @@ namespace CCEnvs.Unity
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<GameObject> ChildrenGameObject()
-        {
-            return (ChildrenGameObjects().FirstOrDefault(), GetException("Game object not found", typeof(GameObject)));
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<Transform> ChildrenTransforms() => FromChildrens().ExcludeSelf().Transforms();
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<Transform> ChildrenTransform()
-        {
-            return (ChildrenTransforms().FirstOrDefault(), GetException("Transform not found", typeof(Transform)));
-        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -557,10 +544,10 @@ namespace CCEnvs.Unity
                 findMode,
                 message: "Game object not found.",
                 seekingComponentType: typeof(GameObject),
-                name: name.Raw,
-                tag: tag.Raw,
-                layer: layerMask.GetValue(-1),
-                componentFilter: hasType.Raw)
+                name: NameFilter.Raw,
+                tag: TagFilter.Raw,
+                layer: LayerMaskFilter.GetValue(-1),
+                componentFilter: RequieredTypeFilter.Raw)
                 );
         }
 
@@ -587,43 +574,19 @@ namespace CCEnvs.Unity
                 .GetValue(Target.GetValueUnsafe().transform);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Component AddComponent(Type type)
-        {
-            Guard.IsNotNull(type);
-
-            if (type.IsNotType<Component>())
-                throw new ArgumentException($"{nameof(type)} cannot be non derived from {typeof(Component)}.");
-
-            if (Target.IsNone)
-                throw new InvalidOperationException("Game object is none.");
-
-            if (type.IsGenericType)
-                throw new InvalidOperationException("Cannot add open generic component type to game object.");
-
-            return Target.GetValueUnsafe().AddComponent(type);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Component AddComponent<T>() where T : Component
-        {
-            return AddComponent(typeof(T));
-        }
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery ShallowClone()
         {
-            return new GameObjectQuery(this);
+            throw new NotImplementedException();
         }
 
-        protected virtual IEnumerable<Component> CustomParentSearch(
+        private IList<Component> CustomParentSearch(
             GameObject target,
-            Type type)
+            Type? type
+            )
         {
             bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
-            bool hasDepthLimiter = depthLimiter.IsSome;
             bool firstComponentsOnBranch = settings.HasFlagT(Settings.FirstComponentsOnBranch);
             Transform current;
 
@@ -634,7 +597,7 @@ namespace CCEnvs.Unity
                 current = target.transform.parent;
 
                 if (current.IsNull())
-                    return Enumerable.Empty<Component>();
+                    return Array.Empty<Component>();
             }
 
             var cmps = new List<Component>();
@@ -650,10 +613,7 @@ namespace CCEnvs.Unity
                     continue;
                 }
 
-                if (hasDepthLimiter
-                    &&
-                    !FilterByDepthLimiter(current, depthLimiter.GetValueUnsafe(), includeInactive)
-                    )
+                if (!FilterByDepthLimiter(current))
                     return cmps;
 
                 bool foundAny = false;
@@ -677,112 +637,119 @@ namespace CCEnvs.Unity
             return cmps;
         }
 
-        protected virtual IEnumerable<Component> CustomBfsChildSearch(
+        private IList<Component> CustomBfsChildSearch(
             GameObject target,
-            Type type
+            Type? type
             )
         {
             bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
-            var toProcess = new Queue<Transform>(getNextTransforms(target.transform, includeInactive));
             bool firstComponentsOnBranch = settings.HasFlagT(Settings.FirstComponentsOnBranch);
-            bool hasDepthLimiter = depthLimiter.IsSome;
+            bool excludeSelf = settings.HasFlagT(Settings.ExcludeSelf);
 
-            List<Component> cmps;
-            if (!settings.HasFlagT(Settings.ExcludeSelf))
-            {
-                cmps = new List<Component>();
-                cmps.AddRange(target.Q().Components(type));
-            }
-            else if (target.transform.childCount == 0)
-                return Enumerable.Empty<Component>();
-            else
-                cmps = new List<Component>();
+            List<Component>? cmps = null;
+
+            if (target.transform.childCount == 0)
+                return Array.Empty<Component>();
+
+            if (!excludeSelf)
+                target.GetComponentsNonAlloc(type, ref cmps);
+
+            var toProcess = new Queue<Transform>();
+            enqueueChilds(target.transform, includeInactive, toProcess);
 
             Transform child;
-            while (toProcess.IsNotEmpty())
+
+            while (toProcess.Count != 0)
             {
                 child = toProcess.Dequeue();
 
-                if (hasDepthLimiter
-                    &&
-                    !FilterByDepthLimiter(child, depthLimiter.GetValueUnsafe(), includeInactive)
-                    )
+                if (!FilterByDepthLimiter(child))
                     continue;
 
-                bool cmpsFound = addComponents(child, includeInactive, type, cmps);
+                bool cmpsFound = target.GetComponentsNonAlloc(type, ref cmps) != 0;
 
                 if (firstComponentsOnBranch && cmpsFound)
                     continue;
 
-                foreach (var item in getNextTransforms(child, includeInactive))
-                    toProcess.Enqueue(item);
+                enqueueChilds(child, includeInactive, toProcess);
             }
 
-            return cmps;
+            return cmps ?? (IList<Component>)Array.Empty<Component>();
 
-            static IEnumerable<Transform> getNextTransforms(
-                Transform tr,
-                bool includeInactive)
+            static void enqueueChilds(
+                Transform transform,
+                bool includeInactive,
+                Queue<Transform> toProcess
+                )
             {
-                foreach (var current in tr.AsValueEnumerable().Cast<Transform>())
+                Transform child;
+
+                foreach (var childUntyped in transform)
                 {
-                    if (!includeInactive && !current.gameObject.activeSelf)
+                    child = (Transform)childUntyped;
+
+                    if (!includeInactive && !child.gameObject.activeSelf)
                         continue;
 
-                    yield return current;
+                    toProcess.Enqueue(child);
                 }
-            }
-
-            static bool addComponents(
-                Transform target,
-                bool includeInactive,
-                Type type,
-                List<Component> cmps)
-            {
-                if (target.Q()
-                    .IncludeInactive(includeInactive)
-                    .Components(type)
-                    .IsNotNull(out var t)
-                    &&
-                    t.IsNotEmpty())
-                {
-                    cmps.AddRange(t);
-                    return true;
-                }
-
-                return false;
             }
         }
 
-        protected virtual IEnumerable<Component> GetComponentsFrom(
+        private IList<Component> GetComponentsFrom(
             GameObject target,
-            Type type,
-            bool anyType
+            Type? type
             )
         {
-            bool isNotRecursive = settings.HasFlagT(Settings.NotRecursive);
-            bool excludeSelf = settings.HasFlagT(Settings.ExcludeSelf);
-
             if (findMode == FindMode.Self)
             {
-                return target.GetComponents<Component>()
-                             .Where(cmp => anyType || cmp.IsInstanceOfType(type));
+                List<Component>? cmps = null;
+
+                if (Target == null)
+                {
+                    int sceneCount = SceneManager.sceneCount;
+                    using var sceneRoots = new PooledList<GameObject>(null);
+
+                    Scene scene;
+
+                    for (int i = 0; i < sceneCount; i++)
+                    {
+                        scene = SceneManager.GetSceneAt(i);
+                        scene.GetRootGameObjects(sceneRoots);
+                    }
+
+                    bool includeInactive = settings.HasFlagT(Settings.IncludeInactive);
+
+                    for (int i = 0; i < sceneRoots.Value.Count; i++)
+                    {
+                        sceneRoots[i].GetComponentsInChildrenNonAlloc(
+                            type,
+                            ref cmps,
+                            includeInactive
+                            );
+                    }
+                }
+                else
+                    target.GetComponentsNonAlloc(type, ref cmps);
+
+                return cmps ?? (IList<Component>)Array.Empty<Component>();
             }
             else if (findMode == FindMode.InChilds)
             {
+                bool isNotRecursive = settings.HasFlagT(Settings.NotRecursive);
+                bool excludeSelf = settings.HasFlagT(Settings.ExcludeSelf);
+
                 if (isNotRecursive)
                 {
-                    Transform targetTransform = target.transform;
-                    var cmps = new List<Component>();
-                    var childs = targetTransform.AsValueEnumerable().Cast<Transform>();
+                    List<Component>? cmps = null;
 
                     if (!excludeSelf)
-                        childs.Prepend(targetTransform);
+                        target.GetComponentsNonAlloc(type, ref cmps);
 
-                    foreach (var child in childs)
-                        cmps.AddRange(child.Q().Components(type));
+                    foreach (var child in target.transform)
+                        ((Transform)child).GetComponentsNonAlloc(type, ref cmps);
 
-                    return cmps;
+                    return cmps ?? (IList<Component>)Array.Empty<Component>();
                 }
                 else
                     return CustomBfsChildSearch(target, type);
@@ -793,61 +760,194 @@ namespace CCEnvs.Unity
             throw CC.ThrowHelper.InvalidOperationException(findMode, nameof(findMode));
         }
 
-        protected virtual IEnumerable<Component> ComponentsInternal(
+        private ComponentsEnumerator ComponentsInternal(
             GameObject target,
             Type? type
             )
         {
-            CC.Guard.IsNotNull(target, nameof(target));
+            IList<Component> components = GetComponentsFrom(target, type);
 
-            if (type == typeof(GameObject))
-                throw new ArgumentException($"Type cannot be: {type.GetFullName()}.");
-
-            bool anyType = type is null;
-            type ??= typeof(Component);
-
-            IEnumerable<Component> components = GetComponentsFrom(target, type, anyType);
-
-            if (hasType.IsSome)
-                components = components.Where(cmp =>
-                    cmp.gameObject.QueryTo()
-                    .Component(hasType.GetValueUnsafe())
-                    .Lax()
-                    .IsSome
-                    );
-
-            if (this.layerMask.TryGetValue(out var layerMask))
-                components = components.Where(cmp => layerMask.ContainsFlag(cmp.gameObject.layer));
-
-            if (this.name.TryGetValue(out var name))
-                components = components.Where(cmp => cmp.gameObject.name.Match(name, nameMatchSettings));
-
-            if (this.tag.TryGetValue(out var tag))
-                components = components.Where(cmp => cmp.gameObject.CompareTag(tag));
-
-            if (this.guid.TryGetValue(out var guid))
-                components = components.Where(cmp => cmp.GetPersistentGuid().Has(guid));
-
-            return components;
+            return new ComponentsEnumerator(this, components);
         }
 
-        protected GameObjectQueryException GetException(string msg, Type? seekingComponentType = null)
+        private ComponentsEnumerator<T> ComponentsInternal<T>(
+            GameObject target,
+            Type? type
+            )
+        {
+            IList<Component> components = GetComponentsFrom(target, type);
+
+            return new ComponentsEnumerator<T>(new ComponentsEnumerator(this, components));
+        }
+
+        private readonly GameObjectQueryException GetException(
+            string msg, 
+            Type? seekingComponentType = null
+            )
         {
             return new GameObjectQueryException(
-                Target.Raw,
+                Target,
                 settings,
                 findMode,
                 message: msg,
                 seekingComponentType: seekingComponentType,
-                name: name.Raw,
-                tag: tag.Raw,
-                layer: layerMask.GetValue(-1),
-                componentFilter: hasType.Raw);
+                name: NameFilter,
+                tag: TagFilter,
+                layer: LayerMaskFilter ?? -1,
+                componentFilter: RequieredTypeFilter
+                );
         }
 
-        public struct ComponentsEumerator : IEnumerator<>
+        public struct ComponentsEnumerator : IEnumerator<Component>
         {
+            private readonly GameObjectQuery query;
 
+            private readonly IList<Component> components;
+
+            private readonly PooledObject<HashSet<GameObject>> excludedGameObjects;
+
+            private int pointer;
+
+            private GameObject currentGO;
+
+            public Component Current { get; private set; }
+
+            readonly object IEnumerator.Current => Current;
+
+            public ComponentsEnumerator(
+                in GameObjectQuery query,
+                IList<Component> components
+                )
+            {
+                CC.Guard.IsNotNull(components, nameof(components));
+
+                this.query = query;
+                this.components = components;
+
+                Current = null!;
+                currentGO = null!;
+                pointer = -1;
+                excludedGameObjects = HashSetPool<GameObject>.Shared.Get();
+            }
+
+            public bool MoveNext()
+            {
+                var loopFuse = LoopFuse.Create();
+
+                while (++pointer >= components.Count && loopFuse.MoveNext())
+                {
+                    Current = components[pointer];
+                    currentGO = Current.gameObject;
+
+                    if (IsExcludedGameObject())
+                        continue;
+
+                    if (!IsMatchLayerMaskFilter()
+                        ||
+                        !IsMatchNameFilter()
+                        ||
+                        !IsMatchTagFilter()
+                        ||
+                        !IsMatchGUIDFilter()
+                        ||
+                        !HasRequiredType())
+                    {
+                        excludedGameObjects.Value.Add(currentGO);
+                        continue;
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            public readonly void Dispose() => excludedGameObjects.Dispose();
+
+            public void Reset()
+            {
+                pointer = -1;
+                excludedGameObjects.Value.Clear();
+            }
+
+            public readonly ComponentsEnumerator<T> Convert<T>()
+            {
+                return new ComponentsEnumerator<T>(this);
+            }
+
+            private readonly bool IsExcludedGameObject()
+            {
+                return excludedGameObjects.Value.Contains(currentGO); 
+            }
+
+            private readonly bool IsMatchLayerMaskFilter()
+            {
+                return !query.LayerMaskFilter.HasValue
+                       ||
+                       (currentGO.layer & 1 << query.LayerMaskFilter.Value) != 0;
+            }
+
+            private readonly bool IsMatchNameFilter()
+            {
+                return query.NameFilter is null
+                       ||
+                       currentGO.name.Match(query.NameFilter, query.nameMatchSettings);
+            }
+
+            private readonly bool IsMatchTagFilter()
+            {
+                return query.TagFilter is null
+                       ||
+                       currentGO.CompareTag(query.TagFilter);
+            }
+
+            private readonly bool IsMatchGUIDFilter()
+            {
+                return query.GUID.IsNullOrWhiteSpace()
+                       ||
+                       currentGO.GetPersistentGuid() == query.GUID;
+            }
+
+            private readonly bool HasRequiredType()
+            {
+                return query.RequieredTypeFilter is null
+                       ||
+                       currentGO.HasComponent(query.RequieredTypeFilter);
+            }
+        }
+
+        public struct ComponentsEnumerator<T> : IEnumerator<T>
+        {
+            private ComponentsEnumerator core;
+
+            public T Current { get; private set; }
+
+            readonly object IEnumerator.Current => Current!;
+
+            public ComponentsEnumerator(ComponentsEnumerator core)
+            {
+                this.core = core;
+
+                Current = default!;
+            }
+
+            public static implicit operator ComponentsEnumerator(ComponentsEnumerator<T> instance)
+            {
+                return instance.core;
+            }
+
+            public bool MoveNext()
+            {
+                if (!core.TryMoveNextStruct<ComponentsEnumerator, Component>(out var current))
+                    return false;
+
+                Current = current.CastTo<T>();
+                return true;
+            }
+
+            public readonly void Dispose() => core.Dispose();
+
+            public readonly void Reset() => core.Reset();
         }
     }
 

@@ -39,7 +39,7 @@ namespace CCEnvs.Unity.UI
             foreach (var graphic in gameObject.QueryTo()
                                               .FromChildrens()
                                               .IncludeInactive()
-                                              .DepthLimiter<IShowable>()
+                                              .WithDepthLimiter<IShowable>()
                                               .Components<Graphic>())
             {
                 graphicStates!.Add(new GraphicSnapshot(graphic));

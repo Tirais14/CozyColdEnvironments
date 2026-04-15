@@ -315,7 +315,7 @@ namespace CCEnvs.Unity.UI
         {
             return this.Q()
                 .FromChildrens()
-                .DepthLimiter<IShowable>()
+                .WithDepthLimiter<IShowable>()
                 .Components<T>()
                 .ToArray();
         }

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
@@ -140,6 +142,60 @@ namespace CCEnvs.Unity
                 timing: PlayerLoopTiming.EarlyUpdate,
                 cancellationToken: source.destroyCancellationToken
                 );
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsNonAlloc(
+            this Component source,
+            Type? type,
+            ref List<Component>? results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetComponentsNonAlloc(type, ref results);
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsNonAlloc<T>(
+            this Component source,
+            ref List<Component>? results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetComponentsNonAlloc<T>(ref results);
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsNonAlloc(
+            this Component source,
+            Type? type,
+            List<Component> results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetComponentsNonAlloc(type, results);
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetComponentsNonAlloc<T>(
+            this Component source,
+            List<Component> results
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.GetComponentsNonAlloc<T>(results);
+        }
+
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasComponent(this Component source, Type type)
+        {
+            CC.Guard.IsNotNullSource(source);
+            return source.gameObject.HasComponent(type);
         }
     }
 }

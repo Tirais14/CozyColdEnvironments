@@ -1,98 +1,120 @@
+using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
+using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using CCEnvs.FuncLanguage;
-using CommunityToolkit.Diagnostics;
 
 #nullable enable
 namespace CCEnvs
 {
     public static class Result
     {
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Create<T>(T? value, Exception exception)
+        public static Result<T> Exception<T>(Exception exception)
         {
-            return new Result<T>(value, exception);
+            return new Result<T>(exception);
         }
+
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Create<T>(T value)
+        public static Result<T> Value<T>(T value)
         {
             return new Result<T>(value);
         }
 
+        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Lazy<T>(Func<T> factory, Func<Exception?> exceptionFactory)
+        public static Result<T> Lazy<T>(
+            Func<object?, T?> valueFactory,
+            Func<object?, Exception?> exceptionFactory,
+            object? valueFactoryState = null,
+            object? exceptionFactoryState = null
+            )
         {
-            return Result<T>.Lazy(factory, exceptionFactory);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Lazy<T>(Func<T> factory)
-        {
-            return Result<T>.Lazy(factory);
+            return new Result<T>(
+                valueFactory,
+                exceptionFactory,
+                valueFactoryState,
+                exceptionFactoryState
+                );
         }
     }
 
-    public readonly struct Result<T>
+    public struct Result<T> : IEquatable<Result<T>>
     {
         public readonly static Result<T> Empty = new();
 
-        public readonly Lazy<Exception?> exception;
-        private readonly Lazy<T?> raw;
+        private readonly Func<object?, T?>? valueFactory;
+        private readonly Func<object?, Exception?>? exceptionFactory;
 
-        public T? Raw => raw.Value;
+        private readonly object? valueFactoryState;
+        private readonly object? exceptionFactoryState;
 
-        public Result(T? value, Exception? exception)
-            :
-            this()
-        {
-            this.raw = new Lazy<T?>(value);
-            this.exception = new Lazy<Exception?>(exception);
-        }
+        private T? value;
+        private Exception? exception;
 
-        public Result(T? value, Func<Exception?> exception)
-        {
-            this.raw = new Lazy<T?>(value);
-            this.exception = new Lazy<Exception?>(exception);
-        }
+        private bool valueCreated;
+        private bool exceptionCreated;
+
+        public readonly T? Raw => value;
 
         public Result(T value)
             :
             this()
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            CC.Guard.IsNotNull(value);
 
-            raw = new Lazy<T?>(value);
-            exception = new Lazy<Exception?>(value: null);
+            this.value = value;
+
+            valueCreated = true;
+            exceptionCreated = true;
         }
 
-        private Result(Func<T?> valueFactory, Func<Exception?> exceptionFactory)
+        public Result(Exception exception)
+            :
+            this()
         {
-            Guard.IsNotNull(valueFactory, nameof(valueFactory));
-            Guard.IsNotNull(exceptionFactory, nameof(exceptionFactory));
+            CC.Guard.IsNotNull(exception, nameof(exception));
 
-            raw = new Lazy<T?>(valueFactory);
-            this.exception = new Lazy<Exception?>(exceptionFactory);
+            this.exception = exception;
+
+            valueCreated = true;
+            exceptionCreated = true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Lazy(Func<T> factory, Func<Exception?> exceptionFactory)
+        public Result(
+            Func<object?, T?> valueFactory,
+            Func<object?, Exception?> exceptionFactory,
+            object? valueFactoryState = null,
+            object? exceptionFactoryState = null
+            )
+            :
+            this()
         {
-            return new Result<T>(factory, exceptionFactory);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Result<T> Lazy(Func<T> factory)
-        {
-            return new Result<T>(factory, exceptionFactory: null!);
+            Guard.IsNotNull(valueFactory);
+            Guard.IsNotNull(exceptionFactory);
+
+            this.valueFactory = valueFactory;
+            this.exceptionFactory = exceptionFactory;
+            this.valueFactoryState = valueFactoryState;
+            this.exceptionFactoryState = exceptionFactoryState;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Result<T>((T? value, Exception? exception) input)
         {
-            if (input.exception is null)
+            if (input.value.IsNotNull())
                 return new Result<T>(input.value!);
 
-            return new Result<T>(input.value, input.exception);
+            if (input.exception is not null)
+                return new Result<T>(input.exception!);
+
+            throw new ArgumentException("Value and exception cannot be null");
         }
 
         [DebuggerStepThrough]
@@ -109,34 +131,140 @@ namespace CCEnvs
             return source.Strict();
         }
 
+        public static bool operator ==(Result<T> left, Result<T> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Result<T> left, Result<T> right)
+        {
+            return !(left == right);
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Maybe<T> Lax() => raw.Value;
+        public Maybe<T> Lax() => GetValue();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Strict()
         {
-            if (raw.Value.IsNull())
-            {
-                if (exception.Value is null)
-                    throw new InvalidOperationException($"{nameof(Strict)} value and exception is null. This exception means violation of contract.");
+            var value = GetValue();
 
-                throw exception.Value;
-            }
+            if (value.IsNull())
+                ThrowException();
 
-            return raw.Value;
+            return value!;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<TOut> Cast<TOut>()
+        public readonly Result<TOut> Cast<TOut>()
         {
-            return (raw.Value.CastTo<TOut>(), exception.Value);
+            if (value.IsNotNull())
+                return new Result<TOut>(value.CastTo<TOut>());
+
+            if (exception is not null)
+                return new Result<TOut>(exception);
+
+            if (exceptionFactory is not null && valueFactory is not null)
+            {
+                return new Result<TOut>((argsUntyped) =>
+                {
+                    var args = argsUntyped.CastTo<(object? valueFactoryState, Func<object?, T> valueFactory)>();
+
+                    return args.valueFactory.Invoke(args.valueFactoryState).CastTo<TOut>();
+                },
+                exceptionFactory,
+                (valueFactoryState, valueFactory),
+                exceptionFactoryState
+                );
+            }
+
+            throw new InvalidOperationException();
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
-            return $"{nameof(Raw)}: {raw.Value}; {nameof(exception)}: {exception}";
+            if (this == default)
+                return TypeCache<Result<T>>.FullName;
+
+            return new ToStringBuilder(null)
+                .Add(nameof(valueFactory), value)
+                .Add(nameof(exceptionFactory), exceptionFactory)
+                .Add(nameof(value), value)
+                .Add(nameof(exception), exception)
+                .Add(nameof(valueCreated), valueCreated)
+                .Add(nameof(exceptionCreated), nameof(exceptionCreated))
+                .ToStringAndDispose();
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is Result<T> result && Equals(result);
+        }
+
+        public readonly bool Equals(Result<T> other)
+        {
+            return EqualityComparer<Func<object?, T?>?>.Default.Equals(valueFactory, other.valueFactory)
+                   &&
+                   EqualityComparer<Func<object?, Exception?>?>.Default.Equals(exceptionFactory, other.exceptionFactory)
+                   &&
+                   EqualityComparer<object?>.Default.Equals(valueFactoryState, other.valueFactoryState)
+                   &&
+                   EqualityComparer<object?>.Default.Equals(exceptionFactoryState, other.exceptionFactoryState)
+                   &&
+                   EqualityComparer<T?>.Default.Equals(value, other.value)
+                   &&
+                   EqualityComparer<Exception?>.Default.Equals(exception, other.exception)
+                   &&
+                   valueCreated == other.valueCreated
+                   &&
+                   exceptionCreated == other.exceptionCreated;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(
+                valueFactory,
+                exceptionFactory,
+                valueFactoryState,
+                exceptionFactoryState,
+                value,
+                exception,
+                valueCreated,
+                exceptionCreated
+                );
+        }
+
+        private T? GetValue()
+        {
+            if (!valueCreated)
+            {
+                if (valueFactory is null)
+                    throw new InvalidOperationException("Not found value factory");
+
+                value = valueFactory(valueFactoryState);
+                valueCreated = true;
+            }
+
+            return value;
+        }
+
+        private void ThrowException()
+        {
+            if (!exceptionCreated)
+            {
+                if (exceptionFactory is null)
+                    throw new InvalidOperationException("Not found exception factory");
+
+                exception = exceptionFactory(exceptionFactoryState);
+                exceptionCreated = true;
+            }
+
+            if (exception is null)
+                throw new InvalidOperationException("Not found exception");
+
+            throw exception;
         }
     }
 }
