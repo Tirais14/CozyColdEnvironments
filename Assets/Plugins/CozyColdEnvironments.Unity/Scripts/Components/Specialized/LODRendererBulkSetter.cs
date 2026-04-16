@@ -28,6 +28,9 @@ namespace CCEnvs.Unity.Editr
 #if UNITY_EDITOR
         private void Update()
         {
+            if (!Application.isPlaying)
+                return;
+
             if (Time.frameCount % 30 != 0)
                 return;
 

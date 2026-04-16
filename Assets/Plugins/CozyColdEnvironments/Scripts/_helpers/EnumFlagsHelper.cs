@@ -166,16 +166,6 @@ namespace CCEnvs
             }
         }
 
-        public static bool IsFlags(this Enum value)
-        {
-            return value.GetType().IsDefined<FlagsAttribute>();
-        }
-        public static bool IsFlags<T>(this T value)
-            where T : Enum
-        {
-            return value.GetType().IsDefined<FlagsAttribute>();
-        }
-
         public static IList<Enum> ToArrayByFlags(this Enum source, string? excludeName = "None")
         {
             CC.Guard.IsNotNullSource(source);
@@ -225,7 +215,7 @@ namespace CCEnvs
             return results;
         }
 
-        public static bool IsFlagsSetted<T>(this T value, IEnumerable<T> flags)
+        public static bool HasFlags<T>(this T value, IEnumerable<T> flags)
             where T : unmanaged, Enum
         {
             if (flags.IsNull())
@@ -241,7 +231,7 @@ namespace CCEnvs
 
             return true;
         }
-        public static bool IsFlagsSetted<T>(this T value, params T[] flags)
+        public static bool HasFlags<T>(this T value, params T[] flags)
             where T : unmanaged, Enum
         {
             if (flags is null)
@@ -261,7 +251,7 @@ namespace CCEnvs
         public static bool HasFlagsT<T>(this T value, T flags)
             where T : unmanaged, Enum
         {
-            return value.IsFlagsSetted(flags.ToArrayByFlags());
+            return value.HasFlags(flags.ToArrayByFlags());
         }
 
         public static T SetFlag<T>(this T value, T flag)

@@ -41,7 +41,7 @@ namespace CCEnvs
                 return false;
             }
 
-            return overrided!.Invoke(source);
+            return overrided.Invoke(source);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

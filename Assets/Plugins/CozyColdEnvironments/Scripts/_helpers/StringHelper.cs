@@ -25,9 +25,9 @@ namespace CCEnvs
             if (left is null || right is null)
                 return false;
 
-            if (settings.HasFlagsT(StringMatchSettings.PartialFromStart))
+            if (settings.HasFlagT(StringMatchSettings.PartialFromStart))
             {
-                if (settings.HasFlagsT(StringMatchSettings.Culture))
+                if (settings.HasFlagT(StringMatchSettings.Culture))
                     throw new NotImplementedException();
                 else if (settings.HasFlagT(StringMatchSettings.Invariant))
                 {

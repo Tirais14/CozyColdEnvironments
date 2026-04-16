@@ -66,9 +66,12 @@ namespace CCEnvs.Unity.Injections
             }
         }
 
-        private static PooledObject<List<InjectableItem>> GetInjectableItems(Component target, List<string>? debugInfo)
+        private static PooledList<InjectableItem> GetInjectableItems(
+            Component target,
+            List<string>? debugInfo
+            )
         {
-            var injectItems = ListPool<InjectableItem>.Shared.Get();
+            var injectItems = new PooledList<InjectableItem>();
 
             try
             {
@@ -84,7 +87,7 @@ namespace CCEnvs.Unity.Injections
                         attribute
                         );
 
-                    injectItems.Value.Add(injectItem);
+                    injectItems.Add(injectItem);
                 }
 
                 return injectItems;
@@ -94,7 +97,7 @@ namespace CCEnvs.Unity.Injections
                 typeof(ComponentInjector).PrintException(ex);
                 injectItems.Dispose();
 
-                return PooledObject<List<InjectableItem>>.Default;
+                return default;
             }
         }
 
@@ -189,7 +192,7 @@ namespace CCEnvs.Unity.Injections
             if (item.Attribute.NameFilter.IsNotNull(out var goName))
                 query.WithName(goName);
 
-            query.nameMatchSettings = item.Attribute.NameMatchSettings;
+            query.nameFilterSettings = item.Attribute.NameMatchSettings;
 
             if (item.Attribute.TagFilter.IsNotNull(out var goTag))
                 query.WithTag(goTag);

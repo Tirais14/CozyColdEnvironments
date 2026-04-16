@@ -83,7 +83,11 @@ namespace CCEnvs
             return HashCode.Combine(stringBuilderHandle, stringBuilder, fieldCount);
         }
 
-        public readonly override string ToString() => stringBuilder.ToString();
+        public readonly override string ToString()
+        {
+            stringBuilder.Append(')');
+            return stringBuilder.ToString();
+        }
         public readonly string ToStringAndDispose()
         {
             var str = ToString();

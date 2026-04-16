@@ -1,6 +1,6 @@
-using System;
 using CCEnvs.Diagnostics;
-using CCEnvs.Reflection;
+using CCEnvs.FuncLanguage;
+using System;
 using UnityEngine;
 
 #nullable enable
@@ -9,26 +9,29 @@ namespace CCEnvs.Unity
     public class GameObjectQueryException : CCException
     {
         public GameObjectQueryException(GameObject? target,
-            GameObjectQuery.Settings settings,
-            FindMode findMode,
+            GameObjectQuery.Settings settings = GameObjectQuery.Settings.None,
+            StringMatchSettings nameFilterSettings = StringMatchSettings.None,
+            FindMode findMode = FindMode.None,
             Type? seekingComponentType = null,
             string? name = null,
             string? tag = null,
-            int layer = -1,
+            int? layer = null,
             Type? componentFilter = null,
             string? message = null)
             :
-            base(Sentence.Empty
-                    .AddIfNotDefault(() => $"{message}...", message)
-                    .AddIfNotDefault(() => $"Target: {target!.name},...", target)
-                    .Add($"Settings: {settings},...")
-                    .Add($"Find Mode: {findMode},...")
-                    .AddIfNotDefault(() => $"Seeking component type: {seekingComponentType.GetFullName()}", seekingComponentType)
-                    .AddIfNotDefault(() => $"Name: {name},...", name)
-                    .AddIfNotDefault(() => $"Tag: {tag}m...", tag)
-                    .Add($"Layer: {layer},...", _ => layer > -1)
-                    .AddIfNotDefault(() => $"Must contain type: {componentFilter!.GetFullName()},...", componentFilter)
-                    .ToString())
+            base(new ExceptionMessageBuilder(null)
+                .AddMessage(message)
+                .AddProperty(nameof(target), target.Maybe().Map(static target => target.name).GetValue())
+                .AddProperty(nameof(seekingComponentType), seekingComponentType)
+                .AddProperty(nameof(settings), settings)
+                .AddProperty(nameof(findMode), findMode)
+                .AddProperty(nameof(name), name)
+                .AddProperty(nameof(nameFilterSettings), nameFilterSettings)
+                .AddProperty(nameof(tag), tag)
+                .AddProperty(nameof(layer), layer)
+                .AddProperty(nameof(componentFilter), componentFilter)
+                .ToStringAndDispose()
+                )
         {
         }
     }

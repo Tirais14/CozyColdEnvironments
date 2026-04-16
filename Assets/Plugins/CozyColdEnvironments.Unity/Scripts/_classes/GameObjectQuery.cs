@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ZLinq;
@@ -43,7 +44,7 @@ namespace CCEnvs.Unity
         public GameObject? Target { get; set; }
 
         public Settings settings { get; set; }
-        public StringMatchSettings nameMatchSettings { get; set; }
+        public StringMatchSettings nameFilterSettings { get; set; }
         public FindMode findMode { get; set; }
         public FindObjectsSortMode sortMode { get; set; }
 
@@ -125,14 +126,14 @@ namespace CCEnvs.Unity
             this.NameFilter = name;
 
             if (byFullName)
-                nameMatchSettings &= ~StringMatchSettings.Partial;
+                nameFilterSettings &= ~StringMatchSettings.Partial;
             else
-                nameMatchSettings |= StringMatchSettings.Partial;
+                nameFilterSettings |= StringMatchSettings.Partial;
 
             if (ignoreCase)
-                nameMatchSettings |= StringMatchSettings.IgnoreCase;
+                nameFilterSettings |= StringMatchSettings.IgnoreCase;
             else
-                nameMatchSettings &= ~StringMatchSettings.IgnoreCase;
+                nameFilterSettings &= ~StringMatchSettings.IgnoreCase;
 
             return this;
         }
@@ -141,7 +142,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameObjectQuery WithNameMatchSettings(StringMatchSettings value = StringMatchSettings.Default)
         {
-            nameMatchSettings = value;
+            nameFilterSettings = value;
             return this;
         }
 
@@ -272,12 +273,14 @@ namespace CCEnvs.Unity
         {
             Target = default!;
             settings = Settings.Default;
+            nameFilterSettings = StringMatchSettings.Default;
             findMode = FindMode.Self;
             sortMode = FindObjectsSortMode.None;
             NameFilter = null;
             TagFilter = null;
             LayerMaskFilter = default;
             RequieredTypeFilter = null;
+            GUID = null;
 
             return this;
         }
@@ -307,7 +310,7 @@ namespace CCEnvs.Unity
         {
             Guard.IsNotNull(type, nameof(type));
 
-            var cmp = Components(type).FirstOrDefault();
+            var cmp = Components(type).FirstOrDefaultStruct<Component, ComponentsEnumerator>();
 
             if (cmp == null)
                 return new Result<Component, object, (GameObjectQuery Query, Type ComponentType)>(static args => args.Query.GetException("Component not found", args.ComponentType), (this, type));
@@ -319,7 +322,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Result<T, object, GameObjectQuery> Component<T>()
         {
-            var cmp = Components<T>().FirstOrDefault();
+            var cmp = Components<T>().FirstOrDefaultStruct<T, ComponentsEnumerator<T>>();
 
             if (cmp == null)
                 return new Result<T, object, GameObjectQuery>(static @this => @this.GetException("Component not found", typeof(T)), this);
@@ -354,7 +357,7 @@ namespace CCEnvs.Unity
         {
             type ??= TypeofCache<IView>.Type;
 
-            var view = Views(type).FirstOrDefault();
+            var view = Views(type).FirstOrDefaultStruct<IView, ComponentsEnumerator<IView>>();
 
             if (view.IsNull())
                 return new Result<IView, object, (GameObjectQuery Query, Type ViewType)>(static args => args.Query.GetException("View not found", args.ViewType), (this, type));
@@ -367,7 +370,7 @@ namespace CCEnvs.Unity
         public readonly Result<T, object, GameObjectQuery> View<T>()
             where T : IView
         {
-            var view = Views<T>().FirstOrDefault();
+            var view = Views<T>().FirstOrDefaultStruct<T, ComponentsEnumerator<T>>();
 
             if (view.IsNull())
                 return new Result<T, object, GameObjectQuery>(static @this => @this.GetException("View not found", typeof(T)), this);
@@ -399,7 +402,7 @@ namespace CCEnvs.Unity
         {
             type ??= TypeofCache<IViewModel>.Type;
 
-            var viewModel = ViewModels(type).FirstOrDefault();
+            var viewModel = ViewModels(type).FirstOrDefaultStruct<IViewModel, ViewModelsEnumerator>();
 
             if (viewModel.IsNull())
                 return new Result<IViewModel, object, (GameObjectQuery Query, Type ViewModelType)>(static args => args.Query.GetException("View model not found", args.ViewModelType), (this, type));
@@ -412,7 +415,7 @@ namespace CCEnvs.Unity
         public readonly Result<T, object, GameObjectQuery> ViewModel<T>()
             where T : IViewModel
         {
-            var viewModel = ViewModels<T>().FirstOrDefault();
+            var viewModel = ViewModels<T>().FirstOrDefaultStruct<T, ViewModelsEnumerator<T>>();
 
             if (viewModel.IsNull())
                 return new Result<T, object, GameObjectQuery>(static @this => @this.GetException("View model not found", typeof(T)), this);
@@ -448,7 +451,7 @@ namespace CCEnvs.Unity
         {
             type ??= TypeofCache<object>.Type;
 
-            var model = Models(type, includeComponents).FirstOrDefault();
+            var model = Models(type, includeComponents).FirstOrDefaultStruct<object, ModelsEnumerator>();
 
             if (model.IsNull())
                 return new Result<object, object, (GameObjectQuery Query, Type ModelType)>(static args => args.Query.GetException("Model not found", args.ModelType), (this, type));
@@ -461,7 +464,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Result<T, object, GameObjectQuery> Model<T>(bool includeComponents = true)
         {
-            var model = Models<T>(includeComponents).FirstOrDefault();
+            var model = Models<T>(includeComponents).FirstOrDefaultStruct<T, ModelsEnumerator<T>>();
 
             if (model.IsNull())
                 return new Result<T, object, GameObjectQuery>(static @this => @this.GetException("Model not found", typeof(T)), this);
@@ -481,7 +484,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Result<Transform, object, GameObjectQuery> Transform()
         {
-            var transform = Transforms().FirstOrDefault();
+            var transform = Transforms().FirstOrDefaultStruct<Transform, ComponentsEnumerator<Transform>>();
 
             if (transform == null)
                 return new Result<Transform, object, GameObjectQuery>(exceptionFactory: (@this) => @this.GetException("Transform not found", TypeofCache<Transform>.Type), this);
@@ -533,7 +536,7 @@ namespace CCEnvs.Unity
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Result<GameObject, object, GameObjectQuery> GameObject()
         {
-            var go = GameObjects().FirstOrDefault();
+            var go = GameObjects().FirstOrDefaultStruct<GameObject, GameObjectsEnumerator>();
 
             if (go == null)
                 return new Result<GameObject, object, GameObjectQuery>(static @this => @this.GetException("Game object not found", typeof(GameObject)), this);
@@ -598,7 +601,7 @@ namespace CCEnvs.Unity
 
             return NameFilter is null
                    ||
-                   go.name.Match(NameFilter, nameMatchSettings);
+                   go.name.Match(NameFilter, nameFilterSettings);
         }
 
         public readonly bool IsMatchTagFilter(GameObject? go)
@@ -621,7 +624,7 @@ namespace CCEnvs.Unity
                    go.GetPersistentGuid() == GUID;
         }
 
-        public readonly bool HasRequiredType(GameObject? go)
+        public readonly bool HasRequieredType(GameObject? go)
         {
             if (go == null)
                 return false;
@@ -641,7 +644,7 @@ namespace CCEnvs.Unity
                    &&
                    IsMatchGUIDFilter(go)
                    &&
-                   HasRequiredType(go);
+                   HasRequieredType(go);
         }
 
         #endregion Filters
@@ -691,7 +694,7 @@ namespace CCEnvs.Unity
                     return Array.Empty<Component>();
             }
 
-            var cmps = new List<Component>();
+            List<Component>? cmps = null;
 
             while (current.IsNotNull())
             {
@@ -705,27 +708,22 @@ namespace CCEnvs.Unity
                 }
 
                 if (HasDepthLimiter(current))
-                    return cmps;
+                    return cmps ?? (IList<Component>)Array.Empty<Component>();
 
-                bool foundAny = false;
-                if (current.Q().IncludeInactive(includeInactive).Components(type).IsNotNull(out var t)
-                    &&
-                    t.IsNotEmpty())
-                {
-                    foundAny = true;
-                    cmps.AddRange(t);
-                }
+                bool foundAny = current.GetComponentsNonAlloc(type, ref cmps) != 0;
 
                 if (firstComponentsOnBranch
                     &&
                     foundAny
                     )
-                    return cmps;
+                {
+                    return cmps ?? (IList<Component>)Array.Empty<Component>();
+                }
 
                 current = current.parent;
             }
 
-            return cmps;
+            return cmps ?? (IList<Component>)Array.Empty<Component>();
         }
 
         private readonly IList<Component> CustomBfsChildSearch(
@@ -745,15 +743,13 @@ namespace CCEnvs.Unity
             if (!excludeSelf)
                 target.GetComponentsNonAlloc(type, ref cmps);
 
-            var toProcess = new Queue<Transform>();
-            enqueueChilds(target.transform, includeInactive, toProcess);
+            using var toProcess = QueuePool<Transform>.Shared.Get();
+            enqueueChilds(target.transform, includeInactive, toProcess.Value);
 
             Transform child;
 
-            while (toProcess.Count != 0)
+            while (toProcess.Value.TryDequeue(out child))
             {
-                child = toProcess.Dequeue();
-
                 if (HasDepthLimiter(child))
                     continue;
 
@@ -762,7 +758,7 @@ namespace CCEnvs.Unity
                 if (firstComponentsOnBranch && cmpsFound)
                     continue;
 
-                enqueueChilds(child, includeInactive, toProcess);
+                enqueueChilds(child, includeInactive, toProcess.Value);
             }
 
             return cmps ?? (IList<Component>)Array.Empty<Component>();
@@ -774,12 +770,13 @@ namespace CCEnvs.Unity
                 )
             {
                 Transform child;
+                int childCount = transform.childCount;
 
-                foreach (var childUntyped in transform)
+                for (int i = 0; i < childCount; i++)
                 {
-                    child = (Transform)childUntyped;
+                    child = transform.GetChild(i);
 
-                    if (!includeInactive && !child.gameObject.activeSelf)
+                    if (!includeInactive && !child.gameObject.activeInHierarchy)
                         continue;
 
                     toProcess.Enqueue(child);
@@ -860,6 +857,7 @@ namespace CCEnvs.Unity
             return new GameObjectQueryException(
                 Target,
                 settings,
+                nameFilterSettings,
                 findMode,
                 message: msg,
                 seekingComponentType: seekingComponentType,
@@ -1356,7 +1354,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new GameObjectQuery().SetTarget(source);
+            return GameObjectQuery.Create().SetTarget(source);
         }
 
         [DebuggerStepThrough]
@@ -1365,7 +1363,7 @@ namespace CCEnvs.Unity
         {
             CC.Guard.IsNotNull(source, nameof(source));
 
-            return new GameObjectQuery().SetTarget(source);
+            return GameObjectQuery.Create().SetTarget(source);
         }
 
         [DebuggerStepThrough]

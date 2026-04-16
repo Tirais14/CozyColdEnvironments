@@ -577,6 +577,156 @@ namespace CCEnvs.Linq
             return default;
         }
 
+        #region Struct
+
+        #region Single
+
+        public static TValue? SingleStruct<TValue, TEnumerable>(this TEnumerable source)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            TValue first = default!;
+            bool hasFirst = false;
+
+            foreach (var item in source)
+            {
+                if (hasFirst)
+                    throw new InvalidOperationException($"Multiple elements. Source: {source}");
+
+                first = item;
+                hasFirst = true;
+            }
+
+            if (!hasFirst)
+                throw new InvalidOperationException($"Cannot find any element. Collection: {source}");
+
+            return first;
+        }
+        public static TValue? SingleStruct<TValue, TEnumerable>(this TEnumerable source, Func<TValue, bool> predicate)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            Guard.IsNotNull(predicate);
+
+            TValue first = default!;
+            bool hasFirst = false;
+
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                {
+                    if (hasFirst)
+                        throw new InvalidOperationException($"Multiple elements. Source: {source}");
+
+                    first = item;
+                    hasFirst = true;
+                }
+            }
+
+            if (!hasFirst)
+                throw new InvalidOperationException($"Cannot find any element. Collection: {source}");
+
+            return first;
+        }
+
+        #endregion Single
+
+        #region SingleOrDefault
+
+        public static TValue? SingleOrDefaultStruct<TValue, TEnumerable>(this TEnumerable source)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            TValue first = default!;
+            bool hasFirst = false;
+
+            foreach (var item in source)
+            {
+                if (hasFirst)
+                    throw new InvalidOperationException($"Multiple elements. Source: {source}");
+
+                first = item;
+                hasFirst = true;
+            }
+
+            return first;
+        }
+        public static TValue? SingleOrDefaultStruct<TValue, TEnumerable>(this TEnumerable source, Func<TValue, bool> predicate)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            Guard.IsNotNull(predicate);
+
+            TValue first = default!;
+            bool hasFirst = false;
+
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                {
+                    if (hasFirst)
+                        throw new InvalidOperationException($"Multiple elements. Source: {source}");
+
+                    first = item;
+                    hasFirst = true;
+                }
+            }
+
+            return first;
+        }
+
+        #endregion SingleOrDefault
+
+        #region First
+
+        public static TValue? FirstStruct<TValue, TEnumerable>(this TEnumerable source)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            foreach (var item in source)
+                return item;
+
+            throw new InvalidOperationException($"Cannot find any element. Collection: {source}");
+        }
+        public static TValue? FirstStruct<TValue, TEnumerable>(this TEnumerable source, Func<TValue, bool> predicate)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            Guard.IsNotNull(predicate);
+
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                    return item;
+            }
+
+            throw new InvalidOperationException($"Cannot find any element. Collection: {source}");
+        }
+
+        #endregion First
+
+        #region FirstOrDefault
+
+        public static TValue? FirstOrDefaultStruct<TValue, TEnumerable>(this TEnumerable source)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            foreach (var item in source)
+                return item;
+
+            return default;
+        }
+        public static TValue? FirstOrDefaultStruct<TValue, TEnumerable>(this TEnumerable source, Func<TValue, bool> predicate)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            Guard.IsNotNull(predicate);
+
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                    return item;
+            }
+
+            return default;
+        }
+
+        #endregion FirstOrDefault
+
+        #endregion Struct
+
         //public static IEnumerable<T> MergeBy<T, TKey>(
         //    this IEnumerable<T> left,
         //    IEnumerable<T> right,

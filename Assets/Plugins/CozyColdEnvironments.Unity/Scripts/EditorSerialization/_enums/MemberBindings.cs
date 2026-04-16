@@ -16,7 +16,7 @@ namespace CCEnvs.Unity.EditorSerialization
     {
         public static BindingFlags Unfold(this MemberBindings source)
         {
-            if (source.IsFlagsSetted(MemberBindings.NonPublic, MemberBindings.Static))
+            if (source.HasFlags(MemberBindings.NonPublic, MemberBindings.Static))
                 return BindingFlagsDefault.All;
             else if (source.HasFlagT(MemberBindings.Static))
                 return BindingFlagsDefault.StaticPublic;
