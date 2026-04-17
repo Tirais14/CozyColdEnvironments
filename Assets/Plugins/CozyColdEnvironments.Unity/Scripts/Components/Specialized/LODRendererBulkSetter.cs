@@ -1,4 +1,3 @@
-using CCEnvs.Collections;
 using CCEnvs.Unity.Components;
 using System.Linq;
 using UnityEngine;
@@ -18,17 +17,43 @@ namespace CCEnvs.Unity.Editr
         [SerializeField]
         private int lodIndex = -1;
 
+        [SerializeField]
+        private bool startAtRuntime;
+
+        public GameObject Source {
+            get => source;
+            set => source = value;  
+        }
+
+        public LODGroup LODGroup {
+            get => lodGroup;
+            set => lodGroup = value;
+        }
+
+        public int LODIndex {
+            get => lodIndex;
+            set => lodIndex = value;
+        }
+
+        public bool StartAtRuntime {
+            get => startAtRuntime;
+            set => startAtRuntime = value;
+        }
+
         protected override void Start()
         {
             base.Start();
 
-            Execute();
+            if (startAtRuntime || !Application.isPlaying)
+                Execute();
+
+            Destroy(this);
         }
 
 #if UNITY_EDITOR
         private void Update()
         {
-            if (!Application.isPlaying)
+            if (Application.isPlaying)
                 return;
 
             if (Time.frameCount % 30 != 0)
@@ -38,7 +63,7 @@ namespace CCEnvs.Unity.Editr
         }
 #endif
 
-        private void Execute()
+        public void Execute()
         {
             if (source == null || lodIndex < 0)
                 return;

@@ -9,37 +9,69 @@ namespace CCEnvs.Unity
 {
     public static class MeshHelper
     {
-        public static bool EqualsByVertexDistance(this Mesh left, Mesh right, float? epsilon = null)
+        public static bool EqualsByNormals(this Mesh leftMesh, Mesh rightMesh, float? epsilon = null)
         {
-            if (left == right)
+            if (leftMesh == rightMesh)
                 return true;
 
-            CC.Guard.IsNotNull(left, nameof(left));
-            CC.Guard.IsNotNull(right, nameof(right));
+            CC.Guard.IsNotNull(leftMesh, nameof(leftMesh));
+            CC.Guard.IsNotNull(rightMesh, nameof(rightMesh));
 
-            using var leftMeshVertexDistances = ListPool<float>.Shared.Get();
-            using var rightMeshVertexDistances = ListPool<float>.Shared.Get();
+            using var leftVertexNormals = PooledList<Vector3>.Create();
+            using var rightVertexNormals = PooledList<Vector3>.Create();
 
-            using var leftMeshVertices = ListPool<Vector3>.Shared.Get();
-            using var rightMeshVertices = ListPool<Vector3>.Shared.Get();
+            leftMesh.GetNormals(leftVertexNormals);
+            rightMesh.GetNormals(rightVertexNormals);
+
+            if (leftVertexNormals.Count != rightVertexNormals.Count)
+                return false;
+
+            Vector3 leftVertexNormal;
+            Vector3 rightVertexNormal;
+
+            for (int i = 0; i < leftVertexNormals.Count; i++)
+            {
+                leftVertexNormal = leftVertexNormals[i];
+                rightVertexNormal = rightVertexNormals[i];
+
+                if (leftVertexNormal.NotNearlyEquals(rightVertexNormal, epsilon))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static bool EqualsByVertexDistance(this Mesh leftMesh, Mesh rightMesh, float? epsilon = null)
+        {
+            if (leftMesh == rightMesh)
+                return true;
+
+            CC.Guard.IsNotNull(leftMesh, nameof(leftMesh));
+            CC.Guard.IsNotNull(rightMesh, nameof(rightMesh));
+
+            using var leftMeshVertexDistances = PooledList<float>.Create();
+            using var rightMeshVertexDistances = PooledList<float>.Create();
+
+            using var leftMeshVertices = PooledList<Vector3>.Create();
+            using var rightMeshVertices = PooledList<Vector3>.Create();
 
             GetVertexDistances(
-                left,
-                leftMeshVertexDistances.Value,
-                leftMeshVertices.Value
+                leftMesh,
+                leftMeshVertexDistances,
+                leftMeshVertices
                 );
 
             GetVertexDistances(
-                right,
-                rightMeshVertexDistances.Value,
-                rightMeshVertices.Value
+                rightMesh,
+                rightMeshVertexDistances,
+                rightMeshVertices
                 );
 
-            if (leftMeshVertexDistances.Value.Count != rightMeshVertexDistances.Value.Count
+            if (leftMeshVertexDistances.Count != rightMeshVertexDistances.Count
                 ||
-                leftMeshVertexDistances.Value.Count == 0
+                leftMeshVertexDistances.Count == 0
                 ||
-                rightMeshVertexDistances.Value.Count == 0)
+                rightMeshVertexDistances.Count == 0)
             {
                 return false;
             }
@@ -47,16 +79,23 @@ namespace CCEnvs.Unity
             float leftMeshVertexDistance;
             float rightMeshVertexDistance;
 
-            for (int i = 0; i < leftMeshVertexDistances.Value.Count; i++)
+            for (int i = 0; i < leftMeshVertexDistances.Count; i++)
             {
-                leftMeshVertexDistance = leftMeshVertexDistances.Value[i];
-                rightMeshVertexDistance = rightMeshVertexDistances.Value[i];
+                leftMeshVertexDistance = leftMeshVertexDistances[i];
+                rightMeshVertexDistance = rightMeshVertexDistances[i];
 
                 if (leftMeshVertexDistance.NotNearlyEquals(rightMeshVertexDistance, epsilon))
                     return false;
             }
 
             return true;
+        }
+
+        public static bool EqualsByGeometry(this Mesh leftMesh, Mesh rightMesh, float? epsilon = null)
+        {
+            return leftMesh.EqualsByNormals(rightMesh, epsilon)
+                   &&
+                   leftMesh.EqualsByVertexDistance(rightMesh, epsilon);
         }
 
         public static void GetVertexDistances(

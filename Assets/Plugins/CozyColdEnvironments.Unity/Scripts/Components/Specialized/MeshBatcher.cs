@@ -285,7 +285,7 @@ namespace CCEnvs.Unity.Components.Specialized
                     if (leftMeshFilter.sharedMesh == rightMeshFilter.sharedMesh)
                         continue;
 
-                    if (leftMeshFilter.sharedMesh.EqualsByVertexDistance(rightMeshFilter.sharedMesh))
+                    if (leftMeshFilter.sharedMesh.EqualsByGeometry(rightMeshFilter.sharedMesh))
                         topologyDuplicates.Add(rightMeshFilter);
                 }
             }

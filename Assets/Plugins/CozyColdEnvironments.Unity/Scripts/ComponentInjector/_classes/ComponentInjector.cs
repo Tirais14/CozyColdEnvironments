@@ -1,4 +1,5 @@
 using CCEnvs.Caching;
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
@@ -71,7 +72,7 @@ namespace CCEnvs.Unity.Injections
             List<string>? debugInfo
             )
         {
-            var injectItems = new PooledList<InjectableItem>();
+            var injectItems = new PooledList<InjectableItem>(null);
 
             try
             {
@@ -79,7 +80,10 @@ namespace CCEnvs.Unity.Injections
 
                 InjectableItem injectItem;
 
-                foreach (var (field, attribute) in GetFields(target, debugInfo))
+                var fields = GetFields(target, debugInfo);
+                injectItems.Value.TryIncreaseCapacity(fields.Length);
+
+                foreach (var (field, attribute) in fields)
                 {
                     injectItem = new InjectableItem(
                         target,

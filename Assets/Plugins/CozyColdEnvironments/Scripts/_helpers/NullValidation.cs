@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using CCEnvs.Attributes;
 using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
 
 #nullable enable
 namespace CCEnvs
@@ -30,7 +31,7 @@ namespace CCEnvs
             if (source is null)
                 return true;
 
-            if (TypeofCache<T>.Type.IsValueType)
+            if (TypeCache<T>.IsValueType)
                 return false;
 
             if (overrided is null)

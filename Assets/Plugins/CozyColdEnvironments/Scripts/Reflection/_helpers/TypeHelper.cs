@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using CCEnvs.FuncLanguage;
+using CCEnvs.Reflection.Caching;
 using CommunityToolkit.Diagnostics;
 
 #nullable enable
@@ -580,6 +581,7 @@ namespace CCEnvs.Reflection
         {
             if (type == null)
                 return false;
+
             if (type == typeof(string)
                 ||
                 type == typeof(decimal)
@@ -588,12 +590,12 @@ namespace CCEnvs.Reflection
                 )
                 return true;
 
-            return type.IsPrimitive;
+            return TypeCache.Get(type).IsPrimitive;
         }
 
         public static bool IsPrimitiveNumber(this Type value)
         {
-            return value.IsPrimitive
+            return TypeCache.Get(value).IsPrimitive
                    &&
                    value == typeof(byte)
                    ||
@@ -640,7 +642,7 @@ namespace CCEnvs.Reflection
 
             if (!result
                 &&
-                (settings.HasFlagT(TypeMatchingSettings.ByBaseGenericTypeDefinition)
+                ((settings & TypeMatchingSettings.ByBaseGenericTypeDefinition) != 0
                 ||
                 source.IsGenericTypeDefinition)
                 &&
@@ -689,10 +691,8 @@ namespace CCEnvs.Reflection
                 throw new ArgumentNullException(nameof(a));
 
             for (int i = 0; i < types.Length; i++)
-            {
                 if (a.IsType(types[i]))
                     return true;
-            }
 
             return false;
         }
