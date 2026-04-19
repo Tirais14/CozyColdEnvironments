@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
-
 using Object = UnityEngine.Object;
 
 #nullable enable
@@ -13,9 +12,9 @@ namespace CCEnvs.Diagnostics
 {
     public sealed class CCDebug : IDebugLogger
     {
-        public static IDebugLogger Instance { get; private set; } = new CCDebug();
+        public static IDebugLogger Instance { get; set; } = new CCDebug();
 
-        private static readonly HashSet<Type> disabledTypes = new();
+        private static readonly HashSet<Type> enabledTypes = new();
 
         public bool IsEnabled { get; set; }
 #if CC_DEBUG_ENABLED
@@ -32,12 +31,12 @@ namespace CCEnvs.Diagnostics
         {
             Guard.IsNotNull(type);
 
-            return Instance.IsEnabled && !disabledTypes.Contains(type);
+            return Instance.IsEnabled && enabledTypes.Contains(type);
         }
 
         public static bool IsTypeEnabled<T>()
         {
-            return Instance.IsEnabled && !disabledTypes.Contains(TypeofCache<T>.Type);
+            return Instance.IsEnabled && enabledTypes.Contains(TypeofCache<T>.Type);
         }
 
         public static void DisableTypes(params Type[] types)
@@ -45,15 +44,15 @@ namespace CCEnvs.Diagnostics
             Guard.IsNotNull(types);
 
             for (int i = 0; i < types.Length; i++)
-                disabledTypes.Add(types[i]);
+                enabledTypes.Remove(types[i]);
         }
 
-        public void EnableTypes(params Type[] types)
+        public static void EnableTypes(params Type[] types)
         {
             Guard.IsNotNull(types);
 
             for (int i = 0; i < types.Length; i++)
-                disabledTypes.Remove(types[i]);
+                enabledTypes.Add(types[i]);
         }
 
         public void PrintLog(object message, object? context = null)
@@ -152,50 +151,64 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
-        private static string GetTypeName(object target)
+        private static void WriteTypeName(object target, StringBuilder stringBuilder)
         {
             if (target is not Type type)
                 type = target.GetType();
 
             string typeName = type.Name;
+
             if (type.IsGenericType)
             {
-                typeName = typeName[..^2];
-                typeName += ConvertGenericArguments();
+                for (int i = 0; i < typeName.Length - 2; i++)
+                    stringBuilder.Append(typeName[i]);
+
+                WriteGenericArguments(type, stringBuilder);
             }
+            else
+                stringBuilder.Append(typeName);
 
-            return typeName;
-
-            string ConvertGenericArguments()
+           static void WriteGenericArguments(Type type, StringBuilder stringBuilder)
             {
-                using var sb = StringBuilderPool.Shared.Get();
+                Type[] genericArguments = type.GetGenericArguments();
 
-                sb.Value.Append('<');
+                using var genericArgumentNames = new PooledList<Type>();
 
-                IEnumerable<string> names =
-                    from type in type.GetGenericArguments()
-                    select GetTypeName(type) into name
-                    select name;
+                stringBuilder.Append('<');
 
-                sb.Value.AppendJoin(", ", names);
+                Type genericArgument;
 
-                sb.Value.Append('>');
+                for (int i = 0; i < genericArguments.Length; i++)
+                {
+                    genericArgument = genericArguments[i];
 
-                return sb.ToString();
+                    WriteTypeName(genericArgument, stringBuilder);
+                    stringBuilder.Append(", ");
+                }
+
+                stringBuilder.Append('>');
             }
         }
 
         private static string GetMessage(object target, object? context)
         {
-            target = (target?.ToString() ?? string.Empty).TrimEnd('.');
+            using var stringBuilder = StringBuilderPool.Shared.Get();
+
+            var targetString = target.ToString();
 
             if (context is not null)
-                return $"{GetContextInfo(context)}: {GetTargetInfo(target)}.";
+            {
+                WriteContextInfo(context, stringBuilder.Value);
+                stringBuilder.Value.Append(": ");
+                WriteTargetInfo(targetString, stringBuilder.Value);
+            }
+            else
+                WriteTargetInfo(targetString, stringBuilder.Value);
 
-            return target.ToString();
+            return stringBuilder.Value.ToString();
         }
 
-        private static string GetContextInfo(object context)
+        private static void WriteContextInfo(object context, StringBuilder stringBuilder)
         {
             object? contextTarget = context;
 
@@ -203,22 +216,29 @@ namespace CCEnvs.Diagnostics
                 contextTarget = debugContext.Target;
 
             if (contextTarget is null)
-                return string.Empty;
+                return;
 
             if (context is Object unityObj)
-                return $"{GetTypeName(unityObj)}({unityObj.name})";
+            {
+                WriteTypeName(unityObj, stringBuilder);
 
-            return GetTypeName(contextTarget);
+                stringBuilder.Append('(');
+                stringBuilder.Append(unityObj.name);
+                stringBuilder.Append(')');
+            }
+            else
+                WriteTypeName(contextTarget, stringBuilder);
         }
 
-        private static string GetTargetInfo(object target)
+        private static void WriteTargetInfo(object target, StringBuilder stringBuilder)
         {
-            return (target?.ToString() ?? string.Empty).TrimEnd('.');
-        }
+            string targetString = target.ToString();
 
-        private bool IsPrintAllowed(object? context)
-        {
-            return IsEnabled;
+            if (targetString.EndsWith('.'))
+                for (int i = 0; i < targetString.Length - 1; i++)
+                    stringBuilder.Append(targetString[i]);
+            else
+                stringBuilder.Append(targetString);
         }
     }
 }

@@ -21,8 +21,6 @@ namespace CCEnvs.Unity.Components.Specialized
 {
     public sealed class MeshBatcher : CCBehaviour
     {
-        private static CommandScheduler commandScheduler = null!;
-
         private readonly Dictionary<MeshFilter, List<MeshFilter>> topologyDuplicatesMeshFilters = new();
 
         [SerializeField]
@@ -40,6 +38,8 @@ namespace CCEnvs.Unity.Components.Specialized
         [SerializeField, HideInInspector]
         private List<MeshFilter> disabledMeshFilters = new();
 
+        private bool isClearingMeshFilters;
+
         public Dictionary<MeshFilter, MeshFilter?> CompareMeshes => compareMeshes.Deserialized;
 
         protected override void Start()
@@ -52,18 +52,11 @@ namespace CCEnvs.Unity.Components.Specialized
                     ClearMeshFiltersAsync().ForgetByPrintException();
 
                 if (destroyAfterStart)
-                    DestroySelf();
+                    DestroySelfAsync().Forget();
             }
         }
 
-        [OnInstallExecutable]
-        private static void SetCommandScheduler()
-        {
-            commandScheduler?.Dispose();
-            commandScheduler = new CommandScheduler(UnityFrameProvider.Update, nameof(MeshBatcher));
-        }
-
-        internal void BatchMeshFiltersCore()
+        public void BatchMeshFilters()
         {
             RestoreDisabledMeshFilters();
             DestroyInsatntiatedMeshFilters();
@@ -71,41 +64,10 @@ namespace CCEnvs.Unity.Components.Specialized
             ProcessMeshFilters();
         }
 
-        public void BatchMeshFilters()
-        {
-            var cmdName = NameFactory.CreateFromCaller(this, nameof(BatchMeshFilters));
-
-            Command.Builder.WithName(cmdName)
-                .AsSingle()
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(static @this => @this.BatchMeshFiltersCore())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
-                .ScheduleBy(commandScheduler);
-        }
-
-        internal void RestoreMeshFiltersCore()
+        public void RestoreMeshFilters()
         {
             DestroyInsatntiatedMeshFilters();
             RestoreDisabledMeshFilters();
-        }
-
-        public void RestoreMeshFilters()
-        {
-            var cmdName = NameFactory.CreateFromCaller(this, nameof(RestoreMeshFilters));
-
-            Command.Builder.WithName(cmdName)
-                .AsSingle()
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(
-                static (@this) => @this.RestoreMeshFiltersCore())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
-                .ScheduleBy(commandScheduler);
         }
 
         public IReadOnlyList<MeshFilter> GetOriginalMeshFilters()
@@ -121,56 +83,16 @@ namespace CCEnvs.Unity.Components.Specialized
                 .ToList();
         }
 
-        internal void ClearMeshFiltersCore()
+        public void ClearMeshFilters()
         {
             DestroyDisabledMeshFilters();
         }
 
-        public void ClearMeshFilters()
-        {
-            var cmdName = NameFactory.CreateFromCaller(this, nameof(ClearMeshFilters));
-
-            Command.Builder.WithName(cmdName)
-                .AsSingle()
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(static @this => @this.ClearMeshFiltersCore())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
-                .ScheduleBy(commandScheduler);
-        }
-
-        internal async UniTask ClearMeshFiltersAsyncCore(CancellationToken cancellationToken)
+        public async UniTask ClearMeshFiltersAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             await DestroyDisabledMeshFiltersAsync(cancellationToken);
-        }
-
-        public async UniTask ClearMeshFiltersAsync(CancellationToken cancellationToken = default)
-        {
-            var cmdName = NameFactory.CreateFromCaller(this, nameof(ClearMeshFilters));
-
-            using var _ = destroyCancellationToken.TryLinkTokens(
-                cancellationToken,
-                out cancellationToken
-                );
-
-            await Command.Builder.WithName(cmdName)
-                .AsSingle()
-                .WithState(this)
-                .Asynchronously()
-                .WithExecuteAction(
-                static async (@this, cancellationToken) =>
-                {
-                    await @this.ClearMeshFiltersAsyncCore(cancellationToken);
-                })
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken)
-                .ScheduleBy(commandScheduler)
-                .WaitForDone();
         }
 
         private void ProcessMeshFilters()
@@ -299,17 +221,15 @@ namespace CCEnvs.Unity.Components.Specialized
                 this.PrintLog(topologyDuplicatesMeshFilters.SelectMany(x => x.Value).Select(x => x.name).JoinStringsByLine());
         }
 
-        private void DestroySelf()
+        private async UniTaskVoid DestroySelfAsync()
         {
-            var cmdName = NameFactory.CreateFromCaller(this, "Destroy");
+            await UniTask.WaitWhile(
+                this,
+                @this => @this.isClearingMeshFilters,
+                cancellationToken: destroyCancellationToken
+                );
 
-            Command.Builder.WithName(cmdName)
-                .AsSingle()
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(static @this => Destroy(@this))
-                .Build()
-                .ScheduleBy(commandScheduler);
+            Destroy(this);
         }
     }
 }
