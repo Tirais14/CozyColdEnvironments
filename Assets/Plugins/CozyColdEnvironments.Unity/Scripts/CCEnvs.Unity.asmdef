@@ -21,7 +21,8 @@
         "Unity.Addressables.Editor",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.Splines",
-        "Unity.Mathematics"
+        "Unity.Mathematics",
+        "Zenject"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

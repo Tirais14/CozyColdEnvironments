@@ -33,7 +33,7 @@ namespace CCEnvs.Patterns.Commands
 
         private readonly ConcurrentQueue<QueueCommand> commands = new();
 
-        private readonly ConcurrentDictionary<CommandSignature, List<QueueCommand>> commandSets = new();
+        private readonly ConcurrentDictionary<CommandSignature, List<QueueCommand>?> commandSets = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
@@ -144,10 +144,7 @@ namespace CCEnvs.Patterns.Commands
 
             commands.Enqueue(queueCmd);
 
-            var commandSet = commandSets.GetOrCreateNew(cmd.Signature);
-
-            lock (SyncRoot)
-                commandSet.Add(queueCmd);
+            AddCommandToSet(cmd.Signature, queueCmd);
 
             if (CCDebug.IsTypeEnabled<CommandScheduler>())
                 this.PrintLog($"Command: {cmd} scheduled");
@@ -258,7 +255,7 @@ namespace CCEnvs.Patterns.Commands
             if (!commandSets.TryGetValue(cmdSignature, out var cmds))
                 return false;
 
-            return cmds.Count > 0;
+            return cmds is not null && cmds.Count > 0;
         }
 
         public bool HasCommand(ICommandBase? command)
@@ -329,7 +326,7 @@ namespace CCEnvs.Patterns.Commands
 
             CommandSignature newCmdSignature = newCmd.Signature;
 
-            if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds))
+            if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds) || equalCmds is null)
                 return;
 
             QueueCommand cmd;
@@ -416,7 +413,7 @@ namespace CCEnvs.Patterns.Commands
 
             lock (SyncRoot)
             {
-                if (commandSets.TryGetValue(cmd.Value.Signature, out var commandSet))
+                if (commandSets.TryGetValue(cmd.Value.Signature, out var commandSet) && commandSet is not null)
                     commandSet.Remove(cmd);
             }
 
@@ -577,6 +574,26 @@ namespace CCEnvs.Patterns.Commands
         private bool IsCurrentCommandUndone()
         {
             return IsCommandUndone(cmd?.Value);
+        }
+
+        private void AddCommandToSet(CommandSignature cmdSignature, QueueCommand cmd)
+        {
+            if (!commandSets.TryGetValue(cmdSignature, out var commandSet))
+            {
+                commandSets.TryAdd(cmdSignature, null);
+                return;
+            }
+
+            if (commandSet is null)
+            {
+                commandSet = new List<QueueCommand>(1) { cmd };
+
+                if (!commandSets.TryUpdate(cmdSignature, commandSet, null))
+                    lock (SyncRoot)
+                        commandSets[cmdSignature]!.Add(cmd);
+            }
+            else
+                commandSet.Add(cmd);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

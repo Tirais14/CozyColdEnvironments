@@ -83,7 +83,7 @@ namespace CCEnvs.Collections
         public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T>? source, int sourceCount)
         {
             if (source.IsNullOrEmpty() || sourceCount < 1)
-                return default;
+                return PooledArray<T>.Empty;
 
             var arrHandle = ArrayPool<T>.Shared.RentHandled(sourceCount);
             source.CopyTo(arrHandle.Value, 0);
@@ -94,7 +94,7 @@ namespace CCEnvs.Collections
         public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T>? source)
         {
             if (source.IsNullOrEmpty())
-                return default;
+                return PooledArray<T>.Empty;
 
             if (source.TryGetNonEnumeratedCount(out var count))
                 return source.EnumerableToArrayPooled(count);

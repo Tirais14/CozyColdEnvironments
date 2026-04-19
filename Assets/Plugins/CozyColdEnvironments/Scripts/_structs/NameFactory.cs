@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using CCEnvs.Caching;
+using CCEnvs.Pools;
+using CCEnvs.Reflection.Caching;
 using Humanizer;
 
 #nullable enable
@@ -8,24 +10,32 @@ namespace CCEnvs
 {
     public static class NameFactory
     {
-        private static Lazy<Cache<(Type Type, int CallerHash), string>> names = new(
+        private readonly static Lazy<Cache<(Type Type, Identifier? ID, int CallerHash), string>> names = new(
             static () =>
             {
-                return new Cache<(Type Type, int CallerHash), string>();
+                return new Cache<(Type Type, Identifier? ID, int CallerHash), string>();
             });
 
         public static string CreateFromCaller<TCaller>(
             TCaller? caller,
-            string? body,
+            [CallerMemberName] string? body = "Unkwown",
             Identifier? id = null,
             bool addHashToId = true,
             TimeSpan? expirationTimeRelativeToNow = null
             )
         {
-            if (caller.IsNull())
-                return $"{body} - {id.GetValueOrDefault()}";
+            using var stringBuilder = StringBuilderPool.Shared.Get();
 
-            var nameKey = (Type: caller.GetType(), CallerHash: caller.GetHashCode());
+            if (caller.IsNull())
+            {
+                stringBuilder.Value.Append(body);
+                stringBuilder.Value.Append(" - ");
+                stringBuilder.Value.Append(id.GetValueOrDefault());
+
+                return stringBuilder.Value.ToString();
+            }
+
+            var nameKey = (Type: caller.GetType(), id, CallerHash: caller.GetHashCode());
 
             if (names.Value.TryGetValue(nameKey, out var name))
                 return name;
@@ -35,7 +45,13 @@ namespace CCEnvs
             else if (addHashToId)
                 id = id.Value.WithNumber(id.Value.Number + nameKey.CallerHash);
 
-            name = $"{caller.GetType()}.{body} - {id}";
+            stringBuilder.Value.Append(TypeCache.GetName(caller.GetType()));
+            stringBuilder.Value.Append('.');
+            stringBuilder.Value.Append(body);
+            stringBuilder.Value.Append(" - ");
+            stringBuilder.Value.Append(id.ToString());
+
+            name = stringBuilder.Value.ToString();
 
             expirationTimeRelativeToNow ??= 5.Minutes();
 

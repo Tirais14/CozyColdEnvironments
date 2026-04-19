@@ -76,11 +76,6 @@ namespace CCEnvs.Unity.D3
         public bool IsGrounded { get; private set; }
         public bool IsRunning { get; private set; }
 
-        protected override void Start()
-        {
-            base.Start();
-        }
-
         protected virtual void Update()
         {
             // Movement is now handled by CharacterControllerInputBinder via MoveByInput
@@ -88,8 +83,11 @@ namespace CCEnvs.Unity.D3
 
         protected virtual void LateUpdate()
         {
-            RaycastSurface();
-            HandlePhysics();
+            if (core.enabled)
+            {
+                RaycastSurface();
+                HandlePhysics();
+            }
         }
 
         protected override void OnDestroy()
@@ -214,10 +212,7 @@ namespace CCEnvs.Unity.D3
                 velocity.y = -2f;
 
             if (moveDirection != Vector3.zero)
-            {
                 ApplyMoveDirection();
-
-            }
 
             if (jumpRequested)
                 TryJump();

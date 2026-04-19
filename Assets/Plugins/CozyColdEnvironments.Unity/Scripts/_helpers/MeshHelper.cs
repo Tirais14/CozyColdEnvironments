@@ -26,6 +26,9 @@ namespace CCEnvs.Unity
             if (leftVertexNormals.Count != rightVertexNormals.Count)
                 return false;
 
+            if (leftVertexNormals.Count == 0)
+                return true;
+
             Vector3 leftVertexNormal;
             Vector3 rightVertexNormal;
 
@@ -67,14 +70,11 @@ namespace CCEnvs.Unity
                 rightMeshVertices
                 );
 
-            if (leftMeshVertexDistances.Count != rightMeshVertexDistances.Count
-                ||
-                leftMeshVertexDistances.Count == 0
-                ||
-                rightMeshVertexDistances.Count == 0)
-            {
+            if (leftMeshVertexDistances.Count != rightMeshVertexDistances.Count)
                 return false;
-            }
+
+            if (leftMeshVertexDistances.Count == 0)
+                return true;
 
             float leftMeshVertexDistance;
             float rightMeshVertexDistance;

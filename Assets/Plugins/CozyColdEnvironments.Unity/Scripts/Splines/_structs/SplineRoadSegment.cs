@@ -87,10 +87,10 @@ namespace CCEnvs.Unity.Splines
                 return TypeCache<SplineRoadSegment>.FullName;
 
             return new ToStringBuilder(null)
-                .Add(nameof(LeftTopPoint), LeftTopPoint)
-                .Add(nameof(LeftBottomPoint), LeftBottomPoint)
-                .Add(nameof(RightTopPoint), RightTopPoint)
-                .Add(nameof(RightBottomPoint), RightBottomPoint)
+                .AddProperty(nameof(LeftTopPoint), LeftTopPoint)
+                .AddProperty(nameof(LeftBottomPoint), LeftBottomPoint)
+                .AddProperty(nameof(RightTopPoint), RightTopPoint)
+                .AddProperty(nameof(RightBottomPoint), RightBottomPoint)
                 .ToStringAndDispose();
         }
 

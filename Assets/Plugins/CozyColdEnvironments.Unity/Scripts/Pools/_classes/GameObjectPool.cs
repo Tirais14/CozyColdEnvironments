@@ -1,5 +1,6 @@
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
+using System.Threading;
 using UnityEngine;
 
 #nullable enable
@@ -30,10 +31,25 @@ namespace CCEnvs.Unity.Pools
         protected override void OnReturn(GameObject obj)
         {
             base.OnReturn(obj);
-            var pos = new Vector3(0f, -100000f);
+            ComponentPool.OnTransfomrReturn(obj.transform);
+        }
 
-            obj.transform.MovePositionSafe(pos);
-            obj.SetActive(false);
+        private int disposed;
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            if (disposing)
+            {
+                if (fastObject != null)
+                    UnityEngine.Object.Destroy(fastObject);
+
+                while (inactiveItems.TryPop(out var go))
+                    UnityEngine.Object.Destroy(go);
+            }
         }
     }
 }

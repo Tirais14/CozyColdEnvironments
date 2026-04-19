@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CCEnvs.Conversations;
 using CommunityToolkit.Diagnostics;
+using Cysharp.Threading.Tasks.CompilerServices;
 using SuperLinq;
 
 #nullable enable
@@ -551,10 +552,8 @@ namespace CCEnvs.Linq
             Guard.IsNotNull(predicate, nameof(predicate));
 
             foreach (var item in source)
-            {
                 if (predicate(item, state))
                     return item;
-            }
 
             throw new InvalidOperationException($"Enumerable {source} doesn't containt any items");
         }
@@ -724,6 +723,23 @@ namespace CCEnvs.Linq
         }
 
         #endregion FirstOrDefault
+
+        public static List<TValue> ToListStruct<TValue, TEnumerable>(this TEnumerable source)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            var results = new List<TValue>();
+
+            foreach (var item in source)
+                results.Add(item);
+
+            return results;
+        }
+
+        public static TValue[] ToArrayStruct<TValue, TEnumerable>(this TEnumerable source)
+            where TEnumerable : struct, IEnumerable<TValue>
+        {
+            return source.ToListStruct<TValue, TEnumerable>().ToArray();
+        }
 
         #endregion Struct
 

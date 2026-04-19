@@ -3,6 +3,7 @@ using CCEnvs.Pools;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Patterns.Factory;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace CCEnvs.Unity.Pools
 
         where T : UnityEngine.Object
         where TCore : IObjectPoolAsync<T>
-        where TFactory : MonoBehaviour, IFactory<CancellationToken, ValueTask<T>>
+        where TFactory : Component, IFactory<CancellationToken, ValueTask<T>>
     {
         [Header("Pool Settings")]
         [Space(6f)]
@@ -64,18 +65,14 @@ namespace CCEnvs.Unity.Pools
         {
             base.Awake();
             core = CreatePool();
+        }
+
+        protected override void Start()
+        {
+            base.Start();
 
             if (preheatCount > 0)
-            {
-                var preheatOp = new ObjectPoolPreheatOperation<T>(
-                    core,
-                    preheatCount,
-                    batchSize: preheatBatchSize,
-                    delayFrameCountBetweenBatches: preheatDelayFrameCountBetweenBatches
-                    );
-
-                preheatOp.ExecuteAsync().ForgetByPrintException(destroyCancellationToken);
-            }
+                PreheatAsync().Forget();
         }
 
         protected override void OnDestroy()
@@ -108,6 +105,20 @@ namespace CCEnvs.Unity.Pools
         public Observable<T> ObserveReturn() => initedSelf.core.ObserveReturn();
 
         protected abstract TCore CreatePool();
+
+        private async UniTaskVoid PreheatAsync()
+        {
+            await UniTask.NextFrame(cancellationToken: destroyCancellationToken);
+
+            var preheatOp = new ObjectPoolPreheatOperation<T>(
+                core,
+                preheatCount,
+                batchSize: preheatBatchSize,
+                delayFrameCountBetweenBatches: preheatDelayFrameCountBetweenBatches
+                );
+
+            preheatOp.ExecuteAsync().ForgetByPrintException(destroyCancellationToken);
+        }
 
         void IDisposable.Dispose() => core.Dispose();
     }

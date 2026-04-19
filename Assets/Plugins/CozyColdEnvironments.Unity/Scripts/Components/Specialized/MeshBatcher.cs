@@ -1,9 +1,10 @@
+using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
-using CCEnvs.Pools;
 using CCEnvs.Threading;
 using CCEnvs.Unity.Async;
+using CCEnvs.Unity.EditorSerialization;
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Collections.Generic;
@@ -11,17 +12,21 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 
+#if ZLINQ_PLUGIN
+using ZLinq;
+#endif
+
 #nullable enable
 namespace CCEnvs.Unity.Components.Specialized
 {
     public sealed class MeshBatcher : CCBehaviour
     {
-        private readonly static CommandScheduler commandScheduler = new(UnityFrameProvider.Update, nameof(MeshBatcher));
+        private static CommandScheduler commandScheduler = null!;
 
         private readonly Dictionary<MeshFilter, List<MeshFilter>> topologyDuplicatesMeshFilters = new();
 
         [SerializeField]
-        private List<MeshFilter> compareMeshes = new();
+        private SerializedDictionary<MeshFilter, MeshFilter?> compareMeshes = new();
 
         [SerializeField]
         private bool clearMeshFilterInRuntime = true;
@@ -35,9 +40,7 @@ namespace CCEnvs.Unity.Components.Specialized
         [SerializeField, HideInInspector]
         private List<MeshFilter> disabledMeshFilters = new();
 
-        private bool isRestoring;
-
-        public IList<MeshFilter> CompareMeshes => compareMeshes;
+        public Dictionary<MeshFilter, MeshFilter?> CompareMeshes => compareMeshes.Deserialized;
 
         protected override void Start()
         {
@@ -53,9 +56,17 @@ namespace CCEnvs.Unity.Components.Specialized
             }
         }
 
+        [OnInstallExecutable]
+        private static void SetCommandScheduler()
+        {
+            commandScheduler?.Dispose();
+            commandScheduler = new CommandScheduler(UnityFrameProvider.Update, nameof(MeshBatcher));
+        }
+
         internal void BatchMeshFiltersCore()
         {
             RestoreDisabledMeshFilters();
+            DestroyInsatntiatedMeshFilters();
             FindTopologyMeshFilterDuplcates();
             ProcessMeshFilters();
         }
@@ -103,8 +114,11 @@ namespace CCEnvs.Unity.Components.Specialized
                 .FromChildrens()
                 .IncludeInactive()
                 .Components<MeshFilter>()
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
                 .Except(instantiatedMeshFilters)
-                .ToArray();
+                .ToList();
         }
 
         internal void ClearMeshFiltersCore()
@@ -131,7 +145,7 @@ namespace CCEnvs.Unity.Components.Specialized
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await DestroyInsatntiatedMeshFiltersAsync(cancellationToken);
+            await DestroyDisabledMeshFiltersAsync(cancellationToken);
         }
 
         public async UniTask ClearMeshFiltersAsync(CancellationToken cancellationToken = default)
@@ -177,8 +191,7 @@ namespace CCEnvs.Unity.Components.Specialized
                 {
                     duplicateMeshFilter = duplcateMeshFilters[i];
 
-                    replacePos = duplicateMeshFilter.transform.position;
-                    replaceRot = duplicateMeshFilter.transform.rotation;
+                    duplicateMeshFilter.transform.GetPositionAndRotation(out replacePos, out replaceRot);
                     replaceParent = duplicateMeshFilter.transform.parent;
 
                     duplicateMeshFilter.gameObject.SetActive(false);
@@ -209,34 +222,6 @@ namespace CCEnvs.Unity.Components.Specialized
             instantiatedMeshFilters.Clear();
         }
 
-        private async UniTask DestroyInsatntiatedMeshFiltersAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            int destroyOperationCountInFrame = 0;
-
-            for (int i = instantiatedMeshFilters.Count - 1; i >= 0; i--)
-            {
-                var meshFilter = instantiatedMeshFilters[i];
-
-                if (meshFilter == null)
-                    continue;
-
-                if (Application.isEditor && !Application.isPlaying)
-                    DestroyImmediate(meshFilter.gameObject);
-                else
-                    Destroy(meshFilter.gameObject);
-
-                destroyOperationCountInFrame++;
-
-                if (destroyOperationCountInFrame >= 16)
-                {
-                    await UniTask.NextFrame(cancellationToken: cancellationToken);
-                    destroyOperationCountInFrame = 0;
-                }
-            }
-        }
-
         private void RestoreDisabledMeshFilters()
         {
             for (int i = 0; i < disabledMeshFilters.Count; i++)
@@ -260,32 +245,52 @@ namespace CCEnvs.Unity.Components.Specialized
             disabledMeshFilters.Clear();
         }
 
+        private async UniTask DestroyDisabledMeshFiltersAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using var disabledMeshFiltersCopy = disabledMeshFilters.EnumerableToArrayPooled(disabledMeshFilters.Count);
+
+            int destroyedInFrame = 0;
+
+            foreach (var meshFilter in disabledMeshFiltersCopy)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Destroy(meshFilter.gameObject);
+
+                disabledMeshFilters.Remove(meshFilter);
+
+                if (++destroyedInFrame >= 16)
+                {
+                    await UniTask.NextFrame(cancellationToken: cancellationToken);
+                    destroyedInFrame = 0;
+                }
+            }
+        }
+
         private void FindTopologyMeshFilterDuplcates()
         {
             topologyDuplicatesMeshFilters.Clear();
 
-            MeshFilter leftMeshFilter;
             MeshFilter rightMeshFilter;
-
-            using var meshDistances = ListPool<float>.Shared.Get();
 
             var meshFilters = GetOriginalMeshFilters();
 
-            for (int i = 0; i < compareMeshes.Count; i++)
+            foreach (var leftMeshFilter in compareMeshes.Deserialized)
             {
-                leftMeshFilter = compareMeshes[i];
+                var topologyDuplicates = topologyDuplicatesMeshFilters.GetOrCreateNew(leftMeshFilter.Value.IfNull(leftMeshFilter.Key));
 
-                var topologyDuplicates = topologyDuplicatesMeshFilters.GetOrCreateNew(leftMeshFilter);
                 topologyDuplicates.Clear();
 
                 for (int j = 0; j < meshFilters.Count; j++)
                 {
                     rightMeshFilter = meshFilters[j];
 
-                    if (leftMeshFilter.sharedMesh == rightMeshFilter.sharedMesh)
+                    if (leftMeshFilter.Key.sharedMesh == rightMeshFilter.sharedMesh)
                         continue;
 
-                    if (leftMeshFilter.sharedMesh.EqualsByGeometry(rightMeshFilter.sharedMesh))
+                    if (leftMeshFilter.Key.sharedMesh.EqualsByGeometry(rightMeshFilter.sharedMesh))
                         topologyDuplicates.Add(rightMeshFilter);
                 }
             }

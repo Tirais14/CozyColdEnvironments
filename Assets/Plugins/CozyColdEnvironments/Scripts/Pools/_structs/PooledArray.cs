@@ -1,4 +1,5 @@
 using CCEnvs.Collections;
+using CCEnvs.Reflection.Caching;
 using R3;
 using System;
 using System.Buffers;
@@ -389,9 +390,12 @@ namespace CCEnvs.Pools
         public readonly override string ToString()
         {
             if (this == default)
-                return StringHelper.EMPTY_OBJECT;
+                return TypeCache<PooledArray<T>>.FullName;
 
-            return $"({nameof(array)}: {array}; {nameof(Length)}: {Length})";
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(array), array)
+                .AddProperty(nameof(Length), Length)
+                .ToStringAndDispose();
         }
 
         public readonly IEnumerator<T> GetEnumerator() => value.GetEnumerator();

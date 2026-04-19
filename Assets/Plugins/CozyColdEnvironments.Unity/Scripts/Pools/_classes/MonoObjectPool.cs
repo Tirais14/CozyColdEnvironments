@@ -2,7 +2,7 @@ using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CCEnvs.Unity.Async;
 using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Patterns.Factory;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace CCEnvs.Unity.Pools
 
         where T : class
         where TCore : IObjectPool<T>
-        where TFactory : MonoBehaviour, IFactory<T>
+        where TFactory : Component, IFactory<T>
     {
         [Header("Pool Settings")]
         [Space(6f)]
@@ -62,18 +62,14 @@ namespace CCEnvs.Unity.Pools
         {
             base.Awake();
             core = CreatePool();
+        }
+
+        protected override void Start()
+        {
+            base.Start();
 
             if (preheatCount > 0)
-            {
-                var preheatOp = new ObjectPoolPreheatOperation<T>(
-                    core,
-                    preheatCount,
-                    batchSize: preheatBatchSize, 
-                    delayFrameCountBetweenBatches: preheatDelayFrameCountBetweenBatches
-                    );
-
-                preheatOp.ExecuteAsync().ForgetByPrintException(destroyCancellationToken);
-            }
+                PreheatAsync().Forget();
         }
 
         protected override void OnDestroy()
@@ -92,9 +88,9 @@ namespace CCEnvs.Unity.Pools
 
         public void Clear() => initedSelf.core.Clear();
 
-        public PooledObject<T> Get() => initedSelf.core.Get();
+        public virtual PooledObject<T> Get() => initedSelf.core.Get();
 
-        public void Return(T? obj) => initedSelf.core.Return(obj);
+        public virtual void Return(T? obj) => initedSelf.core.Return(obj);
 
         public bool IsActiveObject(T obj) => initedSelf.core.IsActiveObject(obj);
 
@@ -103,6 +99,20 @@ namespace CCEnvs.Unity.Pools
         public Observable<T> ObserveReturn() => initedSelf.core.ObserveReturn();
 
         protected abstract TCore CreatePool();
+
+        private async UniTaskVoid PreheatAsync()
+        {
+            await UniTask.NextFrame(cancellationToken: destroyCancellationToken);
+
+            var preheatOp = new ObjectPoolPreheatOperation<T>(
+                    core,
+                    preheatCount,
+                    batchSize: preheatBatchSize,
+                    delayFrameCountBetweenBatches: preheatDelayFrameCountBetweenBatches
+                    );
+
+            preheatOp.ExecuteAsync().ForgetByPrintException(destroyCancellationToken);
+        }
 
         void IDisposable.Dispose() => core.Dispose();
     }

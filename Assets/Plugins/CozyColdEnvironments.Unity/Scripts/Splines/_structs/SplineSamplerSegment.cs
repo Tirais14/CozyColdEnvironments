@@ -53,9 +53,9 @@ namespace CCEnvs.Unity.Splines
                 return TypeCache<SplineSamplerSegment>.FullName;
 
             return new ToStringBuilder(null)
-                .Add(nameof(Position), Position)
-                .Add(nameof(Tangent), Tangent)
-                .Add(nameof(UpVector), UpVector)
+                .AddProperty(nameof(Position), Position)
+                .AddProperty(nameof(Tangent), Tangent)
+                .AddProperty(nameof(UpVector), UpVector)
                 .ToStringAndDispose();
         }
     }

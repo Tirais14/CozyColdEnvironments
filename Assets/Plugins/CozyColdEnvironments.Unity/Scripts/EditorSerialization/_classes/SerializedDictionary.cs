@@ -20,7 +20,7 @@ namespace CCEnvs.Unity.EditorSerialization
         private SerializedKeyValuePair<TKey, TValue> defaultItem;
 
         [SerializeField]
-        private SerializedKeyValuePair<TKey, TValue>[] items;
+        private SerializedKeyValuePair<TKey, TValue>[] items = Array.Empty<SerializedKeyValuePair<TKey, TValue>>();
 
         private EqualityComparer<SerializedKeyValuePair<TKey, TValue>> ItemEqualityComparer => EqualityComparer<SerializedKeyValuePair<TKey, TValue>>.Default;
 
@@ -44,8 +44,15 @@ namespace CCEnvs.Unity.EditorSerialization
 
             collection.AddRange(items);
 
-            this.items = null!;
-            defaultItem = default;
+#if UNITY_EDITOR
+            if (Application.isPlaying)
+            {
+#endif
+                this.items = null!;
+                defaultItem = default;
+#if UNITY_EDITOR
+            }
+#endif
 
             return collection;
         }

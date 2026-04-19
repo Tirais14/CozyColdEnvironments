@@ -1,3 +1,6 @@
+using CCEnvs.Pools;
+using CCEnvs.Reflection;
+using CCEnvs.Reflection.Caching;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -8,14 +11,8 @@ namespace CCEnvs
     [Serializable]
     public readonly struct Identifier : IEquatable<Identifier>
     {
-#if UNITY_2017_1_OR_NEWER
-        [field: UnityEngine.SerializeField]
-#endif
         public int? Number { get; }
 
-#if UNITY_2017_1_OR_NEWER
-        [field: UnityEngine.SerializeField]
-#endif
         public string? Text { get; }
 
         public Identifier(int? number = null, string? text = null)
@@ -112,9 +109,15 @@ namespace CCEnvs
         public readonly override string ToString()
         {
             if (this == default)
-                return StringHelper.EMPTY_OBJECT;
+                return TypeCache<Identifier>.FullName;
 
-            return $"({nameof(Number)}: {Number}; {nameof(Text)}: {Text})";
+            using var stringBuilder = StringBuilderPool.Shared.Get();
+
+            stringBuilder.Value.Append(Number.ToString());
+            stringBuilder.Value.Append(" - ");
+            stringBuilder.Value.Append(Text);
+
+            return stringBuilder.Value.ToString();
         }
     }
 }

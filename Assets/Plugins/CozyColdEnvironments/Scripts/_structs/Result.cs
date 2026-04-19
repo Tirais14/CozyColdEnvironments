@@ -72,8 +72,8 @@ namespace CCEnvs
                 return TypeCache<Result<TValue>>.FullName;
 
             return new ToStringBuilder(null)
-                .Add(nameof(value), value)
-                .Add(nameof(exception), exception)
+                .AddProperty(nameof(value), value)
+                .AddProperty(nameof(exception), exception)
                 .ToStringAndDispose();
         }
 
@@ -230,12 +230,12 @@ namespace CCEnvs
                 return TypeCache<Result<TValue, TValueFactoryState, TExceptionFactoryState>>.FullName;
 
             return new ToStringBuilder(null)
-                .Add(nameof(valueFactory), value)
-                .Add(nameof(exceptionFactory), exceptionFactory)
-                .Add(nameof(value), value)
-                .Add(nameof(exception), exception)
-                .Add(nameof(valueCreated), valueCreated)
-                .Add(nameof(exceptionCreated), nameof(exceptionCreated))
+                .AddProperty(nameof(valueFactory), value)
+                .AddProperty(nameof(exceptionFactory), exceptionFactory)
+                .AddProperty(nameof(value), value)
+                .AddProperty(nameof(exception), exception)
+                .AddProperty(nameof(valueCreated), valueCreated)
+                .AddProperty(nameof(exceptionCreated), nameof(exceptionCreated))
                 .ToStringAndDispose();
         }
 

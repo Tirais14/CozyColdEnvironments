@@ -28,6 +28,11 @@ namespace CCEnvs
             stringBuilder.Append('(');
         }
 
+        public static ToStringBuilder CreatePooled()
+        {
+            return new ToStringBuilder(null);
+        }
+
         public static bool operator ==(ToStringBuilder left, ToStringBuilder right)
         {
             return left.Equals(right);
@@ -38,7 +43,7 @@ namespace CCEnvs
             return !(left == right);
         }
 
-        public ToStringBuilder Add<T>(string? fieldName, T? fieldValue)
+        public ToStringBuilder AddProperty<T>(string? fieldName, T? fieldValue)
         {
             if (fieldCount > 0)
                 stringBuilder.Append(';');
@@ -92,7 +97,6 @@ namespace CCEnvs
         {
             var str = ToString();
             Dispose();
-
             return str;
         }
     }

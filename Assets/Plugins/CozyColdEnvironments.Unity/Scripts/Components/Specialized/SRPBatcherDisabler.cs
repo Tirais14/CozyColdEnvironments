@@ -1,10 +1,12 @@
 using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Unity
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(MeshRenderer))]
     public class SRPBatcherDisabler : CCBehaviour
     {
@@ -14,11 +16,27 @@ namespace CCEnvs.Unity
         protected override void Start()
         {
             base.Start();
+            SetPropertyBlock().Forget();
+        }
 
-            var propBlock = new MaterialPropertyBlock();
-            meshRenderer.SetPropertyBlock(propBlock);
+        private async UniTaskVoid SetPropertyBlock()
+        {
+            try
+            {
+                await UniTask.DelayFrame(6, cancellationToken: destroyCancellationToken);
 
-            Destroy(this);
+                var propBlock = new MaterialPropertyBlock();
+                meshRenderer.SetPropertyBlock(propBlock);
+
+                Destroy(this);
+            }
+            catch (System.Exception ex)
+            {
+                if (ex.IsOperationCanceledException())
+                    this.PrintExceptionAsLog(ex);
+
+                this.PrintException(ex);
+            }
         }
     }
 }

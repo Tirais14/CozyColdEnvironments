@@ -10,7 +10,7 @@ namespace CCEnvs.Unity.Pools
         :
         MonoObjectPoolAsync<GameObject, GameObjectPoolAsync, TFactory>
 
-        where TFactory : MonoBehaviour, IFactory<CancellationToken, ValueTask<GameObject>>
+        where TFactory : Component, IFactory<CancellationToken, ValueTask<GameObject>>
     {
         protected override GameObjectPoolAsync CreatePool()
         {
@@ -18,7 +18,7 @@ namespace CCEnvs.Unity.Pools
         }
     }
 
-    public abstract class GameObjectMonoPoolAsync : GameObjectMonoPoolAsync<UnityObjectFactoryAsync<GameObject>>
+    public abstract class GameObjectMonoPoolAsync : GameObjectMonoPoolAsync<UnityObjectMonoFactoryAsync<GameObject>>
     {
 
     }
