@@ -1,3 +1,4 @@
+using CCEnvs.Unity.Components;
 using CCEnvs.Unity.Injections;
 using CCEnvs.Unity.InputSystem.Rx;
 using R3;
@@ -8,7 +9,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.D3.Controllers
 {
     [DisallowMultipleComponent]
-    public sealed class FirstPersonControllerInputBinder : CharControllerInputBinder
+    public sealed class FirstPersonControllerInputBinder : CCBehaviour
     {
         [SerializeField]
         private InputActionRxReference<Vector2> lookInputAction;
