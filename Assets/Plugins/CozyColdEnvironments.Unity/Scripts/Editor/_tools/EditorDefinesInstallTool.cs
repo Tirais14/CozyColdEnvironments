@@ -3,7 +3,6 @@ using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.Build;
 
@@ -20,6 +19,7 @@ namespace CCEnvs.Unity.Editr
         private const string VCONTAINER = "VContainer";
         private const string BIN_PACKER_EB_AFIT = "CromulentBisgetti";
         private const string SPLINES = "UnityEngine.Splines";
+        private const string UNITY_ENTITES = "Unity.Entities";
 
         private const string UNITASK_SYMBOL = "UNITASK_PLUGIN";
         private const string ZLINQ_SYMBOL = "ZLINQ_PLUGIN";
@@ -28,6 +28,7 @@ namespace CCEnvs.Unity.Editr
         private const string VCONTAINER_SYMBOL = "VCONTAINER_PLUGIN";
         private const string BIN_PACKER_EB_AFIT_SYMBOL = "BIN_PACKER_EB_PLUGIN";
         private const string SPLINES_SYMBOL = "SPLINES_PLUGIN";
+        private const string UNITY_ENTITES_SYMBOL = "UNITY_ENTITES";
 
         private readonly static Dictionary<string, string[]> nspaceDefineSymbols = new()
         {
@@ -37,7 +38,8 @@ namespace CCEnvs.Unity.Editr
             { ZENJECT, Range.From(ZENJECT_SYMBOL) },
             { VCONTAINER, Range.From(VCONTAINER_SYMBOL) },
             { BIN_PACKER_EB_AFIT, Range.From(BIN_PACKER_EB_AFIT_SYMBOL) },
-            { SPLINES, Range.From(SPLINES_SYMBOL) }
+            { SPLINES, Range.From(SPLINES_SYMBOL) },
+            { UNITY_ENTITES, Range.From(UNITY_ENTITES_SYMBOL) }
         };
 
         static EditorDefinesInstallTool()

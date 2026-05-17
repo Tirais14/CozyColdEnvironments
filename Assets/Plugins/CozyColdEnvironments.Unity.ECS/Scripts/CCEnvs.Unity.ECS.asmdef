@@ -6,9 +6,15 @@
         "Unity.Entities.Hybrid",
         "Unity.Mathematics",
         "Unity.Collections",
+        "Unity.Collections.CodeGen",
+        "Unity.Collections.BurstCompatibilityGen",
         "Unity.Physics",
         "Unity.Physics.Hybrid",
-        "Unity.Burst"
+        "Unity.Burst",
+        "Unity.Burst.CodeGen",
+        "Unity.Entities.Graphics",
+        "Unity.Transforms",
+        "Unity.Transforms.Hybrid"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -16,9 +22,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "DOTS_PLUGIN"
-    ],
+    "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
 }
