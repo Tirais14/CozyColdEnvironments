@@ -68,7 +68,7 @@ namespace CCEnvs.Unity.EditorSerialization
 
             items = items.Where(item =>
                 {
-                    return !EqualityComparer<SerializedKeyValuePair<TKey, TValue>>.Default.Equals(item, defaultItem);
+                    return !EqualityComparer<TKey>.Default.Equals(item.Key, defaultItem.Key);
                 })
                 .Prepend(defaultItem)
                 .ToArray();
