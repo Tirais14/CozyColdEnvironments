@@ -1,22 +1,28 @@
 using CCEnvs.Pools;
+using Newtonsoft.Json;
 using System;
+using System.Runtime.Serialization;
 
 #nullable enable
 namespace CCEnvs.Dates
 {
+    [Serializable, DataContract]
     public readonly struct TimeSpanLight : IEquatable<TimeSpanLight>, IComparable<TimeSpanLight>
     {
         public const float FROM_DAY_TO_SECOND = 86400f;
         public const float FROM_HOUR_TO_SECOND = 3600f;
+        public const float FROM_HOUR_TO_MILLISECOND = 360000f;
 
         public static TimeSpanLight Empty => new();
 
+        [JsonProperty("seconds")]
         public readonly float Seconds { get; }
 
         public readonly float Minutes => Seconds / 60f;
         public readonly float Milliseconds => Seconds * 100f;
         public readonly float Hours => Minutes / 60f;
 
+        [JsonConstructor]
         public TimeSpanLight(float seconds)
         {
             Seconds = MathF.Max(seconds, 0f);
@@ -104,7 +110,7 @@ namespace CCEnvs.Dates
             return new TimeSpanLight(milliseconds * 100);
         }
 
-        public TimeSpanLight TrimDays(out float days)
+        public readonly TimeSpanLight TrimDays(out float days)
         {
             var hours = Hours;
 
@@ -123,17 +129,17 @@ namespace CCEnvs.Dates
             return Seconds == other.Seconds;
         }
 
-        public TimeSpanLight Add(TimeSpanLight other)
+        public readonly TimeSpanLight Add(TimeSpanLight other)
         {
             return new TimeSpanLight(Seconds + other.Seconds);
         }
 
-        public TimeSpanLight Minus(TimeSpanLight other)
+        public readonly TimeSpanLight Minus(TimeSpanLight other)
         {
             return new TimeSpanLight(Seconds - other.Seconds);
         }
 
-        public TimeSpanLight Dot(float multiplier)
+        public readonly TimeSpanLight Dot(float multiplier)
         {
             if (multiplier <= 0f)
                 return Empty;
@@ -141,7 +147,7 @@ namespace CCEnvs.Dates
             return new TimeSpanLight(Seconds * multiplier);
         }
 
-        public TimeSpanLight Divide(float divider)
+        public readonly TimeSpanLight Divide(float divider)
         {
             if (divider == 0f)
                 return default;
@@ -154,24 +160,78 @@ namespace CCEnvs.Dates
             return HashCode.Combine(Seconds);
         }
 
-        public override string ToString()
+        public readonly string ToString(StringFormat format)
         {
+            if (format == StringFormat.None)
+                return "None";
+
             using var sb = StringBuilderPool.Shared.Get();
 
-            sb.Value.Append(Hours);
-            sb.Value.Append(':');
-            sb.Value.Append(Minutes);
-            sb.Value.Append(':');
-            sb.Value.Append(Seconds);
-            sb.Value.Append(':');
-            sb.Value.Append(Milliseconds);
+            bool writen = false;
+
+            float hours = MathF.Floor(Hours);
+
+            if (format.HasFlagT(StringFormat.IncludeHours))
+            {
+                sb.Value.Append((int)hours);
+                writen = true;
+            }
+
+            if (format.HasFlagT(StringFormat.IncludeMinutes))
+            {
+                if (writen)
+                    sb.Value.Append(':');
+
+                float minutes = Minutes - (hours * 60f);
+
+                sb.Value.Append((int)minutes);
+                writen = true;
+            }
+
+            if (format.HasFlagT(StringFormat.IncludeSeconds))
+            {
+                if (writen)
+                    sb.Value.Append(':');
+
+                float seconds = Seconds - (MathF.Floor(Minutes) * 60f);
+
+                sb.Value.Append((int)seconds);
+                writen = true;
+            }
+
+            if (format.HasFlagT(StringFormat.IncludeMilliseconds))
+            {
+                if (writen)
+                    sb.Value.Append(':');
+
+                float milliseconds = Milliseconds - (MathF.Floor(Seconds) * 100f);
+
+                sb.Value.Append((int)milliseconds);
+                writen = true;
+            }
 
             return sb.Value.ToString();
+        }
+
+        public readonly override string ToString()
+        {
+            return ToString(StringFormat.Default);
         }
 
         public readonly int CompareTo(TimeSpanLight other)
         {
             return Seconds.CompareTo(other.Seconds);
+        }
+
+        [Flags]
+        public enum StringFormat
+        {
+            None,
+            IncludeHours,
+            IncludeMinutes,
+            IncludeSeconds,
+            IncludeMilliseconds,
+            Default = IncludeHours | IncludeMinutes
         }
     }
 }

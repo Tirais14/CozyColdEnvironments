@@ -1,11 +1,13 @@
 using CCEnvs.Linq;
 using CCEnvs.Reflection.Caching;
 using CommunityToolkit.Diagnostics;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 #nullable enable
 namespace CCEnvs.Collections
@@ -20,13 +22,16 @@ namespace CCEnvs.Collections
         }
     }
 
+    [Serializable, DataContract]
     public struct StructuralArray<T> : IList<T>, IEquatable<StructuralArray<T>>
     {
         public static StructuralArray<T> Empty => new(Array.Empty<T>(), forceCacheHashCode: true);
         public static StructuralArray<T> Default => new();
 
+        [JsonProperty("values")]
         private readonly T[] array;
 
+        [JsonProperty("forceHashCode")]
         private readonly bool cacheHashCode;
 
         private int? hashCode;
@@ -49,19 +54,11 @@ namespace CCEnvs.Collections
         public readonly int Length => array?.Length ?? 0;
 
         public readonly bool IsInitialized { get; }
+
+        [JsonProperty("isReadOnly")]
         public readonly bool IsReadOnly { get; }
 
         readonly int ICollection<T>.Count => array.Length;
-
-        //readonly bool ICollection<T>.IsReadOnly => false;
-
-        //readonly T IList<T>.this[int index] {
-
-        //    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //    get => array[index];
-
-        //    set => CC.ThrowHelper.ReadOnlyCollection(this);
-        //}
 
         public StructuralArray(IEnumerable<T> items, bool isReadOnly = false, bool forceCacheHashCode = false)
             :
@@ -72,6 +69,7 @@ namespace CCEnvs.Collections
             array = items.ToArray();
         }
 
+        [JsonConstructor]
         internal StructuralArray(T[] array, bool isReadOnly = false, bool forceCacheHashCode = false)
                         :
             this(isReadOnly: isReadOnly, forceCacheHashCode: forceCacheHashCode)

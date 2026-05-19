@@ -1,11 +1,14 @@
 using CCEnvs.Collections;
 using CCEnvs.Pools;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 #nullable enable
 namespace CCEnvs.Dates
 {
+    [Serializable, DataContract]
     public readonly struct DateTimeCustom : IEquatable<DateTimeCustom>, IComparable<DateTimeCustom>
     {
         public readonly static Lazy<StructuralArray<int>> defaultCalendar = new(
@@ -17,14 +20,23 @@ namespace CCEnvs.Dates
                 return new StructuralArray<int>(arr, isReadOnly: true, forceCacheHashCode: true);
             });
 
+        [JsonProperty("calendar")]
         private readonly StructuralArray<int> calendar;
 
-        public int Year { get; }
-        public int Month { get; }
-        public int Day { get; }
+        [JsonProperty("year")]
+        public readonly int Year { get; }
 
-        public TimeSpanLight Time { get; }
+        [JsonProperty("month")]
+        public readonly int Month { get; }
 
+        [JsonProperty("day")]
+        public readonly int Day { get; }
+
+
+        [JsonProperty("time")]
+        public readonly TimeSpanLight Time { get; }
+
+        [JsonConstructor]
         public DateTimeCustom(
             int year,
             int month,
@@ -143,7 +155,7 @@ namespace CCEnvs.Dates
             newTime = new TimeSpanLight(remainingSeconds);
         }
 
-        public DateTimeCustom Add(TimeSpanLight otherTime)
+        public readonly DateTimeCustom Add(TimeSpanLight otherTime)
         {
             return new DateTimeCustom(Year, Month, Day, Time + otherTime, calendar);
         }
@@ -171,23 +183,35 @@ namespace CCEnvs.Dates
             return HashCode.Combine(calendar, Year, Month, Day, Time);
         }
 
-        public override string ToString()
+        public readonly string ToString(TimeSpanLight.StringFormat timeFormat)
         {
             using var sb = StringBuilderPool.Shared.Get();
 
+            if (Day < 10 && Day > -10)
+                sb.Value.Append('0');
+
             sb.Value.Append(Day);
             sb.Value.Append('.');
+
+            if (Month < 10 && Month > -10)
+                sb.Value.Append('0');
+
             sb.Value.Append(Month);
             sb.Value.Append('.');
             sb.Value.Append(Year);
             sb.Value.Append(" (");
-            sb.Value.Append(Time);
+            sb.Value.Append(Time.ToString(timeFormat));
             sb.Value.Append(')');
 
             return sb.Value.ToString();
         }
 
-        public int CompareTo(DateTimeCustom other)
+        public readonly override string ToString()
+        {
+            return ToString(TimeSpanLight.StringFormat.Default);
+        }
+
+        public readonly int CompareTo(DateTimeCustom other)
         {
             int comp;
 

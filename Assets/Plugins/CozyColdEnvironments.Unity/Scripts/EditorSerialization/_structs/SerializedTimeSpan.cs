@@ -11,10 +11,10 @@ namespace CCEnvs.Unity.EditorSerialization
         IMutableType<TimeSpan>,
         ISerializationCallbackReceiver
     {
-        [SerializeField, Min(0)]
+        [SerializeField, Min(0f)]
         private long ticks;
 
-        [SerializeField, Min(0)]
+        [SerializeField, Min(0f)]
         private int milliseconds;
 
         [SerializeField, Min(0f)]
