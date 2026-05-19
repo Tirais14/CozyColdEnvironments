@@ -6,7 +6,12 @@ namespace CCEnvs.Dates
 {
     public readonly struct TimeSpanLight : IEquatable<TimeSpanLight>, IComparable<TimeSpanLight>
     {
-        public float Seconds { get; }
+        public const float FROM_DAY_TO_SECOND = 86400f;
+        public const float FROM_HOUR_TO_SECOND = 3600f;
+
+        public static TimeSpanLight Empty => new();
+
+        public readonly float Seconds { get; }
 
         public readonly float Minutes => Seconds / 60f;
         public readonly float Milliseconds => Seconds * 100f;
@@ -67,14 +72,45 @@ namespace CCEnvs.Dates
             return left.Divide(right);
         }
 
+        public static TimeSpanLight FromDays(float days)
+        {
+            if (days <= 0f)
+                return Empty;
+
+            return new TimeSpanLight(days );
+        }
+
         public static TimeSpanLight FromHours(float hours)
         {
-            return new TimeSpanLight(MathF.Max(hours / 3600f, 0f));
+            if (hours <= 0f)
+                return Empty;
+
+            return new TimeSpanLight(hours * FROM_HOUR_TO_SECOND);
         }
 
         public static TimeSpanLight FromMinutes(float minutes)
         {
-            return new TimeSpanLight(MathF.Max(minutes / 60f, 0f));
+            if (minutes <= 0f)
+                return Empty;
+
+            return new TimeSpanLight(minutes * 60f);
+        }
+
+        public static TimeSpanLight FromMilliseconds(int milliseconds)
+        {
+            if (milliseconds <= 0)
+                return Empty;
+
+            return new TimeSpanLight(milliseconds * 100);
+        }
+
+        public TimeSpanLight TrimDays(out float days)
+        {
+            var hours = Hours;
+
+            days = MathF.Floor(hours / 24f);
+
+            return new TimeSpanLight(hours - days * FROM_DAY_TO_SECOND);
         }
 
         public readonly override bool Equals(object? obj)
@@ -99,7 +135,10 @@ namespace CCEnvs.Dates
 
         public TimeSpanLight Dot(float multiplier)
         {
-            return new TimeSpanLight(MathF.Max(Seconds * multiplier, 0f));
+            if (multiplier <= 0f)
+                return Empty;
+
+            return new TimeSpanLight(Seconds * multiplier);
         }
 
         public TimeSpanLight Divide(float divider)

@@ -1,3 +1,6 @@
+using CCEnvs.Linq;
+using CCEnvs.Reflection.Caching;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,39 +10,82 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Collections
 {
+    public static class StructuralArray
+    {
+        public static StructuralArray<T> ByRef<T>(T[] array, bool forceCacheHashCode = false)
+        {
+            Guard.IsNotNull(array);
+
+            return new StructuralArray<T>((T[])array, forceCacheHashCode);
+        }
+    }
+
     public struct StructuralArray<T> : IList<T>, IEquatable<StructuralArray<T>>
     {
-        public static StructuralArray<T> Empty => new(Array.Empty<T>());
+        public static StructuralArray<T> Empty => new(Array.Empty<T>(), forceCacheHashCode: true);
+        public static StructuralArray<T> Default => new();
 
         private readonly T[] array;
 
+        private readonly bool cacheHashCode;
+
         private int? hashCode;
 
-        public readonly T this[int index] {
+        public T this[int index] {
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => array[index];
+            readonly get => array[index];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                if (IsReadOnly)
+                    throw CC.ThrowHelper.ReadOnlyCollection(this);
+
+                array[index] = value;
+                hashCode = null;
+            }
         }
 
-        public readonly int Length => array.Length;
+        public readonly int Length => array?.Length ?? 0;
+
+        public readonly bool IsInitialized { get; }
+        public readonly bool IsReadOnly { get; }
 
         readonly int ICollection<T>.Count => array.Length;
 
-        readonly bool ICollection<T>.IsReadOnly => true;
+        //readonly bool ICollection<T>.IsReadOnly => false;
 
-        readonly T IList<T>.this[int index] {
+        //readonly T IList<T>.this[int index] {
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => array[index];
+        //    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //    get => array[index];
 
-            set => CC.ThrowHelper.ReadOnlyCollection(this);
-        }
+        //    set => CC.ThrowHelper.ReadOnlyCollection(this);
+        //}
 
-        public StructuralArray(IEnumerable<T> items)
+        public StructuralArray(IEnumerable<T> items, bool isReadOnly = false, bool forceCacheHashCode = false)
+            :
+            this(isReadOnly: isReadOnly, forceCacheHashCode: forceCacheHashCode)
         {
             CC.Guard.IsNotNull(items, nameof(items));
 
             array = items.ToArray();
+        }
+
+        internal StructuralArray(T[] array, bool isReadOnly = false, bool forceCacheHashCode = false)
+                        :
+            this(isReadOnly: isReadOnly, forceCacheHashCode: forceCacheHashCode)
+        {
+            this.array = array;
+        }
+
+        private StructuralArray(bool isReadOnly = false, bool forceCacheHashCode = false)
+        {
+            array = null!;
+
+            cacheHashCode = forceCacheHashCode || TypeCache<T>.IsPrimitive;
+            IsInitialized = true;
+            IsReadOnly = isReadOnly;
             hashCode = null;
         }
 
@@ -108,15 +154,19 @@ namespace CCEnvs.Collections
         {
             return Length == other.Length
                    &&
-                   EqaulsByElements(other.array);
+                   EqualsByElements(other.array);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
-            hashCode ??= HashCode.Combine(array, Length);
+            if (cacheHashCode)
+            {
+                hashCode ??= HashCode.Combine(array.HashCodeByElements(), Length);
+                return hashCode.Value;
+            }
 
-            return hashCode.Value;
+            return HashCode.Combine(array.HashCodeByElements(), Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,7 +182,7 @@ namespace CCEnvs.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private readonly bool EqaulsByElements(T[] other)
+        private readonly bool EqualsByElements(T[] other)
         {
             if (array is null)
             {

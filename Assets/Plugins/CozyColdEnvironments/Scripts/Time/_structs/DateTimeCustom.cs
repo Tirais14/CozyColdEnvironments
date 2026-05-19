@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using CCEnvs.Pools;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,16 @@ namespace CCEnvs.Dates
 {
     public readonly struct DateTimeCustom : IEquatable<DateTimeCustom>, IComparable<DateTimeCustom>
     {
-        private readonly int[] calendar;
+        public readonly static Lazy<StructuralArray<int>> defaultCalendar = new(
+            () =>
+            {
+                var arr = new int[12];
+                Array.Fill(arr, 30);
+
+                return new StructuralArray<int>(arr, isReadOnly: true, forceCacheHashCode: true);
+            });
+
+        private readonly StructuralArray<int> calendar;
 
         public int Year { get; }
         public int Month { get; }
@@ -20,31 +30,44 @@ namespace CCEnvs.Dates
             int month,
             int day,
             TimeSpanLight time,
-            int[]? calendar = null
+            StructuralArray<int> calendar = default
             )
         {
+            if (!isValidCalendar(calendar))
+                calendar = defaultCalendar.Value;
+
+            this.calendar = calendar;
+
+            if (time.Hours >= 24f)
+            {
+                OffsetDate(
+                    year,
+                    month,
+                    day,
+                    time,
+                    calendar,
+                    out year,
+                    out month,
+                    out day,
+                    out time
+                    );
+            }
+
             Year = year;
             Month = month;
             Day = day;
             Time = time;
 
-            if (calendar is null || calendar.Length == 0 || isInvalidCalendar(calendar))
+            static bool isValidCalendar(StructuralArray<int> calendar)
             {
-                calendar = new int[12];
-                Array.Fill(calendar, 30);
-            }
+                if (!calendar.IsInitialized || calendar.Length == 0)
+                    return false;
 
-            this.calendar = calendar;
-
-            static bool isInvalidCalendar(int[] calendar)
-            {
                 for (int i = 0; i < calendar.Length; i++)
-                {
                     if (calendar[i] < 1)
-                        return true;
-                }
+                        return false;
 
-                return false;
+                return true;
             }
         }
 
@@ -78,23 +101,51 @@ namespace CCEnvs.Dates
             return left.CompareTo(right) >= 0;
         }
 
-        public DateTimeCustom Add(TimeSpanLight otherTime)
+        public static DateTimeCustom operator +(DateTimeCustom left, TimeSpanLight right)
         {
-            var resultTime = Time + otherTime;
+            return left.Add(right);
+        }
 
-            if (resultTime.Hours >= 24f)
+        public static void OffsetDate(
+            int year,
+            int month,
+            int day,
+            TimeSpanLight time,
+            StructuralArray<int> calendar,
+            out int newYear,
+            out int newMonth,
+            out int newDay,
+            out TimeSpanLight newTime
+            )
+        {
+            int daysToAdd = (int)MathF.Floor(time.Seconds / TimeSpanLight.FROM_DAY_TO_SECOND);
+            float remainingSeconds = time.Seconds - (daysToAdd * TimeSpanLight.FROM_DAY_TO_SECOND);
+
+            int currentDay = day + daysToAdd;
+            int currentMonth = month;
+            int currentYear = year;
+
+            while (currentDay > calendar[currentMonth - 1])
             {
-                var additionalDays = MathF.Floor(resultTime.Hours / 24f);
+                currentDay -= calendar[currentMonth - 1];
+                currentMonth++;
 
-                resultTime -= TimeSpanLight.FromHours(additionalDays * 24f);
-
-                var day = Day + 1;
-
-                if (day > calendar[Month])
+                if (currentMonth > calendar.Length)
                 {
-                    var month 
+                    currentMonth = 1;
+                    currentYear++;
                 }
             }
+
+            newYear = currentYear;
+            newMonth = currentMonth;
+            newDay = currentDay;
+            newTime = new TimeSpanLight(remainingSeconds);
+        }
+
+        public DateTimeCustom Add(TimeSpanLight otherTime)
+        {
+            return new DateTimeCustom(Year, Month, Day, Time + otherTime, calendar);
         }
 
         public readonly override bool Equals(object? obj)
@@ -104,7 +155,9 @@ namespace CCEnvs.Dates
 
         public readonly bool Equals(DateTimeCustom other)
         {
-            return Year == other.Year 
+            return calendar == other.calendar
+                   &&
+                   Year == other.Year 
                    &&
                    Month == other.Month
                    &&
@@ -115,7 +168,7 @@ namespace CCEnvs.Dates
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(Year, Month, Day, Time);
+            return HashCode.Combine(calendar, Year, Month, Day, Time);
         }
 
         public override string ToString()
