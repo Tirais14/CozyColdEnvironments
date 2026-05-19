@@ -25,13 +25,13 @@ namespace CCEnvs.Dates
             var time = TimeSpanLight.Empty;
 
             if (Hours > 0f)
-                time += TimeSpanLight.FromHours(Milliseconds);
+                time += TimeSpanLight.FromHours(Hours);
 
             if (Seconds > 0f)
                 time += new TimeSpanLight(Seconds);
 
             if (Minutes > 0f)
-                time += TimeSpanLight.FromMinutes(Milliseconds);
+                time += TimeSpanLight.FromMinutes(Minutes);
 
             if (Milliseconds > 0)
                 time += TimeSpanLight.FromMilliseconds(Milliseconds);
