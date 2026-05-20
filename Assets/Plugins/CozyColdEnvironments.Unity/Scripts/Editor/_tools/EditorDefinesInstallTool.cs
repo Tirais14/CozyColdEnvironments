@@ -19,8 +19,9 @@ namespace CCEnvs.Unity.Editr
         private const string VCONTAINER = "VContainer";
         private const string BIN_PACKER_EB_AFIT = "CromulentBisgetti";
         private const string SPLINES = "UnityEngine.Splines";
-        private const string UNITY_ENTITES = "Unity.Entities";
+        private const string ENTITES = "Unity.Entities";
         private const string JSON_NET = "Newtonsoft.Json";
+        private const string BURST = "Unity.Burst";
 
         private const string UNITASK_SYMBOL = "UNITASK_PLUGIN";
         private const string ZLINQ_SYMBOL = "ZLINQ_PLUGIN";
@@ -29,8 +30,9 @@ namespace CCEnvs.Unity.Editr
         private const string VCONTAINER_SYMBOL = "VCONTAINER_PLUGIN";
         private const string BIN_PACKER_EB_AFIT_SYMBOL = "BIN_PACKER_EB_PLUGIN";
         private const string SPLINES_SYMBOL = "SPLINES_PLUGIN";
-        private const string UNITY_ENTITES_SYMBOL = "UNITY_ENTITES";
+        private const string ENTITES_SYMBOL = "UNITY_ENTITES";
         private const string JSON_NET_SYMBOL = "JSON_NET";
+        private const string BURST_SYMBOL = "UNITY_BURST";
 
         private readonly static Dictionary<string, string[]> nspaceDefineSymbols = new()
         {
@@ -41,7 +43,7 @@ namespace CCEnvs.Unity.Editr
             { VCONTAINER, Range.From(VCONTAINER_SYMBOL) },
             { BIN_PACKER_EB_AFIT, Range.From(BIN_PACKER_EB_AFIT_SYMBOL) },
             { SPLINES, Range.From(SPLINES_SYMBOL) },
-            { UNITY_ENTITES, Range.From(UNITY_ENTITES_SYMBOL) },
+            { ENTITES, Range.From(ENTITES_SYMBOL) },
             { JSON_NET,  Range.From(JSON_NET_SYMBOL) }
         };
 

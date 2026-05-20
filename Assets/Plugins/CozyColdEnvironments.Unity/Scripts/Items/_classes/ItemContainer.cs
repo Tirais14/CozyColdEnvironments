@@ -17,7 +17,9 @@ namespace CCEnvs.Unity.Items
         private readonly ReactiveProperty<Maybe<IItem>> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
         private readonly ReactiveProperty<bool> isActive = new();
+
         private Maybe<IInventory> parentInventory;
+
         private int capacity;
 
         public Maybe<IItem> Item => item.Value;

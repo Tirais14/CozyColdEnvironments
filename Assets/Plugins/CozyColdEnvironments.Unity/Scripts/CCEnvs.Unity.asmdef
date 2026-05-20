@@ -22,6 +22,8 @@
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.Splines",
         "Unity.Mathematics",
+        "Unity.Burst",
+        "Unity.Burst.CodeGen",
         "Zenject"
     ],
     "includePlatforms": [],

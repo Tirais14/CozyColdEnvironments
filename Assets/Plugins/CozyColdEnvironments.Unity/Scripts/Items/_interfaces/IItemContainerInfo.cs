@@ -4,7 +4,9 @@ using R3;
 #nullable enable
 namespace CCEnvs.Unity.Items
 {
-    public interface IItemContainerInfo : IItemContainerInfoItemless
+    public interface IItemContainerInfo 
+        :
+        IItemContainerInfoItemless
     {
         Maybe<IItem> Item { get; }
 
