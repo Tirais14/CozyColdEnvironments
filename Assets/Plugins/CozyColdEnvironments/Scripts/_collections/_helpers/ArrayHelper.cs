@@ -141,7 +141,7 @@ namespace CCEnvs.Collections
             return new ArraySegment<T>(source, offset, count);
         }
 
-        public static bool TryFindHole<T>(this T?[] array, [NotNullWhen(true)] out int? holeIdx)
+        public static bool TryFindHole<T>(this T?[] array, [NotNullWhen(true)] out int? holeIdx, T? holeValue = default)
         {
             Guard.IsNotNull(array, nameof(array));
 
@@ -150,7 +150,7 @@ namespace CCEnvs.Collections
 
             for (int i = 0; i < arrLength; i++)
             {
-                if (defaultEqComparer.Equals(array[i], default))
+                if (defaultEqComparer.Equals(array[i], holeValue))
                 {
                     holeIdx = i;
                     return true;

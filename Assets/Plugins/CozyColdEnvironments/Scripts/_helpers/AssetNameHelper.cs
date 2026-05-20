@@ -1,14 +1,11 @@
 using CCEnvs.Attributes;
 using CCEnvs.Caching;
 using CCEnvs.Collections;
-using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 #nullable enable
@@ -16,49 +13,102 @@ namespace CCEnvs
 {
     public static class AssetNameHelper
     {
-        public static void Parse(
+        public static bool TryParseIDName(
             string assetName,
             out string name,
-            out int id
+            out int id,
+            string separator = "_",
+            int idPosition = 0,
+            int namePosition = 1
             )
         {
-            if (assetName is null)
-                throw new ArgumentNullException(nameof(assetName));
+            Guard.IsNotNull(assetName);
+            Guard.IsNotNull(separator);
 
-            string[] parts = assetName.Split('_');
+            string[] parts = assetName.Split(separator);
 
-            if (parts.Length == 1)
+            name = assetName;
+            id = default;
+
+            bool isParsed = false;
+
+            if (idPosition < parts.Length)
+                isParsed = int.TryParse(parts[idPosition], out id);
+
+            if (namePosition < parts.Length)
             {
-                name = assetName;
-                id = default!;
-                return;
+                name = parts[namePosition];
+                isParsed = true;
             }
 
-            id = int.Parse(parts[0]);
-            name = parts[1];
+            return isParsed;
         }
 
-        public static void ParseReversed(
+        public static bool TryParseIDNameEnum<TEnum>(
             string assetName,
             out string name,
-            out int id
+            out int id,
+            out TEnum enm,
+            string separator = "_",
+            int idPosition = 0,
+            int enumPosition = 1,
+            int namePosition = 2
             )
+            where TEnum : unmanaged, Enum
         {
-            if (assetName is null)
-                throw new ArgumentNullException(nameof(assetName));
+            Guard.IsNotNull(assetName);
+            Guard.IsNotNull(separator);
 
-            string[] parts = assetName.Split('_');
+            string[] parts = assetName.Split(separator);
 
-            if (parts.Length == 1)
+            name = assetName;
+            id = default;
+            enm = default;
+
+            bool isParsed = false;
+
+            if (idPosition < parts.Length)
+                if (int.TryParse(parts[idPosition], out id))
+                    isParsed = true;
+
+            if (enumPosition < parts.Length)
+                if (Enum.TryParse(parts[enumPosition], out enm))
+                    isParsed = true;
+
+            if (namePosition < parts.Length)
             {
-                name = assetName;
-                id = default!;
-                return;
+                name = parts[namePosition];
+                isParsed = true;
             }
 
-            id = int.Parse(parts[^1]);
-            name = parts[^2];
+            return isParsed;
         }
+
+        //public static bool TryParseIDName(
+        //    string assetName,
+        //    out string name,
+        //    out int id,
+        //    string separator = "_"
+        //    )
+        //{
+        //    Guard.IsNotNull(assetName);
+        //    Guard.IsNotNull(separator);
+
+        //    string[] parts = assetName.Split(separator);
+
+        //    name = assetName;
+        //    id = default;
+
+        //    if (parts.Length == 0)
+        //        return false;
+
+        //    name = parts[0];
+
+        //    if (parts.Length > 1)
+        //        int.TryParse(parts[1], out id);
+
+        //    return true;
+        //}
 
 #if UNITY_2017_1_OR_NEWER
 

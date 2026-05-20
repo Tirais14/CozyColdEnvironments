@@ -2,6 +2,8 @@
     "name": "CCEnvs.Unity.ECS",
     "rootNamespace": "CCEnvs.Unity.ECS",
     "references": [
+        "CCEnvs",
+        "CCEnvs.Unity",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Mathematics",

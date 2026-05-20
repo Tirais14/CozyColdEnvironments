@@ -2,7 +2,6 @@ using CCEnvs.Collections;
 using CCEnvs.Pools;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 #nullable enable
@@ -11,7 +10,9 @@ namespace CCEnvs.Dates
     [Serializable, DataContract]
     public readonly struct DateTimeCustom : IEquatable<DateTimeCustom>, IComparable<DateTimeCustom>
     {
-        public readonly static Lazy<StructuralArray<int>> defaultCalendar = new(
+        public static DateTimeCustom Default => new();
+
+        private readonly static Lazy<StructuralArray<int>> defaultCalendar = new(
             () =>
             {
                 var arr = new int[12];
@@ -20,23 +21,25 @@ namespace CCEnvs.Dates
                 return new StructuralArray<int>(arr, isReadOnly: true, forceCacheHashCode: true);
             });
 
-        [JsonProperty("calendar")]
+        [DataMember(Name =  "calendar")]
         private readonly StructuralArray<int> calendar;
 
-        [JsonProperty("year")]
+        [DataMember(Name = "year")]
         public readonly int Year { get; }
 
-        [JsonProperty("month")]
+        [DataMember(Name = "month")]
         public readonly int Month { get; }
 
-        [JsonProperty("day")]
+        [DataMember(Name = "day")]
         public readonly int Day { get; }
 
 
-        [JsonProperty("time")]
+        [DataMember(Name = "time")]
         public readonly TimeSpanLight Time { get; }
 
+#if JSON_NET
         [JsonConstructor]
+#endif
         public DateTimeCustom(
             int year,
             int month,
@@ -52,7 +55,7 @@ namespace CCEnvs.Dates
 
             if (time.Hours >= 24f)
             {
-                OffsetDate(
+                AddDateOffset(
                     year,
                     month,
                     day,
@@ -118,7 +121,12 @@ namespace CCEnvs.Dates
             return left.Add(right);
         }
 
-        public static void OffsetDate(
+        public static DateTimeCustom operator -(DateTimeCustom left, TimeSpanLight right)
+        {
+            return left.Minus(right);
+        }
+
+        public static void AddDateOffset(
             int year,
             int month,
             int day,
@@ -155,9 +163,82 @@ namespace CCEnvs.Dates
             newTime = new TimeSpanLight(remainingSeconds);
         }
 
+        public static void RemoveDateOffset(
+            int year,
+            int month,
+            int day,
+            TimeSpanLight time,
+            StructuralArray<int> calendar,
+            out int newYear,
+            out int newMonth,
+            out int newDay,
+            out TimeSpanLight newTime
+            )
+        {
+            float totalSeconds = time.Seconds;
+            int daysToRemove = (int)MathF.Floor(totalSeconds / TimeSpanLight.FROM_DAY_TO_SECOND);
+            float secRemainder = totalSeconds - (daysToRemove * TimeSpanLight.FROM_DAY_TO_SECOND);
+
+            int currentDay = day - daysToRemove;
+            int currentMonth = month;
+            int currentYear = year;
+
+            // 1. Откатываем целые дни (заём у предыдущих месяцев/лет)
+            while (currentDay <= 0)
+            {
+                currentMonth--;
+                if (currentMonth <= 0)
+                {
+                    currentMonth = calendar.Length;
+                    currentYear--;
+                }
+                currentDay += calendar[currentMonth - 1];
+            }
+
+            if (secRemainder > 0)
+            {
+                currentDay--;
+                if (currentDay <= 0)
+                {
+                    currentMonth--;
+                    if (currentMonth <= 0)
+                    {
+                        currentMonth = calendar.Length;
+                        currentYear--;
+                    }
+                    currentDay += calendar[currentMonth - 1];
+                }
+                newTime = new TimeSpanLight(TimeSpanLight.FROM_DAY_TO_SECOND - secRemainder);
+            }
+            else
+            {
+                newTime = TimeSpanLight.Empty;
+            }
+
+            newYear = currentYear;
+            newMonth = currentMonth;
+            newDay = currentDay;
+        }
+
         public readonly DateTimeCustom Add(TimeSpanLight otherTime)
         {
             return new DateTimeCustom(Year, Month, Day, Time + otherTime, calendar);
+        }
+
+        public readonly DateTimeCustom Minus(TimeSpanLight otherTime)
+        {
+            float diff = Time.Seconds - otherTime.Seconds;
+
+            if (diff >= 0)
+                return new DateTimeCustom(Year, Month, Day, new TimeSpanLight(diff), calendar);
+
+            RemoveDateOffset(
+                Year, Month, Day,
+                new TimeSpanLight(TimeSpanLight.FROM_DAY_TO_SECOND + MathF.Abs(diff)),
+                calendar,
+                out int ny, out int nm, out int nd, out TimeSpanLight nt);
+
+            return new DateTimeCustom(ny, nm, nd, nt, calendar);
         }
 
         public readonly override bool Equals(object? obj)
@@ -169,13 +250,26 @@ namespace CCEnvs.Dates
         {
             return calendar == other.calendar
                    &&
-                   Year == other.Year 
+                   Year == other.Year
                    &&
                    Month == other.Month
                    &&
                    Day == other.Day
                    &&
-                   EqualityComparer<TimeSpanLight>.Default.Equals(Time, other.Time);
+                   Time == other.Time;
+        }
+
+        public readonly bool NearlyEquals(DateTimeCustom other, float? epsilon = null)
+        {
+            return calendar == other.calendar
+                   &&
+                   Year == other.Year
+                   &&
+                   Month == other.Month
+                   &&
+                   Day == other.Day
+                   &&
+                   Time.NearlyEquals(other.Time, epsilon);
         }
 
         public readonly override int GetHashCode()

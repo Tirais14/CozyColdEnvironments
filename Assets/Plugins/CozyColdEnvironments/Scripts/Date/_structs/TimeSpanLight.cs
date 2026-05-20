@@ -15,14 +15,16 @@ namespace CCEnvs.Dates
 
         public static TimeSpanLight Empty => new();
 
-        [JsonProperty("seconds")]
+        [DataMember(Name = "seconds")]
         public readonly float Seconds { get; }
 
         public readonly float Minutes => Seconds / 60f;
         public readonly float Milliseconds => Seconds * 100f;
         public readonly float Hours => Minutes / 60f;
 
+#if JSON_NET
         [JsonConstructor]
+#endif
         public TimeSpanLight(float seconds)
         {
             Seconds = MathF.Max(seconds, 0f);
@@ -58,12 +60,30 @@ namespace CCEnvs.Dates
             return left.CompareTo(right) >= 0;
         }
 
+        public static implicit operator TimeSpanLight(float seconds)
+        {
+            return new TimeSpanLight(seconds);
+        }
+
+        public static implicit operator float(TimeSpanLight instance)
+        {
+            return instance.Seconds;
+        }
+
         public static TimeSpanLight operator +(TimeSpanLight left, TimeSpanLight right)
+        {
+            return left.Add(right);
+        }
+        public static TimeSpanLight operator +(TimeSpanLight left, float right)
         {
             return left.Add(right);
         }
 
         public static TimeSpanLight operator -(TimeSpanLight left, TimeSpanLight right)
+        {
+            return left.Minus(right);
+        }
+        public static TimeSpanLight operator -(TimeSpanLight left, float right)
         {
             return left.Minus(right);
         }
@@ -119,24 +139,22 @@ namespace CCEnvs.Dates
             return new TimeSpanLight(hours - days * FROM_DAY_TO_SECOND);
         }
 
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is TimeSpanLight span && Equals(span);
-        }
-
-        public readonly bool Equals(TimeSpanLight other)
-        {
-            return Seconds == other.Seconds;
-        }
-
         public readonly TimeSpanLight Add(TimeSpanLight other)
         {
             return new TimeSpanLight(Seconds + other.Seconds);
+        }
+        public readonly TimeSpanLight Add(float seconds)
+        {
+            return new TimeSpanLight(Seconds + seconds);
         }
 
         public readonly TimeSpanLight Minus(TimeSpanLight other)
         {
             return new TimeSpanLight(Seconds - other.Seconds);
+        }
+        public readonly TimeSpanLight Minus(float seconds)
+        {
+            return new TimeSpanLight(Seconds - seconds);
         }
 
         public readonly TimeSpanLight Dot(float multiplier)
@@ -153,6 +171,24 @@ namespace CCEnvs.Dates
                 return default;
 
             return new TimeSpanLight(MathF.Max(Seconds / divider, 0f));
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is TimeSpanLight span && Equals(span);
+        }
+
+        public readonly bool Equals(TimeSpanLight other)
+        {
+            return Seconds == other.Seconds;
+        }
+
+        public readonly bool NearlyEquals(TimeSpanLight other, float? epsilon = null)
+        {
+            if (Equals(other))
+                return true;
+
+            return Seconds.NearlyEquals(other.Seconds, epsilon);
         }
 
         public readonly override int GetHashCode()
