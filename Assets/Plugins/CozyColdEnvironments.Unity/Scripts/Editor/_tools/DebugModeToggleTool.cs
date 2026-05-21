@@ -1,12 +1,12 @@
 #if UNITY_EDITOR
 using System.Linq;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using CCEnvs.Utils;
 using UnityEditor;
 using UnityEditor.Build;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public static class DebugModeToggleTool
     {

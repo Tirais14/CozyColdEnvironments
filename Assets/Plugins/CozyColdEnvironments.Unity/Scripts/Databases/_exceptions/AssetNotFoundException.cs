@@ -2,7 +2,7 @@ using System;
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public class AssetNotFoundException : CCException
     {

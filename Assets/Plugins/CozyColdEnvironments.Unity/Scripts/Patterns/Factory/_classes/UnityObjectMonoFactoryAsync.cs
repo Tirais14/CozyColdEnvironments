@@ -1,12 +1,12 @@
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Patterns.Factory
+namespace CCEnvs.UnityX.Patterns.Factory
 {
     public class UnityObjectMonoFactoryAsync<TOut>
         :

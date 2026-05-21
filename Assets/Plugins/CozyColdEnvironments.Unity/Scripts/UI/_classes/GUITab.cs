@@ -1,12 +1,12 @@
 #nullable enable
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
 #pragma warning disable S4144
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Showable))]

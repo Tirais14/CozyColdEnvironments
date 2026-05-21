@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class DestroyAfterAwake : CCBehaviour
     {

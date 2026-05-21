@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     [SerializationDescriptor("QuaternionSnapshot", "f6c48935-fce4-4ba6-bbf2-e815ccb1fa4f")]

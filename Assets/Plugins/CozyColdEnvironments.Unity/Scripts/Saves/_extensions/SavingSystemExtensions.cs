@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.UnityX.Saves
 {
     public static class SavingSystemExtensions
     {

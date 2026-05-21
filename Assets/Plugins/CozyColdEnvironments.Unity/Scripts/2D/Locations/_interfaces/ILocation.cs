@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using CCEnvs.Unity._2D.Locations;
+using CCEnvs.UnityX._2D.Locations;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity._2D
+namespace CCEnvs.UnityX._2D
 {
     public interface ILocation : IEnumerable<ILocationLayer>
     {

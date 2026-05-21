@@ -4,7 +4,7 @@ using CCEnvs.Collections;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class RemoveComponents : MonoBehaviour
     {

@@ -1,7 +1,7 @@
 #if SPLINES_PLUGIN
 using CCEnvs.Disposables;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Splines;
 
 #nullable enable
-namespace CCEnvs.Unity.Splines
+namespace CCEnvs.UnityX.Splines
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(SplineContainer))]

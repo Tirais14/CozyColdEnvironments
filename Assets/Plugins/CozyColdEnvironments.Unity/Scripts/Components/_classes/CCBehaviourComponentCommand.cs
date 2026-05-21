@@ -1,7 +1,7 @@
 #nullable enable
 using Cysharp.Threading.Tasks;
 
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public class CCBehaviourComponentCommand : CCBehaviour
     {

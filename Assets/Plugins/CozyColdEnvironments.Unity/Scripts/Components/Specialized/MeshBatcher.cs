@@ -3,8 +3,8 @@ using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Async;
-using CCEnvs.Unity.EditorSerialization;
+using CCEnvs.UnityX.Async;
+using CCEnvs.UnityX.EditorSerialization;
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ using ZLinq;
 #endif
 
 #nullable enable
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class MeshBatcher : CCBehaviour
     {

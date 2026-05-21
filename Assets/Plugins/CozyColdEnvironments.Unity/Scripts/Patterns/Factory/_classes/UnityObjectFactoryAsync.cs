@@ -6,7 +6,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity.Patterns.Factory
+namespace CCEnvs.UnityX.Patterns.Factory
 {
     public class UnityObjectFactoryAsync<TOut>
         :

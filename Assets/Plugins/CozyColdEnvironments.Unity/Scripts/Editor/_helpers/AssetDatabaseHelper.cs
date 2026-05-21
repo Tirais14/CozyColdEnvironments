@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public static class AssetDatabaseHelper
     {

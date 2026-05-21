@@ -1,9 +1,9 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity._2D.Locations
+namespace CCEnvs.UnityX._2D.Locations
 {
     public class LocationLayerBinding : CCBehaviour, ILocationLayerBinding
     {

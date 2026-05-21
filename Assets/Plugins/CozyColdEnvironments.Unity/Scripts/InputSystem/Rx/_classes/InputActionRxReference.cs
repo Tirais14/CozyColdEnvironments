@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Rx
+namespace CCEnvs.UnityX.InputSystem.Rx
 {
     internal static class InputActionRxReference
     {

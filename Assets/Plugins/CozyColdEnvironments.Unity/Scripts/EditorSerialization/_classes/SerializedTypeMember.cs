@@ -3,7 +3,7 @@ using CCEnvs.FuncLanguage;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     public abstract class SerializedTypeMember<T> : Serialized<T>
         where T : MemberInfo

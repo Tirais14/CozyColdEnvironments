@@ -1,10 +1,10 @@
-using CCEnvs.Unity.InputSystem.Rx;
+using CCEnvs.UnityX.InputSystem.Rx;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface ICanvasController
     {

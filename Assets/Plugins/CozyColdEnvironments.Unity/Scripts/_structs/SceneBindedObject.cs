@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public readonly struct SceneBindedObject<T> : IEquatable<SceneBindedObject<T>>
     {

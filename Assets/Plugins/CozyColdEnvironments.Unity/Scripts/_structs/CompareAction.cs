@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [Serializable]
     public struct CompareAction<T>

@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.Serialization;
-using Emulator = CCEnvs.Unity.Components.Specialized.PlatformDependentBehaviourEmulator;
+using Emulator = CCEnvs.UnityX.Components.Specialized.PlatformDependentBehaviourEmulator;
 
 #nullable enable
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class PlatformDependent : CCBehaviour
     {

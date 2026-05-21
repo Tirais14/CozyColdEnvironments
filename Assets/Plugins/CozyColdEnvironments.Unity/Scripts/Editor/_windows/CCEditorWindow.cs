@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public abstract class CCEditorWindow : EditorWindow
     {

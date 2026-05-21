@@ -2,7 +2,7 @@ using System;
 using CommunityToolkit.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public struct AdvertisementInfo
     {

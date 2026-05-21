@@ -1,6 +1,6 @@
 #if UNITY_2017_1_OR_NEWER
 using System;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
@@ -8,7 +8,7 @@ using UnityEngine;
 #nullable enable
 
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public class CCBehaviour : MonoBehaviour
     {

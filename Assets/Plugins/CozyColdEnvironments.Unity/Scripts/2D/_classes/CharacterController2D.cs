@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity._2D
+namespace CCEnvs.UnityX._2D
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public abstract class CharacterController2D : CCBehaviour

@@ -4,7 +4,7 @@ using ObservableCollections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IInventory
         : IItemAccessor,

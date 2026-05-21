@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Interactables
+namespace CCEnvs.UnityX.Interactables
 {
     public abstract class InteractionZone<TAgent> : CCBehaviour, IInteractionZone<TAgent>
         where TAgent : Component

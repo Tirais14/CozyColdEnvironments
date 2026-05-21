@@ -6,7 +6,7 @@ using System;
 #pragma warning disable S1117
 
 using UnityEngine;
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public sealed class SerializedType : Serialized<Type>

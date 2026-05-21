@@ -1,10 +1,10 @@
 using System.Threading;
-using CCEnvs.Unity.Profiles;
+using CCEnvs.UnityX.Profiles;
 using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Profiles
+namespace CCEnvs.UnityX.UI.Profiles
 {
     public class UserProfileViewModel : ViewModel<IUserProfile>
     {

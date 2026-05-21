@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public static class EditorHelper
     {

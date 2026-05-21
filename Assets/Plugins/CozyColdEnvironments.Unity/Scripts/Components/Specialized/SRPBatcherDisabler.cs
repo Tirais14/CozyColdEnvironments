@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(MeshRenderer))]

@@ -14,7 +14,7 @@ using ZLinq;
 #nullable enable
 #pragma warning disable S1117
 #pragma warning disable S3236
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public struct AssetDatabaseQuery
     {

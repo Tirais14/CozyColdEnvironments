@@ -1,11 +1,11 @@
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public class DragHandler
         : CCBehaviour,

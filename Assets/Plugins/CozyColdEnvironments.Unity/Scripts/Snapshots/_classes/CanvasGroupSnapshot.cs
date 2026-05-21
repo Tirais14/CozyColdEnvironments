@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Serialization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots.UI
+namespace CCEnvs.UnityX.Snapshots.UI
 {
     [Serializable]
     [SerializationDescriptor("CanvasGroupSnapshot", "5b152852-c9bb-4775-aeb0-aaad5b29143e")]

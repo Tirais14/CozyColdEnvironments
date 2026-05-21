@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     [Serializable]
     [DisallowMultipleComponent]

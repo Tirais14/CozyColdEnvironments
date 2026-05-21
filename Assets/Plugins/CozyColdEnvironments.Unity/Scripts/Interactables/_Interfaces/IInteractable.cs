@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 
-namespace CCEnvs.Unity.Interactables
+namespace CCEnvs.UnityX.Interactables
 {
     public interface IInteractable
     {

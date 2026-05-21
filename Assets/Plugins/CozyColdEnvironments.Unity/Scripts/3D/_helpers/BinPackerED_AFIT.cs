@@ -8,7 +8,7 @@ using UnityEngine;
 using Item = CromulentBisgetti.ContainerPacking.Entities.Item;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public static class BinPackerED_AFIT
     {

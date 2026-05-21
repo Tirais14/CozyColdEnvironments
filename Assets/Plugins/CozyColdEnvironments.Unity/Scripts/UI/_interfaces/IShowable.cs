@@ -5,7 +5,7 @@ using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface IShowable
     {

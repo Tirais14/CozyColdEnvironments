@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ObservableCollections;
 
 #nullable enable
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     public interface IReactiveDictionaryExtended<TKey, TValue> : IReadOnlyObservableDictionary<TKey, TValue>, IDictionary<TKey, TValue>
     {

@@ -16,7 +16,7 @@ using ZLinq;
 
 #pragma warning disable S3236
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public class Inventory : IInventory, IDisposable
     {

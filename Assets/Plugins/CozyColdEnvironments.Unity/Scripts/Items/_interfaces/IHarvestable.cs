@@ -1,7 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IHarvestable
     {

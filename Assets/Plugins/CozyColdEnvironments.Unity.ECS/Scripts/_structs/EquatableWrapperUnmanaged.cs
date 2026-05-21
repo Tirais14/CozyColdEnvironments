@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS
+namespace CCEnvs.UnityX.ECS
 {
     public readonly struct EquatableWrapperUnmanaged<T> : IEquatable<EquatableWrapperUnmanaged<T>>, IEquatable<T>
         where T : unmanaged

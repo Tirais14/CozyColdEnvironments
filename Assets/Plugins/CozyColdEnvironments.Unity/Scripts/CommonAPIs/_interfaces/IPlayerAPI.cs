@@ -1,9 +1,9 @@
 using System;
-using CCEnvs.Unity.Profiles;
+using CCEnvs.UnityX.Profiles;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public interface IPlayerAPI : IDisposable
     {

@@ -1,10 +1,10 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using UnityEngine;
 using UnityEngine.Events;
 
 #nullable enable
-namespace CCEnvs.Unity.Events
+namespace CCEnvs.UnityX.Events
 {
     [CreateAssetMenu(fileName = nameof(ScriptableEventListener), menuName = "Scriptable Objects/ScriptableEventListener")]
     public sealed class ScriptableEventListener : CCBehaviour

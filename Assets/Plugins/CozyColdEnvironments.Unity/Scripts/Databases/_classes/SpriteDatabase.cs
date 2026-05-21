@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.U2D;
 
 #nullable enable
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public class SpriteDatabase : AssetDatabase<Sprite>
     {

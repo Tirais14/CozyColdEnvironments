@@ -1,9 +1,9 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public sealed class ExternalSize : CCBehaviour
     {

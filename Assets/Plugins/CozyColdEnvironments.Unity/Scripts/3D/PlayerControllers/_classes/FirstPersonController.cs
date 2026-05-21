@@ -1,8 +1,8 @@
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3.Controllers
+namespace CCEnvs.UnityX.D3.Controllers
 {
     [RequireComponent(typeof(CharController))]
     public class FirstPersonController : CCBehaviour

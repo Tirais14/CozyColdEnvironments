@@ -1,9 +1,9 @@
 using System;
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     public record CCBehaviourSnapshot<T> : MonoBehaviourSnapshot<T>

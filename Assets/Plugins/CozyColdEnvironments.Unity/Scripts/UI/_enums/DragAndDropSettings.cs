@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [Flags]
     public enum DragAndDropSettings

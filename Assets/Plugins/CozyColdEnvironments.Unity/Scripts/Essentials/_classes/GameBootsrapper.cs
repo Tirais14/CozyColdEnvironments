@@ -1,12 +1,12 @@
 using System;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity.Essentials
+namespace CCEnvs.UnityX.Essentials
 {
     public sealed class GameBootsrapper : CCBehaviourStatic<GameBootsrapper>
     {

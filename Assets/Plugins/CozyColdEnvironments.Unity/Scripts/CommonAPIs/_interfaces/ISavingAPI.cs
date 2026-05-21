@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public interface ISavingAPI : IDisposable
     {

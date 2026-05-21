@@ -1,8 +1,8 @@
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public class MaterializedItem2D : AMaterializedItem

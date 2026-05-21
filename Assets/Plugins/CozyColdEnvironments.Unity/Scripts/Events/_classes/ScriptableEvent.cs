@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Events
+namespace CCEnvs.UnityX.Events
 {
     [CreateAssetMenu(fileName = "ScriptableEvent", menuName = "Scriptable Objects/ScriptableEvent")]
     public sealed class ScriptableEvent : ScriptableObject

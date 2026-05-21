@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public sealed class SerializedImmutableArray<T> : Serialized<ImmutableArray<T>>

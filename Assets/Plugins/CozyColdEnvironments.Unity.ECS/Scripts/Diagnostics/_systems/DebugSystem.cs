@@ -4,7 +4,7 @@ using global::Unity.Collections;
 using global::Unity.Entities;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS.Diagnostics
+namespace CCEnvs.UnityX.ECS.Diagnostics
 {
     public partial struct DebugSystem : ISystem
     {

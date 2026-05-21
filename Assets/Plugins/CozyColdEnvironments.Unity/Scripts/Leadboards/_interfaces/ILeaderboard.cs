@@ -1,11 +1,11 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using CCEnvs.Unity.Profiles;
+using CCEnvs.UnityX.Profiles;
 using ObservableCollections;
 using R3;
 
-namespace CCEnvs.Unity.Leaderboards
+namespace CCEnvs.UnityX.Leaderboards
 {
     public interface ILeaderboard : ICollection<ILeaderboardEntry>, IDisposable
     {

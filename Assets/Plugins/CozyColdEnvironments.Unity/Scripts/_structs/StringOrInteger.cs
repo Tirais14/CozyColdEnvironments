@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S1450
-namespace CCEnvs.Unity.Serialization
+namespace CCEnvs.UnityX.Serialization
 {
     [Serializable]
     public struct StringOrInteger

@@ -1,9 +1,9 @@
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Components
+namespace CCEnvs.UnityX.UI.Components
 {
     public class RectTransformSizeBinding : CCBehaviour, IFrameRunnerWorkItem
     {

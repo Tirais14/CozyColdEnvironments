@@ -8,7 +8,7 @@ using UnityEngine;
 #nullable enable
 #pragma warning disable S3236
 #pragma warning disable S1144
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public class ItemContainer : IItemContainer, IDisposable
     {

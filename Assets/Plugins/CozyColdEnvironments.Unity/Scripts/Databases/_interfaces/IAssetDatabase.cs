@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 #nullable enable
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public interface IAssetDatabase
         : IDisposable,

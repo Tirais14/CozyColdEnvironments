@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Serialization;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     public record SelectableSnapshot<T> : UIBehaviourSnapshot<T>

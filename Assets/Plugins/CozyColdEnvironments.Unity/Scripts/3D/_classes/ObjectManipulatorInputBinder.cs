@@ -1,12 +1,12 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.InputSystem.Rx;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.InputSystem.Rx;
 using R3;
 using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     [DisallowMultipleComponent]
     public sealed class ObjectManipulatorInputBinder : CCBehaviour

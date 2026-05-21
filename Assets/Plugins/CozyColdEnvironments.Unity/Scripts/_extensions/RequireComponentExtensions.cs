@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public static class RequireComponentExtensions
     {

@@ -1,12 +1,12 @@
 using CCEnvs.Disposables;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.EditorSerialization;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.EditorSerialization;
+using CCEnvs.UnityX.Injections;
 using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public class CharController : CCBehaviour
     {

@@ -3,10 +3,10 @@
 #pragma warning disable S2325 // Methods and properties that don't access instance data should be static
 
 using System;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Diagnostics
+namespace CCEnvs.UnityX.Diagnostics
 {
     /// <summary>
     /// !Editor only

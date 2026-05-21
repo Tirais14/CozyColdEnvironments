@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IItemContainer
         : IItemAccessor,

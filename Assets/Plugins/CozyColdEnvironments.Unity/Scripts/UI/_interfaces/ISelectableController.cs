@@ -2,7 +2,7 @@
 using CCEnvs.FuncLanguage;
 using R3;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface ISelectableController
     {

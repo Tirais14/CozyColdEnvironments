@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 
 #nullable enable
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public class DatabaseNotFoundException : CCException
     {

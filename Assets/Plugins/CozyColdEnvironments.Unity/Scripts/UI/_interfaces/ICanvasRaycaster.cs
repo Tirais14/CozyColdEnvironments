@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface ICanvasRaycaster
     {

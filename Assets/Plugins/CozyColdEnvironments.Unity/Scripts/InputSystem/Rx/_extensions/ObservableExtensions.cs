@@ -3,7 +3,7 @@ using R3;
 using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem.Rx
+namespace CCEnvs.UnityX.InputSystem.Rx
 {
     public static class ObservableExtensions
     {

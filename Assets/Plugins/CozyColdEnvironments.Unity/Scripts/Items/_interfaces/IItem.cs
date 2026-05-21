@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IItem : IEquatable<IItem>, IIDMarked<int>
     {

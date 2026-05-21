@@ -6,13 +6,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 #nullable enable
-namespace CCEnvs.Unity._2D.Locations
+namespace CCEnvs.UnityX._2D.Locations
 {
     [RequireComponent(typeof(Tilemap))]
     public abstract class LocationLayer<T> : CCBehaviour, ILocationLayer<T>

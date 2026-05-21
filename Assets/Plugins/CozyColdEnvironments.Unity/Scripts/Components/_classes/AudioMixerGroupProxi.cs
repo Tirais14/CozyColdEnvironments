@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public sealed class AudioMixerGroupProxi : CCBehaviour
     {

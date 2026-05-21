@@ -1,12 +1,12 @@
 using CCEnvs.Attributes;
 using CCEnvs.Json;
-using CCEnvs.Unity.Snapshots;
+using CCEnvs.UnityX.Snapshots;
 using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Json
+namespace CCEnvs.UnityX.Json
 {
     public class Vector3JsonConverter : JsonConverter<Vector3>
     {

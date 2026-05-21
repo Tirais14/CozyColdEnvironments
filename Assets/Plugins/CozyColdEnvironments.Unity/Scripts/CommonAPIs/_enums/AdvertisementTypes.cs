@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     [Flags]
     public enum AdvertisementTypes

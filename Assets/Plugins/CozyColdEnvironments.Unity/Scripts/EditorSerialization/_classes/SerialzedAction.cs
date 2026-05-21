@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     //[Serializable]
     //public class SerialzedAction : Serialized<Action>

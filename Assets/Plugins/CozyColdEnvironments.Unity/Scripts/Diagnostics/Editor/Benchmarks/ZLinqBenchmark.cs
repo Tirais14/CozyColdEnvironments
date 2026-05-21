@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using ZLinq;    
 
 #nullable enable
-namespace CCEnvs.Unity.Diagnostics.EditorC.Benchmarks
+namespace CCEnvs.UnityX.Diagnostics.EditorC.Benchmarks
 {
     public record ZLinqBenchmark<T> : CollectionBenchmark<T>
     {

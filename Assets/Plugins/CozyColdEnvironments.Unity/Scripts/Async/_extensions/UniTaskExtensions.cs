@@ -3,7 +3,7 @@ using CCEnvs.Diagnostics;
 using Cysharp.Threading.Tasks;
 
 #nullable enable
-namespace CCEnvs.Unity.Async
+namespace CCEnvs.UnityX.Async
 {
     public static class UniTaskExtensions
     {

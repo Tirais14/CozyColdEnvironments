@@ -4,7 +4,7 @@ using CommunityToolkit.Diagnostics;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.States
+namespace CCEnvs.UnityX.States
 {
     public class StateMachine : IStateMachine
     {

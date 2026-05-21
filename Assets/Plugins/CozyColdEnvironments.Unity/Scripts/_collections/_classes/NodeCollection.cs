@@ -1,6 +1,6 @@
 #nullable enable
 #pragma warning disable S1121
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     //public class NodeCollection<TKey, TNode>
     //    : INodeCollection<TKey, TNode>,

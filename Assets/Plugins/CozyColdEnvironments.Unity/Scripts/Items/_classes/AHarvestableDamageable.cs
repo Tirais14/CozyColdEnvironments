@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public abstract class AHarvestableDamageable<TItem, TDamageable> : Harvestable<TItem>
         where TItem : IHarvestableItem

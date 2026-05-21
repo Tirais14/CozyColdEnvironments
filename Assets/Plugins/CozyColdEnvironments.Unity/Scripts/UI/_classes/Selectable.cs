@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public class Selectable : CCBehaviour, ISelectable
     {

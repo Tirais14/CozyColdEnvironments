@@ -1,7 +1,7 @@
 #nullable enable
 using R3;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface ISelectable : ISwitchable
     {

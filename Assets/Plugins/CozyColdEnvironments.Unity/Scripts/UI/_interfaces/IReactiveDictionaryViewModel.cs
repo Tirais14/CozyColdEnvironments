@@ -4,7 +4,7 @@ using ObservableCollections;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [Obsolete]
     public interface IReactiveDictionaryViewModel<TKey, TValue> : IViewModel

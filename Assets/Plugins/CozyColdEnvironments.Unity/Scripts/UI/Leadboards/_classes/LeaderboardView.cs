@@ -1,5 +1,5 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Leaderboards;
+using CCEnvs.UnityX.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
@@ -7,7 +7,7 @@ using System.Linq;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Leaderboards
+namespace CCEnvs.UnityX.UI.Leaderboards
 {
     public class LeaderboardView : View<LeaderboardViewModel>
     {

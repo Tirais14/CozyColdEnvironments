@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Pools
+namespace CCEnvs.UnityX.Pools
 {
     public class GameObjectPoolAsync : ObjectPoolAsync<GameObject>
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IItemAccessor
     {

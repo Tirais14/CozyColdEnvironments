@@ -4,7 +4,7 @@ using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     [SerializationDescriptor("Vector3Snapshot", "80f07fb0-8669-4054-b9aa-2a85fc566b64")]

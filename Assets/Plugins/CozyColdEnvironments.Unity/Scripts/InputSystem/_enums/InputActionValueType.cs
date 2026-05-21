@@ -2,7 +2,7 @@ using CCEnvs.Attributes.Metadata;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem
+namespace CCEnvs.UnityX.InputSystem
 {
     public enum InputActionValueType : byte
     {

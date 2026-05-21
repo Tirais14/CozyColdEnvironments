@@ -1,15 +1,15 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.EditorSerialization;
-using CCEnvs.Unity.Snapshots;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.EditorSerialization;
+using CCEnvs.UnityX.Snapshots;
 using CommunityToolkit.Diagnostics;
 using System;
 using UnityEngine;
-using ObjectOptions = CCEnvs.Unity.D3.ObjectManipulatorObjectSettings;
-using OffsetOptions = CCEnvs.Unity.D3.ObjectManipulatorOffsetSettings;
-using VelocityOptions = CCEnvs.Unity.D3.ObjectManipulatorVelocitySettings;
+using ObjectOptions = CCEnvs.UnityX.D3.ObjectManipulatorObjectSettings;
+using OffsetOptions = CCEnvs.UnityX.D3.ObjectManipulatorOffsetSettings;
+using VelocityOptions = CCEnvs.UnityX.D3.ObjectManipulatorVelocitySettings;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     [DisallowMultipleComponent]
     public sealed class ObjectManipulator : CCBehaviour

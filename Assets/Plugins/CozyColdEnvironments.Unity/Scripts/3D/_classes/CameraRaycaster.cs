@@ -1,10 +1,10 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Unity.EditorSerialization;
+using CCEnvs.UnityX.EditorSerialization;
 using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public abstract class CameraRaycaster<TSelf> : ICameraRaycaster
         where TSelf : ICameraRaycaster

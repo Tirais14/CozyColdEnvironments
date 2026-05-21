@@ -1,10 +1,10 @@
 using CCEnvs.Dependencies;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Dependencies;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Dependencies;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     /// <summary>
     /// Marks <see cref="Canvas"/> as <see cref="Canvas"/> with higher sort order for correct overlapping UI elements on example while is dragging any object

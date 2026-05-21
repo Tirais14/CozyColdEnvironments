@@ -1,11 +1,11 @@
 #if UNITY_EDITOR
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [CustomEditor(typeof(PersistentGuid))]
     public class GameObjectPersistentGuidEditor : global::UnityEditor.Editor

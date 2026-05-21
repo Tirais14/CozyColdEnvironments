@@ -1,9 +1,9 @@
-using CCEnvs.Unity.Items;
+using CCEnvs.UnityX.Items;
 using System;
 using Unity.Entities;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS.Items
+namespace CCEnvs.UnityX.ECS.Items
 {
     [InternalBufferCapacity(16)]
     public struct ItemUnmanged : IBufferElementData, IEquatable<ItemUnmanged>

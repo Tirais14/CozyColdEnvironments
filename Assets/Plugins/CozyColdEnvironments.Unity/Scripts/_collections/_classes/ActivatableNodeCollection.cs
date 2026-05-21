@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     //public class ActivatableNodeCollection<TKey, TNode>
     //    : NodeCollection<TKey, TNode>,

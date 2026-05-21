@@ -13,7 +13,7 @@ using UnityEngine.ResourceManagement.ResourceLocations;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.AddrsAssets
+namespace CCEnvs.UnityX.AddrsAssets
 {
     public static class AddressableLoader
     {

@@ -1,11 +1,11 @@
 using CCEnvs.Dependencies;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using R3;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public class AuthorizeButtonInactivator : CCBehaviour
     {

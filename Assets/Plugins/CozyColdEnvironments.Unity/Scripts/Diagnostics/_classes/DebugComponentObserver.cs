@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.Diagnostics
+namespace CCEnvs.UnityX.Diagnostics
 {
     public class DebugComponentObserver : CCBehaviour
     {

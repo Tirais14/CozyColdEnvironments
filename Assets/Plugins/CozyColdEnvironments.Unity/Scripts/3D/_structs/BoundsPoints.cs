@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public readonly struct BoundsPoints : IReadOnlyList<Vector3>, IEquatable<BoundsPoints>
     {

@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IHarvestableItem : IItem
     {

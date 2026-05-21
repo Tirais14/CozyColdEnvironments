@@ -2,7 +2,7 @@
 using System;
 using R3;
 
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public interface IGeneralAPI : IDisposable
     {

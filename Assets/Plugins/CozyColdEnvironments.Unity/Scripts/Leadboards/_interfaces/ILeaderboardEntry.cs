@@ -1,11 +1,11 @@
 using System;
 using System.Threading;
-using CCEnvs.Unity.Profiles;
+using CCEnvs.UnityX.Profiles;
 using ObservableCollections;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.Leaderboards
+namespace CCEnvs.UnityX.Leaderboards
 {
     public interface ILeaderboardEntry
         :

@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S4035
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     [Serializable]
     public class ItemCustom : IItem

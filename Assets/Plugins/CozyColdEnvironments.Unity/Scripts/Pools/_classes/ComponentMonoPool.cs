@@ -1,9 +1,9 @@
 using CCEnvs.Patterns.Factories;
-using CCEnvs.Unity.Patterns.Factory;
+using CCEnvs.UnityX.Patterns.Factory;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Pools
+namespace CCEnvs.UnityX.Pools
 {
     public abstract class ComponentMonoPool<TComponent, TFactory> 
         :

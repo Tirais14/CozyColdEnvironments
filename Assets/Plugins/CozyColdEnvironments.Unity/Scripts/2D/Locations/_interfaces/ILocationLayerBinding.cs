@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 
 #nullable enable
-namespace CCEnvs.Unity._2D.Locations
+namespace CCEnvs.UnityX._2D.Locations
 {
     public interface ILocationLayerBinding
     {

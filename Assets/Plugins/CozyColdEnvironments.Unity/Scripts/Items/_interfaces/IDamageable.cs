@@ -1,7 +1,7 @@
 #nullable enable
 using R3;
 
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IDamageable
     {

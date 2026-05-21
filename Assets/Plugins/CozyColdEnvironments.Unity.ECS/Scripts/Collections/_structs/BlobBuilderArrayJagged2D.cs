@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Unity.Entities;
 
-namespace CCEnvs.Unity.ECS.Collections
+namespace CCEnvs.UnityX.ECS.Collections
 {
     public ref struct BlobBuilderArrayJagged2D<T>
         where T : struct

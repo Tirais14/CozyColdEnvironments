@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 #nullable enable
-namespace CCEnvs.Unity.InputSystem
+namespace CCEnvs.UnityX.InputSystem
 {
     public static class InputActionExtensions
     {

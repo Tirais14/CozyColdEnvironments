@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CCEnvs.Unity.Async;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Async;
+using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
@@ -10,7 +10,7 @@ using SuperLinq;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     public class ComponentList<T> : CCBehaviour
         where T : class

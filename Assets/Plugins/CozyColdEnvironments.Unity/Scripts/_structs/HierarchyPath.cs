@@ -6,7 +6,7 @@ using CCEnvs.Collections;
 using Newtonsoft.Json;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [Serializable]
     [SerializationDescriptor("HierarchyPath", "77427b05-d52c-4cb1-8c64-4bcd8bead81f")]

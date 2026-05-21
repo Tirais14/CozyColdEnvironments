@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public sealed class AuidioSourceManagerProxi : CCBehaviour
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEngine;
 
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IPlaceableItem : IItem
     {

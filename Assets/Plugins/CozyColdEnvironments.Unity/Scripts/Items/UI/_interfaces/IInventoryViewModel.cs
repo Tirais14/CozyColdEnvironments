@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI;
+using CCEnvs.UnityX.Items;
+using CCEnvs.UnityX.UI;
 using ObservableCollections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Storages.UI
+namespace CCEnvs.UnityX.Storages.UI
 {
     public interface IInventoryViewModel
         :

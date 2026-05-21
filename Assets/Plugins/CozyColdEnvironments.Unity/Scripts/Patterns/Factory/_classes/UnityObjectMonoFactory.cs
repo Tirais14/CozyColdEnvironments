@@ -1,9 +1,9 @@
 using CCEnvs.Patterns.Factories;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Patterns.Factory
+namespace CCEnvs.UnityX.Patterns.Factory
 {
     public class UnityObjectMonoFactory<TOut> 
         :

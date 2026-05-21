@@ -5,7 +5,7 @@ using CCEnvs.FuncLanguage;
 
 #nullable enable
 
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
     public readonly struct AssetDatabaseKey

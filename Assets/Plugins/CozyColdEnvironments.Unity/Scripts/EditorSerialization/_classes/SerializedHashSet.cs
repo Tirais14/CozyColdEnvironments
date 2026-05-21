@@ -5,7 +5,7 @@ using CCEnvs.Collections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public sealed class SerializedHashSet<T> : Serialized<HashSet<T>>, ISerializationCallbackReceiver

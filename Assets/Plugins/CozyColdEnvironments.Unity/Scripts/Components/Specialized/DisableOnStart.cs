@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEngine;
 using ZLinq;
 
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public class DisableOnStart : MonoBehaviour
     {

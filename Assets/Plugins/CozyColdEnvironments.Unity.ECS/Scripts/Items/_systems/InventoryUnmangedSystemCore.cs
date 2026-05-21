@@ -1,5 +1,5 @@
 using CCEnvs.Threading;
-using CCEnvs.Unity.Items;
+using CCEnvs.UnityX.Items;
 using R3;
 using System;
 using System.Threading;
@@ -7,7 +7,7 @@ using Unity.Collections;
 using Unity.Entities;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS.Items
+namespace CCEnvs.UnityX.ECS.Items
 {
     public static class InventoryUnmangedSystemCore
     {

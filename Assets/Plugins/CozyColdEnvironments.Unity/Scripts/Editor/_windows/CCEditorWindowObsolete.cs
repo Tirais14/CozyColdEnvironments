@@ -3,14 +3,14 @@ using System;
 using System.IO;
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [Obsolete("Use CCEditorWindow")]
     public abstract class CCEditorWindowObsolete : EditorWindow

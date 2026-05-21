@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots.UI
+namespace CCEnvs.UnityX.Snapshots.UI
 {
     [Serializable]
     public record GraphicSnapshot<T> : BehaviourSnapshot<T>

@@ -1,9 +1,9 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public class ViewComponentCommand<T> : CCBehaviourComponentCommand
         where T : class, IView

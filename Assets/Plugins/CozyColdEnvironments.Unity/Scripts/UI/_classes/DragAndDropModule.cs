@@ -1,10 +1,10 @@
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using CommunityToolkit.Diagnostics;
 using R3;
 using UnityEngine.EventSystems;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public class DragAndDropModule
         : 

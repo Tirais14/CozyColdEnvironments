@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CCEnvs.Unity._2D
+namespace CCEnvs.UnityX._2D
 {
     public static class ObjectMove
     {

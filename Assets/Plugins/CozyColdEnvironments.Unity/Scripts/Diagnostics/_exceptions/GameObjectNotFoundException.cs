@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace CCEnvs.Unity.Diagnostics
+namespace CCEnvs.UnityX.Diagnostics
 {
     public sealed class GameObjectNotFoundException : CCException
     {

@@ -7,7 +7,7 @@ using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity._2D.Locations
+namespace CCEnvs.UnityX._2D.Locations
 {
     public class GhostCell : IGhostCell
     {

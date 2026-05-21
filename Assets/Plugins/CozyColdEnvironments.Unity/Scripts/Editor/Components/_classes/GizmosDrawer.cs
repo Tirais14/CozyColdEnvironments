@@ -2,7 +2,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr.Components
+namespace CCEnvs.UnityX.Editr.Components
 {
     public abstract class GizmosDrawer : MonoBehaviour
     {

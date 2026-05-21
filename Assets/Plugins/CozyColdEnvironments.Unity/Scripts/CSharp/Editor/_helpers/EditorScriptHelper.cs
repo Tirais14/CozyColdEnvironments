@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.CSharp
+namespace CCEnvs.UnityX.CSharp
 {
     public static class EditorScriptHelper
     {

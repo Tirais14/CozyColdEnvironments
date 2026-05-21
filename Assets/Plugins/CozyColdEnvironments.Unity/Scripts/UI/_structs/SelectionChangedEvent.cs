@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using CCEnvs.FuncLanguage;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public static class SelectionChangedEvent
     {

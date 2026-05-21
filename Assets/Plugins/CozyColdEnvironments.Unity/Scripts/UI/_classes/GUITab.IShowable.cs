@@ -1,12 +1,12 @@
 using System.Threading;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public partial class GUITab : IShowable
     {

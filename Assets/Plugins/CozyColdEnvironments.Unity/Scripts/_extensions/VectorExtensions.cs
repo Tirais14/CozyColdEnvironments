@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S2094
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public static class Vector2Extensions
     {

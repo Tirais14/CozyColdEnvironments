@@ -7,7 +7,7 @@ using UnityEngine.Tilemaps;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity._2D.Locations
+namespace CCEnvs.UnityX._2D.Locations
 {
     public interface ILocationLayer : IEnumerable
     {

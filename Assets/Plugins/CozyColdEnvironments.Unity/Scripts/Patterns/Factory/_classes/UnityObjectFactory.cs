@@ -6,7 +6,7 @@ using UnityEngine.Splines;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity.Patterns.Factory
+namespace CCEnvs.UnityX.Patterns.Factory
 {
     public abstract class UnityObjectFactory
     {

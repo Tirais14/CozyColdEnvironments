@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     //public class DictionaryViewModel<TModel, TKey, TValue> : ViewModel<TModel>, IReactiveDictionaryViewModel<TKey, TValue>
     //{

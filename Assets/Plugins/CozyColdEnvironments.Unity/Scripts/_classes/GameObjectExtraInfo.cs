@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [Serializable]
     [SerializationDescriptor("GameObjectExtraInfo", "3a2f26f8-31d8-4f71-831f-af7446d37f30")]

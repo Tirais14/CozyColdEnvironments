@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.EditorSerialization;
-using CCEnvs.Unity.Leaderboards;
+using CCEnvs.UnityX.EditorSerialization;
+using CCEnvs.UnityX.Leaderboards;
 using ObservableCollections;
 using R3;
 using TMPro;
@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace CCEnvs.Unity.UI.Leaderboards
+namespace CCEnvs.UnityX.UI.Leaderboards
 {
     public class LeaderboardEntryView : View<LeaderboardEntryViewModel>
     {

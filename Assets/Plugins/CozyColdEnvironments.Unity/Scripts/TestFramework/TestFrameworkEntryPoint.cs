@@ -1,6 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Reflection;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Tests
+namespace CCEnvs.UnityX.Tests
 {
     [DefaultExecutionOrder(-2)]
     public class TestFrameworkEntryPoint : CCBehaviour

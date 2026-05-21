@@ -6,7 +6,7 @@ using System.Globalization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Json
+namespace CCEnvs.UnityX.Json
 {
     public class Vector2IntJsonConverter : JsonConverter<Vector2Int>
     {

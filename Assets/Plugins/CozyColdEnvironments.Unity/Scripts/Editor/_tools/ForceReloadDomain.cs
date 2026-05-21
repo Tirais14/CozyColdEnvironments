@@ -1,10 +1,10 @@
 #if UNITY_EDITOR
 using CCEnvs.Diagnostics;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using UnityEditor;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public static class ForceReloadDomain
     {

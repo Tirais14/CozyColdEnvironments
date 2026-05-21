@@ -1,6 +1,6 @@
 using UnityEngine.EventSystems;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public delegate void DragAndDropAction(PointerEventData eventData);
 }

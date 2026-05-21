@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.Tests
+namespace CCEnvs.UnityX.Tests
 {
     public class CCMonoTestAttribute : Attribute
     {

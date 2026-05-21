@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using TMPro;
@@ -11,10 +11,10 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 using OptionData = TMPro.TMP_Dropdown.OptionData;
-using OptionDataLocalized = CCEnvs.Unity.TMP_DropdownOptionDataLocalized;
+using OptionDataLocalized = CCEnvs.UnityX.TMP_DropdownOptionDataLocalized;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     [RequireComponent(typeof(TMP_Dropdown))]
     public class TMP_DropdownLocalizer : CCBehaviour

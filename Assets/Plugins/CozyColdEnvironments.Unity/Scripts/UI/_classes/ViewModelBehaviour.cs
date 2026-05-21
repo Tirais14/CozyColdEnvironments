@@ -1,13 +1,13 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using R3;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public abstract class ViewModelBehaviour
         :

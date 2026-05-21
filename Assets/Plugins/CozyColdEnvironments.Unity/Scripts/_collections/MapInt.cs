@@ -5,7 +5,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     public readonly struct MapInt<T> : IEnumerable<T>
     {

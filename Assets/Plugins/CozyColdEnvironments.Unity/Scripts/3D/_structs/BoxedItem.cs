@@ -2,14 +2,14 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Pools;
 using CCEnvs.Reflection.Caching;
-using CCEnvs.Unity.Snapshots;
+using CCEnvs.UnityX.Snapshots;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public struct BoxedItem : IDisposable, IEquatable<BoxedItem>
     {

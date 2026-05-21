@@ -2,7 +2,7 @@
 #pragma warning disable IDE1006
 using System;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface IView : IShowable
     {

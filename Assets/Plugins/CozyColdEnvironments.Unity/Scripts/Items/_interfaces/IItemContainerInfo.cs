@@ -2,7 +2,7 @@ using CCEnvs.FuncLanguage;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IItemContainerInfo 
         :

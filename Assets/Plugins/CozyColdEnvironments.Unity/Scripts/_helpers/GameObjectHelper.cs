@@ -2,7 +2,7 @@ using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ using ZLinq;
 using Object = UnityEngine.Object;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public static class GameObjectHelper
     {

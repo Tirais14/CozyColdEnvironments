@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     [SerializationDescriptor("Vector2Snapshot", "e7762602-0d73-4577-8fbe-4aa37390a929")]

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public class ItemEqulaityComparer : IEqualityComparer<IItem?>
     {

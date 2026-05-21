@@ -1,7 +1,7 @@
 using Unity.Entities;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS.Collections
+namespace CCEnvs.UnityX.ECS.Collections
 {
     public struct BlobArrayJagged2D<T>
         where T : struct

@@ -4,7 +4,7 @@ using System.Threading;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Pools
+namespace CCEnvs.UnityX.Pools
 {
     public class GameObjectPool : ObjectPool<GameObject>
     {

@@ -2,9 +2,9 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI;
+using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.Items;
+using CCEnvs.UnityX.UI;
 using System;
 using UnityEngine;
 
@@ -13,7 +13,7 @@ using ZLinq;
 #endif
 
 #nullable enable
-namespace CCEnvs.Unity.Storages.UI
+namespace CCEnvs.UnityX.Storages.UI
 {
     public abstract class InventoryView<TViewModel>
         :

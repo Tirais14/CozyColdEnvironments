@@ -2,7 +2,7 @@ using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface IIconViewModel : IViewModel
     {

@@ -7,7 +7,7 @@ using CCEnvs.Snapshots;
 using Newtonsoft.Json;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.UnityX.Saves
 {
     [Serializable]
     public readonly struct SaveFileSceneData : IEquatable<SaveFileSceneData>

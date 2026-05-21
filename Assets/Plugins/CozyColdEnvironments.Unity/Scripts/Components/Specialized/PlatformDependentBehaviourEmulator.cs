@@ -1,6 +1,6 @@
 using UnityEngine;
 #nullable enable
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class PlatformDependentBehaviourEmulator : CCBehaviourStaticPublic<PlatformDependentBehaviourEmulator>
     {

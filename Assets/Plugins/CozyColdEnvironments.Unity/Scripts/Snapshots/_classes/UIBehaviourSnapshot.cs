@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Serialization;
 using UnityEngine.EventSystems;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     public record UIBehaviourSnapshot<T> : MonoBehaviourSnapshot<T>

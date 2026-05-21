@@ -3,7 +3,7 @@ using R3;
 
 #nullable enable
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IItemContainerInfoItemless
     {

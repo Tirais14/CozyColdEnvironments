@@ -4,7 +4,7 @@ using CCEnvs.Snapshots;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     [SerializationDescriptor("GameObjectSnapshot", "e6eab1e7-05e5-4e7e-a7a5-e5e004d8029c")]

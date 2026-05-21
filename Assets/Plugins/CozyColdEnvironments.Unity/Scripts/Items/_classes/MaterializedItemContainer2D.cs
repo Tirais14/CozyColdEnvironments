@@ -1,9 +1,9 @@
 #nullable enable
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 
 #pragma warning disable S2933
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public class MaterializedItemContainer2D : AMaterializedItemContainer

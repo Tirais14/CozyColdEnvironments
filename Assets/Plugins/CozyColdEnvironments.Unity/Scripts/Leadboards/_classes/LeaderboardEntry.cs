@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Profiles;
+using CCEnvs.UnityX.Profiles;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.Leaderboards
+namespace CCEnvs.UnityX.Leaderboards
 {
     public class LeaderboardEntry : ILeaderboardEntry
     {

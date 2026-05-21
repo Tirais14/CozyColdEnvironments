@@ -9,7 +9,7 @@ using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public sealed class AudioSourceManager : CCBehaviourStaticPublic<AudioSourceManager>
     {

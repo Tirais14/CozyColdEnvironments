@@ -3,7 +3,7 @@ using CCEnvs.FuncLanguage;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     public readonly struct NodeCollectionCountChangedEvent<TKey, TNode>
     {

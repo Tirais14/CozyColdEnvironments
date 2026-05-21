@@ -2,7 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [Serializable]
     public class TMP_DropdownOptionDataLocalized : TMP_Dropdown.OptionData

@@ -1,13 +1,13 @@
 using System;
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.Unity.EditorSerialization;
+using CCEnvs.UnityX.EditorSerialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [Serializable]
     [SerializationDescriptor("SceneInfo", "2c534bb6-ba5c-4eae-a359-abc635b00b8b")]

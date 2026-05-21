@@ -7,7 +7,7 @@ using UnityEngine;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public sealed class SerializedDictionary<TKey, TValue>

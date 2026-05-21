@@ -3,7 +3,7 @@ using CCEnvs.Attributes.Serialization;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     [SerializationDescriptor("AudioSourceSnapshot", "378125b2-945a-4b38-8269-e7ad43f8a9f6")]

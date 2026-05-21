@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Dependencies
+namespace CCEnvs.UnityX.Dependencies
 {
     public enum UnityDependecyID
     {

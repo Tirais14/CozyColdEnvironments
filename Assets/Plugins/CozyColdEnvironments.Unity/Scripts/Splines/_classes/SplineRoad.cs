@@ -1,7 +1,7 @@
 #if SPLINES_PLUGIN
 using CCEnvs.Collections;
 using CCEnvs.Pools;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Injections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Unity.Mathematics;
@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Splines;
 
 #nullable enable
-namespace CCEnvs.Unity.Splines
+namespace CCEnvs.UnityX.Splines
 {
     [ExecuteInEditMode, DisallowMultipleComponent]
     public class SplineRoad : SplineSampler

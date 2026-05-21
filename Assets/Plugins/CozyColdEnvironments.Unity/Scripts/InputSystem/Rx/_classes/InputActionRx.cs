@@ -12,7 +12,7 @@ using static UnityEngine.InputSystem.InputAction;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.InputSystem.Rx
+namespace CCEnvs.UnityX.InputSystem.Rx
 {
     public class InputActionRx
         :

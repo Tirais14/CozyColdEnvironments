@@ -14,7 +14,7 @@ namespace CCEnvs.Saves
             static () =>
             {
                 return Type.GetType(
-                    "CCEnvs.Unity.GameObjectExtraInfo, CCEnvs.Unity",
+                    "CCEnvs.UnityX.GameObjectExtraInfo, CCEnvs.UnityX",
                     throwOnError: true
                     );
             });
@@ -23,7 +23,7 @@ namespace CCEnvs.Saves
             static () =>
             {
                 return Type.GetType(
-                    "CCEnvs.Unity.GameObjectExtraInfoExtensions, CCEnvs.Unity",
+                    "CCEnvs.UnityX.GameObjectExtraInfoExtensions, CCEnvs.UnityX",
                     throwOnError: true
                     );
             });

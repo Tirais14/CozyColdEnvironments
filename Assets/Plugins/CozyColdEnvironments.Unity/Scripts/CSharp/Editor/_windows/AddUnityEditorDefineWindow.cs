@@ -1,14 +1,14 @@
 #if UNITY_EDITOR
 using System.IO;
 using CCEnvs.Attributes;
-using CCEnvs.Unity.Editr;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityX.Editr;
+using CCEnvs.UnityXEditor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.CSharp.Editor
+namespace CCEnvs.UnityX.CSharp.Editor
 {
     public sealed class AddUnityEditorDefineWindow : CCEditorWindow
     {

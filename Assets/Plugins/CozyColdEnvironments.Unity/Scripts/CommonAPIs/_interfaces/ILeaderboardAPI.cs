@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public interface ILeaderboardAPI : IDisposable
     {

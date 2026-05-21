@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using CCEnvs.Snapshots;
-using CCEnvs.Unity.Snapshots.UI;
+using CCEnvs.UnityX.Snapshots.UI;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public static class UIHelper
     {

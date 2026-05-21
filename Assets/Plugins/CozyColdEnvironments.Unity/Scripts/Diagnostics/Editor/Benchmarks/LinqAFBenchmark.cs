@@ -5,7 +5,7 @@ using LinqAF;
 using System;
 using System.Collections.Generic;
 
-namespace CCEnvs.Unity.Diagnostics.EditorC.Benchmarks
+namespace CCEnvs.UnityX.Diagnostics.EditorC.Benchmarks
 {
     public record LinqAFBenchmark<T> : CollectionBenchmark<T>
     {

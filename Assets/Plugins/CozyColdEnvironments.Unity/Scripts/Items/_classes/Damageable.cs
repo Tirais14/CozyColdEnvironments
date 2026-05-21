@@ -1,11 +1,11 @@
 using CCEnvs.Attributes;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using R3;
 using UnityEngine;
 
 #nullable enable
 #pragma warning disable S1244
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public class Damageable : CCBehaviour, IDamageable
     {

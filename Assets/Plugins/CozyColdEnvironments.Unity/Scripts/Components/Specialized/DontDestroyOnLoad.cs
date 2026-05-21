@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class DontDestroyOnLoad : MonoBehaviour
     {

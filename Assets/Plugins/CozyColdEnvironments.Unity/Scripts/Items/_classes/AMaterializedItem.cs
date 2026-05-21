@@ -1,8 +1,8 @@
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 
 #nullable enable
 #pragma warning disable S4035
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public abstract class AMaterializedItem : CCBehaviour, ICollectable
     {

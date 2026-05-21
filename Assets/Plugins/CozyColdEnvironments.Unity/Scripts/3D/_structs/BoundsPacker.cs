@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     public readonly partial struct BoundsPacker : IEquatable<BoundsPacker>
     {

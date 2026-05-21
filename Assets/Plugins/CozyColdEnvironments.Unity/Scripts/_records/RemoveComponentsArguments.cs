@@ -7,7 +7,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S2376
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public record RemoveComponentsArguments
     {

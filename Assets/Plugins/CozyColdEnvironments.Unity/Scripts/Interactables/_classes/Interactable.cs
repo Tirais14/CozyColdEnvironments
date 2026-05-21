@@ -1,10 +1,10 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Interactables;
+using CCEnvs.UnityX.Interactables;
 using UnityEngine;
 using UnityEngine.Events;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public class Interactable : IInteractable
     {

@@ -2,14 +2,14 @@
 using System;
 using System.Linq;
 using CCEnvs.FuncLanguage;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using Cysharp.Threading.Tasks;
 using SuperLinq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public static class RestartGameTool
     {

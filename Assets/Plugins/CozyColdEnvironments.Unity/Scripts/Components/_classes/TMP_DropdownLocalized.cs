@@ -1,7 +1,7 @@
 using TMPro;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public class TMP_DropdownLocalized : TMP_Dropdown
     {

@@ -4,7 +4,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using Humanizer;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3236
-namespace CCEnvs.Unity.Injections
+namespace CCEnvs.UnityX.Injections
 {
     /// <summary>
     /// Collect all components by <see cref="GetComponentAttribute"/> and setts to it fields or properties.

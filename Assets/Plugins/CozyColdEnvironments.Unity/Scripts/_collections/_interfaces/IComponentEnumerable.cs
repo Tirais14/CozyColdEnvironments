@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     public interface IComponentEnumerable : IUnityObjectEnumerable, IEnumerable<Component>
     {

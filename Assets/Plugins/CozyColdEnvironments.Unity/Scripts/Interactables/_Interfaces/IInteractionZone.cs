@@ -3,7 +3,7 @@ using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Interactables
+namespace CCEnvs.UnityX.Interactables
 {
     public interface IInteractionZone
     {

@@ -1,12 +1,12 @@
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Events;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Events;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [RequireComponent(typeof(Button))]
     public class ScriptableEventButton : CCBehaviour

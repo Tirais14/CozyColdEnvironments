@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.Unity.Injections
+namespace CCEnvs.UnityX.Injections
 {
     public abstract class GetComponentAttribute : Attribute
     {

@@ -7,7 +7,7 @@ using CCEnvs.Collections;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Threading;
-using CCEnvs.Unity.Leaderboards;
+using CCEnvs.UnityX.Leaderboards;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using ObservableCollections;
@@ -15,7 +15,7 @@ using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Leaderboards
+namespace CCEnvs.UnityX.UI.Leaderboards
 {
     public class LeaderboardViewModel
         :

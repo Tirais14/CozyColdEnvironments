@@ -1,7 +1,7 @@
 //using CCEnvs.Disposables;
 //using CCEnvs.Threading;
-//using CCEnvs.Unity.Components;
-//using CCEnvs.Unity.Injections;
+//using CCEnvs.UnityX.Components;
+//using CCEnvs.UnityX.Injections;
 //using Cysharp.Threading.Tasks;
 //using R3;
 //using System;
@@ -9,7 +9,7 @@
 //using UnityEngine;
 
 //#nullable enable
-//namespace CCEnvs.Unity.D3
+//namespace CCEnvs.UnityX.D3
 //{
 //    [RequireComponent(typeof(ItemBox))]
 //    public sealed class ItemBoxWorldTrigger : CCBehaviour

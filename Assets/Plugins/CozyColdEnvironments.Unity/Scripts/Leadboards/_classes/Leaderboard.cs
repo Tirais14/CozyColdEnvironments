@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.Linq;
-using CCEnvs.Unity.Profiles;
+using CCEnvs.UnityX.Profiles;
 using ObservableCollections;
 using R3;
 using SuperLinq;
 
 #nullable enable
-namespace CCEnvs.Unity.Leaderboards
+namespace CCEnvs.UnityX.Leaderboards
 {
     public sealed class Leaderboard
         :

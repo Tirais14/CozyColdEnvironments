@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public struct SerializedNullable<T> :

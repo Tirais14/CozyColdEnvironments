@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [DisallowMultipleComponent]
     public class KeyMarker<T> : MonoBehaviour

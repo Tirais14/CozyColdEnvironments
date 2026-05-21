@@ -2,10 +2,10 @@ using CCEnvs;
 using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Events;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.D3.Events;
-using CCEnvs.Unity.EditorSerialization;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.D3.Events;
+using CCEnvs.UnityX.EditorSerialization;
+using CCEnvs.UnityX.Injections;
 using R3;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ using System.Linq;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
     [RequireComponent(typeof(Collider), typeof(ExternalSize))]
     public class ItemBox: CCBehaviour, IEnumerable<BoxedItem>

@@ -1,14 +1,14 @@
 using CCEnvs.Dependencies;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Dependencies;
-using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.InputSystem.Rx;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Dependencies;
+using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.InputSystem.Rx;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [RequireComponent(typeof(GraphicRaycaster))]
     public class CanvasController : CCBehaviour, ICanvasController

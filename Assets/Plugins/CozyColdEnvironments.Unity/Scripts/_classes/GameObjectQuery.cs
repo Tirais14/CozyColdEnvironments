@@ -3,7 +3,7 @@ using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.UI;
+using CCEnvs.UnityX.UI;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections;
@@ -17,7 +17,7 @@ using UnityEngine.SceneManagement;
 using ZLinq;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public struct GameObjectQuery : IShallowCloneable<GameObjectQuery>
     {

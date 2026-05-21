@@ -1,7 +1,7 @@
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.D3
+namespace CCEnvs.UnityX.D3
 {
 
     public class CameraRaycasterRay : CameraRaycaster<CameraRaycasterRay>

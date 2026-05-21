@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public enum UpdateType
     {

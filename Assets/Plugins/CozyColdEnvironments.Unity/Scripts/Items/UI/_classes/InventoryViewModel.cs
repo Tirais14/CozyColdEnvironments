@@ -3,9 +3,9 @@ using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Async;
-using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI;
+using CCEnvs.UnityX.Async;
+using CCEnvs.UnityX.Items;
+using CCEnvs.UnityX.UI;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
@@ -22,7 +22,7 @@ using System.Linq;
 #endif
 
 #nullable enable
-namespace CCEnvs.Unity.Storages.UI
+namespace CCEnvs.UnityX.Storages.UI
 {
     public class InventoryViewModel<TModel>
         :

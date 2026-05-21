@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.Dependencies;
 
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public class CommonAPIProvider : ICommonAPIProvider
     {

@@ -5,7 +5,7 @@ using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Collections
+namespace CCEnvs.UnityX.Collections
 {
     public interface INodeCollection<TKey, TNode>
         : IEnumerable<KeyValuePair<TKey, TNode>>

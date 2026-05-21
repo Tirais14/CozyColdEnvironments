@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [InitializeOnLoad]
     public static class AssetNameMarkerTool

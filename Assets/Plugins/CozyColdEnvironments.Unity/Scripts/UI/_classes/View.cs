@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public abstract class View : Showable
     {

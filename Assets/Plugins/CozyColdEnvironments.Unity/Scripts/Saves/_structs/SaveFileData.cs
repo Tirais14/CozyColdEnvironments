@@ -6,7 +6,7 @@ using CCEnvs.Linq;
 using Newtonsoft.Json;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.UnityX.Saves
 {
     [Serializable]
     public readonly struct SaveFileData : IEquatable<SaveFileData>

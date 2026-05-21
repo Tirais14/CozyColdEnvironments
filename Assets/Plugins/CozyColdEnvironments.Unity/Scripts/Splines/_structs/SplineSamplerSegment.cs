@@ -3,7 +3,7 @@ using System;
 using Unity.Mathematics;
 
 #nullable enable
-namespace CCEnvs.Unity.Splines
+namespace CCEnvs.UnityX.Splines
 {
     public readonly struct SplineSamplerSegment : IEquatable<SplineSamplerSegment>
     {

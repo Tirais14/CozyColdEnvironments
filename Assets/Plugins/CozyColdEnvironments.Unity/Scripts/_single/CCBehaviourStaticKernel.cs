@@ -6,8 +6,8 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
-using CCEnvs.Unity.Attributes;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Attributes;
+using CCEnvs.UnityX.Components;
 using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using UnityEngine;
@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 
 #nullable enable
 #pragma warning disable S2696
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     [DefaultExecutionOrder(-10)]
     public sealed class CCBehaviourStaticKernel : CCBehaviour

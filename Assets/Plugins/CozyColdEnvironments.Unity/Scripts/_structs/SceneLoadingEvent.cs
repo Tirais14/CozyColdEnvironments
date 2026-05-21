@@ -1,7 +1,7 @@
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public readonly struct SceneLoadingEvent
     {

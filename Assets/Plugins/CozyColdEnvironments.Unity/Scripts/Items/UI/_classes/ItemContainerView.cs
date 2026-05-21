@@ -1,8 +1,8 @@
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Items;
-using CCEnvs.Unity.UI;
+using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.Items;
+using CCEnvs.UnityX.UI;
 using R3;
 using System;
 using TMPro;
@@ -12,7 +12,7 @@ using UnityEngine.UI;
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable S1125
-namespace CCEnvs.Unity.Storages.UI
+namespace CCEnvs.UnityX.Storages.UI
 {
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel>

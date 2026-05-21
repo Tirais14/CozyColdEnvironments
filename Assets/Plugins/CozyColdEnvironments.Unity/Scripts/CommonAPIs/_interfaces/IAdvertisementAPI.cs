@@ -2,7 +2,7 @@ using System;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public interface IAdvertisementAPI : IDisposable
     {

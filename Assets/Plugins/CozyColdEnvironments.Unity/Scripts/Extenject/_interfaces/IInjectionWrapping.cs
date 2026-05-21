@@ -1,5 +1,5 @@
 #nullable enable
-namespace CCEnvs.Unity.Extenject
+namespace CCEnvs.UnityX.Extenject
 {
     public interface IInjectionWrapping
     {

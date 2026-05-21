@@ -2,13 +2,13 @@
 using System.IO;
 using CCEnvs.Diagnostics;
 using CCEnvs.Files;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using SuperLinq;
 using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public static class VisualStudioClearCacheTool
     {

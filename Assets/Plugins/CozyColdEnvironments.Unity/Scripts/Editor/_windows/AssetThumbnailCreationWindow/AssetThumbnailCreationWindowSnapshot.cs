@@ -5,7 +5,7 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [Serializable, SerializationDescriptor("ObjectThumbnailCreationWindow.Snapshot", "adc8d658-0cca-4bf5-8ca8-67ac798d2194")]
     public record AssetThumbnailCreationWindowSnapshot : Snapshot<AssetThumbnailCreationWindow>

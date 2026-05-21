@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     public record TMP_DropdownSnapshot<T> : MonoBehaviourSnapshot<T>

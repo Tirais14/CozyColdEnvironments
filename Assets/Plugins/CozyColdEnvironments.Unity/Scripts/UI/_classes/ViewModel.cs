@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 
 #pragma warning disable S1699
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public abstract class ViewModel<TModel> 
         :

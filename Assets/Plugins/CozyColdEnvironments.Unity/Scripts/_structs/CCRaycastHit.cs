@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEngine;
 
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public readonly struct CCRaycastHit
     {

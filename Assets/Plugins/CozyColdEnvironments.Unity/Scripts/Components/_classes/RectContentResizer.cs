@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     [ExecuteAlways]
     public class RectContentResizer : CCBehaviour

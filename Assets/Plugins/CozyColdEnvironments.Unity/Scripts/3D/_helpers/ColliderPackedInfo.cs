@@ -3,7 +3,7 @@
 //using UnityEngine;
 
 //#nullable enable
-//namespace CCEnvs.Unity.D3
+//namespace CCEnvs.UnityX.D3
 //{
 //    public readonly struct ColliderPackedInfo : IEquatable<ColliderPackedInfo>
 //    {

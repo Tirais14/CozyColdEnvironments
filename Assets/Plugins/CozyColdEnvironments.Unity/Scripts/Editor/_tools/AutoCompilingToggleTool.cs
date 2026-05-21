@@ -1,11 +1,11 @@
 #if UNITY_EDITOR
 using CCEnvs.Diagnostics;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using UnityEditor;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [InitializeOnLoad]
     public static class AutoCompilingToggleTool

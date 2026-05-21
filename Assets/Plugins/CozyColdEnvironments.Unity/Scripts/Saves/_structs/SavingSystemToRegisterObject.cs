@@ -3,7 +3,7 @@ using CommunityToolkit.Diagnostics;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.UnityX.Saves
 {
     [Serializable]
     public struct SavingSystemToRegisterObject : System.IEquatable<SavingSystemToRegisterObject>

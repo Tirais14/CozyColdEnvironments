@@ -3,7 +3,7 @@ using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Snapshots;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [Serializable]
     public record ShowableSnapshot<T> : Snapshot<T>

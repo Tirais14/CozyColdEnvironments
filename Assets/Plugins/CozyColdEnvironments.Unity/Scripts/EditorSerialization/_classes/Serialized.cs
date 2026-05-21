@@ -4,7 +4,7 @@ using CCEnvs.Attributes;
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable S3459
-namespace CCEnvs.Unity.EditorSerialization
+namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public abstract class Serialized<TOut>

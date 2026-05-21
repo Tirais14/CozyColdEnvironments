@@ -2,7 +2,7 @@ using System;
 using CCEnvs.Attributes;
 
 #nullable enable
-namespace CCEnvs.Unity.Attributes
+namespace CCEnvs.UnityX.Attributes
 {
     /// <summary>
     /// Marks <see cref="CCBehaviourStatic"/> to create the instance before the first call

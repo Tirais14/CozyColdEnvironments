@@ -3,7 +3,7 @@ using R3;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Profiles
+namespace CCEnvs.UnityX.Profiles
 {
     public sealed class UserProfile : IUserProfile
     {

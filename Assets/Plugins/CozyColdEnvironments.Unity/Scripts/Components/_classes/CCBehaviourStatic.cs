@@ -3,7 +3,7 @@ using CCEnvs.Reflection;
 using UnityEngine;
 
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     /// <summary>
     /// Same as the singleton. Auto initalizes on scene with the first member access or instant by the <see cref="Attributes.InstantCreationAttribute"/>

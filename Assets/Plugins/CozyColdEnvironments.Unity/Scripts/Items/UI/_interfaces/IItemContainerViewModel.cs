@@ -1,9 +1,9 @@
 #nullable enable
-using CCEnvs.Unity.UI;
+using CCEnvs.UnityX.UI;
 using R3;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public interface IItemContainerViewModel
         :

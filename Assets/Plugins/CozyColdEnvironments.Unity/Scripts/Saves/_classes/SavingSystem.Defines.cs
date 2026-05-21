@@ -5,7 +5,7 @@ using CCEnvs.Snapshots;
 using CommunityToolkit.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.Unity.Saves
+namespace CCEnvs.UnityX.Saves
 {
     public sealed partial class SavingSystem
     {

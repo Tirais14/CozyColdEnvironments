@@ -1,11 +1,11 @@
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
 #pragma warning disable IDE0044
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [RequireComponent(typeof(Button))]
     public sealed class HideButton : CCBehaviour

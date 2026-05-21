@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEngine;
 
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public class ClearAfterStart : CCBehaviour
     {

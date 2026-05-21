@@ -4,7 +4,7 @@ using CCEnvs.Snapshots;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     [SerializationDescriptor("Vector3IntSnapshot", "3f223844-7484-4b29-9f0c-3ed152b974e1")]

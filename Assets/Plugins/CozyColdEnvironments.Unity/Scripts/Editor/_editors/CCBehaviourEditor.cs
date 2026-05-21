@@ -1,8 +1,8 @@
 #if UNITY_EDITOR
 using System.Reflection;
 using CCEnvs.Attributes;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Injections;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 #nullable enable
 
-namespace CCEnvs.UnityEditor
+namespace CCEnvs.UnityXEditor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(CCBehaviour), editorForChildClasses: true)]

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
 using R3;
 using SuperLinq;
@@ -10,7 +10,7 @@ using ZLinq;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     [DisallowMultipleComponent]
     public class SelectableController<T> : CCBehaviour, ISelectableController<T>

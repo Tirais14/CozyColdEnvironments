@@ -3,11 +3,11 @@ using System.Threading;
 using CCEnvs.Attributes;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Saves;
-using CCEnvs.Unity.Components;
-using CCEnvs.Unity.Components.Specialized;
-using CCEnvs.Unity.Items;
-using CCEnvs.Unity.Saves;
-using CCEnvs.Unity.Snapshots;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Components.Specialized;
+using CCEnvs.UnityX.Items;
+using CCEnvs.UnityX.Saves;
+using CCEnvs.UnityX.Snapshots;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -17,7 +17,7 @@ using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S101
-namespace CCEnvs.Unity
+namespace CCEnvs.UnityX
 {
     public delegate UniTask<TOutput> ConverterAsync<in TInput, TOutput>(TInput input);
 

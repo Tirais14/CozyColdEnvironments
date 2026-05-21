@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable, DataContract]
     public record RigidbodySnapshot<T> : ComponentSnapshot<T>

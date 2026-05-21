@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3444
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface IGameObjectBag
         :

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using CCEnvs.Collections;
 using CCEnvs.Linq;
-using CCEnvs.Unity.Components;
+using CCEnvs.UnityX.Components;
 using SuperLinq;
 using ZLinq;
 
 #nullable enable
 #pragma warning disable S3881
 #pragma warning disable IDE1006
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public abstract class AssetDatabaseRegistry<TThis>
         : CCBehaviourStaticPublic<TThis>,

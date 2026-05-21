@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.Databases
+namespace CCEnvs.UnityX.Databases
 {
     public class AssetDatabase<TAsset> : IAssetDatabase<TAsset>
     {

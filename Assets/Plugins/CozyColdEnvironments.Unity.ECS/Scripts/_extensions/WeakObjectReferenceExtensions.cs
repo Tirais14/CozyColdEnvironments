@@ -2,7 +2,7 @@ using Unity.Burst;
 using Unity.Entities.Content;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS
+namespace CCEnvs.UnityX.ECS
 {
     public static class WeakObjectReferenceExtensions
     {

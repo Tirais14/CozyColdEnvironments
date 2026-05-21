@@ -2,7 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 
 #nullable enable
-namespace CCEnvs.Unity.ECS.Diagnostics
+namespace CCEnvs.UnityX.ECS.Diagnostics
 {
     public struct DebugMessageContainer : IComponentData
     {

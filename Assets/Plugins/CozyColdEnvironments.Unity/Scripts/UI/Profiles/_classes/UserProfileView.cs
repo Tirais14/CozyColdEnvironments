@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.UI.Profiles
+namespace CCEnvs.UnityX.UI.Profiles
 {
     public abstract class UserProfileView : View<UserProfileViewModel>
     {

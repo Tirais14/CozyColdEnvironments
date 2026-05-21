@@ -1,7 +1,7 @@
 using CCEnvs.Diagnostics;
 
 #nullable enable
-namespace CCEnvs.Unity.Items
+namespace CCEnvs.UnityX.Items
 {
     public class ItemsDontMatchException : CCException
     {

@@ -3,7 +3,7 @@
 using R3;
 using System.Threading;
 
-namespace CCEnvs.Unity.UI
+namespace CCEnvs.UnityX.UI
 {
     public interface IViewModel
     {

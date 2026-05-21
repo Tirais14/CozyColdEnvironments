@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CCEnvs.Unity.D3.Events
+namespace CCEnvs.UnityX.D3.Events
 {
     public readonly struct ItemBoxBoxedEvent : IEquatable<ItemBoxBoxedEvent>
     {

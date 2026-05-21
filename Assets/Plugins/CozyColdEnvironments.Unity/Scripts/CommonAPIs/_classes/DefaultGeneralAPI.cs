@@ -4,7 +4,7 @@ using CCEnvs.Dependencies;
 using R3;
 
 #nullable enable
-namespace CCEnvs.Unity.CommonAPIs
+namespace CCEnvs.UnityX.CommonAPIs
 {
     public class DefaultGeneralAPI : IGeneralAPI
     {

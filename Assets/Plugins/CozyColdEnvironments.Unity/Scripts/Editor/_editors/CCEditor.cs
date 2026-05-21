@@ -1,13 +1,13 @@
 #if UNITY_EDITOR
 using System.Reflection;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     public class CCEditor : global::UnityEditor.Editor
     {

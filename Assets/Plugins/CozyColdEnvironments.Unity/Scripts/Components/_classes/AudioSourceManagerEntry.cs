@@ -1,9 +1,9 @@
-using CCEnvs.Unity.Injections;
-using CCEnvs.Unity.Snapshots;
+using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.Snapshots;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     [RequireComponent(typeof(AudioSource))]
     public sealed class AudioSourceManagerEntry : CCBehaviour

@@ -13,7 +13,7 @@ using UnityEngine.InputSystem;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.InputSystem.Rx
+namespace CCEnvs.UnityX.InputSystem.Rx
 {
     public abstract class InputHandlerRx
         :

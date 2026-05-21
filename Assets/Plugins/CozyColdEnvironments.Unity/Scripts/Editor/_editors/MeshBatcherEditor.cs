@@ -1,12 +1,12 @@
 #if UNITY_EDITOR
 using CCEnvs.TypeMatching;
-using CCEnvs.Unity.Components.Specialized;
+using CCEnvs.UnityX.Components.Specialized;
 using Humanizer;
 using UnityEditor;
 using UnityEngine.UIElements;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [CustomEditor(typeof(MeshBatcher))]
     public sealed class MeshBatcherEditor : CCEditor

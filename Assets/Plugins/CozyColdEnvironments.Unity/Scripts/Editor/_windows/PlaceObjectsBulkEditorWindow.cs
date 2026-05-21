@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CCEnvs.FuncLanguage;
-using CCEnvs.UnityEditor;
+using CCEnvs.UnityXEditor;
 using CommunityToolkit.Diagnostics;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity.Editr
+namespace CCEnvs.UnityX.Editr
 {
     [InitializeOnLoad]
     public sealed class PlaceObjectsBulkEditorWindow : CCEditorWindow

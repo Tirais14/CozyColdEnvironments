@@ -1,9 +1,9 @@
-using CCEnvs.Unity.EditorSerialization;
+using CCEnvs.UnityX.EditorSerialization;
 using R3;
 using UnityEngine.SceneManagement;
 
 #nullable enable
-namespace CCEnvs.Unity.Components.Specialized
+namespace CCEnvs.UnityX.Components.Specialized
 {
     public sealed class SceneActiveDependent : CCBehaviour
     {

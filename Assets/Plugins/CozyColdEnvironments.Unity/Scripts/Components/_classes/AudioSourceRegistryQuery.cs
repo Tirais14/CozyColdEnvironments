@@ -6,7 +6,7 @@ using SuperLinq;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.Unity.Components
+namespace CCEnvs.UnityX.Components
 {
     public class AudioSourceRegistryQuery
     {

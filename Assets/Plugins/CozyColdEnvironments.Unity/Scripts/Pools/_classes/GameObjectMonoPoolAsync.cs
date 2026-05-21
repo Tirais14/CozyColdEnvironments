@@ -1,10 +1,10 @@
 using CCEnvs.Patterns.Factories;
-using CCEnvs.Unity.Patterns.Factory;
+using CCEnvs.UnityX.Patterns.Factory;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace CCEnvs.Unity.Pools
+namespace CCEnvs.UnityX.Pools
 {
     public abstract class GameObjectMonoPoolAsync<TFactory>
         :

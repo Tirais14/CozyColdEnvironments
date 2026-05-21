@@ -4,7 +4,7 @@ using UnityEngine;
 
 #nullable enable
 #pragma warning disable S3881
-namespace CCEnvs.Unity.Disposables
+namespace CCEnvs.UnityX.Disposables
 {
     public class DisposableBinding : IDisposable
     {

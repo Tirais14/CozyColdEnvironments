@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 #nullable enable
-namespace CCEnvs.Unity.Snapshots
+namespace CCEnvs.UnityX.Snapshots
 {
     [Serializable]
     public record SliderSnapshot<T> : MonoBehaviourSnapshot<T>
