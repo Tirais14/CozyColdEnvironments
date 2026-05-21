@@ -6,6 +6,7 @@
         "CCEnvs.Unity",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
+        "Unity.Entities.Graphics",
         "Unity.Mathematics",
         "Unity.Collections",
         "Unity.Collections.CodeGen",
@@ -14,7 +15,6 @@
         "Unity.Physics.Hybrid",
         "Unity.Burst",
         "Unity.Burst.CodeGen",
-        "Unity.Entities.Graphics",
         "Unity.Transforms",
         "Unity.Transforms.Hybrid"
     ],

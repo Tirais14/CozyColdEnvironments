@@ -221,7 +221,10 @@ namespace CCEnvs.Unity.Items
 
         public override string ToString()
         {
-            return $"{nameof(Item)}: {Item.Map(x => x.ToString()).GetValue("null")}; {nameof(ItemCount)}: {ItemCount}.";
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Item), Item)
+                .AddProperty(nameof(ItemCount), ItemCount)
+                .ToStringAndDispose();
         }
 
         public void Activate()

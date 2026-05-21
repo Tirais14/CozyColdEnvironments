@@ -500,7 +500,7 @@ namespace CCEnvs.Unity.Items
             cnt.ObserveItemCount()
                 .Pairwise()
                 .SelectDelta()
-                .Subscribe(OnContainerItemCount)
+                .Subscribe(OnContainerItemCountChanged)
                 .AddTo(disposables);
         }
 
@@ -512,7 +512,7 @@ namespace CCEnvs.Unity.Items
             occupiedContainers.GetOrCreateNew(item).Add(cnt);
         }
 
-        private void OnContainerItemCount(int itemCountDelta)
+        private void OnContainerItemCountChanged(int itemCountDelta)
         {
             itemCount.Value = Math.Clamp(itemCount.Value + itemCountDelta, 0, int.MaxValue);
         }
