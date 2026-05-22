@@ -35,10 +35,16 @@ namespace CCEnvs.UnityX.Items
                 return items.ContainsKey(id);
         }
 
-        public static IItem TryGet(int id, [NotNullWhen(true)] out IItem? item)
+        public static bool TryGet(int id, [NotNullWhen(true)] out IItem? item)
         {
             lock (ItemsGate)
                 return items.TryGetValue(id, out item);
+        }
+
+        public static IItem Get(int id)
+        {
+            lock (ItemsGate)
+                return items[id];
         }
     }
 }

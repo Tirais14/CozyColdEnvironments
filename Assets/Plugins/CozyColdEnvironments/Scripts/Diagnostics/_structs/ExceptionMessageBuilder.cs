@@ -28,9 +28,9 @@ namespace CCEnvs.Diagnostics
                 this.stringBuilder = stringBuilder;
         }
 
-        public readonly ExceptionMessageBuilder Create()
+        public static ExceptionMessageBuilder CreatePooled()
         {
-            return new ExceptionMessageBuilder(stringBuilder);
+            return new ExceptionMessageBuilder(null);
         }
 
         public static bool operator ==(ExceptionMessageBuilder left, ExceptionMessageBuilder right)

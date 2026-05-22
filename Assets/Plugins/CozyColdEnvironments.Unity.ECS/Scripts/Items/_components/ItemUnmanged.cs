@@ -6,7 +6,11 @@ using Unity.Entities;
 namespace CCEnvs.UnityX.ECS.Items
 {
     [InternalBufferCapacity(16)]
-    public struct ItemUnmanged : IBufferElementData, IEquatable<ItemUnmanged>
+    public struct ItemUnmanged
+        :
+        IBufferElementData,
+        IEquatable<ItemUnmanged>,
+        IManagedConvertible<IItem>
     {
         public int ID;
 
@@ -36,6 +40,10 @@ namespace CCEnvs.UnityX.ECS.Items
             return new ItemUnmanged { ID = item.ID };
         }
 
+        public readonly IItem ConvertToManaged() => ItemRegistry.Get(ID);
+
+        public readonly T ConvertToManagedT<T>() where T : IItem => (T)ConvertToManaged();
+
         public readonly bool Equals(ItemUnmanged other)
         {
             return ID == other.ID;
@@ -49,6 +57,13 @@ namespace CCEnvs.UnityX.ECS.Items
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(ID);
+        }
+
+        public readonly override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(ID), ID)
+                .ToStringAndDispose();
         }
     }
 }
