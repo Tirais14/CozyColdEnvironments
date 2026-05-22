@@ -17,7 +17,7 @@ namespace CCEnvs.FuncLanguage
 #endif
         partial struct Either<L, R> : IEquatable<Either<L, R>>, IEnumerable<R>
     {
-        public readonly static Either<L, R> None = default;
+        public static readonly Either<L, R> None = default;
 
         private readonly L left;
         private readonly R right;

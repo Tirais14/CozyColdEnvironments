@@ -18,7 +18,7 @@ namespace CCEnvs.FuncLanguage
 #endif
         partial struct Maybe<T> : IEquatable<Maybe<T>>
     {
-        public readonly static Maybe<T> None = default;
+        public static readonly Maybe<T> None = default;
         //private static readonly Lazy<bool> targetIsStruct = new((() => typeof(T).IsValueType));
 
 #if UNITY_2017_1_OR_NEWER

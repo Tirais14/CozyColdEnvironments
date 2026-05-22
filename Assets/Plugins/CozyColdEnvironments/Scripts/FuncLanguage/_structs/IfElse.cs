@@ -14,9 +14,9 @@ namespace CCEnvs.FuncLanguage
 {
     public readonly struct IfElse
     {
-        public readonly static IfElse None = default!;
-        public readonly static Func<bool> @true = () => true;
-        public readonly static Func<bool> @false = () => false;
+        public static readonly IfElse None = default!;
+        public static readonly Func<bool> @true = () => true;
+        public static readonly Func<bool> @false = () => false;
 
         private readonly Func<bool> predicate;
 
@@ -148,7 +148,7 @@ namespace CCEnvs.FuncLanguage
 #endif
         partial struct IfElse<T>
     {
-        public readonly static IfElse<T> None = default!;
+        public static readonly IfElse<T> None = default!;
 
         private readonly Predicate<T>? predicate;
 

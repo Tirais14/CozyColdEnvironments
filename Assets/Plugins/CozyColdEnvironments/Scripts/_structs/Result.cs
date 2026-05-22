@@ -11,7 +11,7 @@ namespace CCEnvs
 {
     public readonly struct Result<TValue> : IEquatable<Result<TValue>>
     {
-        public readonly static Result<TValue> Empty = new();
+        public static readonly Result<TValue> Empty = new();
 
         private readonly TValue? value;
         private readonly Exception? exception;
@@ -108,7 +108,7 @@ namespace CCEnvs
 
     public struct Result<TValue, TValueFactoryState, TExceptionFactoryState> : IEquatable<Result<TValue, TValueFactoryState, TExceptionFactoryState>>
     {
-        public readonly static Result<TValue> Empty = new();
+        public static readonly Result<TValue> Empty = new();
 
         private readonly Func<TValueFactoryState?, TValue>? valueFactory;
         private readonly Func<TExceptionFactoryState?, Exception>? exceptionFactory;

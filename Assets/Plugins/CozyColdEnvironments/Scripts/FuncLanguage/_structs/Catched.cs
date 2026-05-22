@@ -12,7 +12,7 @@ namespace CCEnvs.FuncLanguage
 {
     public readonly partial struct Catched
     {
-        public readonly static Catched None = new();
+        public static readonly Catched None = new();
 
         private readonly Maybe<Type> exceptionType;
         private readonly Action? action;

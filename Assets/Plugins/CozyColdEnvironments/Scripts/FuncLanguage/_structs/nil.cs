@@ -7,7 +7,7 @@ namespace CCEnvs.FuncLanguage
 {
     public readonly struct nil : IEquatable<nil>
     {
-        public readonly static nil it;
+        public static readonly nil it;
 
         public static bool operator ==(nil left, nil right) => true;
 
