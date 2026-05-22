@@ -184,7 +184,9 @@ namespace CCEnvs.UnityX.Items
 
             if (count <= 0 
                 ||
-                !occupiedContainers.TryGetValue(item, out var cnts))
+                !occupiedContainers.TryGetValue(item, out var cnts)
+                ||
+                GetItemCount(item) < count)
             {
                 return Maybe<IItemContainerInfo>.None;
             }
@@ -192,7 +194,12 @@ namespace CCEnvs.UnityX.Items
             var items = new ItemContainer(item, count, capacity: int.MaxValue);
 
             foreach (var cnt in cnts)
+            {
+                if (items.ItemCount <= count)
+                    break;
+
                 items.PutItemFrom(cnt);
+            }
 
             if (items.IsEmpty)
                 return Maybe<IItemContainerInfo>.None;

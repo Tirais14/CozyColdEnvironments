@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using Unity.Burst;
 
 #nullable enable
 namespace CCEnvs.UnityX.ECS
@@ -51,8 +51,7 @@ namespace CCEnvs.UnityX.ECS
 
         public readonly bool Equals(NullableUnmanaged<T> other)
         {
-            return EqualityComparer<T>.Default.Equals(Value, other.Value) &&
-                   HasValue == other.HasValue;
+            return GetHashCode() == other.GetHashCode();
         }
 
         public readonly override int GetHashCode()
@@ -70,6 +69,22 @@ namespace CCEnvs.UnityX.ECS
                 return default;
 
             return new NullableUnmanaged<T>(source.Value);
+        }
+
+        [BurstCompile]
+        public static bool EqualsUnmanaged<T>(this NullableUnmanaged<T> left, NullableUnmanaged<T> right)
+            where T : unmanaged, IEquatable<T>
+        {
+            return left.HasValue == right.HasValue
+                   &&
+                   left.Value.Equals(right.Value);
+        }
+
+        [BurstCompile]
+        public static bool NotEqualsUnmanaged<T>(this NullableUnmanaged<T> left, NullableUnmanaged<T> right)
+            where T : unmanaged, IEquatable<T>
+        {
+            return !left.EqualsUnmanaged(right);
         }
     }
 }

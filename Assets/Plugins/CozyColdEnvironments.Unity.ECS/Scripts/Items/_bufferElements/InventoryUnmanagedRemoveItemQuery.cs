@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace CCEnvs.UnityX.ECS.Items
 {
     [InternalBufferCapacity(64)]
-    public struct InventoryUnmanagedPutItemQuery : IBufferElementData
+    public struct InventoryUnmanagedRemoveItemQuery : IBufferElementData
     {
         public InventoryReferenceUnmanged InventoryRef;
 

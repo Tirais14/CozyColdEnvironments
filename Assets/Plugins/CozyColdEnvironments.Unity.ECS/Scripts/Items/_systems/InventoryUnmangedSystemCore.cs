@@ -85,15 +85,14 @@ namespace CCEnvs.UnityX.ECS.Items
             }
         }
 
-        public static void UpdateInventoryContent<TInventoryRefs>(
-            in TInventoryRefs inventoryRefs,
+        public static void UpdateInventoryContent(
+            in DynamicBuffer<InventoryReferenceUnmanged> inventoryRefs,
             in DynamicBuffer<ItemContainerUnmanaged> itemContainerPool
             )
-            where TInventoryRefs : struct, IIndexable<InventoryReferenceUnmanged>
         {
             for (int i = 0; i < inventoryRefs.Length; i++)
             {
-                ref readonly InventoryReferenceUnmanged inventoryRef = ref inventoryRefs.ElementAt(i);
+                InventoryReferenceUnmanged inventoryRef = inventoryRefs[i];
 
                 if (!ChangedInventories.TryGetValue(inventoryRef.InventoryID, out var inventory))
                     continue;
@@ -116,20 +115,18 @@ namespace CCEnvs.UnityX.ECS.Items
             }
         }
 
-        public static void ProcessPutItemQueries<TQueriesView>(
-            IInventory inventory,
-            in TQueriesView queriesView,
-            in DynamicBuffer<InventoryUnmanagedPutItemQuery> queries
+        public static void ProcessPutItemQueries(
+            in NativeArray<InventoryUnmanagedPutItemQuery> queriesView,
+            DynamicBuffer<InventoryUnmanagedPutItemQuery> queries
             )
-            where TQueriesView : struct, IIndexable<InventoryUnmanagedPutItemQuery>
         {
-            CC.Guard.IsNotNull(inventory, nameof(inventory));
-
             for (int i = 0; i < queriesView.Length; i++)
             {
-                ref InventoryUnmanagedPutItemQuery query = ref queriesView.ElementAt(i);
+                InventoryUnmanagedPutItemQuery query = queriesView[i];
 
-                if (inventory.PutItem(query.Item.ConvertToManaged(), query.ItemCount).TryGetValue(out var restItems))
+                if (query.InventoryRef.TryMaterialize(out var inventory)
+                    &&
+                    inventory.PutItem(query.Item.ConvertToManaged(), query.ItemCount).TryGetValue(out var restItems))
                 {
                     query.ItemCount = restItems.ItemCount;
 
@@ -144,23 +141,30 @@ namespace CCEnvs.UnityX.ECS.Items
 
                         typeof(InventoryUnmangedSystemCore).PrintLog(msg);
                     }
+
+                    queries[i] = query;
                 }
                 else
-                {
-                    query.Item = default;
-                    query.ItemCount = 0;
-
                     queries.RemoveAtSwapBack(i);
-                }
             }
         }
 
         public static void ProcessRemoveItemQueries(
-            IInventory inventory,
-            in DynamicBuffer<>
+            in NativeArray<InventoryUnmanagedRemoveItemQuery> queriesView,
+            in DynamicBuffer<InventoryUnmanagedRemoveItemQuery> queries
             )
         {
+            for (int i = 0; i < queriesView.Length; i++)
+            {
+                InventoryUnmanagedRemoveItemQuery query = queriesView[i];
 
+                if (!query.InventoryRef.TryMaterialize(out IInventory? inventory)
+                    ||
+                    inventory.TakeItem(query.Item.ConvertToManaged(), query.ItemCount).IsSome)
+                {
+                    queries.RemoveAtSwapBack(i);
+                }
+            }
         }
     }
 }

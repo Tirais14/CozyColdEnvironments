@@ -7,7 +7,7 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [InternalBufferCapacity(16)]
+    [InternalBufferCapacity(128)]
     public struct ItemContainerUnmanaged : IBufferElementData, IEquatable<ItemContainerUnmanaged>
     {
         public ItemUnmanged Item;
@@ -174,6 +174,135 @@ namespace CCEnvs.UnityX.ECS.Items
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
             return itemContainers.GetInventoryContainerIndexes(inventoryRef.InventoryID, allocator);
+        }
+
+        [BurstCompile]
+        public static bool ContainsItem<ItemContainerPool>(
+            this ItemContainerPool itemContainerPool,
+            ItemUnmanged item,
+            NullableUnmanaged<int> inventoryID = default
+            )
+            where ItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
+        {
+            for (int i = 0; i < itemContainerPool.Length; i++)
+            {
+                ref readonly ItemContainerUnmanaged itemContainer = ref itemContainerPool.ElementAt(i);
+
+                if (inventoryID.HasValue
+                    &&
+                    (!itemContainer.InventoryID.HasValue
+                    ||
+                    itemContainer.InventoryID.Value != inventoryID.Value))
+                {
+                    continue;
+                }
+
+                if (itemContainer.IsEmpty
+                    ||
+                    itemContainer.Item != item
+                    )
+                    continue;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        [BurstCompile]
+        public static bool ContainsItem(
+            this in DynamicBuffer<ItemContainerUnmanaged> itemContainers,
+            ItemUnmanged item,
+            int itemCount
+            )
+        {
+            for (int i = 0; i < itemContainers.Length; i++)
+            {
+                ItemContainerUnmanaged itemContainer = itemContainers[i];
+
+                if (itemContainer.IsEmpty
+                    ||
+                    itemContainer.Item != item
+                    ||
+                    itemContainer.ItemCount < itemCount
+                    )
+                    continue;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        [BurstCompile]
+        public static bool ContainsItems<TList>(
+            this in DynamicBuffer<ItemContainerUnmanaged> itemContainers,
+            TList compareItems
+            )
+            where TList : unmanaged, INativeList<ItemUnmanged>
+        {
+            if (itemContainers.Length == 0
+                ||
+                compareItems.Length == 0)
+            {
+                return false;
+            }
+
+            using var foundItems = new NativeBitArray(compareItems.Length, Allocator.Temp);
+            foundItems.SetBits(0, false, compareItems.Length);
+
+            for (int i = 0; i < itemContainers.Length; i++)
+            {
+                ItemContainerUnmanaged itemContainer = itemContainers[i];
+
+                for (int j = 0; j < compareItems.Length; j++)
+                {
+                    ItemUnmanged compareItem = compareItems[j];
+
+                    if (!itemContainer.ContainsItem(compareItem))
+                        continue;
+
+                    foundItems.Set(j, true);
+                }
+            }
+
+            return foundItems.TestAll(0, compareItems.Length);
+        }
+
+        [BurstCompile]
+        public static bool ContainsItemsWithCount<TItemContainers, TCompareItemContainer>(
+            this TItemContainers itemContainers,
+            TCompareItemContainer compareItemContainers
+            )
+            where TItemContainers : unmanaged, INativeList<ItemContainerUnmanaged>
+            where TCompareItemContainer : unmanaged, INativeList<ItemContainerUnmanaged>
+        {
+            if (itemContainers.Length == 0
+                ||
+                compareItemContainers.Length == 0)
+            {
+                return false;
+            }
+
+            using var foundItems = new NativeBitArray(compareItemContainers.Length, Allocator.Temp);
+            foundItems.SetBits(0, false, compareItemContainers.Length);
+
+            for (int i = 0; i < itemContainers.Length; i++)
+            {
+                ItemContainerUnmanaged itemContainer = itemContainers[i];
+
+                for (int j = 0; j < compareItemContainers.Length; j++)
+                {
+                    ItemContainerUnmanaged compareItemContainer = compareItemContainers[j];
+
+                    if (!itemContainer.ContainsItem(compareItemContainer.Item, compareItemContainer.ItemCount))
+                        continue;
+
+                    foundItems.Set(j, true);
+                }
+            }
+
+            return foundItems.TestAll(0, compareItemContainers.Length);
         }
     }
 }
