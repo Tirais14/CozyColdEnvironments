@@ -13,6 +13,8 @@ namespace CCEnvs.UnityX.ECS.Items
     {
         public static bool IsAnyInventoryChanged { get; private set; }
 
+        public static NativeList<int> ChangedInventoryIDs { get; private set; }
+
         private static CancellationTokenSource? destroyCancellationTokenSource;
         private static IDisposable? anySub;
 
@@ -26,6 +28,8 @@ namespace CCEnvs.UnityX.ECS.Items
                 .Subscribe(_ => IsAnyInventoryChanged = true);
 
             IsAnyInventoryChanged = true;
+
+            ChangedInventoryIDs = new NativeList<int>(Allocator.Persistent);
         }
 
         public static void Destroy()
@@ -43,6 +47,8 @@ namespace CCEnvs.UnityX.ECS.Items
             destroyCancellationTokenSource = null;
 
             IsAnyInventoryChanged = false;
+
+            ChangedInventoryIDs.Dispose();
         }
 
         public static void ResetIsAnyInventoryChanged()
@@ -50,20 +56,16 @@ namespace CCEnvs.UnityX.ECS.Items
             IsAnyInventoryChanged = false;
         }
 
-        public static bool TryUpdateInventoryContent(
-            in InventoryReferenceUnmanged inventoryRef,
-            in DynamicBuffer<ItemUnmanged> items
+        public static void UpdateInventoryContent(
+            IInventory inventory,
+            in DynamicBuffer<ItemContainerUnmanaged> items
             )
         {
-            if (!InventoryRegistry.TryGet(inventoryRef.InventoryID, out var inventory))
-            {
-                typeof(InventoryUnmangedSystemCore).PrintError($"Cannot find inventory. InventoryID: {inventoryRef.InventoryID}");
-                return false;
-            }
+            CC.Guard.IsNotNull(inventory, nameof(inventory));
 
             items.Clear();
 
-            using var addedItems = new NativeHashSet<ItemUnmanged>(64, Allocator.Temp);
+            using var addedItems = new NativeHashSet<ItemContainerUnmanaged>(64, Allocator.Temp);
 
             foreach (var itemContainer in inventory)
             {
@@ -74,18 +76,32 @@ namespace CCEnvs.UnityX.ECS.Items
                     continue;
                 }
 
-                var itemUnmanaged = new ItemUnmanged
+                var itemContainerUnamnged = new ItemContainerUnmanaged
                 {
-                    ID = item.ID
+                    Item = new ItemUnmanged { ID = item.ID },
+                    ItemCount = itemContainer.ItemCount,
                 };
 
-                if (addedItems.Contains(itemUnmanaged))
+                if (addedItems.Contains(itemContainerUnamnged))
                     continue;
 
-                items.Add(itemUnmanaged);
+                items.Add(itemContainerUnamnged);
             }
+        }
 
-            return true;
+        public static void ProcessPutItemQueries(
+            IInventory inventory,
+            in DynamicBuffer<InventoryUnmanagedPutItemQuery> queries
+            )
+        {
+            CC.Guard.IsNotNull(inventory, nameof(inventory));
+
+            for (int i = 0; i < queries.Length; i++)
+            {
+                InventoryUnmanagedPutItemQuery query = queries[i];
+
+                inventory.PutItem(query.)
+            }
         }
     }
 }

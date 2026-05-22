@@ -1,6 +1,6 @@
 {
     "name": "CCEnvs.Unity",
-    "rootNamespace": "CCEnvs.Unity",
+    "rootNamespace": "CCEnvs.UnityX",
     "references": [
         "CCEnvs",
         "Unity.InputSystem",

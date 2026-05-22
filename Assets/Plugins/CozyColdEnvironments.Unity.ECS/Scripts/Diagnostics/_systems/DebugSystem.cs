@@ -1,7 +1,7 @@
 #if CC_DEBUG_ENABLED
 using CCEnvs.Diagnostics;
-using global::Unity.Collections;
-using global::Unity.Entities;
+using Unity.Collections;
+using Unity.Entities;
 
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Diagnostics

@@ -1,6 +1,6 @@
 {
     "name": "CCEnvs.Unity.ECS",
-    "rootNamespace": "CCEnvs.Unity.ECS",
+    "rootNamespace": "CCEnvs.UnityX.ECS",
     "references": [
         "CCEnvs",
         "CCEnvs.Unity",

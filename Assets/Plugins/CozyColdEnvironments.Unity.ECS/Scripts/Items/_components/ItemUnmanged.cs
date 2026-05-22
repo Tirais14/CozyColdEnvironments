@@ -10,6 +10,26 @@ namespace CCEnvs.UnityX.ECS.Items
     {
         public int ID;
 
+        public static bool operator ==(ItemUnmanged left, ItemUnmanged right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ItemUnmanged left, ItemUnmanged right)
+        {
+            return !(left == right);
+        }
+
+        public static implicit operator ItemUnmanged(int id)
+        {
+            return new ItemUnmanged { ID = id };
+        }
+
+        public static explicit operator int(ItemUnmanged item)
+        {
+            return item.ID;
+        }
+
         public ItemUnmanged Create(IItem item)
         {
             CC.Guard.IsNotNull(item, nameof(item));
