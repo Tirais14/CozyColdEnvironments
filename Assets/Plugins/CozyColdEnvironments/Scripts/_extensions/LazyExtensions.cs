@@ -6,7 +6,7 @@ namespace CCEnvs
     public static class LazyExtensions
     {
         public static bool TryGetValue<T>(
-            this Lazy<T> source, 
+            this Lazy<T> source,
             out T result
             )
         {

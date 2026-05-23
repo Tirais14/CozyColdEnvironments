@@ -1,6 +1,6 @@
-using System;
 using CCEnvs.UnityX.Profiles;
 using R3;
+using System;
 
 #nullable enable
 namespace CCEnvs.UnityX.CommonAPIs

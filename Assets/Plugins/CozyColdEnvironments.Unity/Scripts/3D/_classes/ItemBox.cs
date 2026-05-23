@@ -17,7 +17,7 @@ using UnityEngine;
 namespace CCEnvs.UnityX.D3
 {
     [RequireComponent(typeof(Collider), typeof(ExternalSize))]
-    public class ItemBox: CCBehaviour, IEnumerable<BoxedItem>
+    public class ItemBox : CCBehaviour, IEnumerable<BoxedItem>
     {
         public const int EMPTY_POSITION_SEARCH_STEP_COUNT_MIN = 1;
 

@@ -1,6 +1,6 @@
-using System;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.UnityX.Components;
+using System;
 
 #nullable enable
 namespace CCEnvs.UnityX.Snapshots

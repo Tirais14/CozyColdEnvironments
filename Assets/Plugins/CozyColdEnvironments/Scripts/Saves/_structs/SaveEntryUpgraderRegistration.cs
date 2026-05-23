@@ -5,7 +5,7 @@ using System;
 #nullable enable
 namespace CCEnvs.Saves
 {
-    public readonly struct SaveEntryUpgraderRegistration 
+    public readonly struct SaveEntryUpgraderRegistration
         :
         IEquatable<SaveEntryUpgraderRegistration>,
         IDisposable

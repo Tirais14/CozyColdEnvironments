@@ -2,7 +2,6 @@ using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CCEnvs.TypeMatching;
 using UnityEngine;
-using UnityEngine.Splines;
 using Object = UnityEngine.Object;
 
 #nullable enable

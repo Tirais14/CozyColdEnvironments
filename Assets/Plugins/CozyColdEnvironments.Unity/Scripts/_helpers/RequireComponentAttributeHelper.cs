@@ -1,7 +1,7 @@
+using CCEnvs.Collections;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
 using UnityEngine;
 
 #nullable enable

@@ -1,7 +1,7 @@
 #if ZLINQ_PLUGIN
 using CCEnvs.Diagnostics.Benchmarks;
 using System.Collections.Generic;
-using ZLinq;    
+using ZLinq;
 
 #nullable enable
 namespace CCEnvs.UnityX.Diagnostics.EditorC.Benchmarks

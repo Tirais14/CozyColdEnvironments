@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace CCEnvs.Saves
 {
     public static partial class SaveSystem
-    {   
+    {
         public static class Writer
         {
             private readonly static object onWrittenTargetMock = new();

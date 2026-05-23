@@ -98,7 +98,7 @@ namespace CCEnvs.Saves
         {
             return GroupName == other.GroupName
                    &&
-                   SaveDataVersion == other.SaveDataVersion 
+                   SaveDataVersion == other.SaveDataVersion
                    &&
                    Redirection == other.Redirection
                    &&

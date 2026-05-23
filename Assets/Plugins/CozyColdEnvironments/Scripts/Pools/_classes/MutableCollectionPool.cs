@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using CCEnvs.Patterns.Factories;
+using System.Collections.Generic;
 
 #nullable enable
 namespace CCEnvs.Pools

@@ -1,9 +1,8 @@
 #if UNITY_EDITOR
-using System.IO;
 using CCEnvs.Diagnostics;
 using CCEnvs.Files;
-using CCEnvs.UnityXEditor;
 using SuperLinq;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 

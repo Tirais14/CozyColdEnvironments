@@ -21,7 +21,7 @@ namespace CCEnvs.Dates
                 return new StructuralArray<int>(arr, isReadOnly: true, forceCacheHashCode: true);
             });
 
-        [DataMember(Name =  "calendar")]
+        [DataMember(Name = "calendar")]
         private readonly StructuralArray<int> calendar;
 
         [DataMember(Name = "year")]

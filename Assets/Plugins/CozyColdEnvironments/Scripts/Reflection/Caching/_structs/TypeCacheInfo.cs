@@ -52,7 +52,7 @@ namespace CCEnvs.Reflection.Caching
                 if (!isCCBehvaiour.HasValue)
                     InitUnityPart();
 
-                return isCCBehvaiour!.Value; 
+                return isCCBehvaiour!.Value;
             }
         }
         public bool IsValueType {

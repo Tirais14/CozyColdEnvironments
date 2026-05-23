@@ -16,7 +16,7 @@ namespace CCEnvs.UnityX.UI
 
     }
     public abstract class View<TViewModel>
-        : 
+        :
         View,
         IView<TViewModel>
 

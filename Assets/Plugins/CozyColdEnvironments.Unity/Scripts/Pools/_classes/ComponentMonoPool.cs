@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Pools
 {
-    public abstract class ComponentMonoPool<TComponent, TFactory> 
+    public abstract class ComponentMonoPool<TComponent, TFactory>
         :
         MonoObjectPool<TComponent, ComponentPool<TComponent>, TFactory>
 

@@ -18,7 +18,7 @@ namespace CCEnvs.Pools
                 maxSize: maxSize
                 )
         {
-            
+
         }
 
         protected override void OnReturn(T obj)

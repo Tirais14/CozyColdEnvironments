@@ -168,7 +168,7 @@ namespace CCEnvs.Diagnostics
             else
                 stringBuilder.Append(typeName);
 
-           static void WriteGenericArguments(Type type, StringBuilder stringBuilder)
+            static void WriteGenericArguments(Type type, StringBuilder stringBuilder)
             {
                 Type[] genericArguments = type.GetGenericArguments();
 

@@ -33,13 +33,13 @@ namespace CCEnvs.Reflection.Caching
 
         public static bool IsValueType(Type type) => Get(type).IsValueType;
 
-        public static bool IsPrimitive(Type type) => Get(type)  .IsPrimitive;
+        public static bool IsPrimitive(Type type) => Get(type).IsPrimitive;
 
         public static string GetName(Type type) => Get(type).Name;
 
         public static string GetFullName(Type type) => Get(type).Name;
 
-        public static string GetNamespace(Type type) => Get(type).Namespace; 
+        public static string GetNamespace(Type type) => Get(type).Namespace;
     }
 
     public static class TypeCache<T>

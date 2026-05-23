@@ -104,7 +104,7 @@ namespace CCEnvs.UnityX.D3
                    &&
                    EqualityComparer<IBoxItem>.Default.Equals(Value, other.Value)
                    &&
-                   Slot.Equals(other.Slot) 
+                   Slot.Equals(other.Slot)
                    &&
                    EqualityComparer<RigidbodySnapshot?>.Default.Equals(rigidbodySnapshot, other.rigidbodySnapshot)
                    &&

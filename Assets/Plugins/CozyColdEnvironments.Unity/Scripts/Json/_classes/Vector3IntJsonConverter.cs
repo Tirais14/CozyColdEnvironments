@@ -2,7 +2,6 @@ using CCEnvs.Attributes;
 using CCEnvs.Json;
 using Newtonsoft.Json;
 using System;
-using System.Globalization;
 using UnityEngine;
 
 #nullable enable

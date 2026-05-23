@@ -33,7 +33,7 @@ namespace CCEnvs.Saves
 
         public string Path { get; }
 
-        public SaveArchive Archive { get;}
+        public SaveArchive Archive { get; }
 
         public SaveCatalogLoader Loader { get; }
 

@@ -2,8 +2,8 @@
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable S2325 // Methods and properties that don't access instance data should be static
 
-using System;
 using CCEnvs.UnityX.Components;
+using System;
 using UnityEngine;
 
 namespace CCEnvs.UnityX.Diagnostics

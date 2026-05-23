@@ -1,7 +1,7 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Diagnostics;
 
 namespace CCEnvs.Collections
 {

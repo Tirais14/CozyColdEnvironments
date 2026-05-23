@@ -90,7 +90,7 @@ namespace CCEnvs.UnityX.D3
         {
             if (PointIA == null)
             {
-                screePoint = Vector2.zero;  
+                screePoint = Vector2.zero;
                 return false;
             }
 

@@ -26,7 +26,7 @@ namespace CCEnvs.UnityX.Storages.UI
 {
     public class InventoryViewModel<TModel>
         :
-        ViewModel<TModel>, 
+        ViewModel<TModel>,
         IInventoryViewModel
 
         where TModel : IInventory
@@ -114,7 +114,7 @@ namespace CCEnvs.UnityX.Storages.UI
         }
 
         private async UniTask OnAddContainersCore(
-            DictionaryAddEvent<int, IItemContainer>[] addEvs, 
+            DictionaryAddEvent<int, IItemContainer>[] addEvs,
             CancellationToken cancellationToken
             )
         {

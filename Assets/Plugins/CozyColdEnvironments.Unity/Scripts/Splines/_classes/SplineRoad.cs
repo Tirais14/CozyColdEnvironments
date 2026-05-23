@@ -1,12 +1,10 @@
 #if SPLINES_PLUGIN
 using CCEnvs.Collections;
 using CCEnvs.Pools;
-using CCEnvs.UnityX.Injections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Splines;
 
 #nullable enable
 namespace CCEnvs.UnityX.Splines

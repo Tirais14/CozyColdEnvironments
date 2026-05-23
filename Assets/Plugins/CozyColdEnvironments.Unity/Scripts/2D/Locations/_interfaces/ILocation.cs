@@ -1,6 +1,6 @@
+using CCEnvs.UnityX._2D.Locations;
 using System;
 using System.Collections.Generic;
-using CCEnvs.UnityX._2D.Locations;
 using UnityEngine;
 
 #nullable enable

@@ -4,7 +4,7 @@ using R3;
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
-    public interface IItemContainerInfo 
+    public interface IItemContainerInfo
         :
         IItemContainerInfoItemless
     {

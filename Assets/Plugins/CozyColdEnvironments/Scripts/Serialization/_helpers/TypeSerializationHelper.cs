@@ -1,11 +1,8 @@
-using C5;
 using CCEnvs.Attributes;
 using CCEnvs.Attributes.Serialization;
 using CCEnvs.Linq;
-using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -86,14 +83,14 @@ namespace CCEnvs.Serialization
             //Set<long>(new TypeSerializationDescriptor("long", "439d0100-0e89-436b-aa48-db64fa4709ec"));
             //Set<ulong>(new TypeSerializationDescriptor("ulong", "9a1b952b-a582-49be-86ce-58b0a8c23118"));
 
-//#if UNITY_2017_1_OR_NEWER
-//            Set<UnityEngine.Vector2>(new TypeSerializationDescriptor("Vector2", "e09a0c05-4128-46a5-a9c2-045306598ea8"));
-//            Set<UnityEngine.Vector2Int>(new TypeSerializationDescriptor("Vector2Int", "136a0f2f-25fa-4c08-b093-4c51850172f2"));
-//            Set<UnityEngine.Vector3>(new TypeSerializationDescriptor("Vector3", "0cb1c150-6c44-4040-a036-87da41ad769a"));
-//            Set<UnityEngine.Vector3Int>(new TypeSerializationDescriptor("Vector3Int", "8cc80cb4-790e-4ff1-b431-45fa28ee1fc1"));
-//            Set<UnityEngine.Vector4>(new TypeSerializationDescriptor("Vector4", "8c5d1051-baa2-4f62-a47e-77a96a4f4ac5"));
-//            Set<UnityEngine.Quaternion>(new TypeSerializationDescriptor("Quaternion", "95737e23-1c46-4a08-89b0-d5ac7ca6d923"));
-//#endif
+            //#if UNITY_2017_1_OR_NEWER
+            //            Set<UnityEngine.Vector2>(new TypeSerializationDescriptor("Vector2", "e09a0c05-4128-46a5-a9c2-045306598ea8"));
+            //            Set<UnityEngine.Vector2Int>(new TypeSerializationDescriptor("Vector2Int", "136a0f2f-25fa-4c08-b093-4c51850172f2"));
+            //            Set<UnityEngine.Vector3>(new TypeSerializationDescriptor("Vector3", "0cb1c150-6c44-4040-a036-87da41ad769a"));
+            //            Set<UnityEngine.Vector3Int>(new TypeSerializationDescriptor("Vector3Int", "8cc80cb4-790e-4ff1-b431-45fa28ee1fc1"));
+            //            Set<UnityEngine.Vector4>(new TypeSerializationDescriptor("Vector4", "8c5d1051-baa2-4f62-a47e-77a96a4f4ac5"));
+            //            Set<UnityEngine.Quaternion>(new TypeSerializationDescriptor("Quaternion", "95737e23-1c46-4a08-89b0-d5ac7ca6d923"));
+            //#endif
         }
 
         public static bool TryGetTypeSerializationDescriptor(

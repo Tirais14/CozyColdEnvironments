@@ -1,5 +1,5 @@
-using System;
 using CCEnvs.Attributes.Serialization;
+using System;
 using UnityEngine.EventSystems;
 
 #nullable enable

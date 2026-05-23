@@ -22,7 +22,7 @@ namespace CCEnvs.UnityX.UI
 
         private readonly Lazy<List<IDisposable>> modelDisposables = new(() => new List<IDisposable>());
 
-        public TModel? Model => model.Value;    
+        public TModel? Model => model.Value;
 
         public virtual CancellationToken DisposeCancellationToken => destroyCancellationToken;
 

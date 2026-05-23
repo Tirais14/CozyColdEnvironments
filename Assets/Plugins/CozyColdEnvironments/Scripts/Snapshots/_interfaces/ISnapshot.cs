@@ -1,8 +1,8 @@
 #nullable enable
-using System;
-using System.Diagnostics.CodeAnalysis;
 using CCEnvs.Serialization;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.Snapshots
 {

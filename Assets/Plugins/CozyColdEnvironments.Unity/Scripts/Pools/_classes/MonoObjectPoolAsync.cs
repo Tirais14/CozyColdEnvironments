@@ -2,7 +2,6 @@ using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CCEnvs.UnityX.Async;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Patterns.Factory;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
@@ -81,13 +80,13 @@ namespace CCEnvs.UnityX.Pools
             core.Dispose();
         }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         protected virtual void OnValidate()
         {
             if (preheatCount > capacity)
                 capacity = preheatCount;
         }
-    #endif
+#endif
 
         public void Clear() => initedSelf.core.Clear();
 

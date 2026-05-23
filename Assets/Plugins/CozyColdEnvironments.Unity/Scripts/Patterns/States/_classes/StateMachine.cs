@@ -73,7 +73,7 @@ namespace CCEnvs.UnityX.States
                     this.PrintLog($"State entered. State: {nextNode}");
             }
 
-            currentNode = nextNode;    
+            currentNode = nextNode;
         }
 
         public void SetState(IState? state)

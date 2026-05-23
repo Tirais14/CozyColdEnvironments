@@ -60,7 +60,8 @@ namespace CCEnvs.Saves
             {
                 nowReadingCount--;
             }
-;        }
+;
+        }
 
         public override void WriteJson(
             JsonWriter writer,

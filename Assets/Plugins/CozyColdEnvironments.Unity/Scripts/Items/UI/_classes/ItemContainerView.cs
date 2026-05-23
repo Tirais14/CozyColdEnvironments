@@ -1,5 +1,4 @@
 using CCEnvs.Disposables;
-using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.Injections;
 using CCEnvs.UnityX.Items;
 using CCEnvs.UnityX.UI;

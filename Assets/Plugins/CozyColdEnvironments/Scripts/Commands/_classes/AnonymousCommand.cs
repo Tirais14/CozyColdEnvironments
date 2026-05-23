@@ -1,6 +1,6 @@
 #nullable enable
-using System;
 using CommunityToolkit.Diagnostics;
+using System;
 
 namespace CCEnvs.Patterns.Commands
 {

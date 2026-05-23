@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
@@ -15,6 +11,10 @@ using CCEnvs.UnityX.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using R3;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -182,7 +182,7 @@ namespace CCEnvs.UnityX.UI
             if (!IsEnabled)
                 return;
 
-            GetShowCommand(destroyCancellationToken).ScheduleBy(commandScheduler);  
+            GetShowCommand(destroyCancellationToken).ScheduleBy(commandScheduler);
         }
 
         public async UniTask ShowAsync(CancellationToken cancellationToken = default)

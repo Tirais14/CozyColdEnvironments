@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.Leaderboards;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;

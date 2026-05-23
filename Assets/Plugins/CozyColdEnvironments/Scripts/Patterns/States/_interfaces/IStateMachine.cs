@@ -1,6 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
-
 namespace CCEnvs.Patterns.States
 {
     public interface IStateMachine

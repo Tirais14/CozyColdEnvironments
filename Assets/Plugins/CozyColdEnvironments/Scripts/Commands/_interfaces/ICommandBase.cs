@@ -1,9 +1,9 @@
 #nullable enable
 
+using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using R3;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -18,7 +18,7 @@ namespace CCEnvs.Patterns.Commands
         bool IsFaulted { get; }
         bool IsResetable { get; }
         bool IsValid { get; }
-        bool ExecuteOnThreadPool { get;}
+        bool ExecuteOnThreadPool { get; }
 
         string Name { get; }
         string Tag { get; }

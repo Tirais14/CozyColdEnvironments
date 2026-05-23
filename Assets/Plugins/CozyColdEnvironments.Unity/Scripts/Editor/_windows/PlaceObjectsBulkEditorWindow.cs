@@ -1,13 +1,8 @@
 #if UNITY_EDITOR
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using CCEnvs.FuncLanguage;
-using CCEnvs.UnityXEditor;
-using CommunityToolkit.Diagnostics;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.UnityX.Editr

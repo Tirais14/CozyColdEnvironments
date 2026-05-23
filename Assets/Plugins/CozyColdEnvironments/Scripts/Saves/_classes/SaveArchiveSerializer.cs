@@ -1,8 +1,6 @@
-using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
-using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,7 +99,7 @@ namespace CCEnvs.Saves
             ValueTask task;
 
             try
-            { 
+            {
                 lock (Archive.Catalogs.SyncRoot)
                 {
                     foreach (var (_, catalog) in Archive.Catalogs)

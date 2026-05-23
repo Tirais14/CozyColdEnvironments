@@ -45,7 +45,7 @@ namespace CCEnvs.Saves
             if (Redirection == RedirectionMode.FromFileToSerializedStorage)
             {
                 if (!TryGetSerializedSaveGroup(out var serializedGroup))
-                    return null; 
+                    return null;
 
                 return await DeserializeSaveDataFromSerializedAsync(
                     serializedGroup.SaveDataSerialized,

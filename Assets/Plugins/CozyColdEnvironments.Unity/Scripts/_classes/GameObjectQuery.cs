@@ -9,12 +9,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.UnityX
@@ -362,7 +359,7 @@ namespace CCEnvs.UnityX
             if (view.IsNull())
                 return new Result<IView, object, (GameObjectQuery Query, Type ViewType)>(static args => args.Query.GetException("View not found", args.ViewType), (this, type));
 
-            return new Result<IView, object, (GameObjectQuery Query, Type ViewType)>(view); 
+            return new Result<IView, object, (GameObjectQuery Query, Type ViewType)>(view);
         }
 
         [DebuggerStepThrough]
@@ -850,7 +847,7 @@ namespace CCEnvs.UnityX
         #endregion SearchAlgorytms
 
         private readonly GameObjectQueryException GetException(
-            string msg, 
+            string msg,
             Type? seekingComponentType = null
             )
         {
@@ -870,9 +867,9 @@ namespace CCEnvs.UnityX
 
         #region Enumerators
 
-        public struct ComponentsEnumerator 
+        public struct ComponentsEnumerator
             :
-            IEnumerator<Component>, 
+            IEnumerator<Component>,
             IEnumerable<Component>,
             IGameObjectQueryEnumerator
         {
@@ -967,7 +964,7 @@ namespace CCEnvs.UnityX
 
             internal readonly bool IsExcludedGameObject()
             {
-                return excludedGameObjects.Value.Contains(currentGO); 
+                return excludedGameObjects.Value.Contains(currentGO);
             }
         }
 
@@ -1015,7 +1012,7 @@ namespace CCEnvs.UnityX
             readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        public struct ViewModelsEnumerator 
+        public struct ViewModelsEnumerator
             :
             IEnumerator<IViewModel>,
             IEnumerable<IViewModel>,
@@ -1036,7 +1033,7 @@ namespace CCEnvs.UnityX
             readonly object IEnumerator.Current => Current;
 
             public ViewModelsEnumerator(
-                in ComponentsEnumerator<IView> viewsEtor, 
+                in ComponentsEnumerator<IView> viewsEtor,
                 Type? viewModelType
                 )
             {

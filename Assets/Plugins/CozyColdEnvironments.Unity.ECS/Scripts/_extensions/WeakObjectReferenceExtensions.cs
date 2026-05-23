@@ -10,7 +10,7 @@ namespace CCEnvs.UnityX.ECS
         public static bool IsLoaded<T>(this in WeakObjectReference<T> objRef)
             where T : UnityEngine.Object
         {
-            return objRef.IsReferenceValid 
+            return objRef.IsReferenceValid
                    ||
                    objRef.LoadingStatus == ObjectLoadingStatus.Completed;
         }

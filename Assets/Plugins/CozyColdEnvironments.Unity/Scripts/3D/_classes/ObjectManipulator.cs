@@ -480,7 +480,7 @@ namespace CCEnvs.UnityX.D3
             objPos = Vector3.Lerp(objPos, targetColliderPos, moveT);
             objRot = Quaternion.Slerp(objRot, targetRot, rotT);
 
-            if (Time.frameCount % 20L == 0) 
+            if (Time.frameCount % 20L == 0)
                 objRot.Normalize();
 
             Vector3 finalPivotPos = objPos - colliderOffset;
@@ -508,7 +508,7 @@ namespace CCEnvs.UnityX.D3
                 hit.collider != ObjectCollider)
             {
                 if (hit.collider is TerrainCollider)
-                    return hit.normal * (GetObjectRadius() * toTargetDir.magnitude  * 3f);
+                    return hit.normal * (GetObjectRadius() * toTargetDir.magnitude * 3f);
                 else
                     return hit.normal * (GetObjectRadius() * 2f);
             }
@@ -547,7 +547,7 @@ namespace CCEnvs.UnityX.D3
                 Vector3 correctedPoint = hit.point;
 
                 if (hit.collider is TerrainCollider)
-                    correctedPoint += hit.normal * 0.01f; 
+                    correctedPoint += hit.normal * 0.01f;
 
                 targetColliderPos = correctedPoint + hit.normal * (objRadius * 1.02f);
 

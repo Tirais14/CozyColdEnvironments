@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
-using System.Linq;
-using CCEnvs.UnityXEditor;
 using CCEnvs.Utils;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
 

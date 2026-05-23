@@ -39,7 +39,7 @@ namespace CCEnvs.UnityX.D3
 
         public override LayerMask LayerMask {
             get => layerMask.Deserialized ?? Physics.AllLayers;
-            set => SetLayerMask(value); 
+            set => SetLayerMask(value);
         }
 
         public override Camera camera {

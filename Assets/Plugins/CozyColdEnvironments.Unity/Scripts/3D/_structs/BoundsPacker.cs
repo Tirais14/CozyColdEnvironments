@@ -349,8 +349,8 @@ namespace CCEnvs.UnityX.D3
             var axis2ItemCountFloored = Mathf.FloorToInt(axis2ItemCount);
 
             results ??= new List<Bounds>(
-                axis1ItemCountFloored 
-                * 
+                axis1ItemCountFloored
+                *
                 axis2ItemCountFloored
                 );
 
@@ -358,7 +358,7 @@ namespace CCEnvs.UnityX.D3
             {
                 nextAxis2Pos = i2 * (item.size[axis2] + gap[axis2]);
 
-                for (int i1 = 0; i1 < axis1ItemCountFloored ; i1++)
+                for (int i1 = 0; i1 < axis1ItemCountFloored; i1++)
                 {
                     if (!loopFuse.MoveNext())
                         return results;

@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 namespace CCEnvs.UnityX.UI
 {
     public class DragAndDropModule
-        : 
+        :
         CCBehaviour,
         IBeginDragHandler,
         IDragHandler,

@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using CCEnvs.Disposables;
-using CCEnvs.Rx;
 using CCEnvs.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 using static UnityEngine.InputSystem.InputAction;
@@ -155,26 +154,26 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)
 
-            if (disposing)
-            {
-                disposables.DisposeEachAndClear();
+                if (disposing)
+                {
+                    disposables.DisposeEachAndClear();
 
-                disposeCancellationTokeSource.CancelAndDispose();
+                    disposeCancellationTokeSource.CancelAndDispose();
 
-                Action.started -= OnRaw;
-                Action.performed -= OnRaw;
-                Action.canceled -= OnRaw;
+                    Action.started -= OnRaw;
+                    Action.performed -= OnRaw;
+                    Action.canceled -= OnRaw;
 
-                Action.started -= OnStarted;
-                Action.performed -= OnPerformed;
-                Action.canceled -= OnCanceled;
+                    Action.started -= OnStarted;
+                    Action.performed -= OnPerformed;
+                    Action.canceled -= OnCanceled;
 
-                raw.Dispose();
-                started.Dispose();
-                performed.Dispose();
-                canceled.Dispose();
-                isEnabled.Dispose();
-            }
+                    raw.Dispose();
+                    started.Dispose();
+                    performed.Dispose();
+                    canceled.Dispose();
+                    isEnabled.Dispose();
+                }
 
             GC.SuppressFinalize(this);
         }

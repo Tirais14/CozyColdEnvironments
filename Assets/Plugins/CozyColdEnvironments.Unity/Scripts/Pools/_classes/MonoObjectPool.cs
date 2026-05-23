@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Pools
 {
-    public abstract class MonoObjectPool<T, TCore, TFactory> 
+    public abstract class MonoObjectPool<T, TCore, TFactory>
         :
         CCBehaviour,
         IObjectPool<T>

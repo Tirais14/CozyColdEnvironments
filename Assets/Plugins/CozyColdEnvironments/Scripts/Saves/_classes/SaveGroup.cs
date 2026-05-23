@@ -4,6 +4,7 @@ using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
+using CCEnvs.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using ObservableCollections;
 using System;
@@ -12,7 +13,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using CCEnvs.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -115,7 +115,7 @@ namespace CCEnvs.Saves
             Guard.IsNotNull(incGroup, nameof(incGroup));
 
             var group = new SaveGroup(
-                incGroup.Catalog, 
+                incGroup.Catalog,
                 incGroup.Name,
                 saveDataVersion: incGroup.SaveData.Version,
                 redirectionMode: incGroup.Redirection,

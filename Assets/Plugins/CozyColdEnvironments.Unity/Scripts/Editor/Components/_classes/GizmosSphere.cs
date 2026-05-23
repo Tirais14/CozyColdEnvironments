@@ -10,7 +10,7 @@ namespace CCEnvs.UnityX.Editr.Components
         private float radius = 0.5f;
 
         [SerializeField]
-        private bool isWire; 
+        private bool isWire;
 
         protected override void Draw()
         {

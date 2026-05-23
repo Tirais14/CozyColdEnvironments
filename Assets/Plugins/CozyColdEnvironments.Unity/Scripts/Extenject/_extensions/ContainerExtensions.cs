@@ -15,7 +15,7 @@ namespace CCEnvs.Zenject
         public static void BindInputActionAsset(
             this DiContainer container,
             InputActionAsset inputActionAsset,
-            bool bindWithName = false 
+            bool bindWithName = false
             )
         {
             Guard.IsNotNull(container, nameof(container));

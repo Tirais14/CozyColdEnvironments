@@ -8,7 +8,7 @@ namespace CCEnvs.Threading.Tasks
     public static class TaskHelper
     {
         public static async Task WaitWhile(
-            Func<bool> func, 
+            Func<bool> func,
             CancellationToken cancellationToken = default
             )
         {

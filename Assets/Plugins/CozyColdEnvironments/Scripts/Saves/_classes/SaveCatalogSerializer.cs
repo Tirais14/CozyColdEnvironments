@@ -110,7 +110,7 @@ namespace CCEnvs.Saves
                             );
 
                         tasks.Value.Add(task);
-                    }  
+                    }
                 }
 
                 await ValueTaskEx.WhenAll(tasks.Value);

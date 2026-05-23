@@ -1,6 +1,6 @@
 #if UNITASK_PLUGIN
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Threading.Tasks

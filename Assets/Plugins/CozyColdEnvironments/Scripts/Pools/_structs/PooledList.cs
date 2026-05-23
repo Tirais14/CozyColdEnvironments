@@ -12,10 +12,10 @@ namespace CCEnvs.Pools
     public struct PooledList<TList, TValue, TState>
         :
         IDisposable,
-        IList<TValue>, 
+        IList<TValue>,
         IReadOnlyList<TValue>,
         IEquatable<PooledList<TList, TValue, TState>>
-        
+
         where TList : IList<TValue>
     {
         private readonly TState? state;
@@ -180,9 +180,9 @@ namespace CCEnvs.Pools
                    &&
                    disposed == other.disposed
                    &&
-                   EqualityComparer<TState?>.Default.Equals(state, other.state) 
+                   EqualityComparer<TState?>.Default.Equals(state, other.state)
                    &&
-                   EqualityComparer<Action<TList, TState?>>.Default.Equals(returnAction, other.returnAction) 
+                   EqualityComparer<Action<TList, TState?>>.Default.Equals(returnAction, other.returnAction)
                    &&
                    EqualityComparer<TList>.Default.Equals(Value, other.Value)
                    &&
@@ -258,7 +258,7 @@ namespace CCEnvs.Pools
         {
             var listHandle = ListPool<TValue>.Shared.Get();
 
-            if (capacity .HasValue)
+            if (capacity.HasValue)
                 listHandle.Value.TryIncreaseCapacity(capacity.Value);
 
             core = new PooledList<List<TValue>, TValue, PooledObject<List<TValue>>>(

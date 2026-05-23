@@ -1,4 +1,3 @@
-using System.Threading;
 using CCEnvs.UnityX.Profiles;
 using R3;
 using UnityEngine;

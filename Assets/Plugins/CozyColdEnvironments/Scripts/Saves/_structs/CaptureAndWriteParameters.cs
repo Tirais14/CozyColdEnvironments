@@ -40,7 +40,7 @@ namespace CCEnvs.Saves
 
         public bool Equals(CaptureAndWriteParameters other)
         {
-            return WriteMode == other.WriteMode 
+            return WriteMode == other.WriteMode
                    &&
                    PreferedObjectLimitPerFrame == other.PreferedObjectLimitPerFrame;
         }

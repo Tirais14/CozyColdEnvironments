@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.EditorSerialization;
 using CCEnvs.UnityX.Leaderboards;
 using ObservableCollections;

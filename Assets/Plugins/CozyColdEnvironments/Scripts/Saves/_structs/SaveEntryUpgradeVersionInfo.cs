@@ -1,5 +1,5 @@
-using System;
 using CommunityToolkit.Diagnostics;
+using System;
 
 #nullable enable
 namespace CCEnvs.Saves
@@ -55,7 +55,7 @@ namespace CCEnvs.Saves
         {
             hash ??= HashCode.Combine(hash, SnapshotType, Version, NextVersion);
 
-            return hash.Value;  
+            return hash.Value;
         }
 
         public readonly override string ToString()

@@ -33,7 +33,7 @@ namespace CCEnvs.UnityX.Injections
             List<string>? debugInfo = null;
 
             if (CCDebug.Instance.IsEnabled && CCDebug.IsTypeEnabled(typeof(ComponentInjector)))
-                debugInfo = ListPool<string>.Shared.Get().Value;   
+                debugInfo = ListPool<string>.Shared.Get().Value;
 
             var injectableItems = GetInjectableItems(target, debugInfo);
 
@@ -212,7 +212,7 @@ namespace CCEnvs.UnityX.Injections
 
             return result.IsNotNull();
         }
-       
+
 
         private struct InjectableItem
         {
@@ -223,7 +223,7 @@ namespace CCEnvs.UnityX.Injections
             public readonly object? Value => Field.GetValue(Target);
 
             public InjectableItem(
-                Component target, 
+                Component target,
                 FieldInfo field,
                 GetComponentAttribute attribute
                 )

@@ -103,7 +103,7 @@ namespace CCEnvs.Dates
             if (days <= 0f)
                 return Empty;
 
-            return new TimeSpanLight(days );
+            return new TimeSpanLight(days);
         }
 
         public static TimeSpanLight FromHours(float hours)

@@ -28,7 +28,7 @@ namespace CCEnvs.UnityX.Items
 
         public static IItemContainerInfo Get(int id) => itemContainers[id];
         public static IItemContainerInfo Get<T>(int id)
-            where T: IItemContainerInfo
+            where T : IItemContainerInfo
         {
             return (T)itemContainers[id];
         }
@@ -38,7 +38,7 @@ namespace CCEnvs.UnityX.Items
             [NotNullWhen(true)] out IItemContainerInfo? itemContainer
             )
         {
-            return itemContainers.TryGetValue(id, out itemContainer);    
+            return itemContainers.TryGetValue(id, out itemContainer);
         }
         public static bool TryGet<T>(int id, [NotNullWhen(true)] out T? itemContainer)
             where T : IItemContainerInfo

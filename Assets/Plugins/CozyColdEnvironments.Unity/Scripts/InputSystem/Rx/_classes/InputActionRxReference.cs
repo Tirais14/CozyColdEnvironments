@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 #nullable enable
 namespace CCEnvs.UnityX.InputSystem.Rx
@@ -88,7 +87,7 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             }
 
             if (!InputActionRxReference.handlerActionProperties.TryGetValue(
-                handlerType, 
+                handlerType,
                 out var handlerActionProps)
                 )
             {

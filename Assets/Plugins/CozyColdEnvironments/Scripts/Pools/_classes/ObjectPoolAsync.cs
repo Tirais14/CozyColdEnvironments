@@ -1,7 +1,7 @@
 #nullable enable
+using CCEnvs.Patterns.Factories;
 using System.Threading;
 using System.Threading.Tasks;
-using CCEnvs.Patterns.Factories;
 
 namespace CCEnvs.Pools
 {

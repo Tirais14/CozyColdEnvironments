@@ -10,7 +10,7 @@ using System.Threading;
 #pragma warning disable S1699
 namespace CCEnvs.UnityX.UI
 {
-    public abstract class ViewModel<TModel> 
+    public abstract class ViewModel<TModel>
         :
         IViewModel<TModel>,
         IDisposable

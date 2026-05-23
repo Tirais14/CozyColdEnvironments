@@ -1,5 +1,4 @@
 using CCEnvs.Attributes.Serialization;
-using CCEnvs.TypeMatching;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
@@ -20,7 +19,7 @@ namespace CCEnvs.Snapshots
             :
             base(fieldInfo)
         {
-            CC.Guard.IsNotNull(snapshot, nameof(snapshot)); 
+            CC.Guard.IsNotNull(snapshot, nameof(snapshot));
 
             Snapshot = snapshot;
         }

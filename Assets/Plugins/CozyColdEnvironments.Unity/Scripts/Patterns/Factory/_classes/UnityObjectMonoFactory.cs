@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Patterns.Factory
 {
-    public class UnityObjectMonoFactory<TOut> 
+    public class UnityObjectMonoFactory<TOut>
         :
         CCBehaviour,
         IFactory<TOut>,

@@ -13,7 +13,7 @@ namespace CCEnvs.Reflection
         private static Dictionary<string, MemberInfo> declaringTypes = null!;
 
         public static bool TryResolveMember(
-            string id, 
+            string id,
             [NotNullWhen(true)] out MemberInfo member
             )
         {

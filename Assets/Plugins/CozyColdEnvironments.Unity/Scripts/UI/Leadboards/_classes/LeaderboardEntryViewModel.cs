@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using System.Threading;
 using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.Leaderboards;
 using ObservableCollections;
 using R3;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable

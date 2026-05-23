@@ -27,7 +27,7 @@ namespace CCEnvs.Saves
 
             lock (ArchivesGate)
                 return archives.Remove(path);
-        }  
+        }
 
         public static void AddCatalog(
             string archivePath,
@@ -68,7 +68,7 @@ namespace CCEnvs.Saves
         }
 
         public static void AddGroup(
-            string archivePath, 
+            string archivePath,
             string catalogPath,
             SaveGroupSerialized group)
         {

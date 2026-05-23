@@ -1,8 +1,8 @@
+using CCEnvs.Collections;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using CCEnvs.Collections;
 
 #nullable enable
 namespace CCEnvs.Saves

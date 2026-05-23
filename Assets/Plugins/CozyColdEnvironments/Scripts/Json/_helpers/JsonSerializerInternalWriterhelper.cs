@@ -1,12 +1,11 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using CCEnvs.Collections;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
+using System.Linq;
+using System.Reflection;
 
 #nullable enable
 namespace CCEnvs.Json
@@ -19,7 +18,7 @@ namespace CCEnvs.Json
             return Type.GetType($"Newtonsoft.Json.Serialization.JsonSerializerInternalWriter, Newtonsoft.Json", throwOnError: true);
         });
 
-        private static Lazy<MethodInfo> serializeValueMethod => new (
+        private static Lazy<MethodInfo> serializeValueMethod => new(
             static () =>
             {
                 var method = jsonInternalWriterType.Value.GetMethods(BindingFlagsDefault.InstanceNonPublic)
@@ -27,7 +26,7 @@ namespace CCEnvs.Json
                     .Single();
 
                 return method;
-            }); 
+            });
 
         private static ConstructorInfo? jsonInternalWriterCtor;
 

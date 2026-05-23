@@ -1,5 +1,5 @@
-using System;
 using ObservableCollections;
+using System;
 using UnityEngine;
 
 #nullable enable

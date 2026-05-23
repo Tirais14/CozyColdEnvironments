@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -7,7 +9,7 @@ using Unity.Jobs;
 namespace CCEnvs.UnityX.ECS.Items
 {
     [BurstCompile]
-    public struct InventoryUnmanaged : INativeDisposable, IDisposable
+    public struct InventoryUnmanaged : INativeDisposable, IDisposable, IEnumerable<ItemContainerUnmanaged>
     {
         public int ID;
 
@@ -44,8 +46,21 @@ namespace CCEnvs.UnityX.ECS.Items
             return ContainsItem(itemContainer.Item, itemContainer.ItemCount);
         }
 
+        public bool ContainsItems<TItemInfos>(TItemInfos itemInfos)
+            where TItemInfos : unmanaged, IEnumerable<ItemContainerUnmanaged>
+        {
+            foreach (var itemInfo in itemInfos)
+                if (!ContainsItem(itemInfo))
+                    return false;
+
+            return true;
+        }
+
         public JobHandle Dispose(JobHandle inputDeps) => ItemContainers.Dispose(inputDeps);
         public void Dispose() => ItemContainers.Dispose();
+
+        public IEnumerator<ItemContainerUnmanaged> GetEnumerator() => ItemContainers.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public static class InventoryUnmanagedExtensions
@@ -53,7 +68,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static InventoryUnmanaged ToInventory<TItemContainerPool>(
             this TItemContainerPool itemContainerPool,
-            NullableUnmanaged<int> inventoryID
+            NullableUnmanaged<int> inventoryID = default
             )
             where TItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
         {

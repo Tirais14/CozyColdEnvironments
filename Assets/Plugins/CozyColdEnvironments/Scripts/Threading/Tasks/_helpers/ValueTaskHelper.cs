@@ -1,6 +1,6 @@
+using CCEnvs.Diagnostics;
 using System;
 using System.Threading.Tasks;
-using CCEnvs.Diagnostics;
 
 #nullable enable
 namespace CCEnvs.Threading.Tasks
@@ -167,7 +167,7 @@ namespace CCEnvs.Threading.Tasks
 
         public static async void Forget<T, TCaller>(
             this ValueTask<T> task,
-            TCaller? caller, 
+            TCaller? caller,
             bool suppresCancellationThrow = true
             )
         {

@@ -7,7 +7,6 @@ using CCEnvs.Snapshots;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX;
 using CCEnvs.UnityX.Editr;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -608,7 +607,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
         previewTexture!.ReadPixels(new Rect(0f, 0f, PreviewSize, PreviewSize), 0, 0);
         previewTexture!.Apply();
 
-        RenderTexture.active = null;    
+        RenderTexture.active = null;
     }
 
     private void ResolvePreviewTexture()

@@ -182,7 +182,7 @@ namespace CCEnvs.UnityX.Items
 
             count = Math.Max(count, 0);
 
-            if (count <= 0 
+            if (count <= 0
                 ||
                 !occupiedContainers.TryGetValue(item, out var cnts)
                 ||
@@ -305,7 +305,7 @@ namespace CCEnvs.UnityX.Items
         public IList<IItemContainer> InstantiateContainers(
             int count,
             IItemContainer? cloneExmaple = null
-            ) 
+            )
         {
             count = Math.Max(count, 0);
 
@@ -332,7 +332,7 @@ namespace CCEnvs.UnityX.Items
         }
 
         public IList<IItemContainer> SetContainerCount(
-            int count, 
+            int count,
             IItemContainer? cloneExample = null
             )
         {
@@ -552,8 +552,8 @@ namespace CCEnvs.UnityX.Items
 
         private void BindContainerRemove()
         {
-           containerRemoveBinding = containers.ObserveDictionaryRemove(DisposeCancellationToken)
-                .Subscribe(OnContainerRemove);
+            containerRemoveBinding = containers.ObserveDictionaryRemove(DisposeCancellationToken)
+                 .Subscribe(OnContainerRemove);
         }
 
         private void OnContainerRemove(DictionaryRemoveEvent<int, IItemContainer> removeEv)

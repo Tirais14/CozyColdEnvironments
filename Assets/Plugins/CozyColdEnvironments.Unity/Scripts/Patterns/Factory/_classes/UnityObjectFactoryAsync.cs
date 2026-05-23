@@ -53,7 +53,7 @@ namespace CCEnvs.UnityX.Patterns.Factory
 
             if (!activeScene.IsValid()
 #if UNITY_EDITOR
-                || 
+                ||
                 !Application.isPlaying
 #endif
                 )
@@ -120,7 +120,7 @@ namespace CCEnvs.UnityX.Patterns.Factory
             var activeScene = SceneManagerHelper.ActiveScene;
             var instances = await Object.InstantiateAsync(prefab, count, new InstantiateParameters { parent = default }, cancellationToken: cancellationToken);
 
-            if (!activeScene.IsValid() 
+            if (!activeScene.IsValid()
 #if UNITY_EDITOR
                 ||
                 !Application.isPlaying
@@ -166,7 +166,7 @@ namespace CCEnvs.UnityX.Patterns.Factory
 
             return instances;
         }
-         
+
         public virtual async ValueTask<TOut[]> Create(int count, InstantiateParameters prms, CancellationToken cancellationToken)
         {
             var activeScene = SceneManagerHelper.ActiveScene;

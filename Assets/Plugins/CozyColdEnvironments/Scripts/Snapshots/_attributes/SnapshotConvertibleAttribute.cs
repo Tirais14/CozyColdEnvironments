@@ -6,7 +6,7 @@ namespace CCEnvs.Snapshots
 {
     [AttributeUsage(
         AttributeTargets.Class
-        | 
+        |
         AttributeTargets.Struct
         |
         AttributeTargets.Field

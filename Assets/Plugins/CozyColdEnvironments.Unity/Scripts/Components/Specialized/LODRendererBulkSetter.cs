@@ -22,7 +22,7 @@ namespace CCEnvs.UnityX.Editr
 
         public GameObject Source {
             get => source;
-            set => source = value;  
+            set => source = value;
         }
 
         public LODGroup LODGroup {

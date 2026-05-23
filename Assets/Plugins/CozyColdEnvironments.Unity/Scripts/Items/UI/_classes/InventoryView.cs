@@ -1,6 +1,4 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
-using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.Injections;
 using CCEnvs.UnityX.Items;
@@ -9,7 +7,6 @@ using System;
 using UnityEngine;
 
 #if ZLINQ_PLUGIN
-using ZLinq;
 #endif
 
 #nullable enable
@@ -130,7 +127,7 @@ namespace CCEnvs.UnityX.Storages.UI
             var inv = new Inventory(containerCount);
 
             return new InventoryViewModel<IInventory>(
-                inv, 
+                inv,
                 containerPrefab,
                 containersRoot
                 );

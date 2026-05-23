@@ -1,6 +1,6 @@
 #nullable enable
-using System;
 using CCEnvs.FuncLanguage;
+using System;
 
 namespace CCEnvs.Patterns.Commands
 {

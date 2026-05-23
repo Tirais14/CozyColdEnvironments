@@ -1,5 +1,5 @@
-﻿using System;
-using CCEnvs.Serialization;
+﻿using CCEnvs.Serialization;
+using System;
 
 #nullable enable
 namespace CCEnvs.Attributes.Serialization

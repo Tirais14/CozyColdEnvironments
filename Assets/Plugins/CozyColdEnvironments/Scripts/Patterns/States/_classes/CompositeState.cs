@@ -46,7 +46,7 @@ namespace CCEnvs.Patterns.States
         {
             CC.Guard.IsNotNull(state, nameof(state));
 
-            return states.Remove(state);   
+            return states.Remove(state);
         }
     }
 }

@@ -148,7 +148,7 @@ namespace CCEnvs.Diagnostics
         private enum TokenType
         {
             None,
-            Message, 
+            Message,
             Property
         }
     }

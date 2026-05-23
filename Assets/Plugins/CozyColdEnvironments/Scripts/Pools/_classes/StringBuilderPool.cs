@@ -1,5 +1,5 @@
-using System.Text;
 using CCEnvs.Patterns.Factories;
+using System.Text;
 
 #nullable enable
 namespace CCEnvs.Pools

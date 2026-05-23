@@ -1,5 +1,5 @@
-using System;
 using CCEnvs.Attributes.Serialization;
+using System;
 using TMPro;
 using UnityEngine;
 
