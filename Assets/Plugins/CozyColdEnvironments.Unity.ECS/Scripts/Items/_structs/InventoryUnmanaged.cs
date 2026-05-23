@@ -8,15 +8,18 @@ using Unity.Jobs;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [BurstCompile]
     public struct InventoryUnmanaged : INativeDisposable, IDisposable, IEnumerable<ItemContainerUnmanaged>
     {
-        public int ID;
+        public NullableUnmanaged<int> ID;
 
         public NativeArray<ItemContainerUnmanaged> ItemContainers;
 
-        public bool IsEmpty => ContainsItem();
+        public bool IsEmpty {
+            [BurstCompile]
+            get => ContainsItem();
+        }
 
+        [BurstCompile]
         public bool ContainsItem()
         {
             for (int i = 0; i < ItemContainers.Length; i++)
@@ -25,6 +28,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
             return false;
         }
+        [BurstCompile]
         public bool ContainsItem(ItemUnmanged item)
         {
             for (int i = 0; i < ItemContainers.Length; i++)
@@ -33,27 +37,50 @@ namespace CCEnvs.UnityX.ECS.Items
 
             return false;
         }
+        [BurstCompile]
         public bool ContainsItem(ItemUnmanged item, int itemCount)
         {
+            if (itemCount <= 0)
+                return false;
+
+            int foundItemCount = 0;
+
             for (int i = 0; i < ItemContainers.Length; i++)
-                if (ItemContainers[i].ContainsItem(item, itemCount))
+            {
+                ItemContainerUnmanaged itemContainer = ItemContainers[i];
+
+                if (!itemContainer.ContainsItem(item))
+                    continue;
+
+                foundItemCount += itemContainer.ItemCount;
+
+                if (foundItemCount >= itemCount)
                     return true;
+            }
 
             return false;
         }
+        [BurstCompile]
         public bool ContainsItem(in ItemContainerUnmanaged itemContainer)
         {
             return ContainsItem(itemContainer.Item, itemContainer.ItemCount);
         }
 
-        public bool ContainsItems<TItemInfos>(TItemInfos itemInfos)
-            where TItemInfos : unmanaged, IEnumerable<ItemContainerUnmanaged>
+        [BurstCompile]
+        public bool ContainsItems(NativeArray<ItemContainerUnmanaged> itemInfos)
         {
-            foreach (var itemInfo in itemInfos)
-                if (!ContainsItem(itemInfo))
-                    return false;
+            using var foundItemInfoFlags = new NativeBitArray(itemInfos.Length, Allocator.Temp);
+            foundItemInfoFlags.SetBits(0, false, foundItemInfoFlags.Length);
 
-            return true;
+            for (int i = 0; i < itemInfos.Length; i++)
+            {
+                if (!ContainsItem(itemInfos[i]))
+                    continue;
+
+                foundItemInfoFlags.Set(i, true);
+            }
+
+            return foundItemInfoFlags.TestAll(0, itemInfos.Length);
         }
 
         public JobHandle Dispose(JobHandle inputDeps) => ItemContainers.Dispose(inputDeps);
@@ -93,16 +120,6 @@ namespace CCEnvs.UnityX.ECS.Items
                 ID = inventoryID.Value,
                 ItemContainers = inventoryContainers.AsArray()
             };
-        }
-
-        [BurstCompile]
-        public static InventoryUnmanaged ToInventory<TItemContainerPool>(
-            this TItemContainerPool itemContainerPool,
-            InventoryReferenceUnmanged inventoryRef
-            )
-            where TItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
-        {
-            return itemContainerPool.ToInventory(inventoryRef.InventoryID);
         }
     }
 }

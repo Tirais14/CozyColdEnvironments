@@ -44,6 +44,28 @@ namespace CCEnvs.UnityX.ECS.Items
             return ContainsItem(item) && ItemCount >= itemCount;
         }
 
+        [BurstCompile]
+        public readonly InventoryUnmanagedPutItemQuery ToInventoryPutItemQuery(int inventoryID)
+        {
+            return new InventoryUnmanagedPutItemQuery
+            {
+                InventoryRef = inventoryID,
+                Item = Item,
+                ItemCount = ItemCount
+            };
+        }
+
+        [BurstCompile]
+        public readonly InventoryUnmanagedRemoveItemQuery ToInventoryRemoveItemQuery(int inventoryID)
+        {
+            return new InventoryUnmanagedRemoveItemQuery
+            {
+                InventoryRef = inventoryID,
+                Item = Item,
+                ItemCount = ItemCount
+            };
+        }
+
         public readonly override bool Equals(object? obj)
         {
             return obj is ItemContainerUnmanaged unmanaged && Equals(unmanaged);

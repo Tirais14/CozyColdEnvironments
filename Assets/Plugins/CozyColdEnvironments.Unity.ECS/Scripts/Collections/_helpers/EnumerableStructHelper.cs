@@ -1,3 +1,4 @@
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 
@@ -6,6 +7,7 @@ namespace CCEnvs.UnityX.ECS.Collections
 {
     public static class EnumerableStructHelper
     {
+        [BurstCompile]
         public static NativeList<T> ToNativeList<T>(this NativeArray<T> source, Allocator allocator)
             where T : unmanaged
         {
@@ -17,6 +19,7 @@ namespace CCEnvs.UnityX.ECS.Collections
             return list;
         }
 
+        [BurstCompile]
         public static NativeList<T> ToNativeList<T>(this DynamicBuffer<T> source, Allocator allocator)
             where T : unmanaged
         {

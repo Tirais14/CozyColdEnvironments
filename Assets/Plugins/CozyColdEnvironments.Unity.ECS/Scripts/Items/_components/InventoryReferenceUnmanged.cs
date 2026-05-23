@@ -5,10 +5,20 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [InternalBufferCapacity(4)]
+    [InternalBufferCapacity(8)]
     public struct InventoryReferenceUnmanged : IBufferElementData
     {
         public int InventoryID;
+
+        public static implicit operator int(InventoryReferenceUnmanged instance)
+        {
+            return instance.InventoryID;
+        }
+
+        public static implicit operator InventoryReferenceUnmanged(int inventoryID)
+        {
+            return new InventoryReferenceUnmanged { InventoryID = inventoryID };
+        }
 
         public readonly IInventory Materialize() => InventoryRegistry.Get(InventoryID);
         public readonly IInventory Materialize<T>() where T : IInventory => InventoryRegistry.Get<T>(InventoryID);
