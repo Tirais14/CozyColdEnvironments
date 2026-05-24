@@ -8,13 +8,13 @@ namespace CCEnvs
 
     public interface IManagedConvertible<T> : IManagedConvertible
     {
-        new T ConvertToManaged();
+        new T ToManaged();
 
-        TConcrete ConvertToManagedT<TConcrete>() where TConcrete : T
+        TConcrete ToManagedT<TConcrete>() where TConcrete : T
         {
-            return (TConcrete)ConvertToManaged()!;
+            return (TConcrete)ToManaged()!;
         }
 
-        object IManagedConvertible.ConvertToManaged() => ConvertToManaged()!;
+        object IManagedConvertible.ConvertToManaged() => ToManaged()!;
     }
 }

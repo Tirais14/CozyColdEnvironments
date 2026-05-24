@@ -7,18 +7,21 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [InternalBufferCapacity(128)]
-    public struct ItemContainerUnmanaged : IBufferElementData, IEquatable<ItemContainerUnmanaged>
+    [InternalBufferCapacity(0)]
+    public struct ItemContainerUnmanaged 
+        :
+        IBufferElementData, 
+        IEquatable<ItemContainerUnmanaged>
     {
-        public ItemUnmanged Item;
+        public ItemReference Item;
 
         public int ItemCount;
 
-        public NullableUnmanaged<int> InventoryID;
+        public MaybeUnmanaged<InventoryReference> InventoryRef;
 
         public readonly bool IsEmpty {
             [BurstCompile]
-            get => ItemCount > 0;
+            get => ItemCount <= 0;
         }
 
         public static bool operator ==(ItemContainerUnmanaged left, ItemContainerUnmanaged right)
@@ -34,20 +37,20 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public readonly bool ContainsItem() => !IsEmpty;
         [BurstCompile]
-        public readonly bool ContainsItem(ItemUnmanged item)
+        public readonly bool ContainsItem(ItemReference item)
         {
             return Item.Equals(item);
         }
         [BurstCompile]
-        public readonly bool ContainsItem(ItemUnmanged item, int itemCount)
+        public readonly bool ContainsItem(ItemReference item, int itemCount)
         {
             return ContainsItem(item) && ItemCount >= itemCount;
         }
 
         [BurstCompile]
-        public readonly InventoryUnmanagedPutItemQuery ToInventoryPutItemQuery(int inventoryID)
+        public readonly InventoryPutItemQuery ToInventoryPutItemQuery(int inventoryID)
         {
-            return new InventoryUnmanagedPutItemQuery
+            return new InventoryPutItemQuery
             {
                 InventoryRef = inventoryID,
                 Item = Item,
@@ -56,9 +59,9 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         [BurstCompile]
-        public readonly InventoryUnmanagedRemoveItemQuery ToInventoryRemoveItemQuery(int inventoryID)
+        public readonly InventoryRemoveItemQuery ToInventoryRemoveItemQuery(int inventoryID)
         {
-            return new InventoryUnmanagedRemoveItemQuery
+            return new InventoryRemoveItemQuery
             {
                 InventoryRef = inventoryID,
                 Item = Item,
@@ -75,18 +78,20 @@ namespace CCEnvs.UnityX.ECS.Items
         {
             return Item.Equals(other.Item)
                    &&
-                   ItemCount == other.ItemCount;
+                   ItemCount == other.ItemCount
+                   &&
+                   InventoryRef.EqualsUnmanaged(other.InventoryRef);
         }
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(Item, ItemCount);
+            return HashCode.Combine(Item, ItemCount, InventoryRef);
         }
     }
 
     public static class ItemContainerUnmanagedExtensions
     {
-        public static ItemContainerUnmanaged ConvertToUnmanaged(this IItemContainerInfo source)
+        public static ItemContainerUnmanaged ToUnmanaged(this IItemContainerInfo source)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -104,7 +109,7 @@ namespace CCEnvs.UnityX.ECS.Items
             };
         }
 
-        public static ItemContainerUnmanaged ConvertToUnmanaged(this IItemContainerInfo source, int inventoryID)
+        public static ItemContainerUnmanaged ToUnmanaged(this IItemContainerInfo source, int inventoryID)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -117,7 +122,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
             return new ItemContainerUnmanaged
             {
-                InventoryID = inventoryID,
+                InventoryRef = new InventoryReference { InventoryID = inventoryID },
                 Item = item.ID,
                 ItemCount = source.ItemCount
             };
@@ -127,7 +132,7 @@ namespace CCEnvs.UnityX.ECS.Items
         public static NativeArray<ItemContainerUnmanaged> GetInventoryContainers<TList>(
             this TList itemContainers,
             int inventoryID,
-            Allocator allocator = Allocator.TempJob
+            Allocator allocator = Allocator.Temp
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -137,9 +142,9 @@ namespace CCEnvs.UnityX.ECS.Items
             {
                 ref readonly ItemContainerUnmanaged itemContainer = ref itemContainers.ElementAt(i);
 
-                if (!itemContainer.InventoryID.HasValue
+                if (!itemContainer.InventoryRef.HasValue
                     ||
-                    itemContainer.InventoryID != inventoryID)
+                    itemContainer.InventoryRef.Value != inventoryID)
                 {
                     continue;
                 }
@@ -153,8 +158,8 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static NativeArray<ItemContainerUnmanaged> GetInventoryContainers<TList>(
             this TList itemContainers,
-            in InventoryReferenceUnmanged inventoryRef,
-            Allocator allocator = Allocator.TempJob
+            in InventoryReference inventoryRef,
+            Allocator allocator = Allocator.Temp
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -165,7 +170,7 @@ namespace CCEnvs.UnityX.ECS.Items
         public static NativeArray<int> GetInventoryContainerIndexes<TList>(
             this TList itemContainers,
             int inventoryID,
-            Allocator allocator = Allocator.TempJob
+            Allocator allocator = Allocator.Temp
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -175,14 +180,14 @@ namespace CCEnvs.UnityX.ECS.Items
             {
                 ref readonly ItemContainerUnmanaged itemContainer = ref itemContainers.ElementAt(i);
 
-                if (!itemContainer.InventoryID.HasValue
+                if (!itemContainer.InventoryRef.HasValue
                     ||
-                    itemContainer.InventoryID != inventoryID)
+                    itemContainer.InventoryRef.Value != inventoryID)
                 {
                     continue;
                 }
 
-                filteredItemContainerIDs.Add(itemContainer.InventoryID.Value);
+                filteredItemContainerIDs.Add(itemContainer.InventoryRef.Value);
             }
 
             return filteredItemContainerIDs.AsArray();
@@ -190,8 +195,8 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static NativeArray<int> GetInventoryContainerIndexes<TList>(
             this TList itemContainers,
-            in InventoryReferenceUnmanged inventoryRef,
-            Allocator allocator = Allocator.TempJob
+            in InventoryReference inventoryRef,
+            Allocator allocator = Allocator.Temp
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -201,8 +206,8 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static bool ContainsItem<ItemContainerPool>(
             this ItemContainerPool itemContainerPool,
-            ItemUnmanged item,
-            NullableUnmanaged<int> inventoryID = default
+            ItemReference item,
+            MaybeUnmanaged<int> inventoryID = default
             )
             where ItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -212,9 +217,9 @@ namespace CCEnvs.UnityX.ECS.Items
 
                 if (inventoryID.HasValue
                     &&
-                    (!itemContainer.InventoryID.HasValue
+                    (!itemContainer.InventoryRef.HasValue
                     ||
-                    itemContainer.InventoryID.Value != inventoryID.Value))
+                    itemContainer.InventoryRef.Value != inventoryID.Value))
                 {
                     continue;
                 }
@@ -234,7 +239,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static bool ContainsItem(
             this in DynamicBuffer<ItemContainerUnmanaged> itemContainers,
-            ItemUnmanged item,
+            ItemReference item,
             int itemCount
             )
         {
@@ -261,7 +266,7 @@ namespace CCEnvs.UnityX.ECS.Items
             this in DynamicBuffer<ItemContainerUnmanaged> itemContainers,
             TList compareItems
             )
-            where TList : unmanaged, INativeList<ItemUnmanged>
+            where TList : unmanaged, INativeList<ItemReference>
         {
             if (itemContainers.Length == 0
                 ||
@@ -279,7 +284,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
                 for (int j = 0; j < compareItems.Length; j++)
                 {
-                    ItemUnmanged compareItem = compareItems[j];
+                    ItemReference compareItem = compareItems[j];
 
                     if (!itemContainer.ContainsItem(compareItem))
                         continue;

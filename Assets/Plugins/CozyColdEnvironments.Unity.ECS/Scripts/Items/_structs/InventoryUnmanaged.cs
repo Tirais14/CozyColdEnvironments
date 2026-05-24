@@ -3,14 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Jobs;
 
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    public struct InventoryUnmanaged : INativeDisposable, IDisposable, IEnumerable<ItemContainerUnmanaged>
+    [InternalBufferCapacity(8)]
+    public struct InventoryUnmanaged
+        : 
+        IBufferElementData,
+        INativeDisposable,
+        IDisposable, 
+        IEnumerable<ItemContainerUnmanaged>
     {
-        public NullableUnmanaged<int> ID;
+        public MaybeUnmanaged<int> ID;
 
         public NativeArray<ItemContainerUnmanaged> ItemContainers;
 
@@ -29,7 +36,7 @@ namespace CCEnvs.UnityX.ECS.Items
             return false;
         }
         [BurstCompile]
-        public bool ContainsItem(ItemUnmanged item)
+        public bool ContainsItem(ItemReference item)
         {
             for (int i = 0; i < ItemContainers.Length; i++)
                 if (ItemContainers[i].ContainsItem(item))
@@ -38,7 +45,7 @@ namespace CCEnvs.UnityX.ECS.Items
             return false;
         }
         [BurstCompile]
-        public bool ContainsItem(ItemUnmanged item, int itemCount)
+        public bool ContainsItem(ItemReference item, int itemCount)
         {
             if (itemCount <= 0)
                 return false;
@@ -95,7 +102,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static InventoryUnmanaged ToInventory<TItemContainerPool>(
             this TItemContainerPool itemContainerPool,
-            NullableUnmanaged<int> inventoryID = default
+            MaybeUnmanaged<int> inventoryID = default
             )
             where TItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -107,7 +114,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
                 if (inventoryID.HasValue
                     &&
-                    inventoryID.NotEqualsUnmanaged(itemContainer.InventoryID))
+                    inventoryID.NotEqualsUnmanaged(itemContainer.InventoryRef.Reinterpret<int>()))
                 {
                     continue;
                 }

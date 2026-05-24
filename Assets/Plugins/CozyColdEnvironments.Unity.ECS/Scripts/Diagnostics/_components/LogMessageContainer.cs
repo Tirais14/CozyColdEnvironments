@@ -4,7 +4,7 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Diagnostics
 {
-    public struct DebugMessageContainer : IComponentData
+    public struct LogMessageContainer : IComponentData
     {
         public FixedString512Bytes Message;
 

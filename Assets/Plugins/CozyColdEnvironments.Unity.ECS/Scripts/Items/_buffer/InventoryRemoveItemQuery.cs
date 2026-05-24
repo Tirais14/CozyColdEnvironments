@@ -5,30 +5,31 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [InternalBufferCapacity(64)]
-    public struct InventoryUnmanagedRemoveItemQuery : IBufferElementData
+    public struct InventoryRemoveItemQuery : IBufferElementData
     {
-        public InventoryReferenceUnmanged InventoryRef;
+        public InventoryReference InventoryRef;
 
-        public ItemUnmanged Item;
+        public ItemReference Item;
 
         public int ItemCount;
+
+        public bool IsPartialRemove;
     }
 
-    public static class InventoryUnmanagedRemoveItemQueryExtensions
+    public static class InventoryRemoveItemQueryExtensions
     {
         [BurstCompile]
-        public static NativeArray<InventoryUnmanagedRemoveItemQuery> GetInventoryQueries(
-            this NativeArray<InventoryUnmanagedRemoveItemQuery> queries,
+        public static NativeArray<InventoryRemoveItemQuery> GetInventoryQueries(
+            this NativeArray<InventoryRemoveItemQuery> queries,
             int inventoryID,
             Allocator allocator
             )
         {
-            var filteredQueryList = new NativeList<InventoryUnmanagedRemoveItemQuery>(allocator);
+            var filteredQueryList = new NativeList<InventoryRemoveItemQuery>(allocator);
 
             for (int i = 0; i < queries.Length; i++)
             {
-                InventoryUnmanagedRemoveItemQuery query = queries[i];
+                InventoryRemoveItemQuery query = queries[i];
 
                 if (query.InventoryRef != inventoryID)
                     continue;
@@ -47,7 +48,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
         [BurstCompile]
         public static int GetInventoryQueryCount(
-            this NativeArray<InventoryUnmanagedRemoveItemQuery> queries,
+            this NativeArray<InventoryRemoveItemQuery> queries,
             int inventoryID
             )
         {
@@ -62,7 +63,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
         [BurstCompile]
         public static bool HasInventoryQuery(
-            this NativeArray<InventoryUnmanagedRemoveItemQuery> queries,
+            this NativeArray<InventoryRemoveItemQuery> queries,
             int inventoryID
             )
         {

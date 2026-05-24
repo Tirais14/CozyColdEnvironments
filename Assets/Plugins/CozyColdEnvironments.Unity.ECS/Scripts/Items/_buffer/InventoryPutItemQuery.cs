@@ -5,12 +5,11 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [InternalBufferCapacity(64)]
-    public struct InventoryUnmanagedPutItemQuery : IBufferElementData
+    public struct InventoryPutItemQuery : IBufferElementData
     {
-        public InventoryReferenceUnmanged InventoryRef;
+        public InventoryReference InventoryRef;
 
-        public ItemUnmanged Item;
+        public ItemReference Item;
 
         public int ItemCount;
     }
@@ -18,17 +17,17 @@ namespace CCEnvs.UnityX.ECS.Items
     public static class InventoryUnmanagedPutItemQueryExtensions
     {
         [BurstCompile]
-        public static NativeArray<InventoryUnmanagedPutItemQuery> GetInventoryQueries(
-            this NativeArray<InventoryUnmanagedPutItemQuery> queries,
+        public static NativeArray<InventoryPutItemQuery> GetInventoryQueries(
+            this NativeArray<InventoryPutItemQuery> queries,
             int inventoryID,
             Allocator allocator
             )
         {
-            var filteredQueryList = new NativeList<InventoryUnmanagedPutItemQuery>(allocator);
+            var filteredQueryList = new NativeList<InventoryPutItemQuery>(allocator);
 
             for (int i = 0; i < queries.Length; i++)
             {
-                InventoryUnmanagedPutItemQuery query = queries[i];
+                InventoryPutItemQuery query = queries[i];
 
                 if (query.InventoryRef != inventoryID)
                     continue;
@@ -47,7 +46,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
         [BurstCompile]
         public static int GetInventoryQueryCount(
-            this NativeArray<InventoryUnmanagedPutItemQuery> queries,
+            this NativeArray<InventoryPutItemQuery> queries,
             int inventoryID
             )
         {
@@ -62,7 +61,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
         [BurstCompile]
         public static bool HasInventoryQuery(
-            this NativeArray<InventoryUnmanagedPutItemQuery> queries,
+            this NativeArray<InventoryPutItemQuery> queries,
             int inventoryID
             )
         {

@@ -3,12 +3,12 @@ using System;
 #nullable enable
 namespace CCEnvs.UnityX.ECS
 {
-    public readonly struct EquatableWrapperUnmanaged<T> : IEquatable<EquatableWrapperUnmanaged<T>>, IEquatable<T>
+    public readonly struct EquatableWrapper<T> : IEquatable<EquatableWrapper<T>>, IEquatable<T>
         where T : unmanaged
     {
         public readonly T Value;
 
-        public EquatableWrapperUnmanaged(T value)
+        public EquatableWrapper(T value)
         {
             Value = value;
         }
@@ -22,13 +22,13 @@ namespace CCEnvs.UnityX.ECS
             };
         }
 
-        public readonly bool Equals(EquatableWrapperUnmanaged<T> other) => Equals(other.Value);
+        public readonly bool Equals(EquatableWrapper<T> other) => Equals(other.Value);
 
         public readonly override bool Equals(object obj)
         {
             return obj switch
             {
-                EquatableWrapperUnmanaged<T> wrapper => Equals(wrapper),
+                EquatableWrapper<T> wrapper => Equals(wrapper),
                 T value => Equals(value),
                 _ => false,
             };
