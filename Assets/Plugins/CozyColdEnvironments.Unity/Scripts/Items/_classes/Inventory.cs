@@ -90,6 +90,17 @@ namespace CCEnvs.UnityX.Items
             SetContainerCount(containerCount, cloneExample);
         }
 
+        public static Inventory CreateWith<TItemContainer>(int containerCount)
+            where TItemContainer : IItemContainer, new()
+        {
+            var inventory = new Inventory(containerCount);
+
+            for (int i = 0; i < containerCount; i++)
+                inventory.AddContainer(new TItemContainer());
+
+            return inventory;
+        }
+
         ~Inventory() => Dispose();
 
         public bool ContainsItem() => ItemCount >= 1;

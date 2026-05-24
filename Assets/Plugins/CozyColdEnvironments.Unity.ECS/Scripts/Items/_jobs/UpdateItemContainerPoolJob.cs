@@ -6,10 +6,10 @@ using Unity.Entities;
 namespace CCEnvs.UnityX.ECS.Items
 {
     [BurstCompile]
-    public partial struct UpdateItemContainerPoolJob : IJobEntity
+    public partial struct UpdateItemContainerPoolsJob : IJobEntity
     {
         [ReadOnly]
-        public NativeHashMap<int, NativeArray<ItemContainerUnmanaged>> InventoryContainersMap;
+        public NativeHashMap<InventoryReference, NativeArray<ItemContainerUnmanaged>> InventoryContainersMap;
 
         public void Execute(
             in DynamicBuffer<InventoryReference> inventoryRefs,
@@ -29,7 +29,6 @@ namespace CCEnvs.UnityX.ECS.Items
                 for (int j = 0; j < itemContainers.Length; j++)
                     itemContainerPool.Add(itemContainers[i]);
             }
-            
         }
     }
 }

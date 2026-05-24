@@ -7,7 +7,7 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    [InternalBufferCapacity(0)]
+    [InternalBufferCapacity(16)]
     public struct ItemContainerUnmanaged 
         :
         IBufferElementData, 
@@ -59,13 +59,14 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         [BurstCompile]
-        public readonly InventoryRemoveItemQuery ToInventoryRemoveItemQuery(int inventoryID)
+        public readonly InventoryRemoveItemQuery ToInventoryRemoveItemQuery(int inventoryID, bool isPartialRemoveAllowed = false)
         {
             return new InventoryRemoveItemQuery
             {
                 InventoryRef = inventoryID,
                 Item = Item,
-                ItemCount = ItemCount
+                ItemCount = ItemCount,
+                IsPartialRemoveAllowed = isPartialRemoveAllowed
             };
         }
 
@@ -91,6 +92,41 @@ namespace CCEnvs.UnityX.ECS.Items
 
     public static class ItemContainerUnmanagedExtensions
     {
+        public static NativeArray<ItemContainerUnmanaged> GetUnmanagedItemContainers(
+            this IInventory source, 
+            MaybeUnmanaged<int> inventoryID,
+            AllocatorManager.AllocatorHandle allocator
+            )
+        {
+            CC.Guard.IsNotNullSource(source);
+
+            if (source.ItemCount == 0)
+                return default;
+
+            var unmanagedItemContainers = new NativeList<ItemContainerUnmanaged>(source.ContainerCount, allocator);
+
+            foreach (var itemContainer in source)
+            {
+                if (itemContainer.IsEmpty 
+                    || 
+                    !itemContainer.Item.TryGetValue(out IItem? item))
+                {
+                    continue;
+                }
+
+                var unmanagedItemContainer = new ItemContainerUnmanaged
+                {
+                    InventoryRef = inventoryID.Reinterpret<InventoryReference>(),
+                    Item = item.GetUnmanagedReference(),
+                    ItemCount = itemContainer.ItemCount
+                };
+
+                unmanagedItemContainers.Add(unmanagedItemContainer);
+            }
+
+            return unmanagedItemContainers.AsArray();
+        }
+
         public static ItemContainerUnmanaged ToUnmanaged(this IItemContainerInfo source)
         {
             CC.Guard.IsNotNullSource(source);
@@ -201,135 +237,6 @@ namespace CCEnvs.UnityX.ECS.Items
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
             return itemContainers.GetInventoryContainerIndexes(inventoryRef.InventoryID, allocator);
-        }
-
-        [BurstCompile]
-        public static bool ContainsItem<ItemContainerPool>(
-            this ItemContainerPool itemContainerPool,
-            ItemReference item,
-            MaybeUnmanaged<int> inventoryID = default
-            )
-            where ItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
-        {
-            for (int i = 0; i < itemContainerPool.Length; i++)
-            {
-                ref readonly ItemContainerUnmanaged itemContainer = ref itemContainerPool.ElementAt(i);
-
-                if (inventoryID.HasValue
-                    &&
-                    (!itemContainer.InventoryRef.HasValue
-                    ||
-                    itemContainer.InventoryRef.Value != inventoryID.Value))
-                {
-                    continue;
-                }
-
-                if (itemContainer.IsEmpty
-                    ||
-                    itemContainer.Item != item
-                    )
-                    continue;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        [BurstCompile]
-        public static bool ContainsItem(
-            this in DynamicBuffer<ItemContainerUnmanaged> itemContainers,
-            ItemReference item,
-            int itemCount
-            )
-        {
-            for (int i = 0; i < itemContainers.Length; i++)
-            {
-                ItemContainerUnmanaged itemContainer = itemContainers[i];
-
-                if (itemContainer.IsEmpty
-                    ||
-                    itemContainer.Item != item
-                    ||
-                    itemContainer.ItemCount < itemCount
-                    )
-                    continue;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        [BurstCompile]
-        public static bool ContainsItems<TList>(
-            this in DynamicBuffer<ItemContainerUnmanaged> itemContainers,
-            TList compareItems
-            )
-            where TList : unmanaged, INativeList<ItemReference>
-        {
-            if (itemContainers.Length == 0
-                ||
-                compareItems.Length == 0)
-            {
-                return false;
-            }
-
-            using var foundItems = new NativeBitArray(compareItems.Length, Allocator.Temp);
-            foundItems.SetBits(0, false, compareItems.Length);
-
-            for (int i = 0; i < itemContainers.Length; i++)
-            {
-                ItemContainerUnmanaged itemContainer = itemContainers[i];
-
-                for (int j = 0; j < compareItems.Length; j++)
-                {
-                    ItemReference compareItem = compareItems[j];
-
-                    if (!itemContainer.ContainsItem(compareItem))
-                        continue;
-
-                    foundItems.Set(j, true);
-                }
-            }
-
-            return foundItems.TestAll(0, compareItems.Length);
-        }
-
-        [BurstCompile]
-        public static bool ContainsItemsWithCount<TItemContainers, TCompareItemContainer>(
-            this TItemContainers itemContainers,
-            TCompareItemContainer compareItemContainers
-            )
-            where TItemContainers : unmanaged, INativeList<ItemContainerUnmanaged>
-            where TCompareItemContainer : unmanaged, INativeList<ItemContainerUnmanaged>
-        {
-            if (itemContainers.Length == 0
-                ||
-                compareItemContainers.Length == 0)
-            {
-                return false;
-            }
-
-            using var foundItems = new NativeBitArray(compareItemContainers.Length, Allocator.Temp);
-            foundItems.SetBits(0, false, compareItemContainers.Length);
-
-            for (int i = 0; i < itemContainers.Length; i++)
-            {
-                ItemContainerUnmanaged itemContainer = itemContainers[i];
-
-                for (int j = 0; j < compareItemContainers.Length; j++)
-                {
-                    ItemContainerUnmanaged compareItemContainer = compareItemContainers[j];
-
-                    if (!itemContainer.ContainsItem(compareItemContainer.Item, compareItemContainer.ItemCount))
-                        continue;
-
-                    foundItems.Set(j, true);
-                }
-            }
-
-            return foundItems.TestAll(0, compareItemContainers.Length);
         }
     }
 }

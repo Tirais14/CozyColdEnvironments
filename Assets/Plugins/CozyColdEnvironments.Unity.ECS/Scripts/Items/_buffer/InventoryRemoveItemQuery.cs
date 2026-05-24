@@ -13,7 +13,10 @@ namespace CCEnvs.UnityX.ECS.Items
 
         public int ItemCount;
 
-        public bool IsPartialRemove;
+        public bool IsPartialRemoveAllowed;
+
+        [BurstCompile]
+        public readonly void Schedule() => InventoryQueryScheduler.Schedule(this);
     }
 
     public static class InventoryRemoveItemQueryExtensions

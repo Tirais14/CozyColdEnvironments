@@ -10,28 +10,28 @@ namespace CCEnvs.UnityX.ECS
 {
     public readonly struct InventoryQueryScheduler
     {
-        private static NativeList<InventoryPutItemQuery> putItemQueries;
-        private static NativeList<InventoryRemoveItemQuery> removeItemQueries;
+        public static NativeList<InventoryPutItemQuery> PutItemQueries;
+        public static NativeList<InventoryRemoveItemQuery> RemoveItemQueries;
 
         [BurstCompile]
         public static void Schedule(InventoryPutItemQuery putItemQuery)
         {
-            putItemQueries.Add(putItemQuery);
+            PutItemQueries.Add(putItemQuery);
         }
 
         [BurstCompile]
         public static void Schedule(InventoryRemoveItemQuery removeItemQuery)
         {
-            removeItemQueries.Add(removeItemQuery);
+            RemoveItemQueries.Add(removeItemQuery);
         }
 
         public static void ExecutePutItemQuries()
         {  
-            using var processedIndices = new NativeList<int>(putItemQueries.Length, Allocator.Temp);
+            using var processedIndices = new NativeList<int>(PutItemQueries.Length, Allocator.Temp);
 
-            for (int i = 0; i < putItemQueries.Length; i++)
+            for (int i = 0; i < PutItemQueries.Length; i++)
             {
-                ref readonly InventoryPutItemQuery query = ref putItemQueries.ElementAt(i);
+                ref readonly InventoryPutItemQuery query = ref PutItemQueries.ElementAt(i);
 
                 if (!InventoryRegistry.TryGet(query.InventoryRef, out IInventory? inventory))
                     continue;
@@ -40,7 +40,7 @@ namespace CCEnvs.UnityX.ECS
                     &&
                     inventory.PutItem(query.Item.ToManaged(), query.ItemCount).TryGetValue(out IItemContainerInfo? restItems))
                 {
-                    putItemQueries[i] = new InventoryPutItemQuery
+                    PutItemQueries[i] = new InventoryPutItemQuery
                     {
                         Item = query.Item,
                         ItemCount = restItems.ItemCount
@@ -57,11 +57,11 @@ namespace CCEnvs.UnityX.ECS
 
         public static void ExecuteRemoveItemQueries()
         {
-            var processedIndices = new NativeList<int>(removeItemQueries.Length, Allocator.Temp);
+            var processedIndices = new NativeList<int>(RemoveItemQueries.Length, Allocator.Temp);
 
-            for (int i = 0; i < removeItemQueries.Length; i++)
+            for (int i = 0; i < RemoveItemQueries.Length; i++)
             {
-                ref readonly InventoryRemoveItemQuery query = ref removeItemQueries.ElementAt(i);
+                ref readonly InventoryRemoveItemQuery query = ref RemoveItemQueries.ElementAt(i);
 
                 if (!InventoryRegistry.TryGet(query.InventoryRef, out IInventory? inventory))
                     continue;
@@ -70,7 +70,7 @@ namespace CCEnvs.UnityX.ECS
 
                 if (!isProcessed)
                 {
-                    if (!query.IsPartialRemove)
+                    if (!query.IsPartialRemoveAllowed)
                     {
                         if (inventory.TakeItem(query.Item.ToManaged(), query.ItemCount).IsNone)
                             continue;
@@ -108,7 +108,7 @@ namespace CCEnvs.UnityX.ECS
         private static void RemovePutItemQueries(in NativeList<int> indices)
         {
             for (int i = 0; i < indices.Length; i++)
-                putItemQueries.RemoveAtSwapBack(indices[i]);
+                PutItemQueries.RemoveAtSwapBack(indices[i]);
 
             indices.Dispose();
         }
@@ -118,7 +118,7 @@ namespace CCEnvs.UnityX.ECS
         private static void RemoveRemoveItemQueries(in NativeList<int> indices)
         {
             for (int i = 0; i < indices.Length; i++)
-                removeItemQueries.RemoveAtSwapBack(indices[i]);
+                RemoveItemQueries.RemoveAtSwapBack(indices[i]);
 
             indices.Dispose();
         }
@@ -127,11 +127,11 @@ namespace CCEnvs.UnityX.ECS
         [OnInstallExecutable]
         private static void OnInstall()
         {
-            putItemQueries.Dispose();
-            removeItemQueries.Dispose();
+            PutItemQueries.Dispose();
+            RemoveItemQueries.Dispose();
 
-            putItemQueries = new NativeList<InventoryPutItemQuery>(32, Allocator.Persistent);
-            removeItemQueries = new NativeList<InventoryRemoveItemQuery>(32, Allocator.Persistent);
+            PutItemQueries = new NativeList<InventoryPutItemQuery>(32, Allocator.Persistent);
+            RemoveItemQueries = new NativeList<InventoryRemoveItemQuery>(32, Allocator.Persistent);
         }
     }
 }

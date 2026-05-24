@@ -12,6 +12,8 @@ namespace CCEnvs.UnityX.ECS.Items
         public ItemReference Item;
 
         public int ItemCount;
+
+        public readonly void Schedule() => InventoryQueryScheduler.Schedule(this);
     }
 
     public static class InventoryUnmanagedPutItemQueryExtensions
