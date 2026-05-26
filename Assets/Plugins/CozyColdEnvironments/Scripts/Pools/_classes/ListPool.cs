@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Patterns.Factories;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,14 @@ namespace CCEnvs.Pools
                 {
                     ((IDisposable)uHandle).Dispose();
                 });
+        }
+
+        public PooledObject<List<T>> Get(int capacity)
+        {
+            var handle = Get();
+            handle.Value.TryIncreaseCapacity(capacity);
+
+            return handle;
         }
 
         public override void Return(List<T>? obj)

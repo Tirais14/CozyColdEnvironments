@@ -11,7 +11,7 @@ using UnityEngine.UI;
 #nullable enable
 #pragma warning disable IDE0044
 #pragma warning disable S1125
-namespace CCEnvs.UnityX.Storages.UI
+namespace CCEnvs.UnityX.Items.UI
 {
     [RequireComponent(typeof(Image))]
     public abstract class ItemContainerView<TViewModel>

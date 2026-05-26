@@ -4,7 +4,7 @@ using ObservableCollections;
 using UnityEngine;
 
 #nullable enable
-namespace CCEnvs.UnityX.Storages.UI
+namespace CCEnvs.UnityX.Items.UI
 {
     public interface IInventoryViewModel
         :

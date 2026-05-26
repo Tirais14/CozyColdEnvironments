@@ -32,6 +32,18 @@ namespace CCEnvs.UnityX.Items
             return CCDisposable.CreateLight(id, static (id) => Unregister(id));
         }
 
+        public static bool TryRegister(int id, IInventory inventory, out LightDisposable<int> handle)
+        {
+            if (Contains(id))
+            {
+                handle = default;
+                return false;
+            }
+
+            handle = Register(id, inventory);
+            return true;
+        }
+
         public static bool Unregister(int id)
         {
             if (!inventories.Remove(id))

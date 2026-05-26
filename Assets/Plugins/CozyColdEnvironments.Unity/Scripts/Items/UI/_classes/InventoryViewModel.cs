@@ -22,7 +22,7 @@ using System.Linq;
 #endif
 
 #nullable enable
-namespace CCEnvs.UnityX.Storages.UI
+namespace CCEnvs.UnityX.Items.UI
 {
     public class InventoryViewModel<TModel>
         :
@@ -120,8 +120,7 @@ namespace CCEnvs.UnityX.Storages.UI
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var cnts = ListPool<IItemContainer>.Shared.Get();
-            cnts.Value.TryIncreaseCapacity(addEvs.Length);
+            using var cnts = ListPool<IItemContainer>.Shared.Get(addEvs.Length);
 
             foreach (var addEv in addEvs)
             {
@@ -164,7 +163,7 @@ namespace CCEnvs.UnityX.Storages.UI
                 cancellationToken: cancellationToken
                 );
 
-            var cntViewModels = new List<IItemContainerViewModel>();
+            var cntViewModels = new List<IItemContainerViewModel>(count);
 
             try
             {

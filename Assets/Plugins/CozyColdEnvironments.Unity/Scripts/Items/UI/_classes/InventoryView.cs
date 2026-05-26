@@ -1,16 +1,13 @@
 using CCEnvs.Pools;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.Injections;
-using CCEnvs.UnityX.Items;
 using CCEnvs.UnityX.UI;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
-#if ZLINQ_PLUGIN
-#endif
-
 #nullable enable
-namespace CCEnvs.UnityX.Storages.UI
+namespace CCEnvs.UnityX.Items.UI
 {
     public abstract class InventoryView<TViewModel>
         :
@@ -48,6 +45,7 @@ namespace CCEnvs.UnityX.Storages.UI
             SetContainersRoot(containersRoot);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public InventoryView<TViewModel> SetContainerPrefab(GameObject value)
         {
             CC.Guard.IsNotNull(value);
@@ -55,6 +53,7 @@ namespace CCEnvs.UnityX.Storages.UI
             return this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public InventoryView<TViewModel> SetContainersRoot(Transform? value)
         {
             containersRoot = value.IfNull(transform);
@@ -110,12 +109,14 @@ namespace CCEnvs.UnityX.Storages.UI
             set => SetInventoryAutoSize(value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public InventoryView SetContainerCount(int value)
         {
             containerCount = Math.Max(value, 0);
             return this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public InventoryView SetInventoryAutoSize(bool value)
         {
             inventoryAutoSize = value;
@@ -124,7 +125,7 @@ namespace CCEnvs.UnityX.Storages.UI
 
         protected override InventoryViewModel<IInventory> CreateViewModel()
         {
-            var inv = new Inventory(containerCount);
+            var inv = Inventory.CreateWith<ItemContainer>(containerCount);
 
             return new InventoryViewModel<IInventory>(
                 inv,

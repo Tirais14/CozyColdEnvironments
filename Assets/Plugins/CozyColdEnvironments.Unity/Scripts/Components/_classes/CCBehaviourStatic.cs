@@ -30,8 +30,7 @@ namespace CCEnvs.UnityX.Components
 
             if (FindObjectsByType(
                 GetType(),
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None
+                FindObjectsInactive.Include
                 )
                 .Length > 1)
             {

@@ -1,3 +1,4 @@
+using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -5,7 +6,7 @@ using Unity.Entities;
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Items
 {
-    public struct InventoryRemoveItemQuery : IBufferElementData
+    public struct InventoryRemoveItemQuery : IBufferElementData, IEquatable<InventoryRemoveItemQuery>
     {
         public InventoryReference InventoryRef;
 
@@ -15,8 +16,46 @@ namespace CCEnvs.UnityX.ECS.Items
 
         public bool IsPartialRemoveAllowed;
 
+        public static bool operator ==(InventoryRemoveItemQuery left, InventoryRemoveItemQuery right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(InventoryRemoveItemQuery left, InventoryRemoveItemQuery right)
+        {
+            return !(left == right);
+        }
+
         [BurstCompile]
         public readonly void Schedule() => InventoryQueryScheduler.Schedule(this);
+
+        public readonly override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(InventoryRef), InventoryRef)
+                .AddProperty(nameof(Item), Item)
+                .AddProperty(nameof(ItemCount), ItemCount)
+                .AddProperty(nameof(IsPartialRemoveAllowed), IsPartialRemoveAllowed)
+                .ToStringAndDispose();
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is InventoryRemoveItemQuery query && Equals(query);
+        }
+
+        public readonly bool Equals(InventoryRemoveItemQuery other)
+        {
+            return InventoryRef.Equals(other.InventoryRef) &&
+                   Item.Equals(other.Item) &&
+                   ItemCount == other.ItemCount &&
+                   IsPartialRemoveAllowed == other.IsPartialRemoveAllowed;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(InventoryRef, Item, ItemCount, IsPartialRemoveAllowed);
+        }
     }
 
     public static class InventoryRemoveItemQueryExtensions

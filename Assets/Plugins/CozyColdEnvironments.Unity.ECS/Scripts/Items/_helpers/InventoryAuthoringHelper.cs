@@ -23,6 +23,9 @@ namespace CCEnvs.UnityX.ECS.Items
             {
                 KeyValuePair<int, IInventory> inventoryIDPair = inventoryIDPairs[i];
 
+                //TODO: Bind registration handle to entity lifetime by cleanup component
+                InventoryRegistry.TryRegister(inventoryIDPair.Key, inventoryIDPair.Value, out _);
+
                 inventoryRefs.Add(inventoryIDPair.Key);
 
                 var inventoryContainers = inventoryIDPair.Value.GetUnmanagedItemContainers(inventoryIDPair.Key, Allocator.Temp);
