@@ -4,27 +4,32 @@ using Unity.Entities;
 
 namespace CCEnvs.UnityX.ECS.Collections
 {
-    public ref struct BlobBuilderArrayJagged2D<T>
+    public ref struct BlobBuilderArrayJagged<T>
         where T : struct
     {
         public BlobBuilderArray<T> ValuesAB;
         public BlobBuilderArray<int> LengthsAB;
         public BlobBuilderArray<int> OffsetsAB;
 
-        public void Add(int index1, IReadOnlyList<T> chunk)
+        public void Add(int arrayIndex, IReadOnlyList<T> chunk)
         {
             CC.Guard.IsNotNull(chunk, nameof(chunk));
 
-            LengthsAB[index1] = chunk.Count;
-            OffsetsAB[index1] = index1 + 1;
+            LengthsAB[arrayIndex] = chunk.Count;
+            OffsetsAB[arrayIndex] = arrayIndex + 1;
+        }
+
+        public void Add(int arrayIndex, T value)
+        {
+
         }
     }
 
     public static class BlobBuilderExtensions
     {
-        public static BlobBuilderArrayJagged2D<T> AllocateJagged2D<T>(
+        public static BlobBuilderArrayJagged<T> AllocateJagged2D<T>(
             this in BlobBuilder builder,
-            ref BlobArrayJagged2D<T> array,
+            ref BlobArrayJagged<T> array,
             int length1,
             int valueCount
             )
@@ -34,7 +39,7 @@ namespace CCEnvs.UnityX.ECS.Collections
             BlobBuilderArray<int> offsetsAB = builder.Allocate(ref array.Offsets, length1);
             BlobBuilderArray<int> lengthsAB = builder.Allocate(ref array.Lengths, length1);
 
-            return new BlobBuilderArrayJagged2D<T>
+            return new BlobBuilderArrayJagged<T>
             {
                 ValuesAB = valuesAB,
                 OffsetsAB = offsetsAB,

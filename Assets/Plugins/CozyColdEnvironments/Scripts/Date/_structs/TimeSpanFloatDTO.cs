@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace CCEnvs.Dates
 {
     [Serializable, DataContract]
-    public struct TimeSpanLightDTO : IDataTransferObject<TimeSpanLight>
+    public struct TimeSpanFloatDTO : IDataTransferObject<TimeSpanFloat>
     {
         [DataMember(Name = "milliseconds")]
         public int Milliseconds;
@@ -20,21 +20,21 @@ namespace CCEnvs.Dates
         [DataMember(Name = "hours")]
         public float Hours;
 
-        public readonly TimeSpanLight Materialize()
+        public readonly TimeSpanFloat Materialize()
         {
-            var time = TimeSpanLight.Empty;
+            var time = TimeSpanFloat.Empty;
 
             if (Hours > 0f)
-                time += TimeSpanLight.FromHours(Hours);
+                time += TimeSpanFloat.FromHours(Hours);
 
             if (Seconds > 0f)
-                time += new TimeSpanLight(Seconds);
+                time += new TimeSpanFloat(Seconds);
 
             if (Minutes > 0f)
-                time += TimeSpanLight.FromMinutes(Minutes);
+                time += TimeSpanFloat.FromMinutes(Minutes);
 
             if (Milliseconds > 0)
-                time += TimeSpanLight.FromMilliseconds(Milliseconds);
+                time += TimeSpanFloat.FromMilliseconds(Milliseconds);
 
             return time;
         }

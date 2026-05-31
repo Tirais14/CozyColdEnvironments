@@ -22,7 +22,7 @@ namespace CCEnvs.Dates
         public int Day;
 
         [DataMember(Name = "time")]
-        public TimeSpanLightDTO Time;
+        public TimeSpanFloatDTO Time;
 
         public readonly DateTimeCustom Materialize()
         {
