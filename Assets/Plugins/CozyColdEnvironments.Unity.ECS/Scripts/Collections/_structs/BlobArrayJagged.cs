@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 
 #nullable enable
@@ -14,45 +15,51 @@ namespace CCEnvs.UnityX.ECS.Collections
         public BlobArray<int> Lengths;
         public BlobArray<int> Offsets;
 
-        public ref T this[int index1, int index2] {
+        public ref T this[int arrayIndex, int valueIndex] {
             get
             {
-                var offset = Offsets[index1];
-                return ref Values[offset + index2];
+                var offset = Offsets[arrayIndex];
+                return ref Values[offset + valueIndex];
             }
         }
 
-        public int GetValuesIndex(int index1, int index2)
+        public int GetValuesIndex(int arrayIndex, int valueIndex)
         {
-            if (index1 >= Offsets.Length)
+            if (arrayIndex >= Offsets.Length)
                 return -1;
 
-            int offset = Offsets[index1];
-            return offset + index2;
+            int offset = Offsets[arrayIndex];
+            return offset + valueIndex;
         }
 
-        public bool IsInRange(int index1, int index2)
+        public bool IsInRange(int arrayIndex, int valueIndex)
         {
-            int valuesIndex = GetValuesIndex(index1, index2);
+            int valuesIndex = GetValuesIndex(arrayIndex, valueIndex);
             return valuesIndex >= 0;
         }
-
-        public bool TryGetValue(int index1, int index2, out T value)
+        
+        public bool IsInRangeIntEnum<TEnum>(TEnum arrayIndex, int valueIndex)
+            where TEnum : unmanaged, Enum
         {
-            if (!IsInRange(index1, index2))
+            return IsInRange(UnsafeUtility.As<TEnum, int>(ref arrayIndex), valueIndex);
+        }
+
+        public bool TryGetValue(int arrayIndex, int valueIndex, out T value)
+        {
+            if (!IsInRange(arrayIndex, valueIndex))
             {
                 value = default;
                 return false;
             }
 
-            value = Values[index1];
+            value = Values[arrayIndex];
             return true;
         }
 
-        public bool TryGetValueIntEnum<TEnum>(TEnum index1, int index2, out T value)
+        public bool TryGetValueIntEnum<TEnum>(TEnum arrayIndex, int valueIndex, out T value)
             where TEnum : unmanaged, Enum
         {
-            return TryGetValue(Unsafe.As<TEnum, int>(ref index1), index2, out value);
+            return TryGetValue(Unsafe.As<TEnum, int>(ref arrayIndex), valueIndex, out value);
         }
     }
 
