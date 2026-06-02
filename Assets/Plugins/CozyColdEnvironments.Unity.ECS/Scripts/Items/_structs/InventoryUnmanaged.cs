@@ -100,7 +100,7 @@ namespace CCEnvs.UnityX.ECS.Items
     public static class InventoryUnmanagedExtensions
     {
         [BurstCompile]
-        public static InventoryUnmanaged ToInventory<TItemContainerPool>(
+        public static InventoryUnmanaged AsInventory<TItemContainerPool>(
             this TItemContainerPool itemContainerPool,
             MaybeUnmanaged<int> inventoryID = default
             )
@@ -127,6 +127,28 @@ namespace CCEnvs.UnityX.ECS.Items
                 ID = inventoryID.Value,
                 ItemContainers = inventoryContainers.AsArray()
             };
+        }
+
+        [BurstCompile]
+        public static bool TryGetInventory(
+            this in NativeArray<InventoryUnmanaged> inventories,
+            InventoryReference inventoryRef,
+            out InventoryUnmanaged result
+            )
+        {
+            for (int i = 0; i < inventories.Length; i++)
+            {
+                InventoryUnmanaged inventory = inventories[i];
+
+                if (!inventory.ID.HasValue && inventory.ID.Value == inventoryRef.InventoryID)
+                    continue;
+
+                result = inventory;
+                return true;
+            }
+
+            result = default;
+            return false;
         }
     }
 }

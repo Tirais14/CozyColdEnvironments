@@ -27,7 +27,7 @@ namespace CCEnvs.Utils
                     entry.ExpirationTimeRelativeToNow = 10.Minutes();
             }
 
-            return (Enum[])values!;
+            return values;
         }
     }
 

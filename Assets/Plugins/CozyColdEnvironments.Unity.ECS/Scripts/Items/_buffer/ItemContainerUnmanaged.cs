@@ -168,7 +168,7 @@ namespace CCEnvs.UnityX.ECS.Items
         public static NativeArray<ItemContainerUnmanaged> GetInventoryContainers<TList>(
             this TList itemContainers,
             int inventoryID,
-            Allocator allocator = Allocator.Temp
+            Allocator allocator
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -195,7 +195,7 @@ namespace CCEnvs.UnityX.ECS.Items
         public static NativeArray<ItemContainerUnmanaged> GetInventoryContainers<TList>(
             this TList itemContainers,
             in InventoryReference inventoryRef,
-            Allocator allocator = Allocator.Temp
+            Allocator allocator
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -206,7 +206,7 @@ namespace CCEnvs.UnityX.ECS.Items
         public static NativeArray<int> GetInventoryContainerIndexes<TList>(
             this TList itemContainers,
             int inventoryID,
-            Allocator allocator = Allocator.Temp
+            Allocator allocator
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
@@ -232,7 +232,7 @@ namespace CCEnvs.UnityX.ECS.Items
         public static NativeArray<int> GetInventoryContainerIndexes<TList>(
             this TList itemContainers,
             in InventoryReference inventoryRef,
-            Allocator allocator = Allocator.Temp
+            Allocator allocator
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {

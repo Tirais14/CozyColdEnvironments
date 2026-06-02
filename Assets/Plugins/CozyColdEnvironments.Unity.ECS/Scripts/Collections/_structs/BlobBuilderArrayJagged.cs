@@ -1,6 +1,8 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace CCEnvs.UnityX.ECS.Collections
 {
@@ -11,25 +13,56 @@ namespace CCEnvs.UnityX.ECS.Collections
         public BlobBuilderArray<int> LengthsAB;
         public BlobBuilderArray<int> OffsetsAB;
 
-        private int arrayPointer;
+        public int arrayPointer;
+        private int valuesPointer;
+        private int arrayLength;
 
-        public void Add(IReadOnlyList<T> chunk)
+        private List<T>? chunk;
+
+        private bool arrayBegan;
+
+        public void BeginArray(int capacity = 4)
         {
-            CC.Guard.IsNotNull(chunk, nameof(chunk));
+            if (arrayBegan)
+                throw new InvalidOperationException("Cannot begin array more than one time");
 
-            LengthsAB[arrayPointer] = chunk.Count;
+            capacity = math.max(capacity, 1);
 
-            int offset = 0;
-
-            for (int i = 0; i < arrayPointer; i++)
-                offset += LengthsAB[i];
-
-            OffsetsAB[arrayPointer] = offset;
+            if (chunk is null)
+                chunk = new List<T>(capacity);
+            else if (chunk.Capacity < capacity)
+                chunk.Capacity = capacity;
 
             arrayPointer++;
 
-            for (int i = 0; i < chunk.Count; i++)
-                ValuesAB[i + offset] = chunk[i];
+            if (arrayPointer >= LengthsAB.Length
+                ||
+                arrayPointer >= OffsetsAB.Length)
+            {
+                throw new IndexOutOfRangeException(arrayPointer.ToString());
+            }
+
+            arrayBegan = true;
+        }
+
+        public void Add(T value)
+        {
+            if (!arrayBegan)
+                throw new InvalidOperationException("Before add new element array must began");
+
+            ValuesAB[valuesPointer++] = value;
+            arrayLength++;
+        }
+
+        public void EndArray()
+        {
+            LengthsAB[arrayPointer] = arrayLength;
+            OffsetsAB[arrayPointer] = valuesPointer - arrayLength;
+
+            chunk?.Clear();
+            valuesPointer = 0;
+            arrayLength = 0;
+            arrayBegan = false;
         }
     }
 
@@ -51,7 +84,8 @@ namespace CCEnvs.UnityX.ECS.Collections
             {
                 ValuesAB = valuesAB,
                 OffsetsAB = offsetsAB,
-                LengthsAB = lengthsAB
+                LengthsAB = lengthsAB,
+                arrayPointer = -1
             };
         }
     }
