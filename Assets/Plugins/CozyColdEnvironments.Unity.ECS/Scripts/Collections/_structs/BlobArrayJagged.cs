@@ -57,13 +57,15 @@ namespace CCEnvs.UnityX.ECS.Collections
 
         public bool TryGetValue(int arrayIndex, int valueIndex, out T value)
         {
-            if (!IsInRange(arrayIndex, valueIndex))
+            int calculatedValueIndex = GetValuesIndex(arrayIndex, valueIndex);
+
+            if (calculatedValueIndex == -1)
             {
                 value = default;
                 return false;
             }
 
-            value = Values[arrayIndex];
+            value = Values[calculatedValueIndex];
             return true;
         }
 
