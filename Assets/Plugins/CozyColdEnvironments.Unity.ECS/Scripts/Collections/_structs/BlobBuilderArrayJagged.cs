@@ -11,33 +11,41 @@ namespace CCEnvs.UnityX.ECS.Collections
         public BlobBuilderArray<int> LengthsAB;
         public BlobBuilderArray<int> OffsetsAB;
 
-        public void Add(int arrayIndex, IReadOnlyList<T> chunk)
+        private int arrayPointer;
+
+        public void Add(IReadOnlyList<T> chunk)
         {
             CC.Guard.IsNotNull(chunk, nameof(chunk));
 
-            LengthsAB[arrayIndex] = chunk.Count;
-            OffsetsAB[arrayIndex] = arrayIndex + 1;
-        }
+            LengthsAB[arrayPointer] = chunk.Count;
 
-        public void Add(int arrayIndex, T value)
-        {
+            int offset = 0;
 
+            for (int i = 0; i < arrayPointer; i++)
+                offset += LengthsAB[i];
+
+            OffsetsAB[arrayPointer] = offset;
+
+            arrayPointer++;
+
+            for (int i = 0; i < chunk.Count; i++)
+                ValuesAB[i + offset] = chunk[i];
         }
     }
 
     public static class BlobBuilderExtensions
     {
-        public static BlobBuilderArrayJagged<T> AllocateJagged2D<T>(
+        public static BlobBuilderArrayJagged<T> AllocateJagged<T>(
             this in BlobBuilder builder,
             ref BlobArrayJagged<T> array,
-            int length1,
+            int arrayCount,
             int valueCount
             )
             where T : struct
         {
             BlobBuilderArray<T> valuesAB = builder.Allocate(ref array.Values, valueCount);
-            BlobBuilderArray<int> offsetsAB = builder.Allocate(ref array.Offsets, length1);
-            BlobBuilderArray<int> lengthsAB = builder.Allocate(ref array.Lengths, length1);
+            BlobBuilderArray<int> offsetsAB = builder.Allocate(ref array.Offsets, arrayCount);
+            BlobBuilderArray<int> lengthsAB = builder.Allocate(ref array.Lengths, arrayCount);
 
             return new BlobBuilderArrayJagged<T>
             {
