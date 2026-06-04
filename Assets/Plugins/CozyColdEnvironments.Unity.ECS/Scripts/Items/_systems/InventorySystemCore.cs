@@ -15,9 +15,9 @@ namespace CCEnvs.UnityX.ECS.Items
     {
         public static bool IsAnyInventoryChanged => (changedInventories?.Count ?? 0) > 0;
 
-        public static IReadOnlyDictionary<int, IInventory> ChangedInventories => changedInventories ?? throw new InvalidOperationException($"{typeof(InventorySystemCore)} is not created");
+        public static IReadOnlyDictionary<long, IInventory> ChangedInventories => changedInventories ?? throw new InvalidOperationException($"{typeof(InventorySystemCore)} is not created");
 
-        private static Dictionary<int, IInventory>? changedInventories;
+        private static Dictionary<long, IInventory>? changedInventories;
 
         private static CancellationTokenSource? destroyCancellationTokenSource;
         private static IDisposable? anySub;
@@ -27,7 +27,7 @@ namespace CCEnvs.UnityX.ECS.Items
             Destroy();
 
             destroyCancellationTokenSource = new CancellationTokenSource();
-            changedInventories = new Dictionary<int, IInventory>(InventoryRegistry.Inventories.Count);
+            changedInventories = new Dictionary<long, IInventory>(InventoryRegistry.Inventories.Count);
 
             anySub = InventoryRegistry.ObserveAny(destroyCancellationTokenSource.Token)
                 .Subscribe(static (inventory) =>
@@ -98,6 +98,35 @@ namespace CCEnvs.UnityX.ECS.Items
             }
         }
 
+        public static bool TryUpdateInventoryContent(ref InventoryUnmanaged inventoryUnmanaged)
+        {
+            if (!inventoryUnmanaged.ID.HasValue
+                ||
+                !ChangedInventories.TryGetValue(inventoryUnmanaged.ID.Value, out IInventory? inventory))
+            {
+                return false;
+            }
+
+            inventoryUnmanaged.ItemContainers.Dispose();
+            inventoryUnmanaged.ItemContainers = default;
+
+            if (inventory.ItemCount == 0)
+                return false;
+
+            using var newItemContainers = new NativeList<ItemContainerUnmanaged>(inventory.ContainerCount, Allocator.Persistent);
+
+            foreach (var itemContainer in inventory)
+            {
+                if (itemContainer.IsEmpty)
+                    continue;
+
+                newItemContainers.Add(itemContainer.ToUnmanaged());
+            }
+
+            inventoryUnmanaged.ItemContainers = newItemContainers.AsArray();
+            return true;
+        }
+
         public static void UpdateInventoriesContent(
             in DynamicBuffer<InventoryUnmanaged> inventories
             )
@@ -106,30 +135,7 @@ namespace CCEnvs.UnityX.ECS.Items
             {
                 ref InventoryUnmanaged inventoryUnmanaged = ref inventories.ElementAt(i);
 
-                if (!inventoryUnmanaged.ID.HasValue
-                    ||
-                    !ChangedInventories.TryGetValue(inventoryUnmanaged.ID.Value, out IInventory? inventory))
-                {
-                    continue;
-                }
-
-                inventoryUnmanaged.ItemContainers.Dispose();
-                inventoryUnmanaged.ItemContainers = default;
-
-                if (inventory.ItemCount <= 0)
-                    continue;
-
-                using var newItemContainers = new NativeList<ItemContainerUnmanaged>(inventory.ContainerCount, Allocator.Persistent);
-
-                foreach (var itemContainer in inventory)
-                {
-                    if (itemContainer.IsEmpty)
-                        continue;
-
-                    newItemContainers.Add(itemContainer.ToUnmanaged());
-                }
-
-                inventoryUnmanaged.ItemContainers = newItemContainers.AsArray();
+                TryUpdateInventoryContent(ref inventoryUnmanaged);
             }
         }
     }

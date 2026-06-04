@@ -75,7 +75,7 @@ namespace CCEnvs.UnityX.ECS
         }
     }
 
-    public struct TupleUnmanaged<T1, T2, T3> 
+    public struct TupleUnmanaged<T1, T2, T3>
         :
         IEquatable<TupleUnmanaged<T1, T2, T3>>
 

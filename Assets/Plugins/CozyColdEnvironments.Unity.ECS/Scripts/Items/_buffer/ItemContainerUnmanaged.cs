@@ -8,9 +8,9 @@ using Unity.Entities;
 namespace CCEnvs.UnityX.ECS.Items
 {
     [InternalBufferCapacity(16)]
-    public struct ItemContainerUnmanaged 
+    public struct ItemContainerUnmanaged
         :
-        IBufferElementData, 
+        IBufferElementData,
         IEquatable<ItemContainerUnmanaged>
     {
         public ItemReference Item;
@@ -93,7 +93,7 @@ namespace CCEnvs.UnityX.ECS.Items
     public static class ItemContainerUnmanagedExtensions
     {
         public static NativeArray<ItemContainerUnmanaged> GetUnmanagedItemContainers(
-            this IInventory source, 
+            this IInventory source,
             MaybeUnmanaged<long> inventoryID,
             AllocatorManager.AllocatorHandle allocator
             )
@@ -107,8 +107,8 @@ namespace CCEnvs.UnityX.ECS.Items
 
             foreach (var itemContainer in source)
             {
-                if (itemContainer.IsEmpty 
-                    || 
+                if (itemContainer.IsEmpty
+                    ||
                     !itemContainer.Item.TryGetValue(out IItem? item))
                 {
                     continue;
@@ -146,7 +146,7 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         public static ItemContainerUnmanaged ToUnmanaged(
-            this IItemContainerInfo source, 
+            this IItemContainerInfo source,
             long inventoryID
             )
         {

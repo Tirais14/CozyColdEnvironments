@@ -18,7 +18,7 @@ namespace CCEnvs.UnityX.ECS
         public static implicit operator MaybeUnmanagedInt(int? input)
         {
             if (!input.HasValue)
-                return Null;    
+                return Null;
 
             return new MaybeUnmanagedInt { Value = input.Value };
         }

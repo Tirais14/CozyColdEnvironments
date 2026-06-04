@@ -1,4 +1,3 @@
-using CCEnvs.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,10 +11,10 @@ namespace CCEnvs.UnityX.ECS.Items
 {
     [InternalBufferCapacity(8)]
     public struct InventoryUnmanaged
-        : 
+        :
         IBufferElementData,
         INativeDisposable,
-        IDisposable, 
+        IDisposable,
         IEnumerable<ItemContainerUnmanaged>
     {
         public MaybeUnmanaged<int> ID;
