@@ -1,3 +1,4 @@
+using CCEnvs.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,10 +22,7 @@ namespace CCEnvs.UnityX.ECS.Items
 
         public NativeArray<ItemContainerUnmanaged> ItemContainers;
 
-        public bool IsEmpty {
-            [BurstCompile]
-            get => ContainsItem();
-        }
+        public bool IsEmpty => !ItemContainers.IsCreated || ItemContainers.Length == 0;
 
         [BurstCompile]
         public bool ContainsItem()
@@ -74,7 +72,7 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         [BurstCompile]
-        public bool ContainsItems(NativeArray<ItemContainerUnmanaged> itemInfos)
+        public bool ContainsItems(NativeArray<ItemContainerUnmanaged>.ReadOnly itemInfos)
         {
             using var foundItemInfoFlags = new NativeBitArray(itemInfos.Length, Allocator.Temp);
             foundItemInfoFlags.SetBits(0, false, foundItemInfoFlags.Length);
@@ -100,17 +98,16 @@ namespace CCEnvs.UnityX.ECS.Items
     public static class InventoryUnmanagedExtensions
     {
         [BurstCompile]
-        public static InventoryUnmanaged AsInventory<TItemContainerPool>(
-            this TItemContainerPool itemContainerPool,
+        public static InventoryUnmanaged AsInventory(
+            this NativeArray<ItemContainerUnmanaged> itemContainerPool,
             MaybeUnmanaged<int> inventoryID = default
             )
-            where TItemContainerPool : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
             var inventoryContainers = new NativeList<ItemContainerUnmanaged>(itemContainerPool.Length, Allocator.Persistent);
 
             for (int i = 0; i < itemContainerPool.Length; i++)
             {
-                ref readonly ItemContainerUnmanaged itemContainer = ref itemContainerPool.ElementAt(i);
+                ItemContainerUnmanaged itemContainer = itemContainerPool[i];
 
                 if (inventoryID.HasValue
                     &&

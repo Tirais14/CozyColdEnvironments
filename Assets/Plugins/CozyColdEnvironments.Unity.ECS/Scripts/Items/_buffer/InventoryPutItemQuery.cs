@@ -58,7 +58,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static NativeArray<InventoryPutItemQuery> GetInventoryQueries(
             this NativeArray<InventoryPutItemQuery> queries,
-            int inventoryID,
+            long inventoryID,
             Allocator allocator
             )
         {
@@ -86,7 +86,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static int GetInventoryQueryCount(
             this NativeArray<InventoryPutItemQuery> queries,
-            int inventoryID
+            long inventoryID
             )
         {
             int count = 0;
@@ -101,7 +101,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static bool HasInventoryQuery(
             this NativeArray<InventoryPutItemQuery> queries,
-            int inventoryID
+            long inventoryID
             )
         {
             for (int i = 0; i < queries.Length; i++)

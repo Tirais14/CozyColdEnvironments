@@ -48,7 +48,7 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         [BurstCompile]
-        public readonly InventoryPutItemQuery ToInventoryPutItemQuery(int inventoryID)
+        public readonly InventoryPutItemQuery ToInventoryPutItemQuery(long inventoryID)
         {
             return new InventoryPutItemQuery
             {
@@ -59,7 +59,7 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         [BurstCompile]
-        public readonly InventoryRemoveItemQuery ToInventoryRemoveItemQuery(int inventoryID, bool isPartialRemoveAllowed = false)
+        public readonly InventoryRemoveItemQuery ToInventoryRemoveItemQuery(long inventoryID, bool isPartialRemoveAllowed = false)
         {
             return new InventoryRemoveItemQuery
             {
@@ -94,7 +94,7 @@ namespace CCEnvs.UnityX.ECS.Items
     {
         public static NativeArray<ItemContainerUnmanaged> GetUnmanagedItemContainers(
             this IInventory source, 
-            MaybeUnmanaged<int> inventoryID,
+            MaybeUnmanaged<long> inventoryID,
             AllocatorManager.AllocatorHandle allocator
             )
         {
@@ -145,7 +145,10 @@ namespace CCEnvs.UnityX.ECS.Items
             };
         }
 
-        public static ItemContainerUnmanaged ToUnmanaged(this IItemContainerInfo source, int inventoryID)
+        public static ItemContainerUnmanaged ToUnmanaged(
+            this IItemContainerInfo source, 
+            long inventoryID
+            )
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -167,7 +170,7 @@ namespace CCEnvs.UnityX.ECS.Items
         [BurstCompile]
         public static NativeArray<ItemContainerUnmanaged> GetInventoryContainers<TList>(
             this TList itemContainers,
-            int inventoryID,
+            long inventoryID,
             Allocator allocator
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
@@ -203,14 +206,14 @@ namespace CCEnvs.UnityX.ECS.Items
         }
 
         [BurstCompile]
-        public static NativeArray<int> GetInventoryContainerIndexes<TList>(
+        public static NativeArray<long> GetInventoryContainerIndexes<TList>(
             this TList itemContainers,
-            int inventoryID,
+            long inventoryID,
             Allocator allocator
             )
             where TList : unmanaged, IIndexable<ItemContainerUnmanaged>
         {
-            var filteredItemContainerIDs = new NativeList<int>(16, allocator);
+            var filteredItemContainerIDs = new NativeList<long>(16, allocator);
 
             for (int i = 0; i < itemContainers.Length; i++)
             {
@@ -229,7 +232,7 @@ namespace CCEnvs.UnityX.ECS.Items
             return filteredItemContainerIDs.AsArray();
         }
         [BurstCompile]
-        public static NativeArray<int> GetInventoryContainerIndexes<TList>(
+        public static NativeArray<long> GetInventoryContainerIndexes<TList>(
             this TList itemContainers,
             in InventoryReference inventoryRef,
             Allocator allocator

@@ -12,17 +12,17 @@ namespace CCEnvs.UnityX.Items
 {
     public class InventoryRegistry
     {
-        public static IReadOnlyObservableDictionary<int, IInventory> Inventories => inventories;
+        public static IReadOnlyObservableDictionary<long, IInventory> Inventories => inventories;
 
-        private static readonly ObservableDictionary<int, IInventory> inventories = new();
+        private static readonly ObservableDictionary<long, IInventory> inventories = new();
 
-        private static readonly Dictionary<int, IDisposable> inventorySubs = new();
+        private static readonly Dictionary<long, IDisposable> inventorySubs = new();
 
         private static readonly object inventorySubsGate = new();
 
-        private static ReactiveCommand<KeyValuePair<int, IInventory>>? onInventoryChanged;
+        private static ReactiveCommand<KeyValuePair<long, IInventory>>? onInventoryChanged;
 
-        public static LightDisposable<int> Register(int id, IInventory inventory)
+        public static LightDisposable<long> Register(long id, IInventory inventory)
         {
             CC.Guard.IsNotNull(inventory, nameof(inventory));
 
@@ -32,7 +32,7 @@ namespace CCEnvs.UnityX.Items
             return CCDisposable.CreateLight(id, static (id) => Unregister(id));
         }
 
-        public static bool TryRegister(int id, IInventory inventory, out LightDisposable<int> handle)
+        public static bool TryRegister(long id, IInventory inventory, out LightDisposable<long> handle)
         {
             if (Contains(id))
             {
@@ -44,7 +44,7 @@ namespace CCEnvs.UnityX.Items
             return true;
         }
 
-        public static bool Unregister(int id)
+        public static bool Unregister(long id)
         {
             if (!inventories.Remove(id))
                 return false;
@@ -53,20 +53,20 @@ namespace CCEnvs.UnityX.Items
             return true;
         }
 
-        public static bool Contains(int id) => inventories.ContainsKey(id);
+        public static bool Contains(long id) => inventories.ContainsKey(id);
 
-        public static IInventory Get(int id) => inventories[id];
-        public static T Get<T>(int id)
+        public static IInventory Get(long id) => inventories[id];
+        public static T Get<T>(long id)
             where T : IInventory
         {
             return (T)inventories[id];
         }
 
-        public static bool TryGet(int id, [NotNullWhen(true)] out IInventory? inventory)
+        public static bool TryGet(long id, [NotNullWhen(true)] out IInventory? inventory)
         {
             return inventories.TryGetValue(id, out inventory);
         }
-        public static bool TryGet<T>(int id, [NotNullWhen(true)] out T? inventory)
+        public static bool TryGet<T>(long id, [NotNullWhen(true)] out T? inventory)
         {
             if (!TryGet(id, out var inventoryUntyped)
                 ||
@@ -79,7 +79,7 @@ namespace CCEnvs.UnityX.Items
             return true;
         }
 
-        public static Observable<KeyValuePair<int, IInventory>> ObserveRegister(CancellationToken cancellationToken = default)
+        public static Observable<KeyValuePair<long, IInventory>> ObserveRegister(CancellationToken cancellationToken = default)
         {
             var replaceEv = inventories.ObserveDictionaryReplace(cancellationToken)
                 .Select(pair => KeyValuePair.Create(pair.Key, pair.NewValue));
@@ -89,7 +89,7 @@ namespace CCEnvs.UnityX.Items
                 .Merge(replaceEv);
         }
 
-        public static Observable<KeyValuePair<int, IInventory>> ObserveUnregister(CancellationToken cancellationToken = default)
+        public static Observable<KeyValuePair<long, IInventory>> ObserveUnregister(CancellationToken cancellationToken = default)
         {
             var replaceEv = inventories.ObserveDictionaryReplace(cancellationToken)
                 .Select(pair => KeyValuePair.Create(pair.Key, pair.OldValue));
@@ -99,20 +99,20 @@ namespace CCEnvs.UnityX.Items
                 .Merge(replaceEv);
         }
 
-        public static Observable<KeyValuePair<int, IInventory>> ObserveInventoryChanged(CancellationToken cancellationToken = default)
+        public static Observable<KeyValuePair<long, IInventory>> ObserveInventoryChanged(CancellationToken cancellationToken = default)
         {
-            onInventoryChanged ??= new ReactiveCommand<KeyValuePair<int, IInventory>>();
+            onInventoryChanged ??= new ReactiveCommand<KeyValuePair<long, IInventory>>();
             return onInventoryChanged;
         }
 
-        public static Observable<KeyValuePair<int, IInventory>> ObserveAny(CancellationToken cancellationToken = default)
+        public static Observable<KeyValuePair<long, IInventory>> ObserveAny(CancellationToken cancellationToken = default)
         {
             return ObserveInventoryChanged(cancellationToken)
                 .Merge(ObserveRegister(cancellationToken))
                 .Merge(ObserveUnregister(cancellationToken));
         }
 
-        private static void OnRegister(int id, IInventory inventory)
+        private static void OnRegister(long id, IInventory inventory)
         {
             lock (inventorySubsGate)
                 inventorySubs[id] = inventory.ObserveItemCount()
@@ -120,7 +120,7 @@ namespace CCEnvs.UnityX.Items
                     .Subscribe((id, inventory), static (_, args) => onInventoryChanged!.Execute(KeyValuePair.Create(args.id, args.inventory)));
         }
 
-        private static void OnUnregister(int id)
+        private static void OnUnregister(long id)
         {
             lock (inventorySubsGate)
                 if (inventorySubs.TryGetValue(id, out var sub))

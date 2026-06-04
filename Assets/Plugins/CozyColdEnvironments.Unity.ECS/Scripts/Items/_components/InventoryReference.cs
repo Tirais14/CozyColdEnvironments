@@ -1,6 +1,7 @@
 using CCEnvs.UnityX.Items;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Unity.Burst;
 using Unity.Entities;
 
 #nullable enable
@@ -9,23 +10,27 @@ namespace CCEnvs.UnityX.ECS.Items
     [InternalBufferCapacity(8)]
     public struct InventoryReference : IBufferElementData, IEquatable<InventoryReference>
     {
-        public int InventoryID;
+        public long InventoryID;
 
-        public static implicit operator int(InventoryReference instance)
+        [BurstCompile]
+        public static implicit operator long(InventoryReference instance)
         {
             return instance.InventoryID;
         }
+        [BurstCompile]
 
-        public static implicit operator InventoryReference(int inventoryID)
+        public static implicit operator InventoryReference(long inventoryID)
         {
             return new InventoryReference { InventoryID = inventoryID };
         }
 
+        [BurstCompile]
         public static bool operator ==(InventoryReference left, InventoryReference right)
         {
             return left.Equals(right);
         }
 
+        [BurstCompile]
         public static bool operator !=(InventoryReference left, InventoryReference right)
         {
             return !(left == right);
@@ -49,11 +54,13 @@ namespace CCEnvs.UnityX.ECS.Items
             return obj is InventoryReference reference && Equals(reference);
         }
 
+        [BurstCompile]
         public readonly bool Equals(InventoryReference other)
         {
             return InventoryID == other.InventoryID;
         }
 
+        [BurstCompile]
         public readonly override int GetHashCode()
         {
             return HashCode.Combine(InventoryID);
