@@ -45,7 +45,7 @@ namespace CCEnvs.UnityXEditor
 
                 PropertyField propertyField = new(prop.Copy())
                 {
-                    label = prop.displayName
+                    label = GetDisplayName(prop, targetField)
                 };
 
                 //propertyField.RegisterValueChangeCallback(_ =>
@@ -110,6 +110,14 @@ namespace CCEnvs.UnityXEditor
                     _ => $"[🧩]" + propertyField.label,
                 };
             }
+        }
+
+        private static string GetDisplayName(SerializedProperty prop, FieldInfo field)
+        {
+            if (field.GetCustomAttribute<InspectorNameAttribute>(inherit: true) is InspectorNameAttribute nameAttribute)
+                return nameAttribute.displayName;
+
+            return prop.displayName;
         }
     }
 }

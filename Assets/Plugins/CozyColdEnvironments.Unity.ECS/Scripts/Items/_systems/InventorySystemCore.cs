@@ -22,6 +22,7 @@ namespace CCEnvs.UnityX.ECS.Items
         private static CancellationTokenSource? destroyCancellationTokenSource;
         private static IDisposable? anySub;
 
+        [BurstDiscard]
         public static void Create()
         {
             Destroy();
@@ -36,6 +37,7 @@ namespace CCEnvs.UnityX.ECS.Items
                 });
         }
 
+        [BurstDiscard]
         public static void Destroy()
         {
             if (anySub.IsNotNull())
@@ -53,6 +55,7 @@ namespace CCEnvs.UnityX.ECS.Items
             changedInventories = null;
         }
 
+        [BurstDiscard]
         public static void ResetChangedInventories()
         {
             changedInventories?.Clear();

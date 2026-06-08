@@ -29,6 +29,7 @@ namespace CCEnvs.UnityX.ECS
             RemoveItemQueries.Add(removeItemQuery);
         }
 
+        [BurstDiscard]
         public static void ExecutePutItemQuries()
         {
             var processedIndices = new NativeList<int>(PutItemQueries.Length, Allocator.Temp);
@@ -70,6 +71,7 @@ namespace CCEnvs.UnityX.ECS
             processedIndices.Dispose();
         }
 
+        [BurstDiscard]
         public static void ExecuteRemoveItemQueries()
         {
             var processedIndices = new NativeList<int>(RemoveItemQueries.Length, Allocator.Temp);

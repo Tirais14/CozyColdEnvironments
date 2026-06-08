@@ -97,19 +97,20 @@ namespace CCEnvs.UnityX.ECS.Items
     public static class InventoryUnmanagedExtensions
     {
         [BurstCompile]
-        public static InventoryUnmanaged AsInventory(
+        public static InventoryUnmanaged ToInventory(
             this NativeArray<ItemContainerUnmanaged> itemContainerPool,
+            AllocatorManager.AllocatorHandle allocator,
             MaybeUnmanaged<int> inventoryID = default
             )
         {
-            var inventoryContainers = new NativeList<ItemContainerUnmanaged>(itemContainerPool.Length, Allocator.Persistent);
+            var inventoryContainers = new NativeList<ItemContainerUnmanaged>(itemContainerPool.Length, allocator);
 
             for (int i = 0; i < itemContainerPool.Length; i++)
             {
                 ItemContainerUnmanaged itemContainer = itemContainerPool[i];
 
-                if (inventoryID.HasValue
-                    &&
+                if (!inventoryID.HasValue
+                    ||
                     inventoryID.NotEqualsUnmanaged(itemContainer.InventoryRef.Reinterpret<int>()))
                 {
                     continue;

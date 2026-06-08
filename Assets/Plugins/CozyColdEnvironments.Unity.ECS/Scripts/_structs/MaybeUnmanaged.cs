@@ -1,6 +1,7 @@
 using System;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 
 #nullable enable
 namespace CCEnvs.UnityX.ECS
@@ -61,14 +62,16 @@ namespace CCEnvs.UnityX.ECS
             return obj is MaybeUnmanaged<T> unmanaged && Equals(unmanaged);
         }
 
+        [BurstCompile]
         public readonly bool Equals(MaybeUnmanaged<T> other)
         {
             return GetHashCode() == other.GetHashCode();
         }
 
+        [BurstCompile]
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(Value, HasValue);
+            return (int)math.hash(new int2(HasValue.GetHashCode(), Value.GetHashCode()));
         }
     }
 
