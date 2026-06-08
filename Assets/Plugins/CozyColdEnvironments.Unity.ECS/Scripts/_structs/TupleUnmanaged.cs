@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Mathematics;
 
@@ -10,8 +9,8 @@ namespace CCEnvs.UnityX.ECS
     {
         [BurstCompile]
         public static TupleUnmanaged<T1, T2> Create<T1, T2>(T1 item1, T2 item2)
-            where T1 : struct
-            where T2 : struct
+            where T1 : unmanaged
+            where T2 : unmanaged
         {
             return new TupleUnmanaged<T1, T2>
             {
@@ -22,9 +21,9 @@ namespace CCEnvs.UnityX.ECS
 
         [BurstCompile]
         public static TupleUnmanaged<T1, T2, T3> Create<T1, T2, T3>(T1 item1, T2 item2, T3 item3)
-            where T1 : struct
-            where T2 : struct
-            where T3 : struct
+            where T1 : unmanaged
+            where T2 : unmanaged
+            where T3 : unmanaged
         {
             return new TupleUnmanaged<T1, T2, T3>
             {
@@ -39,8 +38,8 @@ namespace CCEnvs.UnityX.ECS
         :
         IEquatable<TupleUnmanaged<T1, T2>>
 
-        where T1 : struct
-        where T2 : struct
+        where T1 : unmanaged
+        where T2 : unmanaged
     {
         public T1 Item1;
         public T2 Item2;
@@ -69,10 +68,12 @@ namespace CCEnvs.UnityX.ECS
             return obj is TupleUnmanaged<T1, T2> unmanaged && Equals(unmanaged);
         }
 
+        [BurstCompile]
         public readonly bool Equals(TupleUnmanaged<T1, T2> other)
         {
-            return EqualityComparer<T1>.Default.Equals(Item1, other.Item1) &&
-                   EqualityComparer<T2>.Default.Equals(Item2, other.Item2);
+            return Item1.GetHashCode() == other.Item1.GetHashCode()
+                   &&
+                   Item2.GetHashCode() == other.Item2.GetHashCode();
         }
 
         [BurstCompile]
@@ -86,9 +87,9 @@ namespace CCEnvs.UnityX.ECS
         :
         IEquatable<TupleUnmanaged<T1, T2, T3>>
 
-        where T1 : struct
-        where T2 : struct
-        where T3 : struct
+        where T1 : unmanaged
+        where T2 : unmanaged
+        where T3 : unmanaged
     {
         public T1 Item1;
         public T2 Item2;
@@ -119,11 +120,14 @@ namespace CCEnvs.UnityX.ECS
             return obj is TupleUnmanaged<T1, T2, T3> unmanaged && Equals(unmanaged);
         }
 
+        [BurstCompile]
         public readonly bool Equals(TupleUnmanaged<T1, T2, T3> other)
         {
-            return EqualityComparer<T1>.Default.Equals(Item1, other.Item1) &&
-                   EqualityComparer<T2>.Default.Equals(Item2, other.Item2) &&
-                   EqualityComparer<T3>.Default.Equals(Item3, other.Item3);
+            return Item1.GetHashCode() == Item1.GetHashCode()
+                   &&
+                   Item2.GetHashCode() == Item2.GetHashCode()
+                   &&
+                   Item3.GetHashCode() == Item3.GetHashCode();
         }
 
         [BurstCompile]
