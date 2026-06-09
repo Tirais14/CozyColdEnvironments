@@ -8,10 +8,10 @@ using Unity.Collections.LowLevel.Unsafe;
 #nullable enable
 namespace CCEnvs
 {
-    public unsafe static class EnumFlagsHelper
+    public static class EnumFlagsHelper
     {
         /// <exception cref="InvalidOperationException"></exception>
-        public unsafe static T SetFlag<T>(T value,
+        public static T SetFlag<T>(T value,
                                           T flag,
                                           bool isToSet)
             where T : unmanaged, Enum
@@ -31,7 +31,7 @@ namespace CCEnvs
             };
         }
 
-        private unsafe static T SetFlagByteInternal<T>(T value,
+        private static T SetFlagByteInternal<T>(T value,
                                                        T flag,
                                                        bool isToSet)
 
@@ -55,7 +55,7 @@ namespace CCEnvs
             return Unsafe.As<byte, T>(ref valueByte);
 #endif
         }
-        private unsafe static T SetFlagInt16Internal<T>(T value,
+        private static T SetFlagInt16Internal<T>(T value,
                                                         T flag,
                                                         bool isToSet)
             where T : unmanaged, Enum
@@ -79,7 +79,7 @@ namespace CCEnvs
             return Unsafe.As<ushort, T>(ref valueByte);
 #endif
         }
-        private unsafe static T SetFlagInt32Internal<T>(T value,
+        private static T SetFlagInt32Internal<T>(T value,
                                                         T flag,
                                                         bool isToSet)
             where T : unmanaged, Enum
@@ -103,7 +103,7 @@ namespace CCEnvs
             return Unsafe.As<uint, T>(ref valueByte);
 #endif
         }
-        private unsafe static T SetFlagInt64Internal<T>(T value,
+        private static T SetFlagInt64Internal<T>(T value,
                                                         T flag,
                                                         bool isToSet)
             where T : unmanaged, Enum
@@ -129,7 +129,7 @@ namespace CCEnvs
         }
 
         /// <exception cref="InvalidOperationException"></exception>
-        public unsafe static bool HasFlagT<T>(this T value, T flag)
+        public static bool HasFlagT<T>(this T value, T flag)
             where T : unmanaged, Enum
         {
 #if UNITY_2017_1_OR_NEWER
@@ -165,7 +165,7 @@ namespace CCEnvs
             }
         }
 
-        public static IList<Enum> ToArrayByFlags(this Enum source, string? excludeName = "None")
+        public static IList<Enum> CollectFlags(this Enum source, string? excludeName = "None")
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -181,7 +181,7 @@ namespace CCEnvs
                 if (!source.HasFlag(current))
                     continue;
 
-                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName!))
+                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName))
                     continue;
 
                 results.Add(current);
@@ -190,7 +190,7 @@ namespace CCEnvs
             return results;
         }
 
-        public static IList<T> ToArrayByFlags<T>(this T value, string? excludeName = "None")
+        public static IList<T> CollectFlags<T>(this T value, string? excludeName = "None")
             where T : unmanaged, Enum
         {
             bool hasExcludeName = excludeName.IsNotNullOrWhiteSpace();
@@ -205,7 +205,7 @@ namespace CCEnvs
                 if (!value.HasFlagT(current))
                     continue;
 
-                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName!))
+                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName))
                     continue;
 
                 results.Add(current);
@@ -250,7 +250,7 @@ namespace CCEnvs
         public static bool HasFlagsT<T>(this T value, T flags)
             where T : unmanaged, Enum
         {
-            return value.HasFlags(flags.ToArrayByFlags());
+            return value.HasFlags(flags.CollectFlags());
         }
 
         public static T SetFlag<T>(this T value, T flag)
@@ -277,7 +277,7 @@ namespace CCEnvs
         public static T SetFlags<T>(this T value, T flags)
             where T : unmanaged, Enum
         {
-            return value.SetFlags(flags.ToArrayByFlags());
+            return value.SetFlags(flags.CollectFlags());
         }
 
         public static T ResetFlag<T>(this T value, T flag)
@@ -304,7 +304,7 @@ namespace CCEnvs
         public static T ResetFlags<T>(this T value, T flags)
             where T : unmanaged, Enum
         {
-            return value.ResetFlags(flags.ToArrayByFlags());
+            return value.ResetFlags(flags.CollectFlags());
         }
 
         public static T UniteFlags<T>(this T[] values)
@@ -349,7 +349,25 @@ namespace CCEnvs
         }
         public static bool HasFlags(this Enum value, Enum flags)
         {
-            return value.HasFlags(flags.ToArrayByFlags());
+            return value.HasFlags(flags.CollectFlags());
+        }
+
+        public static bool TryGetFirstFlag<T>(this T source, out T result)
+            where T : unmanaged, Enum
+        {
+            T[] values = EnumCache<T>.Values;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (source.HasFlagT(values[i]))
+                {
+                    result = values[i];
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
         }
     }
 }

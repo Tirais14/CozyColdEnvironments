@@ -40,7 +40,6 @@ namespace CCEnvs.Utils
             get
             {
                 value ??= Enum.GetValues(typeof(T)).Cast<T>().ToArray();
-
                 return value;
             }
         }

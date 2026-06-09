@@ -23,6 +23,23 @@ namespace CCEnvs.UnityX.Items
             return CCDisposable.CreateLight(item.ID, static id => Unregister(id));
         }
 
+        public static bool TryRegister(IItem item, out LightDisposable<int> handle)
+        {
+            CC.Guard.IsNotNull(item, nameof(item));
+
+            lock (ItemsGate)
+            {
+                if (!items.TryAdd(item.ID, item))
+                {
+                    handle = default;
+                    return false;
+                }
+            }
+
+            handle = CCDisposable.CreateLight(item.ID, static id => Unregister(id));
+            return true;
+        }
+
         public static bool Unregister(int id)
         {
             lock (ItemsGate)

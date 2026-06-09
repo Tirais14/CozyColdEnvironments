@@ -769,7 +769,7 @@ namespace CCEnvs.Reflection
             else
                 types = Range.From(type);
 
-            var memberTypeArray = memberTypes.Value.ToArrayByFlags();
+            var memberTypeArray = memberTypes.Value.CollectFlags();
             IEnumerable<MemberInfo> results = Enumerable.Empty<MemberInfo>();
             IEnumerable<MemberInfo> current;
             foreach (var type in types)
