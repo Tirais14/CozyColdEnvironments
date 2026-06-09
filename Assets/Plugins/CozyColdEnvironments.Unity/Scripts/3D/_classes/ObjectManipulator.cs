@@ -107,7 +107,7 @@ namespace CCEnvs.UnityX.D3
 
         public VelocityOptions VelocitySettings => velocitySettings;
 
-        public LayerMask SurfaceCastMask => surfaceCastMask.Deserialized ?? Physics.AllLayers;
+        public LayerMask SurfaceCastMask => surfaceCastMask.Data ?? Physics.AllLayers;
 
         public float MoveSensitivity => moveSensivity;
         public float MoveDamping => moveDamping;

@@ -46,11 +46,11 @@ namespace CCEnvs.UnityX.Components.Specialized
         {
             var sceneInfo = scene.GetSceneInfo();
 
-            var isContains = activeScenes.Deserialized.Contains(sceneInfo);
+            var isContains = activeScenes.Data.Contains(sceneInfo);
 
             if (!isContains)
             {
-                foreach (var activeScene in activeScenes.Deserialized)
+                foreach (var activeScene in activeScenes.Data)
                 {
                     if (sceneInfo.IsMatch(activeScene))
                     {

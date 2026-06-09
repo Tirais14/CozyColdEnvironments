@@ -26,7 +26,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         private bool hasValue;
 
         [JsonIgnore]
-        public readonly T? Deserialized {
+        public readonly T? Data {
             get
             {
                 if (!hasValue)
@@ -56,7 +56,7 @@ namespace CCEnvs.UnityX.EditorSerialization
 
         public static implicit operator T?(SerializedNullable<T> instance)
         {
-            return instance.Deserialized;
+            return instance.Data;
         }
 
         public static explicit operator T(SerializedNullable<T> instance)

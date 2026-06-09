@@ -39,7 +39,7 @@ namespace CCEnvs.UnityX.EditorSerialization
             var collection = new Dictionary<TKey, TValue>(this.items.Length);
 
             var items = this.items.Skip(1)
-                .Select(pair => pair.Deserialized)
+                .Select(pair => pair.Data)
                 .DistinctBy(pair => pair.Key);
 
             collection.AddRange(items);

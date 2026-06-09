@@ -182,7 +182,7 @@ namespace CCEnvs.UnityX.D3
             IsGrounded = Physics.CheckSphere(
                 surfaceCastPoint.transform.position,
                 surfaceCastDistance / 2,
-                surfaceLayers.Deserialized ?? Physics.AllLayers
+                surfaceLayers.Data ?? Physics.AllLayers
                 );
         }
 

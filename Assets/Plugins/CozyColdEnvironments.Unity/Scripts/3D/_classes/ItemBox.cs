@@ -63,7 +63,7 @@ namespace CCEnvs.UnityX.D3
         public bool IsEmpty => items.IsEmpty();
         public bool HasEmptySlots => emptySlots.IsNotEmpty();
 
-        public LayerMask SpawnObstaclesMask => spawnObstaclesMask.Deserialized ?? Physics.AllLayers;
+        public LayerMask SpawnObstaclesMask => spawnObstaclesMask.Data ?? Physics.AllLayers;
 
         public Vector3 ItemRotation {
             get => itemRotation;

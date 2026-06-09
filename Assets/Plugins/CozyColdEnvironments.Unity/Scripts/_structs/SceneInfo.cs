@@ -59,7 +59,7 @@ namespace CCEnvs.UnityX
             if (Equals(other))
                 return true;
 
-            if (BuildIndex.Deserialized.HasValue || other.BuildIndex.Deserialized.HasValue)
+            if (BuildIndex.Data.HasValue || other.BuildIndex.Data.HasValue)
                 return BuildIndex == other.BuildIndex;
 
             if (Path.IsNotNullOrWhiteSpace() || other.Path.IsNotNullOrWhiteSpace())

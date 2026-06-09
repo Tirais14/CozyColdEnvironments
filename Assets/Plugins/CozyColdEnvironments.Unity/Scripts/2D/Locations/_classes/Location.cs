@@ -134,7 +134,7 @@ namespace CCEnvs.UnityX
 
         private void InitCellBounds()
         {
-            BoundsInt bounds = m_CellBounds.Deserialized;
+            BoundsInt bounds = m_CellBounds.Data;
 
             if (bounds.size.x > 0 || bounds.size.y > 0)
             {

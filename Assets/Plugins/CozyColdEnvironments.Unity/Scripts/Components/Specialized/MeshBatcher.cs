@@ -37,7 +37,7 @@ namespace CCEnvs.UnityX.Components.Specialized
 
         private bool isClearingMeshFilters;
 
-        public Dictionary<MeshFilter, MeshFilter?> CompareMeshes => compareMeshes.Deserialized;
+        public Dictionary<MeshFilter, MeshFilter?> CompareMeshes => compareMeshes.Data;
 
         protected override void Start()
         {
@@ -196,7 +196,7 @@ namespace CCEnvs.UnityX.Components.Specialized
 
             var meshFilters = GetOriginalMeshFilters();
 
-            foreach (var leftMeshFilter in compareMeshes.Deserialized)
+            foreach (var leftMeshFilter in compareMeshes.Data)
             {
                 var topologyDuplicates = topologyDuplicatesMeshFilters.GetOrCreateNew(leftMeshFilter.Value.IfNull(leftMeshFilter.Key));
 

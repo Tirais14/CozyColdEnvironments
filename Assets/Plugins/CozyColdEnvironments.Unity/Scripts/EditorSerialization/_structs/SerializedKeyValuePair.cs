@@ -17,7 +17,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         [field: SerializeField]
         public TValue Value { get; private set; }
 
-        public readonly KeyValuePair<TKey, TValue> Deserialized => new(Key, Value);
+        public readonly KeyValuePair<TKey, TValue> Data => new(Key, Value);
 
         public SerializedKeyValuePair(TKey key, TValue value)
         {

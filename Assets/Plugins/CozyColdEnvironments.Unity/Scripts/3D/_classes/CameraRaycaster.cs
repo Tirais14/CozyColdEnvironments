@@ -38,7 +38,7 @@ namespace CCEnvs.UnityX.D3
         }
 
         public override LayerMask LayerMask {
-            get => layerMask.Deserialized ?? Physics.AllLayers;
+            get => layerMask.Data ?? Physics.AllLayers;
             set => SetLayerMask(value);
         }
 

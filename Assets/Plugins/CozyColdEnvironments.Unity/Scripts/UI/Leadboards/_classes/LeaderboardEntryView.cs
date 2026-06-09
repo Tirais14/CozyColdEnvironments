@@ -47,14 +47,14 @@ namespace CCEnvs.UnityX.UI.Leaderboards
 
         private void UpdateScoreValueView(string key, string scoreView)
         {
-            scoreRecrodViews.Deserialized[key].text = scoreView;
+            scoreRecrodViews.Data[key].text = scoreView;
         }
 
         private void SetRecordViews(LeaderboardEntryViewModel vm)
         {
             foreach (var item in vm.ScoreRecords.Unfiltered)
             {
-                if (!scoreRecrodViews.Deserialized.ContainsKey(item.Value.Key))
+                if (!scoreRecrodViews.Data.ContainsKey(item.Value.Key))
                     continue;
 
                 UpdateScoreValueView(item.Value.Key, item.View);
@@ -65,7 +65,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
         {
             foreach (var item in vm.ScoreRecords.Unfiltered)
             {
-                if (!scoreRecrodViews.Deserialized.ContainsKey(item.Value.Key))
+                if (!scoreRecrodViews.Data.ContainsKey(item.Value.Key))
                     continue;
 
                 UpdateScoreValueView(item.Value.Key, UNBINDED_SCORE_RECORD_VALUE);
@@ -102,7 +102,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 .Subscribe(this,
                 static (_, @this) =>
                 {
-                    foreach (var scoreView in @this.scoreRecrodViews.Deserialized)
+                    foreach (var scoreView in @this.scoreRecrodViews.Data)
                         scoreView.Value.text = UNBINDED_SCORE_RECORD_VALUE;
                 })
                 .AddTo(ViewModelDisposables);
