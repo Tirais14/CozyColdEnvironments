@@ -212,13 +212,20 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Either<L, R> Cast<T, L, R>(T input)
+        public static Either<L, R> CastEither<T, L, R>(T input)
             where T : struct, IConditional<L>
         {
             L? left = input.GetValue();
             R? right = left.As<R>();
 
             return (left, right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TOutValue> Cast<TSource, T, TOutValue>(TSource source)
+            where TSource : struct, IConditional<T>
+        {
+            return (source.GetValue().As<TOutValue>()).Maybe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

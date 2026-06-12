@@ -81,9 +81,16 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Cast<R>()
+        public readonly Either<T, R> CastEither<R>()
         {
-            return Lang.Cast<Maybe<T>, T, R>(this);
+            return Lang.CastEither<Maybe<T>, T, R>(this);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Maybe<TNew> Cast<TNew>()
+        {
+            return Lang.Cast<Maybe<T>, T, TNew>(this);
         }
 
         [DebuggerStepThrough]
@@ -179,9 +186,9 @@ namespace CCEnvs.FuncLanguage
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Cast<R>()
+        public readonly Either<T, R> CastEither<R>()
         {
-            return Lang.Cast<IfElse<T>, T, R>(this);
+            return Lang.CastEither<IfElse<T>, T, R>(this);
         }
 
         [DebuggerStepThrough]

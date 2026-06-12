@@ -681,7 +681,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetFieldValue<T>()
         {
-            return WithTypeFilter<T>().GetFieldValue().Cast<T>().RightTarget.CastTo<T>();
+            return WithTypeFilter<T>().GetFieldValue().CastEither<T>().RightTarget.CastTo<T>();
         }
 
         [DebuggerStepThrough]
@@ -718,7 +718,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Maybe<T> GetPropertyValue<T>()
         {
-            return WithTypeFilter<T>().GetPropertyValue().Cast<T>().GetValueUnsafe<T>();
+            return WithTypeFilter<T>().GetPropertyValue().CastEither<T>().GetValueUnsafe<T>();
         }
 
         [DebuggerStepThrough]

@@ -47,7 +47,7 @@ namespace CCEnvs.FuncLanguage
 
         bool HasUnsafe(Predicate<T?> predicate);
 
-        Either<T, R> Cast<R>();
+        Either<T, R> CastEither<R>();
 
         Either<T, R> Select<R>(Func<T, R> selector);
 

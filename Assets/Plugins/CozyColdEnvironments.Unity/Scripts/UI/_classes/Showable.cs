@@ -603,7 +603,7 @@ namespace CCEnvs.UnityX.UI
                 .ExcludeSelf()
                 .Component<IShowable>()
                 .Lax()
-                .Cast<MonoBehaviour>()
+                .CastEither<MonoBehaviour>()
                 .RightTarget;
         }
 
@@ -616,7 +616,7 @@ namespace CCEnvs.UnityX.UI
                         .FromChildrens()
                         .Component<IShowable>()
                         .Lax()
-                        .Cast<MonoBehaviour>()
+                        .CastEither<MonoBehaviour>()
                         .RightTarget;
                 })
                 .GetValue();

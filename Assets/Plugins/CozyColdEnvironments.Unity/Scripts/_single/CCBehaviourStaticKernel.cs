@@ -81,7 +81,7 @@ namespace CCEnvs.UnityX
         public static Maybe<T> GetInstance<T>()
             where T : CCBehaviourStatic
         {
-            return GetInstance(typeof(T)).Cast<T>().RightTarget;
+            return GetInstance(typeof(T)).CastEither<T>().RightTarget;
         }
 
         private void Validate()

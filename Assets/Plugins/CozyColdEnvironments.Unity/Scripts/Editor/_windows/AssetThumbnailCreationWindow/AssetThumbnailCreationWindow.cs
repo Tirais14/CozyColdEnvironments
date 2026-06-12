@@ -749,7 +749,7 @@ public class AssetThumbnailCreationWindow : EditorWindow
 
         AssetImporter.GetAtPath(filePath)
                      .Maybe()
-                     .Cast<TextureImporter>()
+                     .CastEither<TextureImporter>()
                      .IfRight(importer =>
                      {
                          importer.alphaIsTransparency = true;
