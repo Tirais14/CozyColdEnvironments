@@ -39,7 +39,9 @@ namespace CCEnvs.UnityX.Items.UI
         private IDisposable? replaceContainerBinding;
         private IDisposable? clearContainersBinding;
 
-        public IReadOnlyObservableDictionary<int, IItemContainer> Containers => GuardedModel.Containers;
+        //public IReadOnlyObservableDictionary<int, IItemContainer> Containers => GuardedModel.Containers;
+
+        //public IReadOnlyObservableDictionary<int, IItemContainer> Containers => GuardedModel.Containers;
 
         public IReadOnlyObservableDictionary<IItemContainer, GameObject> ContainerViews => containerViews;
 
@@ -79,33 +81,33 @@ namespace CCEnvs.UnityX.Items.UI
 
         protected override void InitModel(TModel model)
         {
-            InitExistingContainers();
-            BindContainerAdd();
-            BindContainerRemove();
-            BindContainerReplace();
-            BindContainersClear();
+            InitExistingContainers(model);
+            BindContainerAdd(model);
+            BindContainerRemove(model);
+            BindContainerReplace(model);
+            BindContainersClear(model);
         }
 
-        private void InitExistingContainers()
+        private void InitExistingContainers(TModel model)
         {
-            var existsingCnts = Containers
+            var existsingCnts = model.Containers
 #if ZLINQ_PLUGIN
                 .AsValueEnumerable()
 #endif
-                .Select(cnt => new DictionaryAddEvent<int, IItemContainer>(cnt.Key, cnt.Value))
+                .Select(cnt => new InventoryContainerAddEvent { ID = cnt.Key, Container = cnt.Value })
                 .ToArray();
 
             OnContainersAdd(existsingCnts);
         }
 
-        private void BindContainerAdd()
+        private void BindContainerAdd(TModel model)
         {
-            addContainerBinding = Containers.ObserveDictionaryAdd(DisposeCancellationToken)
+            addContainerBinding = model.ObserveContainerAdd()
                 .ChunkFrame(1)
                 .Subscribe(OnContainersAdd);
         }
 
-        private void OnContainersAdd(DictionaryAddEvent<int, IItemContainer>[] addEvs)
+        private void OnContainersAdd(InventoryContainerAddEvent[] addEvs)
         {
             if (addEvs.IsEmpty())
                 return;
@@ -114,7 +116,7 @@ namespace CCEnvs.UnityX.Items.UI
         }
 
         private async UniTask OnAddContainersCore(
-            DictionaryAddEvent<int, IItemContainer>[] addEvs,
+            InventoryContainerAddEvent[] addEvs,
             CancellationToken cancellationToken
             )
         {
@@ -126,13 +128,13 @@ namespace CCEnvs.UnityX.Items.UI
             {
                 if (fromViewContainers.TryGetValue(out var fromViewCnts)
                     &&
-                    fromViewCnts.Contains(addEv.Value))
+                    fromViewCnts.Contains(addEv.Container))
                 {
-                    fromViewContainers.Value.Remove(addEv.Value);
+                    fromViewContainers.Value.Remove(addEv.Container);
                     continue;
                 }
 
-                cnts.Value.Add(addEv.Value);
+                cnts.Value.Add(addEv.Container);
             }
 
             var cntViewModels = await InstantiateContainers(cnts.Value.Count, cancellationToken);
@@ -211,14 +213,14 @@ namespace CCEnvs.UnityX.Items.UI
             return Array.Empty<IItemContainerViewModel>();
         }
 
-        private void BindContainerRemove()
+        private void BindContainerRemove(TModel model)
         {
-            removeContainerBinding = Containers.ObserveDictionaryRemove(DisposeCancellationToken)
+            removeContainerBinding = model.ObserveContainerRemove()
                 .ChunkFrame(1)
                 .Subscribe(OnContainersRemove);
         }
 
-        private void OnContainersRemove(DictionaryRemoveEvent<int, IItemContainer>[] removeEvs)
+        private void OnContainersRemove(InventoryContainerRemoveEvent[] removeEvs)
         {
             if (removeEvs.IsEmpty())
                 return;
@@ -227,7 +229,7 @@ namespace CCEnvs.UnityX.Items.UI
 
             foreach (var addEv in removeEvs)
             {
-                cnt = addEv.Value;
+                cnt = addEv.Container;
 
                 if (!containerViews.Remove(cnt, out var go))
                     continue;
@@ -236,38 +238,38 @@ namespace CCEnvs.UnityX.Items.UI
             }
         }
 
-        private void BindContainerReplace()
+        private void BindContainerReplace(TModel model)
         {
-            replaceContainerBinding = Containers.ObserveDictionaryReplace(DisposeCancellationToken)
+            replaceContainerBinding = model.ObserveContainerReplace()
                 .ChunkFrame(1)
                 .Subscribe(OnContainerReplace);
         }
 
-        private void OnContainerReplace(DictionaryReplaceEvent<int, IItemContainer>[] replaceEvs)
+        private void OnContainerReplace(InventoryContainerReplaceEvent[] replaceEvs)
         {
             if (replaceEvs.IsEmpty())
                 return;
 
-            var removeEvs = new DictionaryRemoveEvent<int, IItemContainer>[replaceEvs.Length];
-            var addEvs = new DictionaryAddEvent<int, IItemContainer>[replaceEvs.Length];
+            var removeEvs = new InventoryContainerRemoveEvent[replaceEvs.Length];
+            var addEvs = new InventoryContainerAddEvent[replaceEvs.Length];
 
-            DictionaryReplaceEvent<int, IItemContainer> replaceEv;
+            InventoryContainerReplaceEvent replaceEv;
 
             for (int i = 0; i < replaceEvs.Length; i++)
             {
                 replaceEv = replaceEvs[i];
 
-                removeEvs[i] = new DictionaryRemoveEvent<int, IItemContainer>(replaceEv.Key, replaceEv.OldValue);
-                addEvs[i] = new DictionaryAddEvent<int, IItemContainer>(replaceEv.Key, replaceEv.NewValue);
+                removeEvs[i] = new InventoryContainerRemoveEvent { ID = replaceEv.ID, Container = replaceEv.OldContainer };
+                addEvs[i] = new InventoryContainerAddEvent { ID = replaceEv.ID, Container = replaceEv.NewContainer };
             }
 
             OnContainersRemove(removeEvs);
             OnContainersAdd(addEvs);
         }
 
-        private void BindContainersClear()
+        private void BindContainersClear(TModel model)
         {
-            clearContainersBinding = Containers.ObserveClear(DisposeCancellationToken)
+            clearContainersBinding = model.ObserveClear()
                 .Subscribe(OnContainersClear);
         }
 

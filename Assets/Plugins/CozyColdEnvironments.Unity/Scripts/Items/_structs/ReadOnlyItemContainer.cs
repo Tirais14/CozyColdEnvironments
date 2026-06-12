@@ -1,5 +1,6 @@
 using CCEnvs.FuncLanguage;
 using R3;
+using System;
 using System.Collections.Generic;
 
 #nullable enable
@@ -8,7 +9,8 @@ namespace CCEnvs.UnityX.Items
     public readonly struct ReadOnlyItemContainer 
         :
         IItemContainerInfo,
-        IItemContainer
+        IItemContainer, 
+        IEquatable<ReadOnlyItemContainer>
     {
         public readonly Maybe<IItem> Item { get; }
 
@@ -37,6 +39,16 @@ namespace CCEnvs.UnityX.Items
             ItemCount = itemCount;
         }
 
+        public static bool operator ==(ReadOnlyItemContainer left, ReadOnlyItemContainer right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ReadOnlyItemContainer left, ReadOnlyItemContainer right)
+        {
+            return !(left == right);
+        }
+
         public readonly bool ContainsItem() => !IsEmpty;
         public readonly bool ContainsItem(IItem? item)
         {
@@ -45,6 +57,37 @@ namespace CCEnvs.UnityX.Items
         public readonly bool ContainsItem(IItem? item, int count)
         {
             return ContainsItem(item) && ItemCount >= count;
+        }
+
+        public readonly ReadOnlyItemContainer<TItem> Convert<TItem>()
+            where TItem : IItem
+        {
+            return new ReadOnlyItemContainer<TItem>(Item.GetValue().As<TItem>(), ItemCount);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is ReadOnlyItemContainer container && Equals(container);
+        }
+
+        public bool Equals(ReadOnlyItemContainer other)
+        {
+            return Item.Equals(other.Item) &&
+                   ItemCount == other.ItemCount;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Item, ItemCount);
+        }
+
+        public override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Item), Item)
+                .AddProperty(nameof(ItemCount), ItemCount)
+                .AddProperty(nameof(IsEmpty), IsEmpty)
+                .ToStringAndDispose();
         }
 
         readonly bool IItemContainerInfoItemless.CanPut() => false;
@@ -94,12 +137,14 @@ namespace CCEnvs.UnityX.Items
             return new ReadOnlyItemContainer(Item.GetValue(), ItemCount);
         }
 
-        Observable<Maybe<IItem>> IItemContainerInfo.ObserveItem()
+        readonly ReadOnlyItemContainer IItemContainer.ToReadOnly() => this;
+
+        readonly Observable<Maybe<IItem>> IItemContainerInfo.ObserveItem()
         {
             return Observable.Return(Item);
         }
 
-        Observable<int> IItemContainerInfoItemless.ObserveItemCount()
+        readonly Observable<int> IItemContainerInfoItemless.ObserveItemCount()
         {
             return Observable.Return(ItemCount);    
         }
@@ -108,8 +153,9 @@ namespace CCEnvs.UnityX.Items
     public readonly struct ReadOnlyItemContainer<TItem>
         :
         IItemContainerInfo<TItem>,
-        IItemContainer<TItem>
-
+        IItemContainer<TItem>,
+        IEquatable<ReadOnlyItemContainer<TItem>> 
+        
         where TItem : IItem
     {
         public readonly Maybe<TItem> Item { get; }
@@ -139,6 +185,21 @@ namespace CCEnvs.UnityX.Items
             ItemCount = itemCount;
         }
 
+        public static implicit operator ReadOnlyItemContainer(ReadOnlyItemContainer<TItem> instance)
+        {
+            return new ReadOnlyItemContainer(instance.Item.GetValue(), instance.ItemCount);
+        }
+
+        public static bool operator ==(ReadOnlyItemContainer<TItem> left, ReadOnlyItemContainer<TItem> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ReadOnlyItemContainer<TItem> left, ReadOnlyItemContainer<TItem> right)
+        {
+            return !(left == right);
+        }
+
         public readonly bool ContainsItem() => !IsEmpty;
         public readonly bool ContainsItem(IItem? item)
         {
@@ -149,42 +210,68 @@ namespace CCEnvs.UnityX.Items
             return ContainsItem(item) && ItemCount >= count;
         }
 
+        public readonly ReadOnlyItemContainer ToUntyped() => new(Item.GetValue(), ItemCount);
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is ReadOnlyItemContainer<TItem> container && Equals(container);
+        }
+        public readonly bool Equals(ReadOnlyItemContainer<TItem> other)
+        {
+            return Item.Equals(other.Item) &&
+                   ItemCount == other.ItemCount;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Item, ItemCount);
+        }
+
+        public override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Item), Item)
+                .AddProperty(nameof(ItemCount), ItemCount)
+                .AddProperty(nameof(IsEmpty), IsEmpty)
+                .ToStringAndDispose();
+        }
+
         readonly bool IItemContainerInfoItemless.CanPut() => false;
         readonly bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
         readonly bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
 
         readonly Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.PutItem(IItem? item, int count)
+        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.PutItem(TItem? item, int count)
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return default;
         }
 
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.PutItemFrom(
-            IItemContainer itemContainer,
+        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.PutItemFrom(
+            IItemContainer<TItem> itemContainer,
             int count
             )
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return default;
         }
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.PutItemFrom(
-            IItemContainer itemContainer
+        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.PutItemFrom(
+            IItemContainer<TItem> itemContainer
             )
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return default;
         }
 
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem()
+        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.TakeItem()
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return default;
         }
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem(int count)
+        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.TakeItem(int count)
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return default;
         }
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem(IItem item, int count)
+        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.TakeItem(TItem item, int count)
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return default;
         }
 
         readonly void IItemAccessor<TItem>.CopyItemFrom(IItemContainerInfo<TItem> itemContainer) { }
@@ -196,12 +283,14 @@ namespace CCEnvs.UnityX.Items
             return new ReadOnlyItemContainer(Item.GetValue(), ItemCount);
         }
 
-        Observable<Maybe<TItem>> IItemContainerInfo<TItem>.ObserveItem()
+        readonly ReadOnlyItemContainer<TItem> IItemContainer<TItem>.ToReadOnly() => this;
+
+        readonly Observable<Maybe<TItem>> IItemContainerInfo<TItem>.ObserveItem()
         {
             return Observable.Return(Item);
         }
 
-        Observable<int> IItemContainerInfoItemless.ObserveItemCount()
+        readonly Observable<int> IItemContainerInfoItemless.ObserveItemCount()
         {
             return Observable.Return(ItemCount);
         }

@@ -49,7 +49,9 @@ namespace CCEnvs.FuncLanguage
 
         Either<T, R> CastEither<R>();
 
-        Either<T, R> Select<R>(Func<T, R> selector);
+        Maybe<TOut> Select<TOut>(Func<T, TOut> selector);
+
+        Either<T, R> SelectEither<R>(Func<T, R> selector);
 
         object? IConditional.GetValue() => GetValue();
         object IConditional.GetValue(object defaultValue)

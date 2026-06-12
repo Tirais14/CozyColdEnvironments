@@ -100,11 +100,17 @@ namespace CCEnvs.FuncLanguage
             return Lang.Where(this, predicate);
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Select<R>(Func<T, R> selector)
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
         {
             return Lang.Select(this, selector);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> SelectEither<R>(Func<T, R> selector)
+        {
+            return Lang.SelectEither(this, selector);
         }
     }
 
@@ -198,11 +204,17 @@ namespace CCEnvs.FuncLanguage
             return Lang.Where(this, predicate);
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Either<T, R> Select<R>(Func<T, R> selector)
+        public readonly Maybe<TOut> Select<TOut>(Func<T, TOut?> selector)
         {
             return Lang.Select(this, selector);
+        }
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Either<T, R> SelectEither<R>(Func<T, R> selector)
+        {
+            return Lang.SelectEither(this, selector);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace CCEnvs.UnityX.Items.UI
         :
         IViewModel
     {
-        IReadOnlyObservableDictionary<int, IItemContainer> Containers { get; }
+        //IReadOnlyObservableDictionary<int, IItemContainer> Containers { get; }
         IReadOnlyObservableDictionary<IItemContainer, GameObject> ContainerViews { get; }
 
         void AddContainer(IItemContainer cnt);

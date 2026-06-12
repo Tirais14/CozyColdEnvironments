@@ -9,6 +9,8 @@ namespace CCEnvs.UnityX.Items
     {
         bool IsReadOnlyContainer { get; }
         bool UnlockCapacity { get; set; }
+
+        ReadOnlyItemContainer ToReadOnly();
     }
 
     public interface IItemContainer<TItem>
@@ -19,18 +21,8 @@ namespace CCEnvs.UnityX.Items
 
         where TItem : IItem
     {
+        new ReadOnlyItemContainer<TItem> ToReadOnly();
 
-    }
-
-    public interface IItemContainer<TItem, TItemContainerInfo>
-        :
-        IItemContainer,
-        IItemAccessor<TItem, TItemContainerInfo>,
-        IItemContainerInfo<TItem>
-
-        where TItem : IItem
-        where TItemContainerInfo : IItemContainerInfo<TItem>
-    {
-
+        ReadOnlyItemContainer IItemContainer.ToReadOnly() => ToReadOnly();
     }
 }

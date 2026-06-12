@@ -241,8 +241,25 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Either<L, R> Select<T, L, R>(T input,
-            Func<L, R?> selector)
+        public static Maybe<TOut> Select<TSource, T, TOut>(
+            TSource source,
+            Func<T, TOut?> selector
+            )
+            where TSource : struct, IConditional<T>
+        {
+            Guard.IsNotNull(selector);
+
+            if (source.TryGetValue(out T? value))
+                return selector(value);
+
+            return CCEnvs.FuncLanguage.Maybe<TOut>.None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Either<L, R> SelectEither<T, L, R>(
+            T input,
+            Func<L, R?> selector
+            )
 
             where T : struct, IConditional<L>
         {

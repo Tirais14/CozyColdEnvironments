@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
+using ObservableCollections;
 using R3;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -50,22 +51,23 @@ namespace CCEnvs.UnityX.Items
         void RemoveCount(int count);
         void RemoveCount(int count, out IList<IItemContainer> removed);
 
-        Observable<(int ID, IItemContainer Value)> ObserveContainerAdd();
+        Observable<InventoryContainerAddEvent> ObserveContainerAdd();
 
-        Observable<(int ID, IItemContainer Value)> ObserveContainerRemove();
+        Observable<InventoryContainerRemoveEvent> ObserveContainerRemove();
+
+        Observable<InventoryContainerReplaceEvent> ObserveContainerReplace();
 
         Observable<Unit> ObserveClear();
     }
 
-    public interface IInventory<TItem, TItemContainer, TItemContainerInfo> 
+    public interface IInventory<TItem, TItemContainer> 
         :
         IInventory,
-        IItemAccessor<TItem, TItemContainerInfo>,
+        IItemAccessor<TItem>,
         IItemContainerInfoItemless
 
         where TItem : IItem
         where TItemContainer : IItemContainer
-        where TItemContainerInfo : IItemContainerInfo
     {
         new IReadOnlyDictionary<int, TItemContainer> Containers { get; }
 
@@ -95,9 +97,11 @@ namespace CCEnvs.UnityX.Items
 
         void RemoveCount(int count, out IList<TItemContainer> removed);
 
-        new Observable<(int ID, TItemContainer Value)> ObserveContainerAdd();
+        new Observable<InventoryContainerAddEvent<TItemContainer>> ObserveContainerAdd();
 
-        new Observable<(int ID, TItemContainer Value)> ObserveContainerRemove();
+        new Observable<InventoryContainerRemoveEvent<TItemContainer>> ObserveContainerRemove();
+
+        new Observable<InventoryContainerReplaceEvent<TItemContainer>> ObserveContainerReplace();
 
         bool IInventory.TryGetContainer(int id, [NotNullWhen(true)] out IItemContainer? container)
         {
@@ -184,14 +188,22 @@ namespace CCEnvs.UnityX.Items
             removed = typedRemoved.Cast<IItemContainer>().ToArray(); 
         }
 
-        Observable<(int ID, IItemContainer Value)> IInventory.ObserveContainerAdd()
+        Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
         {
-            return ObserveContainerAdd().Select(container => (container.ID, (IItemContainer)container.Value));
+            return ObserveContainerAdd()
+                .Select(ev => new InventoryContainerAddEvent { ID = ev.ID, Container = ev.Container});
         }
 
-        Observable<(int ID, IItemContainer Value)> IInventory.ObserveContainerRemove()
+        Observable<InventoryContainerRemoveEvent> IInventory.ObserveContainerRemove()
         {
-            return ObserveContainerRemove().Select(container => (container.ID, (IItemContainer)container.Value));
+            return ObserveContainerRemove()
+                .Select(ev => new InventoryContainerRemoveEvent { ID = ev.ID, Container = ev.Container });
+        }
+
+        Observable<InventoryContainerReplaceEvent> IInventory.ObserveContainerReplace()
+        {
+            return ObserveContainerReplace()
+                .Select(ev => new InventoryContainerReplaceEvent { ID = ev.ID, OldContainer = ev.OldContainer, NewContainer = ev.NewContainer });
         }
     }
 
