@@ -14,7 +14,7 @@ namespace CCEnvs.UnityX.Items
     public interface IItemContainer<TItem>
         :
         IItemContainer,
-        IItemAccessor<TItem, IItemContainerInfo<TItem>>,
+        IItemAccessor<TItem>,
         IItemContainerInfo<TItem>
 
         where TItem : IItem

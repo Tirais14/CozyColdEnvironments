@@ -132,10 +132,10 @@ namespace CCEnvs.UnityX.Items
                 cnt.Clear();
         }
 
-        public Maybe<IItemContainerInfo> PutItem(IItem? item, int count = 1)
+        public Maybe<ReadOnlyItemContainer> PutItem(IItem? item, int count = 1)
         {
             if (item.IsNull() || count <= 0)
-                return Maybe<IItemContainerInfo>.None;
+                return Maybe<ReadOnlyItemContainer>.None;
 
             var restItemsMaybe = Maybe<IItemContainerInfo>.None;
             IItemContainerInfo? restItems;
@@ -156,7 +156,7 @@ namespace CCEnvs.UnityX.Items
                     restItemsMaybe = cnt.PutItem(item, count);
 
                     if (!restItemsMaybe.TryGetValue(out restItems) || restItems.IsEmpty)
-                        return Maybe<IItemContainerInfo>.None;
+                        return Maybe<ReadOnlyItemContainer>.None;
 
                     count = restItems.ItemCount;
                 }
