@@ -234,16 +234,20 @@ namespace CCEnvs.UnityX.Items
 
             isActive.Value = true;
 
+#if CC_DEBUG_ENABLED
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Activated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
+#endif
         }
 
         public void Deactivate()
         {
             isActive.Value = false;
 
+#if CC_DEBUG_ENABLED
             if (CCDebug.Instance.IsEnabled)
                 this.PrintLog($"Deactivated. ID: {GetContainerID().Map(x => x.ToString()).GetValue("null")}");
+#endif
         }
 
         public bool SwitchActiveState()
@@ -297,6 +301,206 @@ namespace CCEnvs.UnityX.Items
                 isActive.Dispose();
             }
         }
+    }
 
+    public class ItemContainer<TItem, TItemContainer, TItemContainerInfo>
+        :
+        IItemContainer<TItem, TItemContainerInfo>,
+        IDisposable
+
+        where TItem : IItem
+        where TItemContainer : IItemContainer, TItemContainerInfo, new()
+        where TItemContainerInfo : IItemContainerInfo<TItem>
+    {
+        private readonly ItemContainer internalContainer;
+
+        public bool IsReadOnlyContainer => internalContainer.IsReadOnlyContainer;
+        public bool UnlockCapacity {
+            get => internalContainer.UnlockCapacity;
+            set => internalContainer.UnlockCapacity = value;
+        }
+        public bool IsEmpty => internalContainer.IsEmpty;
+        public bool IsFull => internalContainer.IsFull;
+
+        public Maybe<TItem> Item => internalContainer.Item.Cast<TItem>();
+
+        public int ItemCount => internalContainer.ItemCount;
+        public int Capacity {
+            get => internalContainer.Capacity;
+            set => internalContainer.Capacity = value;
+        }
+        public int FreeSpace => internalContainer.FreeSpace;
+
+        public Maybe<IInventory> ParentInventory {
+            get => internalContainer.ParentInventory;
+            set => internalContainer.ParentInventory = value;
+        }
+
+        public ItemContainer(
+            TItem? item = default,
+            int count = 1,
+            int capacity = 0,
+            bool isReadOnlyContainer = false
+            )
+        {
+            internalContainer = new ItemContainer(item, count, capacity, isReadOnlyContainer);
+        }
+
+        public ItemContainer()
+            :
+            this(capacity: int.MaxValue)
+        {
+        }
+
+        ~ItemContainer() => Dispose();
+
+        public bool CanPut() => internalContainer.CanPut();
+        public bool CanPut(IItem? item) => internalContainer.CanPut(item);
+        public bool CanPut(IItem? item, int count) => internalContainer.CanPut(item, count);
+
+        public void Clear() => internalContainer.Clear();
+
+        public bool ContainsItem() => internalContainer.ContainsItem();
+        public bool ContainsItem(IItem? item) => internalContainer.ContainsItem(item);
+        public bool ContainsItem(IItem? item, int count) => internalContainer.ContainsItem(item, count);
+
+        public void CopyItemFrom(IItemContainerInfo<TItem> itemContainer)
+        {
+            internalContainer.CopyItemFrom(itemContainer);
+        }
+
+        public Maybe<int> GetContainerID() => internalContainer.GetContainerID();
+
+        public Maybe<TItemContainerInfo> PutItem(TItem? item, int count = 1)
+        {
+            if (!internalContainer.PutItem(item, count).TryGetValue(out IItemContainerInfo? untypedRestItems))
+                return Maybe<TItemContainerInfo>.None;
+
+            var restItems = new TItemContainer
+            {
+                Capacity = untypedRestItems.Capacity
+            };
+
+            restItems.PutItem(
+                untypedRestItems.Item.GetValue().As<TItem>(),
+                untypedRestItems.ItemCount
+                );
+
+            return restItems;
+        }
+
+        public Maybe<TItemContainerInfo> PutItemFrom(IItemContainer<TItem> itemContainer)
+        {
+            if (!internalContainer.PutItemFrom(itemContainer).TryGetValue(out IItemContainerInfo? untypedRestItems))
+                return Maybe<TItemContainerInfo>.None;
+
+            var restItems = new TItemContainer
+            {
+                Capacity = untypedRestItems.Capacity
+            };
+
+            restItems.PutItem(
+                untypedRestItems.Item.GetValue().As<TItem>(),
+                untypedRestItems.ItemCount
+                );
+
+            return restItems;
+        }
+        public Maybe<TItemContainerInfo> PutItemFrom(
+            IItemContainer<TItem> itemContainer,
+            int count
+            )
+        {
+            if (!internalContainer.PutItemFrom(itemContainer, count).TryGetValue(out IItemContainerInfo? untypedRestItems))
+                return Maybe<TItemContainerInfo>.None;
+
+            var restItems = new TItemContainer
+            {
+                Capacity = untypedRestItems.Capacity
+            };
+
+            restItems.PutItem(
+                untypedRestItems.Item.GetValue().As<TItem>(),
+                untypedRestItems.ItemCount
+                );
+
+            return restItems;
+        }
+
+        public IItemContainer ShallowClone()
+        {
+            return new ItemContainer<TItem, TItemContainer, TItemContainerInfo>(
+                item: Item.GetValue(),
+                count: ItemCount,
+                capacity: Capacity,
+                isReadOnlyContainer: IsReadOnlyContainer
+                )
+            {
+                Capacity = Capacity,
+                ParentInventory = ParentInventory,
+                UnlockCapacity = UnlockCapacity
+            };
+        }
+
+        public Maybe<TItemContainerInfo> TakeItem()
+        {
+            if (!internalContainer.TakeItem().TryGetValue(out IItemContainerInfo? untypedTakedItems))
+                return Maybe<TItemContainerInfo>.None;
+
+            var restItems = new TItemContainer
+            {
+                Capacity = untypedTakedItems.Capacity
+            };
+
+            restItems.PutItem(
+                untypedTakedItems.Item.GetValue().As<TItem>(), 
+                untypedTakedItems.ItemCount
+                );
+
+            return restItems;
+        }
+        public Maybe<TItemContainerInfo> TakeItem(int count)
+        {
+            if (!internalContainer.TakeItem(count).TryGetValue(out IItemContainerInfo? untypedTakedItems))
+                return Maybe<TItemContainerInfo>.None;
+
+            var restItems = new TItemContainer
+            {
+                Capacity = untypedTakedItems.Capacity
+            };
+
+            restItems.PutItem(
+                untypedTakedItems.Item.GetValue().As<TItem>(),
+                untypedTakedItems.ItemCount
+                );
+
+            return restItems;
+        }
+        public Maybe<TItemContainerInfo> TakeItem(TItem item, int count)
+        {
+            if (!internalContainer.TakeItem(item, count).TryGetValue(out IItemContainerInfo? untypedTakedItems))
+                return Maybe<TItemContainerInfo>.None;
+
+            var restItems = new TItemContainer
+            {
+                Capacity = untypedTakedItems.Capacity
+            };
+
+            restItems.PutItem(
+                untypedTakedItems.Item.GetValue().As<TItem>(),
+                untypedTakedItems.ItemCount
+                );
+
+            return restItems;
+        }
+
+        public void Dispose() => internalContainer.Dispose();
+
+        public Observable<Maybe<TItem>> ObserveItem()
+        {
+            return internalContainer.ObserveItem().Select(item => item.Cast<TItem>());
+        }
+
+        public Observable<int> ObserveItemCount() => internalContainer.ObserveItemCount();
     }
 }
