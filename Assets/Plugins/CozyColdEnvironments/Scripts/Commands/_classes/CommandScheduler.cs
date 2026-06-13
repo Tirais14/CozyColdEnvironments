@@ -204,7 +204,7 @@ namespace CCEnvs.Patterns.Commands
 
             while (!CCDisposable.IsDisposed(disposed)
                    &&
-                   loopFuse.MoveNext()
+                   loopFuse.MoveNextThrow()
                    )
             {
                 if (IsCurrentCommandUndone())

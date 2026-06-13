@@ -293,7 +293,7 @@ namespace CCEnvs.UnityX.D3
 
             while (Container.Contains(testItem)
                    &&
-                   loopFuse.MoveNext())
+                   loopFuse.MoveNextThrow())
             {
                 results.Add(testItem);
 
@@ -360,7 +360,7 @@ namespace CCEnvs.UnityX.D3
 
                 for (int i1 = 0; i1 < axis1ItemCountFloored; i1++)
                 {
-                    if (!loopFuse.MoveNext())
+                    if (!loopFuse.MoveNextThrow())
                         return results;
 
                     nextAxis1Pos = i1 * (item.size[axis1] + gap[axis1]);
@@ -463,7 +463,7 @@ namespace CCEnvs.UnityX.D3
 
                     for (int i1 = 0; i1 < axis1ItemCountFloored; i1++)
                     {
-                        if (!loopFuse.MoveNext())
+                        if (!loopFuse.MoveNextThrow())
                             return results;
                         nextAxis1Pos = i1 * (item.size[axis1] + gap[axis1]);
 

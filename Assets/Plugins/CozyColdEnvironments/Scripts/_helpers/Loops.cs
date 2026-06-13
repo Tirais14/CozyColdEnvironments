@@ -25,13 +25,19 @@ namespace CCEnvs
 
             var loopState = new LoopState();
 
+#if CC_DEBUG_ENABLED
             var loopFuse = LoopFuse.Create();
+#endif
 
             IEnumerable<T?>? nextValues = null;
             T? current;
 
-            while (toProcess.Count > 0 && loopFuse.DebugMoveNext())
+            while (toProcess.Count > 0)
             {
+#if CC_DEBUG_ENABLED
+                loopFuse.MoveNextThrow();
+#endif
+
                 current = toProcess.Dequeue();
 
                 if (current is null)

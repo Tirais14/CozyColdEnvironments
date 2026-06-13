@@ -123,7 +123,6 @@ namespace CCEnvs.Saves
             using var notReadyMonoBehs = ListPool<MonoBehaviourInfo>.Shared.Get();
 
             var loopFuse = LoopFuse.Create();
-            loopFuse.ThrowOnLimitReached = false;
 
             while (processedCount++ < toProcessCount
                    &&

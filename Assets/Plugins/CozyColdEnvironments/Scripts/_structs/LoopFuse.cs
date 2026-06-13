@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Unity.Collections.LowLevel.Unsafe;
 
 #nullable enable
 #pragma warning disable IDE0251
@@ -44,25 +45,14 @@ namespace CCEnvs
             set;
         }
 
-        public bool ThrowOnLimitReached {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            readonly get;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set;
-        }
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static LoopFuse Create(
-            long iterationLimit = DEFAULT_ITERATION_LIMIT,
-            bool throwOnLimitReached = true
-            )
+        public static LoopFuse Create(long iterationLimit = DEFAULT_ITERATION_LIMIT)
         {
             return new LoopFuse()
             {
                 IterationLimit = iterationLimit,
-                ThrowOnLimitReached = throwOnLimitReached,
+                IterationPosition = -1,
                 isInititalized = true,
             };
         }
@@ -78,52 +68,16 @@ namespace CCEnvs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
+        public bool MoveNextThrow()
         {
-            if (!isInititalized
-                &&
-                this.IsDefault())
-            {
-                IterationPosition = -1;
-                IterationLimit = DEFAULT_ITERATION_LIMIT;
-                ThrowOnLimitReached = true;
-
-                isInititalized = true;
-            }
-
-            IterationCount++;
-            IterationPosition++;
-
-            if (IterationCount > IterationLimit)
-            {
-                OnLimitReached?.Invoke(IterationPosition);
-
-                var ex = CC.ThrowHelper.EndlessLoopException(IterationCount);
-
-                if (ThrowOnLimitReached)
-                    throw ex;
-                else
-                    this.PrintException(ex);
-
-                return false;
-            }
+            if (!MoveNextCore())
+                throw CC.ThrowHelper.EndlessLoopException(IterationCount);
 
             return true;
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        /// <summary>
-        /// Works only if setted CC_DEBUG preprocessor variable
-        /// </summary>
-        public bool DebugMoveNext()
-        {
-#if CC_DEBUG_ENABLED
-            return MoveNext();
-#else
-            return true;
-#endif
-        }
+        public bool MoveNext() => MoveNextCore();
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -145,9 +99,7 @@ namespace CCEnvs
                    &&
                    IterationCount == other.IterationCount
                    &&
-                   IterationLimit == other.IterationLimit
-                   &&
-                   ThrowOnLimitReached == other.ThrowOnLimitReached;
+                   IterationLimit == other.IterationLimit;
         }
 
         public readonly override int GetHashCode()
@@ -155,17 +107,33 @@ namespace CCEnvs
             return HashCode.Combine(
                 IterationPosition,
                 IterationCount,
-                IterationLimit,
-                ThrowOnLimitReached
+                IterationLimit
                 );
         }
 
         public readonly override string ToString()
         {
-            if (this.IsDefault())
-                return StringHelper.EMPTY_OBJECT;
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(IterationPosition), IterationPosition)
+                .AddProperty(nameof(IterationCount), IterationCount)
+                .AddProperty(nameof(IterationLimit), IterationLimit)
+                .ToStringAndDispose();
+        }
 
-            return $"({nameof(IterationPosition)}: {IterationPosition}; {nameof(IterationLimit)}: {IterationLimit})";
+        private bool MoveNextCore()
+        {
+            if (!isInititalized)
+            {
+                IterationPosition = -1;
+                IterationLimit = DEFAULT_ITERATION_LIMIT;
+
+                isInititalized = true;
+            }
+
+            IterationCount++;
+            IterationPosition++;
+
+            return IterationCount <= IterationLimit;
         }
     }
 }

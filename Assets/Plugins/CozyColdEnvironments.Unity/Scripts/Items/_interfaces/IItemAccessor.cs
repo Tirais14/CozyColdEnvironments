@@ -6,13 +6,17 @@ namespace CCEnvs.UnityX.Items
 {
     public interface IItemAccessor
     {
-        Maybe<ReadOnlyItemContainer> PutItem(IItem? item, int count = 1);
-        Maybe<ReadOnlyItemContainer> PutItemFrom(IItemContainer itemContainer, int count);
-        Maybe<ReadOnlyItemContainer> PutItemFrom(IItemContainer itemContainer);
+        ReadOnlyItemContainer PutItem(IItem? item, int count = 1);
+        ReadOnlyItemContainer PutItem(IItemContainerInfo? containerInfo);
+        ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+            where TItemContainerInfo : struct, IItemContainerInfo;
 
-        Maybe<ReadOnlyItemContainer> TakeItem();
-        Maybe<ReadOnlyItemContainer> TakeItem(int count);
-        Maybe<ReadOnlyItemContainer> TakeItem(IItem item, int count);
+        ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer, int count);
+        ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer);
+
+        ReadOnlyItemContainer TakeItem();
+        ReadOnlyItemContainer TakeItem(int count);
+        ReadOnlyItemContainer TakeItem(IItem? item, int count);
 
         void CopyItemFrom(IItemContainerInfo itemContainer);
 
@@ -22,13 +26,17 @@ namespace CCEnvs.UnityX.Items
     public interface IItemAccessor<TItem> : IItemAccessor
         where TItem : IItem
     {
-        Maybe<ReadOnlyItemContainer<TItem>> PutItem(TItem? item, int count = 1);
-        Maybe<ReadOnlyItemContainer<TItem>> PutItemFrom(IItemContainer<TItem> itemContainer, int count);
-        Maybe<ReadOnlyItemContainer<TItem>> PutItemFrom(IItemContainer<TItem> itemContainer);
+        ReadOnlyItemContainer<TItem> PutItem(TItem? item, int count = 1);
+        ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem>? containerInfo);
+        new ReadOnlyItemContainer<TItem> PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+            where TItemContainerInfo : struct, IItemContainerInfo<TItem>;
 
-        new Maybe<ReadOnlyItemContainer<TItem>> TakeItem();
-        new Maybe<ReadOnlyItemContainer<TItem>> TakeItem(int count);
-        Maybe<ReadOnlyItemContainer<TItem>> TakeItem(TItem item, int count);
+        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer, int count);
+        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer);
+
+        new ReadOnlyItemContainer<TItem> TakeItem();
+        new ReadOnlyItemContainer<TItem> TakeItem(int count);
+        ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count);
 
         void CopyItemFrom(IItemContainerInfo<TItem> itemContainer);
 
@@ -40,40 +48,48 @@ namespace CCEnvs.UnityX.Items
             CopyItemFrom(typed);
         }
 
-        Maybe<ReadOnlyItemContainer> IItemAccessor.PutItem(IItem? item, int count)
+        ReadOnlyItemContainer IItemAccessor.PutItem(IItem? item, int count)
         {
-            return PutItem(item.As<TItem>(), count).Select(restItems => restItems.ToUntyped());
+            return PutItem(item.As<TItem>(), count);
+        }
+        ReadOnlyItemContainer IItemAccessor.PutItem(IItemContainerInfo containerInfo)
+        {
+            if (containerInfo.IsNot<IItemContainerInfo<TItem>>(out var typedContainerInfo))
+                return ReadOnlyItemContainer.Empty;
+
+            return PutItem(typedContainerInfo);
+        }
+        ReadOnlyItemContainer IItemAccessor.PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+        {
+            if (containerInfo.IsNot<IItemContainerInfo<TItem>>(out var typedContainerInfo))
+                return ReadOnlyItemContainer.Empty;
+
+            return PutItem(typedContainerInfo);
         }
 
-        Maybe<ReadOnlyItemContainer> IItemAccessor.PutItemFrom(IItemContainer itemContainer)
+        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer itemContainer)
         {
             if (itemContainer.IsNot<IItemContainer<TItem>>(out var typedContainer))
                 return default;
 
-            return PutItemFrom(typedContainer).Select(restItems => restItems.ToUntyped());
+            return PutItemFrom(typedContainer);
         }
-        Maybe<ReadOnlyItemContainer> IItemAccessor.PutItemFrom(IItemContainer itemContainer, int count)
+        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer itemContainer, int count)
         {
             if (itemContainer.IsNot<IItemContainer<TItem>>(out var typedContainer))
                 return default;
 
-            return PutItemFrom(typedContainer, count).Select(restItems => restItems.ToUntyped());
+            return PutItemFrom(typedContainer, count);
         }
 
-        Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem()
-        {
-            return TakeItem().Select(restItems => restItems.ToUntyped());
-        }
-        Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem(int count)
-        {
-            return TakeItem(count).Select(restItems => restItems.ToUntyped());
-        }
-        Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem(IItem item, int count)
+        ReadOnlyItemContainer IItemAccessor.TakeItem() => TakeItem();
+        ReadOnlyItemContainer IItemAccessor.TakeItem(int count) => TakeItem(count);
+        ReadOnlyItemContainer IItemAccessor.TakeItem(IItem item, int count)
         {
             if (item.IsNot<TItem>(out var typedItem))
                 return default;
 
-            return TakeItem(typedItem, count).Select(restItems => restItems.ToUntyped());
+            return TakeItem(typedItem, count);
         }
     }
 }

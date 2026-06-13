@@ -235,7 +235,6 @@ namespace CCEnvs.UnityX.Databases
             private readonly AssetDatabaseQuery query;
 
             private readonly Type? typeFilter;
-
             private readonly Type? assetTypeFilter;
 
             private readonly IAssetDatabaseRegistry registry;
@@ -265,12 +264,16 @@ namespace CCEnvs.UnityX.Databases
 
             public bool MoveNext()
             {
+#if CC_DEBUG_ENABLED
                 var loopFuse = LoopFuse.Create();
+#endif
 
-                while (regEnumerator.TryMoveNext(out var item)
-                       &&
-                       loopFuse.DebugMoveNext())
+                while (regEnumerator.TryMoveNext(out var item))
                 {
+#if CC_DEBUG_ENABLED
+                    loopFuse.MoveNextThrow();
+#endif
+
                     Current = item.Value;
 
                     if (query.ID != null)
@@ -357,14 +360,18 @@ namespace CCEnvs.UnityX.Databases
 
             public bool MoveNext()
             {
+#if CC_DEBUG_ENABLED
                 var loopFuse = LoopFuse.Create();
+#endif
 
                 while (dbKeysEnumerator.TryMoveNext(out var assetID)
                        &&
-                       dbAssetsEnumerator.TryMoveNext(out var asset)
-                       &&
-                       loopFuse.DebugMoveNext())
+                       dbAssetsEnumerator.TryMoveNext(out var asset))
                 {
+#if CC_DEBUG_ENABLED
+                    loopFuse.MoveNextThrow();
+#endif
+
                     if (query.ID != null)
                     {
                         if (assetID != query.ID)

@@ -14,13 +14,18 @@ namespace CCEnvs.UnityX.Items
         IItemAccessor,
         IItemContainerInfoItemless
     {
+        IItemContainer this[int id] { get; }
+
         bool AutoSize { get; set; }
 
         IReadOnlyDictionary<int, IItemContainer> Containers { get; }
 
         int ContainerCount { get; }
 
-        IItemContainer this[int id] { get; }
+        /// <summary>
+        /// Used for cloning when <see cref="AutoSize"/> is true
+        /// </summary>
+        IItemContainer? ContainerSample { get; set; }
 
         bool TryGetContainer(int id, [NotNullWhen(true)] out IItemContainer? container);
 
@@ -69,9 +74,16 @@ namespace CCEnvs.UnityX.Items
         where TItem : IItem
         where TItemContainer : IItemContainer
     {
+        new TItemContainer this[int id] { get; }
+
         new IReadOnlyDictionary<int, TItemContainer> Containers { get; }
 
-        new TItemContainer this[int id] { get; }
+        new TItemContainer? ContainerSample { get; set; }
+
+        IItemContainer? IInventory.ContainerSample {
+            get => ContainerSample;
+            set => ContainerSample.As<TItemContainer>();
+        }
 
         bool TryGetContainer(int id, [NotNullWhen(true)] out TItemContainer? container);
 

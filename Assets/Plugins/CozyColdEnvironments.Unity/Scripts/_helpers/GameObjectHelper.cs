@@ -127,12 +127,16 @@ namespace CCEnvs.UnityX
 
             var results = new List<Type>(components.Count);
 
+#if CC_DEBUG_ENABLED
             var loopFuse = LoopFuse.Create();
+#endif
 
             Component component;
 
-            while (loopFuse.DebugMoveNext() && components.Count > 0)
+            while (components.Count > 0)
             {
+                loopFuse.MoveNextThrow();
+
                 component = components.Pop();
                 Type componentType = component.GetType();
                 if (args.IsToRemoveType(componentType))
@@ -164,7 +168,7 @@ namespace CCEnvs.UnityX
 
             var loopFuse = LoopFuse.Create();
 
-            while (loopFuse.MoveNext() && results.Count < components.Length)
+            while (loopFuse.MoveNextThrow() && results.Count < components.Length)
             {
                 toStack = getComponentsByDependencies();
                 addToResults();
@@ -501,7 +505,7 @@ namespace CCEnvs.UnityX
 
                 Transform child;
 
-                while (toProcess.Value.TryDequeue(out current) && loopFuse.MoveNext())
+                while (toProcess.Value.TryDequeue(out current) && loopFuse.MoveNextThrow())
                 {
                     childCount = current.childCount;
 
@@ -604,7 +608,7 @@ namespace CCEnvs.UnityX
 
                 Transform child;
 
-                while (toProcess.Value.TryDequeue(out current) && loopFuse.MoveNext())
+                while (toProcess.Value.TryDequeue(out current) && loopFuse.MoveNextThrow())
                 {
                     childCount = current.childCount;
 

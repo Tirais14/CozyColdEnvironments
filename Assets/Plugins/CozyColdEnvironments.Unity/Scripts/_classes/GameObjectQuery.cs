@@ -926,7 +926,7 @@ namespace CCEnvs.UnityX
 
                 var loopFuse = LoopFuse.Create();
 
-                while (++pointer < components.Count && loopFuse.MoveNext())
+                while (++pointer < components.Count && loopFuse.MoveNextThrow())
                 {
                     Current = components[pointer];
                     currentGO = Current.gameObject;
@@ -1059,7 +1059,7 @@ namespace CCEnvs.UnityX
 
                 while (viewsEtor.TryMoveNextStruct<ComponentsEnumerator<IView>, IView>(out var view)
                        &&
-                       loopFuse.MoveNext())
+                       loopFuse.MoveNextThrow())
                 {
                     viewModel = view.ViewModel;
 
@@ -1198,7 +1198,7 @@ namespace CCEnvs.UnityX
 
                 Component? cmp = null;
 
-                while (loopFuse.MoveNext())
+                while (loopFuse.MoveNextThrow())
                 {
                     if (viewModelsEtor.TryMoveNextStruct<ViewModelsEnumerator, IViewModel>(out var viewModel))
                         model = viewModel.Model;

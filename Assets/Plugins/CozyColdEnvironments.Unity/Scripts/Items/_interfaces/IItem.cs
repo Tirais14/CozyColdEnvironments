@@ -4,7 +4,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
-    public interface IItem : IEquatable<IItem>, IIDMarked<int>
+    public interface IItem : IIDMarked<int>
     {
         string Name { get; }
 

@@ -6,8 +6,6 @@ using System.Threading;
 using UnityEngine;
 
 #nullable enable
-#pragma warning disable S3236
-#pragma warning disable S1144
 namespace CCEnvs.UnityX.Items
 {
     public class ItemContainer : IItemContainer, IDisposable
@@ -51,13 +49,11 @@ namespace CCEnvs.UnityX.Items
         /// </summary>
         public bool UnlockCapacity { get; set; }
 
-#pragma warning disable S2292
         //TODO: Remove and Add to new item container parent
         public Maybe<IInventory> ParentInventory {
             get => parentInventory;
             set => parentInventory = value;
         }
-#pragma warning restore S2292
 
         bool IItemContainer.IsReadOnlyContainer { get; }
 
@@ -108,18 +104,13 @@ namespace CCEnvs.UnityX.Items
             return ItemCount >= count;
         }
 
-        public Maybe<ReadOnlyItemContainer> PutItem(IItem? inputItem, int count = 1)
+        public ReadOnlyItemContainer PutItem(IItem? inputItem, int count = 1)
         {
-            if (inputItem.IsNull()
-                ||
-                count <= 0
-                ||
-                IsFull
-                ||
-                (this.item.Value.TryGetValue(out var item) && item.ID != inputItem.ID))
-            {
+            if (inputItem.IsNull() || count <= 0)
+                return ReadOnlyItemContainer.Empty;
+
+            if (IsFull || (Item.TryGetValue(out var item) && item.ID != inputItem.ID))
                 return new ReadOnlyItemContainer(inputItem, count);
-            }
 
             int toPutCount = Math.Clamp(count, 0, FreeSpace);
             itemCount.Value += toPutCount;
@@ -127,36 +118,43 @@ namespace CCEnvs.UnityX.Items
             int restCount = toPutCount - count;
 
             if (restCount <= 0)
-                return default;
+                return ReadOnlyItemContainer.Empty;
 
             return new ReadOnlyItemContainer(item, restCount);
         }
-
-        public Maybe<ReadOnlyItemContainer> PutItemFrom(IItemContainer cnt, int count)
+        public ReadOnlyItemContainer PutItem(IItemContainerInfo? containerInfo)
         {
-            CC.Guard.IsNotNull(cnt, nameof(cnt));
+            if (containerInfo.IsNull())
+                return ReadOnlyItemContainer.Empty;
 
-            if (cnt.Equals(this)
-                ||
-                !cnt.TakeItem(count).TryGetValue(out var takedItems))
-            {
-                return Maybe<ReadOnlyItemContainer>.None;
-            }
-
-            return PutItem(takedItems.Item.GetValue(), takedItems.ItemCount);
+            return PutItem(containerInfo.Item.GetValue(), containerInfo.ItemCount);
+        }
+        public ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+            where TItemContainerInfo : struct, IItemContainerInfo
+        {
+            return PutItem(containerInfo.Item.GetValue(), containerInfo.ItemCount);
         }
 
-        public Maybe<ReadOnlyItemContainer> PutItemFrom(IItemContainer itemContainer)
+        public ReadOnlyItemContainer PutItemFrom(IItemContainer? container, int count)
         {
-            CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
+            if (count <= 0 || container.IsNull() || this == container)
+                return ReadOnlyItemContainer.Empty;
 
-            return PutItemFrom(itemContainer, itemContainer.ItemCount);
+            return container.PutItem(PutItem(container.TakeItem(count)));
         }
 
-        public Maybe<ReadOnlyItemContainer> TakeItem(int count)
+        public ReadOnlyItemContainer PutItemFrom(IItemContainer? container)
+        {
+            if (container.IsNull())
+                return ReadOnlyItemContainer.Empty;
+
+            return PutItemFrom(container, container.ItemCount);
+        }
+
+        public ReadOnlyItemContainer TakeItem(int count)
         {
             if (Item.IsNone || count <= 0)
-                return Maybe<ReadOnlyItemContainer>.None;
+                return ReadOnlyItemContainer.Empty;
 
             int takedCount = Math.Clamp(count, 0, ItemCount);
             itemCount.Value -= takedCount;
@@ -164,12 +162,12 @@ namespace CCEnvs.UnityX.Items
             return new ReadOnlyItemContainer(Item.GetValue(), count);
         }
 
-        public Maybe<ReadOnlyItemContainer> TakeItem() => TakeItem(itemCount.Value);
+        public ReadOnlyItemContainer TakeItem() => TakeItem(itemCount.Value);
 
-        public Maybe<ReadOnlyItemContainer> TakeItem(IItem item, int count)
+        public ReadOnlyItemContainer TakeItem(IItem? item, int count)
         {
             if (!ContainsItem(item))
-                return Maybe<ReadOnlyItemContainer>.None;
+                return ReadOnlyItemContainer.Empty;
 
             return TakeItem(count);
         }
@@ -349,30 +347,29 @@ namespace CCEnvs.UnityX.Items
 
         public Maybe<int> GetContainerID() => internalContainer.GetContainerID();
 
-        public Maybe<ReadOnlyItemContainer<TItem>> PutItem(TItem? item, int count = 1)
+        public ReadOnlyItemContainer<TItem> PutItem(TItem? item, int count = 1)
         {
-            if (!internalContainer.PutItem(item, count).TryGetValue(out ReadOnlyItemContainer untypedRestItems))
-                return default;
-
-            return untypedRestItems.Convert<TItem>();
+            return internalContainer.PutItem(item, count).Convert<TItem>();
+        }
+        public ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem>? containerInfo)
+        {
+            return internalContainer.PutItem(containerInfo).Convert<TItem>();
+        }
+        public ReadOnlyItemContainer<TItem> PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo) where TItemContainerInfo : struct, IItemContainerInfo<TItem>
+        {
+            return internalContainer.PutItem(containerInfo).Convert<TItem>();
         }
 
-        public Maybe<ReadOnlyItemContainer<TItem>> PutItemFrom(IItemContainer<TItem> itemContainer)
+        public ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? container)
         {
-            if (!internalContainer.PutItemFrom(itemContainer).TryGetValue(out ReadOnlyItemContainer untypedRestItems))
-                return default;
-
-            return untypedRestItems.Convert<TItem>();
+            return internalContainer.PutItemFrom(container).Convert<TItem>();
         }
-        public Maybe<ReadOnlyItemContainer<TItem>> PutItemFrom(
-            IItemContainer<TItem> itemContainer,
+        public ReadOnlyItemContainer<TItem> PutItemFrom(
+            IItemContainer<TItem>? container,
             int count
             )
         {
-            if (!internalContainer.PutItemFrom(itemContainer, count).TryGetValue(out ReadOnlyItemContainer untypedRestItems))
-                return default;
-
-            return untypedRestItems.Convert<TItem>();
+            return internalContainer.PutItemFrom(container).Convert<TItem>();
         }
 
         public ReadOnlyItemContainer<TItem> ToReadOnly() => new(Item.GetValue(), ItemCount);
@@ -391,26 +388,17 @@ namespace CCEnvs.UnityX.Items
             };
         }
 
-        public Maybe<ReadOnlyItemContainer<TItem>> TakeItem()
+        public ReadOnlyItemContainer<TItem> TakeItem()
         {
-            if (!internalContainer.TakeItem().TryGetValue(out ReadOnlyItemContainer untypedTakedItems))
-                return default;
-
-            return untypedTakedItems.Convert<TItem>();
+            return internalContainer.TakeItem().Convert<TItem>();
         }
-        public Maybe<ReadOnlyItemContainer<TItem>> TakeItem(int count)
+        public ReadOnlyItemContainer<TItem> TakeItem(int count)
         {
-            if (!internalContainer.TakeItem(count).TryGetValue(out ReadOnlyItemContainer untypedTakedItems))
-                return default;
-
-            return untypedTakedItems.Convert<TItem>();
+            return internalContainer.TakeItem(count).Convert<TItem>();
         }
-        public Maybe<ReadOnlyItemContainer<TItem>> TakeItem(TItem item, int count)
+        public ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count)
         {
-            if (!internalContainer.TakeItem(item, count).TryGetValue(out ReadOnlyItemContainer untypedTakedItems))
-                return default;
-
-            return untypedTakedItems.Convert<TItem>();
+            return internalContainer.TakeItem(item, count).Convert<TItem>();
         }
 
         public void Dispose() => internalContainer.Dispose();

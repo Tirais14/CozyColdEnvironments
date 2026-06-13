@@ -12,6 +12,8 @@ namespace CCEnvs.UnityX.Items
         IItemContainer, 
         IEquatable<ReadOnlyItemContainer>
     {
+        public static ReadOnlyItemContainer Empty { get; } = new(null, 0);
+
         public readonly Maybe<IItem> Item { get; }
 
         public readonly int ItemCount { get; }
@@ -35,6 +37,12 @@ namespace CCEnvs.UnityX.Items
 
         public ReadOnlyItemContainer(IItem? item, int itemCount)
         {
+            if (itemCount <= 0)
+            {
+                Item = default;
+                ItemCount = 0;
+            }
+
             Item = item.Maybe();
             ItemCount = itemCount;
         }
@@ -96,36 +104,45 @@ namespace CCEnvs.UnityX.Items
 
         readonly Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.PutItem(IItem? item, int count)
+        readonly ReadOnlyItemContainer IItemAccessor.PutItem(IItem? item, int count)
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return Empty;
+        }
+        readonly ReadOnlyItemContainer IItemAccessor.PutItem(IItemContainerInfo? containerInfo)
+        {
+            return Empty;
         }
 
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.PutItemFrom(
-            IItemContainer itemContainer,
+        readonly ReadOnlyItemContainer IItemAccessor.PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+        {
+            return Empty;
+        }
+
+        readonly ReadOnlyItemContainer IItemAccessor.PutItemFrom(
+            IItemContainer? itemContainer,
             int count
             )
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return Empty;
         }
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.PutItemFrom(
-            IItemContainer itemContainer
+        readonly ReadOnlyItemContainer IItemAccessor.PutItemFrom(
+            IItemContainer? itemContainer
             )
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return Empty;
         }
 
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem()
+        readonly ReadOnlyItemContainer IItemAccessor.TakeItem()
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return Empty;
         }
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem(int count)
+        readonly ReadOnlyItemContainer IItemAccessor.TakeItem(int count)
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return Empty;
         }
-        readonly Maybe<ReadOnlyItemContainer> IItemAccessor.TakeItem(IItem item, int count)
+        readonly ReadOnlyItemContainer IItemAccessor.TakeItem(IItem? item, int count)
         {
-            return Maybe<ReadOnlyItemContainer>.None;
+            return Empty;
         }
 
         readonly void IItemAccessor.CopyItemFrom(IItemContainerInfo itemContainer) {  }
@@ -158,6 +175,8 @@ namespace CCEnvs.UnityX.Items
         
         where TItem : IItem
     {
+        public static ReadOnlyItemContainer<TItem> Empty { get; } = new(default, 0);
+
         public readonly Maybe<TItem> Item { get; }
 
         public readonly int ItemCount { get; }
@@ -242,36 +261,45 @@ namespace CCEnvs.UnityX.Items
 
         readonly Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
 
-        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.PutItem(TItem? item, int count)
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.PutItem(TItem? item, int count)
         {
-            return default;
+            return Empty;
+        }
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.PutItem(IItemContainerInfo<TItem>? containerInfo)
+        {
+            return Empty;
         }
 
-        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.PutItemFrom(
-            IItemContainer<TItem> itemContainer,
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+        {
+            return Empty;
+        }
+
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.PutItemFrom(
+            IItemContainer<TItem>? itemContainer,
             int count
             )
         {
-            return default;
+            return Empty;
         }
-        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.PutItemFrom(
-            IItemContainer<TItem> itemContainer
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.PutItemFrom(
+            IItemContainer<TItem>? itemContainer
             )
         {
-            return default;
+            return Empty;
         }
 
-        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.TakeItem()
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem()
         {
-            return default;
+            return Empty;
         }
-        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.TakeItem(int count)
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem(int count)
         {
-            return default;
+            return Empty;
         }
-        readonly Maybe<ReadOnlyItemContainer<TItem>> IItemAccessor<TItem>.TakeItem(TItem item, int count)
+        readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem(TItem? item, int count)
         {
-            return default;
+            return Empty;
         }
 
         readonly void IItemAccessor<TItem>.CopyItemFrom(IItemContainerInfo<TItem> itemContainer) { }
