@@ -2,6 +2,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using R3;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
@@ -94,7 +95,7 @@ namespace CCEnvs.UnityX.Items
             if (!ContainsItem())
                 return false;
 
-            return Item.Has(item);
+            return EqualityComparer<IItem?>.Default.Equals(Item.GetValue(), item);
         }
         public bool ContainsItem(IItem? item, int count)
         {

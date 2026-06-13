@@ -20,11 +20,13 @@ namespace CCEnvs.UnityX.ECS
             HasValue = true;
         }
 
+        [BurstCompile]
         public static implicit operator MaybeUnmanaged<T>(T value)
         {
             return new MaybeUnmanaged<T>(value);
         }
 
+        [BurstCompile]
         public static implicit operator T?(MaybeUnmanaged<T> instance)
         {
             if (!instance.HasValue)
@@ -33,21 +35,32 @@ namespace CCEnvs.UnityX.ECS
             return instance.Value;
         }
 
+        [BurstCompile]
         public static explicit operator T(MaybeUnmanaged<T> instance)
         {
             return instance.Value;
         }
 
+        [BurstCompile]
         public static bool operator ==(MaybeUnmanaged<T> left, MaybeUnmanaged<T> right)
         {
             return left.Equals(right);
         }
 
+        [BurstCompile]
         public static bool operator !=(MaybeUnmanaged<T> left, MaybeUnmanaged<T> right)
         {
             return !(left == right);
         }
 
+        [BurstCompile]
+        public readonly bool TryGetValue(out T value)
+        {
+            value = Value;
+            return HasValue;
+        }
+
+        [BurstCompile]
         public MaybeUnmanaged<TInterpret> Reinterpret<TInterpret>()
             where TInterpret : unmanaged
         {
