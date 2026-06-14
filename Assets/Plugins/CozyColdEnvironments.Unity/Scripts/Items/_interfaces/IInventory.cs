@@ -1,7 +1,6 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
-using ObservableCollections;
 using R3;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -21,6 +20,8 @@ namespace CCEnvs.UnityX.Items
         IReadOnlyDictionary<int, IItemContainer> Containers { get; }
 
         int ContainerCount { get; }
+        int EmptyContainerCount { get; }
+        int OccupiedContainerCount { get; }
 
         /// <summary>
         /// Used for cloning when <see cref="AutoSize"/> is true
@@ -44,6 +45,10 @@ namespace CCEnvs.UnityX.Items
         int GetItemCount(IItem? item);
 
         int GetFreeSpace(IItem? item);
+
+        IList<ReadOnlyItemContainer> GetCompactedContainers();
+
+        IList<IItemContainer> GetOccupiedContainers();
 
         Maybe<int> GetContainerID(IItemContainer cnt);
 
@@ -108,6 +113,10 @@ namespace CCEnvs.UnityX.Items
         void SetContainerCount(int count, out IList<TItemContainer> changed, TItemContainer? cloneExample = default);
 
         void RemoveCount(int count, out IList<TItemContainer> removed);
+
+        new IList<ReadOnlyItemContainer<TItem>> GetCompactedContainers();
+
+        new IList<TItemContainer> GetOccupiedContainers();
 
         new Observable<InventoryContainerAddEvent<TItemContainer>> ObserveContainerAdd();
 
@@ -198,6 +207,16 @@ namespace CCEnvs.UnityX.Items
             RemoveCount(count, out IList<TItemContainer> typedRemoved);
 
             removed = typedRemoved.Cast<IItemContainer>().ToArray(); 
+        }
+
+        IList<ReadOnlyItemContainer> IInventory.GetCompactedContainers()
+        {
+            return GetCompactedContainers().Select(container => (ReadOnlyItemContainer)container).ToArray();
+        }
+
+        IList<IItemContainer> IInventory.GetOccupiedContainers()
+        {
+            return GetOccupiedContainers().Cast<IItemContainer>().ToArray();
         }
 
         Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()

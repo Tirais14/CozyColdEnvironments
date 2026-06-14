@@ -9,13 +9,12 @@ using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
+#if ZLINQ_PLUGIN
 using ZLinq;
+#endif
 
 #pragma warning disable S3236
 #nullable enable
@@ -23,9 +22,10 @@ namespace CCEnvs.UnityX.Items
 {
     public class Inventory : IInventory, IDisposable
     {
+        internal readonly Dictionary<IItem, List<IItemContainer>> occupiedContainers = new();
+
         private readonly ObservableDictionary<int, IItemContainer> containers;
 
-        private readonly Dictionary<IItem, List<IItemContainer>> occupiedContainers = new();
         private readonly Dictionary<IItemContainer, CompositeDisposable> containerDisposables;
         private readonly Dictionary<IItemContainer, int> containerIDs;
 
@@ -51,6 +51,18 @@ namespace CCEnvs.UnityX.Items
 
         public int FreeSpace { get; private set; }
         public int ContainerCount => containers.Count;
+        public int EmptyContainerCount {
+            get
+            {
+                int occupiedContainerCount = 0;
+
+                foreach (var contaienrs in occupiedContainers.Values)
+                    occupiedContainerCount += contaienrs.Count;
+
+                return Math.Max(ContainerCount - occupiedContainerCount, 0);
+            }
+        }
+        public int OccupiedContainerCount => ContainerCount - EmptyContainerCount;
         public int ItemCount => itemCount.Value;
 
         public IReadOnlyDictionary<int, IItemContainer> Containers => containers;
@@ -471,6 +483,49 @@ namespace CCEnvs.UnityX.Items
             return id;
         }
 
+        public IEnumerable<ReadOnlyItemContainer> GetCompactedContainersQuery()
+        {
+            foreach (var containers in occupiedContainers.Values)
+            {
+                IItem? item = null;
+                int itemCount = 0;
+                bool hasItem = false;
+
+                for (int i = 0; i < containers.Count; i++)
+                {
+                    if (!hasItem)
+                    {
+                        item = containers[i].Item.GetValue();
+                        hasItem = true;
+                    }
+
+                    itemCount += containers[i].ItemCount;
+                }
+
+                if (item.IsNull() || itemCount <= 0)
+                    continue;
+
+                yield return new ReadOnlyItemContainer(item, itemCount);
+            }
+        }
+
+        public IList<ReadOnlyItemContainer> GetCompactedContainers()
+        {
+            return GetCompactedContainersQuery().ToArray();
+        }
+
+        public IEnumerable<IItemContainer> GetOccupiedContainersQuery()
+        {
+            foreach (var containers in occupiedContainers.Values)
+                for (int i = 0; i < containers.Count; i++)
+                    yield return containers[i];
+        }
+
+        public IList<IItemContainer> GetOccupiedContainers()
+        {
+            return GetOccupiedContainersQuery().ToArray();
+        }
+
         public void CopyItemFrom(IItemContainerInfo itemContainer)
         {
             PutItem(itemContainer.Item.GetValue(), itemContainer.ItemCount);
@@ -795,6 +850,8 @@ namespace CCEnvs.UnityX.Items
         public bool IsFull => internalInventory.IsFull;
 
         public int ContainerCount => internalInventory.ContainerCount;
+        public int EmptyContainerCount => internalInventory.EmptyContainerCount;
+        public int OccupiedContainerCount => internalInventory.OccupiedContainerCount;
         public int ItemCount => internalInventory.ItemCount;
         public int FreeSpace => internalInventory.FreeSpace;
 
@@ -904,7 +961,12 @@ namespace CCEnvs.UnityX.Items
                 cloneExample
                 );
 
-            results = untpyedResults.Cast<TItemContainer>().ToArray();
+            results = untpyedResults
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
+                .Cast<TItemContainer>()
+                .ToArray();
         }
 
         public ReadOnlyItemContainer<TItem> PutItem(TItem? item, int count = 1)
@@ -963,7 +1025,12 @@ namespace CCEnvs.UnityX.Items
                 cloneExample
                 );
 
-            changed = untypedChanged.Cast<TItemContainer>().ToArray();
+            changed = untypedChanged
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
+                .Cast<TItemContainer>()
+                .ToArray();
         }
 
         public ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count)
@@ -981,6 +1048,26 @@ namespace CCEnvs.UnityX.Items
 
             container = (TItemContainer)untypedContainer;
             return true;
+        }
+
+        public IList<ReadOnlyItemContainer<TItem>> GetCompactedContainers()
+        {
+            return internalInventory.GetCompactedContainersQuery()
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
+                .Select(container => container.Convert<TItem>())
+                .ToArray();
+        }
+
+        public IList<TItemContainer> GetOccupiedContainers()
+        {
+            return internalInventory.GetCompactedContainersQuery()
+#if ZLINQ_PLUGIN
+                .AsValueEnumerable()
+#endif
+                .Cast<TItemContainer>()
+                .ToArray();
         }
 
         public void CopyItemFrom(IItemContainerInfo<TItem> itemContainer)

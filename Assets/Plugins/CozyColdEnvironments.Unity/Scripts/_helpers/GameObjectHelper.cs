@@ -135,7 +135,9 @@ namespace CCEnvs.UnityX
 
             while (components.Count > 0)
             {
+#if CC_DEBUG_ENABLED
                 loopFuse.MoveNextThrow();
+#endif
 
                 component = components.Pop();
                 Type componentType = component.GetType();
