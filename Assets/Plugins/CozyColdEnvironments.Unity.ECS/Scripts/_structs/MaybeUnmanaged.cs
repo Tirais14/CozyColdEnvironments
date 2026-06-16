@@ -1,4 +1,6 @@
+using CCEnvs.FuncLanguage;
 using System;
+using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -8,7 +10,7 @@ namespace CCEnvs.UnityX.ECS
 {
     public struct MaybeUnmanaged<T> : IEquatable<MaybeUnmanaged<T>> where T : unmanaged
     {
-        public static MaybeUnmanaged<T> Null => new();
+        public static MaybeUnmanaged<T> None => new();
 
         public readonly bool HasValue;
 
@@ -65,7 +67,7 @@ namespace CCEnvs.UnityX.ECS
             where TInterpret : unmanaged
         {
             if (!HasValue)
-                return MaybeUnmanaged<TInterpret>.Null;
+                return MaybeUnmanaged<TInterpret>.None;
 
             return UnsafeUtility.As<T, TInterpret>(ref Value);
         }
@@ -113,6 +115,16 @@ namespace CCEnvs.UnityX.ECS
             where T : unmanaged, IEquatable<T>
         {
             return !left.EqualsUnmanaged(right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaybeUnmanaged<T> ToUnmanaged<T>(this Maybe<T> maybe)
+            where T : unmanaged
+        {
+            if (!maybe.TryGetValue(out T value))
+                return MaybeUnmanaged<T>.None;
+
+            return value;
         }
     }
 }

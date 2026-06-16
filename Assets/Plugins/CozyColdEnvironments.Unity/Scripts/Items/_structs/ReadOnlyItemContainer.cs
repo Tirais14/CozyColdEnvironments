@@ -14,14 +14,14 @@ namespace CCEnvs.UnityX.Items
     {
         public static ReadOnlyItemContainer Empty { get; } = new(null, 0);
 
-        public readonly Maybe<IItem> Item { get; }
+        public readonly IItem? Item { get; }
 
         public readonly int ItemCount { get; }
 
-        public readonly bool IsEmpty => Item.IsNone || ItemCount == 0;
+        public readonly bool IsEmpty => ItemCount == 0 || Item.IsNull();
 
-        readonly Maybe<IInventory> IItemContainerInfoItemless.ParentInventory {
-            get => Maybe<IInventory>.None;
+        readonly IInventory? IItemContainerInfoItemless.ParentInventory {
+            get => null;
             set => _ = value;
         }
 
@@ -33,7 +33,7 @@ namespace CCEnvs.UnityX.Items
 
         bool IItemContainer.IsReadOnlyContainer => true;
 
-        bool IItemContainer.UnlockCapacity { get => false; set => _ = value; }
+        bool IItemContainer.IgnoreMaxItemCount { get => false; set => _ = value; }
 
         public ReadOnlyItemContainer(IItem? item, int itemCount)
         {
@@ -43,7 +43,7 @@ namespace CCEnvs.UnityX.Items
                 ItemCount = 0;
             }
 
-            Item = item.Maybe();
+            Item = item;
             ItemCount = itemCount;
         }
 
@@ -60,7 +60,7 @@ namespace CCEnvs.UnityX.Items
         public readonly bool ContainsItem() => !IsEmpty;
         public readonly bool ContainsItem(IItem? item)
         {
-            return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item.GetValue(), item);
+            return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
         public readonly bool ContainsItem(IItem? item, int count)
         {
@@ -70,7 +70,7 @@ namespace CCEnvs.UnityX.Items
         public readonly ReadOnlyItemContainer<TItem> Convert<TItem>()
             where TItem : IItem
         {
-            return new ReadOnlyItemContainer<TItem>(Item.GetValue().As<TItem>(), ItemCount);
+            return new ReadOnlyItemContainer<TItem>(Item.As<TItem>(), ItemCount);
         }
 
         public override bool Equals(object? obj)
@@ -80,7 +80,7 @@ namespace CCEnvs.UnityX.Items
 
         public bool Equals(ReadOnlyItemContainer other)
         {
-            return Item.Equals(other.Item) &&
+            return EqualityComparer<IItem?>.Default.Equals(Item, other.Item) &&
                    ItemCount == other.ItemCount;
         }
 
@@ -151,12 +151,12 @@ namespace CCEnvs.UnityX.Items
 
         readonly IItemContainer IShallowCloneable<IItemContainer>.ShallowClone()
         {
-            return new ReadOnlyItemContainer(Item.GetValue(), ItemCount);
+            return new ReadOnlyItemContainer(Item, ItemCount);
         }
 
         readonly ReadOnlyItemContainer IItemContainer.ToReadOnly() => this;
 
-        readonly Observable<Maybe<IItem>> IItemContainerInfo.ObserveItem()
+        readonly Observable<IItem?> IItemContainerInfo.ObserveItem()
         {
             return Observable.Return(Item);
         }
@@ -177,14 +177,14 @@ namespace CCEnvs.UnityX.Items
     {
         public static ReadOnlyItemContainer<TItem> Empty { get; } = new(default, 0);
 
-        public readonly Maybe<TItem> Item { get; }
+        public readonly TItem? Item { get; }
 
         public readonly int ItemCount { get; }
 
-        public readonly bool IsEmpty => Item.IsNone || ItemCount == 0;
+        public readonly bool IsEmpty => ItemCount == 0 || Item.IsNull();
 
-        readonly Maybe<IInventory> IItemContainerInfoItemless.ParentInventory {
-            get => Maybe<IInventory>.None;
+        readonly IInventory? IItemContainerInfoItemless.ParentInventory {
+            get => null;
             set => _ = value;
         }
 
@@ -196,17 +196,17 @@ namespace CCEnvs.UnityX.Items
 
         bool IItemContainer.IsReadOnlyContainer => true;
 
-        bool IItemContainer.UnlockCapacity { get => false; set => _ = value; }
+        bool IItemContainer.IgnoreMaxItemCount { get => false; set => _ = value; }
 
         public ReadOnlyItemContainer(TItem? item, int itemCount)
         {
-            Item = item.Maybe();
+            Item = item;
             ItemCount = itemCount;
         }
 
         public static implicit operator ReadOnlyItemContainer(ReadOnlyItemContainer<TItem> instance)
         {
-            return new ReadOnlyItemContainer(instance.Item.GetValue(), instance.ItemCount);
+            return new ReadOnlyItemContainer(instance.Item, instance.ItemCount);
         }
 
         public static bool operator ==(ReadOnlyItemContainer<TItem> left, ReadOnlyItemContainer<TItem> right)
@@ -222,14 +222,14 @@ namespace CCEnvs.UnityX.Items
         public readonly bool ContainsItem() => !IsEmpty;
         public readonly bool ContainsItem(IItem? item)
         {
-            return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item.GetValue(), item);
+            return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
         public readonly bool ContainsItem(IItem? item, int count)
         {
             return ContainsItem(item) && ItemCount >= count;
         }
 
-        public readonly ReadOnlyItemContainer ToUntyped() => new(Item.GetValue(), ItemCount);
+        public readonly ReadOnlyItemContainer ToUntyped() => new(Item, ItemCount);
 
         public readonly override bool Equals(object? obj)
         {
@@ -237,7 +237,7 @@ namespace CCEnvs.UnityX.Items
         }
         public readonly bool Equals(ReadOnlyItemContainer<TItem> other)
         {
-            return Item.Equals(other.Item) &&
+            return EqualityComparer<IItem?>.Default.Equals(Item, other.Item) &&
                    ItemCount == other.ItemCount;
         }
 
@@ -308,12 +308,12 @@ namespace CCEnvs.UnityX.Items
 
         readonly IItemContainer IShallowCloneable<IItemContainer>.ShallowClone()
         {
-            return new ReadOnlyItemContainer(Item.GetValue(), ItemCount);
+            return new ReadOnlyItemContainer(Item, ItemCount);
         }
 
         readonly ReadOnlyItemContainer<TItem> IItemContainer<TItem>.ToReadOnly() => this;
 
-        readonly Observable<Maybe<TItem>> IItemContainerInfo<TItem>.ObserveItem()
+        readonly Observable<TItem?> IItemContainerInfo<TItem>.ObserveItem()
         {
             return Observable.Return(Item);
         }

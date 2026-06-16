@@ -56,7 +56,6 @@ namespace CCEnvs.UnityX.Items.UI
         private void BindItem(T model)
         {
             iconBinding = model.ObserveItem()
-                .Unmaybe()
                 .Subscribe(OnItemChanged);
         }
 

@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.Items
         int Capacity { get; set; }
         int FreeSpace { get; }
 
-        Maybe<IInventory> ParentInventory { get; set; }
+        IInventory? ParentInventory { get; set; }
 
         bool IsEmpty { get; }
         bool IsFull { get; }
@@ -76,11 +76,11 @@ namespace CCEnvs.UnityX.Items
         where TItem : IItem
         where TInventory : IInventory
     {
-        new Maybe<TInventory> ParentInventory { get; set; }
+        new TInventory? ParentInventory { get; set; }
 
-        Maybe<IInventory> IItemContainerInfoItemless.ParentInventory {
-            get => ParentInventory.Cast<IInventory>();
-            set => ParentInventory = value.Cast<TInventory>();
+        IInventory? IItemContainerInfoItemless.ParentInventory {
+            get => ParentInventory;
+            set => ParentInventory = value.As<TInventory>();
         }
     }
 }

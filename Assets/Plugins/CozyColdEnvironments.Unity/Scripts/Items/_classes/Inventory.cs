@@ -4,6 +4,7 @@ using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CCEnvs.Rx;
 using CCEnvs.Threading;
+using CCEnvs.TypeMatching;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
@@ -69,9 +70,11 @@ namespace CCEnvs.UnityX.Items
 
         public IItemContainer? ContainerSample { get; set; }
 
+        public IEqualityComparer<IItemContainer?> ContainerComaprer => containerIDs.Comparer!;
+
         protected CancellationToken DisposeCancellationToken => disposeCancellationTokenSource.Token;
 
-        Maybe<IInventory> IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
+        IInventory? IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
 
         int IItemContainerInfoItemless.Capacity {
             get => ContainerCount;
@@ -80,12 +83,11 @@ namespace CCEnvs.UnityX.Items
 
         public Inventory(
             int collectionCapacity = 4,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<IItemContainer?>? containerComparer = null,
             IEnumerable<IItemContainer>? initialContainers = null
             )
         {
-            containers = new ObservableDictionary<int, IItemContainer>(collectionCapacity, idComparer);
+            containers = new ObservableDictionary<int, IItemContainer>(collectionCapacity, null);
             containerDisposables = new Dictionary<IItemContainer, CompositeDisposable>(collectionCapacity, containerComparer);
             containerIDs = new Dictionary<IItemContainer, int>(collectionCapacity, containerComparer);
 
@@ -100,13 +102,11 @@ namespace CCEnvs.UnityX.Items
 
         public Inventory(
             ICollection<IItemContainer> initialContainers,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<IItemContainer?>? containerComparer = null
             )
             :
             this(
                 initialContainers.Count,
-                idComparer: idComparer,
                 containerComparer: containerComparer,
                 initialContainers: initialContainers
                 )
@@ -115,13 +115,11 @@ namespace CCEnvs.UnityX.Items
 
         public static Inventory CreateWith(
             int containerCount,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<IItemContainer?>? containerComparer = null
             )
         {
             var inventory = new Inventory(
                 collectionCapacity: containerCount,
-                idComparer: idComparer,
                 containerComparer: containerComparer
                 );
 
@@ -133,14 +131,12 @@ namespace CCEnvs.UnityX.Items
 
         public static Inventory CreateWith<TItemContainer>(
             int containerCount,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<IItemContainer?>? containerComparer = null
             )
             where TItemContainer : IItemContainer, new()
         {
             var inventory = new Inventory(
                 collectionCapacity: containerCount,
-                idComparer: idComparer,
                 containerComparer: containerComparer
                 );
 
@@ -181,11 +177,11 @@ namespace CCEnvs.UnityX.Items
 
         public ReadOnlyItemContainer PutItem(IItem? item, int count = 1)
         {
-            if (item.IsNull() || count <= 0)
+            if (count <= 0 || item.IsNull())
                 return ReadOnlyItemContainer.Empty;
 
             if (AutoSize)
-                EnsureFreeSpace(GetItemCount(item) + count);
+                EnsureFreeSpace(GetItemCount(item) + count, item);
 
             static bool putItem(IItem item, ref int count, IItemContainer container)
             {
@@ -210,7 +206,7 @@ namespace CCEnvs.UnityX.Items
             if (containerInfo.IsNull())
                 return ReadOnlyItemContainer.Empty;
 
-            return PutItem(containerInfo.Item.GetValue(), containerInfo.ItemCount);
+            return PutItem(containerInfo.Item, containerInfo.ItemCount);
         }
         public ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
             where TItemContainerInfo : struct, IItemContainerInfo
@@ -218,7 +214,7 @@ namespace CCEnvs.UnityX.Items
             if (containerInfo.IsEmpty)
                 return ReadOnlyItemContainer.Empty;
 
-            return PutItem(containerInfo.Item.GetValue(), containerInfo.ItemCount);
+            return PutItem(containerInfo.Item, containerInfo.ItemCount);
         }
 
         public ReadOnlyItemContainer PutItemFrom(IItemContainer? container, int count)
@@ -264,23 +260,24 @@ namespace CCEnvs.UnityX.Items
         }
 
         public void EnsureFreeSpace(
-            int tragetSpace,
+            int targetSpace,
             IItem? forItem = null,
-            IItemContainer? cloneExample = null
+            IItemContainer? cloneSample = null
             )
         {
-#if CC_DEBUG_ENABLED
-            var loopFuse = LoopFuse.Create(15000);
-#endif
+            if (targetSpace <= 0)
+                return;
 
-            while (GetFreeSpace(forItem) < tragetSpace)
-            {
-#if CC_DEBUG_ENABLED
-                loopFuse.MoveNextThrow();
-#endif
+            int containerCapacity = Math.Min(
+                cloneSample.IfNull(ContainerSample).IfNotNull(container => container.Capacity),
+                forItem.Maybe().Map(item => item.MaxItemCount).GetValue(int.MaxValue)
+                );
 
-                InstantiateContainers(1, cloneExample);
-            }
+            if (GetFreeSpace(forItem) >= targetSpace)
+                return;
+
+            int targetContainerCount = (int)MathF.Ceiling(targetSpace / containerCapacity);
+            InstantiateContainers(targetContainerCount, cloneSample);
         }
 
         public int GetFreeSpace(IItem? item)
@@ -290,8 +287,16 @@ namespace CCEnvs.UnityX.Items
 
             int freeSpace = 0;
 
-            foreach (var cnt in FilterContainersWithItem(item, ignoreFull: true))
-                freeSpace += cnt.FreeSpace;
+            foreach (var container in FilterContainersWithItem(item, ignoreFull: true))
+                freeSpace += container.FreeSpace;
+
+            foreach (var container in FilterEmptyContainers())
+            {
+                if (!container.IgnoreMaxItemCount)
+                    freeSpace += item.MaxItemCount;
+                else
+                    freeSpace += int.MaxValue;
+            }
 
             return freeSpace;
         }
@@ -314,10 +319,12 @@ namespace CCEnvs.UnityX.Items
         }
 
         public IEnumerable<IItemContainer> FilterContainersWithItem(
-            IItem? item,
+            IItem item,
             bool ignoreFull = true
             )
         {
+            CC.Guard.IsNotNull(item, nameof(item));
+
             if (item.IsNull()
                 ||
                 !occupiedContainers.TryGetValue(item, out var containers))
@@ -329,8 +336,12 @@ namespace CCEnvs.UnityX.Items
             {
                 IItemContainer container = containers[i];
 
-                if (ignoreFull && container.IsFull)
+                if (!EqualityComparer<IItem?>.Default.Equals(item, container.Item)
+                    ||
+                    (ignoreFull && container.IsFull))
+                {
                     continue;
+                }
 
                 yield return container;
             }
@@ -523,7 +534,7 @@ namespace CCEnvs.UnityX.Items
                 {
                     if (!hasItem)
                     {
-                        item = containers[i].Item.GetValue();
+                        item = containers[i].Item;
                         hasItem = true;
                     }
 
@@ -556,7 +567,17 @@ namespace CCEnvs.UnityX.Items
 
         public void CopyItemFrom(IItemContainerInfo itemContainer)
         {
-            PutItem(itemContainer.Item.GetValue(), itemContainer.ItemCount);
+            PutItem(itemContainer.Item, itemContainer.ItemCount);
+        }
+
+        public IInventory ShallowClone()
+        {
+            var instance = new Inventory(containers.Count, containerIDs.Comparer!);
+
+            foreach (var (_, container) in containers)
+                AddContainer(container.ShallowClone());
+
+            return instance;
         }
 
         public Observable<int> ObserveItemCount() => itemCount;
@@ -754,7 +775,7 @@ namespace CCEnvs.UnityX.Items
 
             if (!cnt.IsEmpty
                 &&
-                cnt.Item.TryGetValue(out var item)
+                cnt.Item.Is<IItem>(out var item)
                 &&
                 occupiedContainers.TryGetValue(item, out var cnts))
             {
@@ -806,7 +827,7 @@ namespace CCEnvs.UnityX.Items
 
         private void ResolveOccupied(IItemContainer cnt)
         {
-            if (cnt.IsEmpty || !cnt.Item.TryGetValue(out var item))
+            if (cnt.IsEmpty || !cnt.Item.Is<IItem>(out var item))
                 return;
 
             occupiedContainers.GetOrCreateNew(item).Add(cnt);
@@ -822,7 +843,6 @@ namespace CCEnvs.UnityX.Items
             var disposables = containerDisposables.GetOrCreateNew(cnt);
 
             cnt.ObserveItem()
-                .Unmaybe()
                 .Pairwise()
                 .Subscribe(cnt, OnContainerItemChanged)
                 .AddTo(disposables);
@@ -885,6 +905,8 @@ namespace CCEnvs.UnityX.Items
 
         public TItemContainer? ContainerSample { get; set; }
 
+        public IEqualityComparer<TItemContainer?> ContainerComparer { get; }
+
         IItemContainer IInventory.this[int id] => internalInventory[id];
 
         IReadOnlyDictionary<int, IItemContainer> IInventory.Containers => internalInventory.Containers;
@@ -894,14 +916,13 @@ namespace CCEnvs.UnityX.Items
             set => ((IInventory)internalInventory).Capacity = value;
         }
 
-        Maybe<IInventory> IItemContainerInfoItemless.ParentInventory {
+        IInventory? IItemContainerInfoItemless.ParentInventory {
             get => ((IInventory)internalInventory).ParentInventory;
             set => ((IInventory)internalInventory).ParentInventory = value;
         }
 
         public Inventory(
             int collectionCapacity = 4,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<TItemContainer?>? containerComparer = null,
             IEnumerable<TItemContainer>? initialContainers = null
             )
@@ -919,11 +940,14 @@ namespace CCEnvs.UnityX.Items
                     {
                         return containerComparer.GetHashCode((TItemContainer?)value);
                     });
+
+                ContainerComparer = containerComparer;
             }
+            else
+                ContainerComparer = EqualityComparer<TItemContainer?>.Default;
 
             internalInventory = new Inventory(
                 collectionCapacity: collectionCapacity,
-                idComparer: idComparer,
                 containerComparer: untypedContainerComparer,
                 initialContainers: initialContainers.Cast<IItemContainer>()
                 );
@@ -936,13 +960,11 @@ namespace CCEnvs.UnityX.Items
 
         public Inventory(
             ICollection<TItemContainer> initialContainers,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<TItemContainer?>? containerComparer = null
             )
             :
             this(
                 initialContainers.Count,
-                idComparer: idComparer,
                 containerComparer: containerComparer,
                 initialContainers: initialContainers
                 )
@@ -951,14 +973,12 @@ namespace CCEnvs.UnityX.Items
 
         public static Inventory<TItem, TItemContainer> CreateWith<TItemContainerClone>(
             int containerCount,
-            IEqualityComparer<int>? idComparer = null,
             IEqualityComparer<TItemContainer?>? containerComparer = null
             )
             where TItemContainerClone : TItemContainer, new()
         {
             var inventory = new Inventory<TItem, TItemContainer>(
                 collectionCapacity: containerCount,
-                idComparer: idComparer,
                 containerComparer: containerComparer
                 );
 
@@ -1051,7 +1071,7 @@ namespace CCEnvs.UnityX.Items
         }
 
         public ReadOnlyItemContainer<TItem> PutItemFrom(
-            IItemContainer<TItem>? container, 
+            IItemContainer<TItem>? container,
             int count
             )
         {
@@ -1062,7 +1082,7 @@ namespace CCEnvs.UnityX.Items
             return internalInventory.PutItemFrom(container).Convert<TItem>();
         }
 
-        public bool RemoveContainer(int id) => internalInventory.RemoveContainer(id);   
+        public bool RemoveContainer(int id) => internalInventory.RemoveContainer(id);
 
         public void RemoveCount(int count, out IList<TItemContainer> removed)
         {
@@ -1140,6 +1160,16 @@ namespace CCEnvs.UnityX.Items
         public void CopyItemFrom(IItemContainerInfo<TItem> itemContainer)
         {
             internalInventory.CopyItemFrom(itemContainer);
+        }
+
+        public IInventory ShallowClone()
+        {
+            var instance = new Inventory<TItem, TItemContainer>(internalInventory.Containers.Count, ContainerComparer);
+
+            foreach (var container in containersView.Values)
+                instance.AddContainer((TItemContainer)container.ShallowClone());
+
+            return instance;
         }
 
         public Observable<Unit> ObserveClear() => internalInventory.ObserveClear();

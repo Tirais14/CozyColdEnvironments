@@ -7,7 +7,7 @@ using System.Text;
 #nullable enable
 namespace CCEnvs.Diagnostics
 {
-    public struct ExceptionMessageBuilder : IDisposable, IEquatable<ExceptionMessageBuilder>
+    public struct DebugMessageBuilder : IDisposable, IEquatable<DebugMessageBuilder>
     {
         private readonly PooledObject<StringBuilder> stringBuilderHandle;
 
@@ -15,7 +15,7 @@ namespace CCEnvs.Diagnostics
 
         private TokenType tokenType;
 
-        public ExceptionMessageBuilder(StringBuilder? stringBuilder)
+        public DebugMessageBuilder(StringBuilder? stringBuilder)
             :
             this()
         {
@@ -28,22 +28,22 @@ namespace CCEnvs.Diagnostics
                 this.stringBuilder = stringBuilder;
         }
 
-        public static ExceptionMessageBuilder CreatePooled()
+        public static DebugMessageBuilder CreatePooled()
         {
-            return new ExceptionMessageBuilder(null);
+            return new DebugMessageBuilder(null);
         }
 
-        public static bool operator ==(ExceptionMessageBuilder left, ExceptionMessageBuilder right)
+        public static bool operator ==(DebugMessageBuilder left, DebugMessageBuilder right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ExceptionMessageBuilder left, ExceptionMessageBuilder right)
+        public static bool operator !=(DebugMessageBuilder left, DebugMessageBuilder right)
         {
             return !(left == right);
         }
 
-        public ExceptionMessageBuilder AddMessage(string? msg = null)
+        public DebugMessageBuilder AddMessage(string? msg = null)
         {
             if (msg.IsNotNullOrEmpty())
             {
@@ -57,7 +57,7 @@ namespace CCEnvs.Diagnostics
             return this;
         }
 
-        public ExceptionMessageBuilder AddProperty<T>(string? propName, T? value)
+        public DebugMessageBuilder AddProperty<T>(string? propName, T? value)
         {
             bool hasValue = value.IsNotNull();
 
@@ -87,10 +87,10 @@ namespace CCEnvs.Diagnostics
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is ExceptionMessageBuilder builder && Equals(builder);
+            return obj is DebugMessageBuilder builder && Equals(builder);
         }
 
-        public readonly bool Equals(ExceptionMessageBuilder other)
+        public readonly bool Equals(DebugMessageBuilder other)
         {
             return stringBuilderHandle.Equals(other.stringBuilderHandle)
                    &&
@@ -111,7 +111,7 @@ namespace CCEnvs.Diagnostics
         public readonly override string ToString()
         {
             if (stringBuilder is null)
-                return TypeCache<ExceptionMessageBuilder>.FullName;
+                return TypeCache<DebugMessageBuilder>.FullName;
 
             return stringBuilder.ToString();
         }

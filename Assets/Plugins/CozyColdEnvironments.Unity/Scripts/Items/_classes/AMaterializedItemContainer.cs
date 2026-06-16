@@ -16,7 +16,7 @@ namespace CCEnvs.UnityX.Items
         public void SetItemContainer(IItemContainer itemContainer)
         {
             CC.Guard.IsNotNull(itemContainer, nameof(itemContainer));
-            if (itemContainer.Item.IsNone)
+            if (itemContainer.Item.IsNull())
                 throw new System.ArgumentException("Item container has no item.");
 
             this.itemContainer = itemContainer;

@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using R3;
 
 #nullable enable
@@ -8,23 +7,23 @@ namespace CCEnvs.UnityX.Items
         :
         IItemContainerInfoItemless
     {
-        Maybe<IItem> Item { get; }
+        IItem? Item { get; }
 
-        Observable<Maybe<IItem>> ObserveItem();
+        Observable<IItem?> ObserveItem();
     }
 
     public interface IItemContainerInfo<TItem> : IItemContainerInfo
         where TItem : IItem
     {
-        new Maybe<TItem> Item { get; }
+        new TItem? Item { get; }
 
-        Maybe<IItem> IItemContainerInfo.Item => ((IItem?)Item.GetValue()).Maybe();
+        IItem? IItemContainerInfo.Item => Item;
 
-        new Observable<Maybe<TItem>> ObserveItem();
+        new Observable<TItem?> ObserveItem();
 
-        Observable<Maybe<IItem>> IItemContainerInfo.ObserveItem()
+        Observable<IItem?> IItemContainerInfo.ObserveItem()
         {
-            return ObserveItem().Select(item => ((IItem?)item.GetValue()).Maybe());
+            return ObserveItem().Select(item => (IItem?)item);
         }
     }
 }

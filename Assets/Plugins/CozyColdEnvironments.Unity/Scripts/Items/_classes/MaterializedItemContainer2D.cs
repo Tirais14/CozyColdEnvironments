@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.Injections;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace CCEnvs.UnityX.Items
 
         protected override void OnSetItemContainer()
         {
-            renderer.sprite = itemContainer.Item.GetValueUnsafe().Icon;
+            renderer.sprite = itemContainer.Item.Maybe().Map(item => item.Icon).GetValue();
         }
     }
 }

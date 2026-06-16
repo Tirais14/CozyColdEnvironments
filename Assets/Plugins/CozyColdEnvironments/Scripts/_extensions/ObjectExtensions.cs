@@ -202,6 +202,26 @@ namespace CCEnvs
             return source;
         }
 
+        public static TOut? IfNotNull<T, TOut>(this T? source, Func<T, TOut> action)
+        {
+            CC.Guard.IsNotNull(action, nameof(action));
+
+            if (source.IsNull())
+                return default;
+
+            return action(source);
+        }
+
+        public static TOut? IfNotNull<T, TState, TOut>(this T? source, TState state, Func<T, TState, TOut> action)
+        {
+            CC.Guard.IsNotNull(action, nameof(action));
+
+            if (source.IsNull())
+                return default;
+
+            return action(source, state);
+        }
+
         public static T? IfNotNullNullable<T>(this T? source, Action<T> action)
             where T : struct
         {

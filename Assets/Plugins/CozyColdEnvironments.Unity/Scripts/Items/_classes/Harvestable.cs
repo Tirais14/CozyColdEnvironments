@@ -25,9 +25,7 @@ namespace CCEnvs.UnityX.Items
             get
             {
                 return GetHarvestedItems().Select(cnt => cnt.Item)
-                    .Where(item => item.IsSome)
-                    .Select(item => item.GetValueUnsafe()
-                    );
+                    .Where(item => item.IsNotNull())!;
             }
         }
 

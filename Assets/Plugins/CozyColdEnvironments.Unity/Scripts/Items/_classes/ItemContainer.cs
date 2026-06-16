@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CCEnvs.TypeMatching;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -11,23 +12,23 @@ namespace CCEnvs.UnityX.Items
 {
     public class ItemContainer : IItemContainer, IDisposable
     {
-        private readonly ReactiveProperty<Maybe<IItem>> item = new();
+        private readonly ReactiveProperty<IItem?> item = new();
         private readonly ReactiveProperty<int> itemCount = new();
         private readonly ReactiveProperty<bool> isActive = new();
 
-        private Maybe<IInventory> parentInventory;
+        private IInventory? parentInventory;
 
         private int capacity;
 
-        public Maybe<IItem> Item => item.Value;
+        public IItem? Item => item.Value;
         public int ItemCount => itemCount.Value;
         public int Capacity {
             get
             {
-                if (UnlockCapacity)
+                if (IgnoreMaxItemCount)
                     return int.MaxValue;
 
-                return Mathf.Min(item.Value.Map(item => item.MaxItemCount).GetValue(int.MaxValue), capacity);
+                return Math.Min(item.Value.Maybe().Map(item => item.MaxItemCount).GetValue(int.MaxValue), capacity);
             }
             set
             {
@@ -48,10 +49,10 @@ namespace CCEnvs.UnityX.Items
         /// <summary>
         /// If true ignores <see cref="IItem.MaxItemCount"/>
         /// </summary>
-        public bool UnlockCapacity { get; set; }
+        public bool IgnoreMaxItemCount { get; set; }
 
         //TODO: Remove and Add to new item container parent
-        public Maybe<IInventory> ParentInventory {
+        public IInventory? ParentInventory {
             get => parentInventory;
             set => parentInventory = value;
         }
@@ -70,7 +71,7 @@ namespace CCEnvs.UnityX.Items
             int capacity = 0
             )
         {
-            this.item.Value = item.Maybe()!;
+            this.item.Value = item;
             Capacity = capacity;
 
             if (item.IsNull() && count > 0)
@@ -88,14 +89,14 @@ namespace CCEnvs.UnityX.Items
 
         public bool ContainsItem()
         {
-            return Item.IsNotNull() && ItemCount > 0;
+            return ItemCount >= 1 && Item.IsNotNull();
         }
         public bool ContainsItem(IItem? item)
         {
             if (!ContainsItem())
                 return false;
 
-            return EqualityComparer<IItem?>.Default.Equals(Item.GetValue(), item);
+            return EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
         public bool ContainsItem(IItem? item, int count)
         {
@@ -107,33 +108,34 @@ namespace CCEnvs.UnityX.Items
 
         public ReadOnlyItemContainer PutItem(IItem? inputItem, int count = 1)
         {
-            if (inputItem.IsNull() || count <= 0)
+            if (count <= 0 || inputItem.IsNull())
                 return ReadOnlyItemContainer.Empty;
 
-            if (IsFull || (Item.TryGetValue(out var item) && item.ID != inputItem.ID))
+            if (IsFull || (Item.IsNotNull() && !EqualityComparer<IItem?>.Default.Equals(Item, inputItem)))
                 return new ReadOnlyItemContainer(inputItem, count);
 
+            item.Value = inputItem;
             int toPutCount = Math.Clamp(count, 0, FreeSpace);
             itemCount.Value += toPutCount;
 
-            int restCount = toPutCount - count;
+            int restCount = count - toPutCount;
 
             if (restCount <= 0)
                 return ReadOnlyItemContainer.Empty;
 
-            return new ReadOnlyItemContainer(item, restCount);
+            return new ReadOnlyItemContainer(Item, restCount);
         }
         public ReadOnlyItemContainer PutItem(IItemContainerInfo? containerInfo)
         {
             if (containerInfo.IsNull())
                 return ReadOnlyItemContainer.Empty;
 
-            return PutItem(containerInfo.Item.GetValue(), containerInfo.ItemCount);
+            return PutItem(containerInfo.Item, containerInfo.ItemCount);
         }
         public ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
             where TItemContainerInfo : struct, IItemContainerInfo
         {
-            return PutItem(containerInfo.Item.GetValue(), containerInfo.ItemCount);
+            return PutItem(containerInfo.Item, containerInfo.ItemCount);
         }
 
         public ReadOnlyItemContainer PutItemFrom(IItemContainer? container, int count)
@@ -154,13 +156,13 @@ namespace CCEnvs.UnityX.Items
 
         public ReadOnlyItemContainer TakeItem(int count)
         {
-            if (Item.IsNone || count <= 0)
+            if (IsEmpty || count <= 0)
                 return ReadOnlyItemContainer.Empty;
 
-            int takedCount = Math.Clamp(count, 0, ItemCount);
-            itemCount.Value -= takedCount;
+            int takenCount = Math.Min(count, ItemCount);
+            itemCount.Value -= takenCount;
 
-            return new ReadOnlyItemContainer(Item.GetValue(), count);
+            return new ReadOnlyItemContainer(Item, takenCount);
         }
 
         public ReadOnlyItemContainer TakeItem() => TakeItem(itemCount.Value);
@@ -173,11 +175,11 @@ namespace CCEnvs.UnityX.Items
             return TakeItem(count);
         }
 
-        public ReadOnlyItemContainer ToReadOnly() => new(Item.GetValue(), ItemCount);
+        public ReadOnlyItemContainer ToReadOnly() => new(Item, ItemCount);
 
         public IItemContainer ShallowClone()
         {
-            return new ItemContainer(Item.GetValue(), ItemCount, Capacity);
+            return new ItemContainer(Item, ItemCount, Capacity);
         }
 
         public void CopyItemFrom(IItemContainerInfo itemContainer)
@@ -195,7 +197,7 @@ namespace CCEnvs.UnityX.Items
 
         public Maybe<int> GetContainerID()
         {
-            return parentInventory.Map(inv => GetContainerID()).GetValue();
+            return parentInventory.Maybe().Map(inv => GetContainerID()).GetValue();
         }
 
         public override string ToString()
@@ -256,7 +258,7 @@ namespace CCEnvs.UnityX.Items
             return true;
         }
 
-        public Observable<Maybe<IItem>> ObserveItem() => item;
+        public Observable<IItem?> ObserveItem() => item;
 
         public Observable<bool> ObserveIsActive() => isActive;
 
@@ -291,14 +293,14 @@ namespace CCEnvs.UnityX.Items
     {
         private readonly ItemContainer internalContainer;
 
-        public bool UnlockCapacity {
-            get => internalContainer.UnlockCapacity;
-            set => internalContainer.UnlockCapacity = value;
+        public bool IgnoreMaxItemCount {
+            get => internalContainer.IgnoreMaxItemCount;
+            set => internalContainer.IgnoreMaxItemCount = value;
         }
         public bool IsEmpty => internalContainer.IsEmpty;
         public bool IsFull => internalContainer.IsFull;
 
-        public Maybe<TItem> Item => internalContainer.Item.Cast<TItem>();
+        public TItem? Item => (TItem?)internalContainer.Item;
 
         public int ItemCount => internalContainer.ItemCount;
         public int Capacity {
@@ -307,7 +309,7 @@ namespace CCEnvs.UnityX.Items
         }
         public int FreeSpace => internalContainer.FreeSpace;
 
-        public Maybe<IInventory> ParentInventory {
+        public IInventory? ParentInventory {
             get => internalContainer.ParentInventory;
             set => internalContainer.ParentInventory = value;
         }
@@ -373,19 +375,19 @@ namespace CCEnvs.UnityX.Items
             return internalContainer.PutItemFrom(container).Convert<TItem>();
         }
 
-        public ReadOnlyItemContainer<TItem> ToReadOnly() => new(Item.GetValue(), ItemCount);
+        public ReadOnlyItemContainer<TItem> ToReadOnly() => new(Item, ItemCount);
 
         public IItemContainer ShallowClone()
         {
             return new ItemContainer<TItem>(
-                item: Item.GetValue(),
+                item: Item,
                 count: ItemCount,
                 capacity: Capacity
                 )
             {
                 Capacity = Capacity,
                 ParentInventory = ParentInventory,
-                UnlockCapacity = UnlockCapacity
+                IgnoreMaxItemCount = IgnoreMaxItemCount
             };
         }
 
@@ -404,9 +406,9 @@ namespace CCEnvs.UnityX.Items
 
         public void Dispose() => internalContainer.Dispose();
 
-        public Observable<Maybe<TItem>> ObserveItem()
+        public Observable<TItem?> ObserveItem()
         {
-            return internalContainer.ObserveItem().Select(item => item.Cast<TItem>());
+            return internalContainer.ObserveItem().Select(item => (TItem?)item);
         }
 
         public Observable<int> ObserveItemCount() => internalContainer.ObserveItemCount();

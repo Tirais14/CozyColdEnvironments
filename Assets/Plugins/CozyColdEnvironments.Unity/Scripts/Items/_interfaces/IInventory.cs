@@ -11,7 +11,8 @@ namespace CCEnvs.UnityX.Items
     public interface IInventory
         :
         IItemAccessor,
-        IItemContainerInfoItemless
+        IItemContainerInfoItemless,
+        IShallowCloneable<IInventory>
     {
         IItemContainer this[int id] { get; }
 
@@ -229,7 +230,7 @@ namespace CCEnvs.UnityX.Items
             return GetOccupiedContainers().Cast<IItemContainer>().ToArray();
         }
 
-        Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
+        Observable <InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
         {
             return ObserveContainerAdd()
                 .Select(ev => new InventoryContainerAddEvent { ID = ev.ID, Container = ev.Container});

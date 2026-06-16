@@ -8,7 +8,7 @@ namespace CCEnvs.UnityX.Items
         IShallowCloneable<IItemContainer>
     {
         bool IsReadOnlyContainer { get; }
-        bool UnlockCapacity { get; set; }
+        bool IgnoreMaxItemCount { get; set; }
 
         ReadOnlyItemContainer ToReadOnly();
     }

@@ -19,7 +19,7 @@ namespace CCEnvs.UnityX
             Type? componentFilter = null,
             string? message = null)
             :
-            base(new ExceptionMessageBuilder(null)
+            base(new DebugMessageBuilder(null)
                 .AddMessage(message)
                 .AddProperty(nameof(target), target.Maybe().Map(static target => target.name).GetValue())
                 .AddProperty(nameof(seekingComponentType), seekingComponentType)
