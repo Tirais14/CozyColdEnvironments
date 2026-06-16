@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.EditorSerialization
 {
-    public abstract class SerializedTypeMember<T> : Serialized<T>
+    public abstract class SerializedTypeMember<T> : EditorSerialized<T>
         where T : MemberInfo
     {
         [SerializeField]

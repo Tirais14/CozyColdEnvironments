@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
-    public sealed class SerializedImmutableArray<T> : Serialized<ImmutableArray<T>>
+    public sealed class SerializedImmutableArray<T> : EditorSerialized<ImmutableArray<T>>
     {
         [UnityEngine.SerializeField]
         private T[] items = null!;

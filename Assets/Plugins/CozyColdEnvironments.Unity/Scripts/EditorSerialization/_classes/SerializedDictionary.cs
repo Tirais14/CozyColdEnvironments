@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.EditorSerialization
     [Serializable]
     public sealed class SerializedDictionary<TKey, TValue>
         :
-        Serialized<Dictionary<TKey, TValue>>,
+        EditorSerialized<Dictionary<TKey, TValue>>,
         ISerializationCallbackReceiver
     {
         [SerializeField]

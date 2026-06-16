@@ -37,7 +37,10 @@ namespace CCEnvs.Collections
             get => internalDictionary.Count;
         }
 
-        public DictionaryView(IReadOnlyDictionary<TKey, TValue> dictionary, Func<TValue, TValueView> converter)
+        public DictionaryView(
+            IReadOnlyDictionary<TKey, TValue> dictionary,
+            Func<TValue, TValueView> converter
+            )
         {
             internalDictionary = dictionary;
             valueConverter = converter;

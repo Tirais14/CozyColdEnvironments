@@ -9,7 +9,7 @@ using UnityEngine;
 namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
-    public sealed class SerializedType : Serialized<Type>
+    public sealed class SerializedType : EditorSerialized<Type>
     {
         [SerializeField]
         private bool throwIfNotFound = true;

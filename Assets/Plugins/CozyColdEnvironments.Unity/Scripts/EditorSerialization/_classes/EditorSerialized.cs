@@ -7,7 +7,7 @@ using System;
 namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
-    public abstract class Serialized<TOut>
+    public abstract class EditorSerialized<TOut>
         : IEditorSerialized<TOut>,
         IMutableType<TOut>
     {
@@ -18,17 +18,17 @@ namespace CCEnvs.UnityX.EditorSerialization
             get => lazy.Value;
         }
 
-        protected Serialized()
+        protected EditorSerialized()
         {
             lazy = new Lazy<TOut>(ValueFactory);
         }
 
-        protected Serialized(TOut defaultValue)
+        protected EditorSerialized(TOut defaultValue)
         {
             lazy = new Lazy<TOut>(defaultValue);
         }
 
-        public static implicit operator TOut(Serialized<TOut> source)
+        public static implicit operator TOut(EditorSerialized<TOut> source)
         {
             return source.Data;
         }

@@ -32,7 +32,9 @@ namespace CCEnvs.UnityX.Items
 
         void ResetContainers();
 
-        void AddContainer(IItemContainer itemContainer);
+        void AddContainer(IItemContainer container);
+
+        void AddContainers(IEnumerable<IItemContainer> containers);
 
         bool RemoveContainer(int id);
 
@@ -50,7 +52,7 @@ namespace CCEnvs.UnityX.Items
 
         IList<IItemContainer> GetOccupiedContainers();
 
-        Maybe<int> GetContainerID(IItemContainer cnt);
+        Maybe<int> GetContainerID(IItemContainer container);
 
         void InstantiateContainers(int count, IItemContainer? cloneExample = default);
         void InstantiateContainers(int count, out IList<IItemContainer> results, IItemContainer? cloneExample = default);
@@ -93,6 +95,8 @@ namespace CCEnvs.UnityX.Items
         bool TryGetContainer(int id, [NotNullWhen(true)] out TItemContainer? container);
 
         void AddContainer(TItemContainer itemContainer);
+
+        void AddContainers(IEnumerable<TItemContainer> containers);
 
         void EnsureFreeSpace(
             int targetSpace,
@@ -139,6 +143,12 @@ namespace CCEnvs.UnityX.Items
         void IInventory.AddContainer(IItemContainer itemContainer)
         {
             AddContainer((TItemContainer)itemContainer);
+        }
+
+        void IInventory.AddContainers(IEnumerable<IItemContainer> containers)
+        {
+            CC.Guard.IsNotNull(containers, nameof(containers));
+            AddContainers(containers.OfType<TItemContainer>());
         }
 
         void IInventory.EnsureFreeSpace(

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
-    public sealed class SerializedHashSet<T> : Serialized<HashSet<T>>, ISerializationCallbackReceiver
+    public sealed class SerializedHashSet<T> : EditorSerialized<HashSet<T>>, ISerializationCallbackReceiver
     {
         [SerializeField]
         private T[] items = new arr<T>();

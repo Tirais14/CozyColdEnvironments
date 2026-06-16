@@ -81,7 +81,8 @@ namespace CCEnvs.UnityX.Items
         public Inventory(
             int collectionCapacity = 4,
             IEqualityComparer<int>? idComparer = null,
-            IEqualityComparer<IItemContainer?>? containerComparer = null
+            IEqualityComparer<IItemContainer?>? containerComparer = null,
+            IEnumerable<IItemContainer>? initialContainers = null
             )
         {
             containers = new ObservableDictionary<int, IItemContainer>(collectionCapacity, idComparer);
@@ -92,6 +93,24 @@ namespace CCEnvs.UnityX.Items
             BindContainerRemove();
             BindContainerReplace();
             BindContainersClear();
+
+            if (initialContainers.IsNotNull())
+                AddContainers(initialContainers);
+        }
+
+        public Inventory(
+            ICollection<IItemContainer> initialContainers,
+            IEqualityComparer<int>? idComparer = null,
+            IEqualityComparer<IItemContainer?>? containerComparer = null
+            )
+            :
+            this(
+                initialContainers.Count,
+                idComparer: idComparer,
+                containerComparer: containerComparer,
+                initialContainers: initialContainers
+                )
+        {
         }
 
         public static Inventory CreateWith(
@@ -365,16 +384,25 @@ namespace CCEnvs.UnityX.Items
             }
         }
 
-        public void AddContainer(IItemContainer cnt)
+        public void AddContainer(IItemContainer container)
         {
-            CC.Guard.IsNotNull(cnt, nameof(cnt));
+            CC.Guard.IsNotNull(container, nameof(container));
 
-            if (cnt.IsReadOnlyContainer)
-                throw new ArgumentException($"Container cannot be readonly. Container: {cnt}");
+            if (container.IsReadOnlyContainer)
+                throw new ArgumentException($"Container cannot be readonly. Container: {container}");
 
-            var id = ResolveID(cnt);
+            var id = ResolveID(container);
 
-            containers[id] = cnt;
+            containers[id] = container;
+        }
+
+        public void AddContainers(IEnumerable<IItemContainer> containers)
+        {
+            CC.Guard.IsNotNull(containers, nameof(containers));
+
+            foreach (var container in containers)
+                if (container.IsNotNull() && !container.IsReadOnlyContainer)
+                    AddContainer(container);
         }
 
         public bool RemoveContainer(int id)
@@ -874,13 +902,30 @@ namespace CCEnvs.UnityX.Items
         public Inventory(
             int collectionCapacity = 4,
             IEqualityComparer<int>? idComparer = null,
-            IEqualityComparer<IItemContainer?>? containerComparer = null
+            IEqualityComparer<TItemContainer?>? containerComparer = null,
+            IEnumerable<TItemContainer>? initialContainers = null
             )
         {
+            IEqualityComparer<IItemContainer?>? untypedContainerComparer = null;
+
+            if (containerComparer.IsNotNull())
+            {
+                untypedContainerComparer = new AnonymousEqualityComparer<IItemContainer?>(
+                    comparison: (left, right) =>
+                    {
+                        return containerComparer.Equals((TItemContainer?)left, (TItemContainer?)right);
+                    },
+                    hashCodeGenerator: (value) =>
+                    {
+                        return containerComparer.GetHashCode((TItemContainer?)value);
+                    });
+            }
+
             internalInventory = new Inventory(
                 collectionCapacity: collectionCapacity,
                 idComparer: idComparer,
-                containerComparer: containerComparer
+                containerComparer: untypedContainerComparer,
+                initialContainers: initialContainers.Cast<IItemContainer>()
                 );
 
             containersView = new DictionaryView<int, IItemContainer, TItemContainer>(
@@ -889,10 +934,25 @@ namespace CCEnvs.UnityX.Items
                 );
         }
 
+        public Inventory(
+            ICollection<TItemContainer> initialContainers,
+            IEqualityComparer<int>? idComparer = null,
+            IEqualityComparer<TItemContainer?>? containerComparer = null
+            )
+            :
+            this(
+                initialContainers.Count,
+                idComparer: idComparer,
+                containerComparer: containerComparer,
+                initialContainers: initialContainers
+                )
+        {
+        }
+
         public static Inventory<TItem, TItemContainer> CreateWith<TItemContainerClone>(
             int containerCount,
             IEqualityComparer<int>? idComparer = null,
-            IEqualityComparer<IItemContainer?>? containerComparer = null
+            IEqualityComparer<TItemContainer?>? containerComparer = null
             )
             where TItemContainerClone : TItemContainer, new()
         {
@@ -911,6 +971,13 @@ namespace CCEnvs.UnityX.Items
         public void AddContainer(TItemContainer itemContainer)
         {
             internalInventory.AddContainer(itemContainer);
+        }
+
+        public void AddContainers(IEnumerable<TItemContainer> containers)
+        {
+            foreach (var container in containers)
+                if (container.IsNotNull() && !container.IsReadOnlyContainer)
+                    internalInventory.AddContainer(container);
         }
 
         public bool CanPut() => internalInventory.CanPut();
