@@ -44,7 +44,8 @@ namespace CCEnvs.UnityX.Editr
             { BIN_PACKER_EB_AFIT, Range.From(BIN_PACKER_EB_AFIT_SYMBOL) },
             { SPLINES, Range.From(SPLINES_SYMBOL) },
             { ENTITES, Range.From(ENTITES_SYMBOL) },
-            { JSON_NET,  Range.From(JSON_NET_SYMBOL) }
+            { JSON_NET,  Range.From(JSON_NET_SYMBOL) },
+            { BURST, Range.From(BURST_SYMBOL) }
         };
 
         static EditorDefinesInstallTool()
