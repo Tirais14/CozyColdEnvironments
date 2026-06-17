@@ -80,12 +80,12 @@ namespace CCEnvs.UnityX.Items
             itemCount.Value = count;
         }
 
+        ~ItemContainer() => Dispose();
+
         public static explicit operator ReadOnlyItemContainer(ItemContainer instance)
         {
             return instance.ToReadOnly();
         }
-
-        ~ItemContainer() => Dispose();
 
         public bool ContainsItem()
         {
@@ -145,7 +145,6 @@ namespace CCEnvs.UnityX.Items
 
             return container.PutItem(PutItem(container.TakeItem(count)));
         }
-
         public ReadOnlyItemContainer PutItemFrom(IItemContainer? container)
         {
             if (container.IsNull())
@@ -164,9 +163,7 @@ namespace CCEnvs.UnityX.Items
 
             return new ReadOnlyItemContainer(Item, takenCount);
         }
-
         public ReadOnlyItemContainer TakeItem() => TakeItem(itemCount.Value);
-
         public ReadOnlyItemContainer TakeItem(IItem? item, int count)
         {
             if (!ContainsItem(item))
@@ -242,9 +239,7 @@ namespace CCEnvs.UnityX.Items
         }
 
         public bool CanPut() => !IsFull;
-
         public bool CanPut(IItem? item) => ContainsItem(item);
-
         public bool CanPut(IItem? item, int count)
         {
             if (!CanPut(item))
@@ -332,6 +327,11 @@ namespace CCEnvs.UnityX.Items
         }
 
         ~ItemContainer() => Dispose();
+
+        public static explicit operator ReadOnlyItemContainer<TItem>(ItemContainer<TItem> instance)
+        {
+            return instance.ToReadOnly();
+        }
 
         public bool CanPut() => internalContainer.CanPut();
         public bool CanPut(IItem? item) => internalContainer.CanPut(item);

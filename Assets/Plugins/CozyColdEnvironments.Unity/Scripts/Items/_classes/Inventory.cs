@@ -23,10 +23,9 @@ namespace CCEnvs.UnityX.Items
 {
     public class Inventory : IInventory, IDisposable
     {
-        internal readonly Dictionary<IItem, List<IItemContainer>> occupiedContainers = new();
-
         private readonly ObservableDictionary<int, IItemContainer> containers;
 
+        private readonly Dictionary<IItem, List<IItemContainer>> occupiedContainers = new();
         private readonly Dictionary<IItemContainer, CompositeDisposable> containerDisposables;
         private readonly Dictionary<IItemContainer, int> containerIDs;
 
@@ -181,7 +180,10 @@ namespace CCEnvs.UnityX.Items
                 return ReadOnlyItemContainer.Empty;
 
             if (AutoSize)
-                EnsureFreeSpace(GetItemCount(item) + count, item);
+            {
+                int targetItemCount = GetItemCount(item) + count;
+                EnsureFreeSpace(targetItemCount, item);
+            }
 
             static bool putItem(IItem item, ref int count, IItemContainer container)
             {
@@ -276,7 +278,8 @@ namespace CCEnvs.UnityX.Items
             if (GetFreeSpace(forItem) >= targetSpace)
                 return;
 
-            int targetContainerCount = (int)MathF.Ceiling(targetSpace / containerCapacity);
+            double targetContainerCountRaw = targetSpace / (double)containerCapacity;
+            int targetContainerCount = (int)Math.Ceiling(targetContainerCountRaw);
             InstantiateContainers(targetContainerCount, cloneSample);
         }
 
@@ -435,7 +438,6 @@ namespace CCEnvs.UnityX.Items
         {
             InstantiateContainersCore(count, results: null, cloneExmaple);
         }
-
         public void InstantiateContainers(
             int count,
             out IList<IItemContainer> results,
@@ -496,7 +498,6 @@ namespace CCEnvs.UnityX.Items
         }
 
         public bool CanPut() => !IsFull;
-
         public bool CanPut(IItem? item)
         {
             if (item.IsNull() || FreeSpace <= 0)
@@ -866,8 +867,20 @@ namespace CCEnvs.UnityX.Items
                 .Subscribe(OnContainersClear);
         }
 
-        ReadOnlyItemContainer IItemAccessor.TakeItem(int count) => ReadOnlyItemContainer.Empty;
-        ReadOnlyItemContainer IItemAccessor.TakeItem() => ReadOnlyItemContainer.Empty;
+        ReadOnlyItemContainer IItemAccessor.TakeItem(int count)
+        {
+            if (occupiedContainers.Values.FirstOrDefault(containers => containers.Any(container => !container.IsEmpty)).IsNot<IItemContainer>(out var container))
+                return ReadOnlyItemContainer.Empty;
+
+            return TakeItem(container.Item, count);
+        }
+        ReadOnlyItemContainer IItemAccessor.TakeItem()
+        {
+            if (occupiedContainers.Values.FirstOrDefault(containers => containers.Any(container => !container.IsEmpty)).IsNot<IItemContainer>(out var container))
+                return ReadOnlyItemContainer.Empty;
+
+            return TakeItem(container.Item, GetItemCount(container.Item));
+        }
 
         Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
     }
@@ -987,6 +1000,8 @@ namespace CCEnvs.UnityX.Items
 
             return inventory;
         }
+
+        ~Inventory() => Dispose();
 
         public void AddContainer(TItemContainer itemContainer)
         {
@@ -1196,9 +1211,18 @@ namespace CCEnvs.UnityX.Items
 
         public void Dispose() => internalInventory.Dispose();
 
-        ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem() => ReadOnlyItemContainer<TItem>.Empty;
-        ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem(int count) => ReadOnlyItemContainer<TItem>.Empty;
+        ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem()
+        {
+            return ((IInventory)internalInventory).TakeItem().Convert<TItem>();
+        }
+        ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem(int count)
+        {
+            return ((IInventory)internalInventory).TakeItem(count).Convert<TItem>();
+        }
 
-        Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
+        Maybe<int> IItemContainerInfoItemless.GetContainerID()
+        {
+            return ((IInventory)internalInventory).GetContainerID();
+        }
     }
 }

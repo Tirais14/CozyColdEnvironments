@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.Tests
             Mock<IItem> itemMock = GetItemMock();
             IItem item = itemMock.Object;
 
-            inventory.InstantiateContainers(4);
+            inventory.InstantiateContainers(2);
             ReadOnlyItemContainer restItems = inventory.PutItem(item, int.MaxValue);
 
             Assert.AreEqual(0, restItems.ItemCount);
@@ -64,13 +64,26 @@ namespace CCEnvs.Unity.Tests
             Assert.AreEqual(int.MaxValue, inventory.GetItemCount(item));
         }
 
+        [Test]
+        public void CheckTakeItem()
+        {
+            Mock<IItem> itemMock = GetItemMock();
+            IItem item = itemMock.Object;
+
+            inventory.AutoSize = true;
+            inventory.PutItem(item, int.MaxValue);
+            ReadOnlyItemContainer takenItems = inventory.TakeItem(item, int.MaxValue / 2);
+
+            Assert.AreEqual(int.MaxValue / 2, takenItems.ItemCount);
+        }
+
         private Mock<IItem> GetItemMock()
         {
             var itemMock = new Mock<IItem>();
 
             itemMock.Setup(item => item.Name).Returns("Cigarettes");
             itemMock.Setup(item => item.ID).Returns(1);
-            itemMock.Setup(item => item.MaxItemCount).Returns(int.MaxValue / 2);
+            itemMock.Setup(item => item.MaxItemCount).Returns(int.MaxValue / 2 + 1);
 
             return itemMock;
         }
