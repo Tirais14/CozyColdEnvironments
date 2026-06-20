@@ -1,6 +1,4 @@
-using CCEnvs.Attributes;
-using CCEnvs.Collections;
-using CCEnvs.Reflection;
+using CCEnvs.Disposables;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -44,6 +42,8 @@ namespace CCEnvs.Events
                         typeof(CCEventBus).PrintException(ex);
                     }
                 }
+
+                actions.Clear();
             }
 
             if (Events<TEvent>.EvActions.TryGetValue(out List<Action<TEvent>>? evActions))
@@ -59,6 +59,8 @@ namespace CCEnvs.Events
                         typeof(CCEventBus).PrintException(ex);
                     }
                 }
+
+                evActions.Clear();
             }
         }
         public static void Publish<TEvent>(TEvent ev)
@@ -79,7 +81,9 @@ namespace CCEnvs.Events
                         typeof(CCEventBus).PrintException(ex);
                     }
                 }
-            } 
+
+                evActions.Clear();
+            }
         }
 
         private static class Events<TEvent>
@@ -89,22 +93,6 @@ namespace CCEnvs.Events
             public static Lazy<List<Action>> Actions { get; } = new (() => new());
 
             public static Lazy<List<Action<TEvent>>> EvActions { get; } = new(() => new());
-
-            [OnInstallExecutable]
-            private static void OnInstall()
-            {
-                if (Emitter.IsValueCreated)
-                {
-                    Emitter.Value.Dispose();
-                    Emitter = new Lazy<ReactiveCommand<TEvent>>(() => new());
-                }
-
-                if (Actions.IsValueCreated)
-                    Actions.Value.Clear();
-
-                if (EvActions.IsValueCreated)
-                    EvActions.Value.Clear();
-            }
         }
     }
 }
