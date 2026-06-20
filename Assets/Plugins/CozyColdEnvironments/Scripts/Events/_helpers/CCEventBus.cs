@@ -1,3 +1,6 @@
+using CCEnvs.Attributes;
+using CCEnvs.Collections;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -8,7 +11,7 @@ namespace CCEnvs.Events
 {
     public static class CCEventBus
     {
-        public static Observable<TEvent> Recieve<TEvent>() => Events<TEvent>.Emitter;
+        public static Observable<TEvent> Recieve<TEvent>() => Events<TEvent>.Emitter.Value;
 
         public static void RecieveAction<TEvent>(Action action)
         {
@@ -25,48 +28,83 @@ namespace CCEnvs.Events
         public static void Publish<TEvent>()
             where TEvent : new()
         {
-            Events<TEvent>.Emitter.Execute(new TEvent());
+            if (Events<TEvent>.Emitter.IsValueCreated)
+                Events<TEvent>.Emitter.Value.Execute(new TEvent());
 
-            if (!Events<TEvent>.Actions.TryGetValue(out List<Action>? actions))
-                return;
-
-            for (int i = 0; i < actions.Count; i++)
+            if (Events<TEvent>.Actions.TryGetValue(out List<Action>? actions))
             {
-                try
+                for (int i = 0; i < actions.Count; i++)
                 {
-                    actions[i].Invoke();
+                    try
+                    {
+                        actions[i].Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        typeof(CCEventBus).PrintException(ex);
+                    }
                 }
-                catch (Exception ex)
+            }
+
+            if (Events<TEvent>.EvActions.TryGetValue(out List<Action<TEvent>>? evActions))
+            {
+                for (int i = 0; i < evActions.Count; i++)
                 {
-                    typeof(CCEventBus).PrintException(ex);
+                    try
+                    {
+                        evActions[i].Invoke(new TEvent());
+                    }
+                    catch (Exception ex)
+                    {
+                        typeof(CCEventBus).PrintException(ex);
+                    }
                 }
             }
         }
         public static void Publish<TEvent>(TEvent ev)
         {
-            Events<TEvent>.Emitter.Execute(ev);
+            if (Events<TEvent>.Emitter.IsValueCreated)
+                Events<TEvent>.Emitter.Value.Execute(ev);
 
-            if (!Events<TEvent>.EvActions.TryGetValue(out List<Action<TEvent>>? evActions))
-                return;
-
-            for (int i = 0; i < evActions.Count; i++)
+            if (Events<TEvent>.EvActions.TryGetValue(out List<Action<TEvent>>? evActions))
             {
-                try
+                for (int i = 0; i < evActions.Count; i++)
                 {
-                    evActions[i].Invoke(ev);
+                    try
+                    {
+                        evActions[i].Invoke(ev);
+                    }
+                    catch (Exception ex)
+                    {
+                        typeof(CCEventBus).PrintException(ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    typeof(CCEventBus).PrintException(ex);
-                }
-            }
+            } 
         }
 
         private static class Events<TEvent>
         {
-            public static ReactiveCommand<TEvent> Emitter { get; } = new();
+            public static Lazy<ReactiveCommand<TEvent>> Emitter { get; private set; } = new(() => new());
+
             public static Lazy<List<Action>> Actions { get; } = new (() => new());
+
             public static Lazy<List<Action<TEvent>>> EvActions { get; } = new(() => new());
+
+            [OnInstallExecutable]
+            private static void OnInstall()
+            {
+                if (Emitter.IsValueCreated)
+                {
+                    Emitter.Value.Dispose();
+                    Emitter = new Lazy<ReactiveCommand<TEvent>>(() => new());
+                }
+
+                if (Actions.IsValueCreated)
+                    Actions.Value.Clear();
+
+                if (EvActions.IsValueCreated)
+                    EvActions.Value.Clear();
+            }
         }
     }
 }
