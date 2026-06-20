@@ -32,7 +32,7 @@ namespace CCEnvs.UnityX.Components
                 GetType(),
                 FindObjectsInactive.Include
                 )
-                .Length > 1)
+                .Length >= 2)
             {
                 this.PrintError($"{this.GetTypeName()} is static and cannot be created more than one time.");
                 this.PrintLog(StackTraceUtility.ExtractStackTrace());
@@ -40,7 +40,7 @@ namespace CCEnvs.UnityX.Components
                 return;
             }
 
-            this.PrintLog("Awaked");
+            DontDestroyOnLoad(transform.root);
         }
 
         protected override void OnDestroy()

@@ -86,12 +86,8 @@ namespace CCEnvs.UnityX
 
         private void Validate()
         {
-            if (FindObjectsByType<CCBehaviourStaticKernel>(
-                    FindObjectsInactive.Include, FindObjectsSortMode.None).Any(x => x != this)
-                )
-            {
+            if (FindObjectsByType(GetType(), FindObjectsInactive.Include).Length >= 2)
                 throw new CCException($"Cannot create more than one {nameof(CCBehaviourStaticKernel)}.");
-            }
         }
 
         private void Setup()
