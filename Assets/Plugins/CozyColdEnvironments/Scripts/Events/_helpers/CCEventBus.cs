@@ -1,4 +1,3 @@
-using CCEnvs.Disposables;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -90,7 +89,7 @@ namespace CCEnvs.Events
         {
             public static Lazy<ReactiveCommand<TEvent>> Emitter { get; private set; } = new(() => new());
 
-            public static Lazy<List<Action>> Actions { get; } = new (() => new());
+            public static Lazy<List<Action>> Actions { get; } = new(() => new());
 
             public static Lazy<List<Action<TEvent>>> EvActions { get; } = new(() => new());
         }

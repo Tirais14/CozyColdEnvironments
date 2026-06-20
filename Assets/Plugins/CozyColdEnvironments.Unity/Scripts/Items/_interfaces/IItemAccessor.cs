@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 
 namespace CCEnvs.UnityX.Items

@@ -1,4 +1,3 @@
-using CCEnvs.UnityX.Items;
 using CCEnvs.UnityX.UI;
 using ObservableCollections;
 using UnityEngine;

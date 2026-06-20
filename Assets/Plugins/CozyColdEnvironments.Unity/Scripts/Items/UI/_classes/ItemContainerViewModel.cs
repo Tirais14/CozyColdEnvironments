@@ -1,7 +1,5 @@
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Rx;
-using CCEnvs.UnityX.Items;
 using CCEnvs.UnityX.UI;
 using R3;
 using System;

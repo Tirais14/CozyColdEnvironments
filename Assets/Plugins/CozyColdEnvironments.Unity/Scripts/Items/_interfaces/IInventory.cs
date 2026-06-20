@@ -73,7 +73,7 @@ namespace CCEnvs.UnityX.Items
         Observable<Unit> ObserveClear();
     }
 
-    public interface IInventory<TItem, TItemContainer> 
+    public interface IInventory<TItem, TItemContainer>
         :
         IInventory,
         IItemAccessor<TItem>,
@@ -217,7 +217,7 @@ namespace CCEnvs.UnityX.Items
         {
             RemoveCount(count, out IList<TItemContainer> typedRemoved);
 
-            removed = typedRemoved.Cast<IItemContainer>().ToArray(); 
+            removed = typedRemoved.Cast<IItemContainer>().ToArray();
         }
 
         IList<ReadOnlyItemContainer> IInventory.GetCompactedContainers()
@@ -230,10 +230,10 @@ namespace CCEnvs.UnityX.Items
             return GetOccupiedContainers().Cast<IItemContainer>().ToArray();
         }
 
-        Observable <InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
+        Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
         {
             return ObserveContainerAdd()
-                .Select(ev => new InventoryContainerAddEvent { ID = ev.ID, Container = ev.Container});
+                .Select(ev => new InventoryContainerAddEvent { ID = ev.ID, Container = ev.Container });
         }
 
         Observable<InventoryContainerRemoveEvent> IInventory.ObserveContainerRemove()

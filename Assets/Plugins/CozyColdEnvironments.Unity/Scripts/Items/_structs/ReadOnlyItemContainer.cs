@@ -6,10 +6,10 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
-    public readonly struct ReadOnlyItemContainer 
+    public readonly struct ReadOnlyItemContainer
         :
         IItemContainerInfo,
-        IItemContainer, 
+        IItemContainer,
         IEquatable<ReadOnlyItemContainer>
     {
         public static ReadOnlyItemContainer Empty { get; } = new(null, 0);
@@ -145,7 +145,7 @@ namespace CCEnvs.UnityX.Items
             return Empty;
         }
 
-        readonly void IItemAccessor.CopyItemFrom(IItemContainerInfo itemContainer) {  }
+        readonly void IItemAccessor.CopyItemFrom(IItemContainerInfo itemContainer) { }
 
         readonly void IItemAccessor.Clear() { }
 
@@ -163,7 +163,7 @@ namespace CCEnvs.UnityX.Items
 
         readonly Observable<int> IItemContainerInfoItemless.ObserveItemCount()
         {
-            return Observable.Return(ItemCount);    
+            return Observable.Return(ItemCount);
         }
     }
 
@@ -171,8 +171,8 @@ namespace CCEnvs.UnityX.Items
         :
         IItemContainerInfo<TItem>,
         IItemContainer<TItem>,
-        IEquatable<ReadOnlyItemContainer<TItem>> 
-        
+        IEquatable<ReadOnlyItemContainer<TItem>>
+
         where TItem : IItem
     {
         public static ReadOnlyItemContainer<TItem> Empty { get; } = new(default, 0);

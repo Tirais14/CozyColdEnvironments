@@ -1,6 +1,5 @@
 using CCEnvs.Disposables;
 using CCEnvs.UnityX.Injections;
-using CCEnvs.UnityX.Items;
 using CCEnvs.UnityX.UI;
 using R3;
 using System;
