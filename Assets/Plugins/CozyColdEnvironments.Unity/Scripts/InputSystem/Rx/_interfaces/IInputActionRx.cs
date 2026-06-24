@@ -12,7 +12,12 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         ISwitchable
     {
         InputAction Action { get; }
-        string ActionName { get; }
+
+        string Name { get; }
+
+        bool WasStartedOnThisFrame { get; }
+        bool WasPerformedOnThisFrame { get; }
+        bool WasCanceledOnThisFrame { get; }
 
         bool IsButtonPressed();
 
@@ -31,7 +36,9 @@ namespace CCEnvs.UnityX.InputSystem.Rx
     public interface IInputActionRx<T> : IInputActionRx
         where T : struct
     {
-        T InputValue { get; }
+        T OnStartedValue { get; }
+        T OnPerformedValue { get; }
+        T OnCanceledValue { get; }
 
         T ReadValue();
 

@@ -1,4 +1,4 @@
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Dependencies;
 using UnityEngine;
@@ -16,12 +16,12 @@ namespace CCEnvs.UnityX
         {
             base.Awake();
 
-            CCServices.Bind(
-                GetComponent<Canvas>(),
-                UnityDependecyID.HighPriorityCanvas
-                );
+            CCServices.BindInstance(GetComponent<Canvas>())
+                .WithID(UnityDependecyID.HighPriorityCanvas)
+                .AsSingle();
 
-            CCServices.Bind(this);
+            CCServices.BindInstance(this)
+                .AsSingle();
         }
     }
 }

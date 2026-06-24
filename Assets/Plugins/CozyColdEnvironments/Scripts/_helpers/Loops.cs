@@ -1,3 +1,4 @@
+using CCEnvs.Pools;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -100,14 +101,15 @@ namespace CCEnvs
             if (moveNext is null)
                 throw new ArgumentNullException(nameof(moveNext));
 
-            return BreadthFirstSearch(first, (x, _) =>
-            {
-                var values = ArrayPool<T?>.Shared.Get(1);
+            using PooledArray<T?> oneElementArray = ArrayPool<T?>.Shared.Get(1);
 
-                values[0] = moveNext(x);
+            return BreadthFirstSearch(first,
+                (x, _) =>
+                {
+                    oneElementArray[0] = moveNext(x);
 
-                return values;
-            });
+                    return oneElementArray;
+                });
         }
     }
 }

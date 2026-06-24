@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 
 namespace CCEnvs.UnityX.CommonAPIs
 {

@@ -34,7 +34,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         {
         }
 
-        protected override Dictionary<TKey, TValue> ValueFactory()
+        protected override Dictionary<TKey, TValue> CreateValue()
         {
             var collection = new Dictionary<TKey, TValue>(this.items.Length);
 

@@ -12,24 +12,9 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         {
         }
 
-        public override Observable<bool> ObserveRawValue()
+        protected override bool ReadValue(InputAction.CallbackContext context)
         {
-            return ObserveRaw().Select(static ctx => ctx.ReadValueAsButton());
-        }
-
-        public override Observable<bool> ObserveStartedValue()
-        {
-            return ObserveStarted().Select(static ctx => ctx.ReadValueAsButton());
-        }
-
-        public override Observable<bool> ObservePerformedValue()
-        {
-            return ObservePerformed().Select(static ctx => ctx.ReadValueAsButton());
-        }
-
-        public override Observable<bool> ObserveCanceledValue()
-        {
-            return ObserveCanceled().Select(static ctx => ctx.ReadValueAsButton());
+            return context.ReadValueAsButton();
         }
     }
 }

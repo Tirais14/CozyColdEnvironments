@@ -35,20 +35,22 @@ namespace CCEnvs.Reflection
             typeof(Array)
         };
 
-        /// <summary>
-        /// Also supports interfaces
-        /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Queue<Type> CollectBaseTypes(this Type type)
+        public static IList<Type> CollectBaseTypes(this Type type)
         {
             CC.Guard.IsNotNull(type, nameof(type));
 
-            //if (type.IsInterface)
-            //    return GetInterfaceInheritancePath(type);
+            var results = new List<Type>();
 
-            return Loops.BreadthFirstSearch(type, x => x.BaseType);
+            while (type != null)
+            {
+                results.Add(type);
+                type = type.BaseType;
+            }
+
+            return results;
         }
 
         /// <exception cref="TypeNotFoundException"></exception>

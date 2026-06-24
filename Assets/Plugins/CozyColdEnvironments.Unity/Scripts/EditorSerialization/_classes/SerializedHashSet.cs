@@ -25,7 +25,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         {
         }
 
-        protected override HashSet<T> ValueFactory()
+        protected override HashSet<T> CreateValue()
         {
             var set = new HashSet<T>(items.Length);
 

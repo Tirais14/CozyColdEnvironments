@@ -1,5 +1,5 @@
 using CCEnvs.Attributes;
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 using CCEnvs.UnityX.Saves;
 using Cysharp.Threading.Tasks;
 using R3;
@@ -23,8 +23,9 @@ namespace CCEnvs.UnityX.CommonAPIs
 
             Instance = this;
 
-            CCServices.Bind<ISavingAPI>(this);
-            CCServices.Bind(this);
+            CCServices.BindInstance(this)
+                .WithInterfaces()
+                .AsSingle();
         }
 
         public async UniTask SaveGameAsync(

@@ -10,7 +10,7 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         /// <summary>
         /// Uses <see cref="Camera.main"/> to resolve
         /// </summary>
-        public Vector2 WorldPoint => Camera.main.ScreenToWorldPoint(InputValue);
+        public Vector2 WorldPoint => Camera.main.ScreenToWorldPoint(OnPerformedValue);
 
         [Preserve]
         public PointerInputActionRx(InputAction inputAction) : base(inputAction)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -16,6 +17,7 @@ namespace CCEnvs.Reflection.Caching
         private bool? isCCBehvaiour;
         private bool? isValueType;
         private bool? isPrimitive;
+        private bool? isCollection;
 
         public Type Type { get; }
 
@@ -67,6 +69,14 @@ namespace CCEnvs.Reflection.Caching
             {
                 isPrimitive ??= Type.IsPrimitive;
                 return isPrimitive.Value;
+            }
+        }
+
+        public bool IsCollection {
+            get
+            {
+                isCollection ??= Type.IsType<IEnumerable>();
+                return isCollection.Value;
             }
         }
 

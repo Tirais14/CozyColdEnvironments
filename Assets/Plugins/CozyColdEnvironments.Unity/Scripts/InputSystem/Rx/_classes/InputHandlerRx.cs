@@ -1,6 +1,7 @@
 using CCEnvs.Collections;
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
@@ -19,16 +20,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         :
         IInputHandlerRx
     {
-        //#region IL2CPP Defines
-
-        //[Preserve]
-        //private static InputActionRx<Vector2>? _vectorActiion;
-
-        //[Preserve]
-        //private static InputActionRx<bool>? boolAction;
-
-        //#endregion IL2CPP Defines
-
         protected readonly List<IDisposable> disposables = new();
 
         private readonly Dictionary<string, IInputActionRx> registeredActions = new(0);
@@ -44,12 +35,21 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             ActionMap = actionMap;
             isEnabled = new ReactiveProperty<bool>(actionMap.enabled);
 
+            PropertyInfo[]? actionProps = null;
+
             if (autoSetProps)
-                SetProperties();
+                actionProps = SetProperties();
 
             Enable();
-
-            CCServices.Bind(GetType(), this, null);
+            Type type = GetType();
+            BindToServices(type);
+            BindActionsToServices(type,
+                actionProps
+                ??
+                type.GetProperties(BindingFlagsDefault.InstancePublic)
+                .Where(prop => prop.PropertyType.IsType<IInputActionRx>())
+                .ToArray()
+                );
         }
 
         /// <exception cref="EmptyStringArgumentException"></exception>
@@ -129,8 +129,34 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             if (inputAction.IsNull())
                 throw new ArgumentNullException(nameof(inputAction));
 
-            registeredActions.Add(inputAction.ActionName, inputAction);
+            registeredActions.Add(inputAction.Name, inputAction);
             disposables.Add(inputAction);
+        }
+
+        private void BindToServices(Type type)
+        {
+            CCServices.Bind(type).FromInstance(this).AsSingle();
+            CCServices.Bind(type)
+                .WithID(type.GetName(TypeNameConvertingAttributes.None))
+                .FromInstance(this)
+                .WithInterfaces(nameof(IInputHandlerRx))
+                .IfNotBound()
+                .AsSingle();
+        }
+
+        private void BindActionsToServices(Type type, PropertyInfo[] actionProps)
+        {
+            foreach (var item in actionProps.Where(prop => prop.PropertyType.IsType<IInputActionRx>())
+                .Select(this, static (prop, @this) => prop.GetValue(@this))
+                .OfType<IInputActionRx>())
+            {
+                CCServices.Bind(item.GetType())
+                    .WithID(type.GetName(TypeNameConvertingAttributes.None) + '.' + item.Name)
+                    .FromInstance(item)
+                    .WithInterfaces(nameof(IInputActionRx))
+                    .IfNotBound()
+                    .AsSingle();
+            }
         }
 
         private InputAction ResolveInputAction(PropertyInfo prop)
@@ -140,20 +166,17 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             return resolved;
         }
 
-        private void SetProperties()
+        private PropertyInfo[] SetProperties()
         {
-            PropertyInfo[] props = this.Reflect()
-                .IncludeNonPublic()
-                .IncludeBaseTypes()
-                .WithTypeFilter<IInputActionRx>()
-                .Properties()
-                .Where(x => x.PropertyType.IsType<IInputActionRx>())
+            PropertyInfo[] props = GetType()
+                .GetProperties(BindingFlagsDefault.InstancePublic)
+                .Where(prop => prop.PropertyType.IsType<IInputActionRx>())
                 .ToArray();
 
             if (props.IsNullOrEmpty())
             {
                 CCDebug.Instance.PrintWarning("Cannot find any input action properties.");
-                return;
+                return Array.Empty<PropertyInfo>();
             }
 
             registeredActions.EnsureCapacity(props.Length);
@@ -175,6 +198,7 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
             registeredActions.TrimExcess();
             CCDebug.Instance.PrintLog("Initialized", new DebugContext(GetType()).Additive());
+            return props;
         }
     }
 }

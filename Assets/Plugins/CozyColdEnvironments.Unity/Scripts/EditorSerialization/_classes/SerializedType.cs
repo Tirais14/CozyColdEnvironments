@@ -34,7 +34,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         {
         }
 
-        protected override Type ValueFactory()
+        protected override Type CreateValue()
         {
             return TypeSearch.FindTypeInAppDomain(new TypeSearchArguments
             {

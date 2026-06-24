@@ -1,4 +1,4 @@
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Injections;
 using R3;

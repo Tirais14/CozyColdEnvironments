@@ -1,10 +1,11 @@
+using CCEnvs.Services;
 using CCEnvs.Disposables;
 using CCEnvs.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
-using System.Collections.Generic;
 using System.Threading;
+using UnityEditor;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 using static UnityEngine.InputSystem.InputAction;
@@ -17,8 +18,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         :
         IInputActionRx
     {
-        protected readonly List<IDisposable> disposables = new();
-
         private readonly CancellationTokenSource disposeCancellationTokeSource = new();
 
         private readonly ReactiveCommand<CallbackContext> raw = new();
@@ -28,16 +27,19 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         private readonly ReactiveProperty<bool> isEnabled;
 
-        //private Observable<Unit>? everyUpdateThread;
+        private readonly Observable<Unit> preUpdate;
 
-        //private bool performedState;
+        private IDisposable? preUpdateBinding;
 
         public InputAction Action { get; }
 
-        public string ActionName => Action.name;
+        public string Name => Action.name;
 
         public bool IsEnabled => isEnabled.Value && Action.enabled;
         public bool IsHolding { get; private set; }
+        public bool WasStartedOnThisFrame { get; private set; }
+        public bool WasPerformedOnThisFrame { get; private set; }
+        public bool WasCanceledOnThisFrame { get; private set; }
 
         protected CancellationToken DisposeCancellationToken => disposeCancellationTokeSource.Token;
 
@@ -47,9 +49,20 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             CC.Guard.IsNotNull(inputAction, nameof(inputAction));
 
             isEnabled = new ReactiveProperty<bool>(inputAction.enabled);
+            preUpdate = Observable.EveryUpdate(UnityFrameProvider.Initialization, DisposeCancellationToken)
+                .Where(this, (_, @this) => @this.IsEnabled);
 
             Action = inputAction;
+
             Setup();
+            BindPreUpdate();
+
+            CCServices.Bind(GetType())
+                .FromInstance(this)
+                .WithID(Name)
+                .WithInterfaces(nameof(IInputActionRx))
+                .IfNotBound()
+                .AsSingle();
         }
 
         ~InputActionRx() => Dispose();
@@ -88,92 +101,113 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         public Observable<bool> ObserveEnabled()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
             return isEnabled.Where(static x => x);
         }
 
         public Observable<bool> ObserveDisabled()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
             return isEnabled.Where(static x => !x);
         }
 
         public Observable<CallbackContext> ObserveRaw()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
             return raw;
         }
 
         public Observable<CallbackContext> ObserveStarted()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
             return started;
         }
 
         public Observable<CallbackContext> ObservePerformed()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-            //performedState = true;
-
             return performed;
         }
 
         public Observable<CallbackContext> ObserveCanceled()
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
-
-            //performedState = false;
-
             return canceled;
         }
 
-        //public Observable<Unit> ObserveIsPressed()
-        //{
-        //    CCDisposable.ThrowIfDisposed(this, disposed);
+        protected virtual void OnRaw(CallbackContext context)
+        {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
 
-        //    everyUpdateThread ??= Observable.EveryUpdate(UnityFrameProvider.EarlyUpdate);
+            raw.Execute(context);
+        }
 
-        //    return everyUpdateThread.Where(Action, static (_, action) => action.IsPressed());
-        //}
+        protected virtual void OnStarted(CallbackContext context)
+        {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
 
-        //public Observable<Unit> ObserveContinuousPerformed()
-        //{
-        //    CCDisposable.ThrowIfDisposed(this, disposed);
+            WasStartedOnThisFrame = true;
+            IsHolding = true;
 
-        //    return ObserveIsPressed().Where(Action, (_, action) => action.WasPerformedThisFrame());
-        //}
+            started.Execute(context);
+        }
+
+        protected virtual void OnPerformed(CallbackContext context)
+        {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
+
+            WasPerformedOnThisFrame = true;
+
+            performed.Execute(context);
+        }
+
+        protected virtual void OnCanceled(CallbackContext context)
+        {
+            if (CCDisposable.IsDisposed(disposed))
+                return;
+
+            WasCanceledOnThisFrame = true;
+            IsHolding = false;
+
+            canceled.Execute(context);
+        }
+
+        protected virtual void OnPreUpdate(Unit _)
+        {
+            WasStartedOnThisFrame = false;
+            WasPerformedOnThisFrame = false;
+            WasCanceledOnThisFrame = false;
+        }
 
         private int disposed;
-
         public void Dispose() => Dispose(disposing: true);
         protected virtual void Dispose(bool disposing)
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
 
-                if (disposing)
-                {
-                    disposables.DisposeEachAndClear();
+            if (disposing)
+            {
+                disposeCancellationTokeSource.CancelAndDispose();
 
-                    disposeCancellationTokeSource.CancelAndDispose();
+                Action.started -= OnRaw;
+                Action.performed -= OnRaw;
+                Action.canceled -= OnRaw;
 
-                    Action.started -= OnRaw;
-                    Action.performed -= OnRaw;
-                    Action.canceled -= OnRaw;
+                Action.started -= OnStarted;
+                Action.performed -= OnPerformed;
+                Action.canceled -= OnCanceled;
 
-                    Action.started -= OnStarted;
-                    Action.performed -= OnPerformed;
-                    Action.canceled -= OnCanceled;
+                raw.Dispose();
+                started.Dispose();
+                performed.Dispose();
+                canceled.Dispose();
+                isEnabled.Dispose();
 
-                    raw.Dispose();
-                    started.Dispose();
-                    performed.Dispose();
-                    canceled.Dispose();
-                    isEnabled.Dispose();
-                }
+                CCDisposable.Dispose(ref preUpdateBinding);
+            }
 
             GC.SuppressFinalize(this);
         }
@@ -189,38 +223,9 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             Action.canceled += OnCanceled;
         }
 
-        private void OnRaw(CallbackContext context)
+        private void BindPreUpdate()
         {
-            if (CCDisposable.IsDisposed(disposed))
-                return;
-
-            raw.Execute(context);
-        }
-
-        private void OnStarted(CallbackContext context)
-        {
-            if (CCDisposable.IsDisposed(disposed))
-                return;
-
-            started.Execute(context);
-            IsHolding = true;
-        }
-
-        private void OnPerformed(CallbackContext context)
-        {
-            if (CCDisposable.IsDisposed(disposed))
-                return;
-
-            performed.Execute(context);
-        }
-
-        private void OnCanceled(CallbackContext context)
-        {
-            if (CCDisposable.IsDisposed(disposed))
-                return;
-
-            canceled.Execute(context);
-            IsHolding = false;
+            preUpdateBinding = preUpdate.Subscribe(OnPreUpdate);
         }
     }
     public class InputActionRx<T>
@@ -230,38 +235,101 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         where T : struct
     {
-        public T InputValue { get; private set; }
+        private IDisposable? rawValueBinding;
+
+        public T OnStartedValue { get; private set; }
+        public T OnPerformedValue { get; private set; }
+        public T OnCanceledValue { get; private set; }
 
         [Preserve]
         public InputActionRx(InputAction inputAction)
             :
             base(inputAction)
         {
-            ObserveRawValue().Subscribe(this,
-                static (x, @this) => @this.InputValue = x)
-                .AddTo(disposables);
+            BindRawValue();
         }
 
         public T ReadValue() => Action.ReadValue<T>();
 
         public virtual Observable<T> ObserveRawValue()
         {
-            return ObserveRaw().Select(static x => x.ReadValue<T>());
+            return ObserveRaw().Select(this, static (ctx, @this) => @this.ReadValue(ctx));
         }
 
         public virtual Observable<T> ObserveStartedValue()
         {
-            return ObserveStarted().Select(static x => x.ReadValue<T>());
+            return ObserveStarted().Select(this, static (ctx, @this) => @this.OnStartedValue);
         }
 
         public virtual Observable<T> ObservePerformedValue()
         {
-            return ObservePerformed().Select(static x => x.ReadValue<T>());
+            return ObservePerformed().Select(this, static (ctx, @this) => @this.OnPerformedValue);
         }
 
         public virtual Observable<T> ObserveCanceledValue()
         {
-            return ObserveCanceled().Select(static x => x.ReadValue<T>());
+            return ObserveCanceled().Select(this, static (ctx, @this) => @this.OnCanceledValue);
+        }
+
+        public override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Name), Name)
+                .AddProperty(nameof(IsEnabled), IsEnabled)
+                .ToStringAndDispose();
+        }
+
+        protected virtual T ReadValue(CallbackContext context)
+        {
+            return context.ReadValue<T>();
+        }
+
+        protected override void OnStarted(CallbackContext context)
+        {
+            OnStartedValue = ReadValue(context);
+            base.OnStarted(context);
+        }
+
+        protected override void OnPerformed(CallbackContext context)
+        {
+            OnPerformedValue = ReadValue(context);
+            base.OnPerformed(context);
+        }
+
+        protected override void OnCanceled(CallbackContext context)
+        {
+            OnCanceledValue = ReadValue(context);
+            base.OnCanceled(context);
+        }
+
+        protected override void OnPreUpdate(Unit _)
+        {
+            base.OnPreUpdate(_);
+            OnStartedValue = default;
+            OnPerformedValue = default;
+            OnCanceledValue = default;
+        }
+
+        private int disposed;
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            if (disposing)
+                CCDisposable.Dispose(ref rawValueBinding);
+        }
+
+        private void OnRawValueChanged(T value)
+        {
+            OnPerformedValue = value;
+        }
+
+        private void BindRawValue()
+        {
+            rawValueBinding = ObserveRawValue().Subscribe(OnRawValueChanged);
         }
     }
 }

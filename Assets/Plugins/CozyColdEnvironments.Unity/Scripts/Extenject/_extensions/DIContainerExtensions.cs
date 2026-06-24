@@ -1,8 +1,11 @@
+using CCEnvs.Linq;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.InputSystem.Rx;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
@@ -10,7 +13,7 @@ using Zenject;
 #nullable enable
 namespace CCEnvs.Zenject
 {
-    public static class ContainerExtensions
+    public static class DIContainerExtensions
     {
         public static void BindInputActionAsset(
             this DiContainer container,
@@ -51,15 +54,77 @@ namespace CCEnvs.Zenject
 
             foreach (var handler in handlers)
             {
-                //container.BindInstance(handler.ActionMap)
-                //    .WithId(handler.ActionMap.name)
-                //    .AsCached()
-                //    .NonLazy();
+                Type handlerType = handler.GetType();
 
-                container.Bind(handler.GetType())
+                container.Bind(handlerType)
                     .FromInstance(handler)
                     .AsSingle()
                     .NonLazy();
+
+                foreach (var inputAction in handlerType.GetProperties()
+                    .Where(prop => prop.PropertyType.IsType<IInputActionRx>())
+                    .Select(prop => prop.GetValue(handler))
+                    .Cast<IInputActionRx>())
+                {
+                    Type inputActionType = inputAction.GetType();
+
+                    container.Bind(inputActionType)
+                        .WithId(inputAction.Name)
+                        .FromInstance(inputAction)
+                        .AsCached()
+                        .NonLazy();
+
+                    container.Bind(TypeofCache<IInputActionRx>.Type)
+                        .WithId(inputAction.Name)
+                        .FromInstance(inputAction)
+                        .AsCached()
+                        .NonLazy();
+
+                    if (inputAction is InputActionRx concreteInputAction)
+                    {
+                        if (inputActionType != concreteInputAction.GetType())
+                        {
+                            container.Bind(TypeofCache<InputActionRx>.Type)
+                            .WithId(inputAction.Name)
+                            .FromInstance(inputAction)
+                            .AsCached()
+                            .NonLazy();
+
+                            foreach (var baseType in inputActionType.CollectBaseTypes())
+                            {
+                                if (baseType != inputActionType
+                                    &&
+                                    baseType.IsType<InputActionRx>()
+                                    && 
+                                    baseType.IsGenericType)
+                                {
+                                    container.Bind(baseType)
+                                        .WithId(inputAction.Name)
+                                        .FromInstance(inputAction)
+                                        .AsCached()
+                                        .NonLazy();
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (var iface in inputActionType.GetInterfaces()
+                        .Where(iface =>
+                        {
+                            return iface.Name.StartsWith(nameof(IInputActionRx))
+                                   &&
+                                   iface.IsGenericType;
+                        }))
+                    {
+                        container.Bind(iface.GetType())
+                            .WithId(inputAction.Name)
+                            .FromInstance(iface)
+                            .AsCached()
+                            .NonLazy();
+                    }
+                }
             }
         }
 

@@ -44,7 +44,7 @@ namespace CCEnvs.Reflection.Caching
 
     public static class TypeCache<T>
     {
-        private static TypeCacheInfo core = new(TypeofCache<T>.Type);
+        private static TypeCacheInfo core = new(typeof(T));
 
         public static bool IsUnityObject => core.IsUnityObject;
         public static bool IsUnityComponent => core.IsUnityComponent;
@@ -52,6 +52,7 @@ namespace CCEnvs.Reflection.Caching
         public static bool IsCCBheaviour => core.IsCCBheaviour;
         public static bool IsValueType => core.IsValueType;
         public static bool IsPrimitive => core.IsPrimitive;
+        public static bool IsCollection => core.IsCollection;
 
         public static string Name => core.Name;
         public static string FullName => core.FullName;

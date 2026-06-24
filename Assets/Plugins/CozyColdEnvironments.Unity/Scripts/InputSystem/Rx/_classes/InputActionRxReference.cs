@@ -1,6 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 using CCEnvs.Reflection;
 using SuperLinq;
 using System;

@@ -1,5 +1,5 @@
 using CCEnvs.Attributes;
-using CCEnvs.Dependencies;
+using CCEnvs.Services;
 using R3;
 using System;
 
@@ -40,8 +40,9 @@ namespace CCEnvs.UnityX.CommonAPIs
 
             Instance = this;
 
-            CCServices.Bind<IGeneralAPI>(this);
-            CCServices.Bind(this);
+            CCServices.BindInstance(this)
+                .WithInterfaces()
+                .AsSingle();
         }
 
         public void GameplayStart()
