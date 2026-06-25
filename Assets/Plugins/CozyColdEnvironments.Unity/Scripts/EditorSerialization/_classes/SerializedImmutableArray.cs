@@ -1,3 +1,5 @@
+#if UNITY_2017_1_OR_NEWER
+using CCEnvs.Collections;
 using CCEnvs.Linq;
 using System;
 using System.Collections.Immutable;
@@ -10,7 +12,7 @@ namespace CCEnvs.UnityX.EditorSerialization
     public sealed class SerializedImmutableArray<T> : EditorSerialized<ImmutableArray<T>>
     {
         [UnityEngine.SerializeField]
-        private T[] items = null!;
+        private T[] items = Array.Empty<T>();
 
         public SerializedImmutableArray()
         {
@@ -29,14 +31,22 @@ namespace CCEnvs.UnityX.EditorSerialization
     }
 
     [Serializable]
-    public sealed class SerializedImmutableArray<T, TConverted> : EditorSerialized<ImmutableArray<T>, ImmutableArray<TConverted>>
+    public sealed class SerializedImmutableArray<T, TConverted> : EditorSerialized<T[], ImmutableArray<TConverted>>
     {
         [UnityEngine.SerializeField]
-        private T[] items = null!;
+        private T[] items = Array.Empty<T>();
 
         public SerializedImmutableArray(Func<T, TConverted> converter)
             :
-            base((source) => source.Select(converter, static (item, converter) => converter(item)).ToImmutableArray())
+            base((source) =>
+            {
+                ImmutableArray<TConverted> result = Array.ConvertAll(source, (item) => converter(item)).ToImmutableArray();
+
+                if (result.IsDefault)
+                    return ImmutableArray<TConverted>.Empty;
+
+                return result;
+            })
         {
         }
 
@@ -46,9 +56,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         {
         }
 
-        protected override ImmutableArray<T> CreateValue()
-        {
-            return items.ToImmutableArray();
-        }
+        protected override T[] CreateValue() => items;
     }
 }
+#endif

@@ -2,6 +2,7 @@ using CCEnvs.Caching;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
+using System.Collections.Immutable;
 using System.Linq;
 
 #nullable enable
@@ -34,13 +35,13 @@ namespace CCEnvs.Utils
     public static class EnumCache<T>
         where T : Enum
     {
-        private static T[]? value;
+        private static ImmutableArray<T>? values;
 
-        public static T[] Values {
+        public static ImmutableArray<T> Values {
             get
             {
-                value ??= Enum.GetValues(typeof(T)).Cast<T>().ToArray();
-                return value;
+                values ??= Enum.GetValues(typeof(T)).Cast<T>().ToImmutableArray();
+                return values.Value;
             }
         }
     }

@@ -2,6 +2,7 @@ using CCEnvs.Collections;
 using CCEnvs.Utils;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -194,7 +195,7 @@ namespace CCEnvs
             where T : unmanaged, Enum
         {
             bool hasExcludeName = excludeName.IsNotNullOrWhiteSpace();
-            T[] values = EnumCache<T>.Values;
+            ImmutableArray<T> values = EnumCache<T>.Values;
             var results = new List<T>(values.Length);
 
             T current;
@@ -355,7 +356,7 @@ namespace CCEnvs
         public static bool TryGetFirstFlag<T>(this T source, out T result)
             where T : unmanaged, Enum
         {
-            T[] values = EnumCache<T>.Values;
+           ImmutableArray<T> values = EnumCache<T>.Values;
 
             for (int i = 0; i < values.Length; i++)
             {
