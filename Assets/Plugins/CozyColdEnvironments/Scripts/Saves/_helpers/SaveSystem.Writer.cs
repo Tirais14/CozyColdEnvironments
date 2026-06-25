@@ -66,7 +66,7 @@ namespace CCEnvs.Saves
                 PooledArray<SaveArchive> archivesCopy;
 
                 lock (Archives.SyncRoot)
-                    archivesCopy = Archives.SelectValue().EnumerableToArrayPooled(SaveSystem.Archives.Count);
+                    archivesCopy = Archives.SelectValue().SequenceToArrayPooled(SaveSystem.Archives.Count);
 
                 try
                 {

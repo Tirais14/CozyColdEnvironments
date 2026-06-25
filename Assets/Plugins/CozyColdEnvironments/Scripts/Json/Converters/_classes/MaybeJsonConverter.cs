@@ -22,7 +22,7 @@ namespace CCEnvs.Json.Converters
             )
         {
             var filteredConvs = serializer.Converters.Where(typeof(MaybeJsonConverter<T>), (conv, thisType) => conv.GetType() != thisType)
-                .EnumerableToArrayPooled();
+                .SequenceToArrayPooled();
 
             serializer.Converters.Clear();
             serializer.Converters.AddRange(filteredConvs);

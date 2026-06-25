@@ -17,7 +17,7 @@ namespace CCEnvs
 
             if (bufferized)
             {
-                using var disposablesPooled = disposables.Cast<IDisposable>().EnumerableToArrayPooled();
+                using var disposablesPooled = disposables.Cast<IDisposable>().SequenceToArrayPooled();
 
                 foreach (var item in disposablesPooled.AsSpan())
                 {

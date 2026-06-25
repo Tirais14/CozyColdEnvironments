@@ -89,7 +89,7 @@ namespace CCEnvs.Saves
             PooledArray<SaveCatalog> catalogsCopy;
 
             lock (Archive.Catalogs.SyncRoot)
-                catalogsCopy = Archive.Catalogs.SelectValue().EnumerableToArrayPooled(Archive.Catalogs.Count);
+                catalogsCopy = Archive.Catalogs.SelectValue().SequenceToArrayPooled(Archive.Catalogs.Count);
 
             try
             {

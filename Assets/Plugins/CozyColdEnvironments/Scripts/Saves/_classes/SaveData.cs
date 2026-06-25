@@ -137,7 +137,7 @@ namespace CCEnvs.Saves
             if (otherSaveEntries.IsEmpty())
                 return this;
 
-            using var otherSaveEntriesCopy = otherSaveEntries.EnumerableToArrayPooled();
+            using var otherSaveEntriesCopy = otherSaveEntries.SequenceToArrayPooled();
 
             foreach (var saveUnit in otherSaveEntriesCopy)
                 this.saveEntries.TryAdd(saveUnit.Key, saveUnit);
@@ -191,7 +191,7 @@ namespace CCEnvs.Saves
             if (otherSaveEntries.IsEmpty())
                 return this;
 
-            using var otherSaveEntriesCopy = otherSaveEntries.EnumerableToArrayPooled();
+            using var otherSaveEntriesCopy = otherSaveEntries.SequenceToArrayPooled();
 
             foreach (var saveEntry in otherSaveEntriesCopy)
                 saveEntries[saveEntry.Key] = saveEntry;
@@ -217,7 +217,7 @@ namespace CCEnvs.Saves
 
             this.saveEntries.Clear();
 
-            using var otherSaveEntriesCopy = otherSaveEntries.EnumerableToArrayPooled();
+            using var otherSaveEntriesCopy = otherSaveEntries.SequenceToArrayPooled();
 
             foreach (var saveEntry in otherSaveEntriesCopy)
                 this.saveEntries[saveEntry.Key] = saveEntry;

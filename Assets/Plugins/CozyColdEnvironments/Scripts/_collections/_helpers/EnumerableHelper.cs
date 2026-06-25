@@ -80,7 +80,7 @@ namespace CCEnvs.Collections
             return range;
         }
 
-        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T>? source, int sourceCount)
+        public static PooledArray<T> SequenceToArrayPooled<T>(this IEnumerable<T>? source, int sourceCount)
         {
             if (source.IsNullOrEmpty() || sourceCount < 1)
                 return PooledArray<T>.Empty;
@@ -91,13 +91,13 @@ namespace CCEnvs.Collections
             return new PooledArray<T>(arrHandle, sourceCount, offset: 0);
         }
 
-        public static PooledArray<T> EnumerableToArrayPooled<T>(this IEnumerable<T>? source)
+        public static PooledArray<T> SequenceToArrayPooled<T>(this IEnumerable<T>? source)
         {
             if (source.IsNullOrEmpty())
                 return PooledArray<T>.Empty;
 
             if (source.TryGetNonEnumeratedCount(out var count))
-                return source.EnumerableToArrayPooled(count);
+                return source.SequenceToArrayPooled(count);
 
             PooledObject<T[]> items = ArrayPool<T>.Shared.RentHandled(16);
             int itemCount = 0;

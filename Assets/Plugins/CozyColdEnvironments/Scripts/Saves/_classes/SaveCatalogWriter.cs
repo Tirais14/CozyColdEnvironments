@@ -113,7 +113,7 @@ namespace CCEnvs.Saves
             PooledArray<SaveGroup> groupsCopy;
 
             lock (Catalog.Groups.SyncRoot)
-                groupsCopy = Catalog.Groups.SelectValue().EnumerableToArrayPooled(Catalog.Groups.Count);
+                groupsCopy = Catalog.Groups.SelectValue().SequenceToArrayPooled(Catalog.Groups.Count);
 
             try
             {
@@ -168,7 +168,7 @@ namespace CCEnvs.Saves
             PooledArray<SaveGroupIncremental> groupsIncrementalCopy;
 
             lock (Catalog.Groups.SyncRoot)
-                groupsIncrementalCopy = Catalog.IncrementalGroups.SelectValue().EnumerableToArrayPooled(Catalog.Groups.Count);
+                groupsIncrementalCopy = Catalog.IncrementalGroups.SelectValue().SequenceToArrayPooled(Catalog.Groups.Count);
 
             int enqueudObjectSum = 0;
 

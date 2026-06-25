@@ -168,7 +168,7 @@ namespace CCEnvs.UnityX.Components.Specialized
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var disabledMeshFiltersCopy = disabledMeshFilters.EnumerableToArrayPooled(disabledMeshFilters.Count);
+            using var disabledMeshFiltersCopy = disabledMeshFilters.SequenceToArrayPooled(disabledMeshFilters.Count);
 
             int destroyedInFrame = 0;
 

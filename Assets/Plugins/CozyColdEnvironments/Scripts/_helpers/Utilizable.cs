@@ -29,7 +29,7 @@ namespace CCEnvs
 
             if (bufferized)
             {
-                using var utilizables = source.Cast<IUtilizable>().EnumerableToArrayPooled();
+                using var utilizables = source.Cast<IUtilizable>().SequenceToArrayPooled();
 
                 foreach (var item in utilizables.AsSpan())
                 {
