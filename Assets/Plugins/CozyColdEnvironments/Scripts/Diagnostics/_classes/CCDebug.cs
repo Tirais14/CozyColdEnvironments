@@ -16,7 +16,7 @@ namespace CCEnvs.Diagnostics
 
         internal static bool isEnabledTypesChanged = true;
 
-        private static readonly HashSet<Type> enabledTypes = new();
+        private static readonly HashSet<Type> disableTypes = new();
 
         public static bool IsEnabled {
             get => Instance.IsEnabled;
@@ -28,28 +28,22 @@ namespace CCEnvs.Diagnostics
          = true;
 #endif
 
-        public static void SetLogger(IDebugLogger logger)
-        {
-            CC.Guard.IsNotNull(logger, nameof(logger));
-            Instance = logger;
-        }
-
         public static bool IsTypeEnabled(Type type)
         {
             Guard.IsNotNull(type);
-            return Instance.IsEnabled && enabledTypes.Contains(type);
+            return Instance.IsEnabled && !disableTypes.Contains(type);
         }
 
         public static bool IsTypeEnabled<T>()
         {
-            return Instance.IsEnabled && enabledTypes.Contains(TypeofCache<T>.Type);
+            return Instance.IsEnabled && !disableTypes.Contains(TypeofCache<T>.Type);
         }
 
         public static void DisableType(Type type)
         {
             Guard.IsNotNull(type);
             isEnabledTypesChanged = true;
-            enabledTypes.Remove(type);
+            disableTypes.Add(type);
         }
 
         public static void DisableTypes(params Type[] types)
@@ -59,7 +53,7 @@ namespace CCEnvs.Diagnostics
             for (int i = 0; i < types.Length; i++)
             {
                 isEnabledTypesChanged = true;
-                enabledTypes.Remove(types[i]);
+                disableTypes.Remove(types[i]);
             }
         }
 
@@ -67,7 +61,7 @@ namespace CCEnvs.Diagnostics
         {
             Guard.IsNotNull(type);
             isEnabledTypesChanged = true;
-            enabledTypes.Add(type);
+            disableTypes.Remove(type);
         }
 
         public static void EnableTypes(params Type[] types)
@@ -312,15 +306,15 @@ namespace CCEnvs.Diagnostics
 
     public static class CCDebug<T>
     {
-        private static bool isEnabled;
+        private static bool? isEnabled;
 
         public static bool IsEnabled {
             get
             {
-                if (CCDebug.isEnabledTypesChanged)
+                if (!isEnabled.HasValue || CCDebug.isEnabledTypesChanged)
                     isEnabled = CCDebug.IsTypeEnabled(typeof(T));
 
-                return isEnabled;
+                return isEnabled.Value;
             }
             set => CCDebug.EnableType(typeof(T));
         }

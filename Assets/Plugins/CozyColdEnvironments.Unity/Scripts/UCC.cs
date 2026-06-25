@@ -72,7 +72,7 @@ namespace CCEnvs.UnityX
 
         public static Lazy<Sprite> ColorSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/ColorSprite"));
 
-        public static Lazy<Sprite> Transparent { get; } = new(static () => Resources.Load<Sprite>("Textures/DummySprite"));
+        public static Lazy<Sprite> TransparentSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/DummySprite"));
 
         public static Lazy<Sprite> RedCrossSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/RedCross"));
 

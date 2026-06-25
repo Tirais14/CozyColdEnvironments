@@ -11,21 +11,21 @@ namespace CCEnvs
 #if UNITY_BURST
         [Unity.Burst.BurstCompile]
 #endif
-            readonly get => (int)Value;
+            readonly get => (int)(Value & 0xFFFFFFFFL);
 #if UNITY_BURST
         [Unity.Burst.BurstCompile]
 #endif
-            set => Value |= (long)value;
+            set => Value = (Value & unchecked((long)0xFFFFFFFF00000000UL)) | (uint)value;
         }
         public int Part2 {
 #if UNITY_BURST
         [Unity.Burst.BurstCompile]
 #endif
-            readonly get => (int)Value << 16;
+            readonly get => (int)(Value >> 32);
 #if UNITY_BURST
         [Unity.Burst.BurstCompile]
 #endif
-            set => Value |= (long)value >> 16;
+            set => Value = (Value & 0x00000000FFFFFFFFL) | ((long)value << 32);
         }
 
 #if UNITY_BURST
@@ -113,7 +113,7 @@ namespace CCEnvs
 #if UNITY_BURST
         [Unity.Burst.BurstCompile]
 #endif
-        public CombinedInt SetPart21(int value)
+        public CombinedInt SetPart2(int value)
         {
             Part2 = value;
             return this;

@@ -144,7 +144,7 @@ namespace CCEnvs.Collections
             return false;
         }
 
-        public static string ElementsToString<T>(this IEnumerable<T> source)
+        public static string SequenceToString<T>(this IEnumerable<T> source)
         {
             CC.Guard.IsNotNullSource(source);
 
@@ -153,9 +153,30 @@ namespace CCEnvs.Collections
 
             using var sb = StringBuilderPool.Shared.Get();
 
-            sb.Value.Append($"[{Environment.NewLine}");
-            sb.Value.AppendJoin($",{Environment.NewLine}", source);
-            sb.Value.Append($"{Environment.NewLine}]");
+            sb.Value.Append('[');
+            sb.Value.Append(Environment.NewLine);
+
+            bool isFirstItem = true;
+
+            foreach (var item in source)
+            {
+                if (!isFirstItem)
+                {
+                    sb.Value.Append(", \t");
+                    sb.Value.Append(item.IsNull() ? "null" : item.ToString());
+                    sb.Value.Append(Environment.NewLine);
+                }
+                else
+                {
+                    sb.Value.Append('\t');
+                    sb.Value.Append(item.IsNull() ? "null" : item.ToString());
+                }
+
+                isFirstItem = false;
+            }
+
+            sb.Value.Append(Environment.NewLine);
+            sb.Value.Append(']');
 
             return sb.Value.ToString();
         }
