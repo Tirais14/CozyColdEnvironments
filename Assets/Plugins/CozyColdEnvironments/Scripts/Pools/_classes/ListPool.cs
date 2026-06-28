@@ -21,6 +21,14 @@ namespace CCEnvs.Pools
 
         }
 
+        public PooledObject<List<T>> Get(int capacity)
+        {
+            var handle = Get();
+            handle.Value.TryIncreaseCapacity(capacity);
+
+            return handle;
+        }
+
 #if UNITY_2017_1_OR_NEWER
         public override PooledObject<List<T>> Get()
         {
@@ -31,14 +39,6 @@ namespace CCEnvs.Pools
                 {
                     ((IDisposable)uHandle).Dispose();
                 });
-        }
-
-        public PooledObject<List<T>> Get(int capacity)
-        {
-            var handle = Get();
-            handle.Value.TryIncreaseCapacity(capacity);
-
-            return handle;
         }
 
         public override void Return(List<T>? obj)

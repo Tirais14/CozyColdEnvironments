@@ -205,7 +205,7 @@ namespace CCEnvs.Pools
         }
     }
 
-    public struct PooledList<TValue>
+    public readonly struct PooledList<TValue>
         :
         IDisposable,
         IList<TValue>,

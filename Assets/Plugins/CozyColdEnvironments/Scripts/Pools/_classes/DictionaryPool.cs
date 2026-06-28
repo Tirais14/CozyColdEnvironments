@@ -19,6 +19,13 @@ namespace CCEnvs.Pools
         {
         }
 
+        public PooledObject<Dictionary<TKey, TValue>> Get(int capacity)
+        {
+            PooledObject<Dictionary<TKey, TValue>> handle = Get();
+            handle.Value.EnsureCapacity(capacity);
+            return handle;
+        }
+
 #if UNITY_2017_1_OR_NEWER
         public override PooledObject<Dictionary<TKey, TValue>> Get()
         {
