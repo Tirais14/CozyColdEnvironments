@@ -33,9 +33,10 @@ namespace CCEnvs.UnityX.Items
 
         void ResetContainers();
 
-        void AddContainer(IItemContainer container);
+        int AddContainer(IItemContainer container);
 
         void AddContainers(IEnumerable<IItemContainer> containers);
+        void AddContainers(IEnumerable<IItemContainer> containers, out IList<int> ids);
 
         bool RemoveContainer(int id);
 
@@ -52,8 +53,6 @@ namespace CCEnvs.UnityX.Items
         IList<ReadOnlyItemContainer> GetCompactedContainers();
 
         IList<IItemContainer> GetOccupiedContainers();
-
-        Maybe<int> GetContainerID(IItemContainer container);
 
         void InstantiateContainers(int count, IItemContainer? cloneExample = default);
         void InstantiateContainers(int count, out IList<IItemContainer> results, IItemContainer? cloneExample = default);
@@ -95,9 +94,13 @@ namespace CCEnvs.UnityX.Items
 
         bool TryGetContainer(int id, [NotNullWhen(true)] out TItemContainer? container);
 
-        void AddContainer(TItemContainer itemContainer);
+        int AddContainer(TItemContainer itemContainer);
 
         void AddContainers(IEnumerable<TItemContainer> containers);
+        void AddContainers(
+            IEnumerable<TItemContainer> containers,
+            out IList<int> ids
+            );
 
         void EnsureFreeSpace(
             int targetSpace,
@@ -108,8 +111,6 @@ namespace CCEnvs.UnityX.Items
         int GetItemCount(TItem? item);
 
         int GetFreeSpace(TItem? item);
-
-        Maybe<int> GetContainerID(TItemContainer cnt);
 
         void InstantiateContainers(int count, TItemContainer? cloneExample = default);
         void InstantiateContainers(int count, out IList<TItemContainer> results, TItemContainer? cloneExample = default);
@@ -141,15 +142,20 @@ namespace CCEnvs.UnityX.Items
             return true;
         }
 
-        void IInventory.AddContainer(IItemContainer itemContainer)
+        int IInventory.AddContainer(IItemContainer itemContainer)
         {
-            AddContainer((TItemContainer)itemContainer);
+            return AddContainer((TItemContainer)itemContainer);
         }
 
         void IInventory.AddContainers(IEnumerable<IItemContainer> containers)
         {
             CC.Guard.IsNotNull(containers, nameof(containers));
             AddContainers(containers.OfType<TItemContainer>());
+        }
+        void IInventory.AddContainers(IEnumerable<IItemContainer> containers, out IList<int> ids)
+        {
+            CC.Guard.IsNotNull(containers, nameof(containers));
+            AddContainers(containers.OfType<TItemContainer>(), out ids);
         }
 
         void IInventory.EnsureFreeSpace(
@@ -173,14 +179,6 @@ namespace CCEnvs.UnityX.Items
         int IInventory.GetFreeSpace(IItem? item)
         {
             return GetFreeSpace(item.As<TItem>());
-        }
-
-        Maybe<int> IInventory.GetContainerID(IItemContainer cnt)
-        {
-            if (cnt.IsNot<TItemContainer>(out var typedContainer))
-                return Maybe<int>.None;
-
-            return GetContainerID(typedContainer);
         }
 
         void IInventory.InstantiateContainers(int count, IItemContainer? cloneExample)

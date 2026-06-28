@@ -7,7 +7,7 @@ namespace CCEnvs
     public class ReferenceEqualityComparer<T> : IEqualityComparer<T>
         where T : class
     {
-        public static ReferenceEqualityComparer<T> Instance { get; } = new();
+        public static ReferenceEqualityComparer<T> Default { get; } = new();
 
         public bool Equals(T x, T y) => ReferenceEquals(x, y);
 

@@ -140,18 +140,16 @@ namespace CCEnvs.FuncLanguage
 
         public readonly override string ToString()
         {
-            if (this.IsDefault())
-                return StringHelper.EMPTY_OBJECT;
+            if (IsNone)
+                return $"({typeof(T)}: None)";
 
-            return $"({target}; {nameof(IsSome)}: {IsSome})";
+            return target!.ToString();
         }
 
         public readonly IEnumerator<T> GetEnumerator()
         {
-            if (IsNone)
-                yield break;
-
-            yield return target!;
+            if (IsSome)
+                yield return target!;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -6,16 +6,20 @@ using R3;
 #pragma warning disable IDE1006
 namespace CCEnvs.UnityX.Items
 {
-    public interface IItemContainerInfoItemless
+    public interface IItemContainerInfoItemless : IIDMarked<int?>
     {
         int ItemCount { get; }
         int Capacity { get; set; }
         int FreeSpace { get; }
 
-        IInventory? ParentInventory { get; set; }
+        int? ID { get; set; }
+
+        IInventory? ParentInventory { get; }
 
         bool IsEmpty { get; }
         bool IsFull { get; }
+
+        int? IIDMarked<int?>.ID => ID;
 
         bool ContainsItem();
         bool ContainsItem(IItem? item);
@@ -25,7 +29,7 @@ namespace CCEnvs.UnityX.Items
         bool CanPut(IItem? item);
         bool CanPut(IItem? item, int count);
 
-        Maybe<int> GetContainerID();
+        void SetParentInventory(IInventory? inventory);
 
         Observable<int> ObserveItemCount();
     }
@@ -80,7 +84,6 @@ namespace CCEnvs.UnityX.Items
 
         IInventory? IItemContainerInfoItemless.ParentInventory {
             get => ParentInventory;
-            set => ParentInventory = value.As<TInventory>();
         }
     }
 }

@@ -10,6 +10,8 @@ namespace CCEnvs.UnityX.Items
         bool IsReadOnlyContainer { get; }
         bool IgnoreMaxItemCount { get; set; }
 
+
+
         ReadOnlyItemContainer ToReadOnly();
     }
 

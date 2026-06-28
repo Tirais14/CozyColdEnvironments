@@ -27,7 +27,7 @@ namespace CCEnvs.Pools
 
         protected readonly ConcurrentStack<T> inactiveItems;
 
-        protected readonly ConcurrentDictionary<T, PooledObject<T>> activeItems = new(ReferenceEqualityComparer<T>.Instance);
+        protected readonly ConcurrentDictionary<T, PooledObject<T>> activeItems = new(ReferenceEqualityComparer<T>.Default);
 
         protected ReactiveCommand<T>? getCmd;
         protected ReactiveCommand<T>? returnCmd;
@@ -78,9 +78,9 @@ namespace CCEnvs.Pools
 
 #if CC_DEBUG_ENABLED
 
-            if (ReferenceEqualityComparer<T?>.Instance.Equals(obj, fastObject)
+            if (ReferenceEqualityComparer<T?>.Default.Equals(obj, fastObject)
                 ||
-                inactiveItems.Where(static x => x.IsNotNull()).Contains(obj, ReferenceEqualityComparer<T>.Instance))
+                inactiveItems.Where(static x => x.IsNotNull()).Contains(obj, ReferenceEqualityComparer<T>.Default))
             {
                 throw new InvalidOperationException($"Object: {obj} is already pooled");
             }

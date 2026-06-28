@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -20,16 +19,16 @@ namespace CCEnvs.UnityX.Items
 
         public readonly bool IsEmpty => ItemCount == 0 || Item.IsNull();
 
-        readonly IInventory? IItemContainerInfoItemless.ParentInventory {
+        readonly IInventory? IItemContainerInfoItemless.ParentInventory => null;
+
+        readonly int IItemContainerInfoItemless.Capacity { get => ItemCount; set => _ = value; }
+        readonly int IItemContainerInfoItemless.FreeSpace => int.MaxValue;
+        readonly int? IItemContainerInfoItemless.ID {
             get => null;
             set => _ = value;
         }
 
-        readonly int IItemContainerInfoItemless.Capacity { get => ItemCount; set => _ = value; }
-
         readonly bool IItemContainerInfoItemless.IsFull => false;
-
-        readonly int IItemContainerInfoItemless.FreeSpace => int.MaxValue;
 
         bool IItemContainer.IsReadOnlyContainer => true;
 
@@ -102,8 +101,6 @@ namespace CCEnvs.UnityX.Items
         readonly bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
         readonly bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
 
-        readonly Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
-
         readonly ReadOnlyItemContainer IItemAccessor.PutItem(IItem? item, int count)
         {
             return Empty;
@@ -165,6 +162,8 @@ namespace CCEnvs.UnityX.Items
         {
             return Observable.Return(ItemCount);
         }
+
+        readonly void IItemContainerInfoItemless.SetParentInventory(IInventory? inventory) { }
     }
 
     public readonly struct ReadOnlyItemContainer<TItem>
@@ -185,7 +184,6 @@ namespace CCEnvs.UnityX.Items
 
         readonly IInventory? IItemContainerInfoItemless.ParentInventory {
             get => null;
-            set => _ = value;
         }
 
         readonly int IItemContainerInfoItemless.Capacity { get => ItemCount; set => _ = value; }
@@ -193,6 +191,11 @@ namespace CCEnvs.UnityX.Items
         readonly bool IItemContainerInfoItemless.IsFull => false;
 
         readonly int IItemContainerInfoItemless.FreeSpace => int.MaxValue;
+
+        readonly int? IItemContainerInfoItemless.ID {
+            get => null;
+            set => _ = value;
+        }
 
         bool IItemContainer.IsReadOnlyContainer => true;
 
@@ -259,8 +262,6 @@ namespace CCEnvs.UnityX.Items
         readonly bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
         readonly bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
 
-        readonly Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
-
         readonly ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.PutItem(TItem? item, int count)
         {
             return Empty;
@@ -322,5 +323,7 @@ namespace CCEnvs.UnityX.Items
         {
             return Observable.Return(ItemCount);
         }
+
+        readonly void IItemContainerInfoItemless.SetParentInventory(IInventory? inventory) { }
     }
 }

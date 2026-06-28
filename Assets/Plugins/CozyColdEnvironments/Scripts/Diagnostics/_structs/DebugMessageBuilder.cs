@@ -83,6 +83,18 @@ namespace CCEnvs.Diagnostics
             return this;
         }
 
+        public DebugMessageBuilder AddPredicatedProperty<T>(
+            bool condition,
+            string? propName,
+            T value
+            )
+        {
+            if (condition)
+                return AddProperty(propName, value);
+
+            return this;
+        }
+
         public readonly void Dispose() => stringBuilderHandle.Dispose();
 
         public readonly override bool Equals(object? obj)

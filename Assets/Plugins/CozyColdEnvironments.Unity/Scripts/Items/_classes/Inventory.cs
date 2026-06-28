@@ -10,6 +10,7 @@ using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -27,7 +28,6 @@ namespace CCEnvs.UnityX.Items
 
         private readonly Dictionary<IItem, List<IItemContainer>> occupiedContainers = new();
         private readonly Dictionary<IItemContainer, CompositeDisposable> containerDisposables;
-        private readonly Dictionary<IItemContainer, int> containerIDs;
 
         private readonly ReactiveProperty<int> itemCount = new();
 
@@ -69,15 +69,19 @@ namespace CCEnvs.UnityX.Items
 
         public IItemContainer? ContainerSample { get; set; }
 
-        public IEqualityComparer<IItemContainer?> ContainerComaprer => containerIDs.Comparer!;
+        public IEqualityComparer<IItemContainer?> ContainerComaprer => null!;
 
         protected CancellationToken DisposeCancellationToken => disposeCancellationTokenSource.Token;
 
-        IInventory? IItemContainerInfoItemless.ParentInventory { get => null!; set => _ = value; }
+        IInventory? IItemContainerInfoItemless.ParentInventory { get => null; }
 
         int IItemContainerInfoItemless.Capacity {
             get => ContainerCount;
             set => SetContainerCount(value);
+        }
+        int? IItemContainerInfoItemless.ID {
+            get => null;
+            set => _ = value;
         }
 
         public Inventory(
@@ -86,9 +90,11 @@ namespace CCEnvs.UnityX.Items
             IEnumerable<IItemContainer>? initialContainers = null
             )
         {
+            containerComparer ??= ReferenceEqualityComparer<IItemContainer>.Default!;
+
             containers = new ObservableDictionary<int, IItemContainer>(collectionCapacity, null);
             containerDisposables = new Dictionary<IItemContainer, CompositeDisposable>(collectionCapacity, containerComparer);
-            containerIDs = new Dictionary<IItemContainer, int>(collectionCapacity, containerComparer);
+            //containerIDs = new Dictionary<IItemContainer, int>(collectionCapacity, containerComparer);
 
             BindContainerAdd();
             BindContainerRemove();
@@ -398,9 +404,16 @@ namespace CCEnvs.UnityX.Items
             }
         }
 
-        public void AddContainer(IItemContainer container)
+        public int AddContainer(IItemContainer container)
         {
             CC.Guard.IsNotNull(container, nameof(container));
+
+            if (container.ParentInventory is not null
+                &&
+                !EqualityComparer<IInventory?>.Default.Equals(container.ParentInventory, this))
+            {
+                throw new ArgumentException("Container cannot have other parent inventory");
+            }
 
             if (container.IsReadOnlyContainer)
                 throw new ArgumentException($"Container cannot be readonly. Container: {container}");
@@ -408,6 +421,7 @@ namespace CCEnvs.UnityX.Items
             var id = ResolveID(container);
 
             containers[id] = container;
+            return id;
         }
 
         public void AddContainers(IEnumerable<IItemContainer> containers)
@@ -415,8 +429,39 @@ namespace CCEnvs.UnityX.Items
             CC.Guard.IsNotNull(containers, nameof(containers));
 
             foreach (var container in containers)
-                if (container.IsNotNull() && !container.IsReadOnlyContainer)
+            {
+                if (container.ParentInventory is null
+                    &&
+                    container.IsNotNull()
+                    &&
+                    !container.IsReadOnlyContainer)
+                {
                     AddContainer(container);
+                }
+            }
+        }
+        public void AddContainers(
+            IEnumerable<IItemContainer> containers,
+            out IList<int> ids
+            )
+        {
+            if (containers.TryGetNonEnumeratedCount(out int containerCount))
+                ids = new List<int>(containerCount);
+            else
+                ids = new List<int>();
+
+            foreach (var container in containers)
+            {
+                if (container.ParentInventory is null
+                    &&
+                    container.IsNotNull()
+                    &&
+                    !container.IsReadOnlyContainer)
+                {
+                    int id = AddContainer(container);
+                    ids.Add(id);
+                }
+            }
         }
 
         public bool RemoveContainer(int id)
@@ -425,10 +470,10 @@ namespace CCEnvs.UnityX.Items
         }
         public bool RemoveContainer(IItemContainer container)
         {
-            if (!container.GetContainerID().TryGetValue(out int cntID))
+            if (!container.ID.HasValue)
                 return false;
 
-            return RemoveContainer(cntID);
+            return RemoveContainer(container.ID.Value);
         }
 
         public void InstantiateContainers(
@@ -513,16 +558,6 @@ namespace CCEnvs.UnityX.Items
             return GetFreeSpace(item) >= count;
         }
 
-        public Maybe<int> GetContainerID(IItemContainer cnt)
-        {
-            CC.Guard.IsNotNull(cnt, nameof(cnt));
-
-            if (!containerIDs.TryGetValue(cnt, out var id))
-                return Maybe<int>.None;
-
-            return id;
-        }
-
         public IEnumerable<ReadOnlyItemContainer> GetCompactedContainersQuery()
         {
             foreach (var containers in occupiedContainers.Values)
@@ -573,7 +608,7 @@ namespace CCEnvs.UnityX.Items
 
         public IInventory ShallowClone()
         {
-            var instance = new Inventory(containers.Count, containerIDs.Comparer!);
+            var instance = new Inventory(containers.Count, ContainerComaprer);
 
             foreach (var (_, container) in containers)
                 AddContainer(container.ShallowClone());
@@ -744,9 +779,13 @@ namespace CCEnvs.UnityX.Items
             BindContainerItem(cnt);
             ResolveOccupied(cnt);
 
-            cnt.ParentInventory = this;
+            if (!EqualityComparer<IInventory?>.Default.Equals(this, cnt.ParentInventory))
+            {
+                cnt.ID = addEv.Key;
+                cnt.SetParentInventory(this);
+            }
+
             FreeSpace += cnt.FreeSpace;
-            containerIDs[cnt] = id;
         }
 
         protected virtual void OnContainerItemChanged((IItem? Previous, IItem? Current) items, IItemContainer cnt)
@@ -782,8 +821,6 @@ namespace CCEnvs.UnityX.Items
             {
                 cnts.Remove(cnt);
             }
-
-            containerIDs.Remove(cnt);
         }
 
         protected virtual void OnContainerReplace(DictionaryReplaceEvent<int, IItemContainer> replaceEv)
@@ -802,7 +839,6 @@ namespace CCEnvs.UnityX.Items
         protected virtual void OnContainersClear(Unit _)
         {
             occupiedContainers.Clear();
-            containerIDs.Clear();
             containerDisposables.SelectValue().DisposeEach(bufferized: true);
             containerDisposables.Clear();
             FreeSpace = 0;
@@ -882,7 +918,7 @@ namespace CCEnvs.UnityX.Items
             return TakeItem(container.Item, GetItemCount(container.Item));
         }
 
-        Maybe<int> IItemContainerInfoItemless.GetContainerID() => Maybe<int>.None;
+        void IItemContainerInfoItemless.SetParentInventory(IInventory? inventory) { }
     }
 
     public class Inventory<TItem, TItemContainer>
@@ -931,7 +967,10 @@ namespace CCEnvs.UnityX.Items
 
         IInventory? IItemContainerInfoItemless.ParentInventory {
             get => ((IInventory)internalInventory).ParentInventory;
-            set => ((IInventory)internalInventory).ParentInventory = value;
+        }
+        int? IItemContainerInfoItemless.ID {
+            get => null;
+            set => _ = value;
         }
 
         public Inventory(
@@ -1003,16 +1042,47 @@ namespace CCEnvs.UnityX.Items
 
         ~Inventory() => Dispose();
 
-        public void AddContainer(TItemContainer itemContainer)
+        public int AddContainer(TItemContainer itemContainer)
         {
-            internalInventory.AddContainer(itemContainer);
+            return internalInventory.AddContainer(itemContainer);
         }
 
         public void AddContainers(IEnumerable<TItemContainer> containers)
         {
             foreach (var container in containers)
-                if (container.IsNotNull() && !container.IsReadOnlyContainer)
+            {
+                if (container.ParentInventory is null
+                    &&
+                    container.IsNotNull()
+                    &&
+                    !container.IsReadOnlyContainer)
+                {
                     internalInventory.AddContainer(container);
+                }
+            }
+        }
+        public void AddContainers(
+            IEnumerable<TItemContainer> containers,
+            out IList<int> ids
+            )
+        {
+            if (containers.TryGetNonEnumeratedCount(out int containerCount))
+                ids = new List<int>(containerCount);
+            else
+                ids = new List<int>();
+
+            foreach (var container in containers)
+            {
+                if (container.ParentInventory is null
+                    &&
+                    container.IsNotNull()
+                    &&
+                    !container.IsReadOnlyContainer)
+                {
+                    int id = internalInventory.AddContainer(container);
+                    ids.Add(id);
+                }
+            }
         }
 
         public bool CanPut() => internalInventory.CanPut();
@@ -1032,11 +1102,6 @@ namespace CCEnvs.UnityX.Items
             )
         {
             internalInventory.EnsureFreeSpace(targetSpace, item, cloneExample);
-        }
-
-        public Maybe<int> GetContainerID(TItemContainer cnt)
-        {
-            return internalInventory.GetContainerID(cnt);
         }
 
         public int GetFreeSpace(TItem? item) => internalInventory.GetFreeSpace(item);
@@ -1220,9 +1285,6 @@ namespace CCEnvs.UnityX.Items
             return ((IInventory)internalInventory).TakeItem(count).Convert<TItem>();
         }
 
-        Maybe<int> IItemContainerInfoItemless.GetContainerID()
-        {
-            return ((IInventory)internalInventory).GetContainerID();
-        }
+        void IItemContainerInfoItemless.SetParentInventory(IInventory? inventory) { }
     }
 }
