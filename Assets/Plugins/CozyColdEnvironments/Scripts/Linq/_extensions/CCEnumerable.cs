@@ -179,7 +179,7 @@ namespace CCEnvs.Linq
 #pragma warning restore S112
         }
 
-        public static int HashCodeByElements<T>(this IEnumerable<T>? values)
+        public static int GetSequenceHashCode<T>(this IEnumerable<T>? values)
         {
             if (values.IsNull())
                 return 0;

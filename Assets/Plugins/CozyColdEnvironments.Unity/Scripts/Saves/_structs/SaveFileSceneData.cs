@@ -48,7 +48,7 @@ namespace CCEnvs.UnityX.Saves
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(SceneInfo, Snapshots.HashCodeByElements());
+            return HashCode.Combine(SceneInfo, Snapshots.GetSequenceHashCode());
         }
 
         public readonly override string ToString()

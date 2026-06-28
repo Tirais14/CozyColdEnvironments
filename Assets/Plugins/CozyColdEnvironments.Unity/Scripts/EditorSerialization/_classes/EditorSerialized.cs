@@ -1,6 +1,7 @@
 using CCEnvs.Attributes;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -13,8 +14,10 @@ namespace CCEnvs.UnityX.EditorSerialization
         IEditorSerialized<T>,
         IMutableType<T>
     {
+        [NonSerialized]
         private T? data;
 
+        [NonSerialized]
         private bool isValueCreated;
 
         public T Data {
@@ -56,10 +59,13 @@ namespace CCEnvs.UnityX.EditorSerialization
         IEditorSerialized<TConverted>,
         IMutableType<TConverted>
     {
+        [NonSerialized]
         private TConverted? data;
 
+        [NonSerialized]
         private bool isValueCreated;
 
+        [NonSerialized]
         private Func<T, TConverted>? converter;
 
         public TConverted Data {

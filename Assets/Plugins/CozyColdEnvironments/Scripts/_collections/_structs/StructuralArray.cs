@@ -160,11 +160,11 @@ namespace CCEnvs.Collections
         {
             if (cacheHashCode)
             {
-                hashCode ??= HashCode.Combine(array.HashCodeByElements(), Length);
+                hashCode ??= HashCode.Combine(array.GetSequenceHashCode(), Length);
                 return hashCode.Value;
             }
 
-            return HashCode.Combine(array.HashCodeByElements(), Length);
+            return HashCode.Combine(array.GetSequenceHashCode(), Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

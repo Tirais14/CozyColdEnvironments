@@ -18,6 +18,13 @@ namespace CCEnvs.Pools
 
         }
 
+        public PooledObject<HashSet<T>> Get(int capacity)
+        {
+            PooledObject<HashSet<T>> handle = Get();
+            handle.Value.EnsureCapacity(capacity);
+            return handle;
+        }
+
 #if UNITY_2017_1_OR_NEWER
         public override PooledObject<HashSet<T>> Get()
         {
