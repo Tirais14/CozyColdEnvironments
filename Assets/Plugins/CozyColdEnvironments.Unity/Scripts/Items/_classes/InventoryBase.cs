@@ -3,7 +3,6 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
-using CCEnvs.Rx;
 using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using ObservableCollections;
@@ -34,9 +33,10 @@ namespace CCEnvs.UnityX.Items
         private readonly Dictionary<TItem, List<TItemContainer>> occupiedContainers = new();
         private readonly Dictionary<TItemContainer, CompositeDisposable> containerDisposables;
 
-        private readonly ReactiveProperty<int> itemCount = new();
-
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
+
+        private ReactiveCommand<TItemContainer>? onContainerPutItem;
+        private ReactiveCommand<TItemContainer>? onContainerTakeItem;
 
         private IDisposable? containerAddBinding;
         private IDisposable? containerRemoveBinding;
@@ -47,14 +47,33 @@ namespace CCEnvs.UnityX.Items
 
         public TItemContainer this[int id] => containers[id];
 
-        public bool IsEmpty => ItemCount <= 0;
-        public bool IsFull => FreeSpace <= 0;
+        public bool IsEmpty {
+            get
+            {
+                foreach (var containers in occupiedContainers.Values)
+                    for (int i = 0; i < containers.Count; i++)
+                        if (!containers[i].IsEmpty)
+                            return false;
+
+                return true;
+            }
+        }
+        public bool IsFull {
+            get
+            {
+                foreach (var containers in occupiedContainers.Values)
+                    for (int i = 0; i < containers.Count; i++)
+                        if (!containers[i].IsFull)
+                            return false;
+
+                return true;
+            }
+        }
         public bool AutoSize {
             get => autoSize && ContainerSample.IsNotNull();
             set => autoSize = value;
         }
 
-        public int FreeSpace { get; private set; }
         public int ContainerCount => containers.Count;
         public int EmptyContainerCount {
             get
@@ -68,7 +87,6 @@ namespace CCEnvs.UnityX.Items
             }
         }
         public int OccupiedContainerCount => ContainerCount - EmptyContainerCount;
-        public int ItemCount => itemCount.Value;
 
         public IEnumerable<KeyValuePair<int, TItemContainer>> Containers => containers;
 
@@ -113,7 +131,7 @@ namespace CCEnvs.UnityX.Items
 
         ~InventoryBase() => Dispose();
 
-        public bool ContainsItem() => ItemCount >= 1;
+        public bool ContainsItem() => !IsEmpty;
         public bool ContainsItem(TItem? item)
         {
             if (item.IsNull())
@@ -123,9 +141,6 @@ namespace CCEnvs.UnityX.Items
         }
         public bool ContainsItem(TItem? item, int count)
         {
-            if (ItemCount <= 0)
-                return false;
-
             return GetItemCount(item) >= count;
         }
 
@@ -268,7 +283,7 @@ namespace CCEnvs.UnityX.Items
         public long GetFreeSpace(TItem? item)
         {
             if (item.IsNull())
-                return FreeSpace;
+                return 0;
 
             long freeSpace = 0;
 
@@ -288,18 +303,14 @@ namespace CCEnvs.UnityX.Items
 
         public long GetItemCount(TItem? item)
         {
-            if (item.IsNull()
-                ||
-                !occupiedContainers.TryGetValue(item, out var cnts))
-            {
-                return ItemCount;
-            }
+            if (item.IsNull() || !occupiedContainers.TryGetValue(item, out var containers))
+                return 0;
 
             long count = 0;
 
-            foreach (var cnt in cnts)
-                count += cnt.ItemCount;
-
+            for (int i = 0; i < containers.Count; i++)
+                count += containers[i].ItemCount;
+                
             return count;
         }
 
@@ -583,16 +594,10 @@ namespace CCEnvs.UnityX.Items
         public bool CanPut() => !IsFull;
         public bool CanPut(TItem? item)
         {
-            if (item.IsNull() || FreeSpace <= 0)
-                return false;
-
-            return GetFreeSpace(item) > 0;
+            return GetFreeSpace(item) >= 1;
         }
         public bool CanPut(TItem? item, int count)
         {
-            if (item.IsNull() || FreeSpace <= 0)
-                return false;
-
             return GetFreeSpace(item) >= count;
         }
 
@@ -644,8 +649,6 @@ namespace CCEnvs.UnityX.Items
             PutItem((TItem)itemContainer.Item!, itemContainer.ItemCount);
         }
 
-        public Observable<int> ObserveItemCount() => itemCount;
-
         public Observable<TContainerAddEvent> ObserveContainerAdd()
         {
             return containers.ObserveDictionaryAdd(DisposeCancellationToken)
@@ -690,7 +693,6 @@ namespace CCEnvs.UnityX.Items
                         .OfType<IDisposable>()
                         .DisposeEach(bufferized: true);
 
-                itemCount?.Dispose();
                 containerAddBinding?.Dispose();
                 containerRemoveBinding?.Dispose();
                 containerReplaceBinding?.Dispose();
@@ -831,11 +833,20 @@ namespace CCEnvs.UnityX.Items
                 occupiedContainers.GetOrCreateNew(current).Add(cnt);
         }
 
+        protected virtual void OnContainerPutItem(TItemContainer container)
+        {
+            onContainerPutItem?.Execute(container);
+        }
+
+        protected virtual void OnContainerTakeItem(TItemContainer container)
+        {
+            onContainerTakeItem?.Execute(container);
+        }
+
         protected virtual void OnContainerAdd(DictionaryAddEvent<int, TItemContainer> addEv)
         {
             TItemContainer? container = addEv.Value;
 
-            BindContainerItemCount(container);
             BindContainerItem(container);
             ResolveOccupied(container);
 
@@ -844,8 +855,6 @@ namespace CCEnvs.UnityX.Items
                 container.ID = addEv.Key;
                 container.SetParentInventory((IInventory)this);
             }
-
-            FreeSpace += container.FreeSpace;
         }
 
         protected virtual void OnContainerRemove(DictionaryRemoveEvent<int, TItemContainer> removeEv)
@@ -854,9 +863,6 @@ namespace CCEnvs.UnityX.Items
 
             if (containerDisposables.TryGetValue(container, out var disposables))
                 disposables.Dispose();
-
-            FreeSpace = Math.Clamp(FreeSpace - container.FreeSpace, 0, int.MaxValue);
-            itemCount.Value = Math.Max(itemCount.Value - container.ItemCount, 0);
 
             if (!container.IsEmpty
                 &&
@@ -886,49 +892,36 @@ namespace CCEnvs.UnityX.Items
             occupiedContainers.Clear();
             containerDisposables.SelectValue().DisposeEach(bufferized: true);
             containerDisposables.Clear();
-            FreeSpace = 0;
-            itemCount.Value = 0;
+        }
+
+        private void ResolveOccupied(TItemContainer container)
+        {
+            if (container.IsEmpty || container.Item.IsNot<TItem>(out var item))
+                return;
+
+            occupiedContainers.GetOrCreateNew(item).Add(container);
+        }
+
+        private void BindContainerItem(TItemContainer container)
+        {
+            var disposables = containerDisposables.GetOrCreateNew(container);
+
+            container.ObserveItem()!
+                .Cast<IItem, TItem>()
+                .Pairwise()
+                .Subscribe(container, OnContainerItemChanged)
+                .AddTo(disposables);
+        }
+
+        private void BindContainerPutItem()
+        {
+
         }
 
         private void BindContainerAdd()
         {
             containerAddBinding = containers.ObserveDictionaryAdd(DisposeCancellationToken)
                 .Subscribe(OnContainerAdd);
-        }
-
-        private void BindContainerItemCount(TItemContainer cnt)
-        {
-            var disposables = containerDisposables.GetOrCreateNew(cnt);
-
-            cnt.ObserveItemCount()
-                .Pairwise()
-                .SelectDelta()
-                .Subscribe(OnContainerItemCountChanged)
-                .AddTo(disposables);
-        }
-
-        private void ResolveOccupied(TItemContainer cnt)
-        {
-            if (cnt.IsEmpty || !cnt.Item.Is<TItem>(out var item))
-                return;
-
-            occupiedContainers.GetOrCreateNew(item).Add(cnt);
-        }
-
-        private void OnContainerItemCountChanged(int itemCountDelta)
-        {
-            itemCount.Value = Math.Clamp(itemCount.Value + itemCountDelta, 0, int.MaxValue);
-        }
-
-        private void BindContainerItem(TItemContainer cnt)
-        {
-            var disposables = containerDisposables.GetOrCreateNew(cnt);
-
-            cnt.ObserveItem()!
-                .Cast<IItem, TItem>()
-                .Pairwise()
-                .Subscribe(cnt, OnContainerItemChanged)
-                .AddTo(disposables);
         }
 
         private void BindContainerRemove()

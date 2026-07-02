@@ -77,16 +77,44 @@ namespace CCEnvs.Unity.Tests
             Assert.AreEqual(int.MaxValue / 2, takenItems.ItemCount);
         }
 
+        //[Test]
+        //public void CheckFreeSpace()
+        //{
+        //    Mock<IItem> itemMock = GetItemMock();
+        //    IItem item = itemMock.Object;
+
+        //    inventory.AutoSize = true;
+        //    inventory.PutItem(item, 60);
+
+        //    Assert.AreEqual(item.MaxItemCount - 60, inventory.FreeSpace);
+        //}
+
         [Test]
-        public void CheckFreeSpace()
+        public void CheckIsEmpty()
         {
             Mock<IItem> itemMock = GetItemMock();
             IItem item = itemMock.Object;
 
-            inventory.AutoSize = true;
-            inventory.PutItem(item, 60);
+            Assert.IsTrue(inventory.IsEmpty);
 
-            Assert.AreEqual(item.MaxItemCount - 60, inventory.FreeSpace);
+            inventory.AutoSize = true;
+            inventory.PutItem(item, 256);
+
+            Assert.IsFalse(inventory.IsEmpty);
+        }
+
+        [Test]
+        public void CheckIsFull()
+        {
+            Mock<IItem> itemMock = GetItemMock();
+            IItem item = itemMock.Object;
+
+            Assert.IsTrue(inventory.IsFull);
+
+            inventory.AutoSize = true;
+            inventory.PutItem(item, 256);
+
+            Assert.IsTrue(inventory.IsFull);
         }
 
         private Mock<IItem> GetItemMock()
@@ -95,7 +123,7 @@ namespace CCEnvs.Unity.Tests
 
             itemMock.Setup(item => item.Name).Returns("Cigarettes");
             itemMock.Setup(item => item.ID).Returns(1);
-            itemMock.Setup(item => item.MaxItemCount).Returns(int.MaxValue / 2 + 1);
+            itemMock.Setup(item => item.MaxItemCount).Returns(256);
 
             return itemMock;
         }

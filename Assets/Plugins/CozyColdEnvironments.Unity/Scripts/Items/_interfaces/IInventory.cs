@@ -89,11 +89,14 @@ namespace CCEnvs.UnityX.Items
         Observable<InventoryContainerReplaceEvent> ObserveContainerReplace();
 
         Observable<Unit> ObserveClear();
+
+        Observable<IItemContainer> ObservePutItem();
+
+        Observable<IItemContainer> ObserveTakeItem();
     }
     public interface IInventory<TItem, TItemContainer>
         :
-        IInventory,
-        IItemContainerInfoItemless<TItem>
+        IInventory
 
         where TItem : IItem
         where TItemContainer : IItemContainer<TItem>

@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.TypeMatching;
+using R3;
 using UnityEditor;
 
 namespace CCEnvs.UnityX.Items
@@ -20,6 +21,10 @@ namespace CCEnvs.UnityX.Items
         void CopyItemFrom(IItemContainer itemContainer);
 
         void Clear();
+
+        Observable<ItemAccessorPutItemEvent> ObservePutItem();
+
+        Observable<ItemAccessorTakeItemEvent> ObserveTakeItem();
     }
 
     public interface IItemAccessor<TItem> : IItemAccessor
@@ -37,6 +42,10 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count);
 
         void CopyItemFrom(IItemContainer<TItem> itemContainer);
+
+        new Observable<ItemAccessorPutItemEvent<TItem>> ObservePutItem();
+
+        new Observable<ItemAccessorTakeItemEvent<TItem>> ObserveTakeItem();
 
         void IItemAccessor.CopyItemFrom(IItemContainer itemContainer)
         {
@@ -85,6 +94,16 @@ namespace CCEnvs.UnityX.Items
                 return default;
 
             return TakeItem(typedItem, count);
+        }
+
+        Observable<ItemAccessorPutItemEvent> IItemAccessor.ObservePutItem()
+        {
+            return ObservePutItem().Select(ev => ev.AsUntyped());
+        }
+
+        Observable<ItemAccessorTakeItemEvent> IItemAccessor.ObserveTakeItem()
+        {
+            return ObserveTakeItem().Select(ev => ev.AsUntyped());
         }
     }
 }
