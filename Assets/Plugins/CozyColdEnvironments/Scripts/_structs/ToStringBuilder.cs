@@ -1,4 +1,5 @@
 using CCEnvs.Pools;
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -59,6 +60,18 @@ namespace CCEnvs
             stringBuilder.Append(fieldValueString);
 
             fieldCount++;
+
+            return this;
+        }
+
+        public ToStringBuilder AddPredicatedProperty<T>(
+            bool predicate,
+            string? propName,
+            T? propValue
+            )
+        {
+            if (!predicate)
+                return AddProperty(propName, propValue);
 
             return this;
         }

@@ -16,9 +16,11 @@ namespace CCEnvs.Diagnostics
 
         internal static readonly List<Action> onEnabledTypesChangedActions = new(0);
 
+#if CC_DEBUG_ENABLED
         private static readonly HashSet<Type> disabledTypes = new();
-
+#else
         private static readonly HashSet<Type> enabledTypes = new();
+#endif
 
         public static bool IsEnabled {
             get => Instance.IsEnabled;

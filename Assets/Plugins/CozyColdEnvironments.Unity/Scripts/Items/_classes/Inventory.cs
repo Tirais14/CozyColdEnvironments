@@ -4,8 +4,6 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Localization.Plugins.XLIFF.V12;
-using UnityEngine.UIElements;
 
 #if ZLINQ_PLUGIN
 using ZLinq;
@@ -17,7 +15,7 @@ namespace CCEnvs.UnityX.Items
 {
     public class Inventory
         :
-        InventoryBase<IItem, IItemContainer, IItemContainer, IItemContainerInfo, ReadOnlyItemContainer, InventoryContainerAddEvent, InventoryContainerRemoveEvent, InventoryContainerReplaceEvent>,
+        InventoryBase<IItem, IItemContainer, IItemContainer, IItemContainerInfo, ReadOnlyItemContainer, LargeReadOnlyItemContainer, InventoryContainerAddEvent, InventoryContainerRemoveEvent, InventoryContainerReplaceEvent>,
         IInventory,
         IDisposable
     {
@@ -70,7 +68,7 @@ namespace CCEnvs.UnityX.Items
                 )
             {
                 AutoSize = autoSize,
-                ContainerSample = containerSample.IfNull(static () => new ItemContainer())
+                ContainerSample = containerSample
             };
         }
 
@@ -94,10 +92,23 @@ namespace CCEnvs.UnityX.Items
         {
             return ReadOnlyItemContainer.Empty;
         }
-
         protected override ReadOnlyItemContainer CreateReadOnlyItemContainer(IItem? item, int itemCount)
         {
             return new ReadOnlyItemContainer(item, itemCount);
+        }
+
+        protected override LargeReadOnlyItemContainer CreateLargeReadOnlyItemContainer()
+        {
+            return LargeReadOnlyItemContainer.Empty;
+        }
+        protected override LargeReadOnlyItemContainer CreateLargeReadOnlyItemContainer(IItem? item, long itemCount)
+        {
+            return new LargeReadOnlyItemContainer(item, itemCount);
+        }
+
+        protected override ReadOnlyItemContainer ConverteLargeToNormalReadOnlyContainer(LargeReadOnlyItemContainer largeContainer)
+        {
+            return (ReadOnlyItemContainer)largeContainer;
         }
 
         protected override InventoryContainerAddEvent CreateContainerAddEvent(int id, IItemContainer container)
@@ -127,21 +138,11 @@ namespace CCEnvs.UnityX.Items
                 NewContainer = newContainer
             };
         }
-
-        ReadOnlyItemContainer IItemAccessor.TakeItem()
-        {
-            return TakeItemInternal();
-        }
-
-        ReadOnlyItemContainer IItemAccessor.TakeItem(int count)
-        {
-            return TakeItemInternal(count);
-        }
     }
 
     public class Inventory<TItem, TItemContainer>
         :
-        InventoryBase<TItem, TItemContainer, IItemContainer<TItem>, IItemContainerInfo<TItem>, ReadOnlyItemContainer<TItem>, InventoryContainerAddEvent<TItemContainer>, InventoryContainerRemoveEvent<TItemContainer>, InventoryContainerReplaceEvent<TItemContainer>>,
+        InventoryBase<TItem, TItemContainer, IItemContainer<TItem>, IItemContainerInfo<TItem>, ReadOnlyItemContainer<TItem>, LargeReadOnlyItemContainer<TItem>, InventoryContainerAddEvent<TItemContainer>, InventoryContainerRemoveEvent<TItemContainer>, InventoryContainerReplaceEvent<TItemContainer>>,
         IInventory<TItem, TItemContainer>,
         IDisposable
 
@@ -191,7 +192,7 @@ namespace CCEnvs.UnityX.Items
                 )
             {
                 AutoSize = autoSize,
-                ContainerSample = containerSample.IfNull(static () => new TCreatableItemContainer())
+                ContainerSample = containerSample
             };
         }
 
@@ -199,7 +200,19 @@ namespace CCEnvs.UnityX.Items
 
         public IInventory ShallowClone()
         {
-            throw new NotImplementedException();
+            var clone = new Inventory<TItem, TItemContainer>(
+                ContainerCount,
+                ContainerComaprer
+                )
+            {
+                AutoSize = AutoSize,
+                ContainerSample = ContainerSample
+            };
+
+            foreach (var (id, container) in Containers)
+                clone.AddContainer(container, id);
+
+            return clone;
         }
 
         protected override InventoryContainerAddEvent<TItemContainer> CreateContainerAddEvent(
@@ -248,16 +261,6 @@ namespace CCEnvs.UnityX.Items
         protected override ReadOnlyItemContainer<TItem> CreateReadOnlyItemContainer(TItem? item, int itemCount)
         {
             return new ReadOnlyItemContainer<TItem>(item, itemCount);
-        }
-
-        ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem()
-        {
-            return TakeItemInternal();
-        }
-
-        ReadOnlyItemContainer<TItem> IItemAccessor<TItem>.TakeItem(int count)
-        {
-            return TakeItemInternal(count);
         }
     }
 }

@@ -1,7 +1,9 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.TypeMatching;
 using R3;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -10,8 +12,6 @@ namespace CCEnvs.UnityX.Items
 {
     public interface IInventory
         :
-        IItemAccessor,
-        IItemContainerInfoItemless,
         IShallowCloneable<IInventory>
     {
         IItemContainer this[int id] { get; }
@@ -45,15 +45,30 @@ namespace CCEnvs.UnityX.Items
 
         bool RemoveContainer(int id);
 
+        bool ContainsContainer(IItemContainer container);
+        bool ContainsContainer(int? id);
+
+        LargeReadOnlyItemContainer TakeItem(IItem? item, long itemCount);
+        LargeReadOnlyItemContainer TakeItem(IItem? item);
+
+        LargeReadOnlyItemContainer PutItem(IItem? item, long itemCount = 1);
+        ReadOnlyItemContainer PutItem(IItemContainerInfo containerInfo);
+        ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+            where TItemContainerInfo : struct, IItemContainerInfo;
+
+        ReadOnlyItemContainer PutItemFrom(IItemContainer container);
+        LargeReadOnlyItemContainer PutItemFrom(IInventory inventory, IItem? item, long itemCount);
+        LargeReadOnlyItemContainer PutItemFrom(IInventory inventory, IItem? item);
+
         void EnsureFreeSpace(
-            int targetSpace,
+            long targetSpace,
             IItem? item = default,
             IItemContainer? cloneExample = default
             );
 
-        int GetItemCount(IItem? item);
+        long GetItemCount(IItem? item);
 
-        int GetFreeSpace(IItem? item);
+        long GetFreeSpace(IItem? item);
 
         IList<ReadOnlyItemContainer> GetCompactedContainers();
 
@@ -75,6 +90,39 @@ namespace CCEnvs.UnityX.Items
         Observable<InventoryContainerReplaceEvent> ObserveContainerReplace();
 
         Observable<Unit> ObserveClear();
+
+        ReadOnlyItemContainer IItemAccessor.TakeItem()
+        {
+            if (IsEmpty
+                ||
+                Containers.SelectValue()
+                    .FirstOrDefault(container => !container.IsEmpty)
+                    .IsNot<IItemContainer>(out var firstContainer)
+                    )
+            {
+                return ReadOnlyItemContainer.Empty;
+            }
+
+            int takeCount = Math.Min(firstContainer.ItemCount, Math.Abs(new Random().Next()));
+            return TakeItem(firstContainer.Item, takeCount);
+        }
+
+        ReadOnlyItemContainer IItemAccessor.TakeItem(int count)
+        {
+            if (IsEmpty
+                ||
+                Containers.SelectValue()
+                    .FirstOrDefault(container => !container.IsEmpty)
+                    .Maybe()
+                    .Map(container => container.Item)
+                    .TryGetValue(out IItem? firstItem)
+                    )
+            {
+                return ReadOnlyItemContainer.Empty;
+            }
+
+            return TakeItem(firstItem, count);
+        }
     }
 
     public interface IInventory<TItem, TItemContainer>
@@ -119,14 +167,14 @@ namespace CCEnvs.UnityX.Items
             );
 
         void EnsureFreeSpace(
-            int targetSpace,
+            long targetSpace,
             TItem? item = default,
             TItemContainer? cloneExample = default
             );
 
-        int GetItemCount(TItem? item);
+        long GetItemCount(TItem? item);
 
-        int GetFreeSpace(TItem? item);
+        long GetFreeSpace(TItem? item);
 
         void InstantiateContainers(int count, TItemContainer? cloneExample = default);
         void InstantiateContainers(int count, out IList<TItemContainer> results, TItemContainer? cloneExample = default);
@@ -196,7 +244,7 @@ namespace CCEnvs.UnityX.Items
         }
 
         void IInventory.EnsureFreeSpace(
-            int targetSpace,
+            long targetSpace,
             IItem? item,
             IItemContainer? cloneExample
             )
@@ -208,12 +256,12 @@ namespace CCEnvs.UnityX.Items
                 );
         }
 
-        int IInventory.GetItemCount(IItem? item)
+        long IInventory.GetItemCount(IItem? item)
         {
             return GetItemCount(item.As<TItem>());
         }
 
-        int IInventory.GetFreeSpace(IItem? item)
+        long IInventory.GetFreeSpace(IItem? item)
         {
             return GetFreeSpace(item.As<TItem>());
         }

@@ -1,71 +1,20 @@
-using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using R3;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
-    public class ItemContainer : IItemContainer, IDisposable
+    public class ItemContainer
+        :
+        ItemContainerBase<IItem, IItemContainer, IItemContainerInfo, ReadOnlyItemContainer>,
+        IItemContainer
     {
-        private readonly ReactiveProperty<IItem?> item = new();
-        private readonly ReactiveProperty<int> itemCount = new();
-        private readonly ReactiveProperty<bool> isActive = new();
-
-        private IInventory? parentInventory;
-
-        private int capacity;
-        private int? id;
-
-        public IItem? Item => item.Value;
-        public int ItemCount => itemCount.Value;
-        public int Capacity {
-            get
-            {
-                if (IgnoreMaxItemCount)
-                    return int.MaxValue;
-
-                return Math.Min(item.Value.Maybe().Map(item => item.MaxItemCount).GetValue(int.MaxValue), capacity);
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    capacity = 0;
-                    return;
-                }
-
-                capacity = value;
-            }
-        }
-        public int FreeSpace => Math.Max(Capacity - ItemCount, 0);
-        public int? ID {
-            get => id;
-            set
-            {
-                if (parentInventory is null)
-                    id = value;
-            }
-        }
-
-        public bool IsEmpty => !ContainsItem();
-        public bool IsFull => ItemCount >= Capacity;
-        public bool IsActive => isActive.Value;
-        /// <summary>
-        /// If true ignores <see cref="IItem.MaxItemCount"/>
-        /// </summary>
-        public bool IgnoreMaxItemCount { get; set; }
-
-        public IInventory? ParentInventory => parentInventory;
-
-        bool IItemContainer.IsReadOnlyContainer { get; }
+        bool IItemContainer.IsReadOnlyContainer => false;
 
         public ItemContainer()
             :
-            this(capacity: int.MaxValue)
+            base()
         {
         }
 
@@ -74,281 +23,40 @@ namespace CCEnvs.UnityX.Items
             int count = 1,
             int capacity = 0
             )
+            :
+            base(
+                item,
+                count,
+                capacity
+                )
         {
-            this.item.Value = item;
-            Capacity = capacity;
-
-            if (item.IsNull() && count > 0)
-                count = 0;
-
-            itemCount.Value = count;
         }
 
         ~ItemContainer() => Dispose();
 
-        public static explicit operator ReadOnlyItemContainer(ItemContainer instance)
-        {
-            return instance.ToReadOnly();
-        }
-
-        public bool ContainsItem()
-        {
-            return ItemCount >= 1 && Item.IsNotNull();
-        }
-        public bool ContainsItem(IItem? item)
-        {
-            if (!ContainsItem())
-                return false;
-
-            return EqualityComparer<IItem?>.Default.Equals(Item, item);
-        }
-        public bool ContainsItem(IItem? item, int count)
-        {
-            if (!ContainsItem(item))
-                return false;
-
-            return ItemCount >= count;
-        }
-
-        public ReadOnlyItemContainer PutItem(IItem? inputItem, int count = 1)
-        {
-            if (count <= 0 || inputItem.IsNull())
-                return ReadOnlyItemContainer.Empty;
-
-            if (IsFull || (Item.IsNotNull() && !EqualityComparer<IItem?>.Default.Equals(Item, inputItem)))
-                return new ReadOnlyItemContainer(inputItem, count);
-
-            item.Value = inputItem;
-            int toPutCount = Math.Clamp(count, 0, FreeSpace);
-            itemCount.Value += toPutCount;
-
-            int restCount = count - toPutCount;
-
-            if (CCDebug<ItemContainer>.IsEnabled)
-            {
-                this.PrintLog(DebugMessageBuilder.CreatePooled()
-                    .AddMessage("Item was put")
-                    .AddProperty("ParentInventory", parentInventory)
-                    .AddProperty("ID", ID)
-                    .AddProperty("Item", Item)
-                    .AddProperty("ItemCount", toPutCount)
-                    .AddPredicatedProperty(restCount != 0, "RestItemCount", restCount)
-                    .ToStringAndDispose()
-                    );
-            }
-
-            if (restCount <= 0)
-                return ReadOnlyItemContainer.Empty;
-
-            return new ReadOnlyItemContainer(Item, restCount);
-        }
-        public ReadOnlyItemContainer PutItem(IItemContainerInfo? containerInfo)
-        {
-            if (containerInfo.IsNull())
-                return ReadOnlyItemContainer.Empty;
-
-            return PutItem(containerInfo.Item, containerInfo.ItemCount);
-        }
-        public ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
-            where TItemContainerInfo : struct, IItemContainerInfo
-        {
-            return PutItem(containerInfo.Item, containerInfo.ItemCount);
-        }
-
-        public ReadOnlyItemContainer PutItemFrom(IItemContainer? container, int count)
-        {
-            if (count <= 0 || container.IsNull() || this == container)
-                return ReadOnlyItemContainer.Empty;
-
-            return container.PutItem(PutItem(container.TakeItem(count)));
-        }
-        public ReadOnlyItemContainer PutItemFrom(IItemContainer? container)
-        {
-            if (container.IsNull())
-                return ReadOnlyItemContainer.Empty;
-
-            return PutItemFrom(container, container.ItemCount);
-        }
-
-        public ReadOnlyItemContainer TakeItem(int count)
-        {
-            if (IsEmpty || count <= 0)
-                return ReadOnlyItemContainer.Empty;
-
-            int takenCount = Math.Min(count, ItemCount);
-            itemCount.Value -= takenCount;
-
-            return new ReadOnlyItemContainer(Item, takenCount);
-        }
-        public ReadOnlyItemContainer TakeItem() => TakeItem(itemCount.Value);
-        public ReadOnlyItemContainer TakeItem(IItem? item, int count)
-        {
-            if (!ContainsItem(item))
-                return ReadOnlyItemContainer.Empty;
-
-            return TakeItem(count);
-        }
-
-        public ReadOnlyItemContainer ToReadOnly() => new(Item, ItemCount);
-
-        public IItemContainer ShallowClone()
+        public override IItemContainer ShallowClone()
         {
             return new ItemContainer(Item, ItemCount, Capacity);
         }
 
-        public void CopyItemFrom(IItemContainer itemContainer)
+        protected override ReadOnlyItemContainer CreateReadOnlyItemContainer()
         {
-            item.Value = itemContainer.Item;
-            itemCount.Value = itemContainer.ItemCount;
-            capacity = itemContainer.Capacity;
+            return ReadOnlyItemContainer.Empty;
         }
 
-        public void Clear()
+        protected override ReadOnlyItemContainer CreateReadOnlyItemContainer(IItem? item, int itemCount)
         {
-            item.Value = null;
-            itemCount.Value = 0;
-        }
-
-        public void SetParentInventory(IInventory? inventory)
-        {
-            if (EqualityComparer<IInventory?>.Default.Equals(parentInventory, inventory))
-                return;
-
-            if (parentInventory is not null)
-            {
-                if (parentInventory is not null)
-                {
-                    if (ID.HasValue)
-                        parentInventory.RemoveContainer(ID.Value);
-
-                    parentInventory = null;
-                    id = null;
-                }
-            }
-
-            if (inventory.IsNotNull())
-            {
-                parentInventory = inventory;
-                id = inventory.AddContainer(this);
-            }
-        }
-
-        public override string ToString()
-        {
-            return ToStringBuilder.CreatePooled()
-                .AddProperty(nameof(Item), Item)
-                .AddProperty(nameof(ItemCount), ItemCount)
-                .ToStringAndDispose();
-        }
-
-        public void Activate()
-        {
-            if (IsEmpty)
-                return;
-
-            isActive.Value = true;
-
-#if CC_DEBUG_ENABLED
-            if (CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Activated. ID: {ID}");
-#endif
-        }
-
-        public void Deactivate()
-        {
-            isActive.Value = false;
-
-#if CC_DEBUG_ENABLED
-            if (CCDebug.Instance.IsEnabled)
-                this.PrintLog($"Deactivated. ID: {ID}");
-#endif
-        }
-
-        public bool SwitchActiveState()
-        {
-            if (isActive.Value)
-                Deactivate();
-            else
-                Activate();
-
-            return isActive.Value;
-        }
-
-        public bool CanPut() => !IsFull;
-        public bool CanPut(IItem? item) => ContainsItem(item);
-        public bool CanPut(IItem? item, int count)
-        {
-            if (!CanPut(item))
-                return false;
-
-            count = Math.Clamp(count, min: 0, max: int.MaxValue);
-
-            if (FreeSpace < count)
-                return false;
-
-            return true;
-        }
-
-        public Observable<IItem?> ObserveItem() => item;
-
-        public Observable<bool> ObserveIsActive() => isActive;
-
-        public Observable<int> ObserveItemCount() => itemCount;
-
-        private int disposed;
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            if (disposing)
-            {
-                item.Dispose();
-                itemCount.Dispose();
-                isActive.Dispose();
-            }
+            return new ReadOnlyItemContainer(item, itemCount);
         }
     }
 
     public class ItemContainer<TItem>
         :
-        IItemContainer<TItem>,
-        IDisposable
+        ItemContainerBase<TItem, IItemContainer<TItem>, IItemContainerInfo<TItem>, ReadOnlyItemContainer<TItem>>,
+        IItemContainer<TItem>
 
-        where TItem : IItem
+        where TItem : class, IItem
     {
-        private readonly ItemContainer internalContainer;
-
-        public bool IgnoreMaxItemCount {
-            get => internalContainer.IgnoreMaxItemCount;
-            set => internalContainer.IgnoreMaxItemCount = value;
-        }
-        public bool IsEmpty => internalContainer.IsEmpty;
-        public bool IsFull => internalContainer.IsFull;
-
-        public TItem? Item => (TItem?)internalContainer.Item;
-
-        public int ItemCount => internalContainer.ItemCount;
-        public int Capacity {
-            get => internalContainer.Capacity;
-            set => internalContainer.Capacity = value;
-        }
-        public int FreeSpace => internalContainer.FreeSpace;
-
-        public int? ID {
-            get => internalContainer.ID;
-            set => internalContainer.ID = value;
-        }
-
-        public IInventory? ParentInventory {
-            get => internalContainer.ParentInventory;
-        }
-
         bool IItemContainer.IsReadOnlyContainer => false;
 
         public ItemContainer(
@@ -356,13 +64,18 @@ namespace CCEnvs.UnityX.Items
             int count = 1,
             int capacity = 0
             )
+            :
+            base(
+                item, 
+                count,
+                capacity
+                )
         {
-            internalContainer = new ItemContainer(item, count, capacity);
         }
 
         public ItemContainer()
             :
-            this(capacity: int.MaxValue)
+            base()
         {
         }
 
@@ -373,87 +86,19 @@ namespace CCEnvs.UnityX.Items
             return instance.ToReadOnly();
         }
 
-        public bool CanPut() => internalContainer.CanPut();
-        public bool CanPut(IItem? item) => internalContainer.CanPut(item);
-        public bool CanPut(IItem? item, int count) => internalContainer.CanPut(item, count);
-
-        public void Clear() => internalContainer.Clear();
-
-        public bool ContainsItem() => internalContainer.ContainsItem();
-        public bool ContainsItem(IItem? item) => internalContainer.ContainsItem(item);
-        public bool ContainsItem(IItem? item, int count) => internalContainer.ContainsItem(item, count);
-
-        public void CopyItemFrom(IItemContainer<TItem> itemContainer)
+        public override IItemContainer ShallowClone()
         {
-            internalContainer.CopyItemFrom(itemContainer);
+            return new ItemContainer<TItem>(Item, ItemCount, Capacity);
         }
 
-        public ReadOnlyItemContainer<TItem> PutItem(TItem? item, int count = 1)
+        protected override ReadOnlyItemContainer<TItem> CreateReadOnlyItemContainer()
         {
-            return internalContainer.PutItem(item, count).Convert<TItem>();
-        }
-        public ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem>? containerInfo)
-        {
-            return internalContainer.PutItem(containerInfo).Convert<TItem>();
-        }
-        public ReadOnlyItemContainer<TItem> PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo) where TItemContainerInfo : struct, IItemContainerInfo<TItem>
-        {
-            return internalContainer.PutItem(containerInfo).Convert<TItem>();
+            return ReadOnlyItemContainer<TItem>.Empty;
         }
 
-        public ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? container)
+        protected override ReadOnlyItemContainer<TItem> CreateReadOnlyItemContainer(TItem? item, int itemCount)
         {
-            return internalContainer.PutItemFrom(container).Convert<TItem>();
+            return new ReadOnlyItemContainer<TItem>(Item, itemCount);
         }
-        public ReadOnlyItemContainer<TItem> PutItemFrom(
-            IItemContainer<TItem>? container,
-            int count
-            )
-        {
-            return internalContainer.PutItemFrom(container).Convert<TItem>();
-        }
-
-        public ReadOnlyItemContainer<TItem> ToReadOnly() => new(Item, ItemCount);
-
-        public void SetParentInventory(IInventory? inventory)
-        {
-            internalContainer.SetParentInventory(inventory);
-        }
-
-        public IItemContainer ShallowClone()
-        {
-            return new ItemContainer<TItem>(
-                item: Item,
-                count: ItemCount,
-                capacity: Capacity
-                )
-            {
-                Capacity = Capacity,
-                ID = ID,
-                IgnoreMaxItemCount = IgnoreMaxItemCount
-            };
-        }
-
-        public ReadOnlyItemContainer<TItem> TakeItem()
-        {
-            return internalContainer.TakeItem().Convert<TItem>();
-        }
-        public ReadOnlyItemContainer<TItem> TakeItem(int count)
-        {
-            return internalContainer.TakeItem(count).Convert<TItem>();
-        }
-        public ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count)
-        {
-            return internalContainer.TakeItem(item, count).Convert<TItem>();
-        }
-
-        public void Dispose() => internalContainer.Dispose();
-
-        public Observable<TItem?> ObserveItem()
-        {
-            return internalContainer.ObserveItem().Select(item => (TItem?)item);
-        }
-
-        public Observable<int> ObserveItemCount() => internalContainer.ObserveItemCount();
     }
 }

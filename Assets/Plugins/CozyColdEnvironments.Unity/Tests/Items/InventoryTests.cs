@@ -40,7 +40,7 @@ namespace CCEnvs.Unity.Tests
         }
 
         [Test]
-        public void CheckFreeSpace()
+        public void CheckGetFreeSpace()
         {
             Mock<IItem> itemMock = GetItemMock();
             IItem item = itemMock.Object;
@@ -75,6 +75,18 @@ namespace CCEnvs.Unity.Tests
             ReadOnlyItemContainer takenItems = inventory.TakeItem(item, int.MaxValue / 2);
 
             Assert.AreEqual(int.MaxValue / 2, takenItems.ItemCount);
+        }
+
+        [Test]
+        public void CheckFreeSpace()
+        {
+            Mock<IItem> itemMock = GetItemMock();
+            IItem item = itemMock.Object;
+
+            inventory.AutoSize = true;
+            inventory.PutItem(item, 60);
+
+            Assert.AreEqual(item.MaxItemCount - 60, inventory.FreeSpace);
         }
 
         private Mock<IItem> GetItemMock()
