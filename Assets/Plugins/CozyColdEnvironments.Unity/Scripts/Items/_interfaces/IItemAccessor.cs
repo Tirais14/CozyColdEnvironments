@@ -17,7 +17,7 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer TakeItem(int count);
         ReadOnlyItemContainer TakeItem(IItem? item, int count);
 
-        void CopyItemFrom(IItemContainerInfo itemContainer);
+        void CopyItemFrom(IItemContainer itemContainer);
 
         void Clear();
     }
@@ -37,11 +37,11 @@ namespace CCEnvs.UnityX.Items
         new ReadOnlyItemContainer<TItem> TakeItem(int count);
         ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count);
 
-        void CopyItemFrom(IItemContainerInfo<TItem> itemContainer);
+        void CopyItemFrom(IItemContainer<TItem> itemContainer);
 
-        void IItemAccessor.CopyItemFrom(IItemContainerInfo itemContainer)
+        void IItemAccessor.CopyItemFrom(IItemContainer itemContainer)
         {
-            if (itemContainer.IsNot<IItemContainerInfo<TItem>>(out var typed))
+            if (itemContainer.IsNot<IItemContainer<TItem>>(out var typed))
                 return;
 
             CopyItemFrom(typed);
@@ -51,7 +51,7 @@ namespace CCEnvs.UnityX.Items
         {
             return PutItem(item.As<TItem>(), count);
         }
-        ReadOnlyItemContainer IItemAccessor.PutItem(IItemContainerInfo containerInfo)
+        ReadOnlyItemContainer IItemAccessor.PutItem(IItemContainerInfo? containerInfo)
         {
             if (containerInfo.IsNot<IItemContainerInfo<TItem>>(out var typedContainerInfo))
                 return ReadOnlyItemContainer.Empty;
@@ -66,14 +66,14 @@ namespace CCEnvs.UnityX.Items
             return PutItem(typedContainerInfo);
         }
 
-        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer itemContainer)
+        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? itemContainer)
         {
             if (itemContainer.IsNot<IItemContainer<TItem>>(out var typedContainer))
                 return default;
 
             return PutItemFrom(typedContainer);
         }
-        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer itemContainer, int count)
+        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? itemContainer, int count)
         {
             if (itemContainer.IsNot<IItemContainer<TItem>>(out var typedContainer))
                 return default;
@@ -83,7 +83,7 @@ namespace CCEnvs.UnityX.Items
 
         ReadOnlyItemContainer IItemAccessor.TakeItem() => TakeItem();
         ReadOnlyItemContainer IItemAccessor.TakeItem(int count) => TakeItem(count);
-        ReadOnlyItemContainer IItemAccessor.TakeItem(IItem item, int count)
+        ReadOnlyItemContainer IItemAccessor.TakeItem(IItem? item, int count)
         {
             if (item.IsNot<TItem>(out var typedItem))
                 return default;

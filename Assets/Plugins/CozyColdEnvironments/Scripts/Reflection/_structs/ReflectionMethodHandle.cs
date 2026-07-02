@@ -163,7 +163,7 @@ namespace CCEnvs.Reflection
                 return method;
             }
 
-            if (BaseReflectionHandle.CacheResults)
+            if (BaseReflectionHandle.IsCacheResults)
                 CacheMethod(method);
 
             return method;
@@ -196,7 +196,7 @@ namespace CCEnvs.Reflection
                 return ctor;
             }
 
-            if (BaseReflectionHandle.CacheResults)
+            if (BaseReflectionHandle.IsCacheResults)
                 CacheConstructor(ctor);
 
             return ctor;

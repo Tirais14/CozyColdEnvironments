@@ -19,11 +19,12 @@ namespace CCEnvs.UnityX.Items
 
         public readonly bool IsEmpty => ItemCount == 0 || Item.IsNull();
 
-        readonly IInventory? IItemContainerInfoItemless.ParentInventory => null;
+        readonly IInventory? IItemContainer.ParentInventory => null;
 
-        readonly int IItemContainerInfoItemless.Capacity { get => ItemCount; set => _ = value; }
         readonly int IItemContainerInfoItemless.FreeSpace => int.MaxValue;
-        readonly int? IItemContainerInfoItemless.ID {
+        readonly int IItemContainer.Capacity { get => ItemCount; set => _ = value; }
+
+        readonly int? IItemContainer.ID {
             get => null;
             set => _ = value;
         }
@@ -142,7 +143,7 @@ namespace CCEnvs.UnityX.Items
             return Empty;
         }
 
-        readonly void IItemAccessor.CopyItemFrom(IItemContainerInfo itemContainer) { }
+        readonly void IItemAccessor.CopyItemFrom(IItemContainer _) { }
 
         readonly void IItemAccessor.Clear() { }
 
@@ -163,7 +164,7 @@ namespace CCEnvs.UnityX.Items
             return Observable.Return(ItemCount);
         }
 
-        readonly void IItemContainerInfoItemless.SetParentInventory(IInventory? inventory) { }
+        readonly void IItemContainer.SetParentInventory(IInventory? inventory) { }
     }
 
     public readonly struct ReadOnlyItemContainer<TItem>
@@ -182,17 +183,16 @@ namespace CCEnvs.UnityX.Items
 
         public readonly bool IsEmpty => ItemCount == 0 || Item.IsNull();
 
-        readonly IInventory? IItemContainerInfoItemless.ParentInventory {
+        readonly IInventory? IItemContainer.ParentInventory {
             get => null;
         }
-
-        readonly int IItemContainerInfoItemless.Capacity { get => ItemCount; set => _ = value; }
 
         readonly bool IItemContainerInfoItemless.IsFull => false;
 
         readonly int IItemContainerInfoItemless.FreeSpace => int.MaxValue;
+        readonly int IItemContainer.Capacity { get => ItemCount; set => _ = value; }
 
-        readonly int? IItemContainerInfoItemless.ID {
+        readonly int? IItemContainer.ID {
             get => null;
             set => _ = value;
         }
@@ -233,6 +233,15 @@ namespace CCEnvs.UnityX.Items
         }
 
         public readonly ReadOnlyItemContainer ToUntyped() => new(Item, ItemCount);
+
+        public readonly ReadOnlyItemContainer<TItemOut> Convert<TItemOut>()
+            where TItemOut : IItem
+        {
+            return new ReadOnlyItemContainer<TItemOut>(
+                Item.As<TItemOut>(),
+                ItemCount
+                );
+        }
 
         public readonly override bool Equals(object? obj)
         {
@@ -303,13 +312,13 @@ namespace CCEnvs.UnityX.Items
             return Empty;
         }
 
-        readonly void IItemAccessor<TItem>.CopyItemFrom(IItemContainerInfo<TItem> itemContainer) { }
+        readonly void IItemAccessor<TItem>.CopyItemFrom(IItemContainer<TItem> _) { }
 
         readonly void IItemAccessor.Clear() { }
 
         readonly IItemContainer IShallowCloneable<IItemContainer>.ShallowClone()
         {
-            return new ReadOnlyItemContainer(Item, ItemCount);
+            return new ReadOnlyItemContainer<TItem>(Item, ItemCount);
         }
 
         readonly ReadOnlyItemContainer<TItem> IItemContainer<TItem>.ToReadOnly() => this;
@@ -324,6 +333,6 @@ namespace CCEnvs.UnityX.Items
             return Observable.Return(ItemCount);
         }
 
-        readonly void IItemContainerInfoItemless.SetParentInventory(IInventory? inventory) { }
+        readonly void IItemContainer.SetParentInventory(IInventory? inventory) { }
     }
 }

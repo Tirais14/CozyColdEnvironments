@@ -98,7 +98,7 @@ namespace CCEnvs.Reflection
                 return null;
             }
 
-            if (BaseReflectionHandle.CacheResults)
+            if (BaseReflectionHandle.IsCacheResults)
                 CacheField(field);
 
             return field;

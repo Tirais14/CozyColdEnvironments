@@ -14,6 +14,8 @@ namespace CCEnvs.Reflection
 {
     public struct ReflectionHandle : IEquatable<ReflectionHandle>
     {
+        public static ReflectionHandle Instance { get; } = new();
+
         private static readonly Cache<ReflectionHandle, MemberKey> cachedMemberKeys = new()
         {
             ExpirationScanFrequency = 1.Minutes(),
@@ -36,9 +38,9 @@ namespace CCEnvs.Reflection
 
         public string? NameFilter { readonly get; init; }
 
-        public bool CacheResults { readonly get; init; }
+        public bool IsCacheResults { readonly get; init; }
 
-        public TimeSpan? CacheExpiratiomTimeRelativeToNow { readonly get; init; }
+        public TimeSpan? ExpirationTimeRelativeToNow { readonly get; init; }
 
         public static bool operator ==(ReflectionHandle left, ReflectionHandle right)
         {
@@ -68,8 +70,8 @@ namespace CCEnvs.Reflection
                 Bindings = Bindings,
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = NameFilter,
-                CacheResults = CacheResults,
-                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
+                IsCacheResults = IsCacheResults,
+                ExpirationTimeRelativeToNow = ExpirationTimeRelativeToNow,
             };
         }
 
@@ -82,8 +84,8 @@ namespace CCEnvs.Reflection
                 Bindings = bindings,
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = NameFilter,
-                CacheResults = CacheResults,
-                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
+                IsCacheResults = IsCacheResults,
+                ExpirationTimeRelativeToNow = ExpirationTimeRelativeToNow,
             };
         }
 
@@ -96,41 +98,27 @@ namespace CCEnvs.Reflection
                 Bindings = Bindings,
                 StringMatchOptions = stringMatchSettings,
                 NameFilter = NameFilter,
-                CacheResults = CacheResults,
-                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
+                IsCacheResults = IsCacheResults,
+                ExpirationTimeRelativeToNow = ExpirationTimeRelativeToNow,
             };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectionHandle WithNameFilter(string? name)
+        public readonly ReflectionHandle WithNameFilter(string? filter)
         {
             return new ReflectionHandle
             {
                 Type = Type,
                 Bindings = Bindings,
                 StringMatchOptions = StringMatchOptions,
-                NameFilter = name,
-                CacheResults = CacheResults,
-                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
+                NameFilter = filter,
+                IsCacheResults = IsCacheResults,
+                ExpirationTimeRelativeToNow = ExpirationTimeRelativeToNow,
             };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectionHandle WithCacheResults(bool state = true)
-        {
-            return new ReflectionHandle
-            {
-                Type = Type,
-                Bindings = Bindings,
-                StringMatchOptions = StringMatchOptions,
-                NameFilter = NameFilter,
-                CacheResults = state,
-                CacheExpiratiomTimeRelativeToNow = CacheExpiratiomTimeRelativeToNow,
-            };
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReflectionHandle WithCacheExpirationTimeRelativeToNoew(TimeSpan? cacheExpiratiomTimeRelativeToNow)
+        public readonly ReflectionHandle CacheResults(bool state = true)
         {
             return new ReflectionHandle
             {
@@ -138,8 +126,22 @@ namespace CCEnvs.Reflection
                 Bindings = Bindings,
                 StringMatchOptions = StringMatchOptions,
                 NameFilter = NameFilter,
-                CacheResults = CacheResults,
-                CacheExpiratiomTimeRelativeToNow = cacheExpiratiomTimeRelativeToNow ?? 20.Minutes(),
+                IsCacheResults = state,
+                ExpirationTimeRelativeToNow = ExpirationTimeRelativeToNow,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReflectionHandle CacheResultsWithExpirationTimeRelativeToNow(TimeSpan? cacheExpiratiomTimeRelativeToNow)
+        {
+            return new ReflectionHandle
+            {
+                Type = Type,
+                Bindings = Bindings,
+                StringMatchOptions = StringMatchOptions,
+                NameFilter = NameFilter,
+                IsCacheResults = IsCacheResults,
+                ExpirationTimeRelativeToNow = cacheExpiratiomTimeRelativeToNow ?? 20.Minutes(),
             };
         }
 
@@ -178,7 +180,7 @@ namespace CCEnvs.Reflection
                 this
                 );
 
-            if (CacheResults)
+            if (IsCacheResults)
                 CacheMembers(members);
 
             return members;
@@ -204,7 +206,7 @@ namespace CCEnvs.Reflection
                 return null;
             }
 
-            if (CacheResults)
+            if (IsCacheResults)
                 CacheMember(member);
 
             return member;
@@ -213,7 +215,7 @@ namespace CCEnvs.Reflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly TimeSpan GetCacheExpirationTimeRelativeToNowOrDefault()
         {
-            return CacheExpiratiomTimeRelativeToNow ?? 20.Minutes();
+            return ExpirationTimeRelativeToNow ?? 20.Minutes();
         }
 
         public readonly bool Equals(ReflectionHandle other)
@@ -226,20 +228,26 @@ namespace CCEnvs.Reflection
                    &&
                    NameFilter == other.NameFilter
                    &&
-                   CacheResults == other.CacheResults;
+                   IsCacheResults == other.IsCacheResults
+                   &&
+                   ExpirationTimeRelativeToNow == other.ExpirationTimeRelativeToNow;
         }
 
         public readonly override bool Equals(object obj)
         {
-            return obj is ReflectionMethodHandle typed && Equals(typed);
+            return obj is ReflectionHandle typed && Equals(typed);
         }
 
         public readonly override string ToString()
         {
-            if (this == default)
-                return StringHelper.EMPTY_OBJECT;
-
-            return $"({nameof(Type)}: {Type}; {nameof(Bindings)}: {Bindings}; {nameof(StringMatchOptions)}: {StringMatchOptions}; {nameof(NameFilter)}: {NameFilter}; {nameof(CacheResults)}: {CacheResults})";
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Type), Type)
+                .AddProperty(nameof(Bindings), Bindings)
+                .AddProperty(nameof(StringMatchOptions), StringMatchOptions)
+                .AddProperty(nameof(NameFilter), NameFilter)
+                .AddProperty(nameof(IsCacheResults), IsCacheResults)
+                .AddProperty(nameof(ExpirationTimeRelativeToNow), ExpirationTimeRelativeToNow)
+                .ToStringAndDispose();
         }
 
         public override int GetHashCode()
@@ -249,7 +257,8 @@ namespace CCEnvs.Reflection
                 Bindings,
                 StringMatchOptions,
                 NameFilter,
-                CacheResults
+                IsCacheResults,
+                ExpirationTimeRelativeToNow
                 );
 
             return hashCode.Value;
@@ -270,6 +279,21 @@ namespace CCEnvs.Reflection
 
             for (int i = 0; i < members.Length; i++)
                 CachedMembers.TryAddMemberUntyped(members[i], out _, GetCacheExpirationTimeRelativeToNowOrDefault());
+        }
+    }
+
+    public static class ReflectionHandleExtensions
+    {
+        public static ReflectionHandle GetReflectionHandle(this Type type)
+        {
+            Guard.IsNotNull(type);
+            return new ReflectionHandle().WithType(type);
+        }
+
+        public static ReflectionHandle GetReflectionHandle(this object obj)
+        {
+            Guard.IsNotNull(obj);
+            return new ReflectionHandle().WithType(obj.GetType());
         }
     }
 }

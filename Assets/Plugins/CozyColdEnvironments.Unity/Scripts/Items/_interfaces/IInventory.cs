@@ -1,5 +1,5 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
+using CCEnvs.Linq;
 using CCEnvs.TypeMatching;
 using R3;
 using System.Collections.Generic;
@@ -16,9 +16,12 @@ namespace CCEnvs.UnityX.Items
     {
         IItemContainer this[int id] { get; }
 
+        /// <summary>
+        /// Automatically add container if item not fit in existing containers
+        /// </summary>
         bool AutoSize { get; set; }
 
-        IReadOnlyDictionary<int, IItemContainer> Containers { get; }
+        IEnumerable<KeyValuePair<int, IItemContainer>> Containers { get; }
 
         int ContainerCount { get; }
         int EmptyContainerCount { get; }
@@ -33,10 +36,12 @@ namespace CCEnvs.UnityX.Items
 
         void ResetContainers();
 
-        int AddContainer(IItemContainer container);
+        int AddContainer(IItemContainer container, int? id = null);
 
         void AddContainers(IEnumerable<IItemContainer> containers);
+        void AddContainers(IEnumerable<(IItemContainer Value, int? ID)> containers);
         void AddContainers(IEnumerable<IItemContainer> containers, out IList<int> ids);
+        void AddContainers(IEnumerable<(IItemContainer Value, int? ID)> containers, out IList<int> ids);
 
         bool RemoveContainer(int id);
 
@@ -76,29 +81,40 @@ namespace CCEnvs.UnityX.Items
         :
         IInventory,
         IItemAccessor<TItem>,
-        IItemContainerInfoItemless
+        IItemContainerInfoItemless<TItem>
 
         where TItem : IItem
-        where TItemContainer : IItemContainer
+        where TItemContainer : IItemContainer<TItem>
     {
         new TItemContainer this[int id] { get; }
 
-        new IReadOnlyDictionary<int, TItemContainer> Containers { get; }
+        new IEnumerable<KeyValuePair<int, TItemContainer>> Containers { get; }
 
         new TItemContainer? ContainerSample { get; set; }
+
+        IItemContainer IInventory.this[int id] => this[id];
 
         IItemContainer? IInventory.ContainerSample {
             get => ContainerSample;
             set => ContainerSample.As<TItemContainer>();
         }
 
+        IEnumerable<KeyValuePair<int, IItemContainer>> IInventory.Containers {
+            get => Containers.Select(x => KeyValuePair.Create(x.Key, (IItemContainer)x.Value));
+        }
+
         bool TryGetContainer(int id, [NotNullWhen(true)] out TItemContainer? container);
 
-        int AddContainer(TItemContainer itemContainer);
+        int AddContainer(TItemContainer itemContainer, int? id = null);
 
         void AddContainers(IEnumerable<TItemContainer> containers);
+        void AddContainers(IEnumerable<(TItemContainer Value, int? ID)> containers);
         void AddContainers(
             IEnumerable<TItemContainer> containers,
+            out IList<int> ids
+            );
+        void AddContainers(
+            IEnumerable<(TItemContainer Value, int? ID)> containers,
             out IList<int> ids
             );
 
@@ -142,7 +158,7 @@ namespace CCEnvs.UnityX.Items
             return true;
         }
 
-        int IInventory.AddContainer(IItemContainer itemContainer)
+        int IInventory.AddContainer(IItemContainer itemContainer, int? id)
         {
             return AddContainer((TItemContainer)itemContainer);
         }
@@ -152,10 +168,27 @@ namespace CCEnvs.UnityX.Items
             CC.Guard.IsNotNull(containers, nameof(containers));
             AddContainers(containers.OfType<TItemContainer>());
         }
+        void IInventory.AddContainers(IEnumerable<(IItemContainer Value, int? ID)> containers)
+        {
+            CC.Guard.IsNotNull(containers, nameof(containers));
+            AddContainers(containers.Where(x => x.Value.Is<TItemContainer>()).Select(x => ((TItemContainer)x.Value, x.ID)));
+        }
         void IInventory.AddContainers(IEnumerable<IItemContainer> containers, out IList<int> ids)
         {
             CC.Guard.IsNotNull(containers, nameof(containers));
             AddContainers(containers.OfType<TItemContainer>(), out ids);
+        }
+        void IInventory.AddContainers(IEnumerable<(IItemContainer Value, int? ID)> containers, out IList<int> ids)
+        {
+            CC.Guard.IsNotNull(containers, nameof(containers));
+
+            IEnumerable<(TItemContainer Value, int? ID)> typedContainers = containers.Where(container => container.Value.Is<TItemContainer>())
+                .Select(container => ((TItemContainer)container.Value, container.ID));
+
+            AddContainers(
+                typedContainers,
+                out ids
+                );
         }
 
         void IInventory.EnsureFreeSpace(
@@ -220,7 +253,7 @@ namespace CCEnvs.UnityX.Items
 
         IList<ReadOnlyItemContainer> IInventory.GetCompactedContainers()
         {
-            return GetCompactedContainers().Select(container => (ReadOnlyItemContainer)container).ToArray();
+            return GetCompactedContainers().Select(container => container.ToUntyped()).ToArray();
         }
 
         IList<IItemContainer> IInventory.GetOccupiedContainers()
@@ -228,7 +261,7 @@ namespace CCEnvs.UnityX.Items
             return GetOccupiedContainers().Cast<IItemContainer>().ToArray();
         }
 
-        Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
+        Observable <InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
         {
             return ObserveContainerAdd()
                 .Select(ev => new InventoryContainerAddEvent { ID = ev.ID, Container = ev.Container });
@@ -252,7 +285,7 @@ namespace CCEnvs.UnityX.Items
         public static IEnumerator<IItemContainer> GetEnumerator(this IInventory source)
         {
             CC.Guard.IsNotNullSource(source);
-            return source.Containers.Values.GetEnumerator();
+            return source.Containers.SelectValue().GetEnumerator();
         }
 
         public static IEnumerator<TItemContainer> GetEnumerator<TItem, TItemContainer>(
@@ -260,10 +293,10 @@ namespace CCEnvs.UnityX.Items
             )
 
             where TItem : IItem
-            where TItemContainer : IItemContainer
+            where TItemContainer : IItemContainer<TItem>
         {
             CC.Guard.IsNotNullSource(source);
-            return source.Containers.Values.GetEnumerator();
+            return source.Containers.SelectValue().GetEnumerator();
         }
     }
 }

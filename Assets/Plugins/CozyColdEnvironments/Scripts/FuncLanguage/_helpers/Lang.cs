@@ -46,28 +46,60 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> Map<T, TValue, TOutValue>(T input,
-            Func<TValue, TOutValue?> selector)
-            where T : struct, IConditional<TValue>
+        public static Maybe<TOut> Map<TConditional, TValue, TOut>(
+            TConditional input,
+            Func<TValue, TOut?> selector
+            )
+
+            where TConditional : struct, IConditional<TValue>
         {
             Guard.IsNotNull(selector, nameof(selector));
 
-            return input.IsSome ? selector(input.GetValueUnsafe()) : global::CCEnvs.FuncLanguage.Maybe<TOutValue>.None;
+            return input.TryGetValue(out TValue? value) ? selector(value) : FuncLanguage.Maybe<TOut>.None;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> BiMap<T, TValue, TOutValue>(T input,
-            Func<TValue, TOutValue?> some,
-            Func<TOutValue?> none)
-            where T : struct, IConditional<TValue>
+        public static Maybe<TOut> Map<TConditional, TState, TValue, TOut>(
+            TConditional input,
+            TState state,
+            Func<TValue, TState, TOut?> selector
+            )
+
+            where TConditional : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(selector, nameof(selector));
+
+            return input.TryGetValue(out TValue? value) ? selector(value, state) : FuncLanguage.Maybe<TOut>.None;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TOut> BiMap<TConditional, TValue, TOut>(TConditional input,
+            Func<TValue, TOut?> some,
+            Func<TOut?> none
+            )
+
+            where TConditional : struct, IConditional<TValue>
         {
             Guard.IsNotNull(some, nameof(some));
             Guard.IsNotNull(none, nameof(none));
 
-            if (input.IsSome)
-                return some(input.GetValueUnsafe());
-            else
-                return none();
+            return input.TryGetValue(out TValue? value) ? some(value) : none();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TOut> BiMap<TConditional, TState, TValue, TOut>(
+            TConditional input,
+            TState state,
+            Func<TValue, TState, TOut?> some,
+            Func<TState, TOut?> none
+            )
+
+            where TConditional : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(some, nameof(some));
+            Guard.IsNotNull(none, nameof(none));
+
+            return input.TryGetValue(out TValue? value) ? some(value, state) : none(state);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -160,10 +192,20 @@ namespace CCEnvs.FuncLanguage
         public static TValue GetValue<T, TValue>(T input, Func<TValue> factory)
             where T : struct, IConditional<TValue>
         {
-            if (input.IsNone)
-                return factory();
+            Guard.IsNotNull(factory);
+            return input.TryGetValue(out TValue? value) ? value : factory();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TValue GetValue<TConditional, TState, TValue>(
+            TConditional input,
+            TState state,
+            Func<TState, TValue> factory
+            )
 
-            return input.GetValueUnsafe();
+            where TConditional : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(factory);
+            return input.TryGetValue(out TValue? value) ? value : factory(state);
         }
 
         public static bool TryGetValue<T, TValue>(T input, out TValue? result)
@@ -212,6 +254,13 @@ namespace CCEnvs.FuncLanguage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Maybe<TOutValue> Cast<TSource, T, TOutValue>(TSource source)
+            where TSource : struct, IConditional<T>
+        {
+            return (source.GetValue().As<TOutValue>()).Maybe();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Either<L, R> CastEither<T, L, R>(T input)
             where T : struct, IConditional<L>
         {
@@ -219,13 +268,6 @@ namespace CCEnvs.FuncLanguage
             R? right = left.As<R>();
 
             return (left, right);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Maybe<TOutValue> Cast<TSource, T, TOutValue>(TSource source)
-            where TSource : struct, IConditional<T>
-        {
-            return (source.GetValue().As<TOutValue>()).Maybe();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

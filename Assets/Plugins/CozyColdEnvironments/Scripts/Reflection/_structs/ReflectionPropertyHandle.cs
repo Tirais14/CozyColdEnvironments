@@ -97,7 +97,7 @@ namespace CCEnvs.Reflection
                 return null;
             }
 
-            if (BaseReflectionHandle.CacheResults)
+            if (BaseReflectionHandle.IsCacheResults)
                 CacheProperty(prop);
 
             return prop;

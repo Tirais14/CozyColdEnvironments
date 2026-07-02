@@ -793,6 +793,7 @@ namespace CCEnvs.Reflection
                 .FirstOrDefault(x => x.ReturnType.IsType(castType));
         }
 
+        [Obsolete]
         public static bool TrySwitchType(this Type source,
             params (Type onType, Action<Type> action)[] conditions)
         {
@@ -801,6 +802,7 @@ namespace CCEnvs.Reflection
             var convertedConditions = conditions.Select<(Type onType, Action<Type> action), (Predicate<Type?>, Action<Type>)>(condition => ((inputType) => inputType is not null && inputType.IsType(condition.onType), condition.action)).ToArray();
             return ObjectExtensions.TrySwitch(source, convertedConditions);
         }
+        [Obsolete]
         public static bool TrySwitchType<TResult>(this Type source,
             out TResult result,
             params (Type onType, Func<Type, TResult> func)[] conditions)

@@ -18,12 +18,20 @@ namespace CCEnvs.FuncLanguage
         {
             return Lang.GetValue(this, @default);
         }
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T GetValue(Func<T> defaultValueFactory)
         {
             return Lang.GetValue(this, defaultValueFactory);
+        }
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T GetValue<TState>(
+            TState state,
+            Func<TState, T> factory
+            )
+        {
+            return Lang.GetValue(this, state, factory);
         }
 
         [DebuggerStepThrough]

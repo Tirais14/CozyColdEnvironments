@@ -5,14 +5,23 @@ namespace CCEnvs.UnityX.Items
         :
         IItemAccessor,
         IItemContainerInfo,
+        IIDMarked<int?>,
         IShallowCloneable<IItemContainer>
     {
         bool IsReadOnlyContainer { get; }
         bool IgnoreMaxItemCount { get; set; }
 
+        int Capacity { get; set; }
 
+        new int? ID { get; set; }
+
+        int? IIDMarked<int?>.ID => ID;
+
+        IInventory? ParentInventory { get; }
 
         ReadOnlyItemContainer ToReadOnly();
+
+        void SetParentInventory(IInventory? inventory);
     }
 
     public interface IItemContainer<TItem>

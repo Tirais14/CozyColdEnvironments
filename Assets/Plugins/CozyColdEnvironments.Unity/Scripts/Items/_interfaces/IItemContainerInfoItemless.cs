@@ -1,4 +1,3 @@
-using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
 using R3;
 
@@ -6,20 +5,13 @@ using R3;
 #pragma warning disable IDE1006
 namespace CCEnvs.UnityX.Items
 {
-    public interface IItemContainerInfoItemless : IIDMarked<int?>
+    public interface IItemContainerInfoItemless
     {
         int ItemCount { get; }
-        int Capacity { get; set; }
         int FreeSpace { get; }
-
-        int? ID { get; set; }
-
-        IInventory? ParentInventory { get; }
 
         bool IsEmpty { get; }
         bool IsFull { get; }
-
-        int? IIDMarked<int?>.ID => ID;
 
         bool ContainsItem();
         bool ContainsItem(IItem? item);
@@ -28,8 +20,6 @@ namespace CCEnvs.UnityX.Items
         bool CanPut();
         bool CanPut(IItem? item);
         bool CanPut(IItem? item, int count);
-
-        void SetParentInventory(IInventory? inventory);
 
         Observable<int> ObserveItemCount();
     }
@@ -73,17 +63,6 @@ namespace CCEnvs.UnityX.Items
                 return false;
 
             return CanPut(typed, count);
-        }
-    }
-
-    public interface IItemContainerInfoItemless<TItem, TInventory> : IItemContainerInfoItemless<TItem>
-        where TItem : IItem
-        where TInventory : IInventory
-    {
-        new TInventory? ParentInventory { get; set; }
-
-        IInventory? IItemContainerInfoItemless.ParentInventory {
-            get => ParentInventory;
         }
     }
 }

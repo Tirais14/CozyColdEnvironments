@@ -3,6 +3,7 @@ using CCEnvs.FuncLanguage;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 #nullable enable
@@ -46,7 +47,7 @@ namespace CCEnvs.UnityX.Items
             set
             {
                 if (parentInventory is null)
-                    ID = value;
+                    id = value;
             }
         }
 
@@ -195,7 +196,7 @@ namespace CCEnvs.UnityX.Items
             return new ItemContainer(Item, ItemCount, Capacity);
         }
 
-        public void CopyItemFrom(IItemContainerInfo itemContainer)
+        public void CopyItemFrom(IItemContainer itemContainer)
         {
             item.Value = itemContainer.Item;
             itemCount.Value = itemContainer.ItemCount;
@@ -213,21 +214,22 @@ namespace CCEnvs.UnityX.Items
             if (EqualityComparer<IInventory?>.Default.Equals(parentInventory, inventory))
                 return;
 
-            if (parentInventory is not null && ID.HasValue)
+            if (parentInventory is not null)
             {
-                parentInventory.RemoveContainer(ID.Value);
-                id = null;
+                if (parentInventory is not null)
+                {
+                    if (ID.HasValue)
+                        parentInventory.RemoveContainer(ID.Value);
+
+                    parentInventory = null;
+                    id = null;
+                }
             }
 
             if (inventory.IsNotNull())
             {
                 parentInventory = inventory;
-                parentInventory.AddContainer(this);
-            }
-            else if (ID.HasValue && parentInventory is not null)
-            {
-                parentInventory.RemoveContainer(ID.Value);
-                id = null;
+                id = inventory.AddContainer(this);
             }
         }
 
@@ -381,7 +383,7 @@ namespace CCEnvs.UnityX.Items
         public bool ContainsItem(IItem? item) => internalContainer.ContainsItem(item);
         public bool ContainsItem(IItem? item, int count) => internalContainer.ContainsItem(item, count);
 
-        public void CopyItemFrom(IItemContainerInfo<TItem> itemContainer)
+        public void CopyItemFrom(IItemContainer<TItem> itemContainer)
         {
             internalContainer.CopyItemFrom(itemContainer);
         }

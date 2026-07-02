@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Attributes;
+using CCEnvs.Caching;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
@@ -32,18 +33,22 @@ namespace CCEnvs.Conversations
             Guard.IsNotNull(toType, nameof(toType));
 
             Type inputType = input.GetType();
+
             if (inputType.IsType(toType))
                 return input;
 
-            var converted = ConvertByDefaultConverter(input, toType).Resolve()
-                .Else(() => ConvertByInterface(input).GetValue()!)
-                .Else(() => ConvertByOverloadedCastOperator(input, inputType, toType).GetValue()!)
-                .Else(() => ConvertByCustomConverter(input, inputType, toType).GetValue()!)
-                .Else(() => CreateByReflection(input, toType).GetValue()!)
-                .Else(() => throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}."))
-                .GetValueUnsafe();
+            if (ConvertByDefaultConverter(input, toType).TryGetValue(out object? result))
+                return result;
+            else if (ConvertByInterface(input).TryGetValue(out result))
+                return result;
+            else if (ConvertByOverloadedCastOperator(input, inputType, toType).TryGetValue(out result))
+                return result;
+            else if (ConvertByCustomConverter(input, inputType, toType).TryGetValue(out result))
+                return result;
+            else if (CreateByReflection(input, toType).TryGetValue(out result))
+                return result;
 
-            return converted;
+            throw new InvalidOperationException($"Cannot mutate type: {inputType.GetFullName()} to type: {toType.GetFullName()}.");
         }
         /// <inheritdoc cref="MutateType(object, Type)"/>
         [DebuggerStepThrough]
@@ -68,7 +73,7 @@ namespace CCEnvs.Conversations
         {
             return input.As<IMutableType>()
                         .Maybe()
-                        .Map(x => x.MutateType())
+                        .Map(static x => x.MutateType())
                         .GetValue();
         }
 

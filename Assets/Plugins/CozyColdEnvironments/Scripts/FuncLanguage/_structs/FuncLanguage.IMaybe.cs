@@ -56,12 +56,28 @@ namespace CCEnvs.FuncLanguage
         {
             return Lang.Map(this, selector);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        public readonly Maybe<TOut> Map<TState, TOut>(TState state, Func<T, TState, TOut?> selector)
+        {
+            return Lang.Map(this, state, selector);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
         public readonly Maybe<TOut> BiMap<TOut>(Func<T, TOut?> some, Func<TOut?> none)
         {
             return Lang.Match(this, some, none);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        public readonly Maybe<TOut> BiMap<TState, TOut>(
+            TState state,
+            Func<T, TState, TOut?> some,
+            Func<TState, TOut?> none
+            )
+        {
+            return Lang.BiMap(this, state, some, none);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
