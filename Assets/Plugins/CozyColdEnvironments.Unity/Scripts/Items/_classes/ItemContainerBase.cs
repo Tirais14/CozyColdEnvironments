@@ -143,10 +143,9 @@ namespace CCEnvs.UnityX.Items
 
             return PutItem(containerInfo.Item.CastTo<TItem>(), containerInfo.ItemCount);
         }
-        public TReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
-            where TItemContainerInfo : struct, TInputItemContainerInfo
+        public TReadOnlyItemContainer PutItem(TReadOnlyItemContainer readOnlyItemContainer)
         {
-            return PutItem(containerInfo.Item.CastTo<TItem>(), containerInfo.ItemCount);
+            return PutItem(readOnlyItemContainer.Item.CastTo<TItem>(), readOnlyItemContainer.ItemCount);
         }
 
         public TReadOnlyItemContainer PutItemFrom(TInputItemContainer? container, int count)

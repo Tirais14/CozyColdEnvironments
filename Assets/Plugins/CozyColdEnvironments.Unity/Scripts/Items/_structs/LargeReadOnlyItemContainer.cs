@@ -18,7 +18,7 @@ namespace CCEnvs.UnityX.Items
         public bool IsEmpty => !ContainsItem();
         public bool IsFull => ItemCount == long.MaxValue;
 
-        int IItemContainerInfoItemless.ItemCount => (int)Math.Min(ItemCount, int.MaxValue);
+        int IItemContainerInfoItemless.ItemCount => ItemCount.ToInt();
         int IItemContainerInfoItemless.FreeSpace => 0;
 
         public LargeReadOnlyItemContainer(IItem? item, long itemCount)
@@ -165,9 +165,9 @@ namespace CCEnvs.UnityX.Items
             return !(left == right);
         }
 
-        public ReadOnlyItemContainer ToNormal()
+        public ReadOnlyItemContainer<TItem> ToNormal()
         {
-            return new ReadOnlyItemContainer(Item, (int)Math.Min(ItemCount, int.MaxValue));
+            return new ReadOnlyItemContainer<TItem>(Item, ItemCount.ToInt());
         }
 
         public LargeReadOnlyItemContainer AsUntyped()

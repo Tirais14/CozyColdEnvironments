@@ -174,15 +174,21 @@ namespace CCEnvs.UnityX.Items
             if (containerInfo.IsNull())
                 return CreateReadOnlyItemContainer();
 
-            return ConverteLargeToNormalReadOnlyContainer(PutItem(containerInfo.Item.CastTo<TItem>(), containerInfo.ItemCount));
+            return ConvertLargeToNormalReadOnlyContainer(PutItem(containerInfo.Item.CastTo<TItem>(), containerInfo.ItemCount));
         }
-        public TReadOnlyItemContainer PutItem<TSturctItemContainerInfo>(TSturctItemContainerInfo containerInfo)
-            where TSturctItemContainerInfo : struct, IItemContainerInfo
+        public TReadOnlyItemContainer PutItem(TReadOnlyItemContainer readOnlyContainer)
         {
-            if (containerInfo.IsEmpty)
+            if (readOnlyContainer.IsEmpty)
                 return CreateReadOnlyItemContainer();
 
-            return ConverteLargeToNormalReadOnlyContainer(PutItem(containerInfo.Item.CastTo<TItem>()!, containerInfo.ItemCount));
+            return ConvertLargeToNormalReadOnlyContainer(PutItem(readOnlyContainer.Item.CastTo<TItem>()!, readOnlyContainer.ItemCount));
+        }
+        public TLargeReadOnlyItemContainer PutItem(TLargeReadOnlyItemContainer readOnlyContainer)
+        {
+            return PutItem(
+                GetItemFromReadOnlyContainer(readOnlyContainer),
+                GetItemCountFromReadOnlytContainer(readOnlyContainer)
+                );
         }
 
         public TReadOnlyItemContainer PutItemFrom(TInputItemContainer? container, int count)
@@ -204,36 +210,6 @@ namespace CCEnvs.UnityX.Items
                 return CreateReadOnlyItemContainer();
 
             return PutItemFrom(container, container.ItemCount);
-        }
-        public TLargeReadOnlyItemContainer PutItemFrom(
-            IInventory inventory,
-            TItem? item,
-            long itemCount
-            )
-        {
-            CC.Guard.IsNotNull(inventory, nameof(inventory));
-
-            if (itemCount <= 0 || item.IsNull())
-                return CreateLargeReadOnlyItemContainer();
-
-            LargeReadOnlyItemContainer takenItems = inventory.TakeItem(item, itemCount);
-            TLargeReadOnlyItemContainer notFitItems = PutItem(takenItems.Item.CastTo<TItem>(), takenItems.ItemCount);
-            LargeReadOnlyItemContainer restItems = inventory.PutItem(notFitItems);
-
-            return CreateLargeReadOnlyItemContainer(restItems.Item.CastTo<TItem>(), restItems.ItemCount);
-        }
-
-        public TLargeReadOnlyItemContainer PutItemFrom(
-            IInventory inventory,
-            TItem? item
-            )
-        {
-            CC.Guard.IsNotNull(inventory, nameof(inventory));
-
-            if (item.IsNull())
-                return CreateLargeReadOnlyItemContainer();
-
-            return TakeItem(item, long.MaxValue);
         }
 
         public TLargeReadOnlyItemContainer TakeItem(TItem? item, long count)
@@ -620,12 +596,12 @@ namespace CCEnvs.UnityX.Items
             return GetFreeSpace(item) >= count;
         }
 
-        public IEnumerable<TReadOnlyItemContainer> GetCompactedContainersQuery()
+        public IEnumerable<TLargeReadOnlyItemContainer> GetCompactedContainersQuery()
         {
             foreach (var containers in occupiedContainers.Values)
             {
                 IItem? item = null;
-                int itemCount = 0;
+                long itemCount = 0;
                 bool hasItem = false;
 
                 for (int i = 0; i < containers.Count; i++)
@@ -642,11 +618,11 @@ namespace CCEnvs.UnityX.Items
                 if (item.IsNull() || itemCount <= 0)
                     continue;
 
-                yield return CreateReadOnlyItemContainer((TItem)item, itemCount);
+                yield return CreateLargeReadOnlyItemContainer((TItem)item, itemCount);
             }
         }
 
-        public IList<TReadOnlyItemContainer> GetCompactedContainers()
+        public IList<TLargeReadOnlyItemContainer> GetCompactedContainers()
         {
             return GetCompactedContainersQuery().ToArray();
         }
@@ -737,7 +713,7 @@ namespace CCEnvs.UnityX.Items
             long itemCount
             );
 
-        protected abstract TReadOnlyItemContainer ConverteLargeToNormalReadOnlyContainer(
+        protected abstract TReadOnlyItemContainer ConvertLargeToNormalReadOnlyContainer(
     TLargeReadOnlyItemContainer largeContainer
     );
 
@@ -756,6 +732,10 @@ namespace CCEnvs.UnityX.Items
             TItemContainer oldContainer,
             TItemContainer newContainer
             );
+
+        protected abstract TItem? GetItemFromReadOnlyContainer(TLargeReadOnlyItemContainer largeReadOnlyContainer);
+
+        protected abstract long GetItemCountFromReadOnlytContainer(TLargeReadOnlyItemContainer largeReadOnlyContainer);
 
         protected virtual int ResolveID()
         {

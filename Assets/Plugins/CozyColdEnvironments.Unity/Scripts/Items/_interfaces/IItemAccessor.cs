@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.TypeMatching;
+using UnityEditor;
 
 namespace CCEnvs.UnityX.Items
 {
@@ -7,8 +8,7 @@ namespace CCEnvs.UnityX.Items
     {
         ReadOnlyItemContainer PutItem(IItem? item, int count = 1);
         ReadOnlyItemContainer PutItem(IItemContainerInfo? containerInfo);
-        ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
-            where TItemContainerInfo : struct, IItemContainerInfo;
+        ReadOnlyItemContainer PutItem(ReadOnlyItemContainer readOnlyContainer);
 
         ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer, int count);
         ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer);
@@ -27,8 +27,7 @@ namespace CCEnvs.UnityX.Items
     {
         ReadOnlyItemContainer<TItem> PutItem(TItem? item, int count = 1);
         ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem>? containerInfo);
-        new ReadOnlyItemContainer<TItem> PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
-            where TItemContainerInfo : struct, IItemContainerInfo<TItem>;
+        ReadOnlyItemContainer<TItem> PutItem(ReadOnlyItemContainer<TItem> readOnlyContainer);
 
         ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer, int count);
         ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer);
@@ -58,12 +57,9 @@ namespace CCEnvs.UnityX.Items
 
             return PutItem(typedContainerInfo);
         }
-        ReadOnlyItemContainer IItemAccessor.PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
+        ReadOnlyItemContainer IItemAccessor.PutItem(ReadOnlyItemContainer readOnlyContainer)
         {
-            if (containerInfo.IsNot<IItemContainerInfo<TItem>>(out var typedContainerInfo))
-                return ReadOnlyItemContainer.Empty;
-
-            return PutItem(typedContainerInfo);
+            return PutItem(readOnlyContainer.Convert<TItem>());
         }
 
         ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? itemContainer)

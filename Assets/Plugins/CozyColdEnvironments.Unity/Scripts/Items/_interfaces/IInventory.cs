@@ -53,12 +53,11 @@ namespace CCEnvs.UnityX.Items
 
         LargeReadOnlyItemContainer PutItem(IItem? item, long itemCount = 1);
         ReadOnlyItemContainer PutItem(IItemContainerInfo containerInfo);
-        ReadOnlyItemContainer PutItem<TItemContainerInfo>(TItemContainerInfo containerInfo)
-            where TItemContainerInfo : struct, IItemContainerInfo;
+        ReadOnlyItemContainer PutItem(ReadOnlyItemContainer readOnlyContainer);
+        LargeReadOnlyItemContainer PutItem(LargeReadOnlyItemContainer readOnlyContainer);
 
         ReadOnlyItemContainer PutItemFrom(IItemContainer container);
-        LargeReadOnlyItemContainer PutItemFrom(IInventory inventory, IItem? item, long itemCount);
-        LargeReadOnlyItemContainer PutItemFrom(IInventory inventory, IItem? item);
+        ReadOnlyItemContainer PutItemFrom(IItemContainer container, int count);
 
         void EnsureFreeSpace(
             long targetSpace,
@@ -70,7 +69,7 @@ namespace CCEnvs.UnityX.Items
 
         long GetFreeSpace(IItem? item);
 
-        IList<ReadOnlyItemContainer> GetCompactedContainers();
+        IList<LargeReadOnlyItemContainer> GetCompactedContainers();
 
         IList<IItemContainer> GetOccupiedContainers();
 
@@ -90,45 +89,10 @@ namespace CCEnvs.UnityX.Items
         Observable<InventoryContainerReplaceEvent> ObserveContainerReplace();
 
         Observable<Unit> ObserveClear();
-
-        ReadOnlyItemContainer IItemAccessor.TakeItem()
-        {
-            if (IsEmpty
-                ||
-                Containers.SelectValue()
-                    .FirstOrDefault(container => !container.IsEmpty)
-                    .IsNot<IItemContainer>(out var firstContainer)
-                    )
-            {
-                return ReadOnlyItemContainer.Empty;
-            }
-
-            int takeCount = Math.Min(firstContainer.ItemCount, Math.Abs(new Random().Next()));
-            return TakeItem(firstContainer.Item, takeCount);
-        }
-
-        ReadOnlyItemContainer IItemAccessor.TakeItem(int count)
-        {
-            if (IsEmpty
-                ||
-                Containers.SelectValue()
-                    .FirstOrDefault(container => !container.IsEmpty)
-                    .Maybe()
-                    .Map(container => container.Item)
-                    .TryGetValue(out IItem? firstItem)
-                    )
-            {
-                return ReadOnlyItemContainer.Empty;
-            }
-
-            return TakeItem(firstItem, count);
-        }
     }
-
     public interface IInventory<TItem, TItemContainer>
         :
         IInventory,
-        IItemAccessor<TItem>,
         IItemContainerInfoItemless<TItem>
 
         where TItem : IItem
@@ -166,6 +130,16 @@ namespace CCEnvs.UnityX.Items
             out IList<int> ids
             );
 
+        LargeReadOnlyItemContainer<TItem> TakeItem(TItem? item, long itemCount);
+        LargeReadOnlyItemContainer<TItem> TakeItem(TItem? item);
+
+        LargeReadOnlyItemContainer<TItem> PutItem(TItem? item, long itemCount = 1);
+        ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem> containerInfo);
+        ReadOnlyItemContainer<TItem> PutItem(ReadOnlyItemContainer<TItem> readOnlyContainer);
+        LargeReadOnlyItemContainer<TItem> PutItem(LargeReadOnlyItemContainer<TItem> readOnlyContainer);
+
+        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem> container);
+
         void EnsureFreeSpace(
             long targetSpace,
             TItem? item = default,
@@ -184,7 +158,7 @@ namespace CCEnvs.UnityX.Items
 
         void RemoveCount(int count, out IList<TItemContainer> removed);
 
-        new IList<ReadOnlyItemContainer<TItem>> GetCompactedContainers();
+        new IList<LargeReadOnlyItemContainer<TItem>> GetCompactedContainers();
 
         new IList<TItemContainer> GetOccupiedContainers();
 
@@ -241,6 +215,51 @@ namespace CCEnvs.UnityX.Items
                 typedContainers,
                 out ids
                 );
+        }
+
+        LargeReadOnlyItemContainer IInventory.PutItem(IItem? item, long itemCount)
+        {
+            return PutItem(item.As<TItem>(), itemCount);
+        }
+        ReadOnlyItemContainer IInventory.PutItem(IItemContainerInfo containerInfo)
+        {
+            if (containerInfo.IsNot<IItemContainer<TItem>>(out var typedContainerInfo))
+                return ReadOnlyItemContainer.Empty;
+
+            return PutItem(typedContainerInfo);
+        }
+        ReadOnlyItemContainer IInventory.PutItem(ReadOnlyItemContainer readOnlyContainer)
+        {
+            return PutItem(readOnlyContainer.Convert<TItem>());
+        }
+        LargeReadOnlyItemContainer IInventory.PutItem(LargeReadOnlyItemContainer readOnlyContainer)
+        {
+            return PutItem(readOnlyContainer.Convert<TItem>());
+        }
+
+        ReadOnlyItemContainer IInventory.PutItemFrom(IItemContainer container)
+        {
+            if (container.IsNot<IItemContainer<TItem>>(out var typedContainer))
+                return ReadOnlyItemContainer.Empty;
+
+            return PutItemFrom(typedContainer);
+        }
+
+        ReadOnlyItemContainer IInventory.PutItemFrom(IItemContainer container, int count)
+        {
+            if (container.IsNot<IItemContainer<TItem>>(out var typedContainer))
+                return ReadOnlyItemContainer.Empty;
+
+            return PutItemFrom(typedContainer, count);
+        }
+
+        LargeReadOnlyItemContainer IInventory.TakeItem(IItem? item)
+        {
+            return TakeItem(item.As<TItem>());
+        }
+        LargeReadOnlyItemContainer IInventory.TakeItem(IItem? item, long itemCount)
+        {
+            return TakeItem(item.As<TItem>(), itemCount);
         }
 
         void IInventory.EnsureFreeSpace(
@@ -303,9 +322,9 @@ namespace CCEnvs.UnityX.Items
             removed = typedRemoved.Cast<IItemContainer>().ToArray();
         }
 
-        IList<ReadOnlyItemContainer> IInventory.GetCompactedContainers()
+        IList<LargeReadOnlyItemContainer> IInventory.GetCompactedContainers()
         {
-            return GetCompactedContainers().Select(container => container.ToUntyped()).ToArray();
+            return GetCompactedContainers().Select(container => container.AsUntyped()).ToArray();
         }
 
         IList<IItemContainer> IInventory.GetOccupiedContainers()

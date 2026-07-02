@@ -106,7 +106,7 @@ namespace CCEnvs.UnityX.Items
             return new LargeReadOnlyItemContainer(item, itemCount);
         }
 
-        protected override ReadOnlyItemContainer ConverteLargeToNormalReadOnlyContainer(LargeReadOnlyItemContainer largeContainer)
+        protected override ReadOnlyItemContainer ConvertLargeToNormalReadOnlyContainer(LargeReadOnlyItemContainer largeContainer)
         {
             return (ReadOnlyItemContainer)largeContainer;
         }
@@ -137,6 +137,16 @@ namespace CCEnvs.UnityX.Items
                 OldContainer = oldContainer,
                 NewContainer = newContainer
             };
+        }
+
+        protected override IItem? GetItemFromReadOnlyContainer(LargeReadOnlyItemContainer largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.Item;
+        }
+
+        protected override long GetItemCountFromReadOnlytContainer(LargeReadOnlyItemContainer largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.ItemCount;
         }
     }
 
@@ -261,6 +271,31 @@ namespace CCEnvs.UnityX.Items
         protected override ReadOnlyItemContainer<TItem> CreateReadOnlyItemContainer(TItem? item, int itemCount)
         {
             return new ReadOnlyItemContainer<TItem>(item, itemCount);
+        }
+
+        protected override LargeReadOnlyItemContainer<TItem> CreateLargeReadOnlyItemContainer()
+        {
+            return LargeReadOnlyItemContainer<TItem>.Empty;
+        }
+
+        protected override LargeReadOnlyItemContainer<TItem> CreateLargeReadOnlyItemContainer(TItem? item, long itemCount)
+        {
+            return new LargeReadOnlyItemContainer<TItem>(item, itemCount);
+        }
+
+        protected override ReadOnlyItemContainer<TItem> ConvertLargeToNormalReadOnlyContainer(LargeReadOnlyItemContainer<TItem> largeContainer)
+        {
+            return largeContainer.ToNormal();
+        }
+
+        protected override TItem? GetItemFromReadOnlyContainer(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.Item;
+        }
+
+        protected override long GetItemCountFromReadOnlytContainer(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.ItemCount;
         }
     }
 }
