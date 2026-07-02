@@ -14,9 +14,11 @@ namespace CCEnvs.Diagnostics
     {
         public static IDebugLogger Instance { get; set; } = new CCDebug();
 
-        internal static bool isEnabledTypesChanged = true;
+        internal static readonly List<Action> onEnabledTypesChangedActions = new(0);
 
-        private static readonly HashSet<Type> disableTypes = new();
+        private static readonly HashSet<Type> disabledTypes = new();
+
+        private static readonly HashSet<Type> enabledTypes = new();
 
         public static bool IsEnabled {
             get => Instance.IsEnabled;
@@ -31,19 +33,34 @@ namespace CCEnvs.Diagnostics
         public static bool IsTypeEnabled(Type type)
         {
             Guard.IsNotNull(type);
-            return Instance.IsEnabled && !disableTypes.Contains(type);
+
+#if CC_DEBUG_ENABLED
+            return Instance.IsEnabled && !disabledTypes.Contains(type);
+#else
+            return Instance.IsEnabled && enabledTypes.Contains(type);
+#endif
         }
 
         public static bool IsTypeEnabled<T>()
         {
-            return Instance.IsEnabled && !disableTypes.Contains(TypeofCache<T>.Type);
+#if CC_DEBUG_ENABLED
+            return Instance.IsEnabled && !disabledTypes.Contains(TypeofCache<T>.Type);
+#else
+            return Instance.IsEnabled && enabledTypes.Contains(TypeofCache<T>.Type);
+#endif
         }
 
         public static void DisableType(Type type)
         {
             Guard.IsNotNull(type);
-            isEnabledTypesChanged = true;
-            disableTypes.Add(type);
+
+#if CC_DEBUG_ENABLED
+            disabledTypes.Add(type);
+#else
+            enabledTypes.Remove(type);
+#endif
+
+            OnEnabledTypesChanged();
         }
 
         public static void DisableTypes(params Type[] types)
@@ -51,17 +68,20 @@ namespace CCEnvs.Diagnostics
             Guard.IsNotNull(types);
 
             for (int i = 0; i < types.Length; i++)
-            {
-                isEnabledTypesChanged = true;
-                disableTypes.Remove(types[i]);
-            }
+                disabledTypes.Remove(types[i]);
         }
 
         public static void EnableType(Type type)
         {
             Guard.IsNotNull(type);
-            isEnabledTypesChanged = true;
-            disableTypes.Remove(type);
+
+#if CC_DEBUG_ENABLED
+            disabledTypes.Remove(type);
+#else
+            enabledTypes.Add(type);
+#endif
+
+            OnEnabledTypesChanged();
         }
 
         public static void EnableTypes(params Type[] types)
@@ -207,7 +227,13 @@ namespace CCEnvs.Diagnostics
                 stringBuilder.Append(targetString);
         }
 
-        void IDebugLogger.PrintLog(object message, object? context = null)
+        private static void OnEnabledTypesChanged()
+        {
+            for (int i = 0; i < onEnabledTypesChangedActions.Count; i++)
+                onEnabledTypesChangedActions[i]();
+        }
+
+        void IDebugLogger.PrintLog(object message, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
             Debug.Log(GetMessage(message, context), context as Object);
@@ -216,7 +242,7 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
-        void IDebugLogger.PrintWarning(object message, object? context = null)
+        void IDebugLogger.PrintWarning(object message, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning(GetMessage(message, context), context as Object);
@@ -225,7 +251,7 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
-        void IDebugLogger.PrintError(object message, object? context = null)
+        void IDebugLogger.PrintError(object message, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
             Debug.LogError(GetMessage(message, context), context as Object);
@@ -234,7 +260,7 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
-        void IDebugLogger.PrintExceptionAsLog(Exception exception, object? context = null)
+        void IDebugLogger.PrintExceptionAsLog(Exception exception, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
             Debug.Log($"{exception.GetType().Name}: {exception.Message}", context as Object);
@@ -243,7 +269,7 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
-        void IDebugLogger.PrintExceptionAsWarning(Exception exception, object? context = null)
+        void IDebugLogger.PrintExceptionAsWarning(Exception exception, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning($"{exception.GetType().Name}: {exception.Message}", context as Object);
@@ -252,7 +278,7 @@ namespace CCEnvs.Diagnostics
 #endif
         }
 
-        void IDebugLogger.PrintException(Exception exception, object? context = null)
+        void IDebugLogger.PrintException(Exception exception, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
             Debug.LogException(exception, context as Object);
@@ -311,12 +337,15 @@ namespace CCEnvs.Diagnostics
         public static bool IsEnabled {
             get
             {
-                if (!isEnabled.HasValue || CCDebug.isEnabledTypesChanged)
-                    isEnabled = CCDebug.IsTypeEnabled(typeof(T));
-
+                isEnabled ??= CCDebug.IsTypeEnabled(typeof(T));
                 return isEnabled.Value;
             }
             set => CCDebug.EnableType(typeof(T));
+        }
+
+        static CCDebug()
+        {
+            CCDebug.onEnabledTypesChangedActions.Add(() => isEnabled = null);
         }
     }
 }

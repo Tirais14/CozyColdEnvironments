@@ -160,7 +160,7 @@ namespace CCEnvs.UnityX.Items
 
         int IInventory.AddContainer(IItemContainer itemContainer, int? id)
         {
-            return AddContainer((TItemContainer)itemContainer);
+            return AddContainer(itemContainer.CastTo<TItemContainer>());
         }
 
         void IInventory.AddContainers(IEnumerable<IItemContainer> containers)
@@ -171,7 +171,11 @@ namespace CCEnvs.UnityX.Items
         void IInventory.AddContainers(IEnumerable<(IItemContainer Value, int? ID)> containers)
         {
             CC.Guard.IsNotNull(containers, nameof(containers));
-            AddContainers(containers.Where(x => x.Value.Is<TItemContainer>()).Select(x => ((TItemContainer)x.Value, x.ID)));
+
+            IEnumerable<(TItemContainer Value, int? ID)> typedContainers = containers.Where(container => container.Value.Is<TItemContainer>())
+                .Select(container => (container.Value.CastTo<TItemContainer>(), container.ID));
+
+            AddContainers(typedContainers);
         }
         void IInventory.AddContainers(IEnumerable<IItemContainer> containers, out IList<int> ids)
         {
@@ -183,7 +187,7 @@ namespace CCEnvs.UnityX.Items
             CC.Guard.IsNotNull(containers, nameof(containers));
 
             IEnumerable<(TItemContainer Value, int? ID)> typedContainers = containers.Where(container => container.Value.Is<TItemContainer>())
-                .Select(container => ((TItemContainer)container.Value, container.ID));
+                .Select(container => (container.Value.CastTo<TItemContainer>(), container.ID));
 
             AddContainers(
                 typedContainers,
