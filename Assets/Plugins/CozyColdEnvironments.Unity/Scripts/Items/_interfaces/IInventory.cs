@@ -48,16 +48,22 @@ namespace CCEnvs.UnityX.Items
         bool ContainsContainer(IItemContainer container);
         bool ContainsContainer(int? id);
 
-        LargeReadOnlyItemContainer TakeItem(IItem? item, long itemCount);
+        LargeReadOnlyItemContainer TakeItem(IItem? item, long count);
         LargeReadOnlyItemContainer TakeItem(IItem? item);
 
-        LargeReadOnlyItemContainer PutItem(IItem? item, long itemCount = 1);
+        LargeReadOnlyItemContainer PutItem(IItem? item, long count = 1);
         ReadOnlyItemContainer PutItem(IItemContainerInfo containerInfo);
         ReadOnlyItemContainer PutItem(ReadOnlyItemContainer readOnlyContainer);
         LargeReadOnlyItemContainer PutItem(LargeReadOnlyItemContainer readOnlyContainer);
 
         ReadOnlyItemContainer PutItemFrom(IItemContainer container);
         ReadOnlyItemContainer PutItemFrom(IItemContainer container, int count);
+
+        bool ContainsItem(IItem? item);
+        bool ContainsItem(IItem? item, long count);
+
+        bool CanPutItem(IItem? item);
+        bool CanPutItem(IItem? item, long count);
 
         void EnsureFreeSpace(
             long targetSpace,
@@ -90,9 +96,9 @@ namespace CCEnvs.UnityX.Items
 
         Observable<Unit> ObserveClear();
 
-        Observable<IItemContainer> ObservePutItem();
+        Observable<InventoryPutItemEvent> ObservePutItem();
 
-        Observable<IItemContainer> ObserveTakeItem();
+        Observable<InventoryTakeItemEvent> ObserveTakeItem();
     }
     public interface IInventory<TItem, TItemContainer>
         :
@@ -143,6 +149,12 @@ namespace CCEnvs.UnityX.Items
 
         ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem> container);
 
+        bool ContainsItem(TItem? item);
+        bool ContainsItem(TItem? item, long count);
+
+        bool CanPutItem(TItem? item);
+        bool CanPutItem(TItem? item, long count);
+
         void EnsureFreeSpace(
             long targetSpace,
             TItem? item = default,
@@ -170,6 +182,10 @@ namespace CCEnvs.UnityX.Items
         new Observable<InventoryContainerRemoveEvent<TItemContainer>> ObserveContainerRemove();
 
         new Observable<InventoryContainerReplaceEvent<TItemContainer>> ObserveContainerReplace();
+
+        new Observable<InventoryPutItemEvent<TItem, TItemContainer>> ObservePutItem();
+
+        new Observable<InventoryTakeItemEvent<TItem, TItemContainer>> ObserveTakeItem();
 
         bool IInventory.TryGetContainer(int id, [NotNullWhen(true)] out IItemContainer? container)
         {
@@ -260,9 +276,27 @@ namespace CCEnvs.UnityX.Items
         {
             return TakeItem(item.As<TItem>());
         }
-        LargeReadOnlyItemContainer IInventory.TakeItem(IItem? item, long itemCount)
+        LargeReadOnlyItemContainer IInventory.TakeItem(IItem? item, long count)
         {
-            return TakeItem(item.As<TItem>(), itemCount);
+            return TakeItem(item.As<TItem>(), count);
+        }
+
+        bool IInventory.ContainsItem(IItem? item)
+        {
+            return item.Is<TItem>(out var typedItem) && ContainsItem(typedItem);
+        }
+        bool IInventory.ContainsItem(IItem? item, long count)
+        {
+            return item.Is<TItem>(out var typedItem) && ContainsItem(typedItem, count);
+        }
+
+        bool IInventory.CanPutItem(IItem? item)
+        {
+            return item.Is<TItem>(out var typedItem) && CanPutItem(typedItem);
+        }
+        bool IInventory.CanPutItem(IItem? item, long count)
+        {
+            return item.Is<TItem>(out var typedItem) && ContainsItem(typedItem, count);
         }
 
         void IInventory.EnsureFreeSpace(
@@ -337,20 +371,40 @@ namespace CCEnvs.UnityX.Items
 
         Observable <InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
         {
-            return ObserveContainerAdd()
-                .Select(ev => new InventoryContainerAddEvent { ID = ev.ID, Container = ev.Container });
+            return ObserveContainerAdd().Select(ev => new InventoryContainerAddEvent 
+            { 
+                ID = ev.ID,
+                Container = ev.Container 
+            });
         }
 
         Observable<InventoryContainerRemoveEvent> IInventory.ObserveContainerRemove()
         {
-            return ObserveContainerRemove()
-                .Select(ev => new InventoryContainerRemoveEvent { ID = ev.ID, Container = ev.Container });
+            return ObserveContainerRemove().Select(ev => new InventoryContainerRemoveEvent 
+            { 
+                ID = ev.ID,
+                Container = ev.Container
+            });
         }
 
         Observable<InventoryContainerReplaceEvent> IInventory.ObserveContainerReplace()
         {
-            return ObserveContainerReplace()
-                .Select(ev => new InventoryContainerReplaceEvent { ID = ev.ID, OldContainer = ev.OldContainer, NewContainer = ev.NewContainer });
+            return ObserveContainerReplace().Select(ev => new InventoryContainerReplaceEvent
+            {
+                ID = ev.ID, 
+                OldContainer = ev.OldContainer, 
+                NewContainer = ev.NewContainer
+            });
+        }
+
+        Observable<InventoryPutItemEvent> IInventory.ObservePutItem()
+        {
+            return ObservePutItem().Select(ev => ev.AsUntyped());
+        }
+
+        Observable<InventoryTakeItemEvent> IInventory.ObserveTakeItem()
+        {
+            return ObserveTakeItem().Select(ev => ev.AsUntyped());
         }
     }
 

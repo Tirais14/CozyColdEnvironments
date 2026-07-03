@@ -8,16 +8,34 @@ using System.Threading;
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
-    public abstract class ItemContainerBase<TItem, TInputItemContainer, TInputItemContainerInfo, TReadOnlyItemContainer> : IDisposable
+    public abstract class ItemContainerBase
+        <
+        TItem,
+        TInputItemContainer,
+        TInputItemContainerInfo,
+        TReadOnlyContainer,
+        TLargeReadOnlyContainer,
+        TPutItemEvent,
+        TTakeItemEvent
+        >
+        :
+        IDisposable
 
         where TItem : class, IItem
         where TInputItemContainer : IItemContainer
         where TInputItemContainerInfo : IItemContainerInfo
-        where TReadOnlyItemContainer : struct, IItemContainerInfo
+        where TReadOnlyContainer : struct, IItemContainerInfo
+        where TLargeReadOnlyContainer : struct
     {
         private readonly ReactiveProperty<TItem?> item = new();
+
         private readonly ReactiveProperty<int> itemCount = new();
+
         private readonly ReactiveProperty<bool> isActive = new();
+
+        private ReactiveCommand<TPutItemEvent>? onPutItem;
+
+        private ReactiveCommand<TTakeItemEvent>? onTakeItem;
 
         private IInventory? parentInventory;
 
@@ -104,13 +122,13 @@ namespace CCEnvs.UnityX.Items
             return ItemCount >= count;
         }
 
-        public TReadOnlyItemContainer PutItem(TItem? inputItem, int count = 1)
+        public TReadOnlyContainer PutItem(TItem? inputItem, int count = 1)
         {
             if (count <= 0 || inputItem.IsNull())
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
             if (IsFull || (Item.IsNotNull() && !EqualityComparer<IItem?>.Default.Equals(Item, inputItem)))
-                return CreateReadOnlyItemContainer(inputItem, count);
+                return CreateReadOnlyContainer(inputItem, count);
 
             item.Value = inputItem;
             int toPutCount = Math.Clamp(count, 0, FreeSpace);
@@ -132,61 +150,89 @@ namespace CCEnvs.UnityX.Items
             }
 
             if (restCount <= 0)
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
-            return CreateReadOnlyItemContainer(Item, restCount);
+            return CreateReadOnlyContainer(Item, restCount);
         }
-        public TReadOnlyItemContainer PutItem(TInputItemContainerInfo? containerInfo)
+        public TReadOnlyContainer PutItem(TInputItemContainerInfo? containerInfo)
         {
             if (containerInfo.IsNull())
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
             return PutItem(containerInfo.Item.CastTo<TItem>(), containerInfo.ItemCount);
         }
-        public TReadOnlyItemContainer PutItem(TReadOnlyItemContainer readOnlyItemContainer)
+        public TReadOnlyContainer PutItem(TReadOnlyContainer readOnlyContainer)
         {
-            return PutItem(readOnlyItemContainer.Item.CastTo<TItem>(), readOnlyItemContainer.ItemCount);
+            return PutItem(readOnlyContainer.Item.CastTo<TItem>(), readOnlyContainer.ItemCount);
+        }
+        public TLargeReadOnlyContainer PutItem(TItem? item, long count)
+        {
+            if (count <= int.MaxValue)
+                return ConvertReadOnlyContainerToLarge(PutItem(item, (int)count));
+
+            if (!CanPut(item) || count <= 0)
+                return CreateLargeReadOnlyContainer();
+
+            TItem? previousItem = Item;
+            this.item.Value = item;
+            int putItemCount = Capacity - ItemCount;
+
+            if (putItemCount <= 0)
+            {
+                this.item.Value = previousItem;
+                return CreateLargeReadOnlyContainer();
+            }
+
+            long restItemCount = count - putItemCount + PutItem(item, putItemCount).ItemCount;
+            return CreateLargeReadOnlyContainer(item, restItemCount);
+        }
+        public TLargeReadOnlyContainer PutItem(TLargeReadOnlyContainer largeReadOnlyContainer)
+        {
+            return PutItem(
+                GetLargeReadOnlyContainerItem(largeReadOnlyContainer),
+                GetLargeReadOnlyContainerItemCount(largeReadOnlyContainer)
+                );
         }
 
-        public TReadOnlyItemContainer PutItemFrom(TInputItemContainer? container, int count)
+        public TReadOnlyContainer PutItemFrom(TInputItemContainer? container, int count)
         {
             if (count <= 0 || container.IsNull() || Equals(container))
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
             ReadOnlyItemContainer containerItems = container.TakeItem(count);
-            TReadOnlyItemContainer notFitItems = PutItem(containerItems.Item.CastTo<TItem>(), containerItems.ItemCount);
+            TReadOnlyContainer notFitItems = PutItem(containerItems.Item.CastTo<TItem>(), containerItems.ItemCount);
             ReadOnlyItemContainer restItems = container.PutItem(notFitItems);
 
-            return CreateReadOnlyItemContainer(restItems);
+            return CreateReadOnlyContainer(restItems.Item.CastTo<TItem>(), restItems.ItemCount);
         }
-        public TReadOnlyItemContainer PutItemFrom(TInputItemContainer? container)
+        public TReadOnlyContainer PutItemFrom(TInputItemContainer? container)
         {
             if (container.IsNull())
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
             return PutItemFrom(container, container.ItemCount);
         }
 
-        public TReadOnlyItemContainer TakeItem(int count)
+        public TReadOnlyContainer TakeItem(int count)
         {
             if (IsEmpty || count <= 0)
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
             int takenCount = Math.Min(count, ItemCount);
             itemCount.Value -= takenCount;
 
-            return CreateReadOnlyItemContainer(Item, takenCount);
+            return CreateReadOnlyContainer(Item, takenCount);
         }
-        public TReadOnlyItemContainer TakeItem() => TakeItem(itemCount.Value);
-        public TReadOnlyItemContainer TakeItem(TItem? item, int count)
+        public TReadOnlyContainer TakeItem() => TakeItem(itemCount.Value);
+        public TReadOnlyContainer TakeItem(TItem? item, int count)
         {
             if (!ContainsItem(item))
-                return CreateReadOnlyItemContainer();
+                return CreateReadOnlyContainer();
 
             return TakeItem(count);
         }
 
-        public TReadOnlyItemContainer ToReadOnly() => CreateReadOnlyItemContainer(Item, ItemCount);
+        public TReadOnlyContainer ToReadOnly() => CreateReadOnlyContainer(Item, ItemCount);
 
         public abstract IItemContainer ShallowClone();
 
@@ -292,24 +338,23 @@ namespace CCEnvs.UnityX.Items
 
         public Observable<int> ObserveItemCount() => itemCount;
 
+        public Observable<TPutItemEvent> ObservePutItem()
+        {
+            onPutItem ??= new ReactiveCommand<TPutItemEvent>();
+            return onPutItem;
+        }
+
+        public Observable<TTakeItemEvent> ObserveTakeItem()
+        {
+            onTakeItem ??= new ReactiveCommand<TTakeItemEvent>();
+            return onTakeItem;
+        }
+
         private int disposed;
         public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        protected abstract TReadOnlyItemContainer CreateReadOnlyItemContainer();
-        protected abstract TReadOnlyItemContainer CreateReadOnlyItemContainer(
-            TItem? item, 
-            int itemCount
-            );
-        protected  TReadOnlyItemContainer CreateReadOnlyItemContainer<TInputReadOnlyItemContainer>(
-            TInputReadOnlyItemContainer container
-            )
-            where TInputReadOnlyItemContainer : struct, IItemContainerInfo
-        {
-            return CreateReadOnlyItemContainer(container.Item.CastTo<TItem>(), container.ItemCount);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -322,7 +367,31 @@ namespace CCEnvs.UnityX.Items
                 item.Dispose();
                 itemCount.Dispose();
                 isActive.Dispose();
+                onPutItem?.Dispose();
+                onTakeItem?.Dispose();
             }
         }
+
+        protected abstract TReadOnlyContainer CreateReadOnlyContainer();
+        protected abstract TReadOnlyContainer CreateReadOnlyContainer(
+            TItem? item, 
+            int itemCount
+            );
+
+        protected abstract TLargeReadOnlyContainer CreateLargeReadOnlyContainer();
+        protected abstract TLargeReadOnlyContainer CreateLargeReadOnlyContainer(
+            TItem? item,
+            long itemCount
+            );
+
+        protected abstract TLargeReadOnlyContainer ConvertReadOnlyContainerToLarge(TReadOnlyContainer readOnlyContainer);
+
+        protected abstract TPutItemEvent CreatePutItemEvent(TItem item, int itemCount);
+
+        protected abstract TTakeItemEvent CreateTakeItemEvent(TItem item, int itemCount);
+
+        protected abstract TItem? GetLargeReadOnlyContainerItem(TLargeReadOnlyContainer largeReadOnlyContainer);
+
+        protected abstract long GetLargeReadOnlyContainerItemCount(TLargeReadOnlyContainer largeReadOnlyContainer);
     }
 }

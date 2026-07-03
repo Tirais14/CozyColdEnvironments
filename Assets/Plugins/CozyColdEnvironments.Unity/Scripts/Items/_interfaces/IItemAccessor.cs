@@ -10,6 +10,8 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer PutItem(IItem? item, int count = 1);
         ReadOnlyItemContainer PutItem(IItemContainerInfo? containerInfo);
         ReadOnlyItemContainer PutItem(ReadOnlyItemContainer readOnlyContainer);
+        LargeReadOnlyItemContainer PutItem(IItem? item, long count);
+        LargeReadOnlyItemContainer PutItem(LargeReadOnlyItemContainer largeReadOnlyContainer);
 
         ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer, int count);
         ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer);
@@ -33,6 +35,8 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer<TItem> PutItem(TItem? item, int count = 1);
         ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem>? containerInfo);
         ReadOnlyItemContainer<TItem> PutItem(ReadOnlyItemContainer<TItem> readOnlyContainer);
+        LargeReadOnlyItemContainer<TItem> PutItem(TItem? item, long count);
+        LargeReadOnlyItemContainer<TItem> PutItem(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer);
 
         ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer, int count);
         ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer);
@@ -69,6 +73,22 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer IItemAccessor.PutItem(ReadOnlyItemContainer readOnlyContainer)
         {
             return PutItem(readOnlyContainer.Convert<TItem>());
+        }
+        LargeReadOnlyItemContainer IItemAccessor.PutItem(IItem? item, long count)
+        {
+            if (item.IsNot<TItem>(out var typedItem))
+                return LargeReadOnlyItemContainer.Empty;
+
+            return PutItem(typedItem, count);
+        }
+        LargeReadOnlyItemContainer IItemAccessor.PutItem(LargeReadOnlyItemContainer largeReadOnlyContainer)
+        {
+            var typedLargeReadOnlyContainer = largeReadOnlyContainer.Convert<TItem>();
+
+            if (typedLargeReadOnlyContainer.IsEmpty)
+                return LargeReadOnlyItemContainer.Empty;
+
+            return PutItem(typedLargeReadOnlyContainer);
         }
 
         ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? itemContainer)

@@ -15,7 +15,19 @@ namespace CCEnvs.UnityX.Items
 {
     public class Inventory
         :
-        InventoryBase<IItem, IItemContainer, IItemContainer, IItemContainerInfo, ReadOnlyItemContainer, LargeReadOnlyItemContainer, InventoryContainerAddEvent, InventoryContainerRemoveEvent, InventoryContainerReplaceEvent>,
+        InventoryBase<
+            IItem, 
+            IItemContainer,
+            IItemContainer,
+            IItemContainerInfo,
+            ReadOnlyItemContainer,
+            LargeReadOnlyItemContainer,
+            InventoryContainerAddEvent,
+            InventoryContainerRemoveEvent,
+            InventoryContainerReplaceEvent,
+            InventoryPutItemEvent,
+            InventoryTakeItemEvent
+            >,
         IInventory,
         IDisposable
     {
@@ -148,21 +160,57 @@ namespace CCEnvs.UnityX.Items
         {
             return largeReadOnlyContainer.ItemCount;
         }
+
+        protected override InventoryPutItemEvent CreatePutItemEvent(
+            IItem item,
+            int itemCount,
+            IItemContainer container
+            )
+        {
+            return new InventoryPutItemEvent(
+                new ItemAccessorPutItemEvent(item, itemCount),
+                container
+                );
+        }
+
+        protected override InventoryTakeItemEvent CreateTakeItemEvent(
+            IItem item,
+            int itemCount,
+            IItemContainer container
+            )
+        {
+            return new InventoryTakeItemEvent(
+                new ItemAccessorTakeItemEvent(item, itemCount), 
+                container
+                );
+        }
     }
 
-    public class Inventory<TItem, TItemContainer>
+    public class Inventory<TItem, TContainer>
         :
-        InventoryBase<TItem, TItemContainer, IItemContainer<TItem>, IItemContainerInfo<TItem>, ReadOnlyItemContainer<TItem>, LargeReadOnlyItemContainer<TItem>, InventoryContainerAddEvent<TItemContainer>, InventoryContainerRemoveEvent<TItemContainer>, InventoryContainerReplaceEvent<TItemContainer>>,
-        IInventory<TItem, TItemContainer>,
+        InventoryBase<
+            TItem,
+            TContainer,
+            IItemContainer<TItem>,
+            IItemContainerInfo<TItem>,
+            ReadOnlyItemContainer<TItem>, 
+            LargeReadOnlyItemContainer<TItem>,
+            InventoryContainerAddEvent<TContainer>,
+            InventoryContainerRemoveEvent<TContainer>,
+            InventoryContainerReplaceEvent<TContainer>,
+            InventoryPutItemEvent<TItem, TContainer>,
+            InventoryTakeItemEvent<TItem, TContainer>
+            >,
+        IInventory<TItem, TContainer>,
         IDisposable
 
         where TItem : class, IItem
-        where TItemContainer : class, IItemContainer<TItem>
+        where TContainer : class, IItemContainer<TItem>
     {
         public Inventory(
             int collectionCapacity = 4,
-            IEqualityComparer<TItemContainer?>? containerComparer = null,
-            IEnumerable<TItemContainer>? initialContainers = null
+            IEqualityComparer<TContainer?>? containerComparer = null,
+            IEnumerable<TContainer>? initialContainers = null
             )
             :
             base(
@@ -173,8 +221,8 @@ namespace CCEnvs.UnityX.Items
         }
 
         public Inventory(
-            ICollection<TItemContainer> initialContainers,
-            IEqualityComparer<TItemContainer?>? containerComparer = null
+            ICollection<TContainer> initialContainers,
+            IEqualityComparer<TContainer?>? containerComparer = null
             )
             :
             base(
@@ -185,20 +233,20 @@ namespace CCEnvs.UnityX.Items
         {
         }
 
-        public static Inventory<TItem, TItemContainer> CreateWith<TCreatableItemContainer>(
+        public static Inventory<TItem, TContainer> CreateWith<TCreatableItemContainer>(
             int containerCount,
             IEqualityComparer<IItemContainer?>? containerComparer = null,
             bool autoSize = false,
-            TItemContainer? containerSample = null
+            TContainer? containerSample = null
             )
-            where TCreatableItemContainer : TItemContainer, new()
+            where TCreatableItemContainer : TContainer, new()
         {
-            return new Inventory<TItem, TItemContainer>(
+            return new Inventory<TItem, TContainer>(
                 containerCount,
                 containerComparer,
                 Enumerable.Range(0, containerCount)
                     .Select(_ => new TCreatableItemContainer())
-                    .Cast<TItemContainer>()
+                    .Cast<TContainer>()
                 )
             {
                 AutoSize = autoSize,
@@ -210,7 +258,7 @@ namespace CCEnvs.UnityX.Items
 
         public IInventory ShallowClone()
         {
-            var clone = new Inventory<TItem, TItemContainer>(
+            var clone = new Inventory<TItem, TContainer>(
                 ContainerCount,
                 ContainerComaprer
                 )
@@ -225,37 +273,37 @@ namespace CCEnvs.UnityX.Items
             return clone;
         }
 
-        protected override InventoryContainerAddEvent<TItemContainer> CreateContainerAddEvent(
+        protected override InventoryContainerAddEvent<TContainer> CreateContainerAddEvent(
             int id,
-            TItemContainer container
+            TContainer container
             )
         {
-            return new InventoryContainerAddEvent<TItemContainer> 
+            return new InventoryContainerAddEvent<TContainer> 
             {
                 ID = id,
                 Container = container 
             };
         }
 
-        protected override InventoryContainerRemoveEvent<TItemContainer> CreateContainerRemoveEvent(
+        protected override InventoryContainerRemoveEvent<TContainer> CreateContainerRemoveEvent(
             int id,
-            TItemContainer container
+            TContainer container
             )
         {
-            return new InventoryContainerRemoveEvent<TItemContainer>
+            return new InventoryContainerRemoveEvent<TContainer>
             {
                 ID = id,
                 Container = container 
             };
         }
 
-        protected override InventoryContainerReplaceEvent<TItemContainer> CreateContainerReplaceEvent(
+        protected override InventoryContainerReplaceEvent<TContainer> CreateContainerReplaceEvent(
             int id,
-            TItemContainer oldContainer,
-            TItemContainer newContainer
+            TContainer oldContainer,
+            TContainer newContainer
             )
         {
-            return new InventoryContainerReplaceEvent<TItemContainer>
+            return new InventoryContainerReplaceEvent<TContainer>
             {
                 ID = id,
                 OldContainer = oldContainer,
@@ -296,6 +344,30 @@ namespace CCEnvs.UnityX.Items
         protected override long GetItemCountFromReadOnlytContainer(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer)
         {
             return largeReadOnlyContainer.ItemCount;
+        }
+
+        protected override InventoryPutItemEvent<TItem, TContainer> CreatePutItemEvent(
+            TItem item,
+            int itemCount,
+            TContainer container
+            )
+        {
+            return new InventoryPutItemEvent<TItem, TContainer>(
+                new ItemAccessorPutItemEvent<TItem>(item, itemCount), 
+                container
+                );
+        }
+
+        protected override InventoryTakeItemEvent<TItem, TContainer> CreateTakeItemEvent(
+            TItem item,
+            int itemCount,
+            TContainer container
+            )
+        {
+            return new InventoryTakeItemEvent<TItem, TContainer>(
+                new ItemAccessorTakeItemEvent<TItem>(item, itemCount),
+                container
+                );
         }
     }
 }

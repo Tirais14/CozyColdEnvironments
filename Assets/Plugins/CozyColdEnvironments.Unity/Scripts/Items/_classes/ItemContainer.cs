@@ -1,13 +1,18 @@
-using R3;
-using System;
-using System.Linq;
-
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
     public class ItemContainer
         :
-        ItemContainerBase<IItem, IItemContainer, IItemContainerInfo, ReadOnlyItemContainer>,
+        ItemContainerBase<
+            IItem,
+            IItemContainer, 
+            IItemContainerInfo, 
+            ReadOnlyItemContainer, 
+            LargeReadOnlyItemContainer,
+            ItemAccessorPutItemEvent,
+            ItemAccessorTakeItemEvent
+            >,
+
         IItemContainer
     {
         bool IItemContainer.IsReadOnlyContainer => false;
@@ -39,20 +44,63 @@ namespace CCEnvs.UnityX.Items
             return new ItemContainer(Item, ItemCount, Capacity);
         }
 
-        protected override ReadOnlyItemContainer CreateReadOnlyItemContainer()
+        protected override ReadOnlyItemContainer CreateReadOnlyContainer()
         {
             return ReadOnlyItemContainer.Empty;
         }
 
-        protected override ReadOnlyItemContainer CreateReadOnlyItemContainer(IItem? item, int itemCount)
+        protected override ReadOnlyItemContainer CreateReadOnlyContainer(IItem? item, int itemCount)
         {
-            return new ReadOnlyItemContainer(item, itemCount);
+            return new ReadOnlyItemContainer(item, ItemCount);
+        }
+
+        protected override LargeReadOnlyItemContainer CreateLargeReadOnlyContainer()
+        {
+            return LargeReadOnlyItemContainer.Empty;
+        }
+
+        protected override LargeReadOnlyItemContainer CreateLargeReadOnlyContainer(IItem? item, long itemCount)
+        {
+            return new LargeReadOnlyItemContainer(item, itemCount);
+        }
+
+        protected override ItemAccessorPutItemEvent CreatePutItemEvent(IItem item, int itemCount)
+        {
+            return new ItemAccessorPutItemEvent(item, itemCount);
+        }
+
+        protected override ItemAccessorTakeItemEvent CreateTakeItemEvent(IItem item, int itemCount)
+        {
+            return new ItemAccessorTakeItemEvent(item, itemCount);
+        }
+
+        protected override LargeReadOnlyItemContainer ConvertReadOnlyContainerToLarge(ReadOnlyItemContainer readOnlyContainer)
+        {
+            return readOnlyContainer;
+        }
+
+        protected override IItem? GetLargeReadOnlyContainerItem(LargeReadOnlyItemContainer largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.Item;
+        }
+
+        protected override long GetLargeReadOnlyContainerItemCount(LargeReadOnlyItemContainer largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.ItemCount;
         }
     }
 
     public class ItemContainer<TItem>
         :
-        ItemContainerBase<TItem, IItemContainer<TItem>, IItemContainerInfo<TItem>, ReadOnlyItemContainer<TItem>>,
+        ItemContainerBase<
+            TItem,
+            IItemContainer<TItem>, 
+            IItemContainerInfo<TItem>,
+            ReadOnlyItemContainer<TItem>,
+            LargeReadOnlyItemContainer<TItem>,
+            ItemAccessorPutItemEvent<TItem>,
+            ItemAccessorTakeItemEvent<TItem>
+            >,
         IItemContainer<TItem>
 
         where TItem : class, IItem
@@ -91,14 +139,49 @@ namespace CCEnvs.UnityX.Items
             return new ItemContainer<TItem>(Item, ItemCount, Capacity);
         }
 
-        protected override ReadOnlyItemContainer<TItem> CreateReadOnlyItemContainer()
+        protected override ReadOnlyItemContainer<TItem> CreateReadOnlyContainer()
         {
             return ReadOnlyItemContainer<TItem>.Empty;
         }
 
-        protected override ReadOnlyItemContainer<TItem> CreateReadOnlyItemContainer(TItem? item, int itemCount)
+        protected override ReadOnlyItemContainer<TItem> CreateReadOnlyContainer(TItem? item, int itemCount)
         {
             return new ReadOnlyItemContainer<TItem>(Item, itemCount);
+        }
+
+        protected override LargeReadOnlyItemContainer<TItem> CreateLargeReadOnlyContainer()
+        {
+            return LargeReadOnlyItemContainer<TItem>.Empty;
+        }
+
+        protected override LargeReadOnlyItemContainer<TItem> CreateLargeReadOnlyContainer(TItem? item, long itemCount)
+        {
+            return new LargeReadOnlyItemContainer<TItem>(item, itemCount);
+        }
+
+        protected override LargeReadOnlyItemContainer<TItem> ConvertReadOnlyContainerToLarge(ReadOnlyItemContainer<TItem> readOnlyContainer)
+        {
+            return readOnlyContainer;
+        }
+
+        protected override ItemAccessorPutItemEvent<TItem> CreatePutItemEvent(TItem item, int itemCount)
+        {
+            return new ItemAccessorPutItemEvent<TItem>(item, itemCount);
+        }
+
+        protected override ItemAccessorTakeItemEvent<TItem> CreateTakeItemEvent(TItem item, int itemCount)
+        {
+            return new ItemAccessorTakeItemEvent<TItem>(item, itemCount);
+        }
+
+        protected override TItem? GetLargeReadOnlyContainerItem(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.Item;
+        }
+
+        protected override long GetLargeReadOnlyContainerItemCount(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer)
+        {
+            return largeReadOnlyContainer.ItemCount;
         }
     }
 }
