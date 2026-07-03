@@ -39,7 +39,7 @@ namespace CCEnvs.UnityX.Items
 
         private IInventory? parentInventory;
 
-        private int capacity = 128;
+        private int capacity;
         private int? id;
 
         public TItem? Item => item.Value;

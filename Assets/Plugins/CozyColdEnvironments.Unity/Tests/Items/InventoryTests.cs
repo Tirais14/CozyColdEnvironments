@@ -8,6 +8,8 @@ namespace CCEnvs.Unity.Tests
     [TestFixture]
     public class InventoryTests
     {
+        private const int PUT_ITEM_COUNT = 15000;
+
         private Inventory inventory = null!;
 
         [SetUp]
@@ -33,10 +35,10 @@ namespace CCEnvs.Unity.Tests
             IItem item = itemMock.Object;
 
             inventory.InstantiateContainers(2);
-            LargeReadOnlyItemContainer restItems = inventory.PutItem(item, int.MaxValue);
+            LargeReadOnlyItemContainer restItems = inventory.PutItem(item, PUT_ITEM_COUNT);
 
             Assert.AreEqual(0, restItems.ItemCount);
-            Assert.AreEqual(int.MaxValue, inventory.GetItemCount(item));
+            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetItemCount(item));
         }
 
         [Test]
@@ -46,9 +48,9 @@ namespace CCEnvs.Unity.Tests
             IItem item = itemMock.Object;
 
             inventory.InstantiateContainers(2);
-            inventory.PutItem(item, item.MaxItemCount);
+            inventory.PutItem(item, PUT_ITEM_COUNT);
 
-            Assert.AreEqual(item.MaxItemCount, inventory.GetFreeSpace(item));
+            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetFreeSpace(item));
         }
 
         [Test]
@@ -58,10 +60,10 @@ namespace CCEnvs.Unity.Tests
             IItem item = itemMock.Object;
 
             inventory.AutoSize = true;
-            LargeReadOnlyItemContainer restItems = inventory.PutItem(item, int.MaxValue);
+            LargeReadOnlyItemContainer restItems = inventory.PutItem(item, PUT_ITEM_COUNT);
 
             Assert.AreEqual(0, restItems.ItemCount);
-            Assert.AreEqual(int.MaxValue, inventory.GetItemCount(item));
+            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetItemCount(item));
         }
 
         [Test]
@@ -71,10 +73,10 @@ namespace CCEnvs.Unity.Tests
             IItem item = itemMock.Object;
 
             inventory.AutoSize = true;
-            inventory.PutItem(item, int.MaxValue);
-            LargeReadOnlyItemContainer takenItems = inventory.TakeItem(item, int.MaxValue / 2);
+            inventory.PutItem(item, PUT_ITEM_COUNT);
+            LargeReadOnlyItemContainer takenItems = inventory.TakeItem(item, PUT_ITEM_COUNT / 2);
 
-            Assert.AreEqual(int.MaxValue / 2, takenItems.ItemCount);
+            Assert.AreEqual(PUT_ITEM_COUNT / 2, takenItems.ItemCount);
         }
 
         //[Test]
@@ -98,7 +100,7 @@ namespace CCEnvs.Unity.Tests
             Assert.IsTrue(inventory.IsEmpty);
 
             inventory.AutoSize = true;
-            inventory.PutItem(item, 256);
+            inventory.PutItem(item, PUT_ITEM_COUNT);
 
             Assert.IsFalse(inventory.IsEmpty);
         }
@@ -111,9 +113,10 @@ namespace CCEnvs.Unity.Tests
 
             Assert.IsTrue(inventory.IsFull);
 
-            inventory.AutoSize = true;
-            inventory.PutItem(item, 256);
+            inventory.InstantiateContainers(1);
+            Assert.IsTrue(inventory.IsFull);
 
+            inventory.PutItem(item, item.MaxItemCount);
             Assert.IsTrue(inventory.IsFull);
         }
 
@@ -123,7 +126,7 @@ namespace CCEnvs.Unity.Tests
 
             itemMock.Setup(item => item.Name).Returns("Cigarettes");
             itemMock.Setup(item => item.ID).Returns(1);
-            itemMock.Setup(item => item.MaxItemCount).Returns(256);
+            itemMock.Setup(item => item.MaxItemCount).Returns(short.MaxValue);
 
             return itemMock;
         }

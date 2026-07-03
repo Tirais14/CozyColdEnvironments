@@ -273,6 +273,9 @@ namespace CCEnvs.UnityX.Items
                 forItem.Maybe().Map(item => item.MaxItemCount).GetValue(int.MaxValue)
                 );
 
+            if (containerCapacity <= 0)
+                throw new InvalidOperationException($"Invalid container capacity. Capacity: {containerCapacity}");
+
             if (GetFreeSpace(forItem) >= targetSpace)
                 return;
 
@@ -669,6 +672,18 @@ namespace CCEnvs.UnityX.Items
             PutItem((TItem)itemContainer.Item!, itemContainer.ItemCount);
         }
 
+        public override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(ContainerCount), ContainerCount)
+                .AddProperty(nameof(EmptyContainerCount), EmptyContainerCount)
+                .AddPredicatedProperty(ContainerSample.IsNotNull(), nameof(ContainerSample), "Exists")
+                .AddProperty(nameof(IsEmpty), IsEmpty)
+                .AddProperty(nameof(IsFull), IsFull)
+                .AddProperty(nameof(Containers), containers.SelectValue().SequenceToString())
+                .ToStringAndDispose();
+        }
+
         public Observable<TContainerAddEvent> ObserveContainerAdd()
         {
             return containers.ObserveDictionaryAdd(DisposeCancellationToken)
@@ -809,13 +824,16 @@ namespace CCEnvs.UnityX.Items
             if (count <= 0)
                 return;
 
+            if (count >= 1000000)
+                throw new InvalidOperationException($"Cannot instantiate so many containers. Count: {count}");
+
             cloneSample = cloneSample.IfNull(ContainerSample)
                 .IfNull(containers, static (containers) => containers.SelectValue().FirstOrDefault());
 
             if (cloneSample.IsNull())
             {
 #if CC_DEBUG_ENABLED
-                this.PrintWarning($"Cannot instantiate containers without {ContainerSample}");
+                this.PrintWarning($"Cannot instantiate containers without {nameof(ContainerSample)}");
 #endif
                 return;
             }
@@ -919,6 +937,24 @@ namespace CCEnvs.UnityX.Items
                 .AddTo(containerDisposables.GetOrCreateNew(container));
         }
 
+        private void BindContainerTakeItem(TContainer container)
+        {
+            container.ObserveTakeItem()
+                .Subscribe((@this: this, container), static (containerEv, args) =>
+                {
+                    var (@this, container) = args;
+
+                    TTakeItemEvent inventoryEv = @this.CreateTakeItemEvent(
+                        containerEv.Item.CastTo<TItem>(),
+                        containerEv.ItemCount,
+                        container
+                        );
+
+                    @this.OnContainerTakeItem(inventoryEv);
+                })
+                .AddTo(containerDisposables.GetOrCreateNew(container));
+        }
+
         protected virtual void OnContainerAdd(DictionaryAddEvent<int, TContainer> addEv)
         {
             TContainer? container = addEv.Value;
@@ -978,24 +1014,6 @@ namespace CCEnvs.UnityX.Items
                 return;
 
             occupiedContainers.GetOrCreateNew(item).Add(container);
-        }
-
-        private void BindContainerTakeItem(TContainer container)
-        {
-            container.ObserveTakeItem()
-                .Subscribe((@this: this, container), static (containerEv, args) =>
-                {
-                    var (@this, container) = args;
-
-                    TTakeItemEvent inventoryEv = @this.CreateTakeItemEvent(
-                        containerEv.Item.CastTo<TItem>(),
-                        containerEv.ItemCount,
-                        container
-                        );
-
-                    @this.OnContainerTakeItem(inventoryEv);
-                })
-                .AddTo(containerDisposables.GetOrCreateNew(container));
         }
 
         private void BindContainerAdd()

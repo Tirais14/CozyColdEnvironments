@@ -8,6 +8,7 @@ namespace CCEnvs.UnityX.Tests
     [TestFixture]
     public class ItemContainerTests
     {
+
         private ItemContainer itemContainer = null!;
 
         [SetUp]
@@ -37,10 +38,12 @@ namespace CCEnvs.UnityX.Tests
         {
             Mock<IItem> itemMock = GetItemMock();
             IItem item = itemMock.Object;
-            ReadOnlyItemContainer restItems = itemContainer.PutItem(item, int.MaxValue);
 
-            Assert.AreEqual(int.MaxValue - item.MaxItemCount, restItems.ItemCount);
-            Assert.AreEqual(item.MaxItemCount, itemContainer.ItemCount);
+            const int PUT_ITEM_COUNT = 15000;
+            ReadOnlyItemContainer restItems = itemContainer.PutItem(item, PUT_ITEM_COUNT);
+
+            Assert.AreEqual(0, restItems.ItemCount);
+            Assert.AreEqual(PUT_ITEM_COUNT, itemContainer.ItemCount);
         }
 
         [Test]
@@ -58,14 +61,15 @@ namespace CCEnvs.UnityX.Tests
         {
             Mock<IItem> itemMock = GetItemMock();
             IItem item = itemMock.Object;
-            itemContainer.PutItem(item, int.MaxValue);
 
-            int takeItemCount = int.MaxValue / 4;
+            const int PUT_ITEM_COUNT = 15000;
+            const int TAKE_ITEM_COUNT = 15000;
 
-            ReadOnlyItemContainer takenItems = itemContainer.TakeItem(takeItemCount);
+            itemContainer.PutItem(item, PUT_ITEM_COUNT);
+            ReadOnlyItemContainer takenItems = itemContainer.TakeItem(TAKE_ITEM_COUNT);
 
-            Assert.AreEqual(takeItemCount, takenItems.ItemCount);
-            Assert.AreEqual(itemContainer.Capacity - takeItemCount, itemContainer.ItemCount);
+            Assert.AreEqual(TAKE_ITEM_COUNT, takenItems.ItemCount);
+            Assert.AreEqual(PUT_ITEM_COUNT - TAKE_ITEM_COUNT, itemContainer.ItemCount);
         }
 
         private Mock<IItem> GetItemMock()

@@ -51,7 +51,7 @@ namespace CCEnvs.UnityX.Items
 
         protected override ReadOnlyItemContainer CreateReadOnlyContainer(IItem? item, int itemCount)
         {
-            return new ReadOnlyItemContainer(item, ItemCount);
+            return new ReadOnlyItemContainer(item, itemCount);
         }
 
         protected override LargeReadOnlyItemContainer CreateLargeReadOnlyContainer()
