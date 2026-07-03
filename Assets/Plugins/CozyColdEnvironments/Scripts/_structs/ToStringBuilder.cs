@@ -10,11 +10,14 @@ namespace CCEnvs
     public struct ToStringBuilder : IEquatable<ToStringBuilder>, IDisposable
     {
         private readonly PooledObject<StringBuilder> stringBuilderHandle;
+
         private readonly StringBuilder stringBuilder;
+
+        private readonly bool indented;
 
         private int fieldCount;
 
-        public ToStringBuilder(StringBuilder? sb)
+        public ToStringBuilder(StringBuilder? sb, bool indented = false)
             :
             this()
         {
@@ -27,11 +30,13 @@ namespace CCEnvs
                 stringBuilder = new StringBuilder();
 
             stringBuilder.Append('(');
+
+            this.indented = indented;
         }
 
-        public static ToStringBuilder CreatePooled()
+        public static ToStringBuilder CreatePooled(bool indented = false)
         {
-            return new ToStringBuilder(null);
+            return new ToStringBuilder(null, indented);
         }
 
         public static bool operator ==(ToStringBuilder left, ToStringBuilder right)
@@ -58,6 +63,12 @@ namespace CCEnvs
             var fieldValueString = fieldValue.IsNull() ? "null" : fieldValue.ToString();
 
             stringBuilder.Append(fieldValueString);
+
+            if (indented)
+            {
+                stringBuilder.Append(Environment.NewLine);
+                stringBuilder.Append('\t');
+            }
 
             fieldCount++;
 

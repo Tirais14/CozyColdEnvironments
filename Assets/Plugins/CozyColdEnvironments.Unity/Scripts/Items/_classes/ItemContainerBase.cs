@@ -130,21 +130,24 @@ namespace CCEnvs.UnityX.Items
             if (IsFull || (Item.IsNotNull() && !EqualityComparer<IItem?>.Default.Equals(Item, inputItem)))
                 return CreateReadOnlyContainer(inputItem, count);
 
-            item.Value = inputItem;
+            this.item.Value = inputItem;
             int toPutCount = Math.Clamp(count, 0, FreeSpace);
             itemCount.Value += toPutCount;
+
+            if (onPutItem is not null && toPutCount >= 1)
+                onPutItem.Execute(CreatePutItemEvent(inputItem, toPutCount));
 
             int restCount = count - toPutCount;
 
             if (CCDebug<ItemContainer>.IsEnabled)
             {
-                this.PrintLog(DebugMessageBuilder.CreatePooled()
+                this.PrintLog(DebugMessageBuilder.CreatePooled(indented: true)
                     .AddMessage("Item was put")
-                    .AddPredicatedProperty(ID.HasValue, "ID", ID)
-                    .AddPredicatedProperty(parentInventory is not null, "ParentInventory", parentInventory)
                     .AddProperty("Item", inputItem)
                     .AddProperty("ItemCount", toPutCount)
                     .AddPredicatedProperty(restCount != 0, "RestItemCount", restCount)
+                    .AddPredicatedProperty(ID.HasValue, "ID", ID)
+                    .AddPredicatedProperty(parentInventory is not null, "ParentInventory", parentInventory)
                     .ToStringAndDispose()
                     );
             }
@@ -220,6 +223,9 @@ namespace CCEnvs.UnityX.Items
 
             int takenCount = Math.Min(count, ItemCount);
             itemCount.Value -= takenCount;
+
+            if (onTakeItem is not null && takenCount >= 1)
+                onTakeItem.Execute(CreateTakeItemEvent(Item!, takenCount));
 
             return CreateReadOnlyContainer(Item, takenCount);
         }

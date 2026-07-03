@@ -1,5 +1,6 @@
 using CCEnvs.Collections;
 using CCEnvs.Utils;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -191,10 +192,28 @@ namespace CCEnvs
             return results;
         }
 
-        public static IList<T> CollectFlags<T>(this T value, string? excludeName = "None")
+        public static IList<T> CollectFlags<T>(this T value, bool skipFirst = true)
             where T : unmanaged, Enum
         {
-            bool hasExcludeName = excludeName.IsNotNullOrWhiteSpace();
+            ImmutableArray<T> values = EnumCache<T>.Values;
+            var results = new List<T>(values.Length);
+
+            T current;
+            for (int i = skipFirst ? 1 : 0; i < values.Length; i++)
+            {
+                current = values[i];
+
+                if (!value.HasFlagT(current))
+                    continue;
+
+                results.Add(current);
+            }
+
+            return results;
+        }
+        public static IList<T> CollectFlags<T>(this T value, T exclude)
+            where T : unmanaged, Enum
+        {
             ImmutableArray<T> values = EnumCache<T>.Values;
             var results = new List<T>(values.Length);
 
@@ -203,10 +222,33 @@ namespace CCEnvs
             {
                 current = values[i];
 
-                if (!value.HasFlagT(current))
+                if (current.Equals(exclude) || !value.HasFlagT(current))
                     continue;
 
-                if (hasExcludeName && current.ToString().EqualsOrdinal(excludeName))
+                results.Add(current);
+            }
+
+            return results;
+        }
+        public static IList<T> CollectFlags<T>(
+            this T value,
+            string excludeName,
+            StringMatchSettings nameMatchSettings = StringMatchSettings.Ordinal
+            )
+
+            where T : unmanaged, Enum
+        {
+            Guard.IsNotNull(excludeName);
+
+            ImmutableArray<T> values = EnumCache<T>.Values;
+            var results = new List<T>(values.Length);
+
+            T current;
+            for (int i = 0; i < values.Length; i++)
+            {
+                current = values[i];
+
+                if (current.ToString().Match(excludeName, nameMatchSettings) || !value.HasFlagT(current))
                     continue;
 
                 results.Add(current);
@@ -353,12 +395,12 @@ namespace CCEnvs
             return value.HasFlags(flags.CollectFlags());
         }
 
-        public static bool TryGetFirstFlag<T>(this T source, out T result)
+        public static bool TryGetFirstFlag<T>(this T source, out T result, bool skipDefault = true)
             where T : unmanaged, Enum
         {
            ImmutableArray<T> values = EnumCache<T>.Values;
 
-            for (int i = 0; i < values.Length; i++)
+            for (int i = skipDefault ? 1 : 0; i < values.Length; i++)
             {
                 if (source.HasFlagT(values[i]))
                 {

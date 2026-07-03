@@ -13,9 +13,11 @@ namespace CCEnvs.Diagnostics
 
         private readonly StringBuilder stringBuilder;
 
+        private readonly bool indented;
+
         private TokenType tokenType;
 
-        public DebugMessageBuilder(StringBuilder? stringBuilder)
+        public DebugMessageBuilder(StringBuilder? stringBuilder, bool indented = false)
             :
             this()
         {
@@ -26,11 +28,13 @@ namespace CCEnvs.Diagnostics
             }
             else
                 this.stringBuilder = stringBuilder;
+
+            this.indented = indented;
         }
 
-        public static DebugMessageBuilder CreatePooled()
+        public static DebugMessageBuilder CreatePooled(bool indented = false)
         {
-            return new DebugMessageBuilder(null);
+            return new DebugMessageBuilder(null, indented);
         }
 
         public static bool operator ==(DebugMessageBuilder left, DebugMessageBuilder right)
@@ -137,14 +141,20 @@ namespace CCEnvs.Diagnostics
 
         private readonly void ClosePreviousToken()
         {
-            var msg = tokenType switch
+            var tokenEnd = tokenType switch
             {
                 TokenType.Message => ". ",
                 TokenType.Property => "; ",
                 _ => string.Empty
             };
 
-            stringBuilder.Append(msg);
+            stringBuilder.Append(tokenEnd);
+
+            if (indented)
+            {
+                stringBuilder.Append(Environment.NewLine);
+                stringBuilder.Append('\t');
+            }
         }
 
         private readonly void WritePropertyStart()

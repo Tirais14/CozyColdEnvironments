@@ -75,6 +75,9 @@ namespace CCEnvs.UnityX.Items
         public bool IsFull {
             get
             {
+                if (OccupiedContainerCount == 0 && ContainerCount >= 1)
+                    return false;
+
                 foreach (var containers in occupiedContainers.Values)
                     for (int i = 0; i < containers.Count; i++)
                         if (!containers[i].IsFull)

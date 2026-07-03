@@ -12,6 +12,10 @@ namespace CCEnvs.Unity.Tests
 
         private Inventory inventory = null!;
 
+        private Mock<IItem> cigarettes = null!;
+
+        private IItem Cigarettes => cigarettes.Object;
+
         [SetUp]
         public void Setup()
         {
@@ -19,6 +23,8 @@ namespace CCEnvs.Unity.Tests
             {
                 ContainerSample = new ItemContainer()
             };
+
+            cigarettes = GetItemMock();
         }
 
         [TearDown]
@@ -26,81 +32,55 @@ namespace CCEnvs.Unity.Tests
         {
             inventory.Dispose();
             inventory = null!;
+            cigarettes = null!;
         }
 
         [Test]
         public void CheckPutItem()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             inventory.InstantiateContainers(2);
-            LargeReadOnlyItemContainer restItems = inventory.PutItem(item, PUT_ITEM_COUNT);
+            LargeReadOnlyItemContainer restItems = inventory.PutItem(Cigarettes, PUT_ITEM_COUNT);
 
             Assert.AreEqual(0, restItems.ItemCount);
-            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetItemCount(item));
+            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetItemCount(Cigarettes));
         }
 
         [Test]
         public void CheckGetFreeSpace()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             inventory.InstantiateContainers(2);
-            inventory.PutItem(item, PUT_ITEM_COUNT);
+            inventory.PutItem(Cigarettes, PUT_ITEM_COUNT);
 
-            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetFreeSpace(item));
+            Assert.AreEqual(Cigarettes.MaxItemCount * inventory.ContainerCount - PUT_ITEM_COUNT, inventory.GetFreeSpace(Cigarettes));
         }
 
         [Test]
         public void CheckAutoSize()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             inventory.AutoSize = true;
-            LargeReadOnlyItemContainer restItems = inventory.PutItem(item, PUT_ITEM_COUNT);
+            LargeReadOnlyItemContainer restItems = inventory.PutItem(Cigarettes, PUT_ITEM_COUNT);
 
             Assert.AreEqual(0, restItems.ItemCount);
-            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetItemCount(item));
+            Assert.AreEqual(PUT_ITEM_COUNT, inventory.GetItemCount(Cigarettes));
         }
 
         [Test]
         public void CheckTakeItem()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             inventory.AutoSize = true;
-            inventory.PutItem(item, PUT_ITEM_COUNT);
-            LargeReadOnlyItemContainer takenItems = inventory.TakeItem(item, PUT_ITEM_COUNT / 2);
+            inventory.PutItem(Cigarettes, PUT_ITEM_COUNT);
+            LargeReadOnlyItemContainer takenItems = inventory.TakeItem(Cigarettes, PUT_ITEM_COUNT / 2);
 
             Assert.AreEqual(PUT_ITEM_COUNT / 2, takenItems.ItemCount);
         }
 
-        //[Test]
-        //public void CheckFreeSpace()
-        //{
-        //    Mock<IItem> itemMock = GetItemMock();
-        //    IItem item = itemMock.Object;
-
-        //    inventory.AutoSize = true;
-        //    inventory.PutItem(item, 60);
-
-        //    Assert.AreEqual(item.MaxItemCount - 60, inventory.FreeSpace);
-        //}
-
         [Test]
         public void CheckIsEmpty()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             Assert.IsTrue(inventory.IsEmpty);
 
             inventory.AutoSize = true;
-            inventory.PutItem(item, PUT_ITEM_COUNT);
+            inventory.PutItem(Cigarettes, PUT_ITEM_COUNT);
 
             Assert.IsFalse(inventory.IsEmpty);
         }
@@ -108,16 +88,43 @@ namespace CCEnvs.Unity.Tests
         [Test]
         public void CheckIsFull()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             Assert.IsTrue(inventory.IsFull);
 
             inventory.InstantiateContainers(1);
-            Assert.IsTrue(inventory.IsFull);
+            Assert.IsFalse(inventory.IsFull);
 
-            inventory.PutItem(item, item.MaxItemCount);
+            inventory.PutItem(Cigarettes, Cigarettes.MaxItemCount);
             Assert.IsTrue(inventory.IsFull);
+        }
+
+        [Test]
+        public void CheckGetItemCount()
+        {
+            inventory.InstantiateContainers(2);
+            inventory.PutItem(Cigarettes, Cigarettes.MaxItemCount * inventory.ContainerCount);
+
+            long inventoryItemCount = inventory.GetItemCount(Cigarettes);
+            Assert.AreEqual(Cigarettes.MaxItemCount * inventory.ContainerCount, inventoryItemCount);
+        
+        }
+
+        [Test]
+        public void CheckContainsItem()
+        {
+            inventory.InstantiateContainers(4);
+            inventory.PutItem(Cigarettes, Cigarettes.MaxItemCount * inventory.ContainerCount);
+
+            Assert.IsTrue(inventory.ContainsItem(Cigarettes, Cigarettes.MaxItemCount * inventory.ContainerCount));
+        }
+
+        [Test]
+        public void CheckCanPut()
+        {
+            Assert.IsFalse(inventory.CanPutItem(Cigarettes));
+
+            inventory.InstantiateContainers(1);
+
+            Assert.IsTrue(inventory.CanPutItem(Cigarettes));
         }
 
         private Mock<IItem> GetItemMock()
