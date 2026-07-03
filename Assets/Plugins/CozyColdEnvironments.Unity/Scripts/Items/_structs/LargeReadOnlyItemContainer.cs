@@ -100,9 +100,9 @@ namespace CCEnvs.UnityX.Items
                 .ToStringAndDispose();
         }
 
-        bool IItemContainerInfoItemless.CanPut() => false;
-        bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
-        bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
+        bool IItemContainerInfoItemless.CanPutItem() => false;
+        bool IItemContainerInfoItemless.CanPutItem(IItem? item) => false;
+        bool IItemContainerInfoItemless.CanPutItem(IItem? item, int count) => false;
 
         Observable<IItem?> IItemContainerInfo.ObserveItem()
         {
@@ -221,9 +221,9 @@ namespace CCEnvs.UnityX.Items
                 .ToStringAndDispose();
         }
 
-        bool IItemContainerInfoItemless.CanPut() => false;
-        bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
-        bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
+        bool IItemContainerInfoItemless.CanPutItem() => false;
+        bool IItemContainerInfoItemless.CanPutItem(IItem? item) => false;
+        bool IItemContainerInfoItemless.CanPutItem(IItem? item, int count) => false;
 
         Observable<TItem?> IItemContainerInfo<TItem>.ObserveItem()
         {

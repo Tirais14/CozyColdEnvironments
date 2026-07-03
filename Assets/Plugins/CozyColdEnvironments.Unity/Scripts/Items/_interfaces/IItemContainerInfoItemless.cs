@@ -17,9 +17,9 @@ namespace CCEnvs.UnityX.Items
         bool ContainsItem(IItem? item);
         bool ContainsItem(IItem? item, int count);
 
-        bool CanPut();
-        bool CanPut(IItem? item);
-        bool CanPut(IItem? item, int count);
+        bool CanPutItem();
+        bool CanPutItem(IItem? item);
+        bool CanPutItem(IItem? item, int count);
 
         Observable<int> ObserveItemCount();
     }
@@ -30,8 +30,8 @@ namespace CCEnvs.UnityX.Items
         bool ContainsItem(TItem? item);
         bool ContainsItem(TItem? item, int count);
 
-        bool CanPut(TItem? item);
-        bool CanPut(TItem? item, int count);
+        bool CanPutItem(TItem? item);
+        bool CanPutItem(TItem? item, int count);
 
         bool IItemContainerInfoItemless.ContainsItem(IItem? item)
         {
@@ -49,20 +49,20 @@ namespace CCEnvs.UnityX.Items
             return ContainsItem(typed, count);
         }
 
-        bool IItemContainerInfoItemless.CanPut(IItem? item)
+        bool IItemContainerInfoItemless.CanPutItem(IItem? item)
         {
             if (item.IsNot<TItem>(out var typed))
                 return false;
 
-            return CanPut(typed);
+            return CanPutItem(typed);
         }
 
-        bool IItemContainerInfoItemless.CanPut(IItem? item, int count)
+        bool IItemContainerInfoItemless.CanPutItem(IItem? item, int count)
         {
             if (item.IsNot<TItem>(out var typed))
                 return false;
 
-            return CanPut(typed, count);
+            return CanPutItem(typed, count);
         }
     }
 }

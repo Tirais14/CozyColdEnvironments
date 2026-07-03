@@ -170,7 +170,7 @@ namespace CCEnvs.UnityX.Items
             if (count <= int.MaxValue)
                 return ConvertReadOnlyContainerToLarge(PutItem(item, (int)count));
 
-            if (!CanPut(item) || count <= 0)
+            if (!CanPutItem(item) || count <= 0)
                 return CreateLargeReadOnlyContainer();
 
             TItem? previousItem = Item;
@@ -307,11 +307,11 @@ namespace CCEnvs.UnityX.Items
             return isActive.Value;
         }
 
-        public bool CanPut() => !IsFull;
-        public bool CanPut(IItem? item) => !IsFull && ContainsItem(item);
-        public bool CanPut(IItem? item, int count)
+        public bool CanPutItem() => !IsFull;
+        public bool CanPutItem(IItem? item) => !IsFull && ContainsItem(item);
+        public bool CanPutItem(IItem? item, int count)
         {
-            if (!CanPut(item))
+            if (!CanPutItem(item))
                 return false;
 
             count = Math.Clamp(count, min: 0, max: int.MaxValue);

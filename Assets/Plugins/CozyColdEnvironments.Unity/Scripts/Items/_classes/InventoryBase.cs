@@ -145,19 +145,6 @@ namespace CCEnvs.UnityX.Items
 
         ~InventoryBase() => Dispose();
 
-        public bool ContainsItem() => !IsEmpty;
-        public bool ContainsItem(TItem? item)
-        {
-            if (item.IsNull())
-                return ContainsItem();
-
-            return occupiedContainers.ContainsKey(item);
-        }
-        public bool ContainsItem(TItem? item, int count)
-        {
-            return GetItemCount(item) >= count;
-        }
-
         public bool TryGetContainer(int id, [NotNullWhen(true)] out TContainer? container)
         {
             return containers.TryGetValue(id, out container);
@@ -605,14 +592,33 @@ namespace CCEnvs.UnityX.Items
             RemoveCountCore(removeCount, removed);
         }
 
-        public bool CanPut() => !IsFull;
-        public bool CanPut(TItem? item)
+        public bool CanPutItem() => !IsFull;
+        public bool CanPutItem(TItem? item)
         {
             return GetFreeSpace(item) >= 1;
         }
-        public bool CanPut(TItem? item, int count)
+        public bool CanPutItem(TItem? item, long count)
         {
             return GetFreeSpace(item) >= count;
+        }
+
+        public bool ContainsItem()
+        {
+            return occupiedContainers.Count != 0
+                   &&
+                   occupiedContainers.Values.SelectMany(containers => containers)
+                        .Any(container => !container.IsEmpty);
+        }
+        public bool ContainsItem(TItem? item)
+        {
+            if (item.IsNull())
+                return false;
+
+            return occupiedContainers.ContainsKey(item);
+        }
+        public bool ContainsItem(TItem? item, long count)
+        {
+            return GetItemCount(item) >= count;
         }
 
         public IEnumerable<TLargeReadOnlyItemContainer> GetCompactedContainersQuery()

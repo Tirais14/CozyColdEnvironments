@@ -96,9 +96,9 @@ namespace CCEnvs.UnityX.Items
                 .ToStringAndDispose();
         }
 
-        readonly bool IItemContainerInfoItemless.CanPut() => false;
-        readonly bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
-        readonly bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
+        readonly bool IItemContainerInfoItemless.CanPutItem() => false;
+        readonly bool IItemContainerInfoItemless.CanPutItem(IItem? item) => false;
+        readonly bool IItemContainerInfoItemless.CanPutItem(IItem? item, int count) => false;
 
         readonly Observable<IItem?> IItemContainerInfo.ObserveItem()
         {
@@ -213,9 +213,9 @@ namespace CCEnvs.UnityX.Items
                 .ToStringAndDispose();
         }
 
-        readonly bool IItemContainerInfoItemless.CanPut() => false;
-        readonly bool IItemContainerInfoItemless.CanPut(IItem? item) => false;
-        readonly bool IItemContainerInfoItemless.CanPut(IItem? item, int count) => false;
+        readonly bool IItemContainerInfoItemless.CanPutItem() => false;
+        readonly bool IItemContainerInfoItemless.CanPutItem(IItem? item) => false;
+        readonly bool IItemContainerInfoItemless.CanPutItem(IItem? item, int count) => false;
 
         readonly Observable<TItem?> IItemContainerInfo<TItem>.ObserveItem()
         {

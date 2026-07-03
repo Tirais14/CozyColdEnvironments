@@ -59,9 +59,11 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer PutItemFrom(IItemContainer container);
         ReadOnlyItemContainer PutItemFrom(IItemContainer container, int count);
 
+        bool ContainsItem();
         bool ContainsItem(IItem? item);
         bool ContainsItem(IItem? item, long count);
 
+        bool CanPutItem();
         bool CanPutItem(IItem? item);
         bool CanPutItem(IItem? item, long count);
 
