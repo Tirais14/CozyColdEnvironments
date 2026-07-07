@@ -1,9 +1,7 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.TypeMatching;
 using R3;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -371,19 +369,19 @@ namespace CCEnvs.UnityX.Items
             return GetOccupiedContainers().Cast<IItemContainer>().ToArray();
         }
 
-        Observable <InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
+        Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()
         {
-            return ObserveContainerAdd().Select(ev => new InventoryContainerAddEvent 
-            { 
+            return ObserveContainerAdd().Select(ev => new InventoryContainerAddEvent
+            {
                 ID = ev.ID,
-                Container = ev.Container 
+                Container = ev.Container
             });
         }
 
         Observable<InventoryContainerRemoveEvent> IInventory.ObserveContainerRemove()
         {
-            return ObserveContainerRemove().Select(ev => new InventoryContainerRemoveEvent 
-            { 
+            return ObserveContainerRemove().Select(ev => new InventoryContainerRemoveEvent
+            {
                 ID = ev.ID,
                 Container = ev.Container
             });
@@ -393,8 +391,8 @@ namespace CCEnvs.UnityX.Items
         {
             return ObserveContainerReplace().Select(ev => new InventoryContainerReplaceEvent
             {
-                ID = ev.ID, 
-                OldContainer = ev.OldContainer, 
+                ID = ev.ID,
+                OldContainer = ev.OldContainer,
                 NewContainer = ev.NewContainer
             });
         }

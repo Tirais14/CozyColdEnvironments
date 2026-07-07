@@ -398,7 +398,7 @@ namespace CCEnvs
         public static bool TryGetFirstFlag<T>(this T source, out T result, bool skipDefault = true)
             where T : unmanaged, Enum
         {
-           ImmutableArray<T> values = EnumCache<T>.Values;
+            ImmutableArray<T> values = EnumCache<T>.Values;
 
             for (int i = skipDefault ? 1 : 0; i < values.Length; i++)
             {

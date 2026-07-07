@@ -1,9 +1,6 @@
 #if UNITY_2017_1_OR_NEWER
-using CCEnvs.Collections;
-using CCEnvs.Linq;
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 
 #nullable enable
 namespace CCEnvs.UnityX.EditorSerialization

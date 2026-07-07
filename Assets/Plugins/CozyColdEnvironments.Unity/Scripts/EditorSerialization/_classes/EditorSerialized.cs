@@ -1,7 +1,6 @@
 using CCEnvs.Attributes;
 using CommunityToolkit.Diagnostics;
 using System;
-using System.Collections.Generic;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -10,7 +9,7 @@ namespace CCEnvs.UnityX.EditorSerialization
 {
     [Serializable]
     public abstract class EditorSerialized<T>
-        : 
+        :
         IEditorSerialized<T>,
         IMutableType<T>
     {

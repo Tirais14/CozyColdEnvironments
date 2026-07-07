@@ -15,7 +15,7 @@ namespace CCEnvs.Services
         public ServiceBinder<TContract> FromInstance(TContract instance)
         {
             Instance = instance;
-            return this;    
+            return this;
         }
     }
 }

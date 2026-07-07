@@ -70,7 +70,7 @@
 //            TItem? item,
 //            int count
 //            )
-            
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //        {
@@ -118,7 +118,7 @@
 //            TItemContainer? containerSample,
 //            IItemContainerInfo? containerInfo
 //            )
-           
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //        {
@@ -143,7 +143,7 @@
 //            TItemContainer? containerSample,
 //            TItemContainerInfo containerInfo
 //            )
-            
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //            where TItemContainerInfo : struct, IItemContainerInfo
@@ -171,7 +171,7 @@
 //            TItemContainer? container,
 //            int count
 //            )
-            
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //        {
@@ -199,7 +199,7 @@
 //            TItemContainer? containerSample,
 //            TItemContainer? container
 //            )
-            
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //        {
@@ -282,7 +282,7 @@
 //            TItem? forItem,
 //            TItemContainer? containerSample
 //            )
-            
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //        {
@@ -521,7 +521,7 @@
 //            IEnumerable<TItemContainer> newContainers,
 //            out IList<int> ids
 //            )
-            
+
 //            where TItem : IItem
 //            where TItemContainer : IItemContainer
 //        {
@@ -615,7 +615,7 @@
 //            out IList<TItemContainer> changed,
 //            TItemContainer? containerSample
 //            )
-            
+
 //            where TItemContainer : IItemContainer
 //        {
 //            if (count >= 1)
@@ -799,7 +799,7 @@
 //             ObservableDictionary<int, TItemContainer> containers,
 //             CancellationToken cancellationToken = default
 //            )
-            
+
 //            where TItemContainer : IItemContainer
 //        {
 //            return containers.ObserveDictionaryRemove(cancellationToken)
@@ -814,7 +814,7 @@
 //            ObservableDictionary<int, TItemContainer> containers,
 //            CancellationToken cancellationToken = default
 //            )
-            
+
 //            where TItemContainer : IItemContainer
 //        {
 //            return containers.ObserveDictionaryReplace(cancellationToken)

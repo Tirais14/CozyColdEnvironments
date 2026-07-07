@@ -7,7 +7,7 @@ namespace CCEnvs.UnityX.Items
 {
     public readonly struct LargeReadOnlyItemContainer
         :
-        IItemContainerInfo, 
+        IItemContainerInfo,
         IEquatable<LargeReadOnlyItemContainer>
     {
         public static LargeReadOnlyItemContainer Empty { get; } = new();
@@ -23,7 +23,7 @@ namespace CCEnvs.UnityX.Items
 
         public LargeReadOnlyItemContainer(IItem? item, long itemCount)
         {
-            if (itemCount <= 0  || item.IsNull())
+            if (itemCount <= 0 || item.IsNull())
             {
                 Item = default;
                 ItemCount = 0;

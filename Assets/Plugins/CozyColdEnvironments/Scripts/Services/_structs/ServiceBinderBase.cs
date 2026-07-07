@@ -1,5 +1,4 @@
 using CCEnvs.Disposables;
-using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -43,7 +42,7 @@ namespace CCEnvs.Services
         {
             Guard.IsNotNull(contract, nameof(contract));
             baseContract = contract;
-            isAlreadyBinded = CCServices.HasBinding(BaseContract, ID);   
+            isAlreadyBinded = CCServices.HasBinding(BaseContract, ID);
         }
 
         public static ServiceBinderBase Create<TContract>()
@@ -90,7 +89,7 @@ namespace CCEnvs.Services
         {
             foreach (var iface in GetBaseContractInterfaces())
             {
-                if (iface.Namespace.StartsWith("System") 
+                if (iface.Namespace.StartsWith("System")
                     ||
                     (SkipBinded && CCServices.HasBinding(iface, ID)))
                 {

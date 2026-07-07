@@ -16,7 +16,7 @@ namespace CCEnvs.UnityX.Items
     public class Inventory
         :
         InventoryBase<
-            IItem, 
+            IItem,
             IItemContainer,
             IItemContainer,
             IItemContainerInfo,
@@ -31,10 +31,10 @@ namespace CCEnvs.UnityX.Items
         IInventory,
         IDisposable
     {
-        public static Inventory World { get; } = new() 
+        public static Inventory World { get; } = new()
         {
             AutoSize = true,
-            ContainerSample = new ItemContainer() 
+            ContainerSample = new ItemContainer()
         };
 
         public Inventory(
@@ -125,7 +125,7 @@ namespace CCEnvs.UnityX.Items
 
         protected override InventoryContainerAddEvent CreateContainerAddEvent(int id, IItemContainer container)
         {
-            return new InventoryContainerAddEvent 
+            return new InventoryContainerAddEvent
             {
                 ID = id,
                 Container = container
@@ -134,7 +134,7 @@ namespace CCEnvs.UnityX.Items
 
         protected override InventoryContainerRemoveEvent CreateContainerRemoveEvent(int id, IItemContainer container)
         {
-            return new InventoryContainerRemoveEvent 
+            return new InventoryContainerRemoveEvent
             {
                 ID = id,
                 Container = container
@@ -145,7 +145,7 @@ namespace CCEnvs.UnityX.Items
         {
             return new InventoryContainerReplaceEvent
             {
-                ID = id, 
+                ID = id,
                 OldContainer = oldContainer,
                 NewContainer = newContainer
             };
@@ -180,7 +180,7 @@ namespace CCEnvs.UnityX.Items
             )
         {
             return new InventoryTakeItemEvent(
-                new ItemAccessorTakeItemEvent(item, itemCount), 
+                new ItemAccessorTakeItemEvent(item, itemCount),
                 container
                 );
         }
@@ -193,7 +193,7 @@ namespace CCEnvs.UnityX.Items
             TContainer,
             IItemContainer<TItem>,
             IItemContainerInfo<TItem>,
-            ReadOnlyItemContainer<TItem>, 
+            ReadOnlyItemContainer<TItem>,
             LargeReadOnlyItemContainer<TItem>,
             InventoryContainerAddEvent<TContainer>,
             InventoryContainerRemoveEvent<TContainer>,
@@ -278,10 +278,10 @@ namespace CCEnvs.UnityX.Items
             TContainer container
             )
         {
-            return new InventoryContainerAddEvent<TContainer> 
+            return new InventoryContainerAddEvent<TContainer>
             {
                 ID = id,
-                Container = container 
+                Container = container
             };
         }
 
@@ -293,7 +293,7 @@ namespace CCEnvs.UnityX.Items
             return new InventoryContainerRemoveEvent<TContainer>
             {
                 ID = id,
-                Container = container 
+                Container = container
             };
         }
 
@@ -353,7 +353,7 @@ namespace CCEnvs.UnityX.Items
             )
         {
             return new InventoryPutItemEvent<TItem, TContainer>(
-                new ItemAccessorPutItemEvent<TItem>(item, itemCount), 
+                new ItemAccessorPutItemEvent<TItem>(item, itemCount),
                 container
                 );
         }

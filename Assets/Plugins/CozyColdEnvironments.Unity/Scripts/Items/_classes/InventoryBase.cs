@@ -18,10 +18,10 @@ namespace CCEnvs.UnityX.Items
 {
     public abstract class InventoryBase<
         TItem,
-        TContainer, 
+        TContainer,
         TInputItemContainer,
         TInputItemContainerInfo,
-        TReadOnlyItemContainer, 
+        TReadOnlyItemContainer,
         TLargeReadOnlyItemContainer,
         TContainerAddEvent,
         TContainerRemoveEvent,
@@ -29,7 +29,7 @@ namespace CCEnvs.UnityX.Items
         TPutItemEvent,
         TTakeItemEvent
         >
-        
+
         where TItem : class, IItem
         where TContainer : class, IItemContainer
         where TInputItemContainer : IItemContainer
@@ -317,7 +317,7 @@ namespace CCEnvs.UnityX.Items
 
             for (int i = 0; i < containers.Count; i++)
                 count += containers[i].ItemCount;
-                
+
             return count;
         }
 

@@ -380,7 +380,7 @@ namespace CCEnvs.UnityX.Items
 
         protected abstract TReadOnlyContainer CreateReadOnlyContainer();
         protected abstract TReadOnlyContainer CreateReadOnlyContainer(
-            TItem? item, 
+            TItem? item,
             int itemCount
             );
 

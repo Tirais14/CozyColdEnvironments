@@ -5,9 +5,9 @@ namespace CCEnvs.UnityX.Items
         :
         ItemContainerBase<
             IItem,
-            IItemContainer, 
-            IItemContainerInfo, 
-            ReadOnlyItemContainer, 
+            IItemContainer,
+            IItemContainerInfo,
+            ReadOnlyItemContainer,
             LargeReadOnlyItemContainer,
             ItemAccessorPutItemEvent,
             ItemAccessorTakeItemEvent
@@ -94,7 +94,7 @@ namespace CCEnvs.UnityX.Items
         :
         ItemContainerBase<
             TItem,
-            IItemContainer<TItem>, 
+            IItemContainer<TItem>,
             IItemContainerInfo<TItem>,
             ReadOnlyItemContainer<TItem>,
             LargeReadOnlyItemContainer<TItem>,
@@ -114,7 +114,7 @@ namespace CCEnvs.UnityX.Items
             )
             :
             base(
-                item, 
+                item,
                 count,
                 capacity
                 )

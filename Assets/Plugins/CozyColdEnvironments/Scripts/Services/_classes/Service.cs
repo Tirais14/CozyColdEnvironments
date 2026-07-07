@@ -76,63 +76,63 @@ namespace CCEnvs.Services
 #endif
     }
 
-//    public class Service<T, TResolve>
-//        where T : TResolve
-//    {
-//        private T? value;
+    //    public class Service<T, TResolve>
+    //        where T : TResolve
+    //    {
+    //        private T? value;
 
-//#if CC_DEBUG_ENABLED
-//        private object? resolvedID;
-//#endif
+    //#if CC_DEBUG_ENABLED
+    //        private object? resolvedID;
+    //#endif
 
-//        public bool IsResolved { get; private set; }
+    //        public bool IsResolved { get; private set; }
 
-//        public T GetValue(object? id = null)
-//        {
-//            if (!IsResolved)
-//            {
-//                value = (T)CCServices.Resolve<TResolve>(id)!;
-//                IsResolved = true;
+    //        public T GetValue(object? id = null)
+    //        {
+    //            if (!IsResolved)
+    //            {
+    //                value = (T)CCServices.Resolve<TResolve>(id)!;
+    //                IsResolved = true;
 
-//#if CC_DEBUG_ENABLED
-//                resolvedID = id;
-//#endif
-//            }
-//#if CC_DEBUG_ENABLED
-//            else ValidateID(id);
-//#endif
+    //#if CC_DEBUG_ENABLED
+    //                resolvedID = id;
+    //#endif
+    //            }
+    //#if CC_DEBUG_ENABLED
+    //            else ValidateID(id);
+    //#endif
 
-//            return value!;
-//        }
+    //            return value!;
+    //        }
 
-//        public bool TryGetValue([NotNullWhen(true)] out T? result, object? id = null)
-//        {
-//            if (!IsResolved)
-//            {
-//                if (CCServices.TryResolveOut<TResolve>(out var tResult, id))
-//                {
-//                    value = (T)tResult;
-//                    IsResolved = true;
+    //        public bool TryGetValue([NotNullWhen(true)] out T? result, object? id = null)
+    //        {
+    //            if (!IsResolved)
+    //            {
+    //                if (CCServices.TryResolveOut<TResolve>(out var tResult, id))
+    //                {
+    //                    value = (T)tResult;
+    //                    IsResolved = true;
 
-//#if CC_DEBUG_ENABLED
-//                    resolvedID = id;
-//#endif
-//                }
-//            }
-//#if CC_DEBUG_ENABLED
-//            else ValidateID(id);    
-//#endif
+    //#if CC_DEBUG_ENABLED
+    //                    resolvedID = id;
+    //#endif
+    //                }
+    //            }
+    //#if CC_DEBUG_ENABLED
+    //            else ValidateID(id);    
+    //#endif
 
-//            result = value;
-//            return IsResolved;
-//        }
+    //            result = value;
+    //            return IsResolved;
+    //        }
 
-//#if CC_DEBUG_ENABLED
-//        private void ValidateID(object? otherID)
-//        {
-//            if (!EqualityComparer<object?>.Default.Equals(resolvedID, otherID))
-//                typeof(GlobalService<T>).PrintWarning("Static service ignores other id after resolve. It must be null or the same id");
-//        }
-//#endif
-//    }
+    //#if CC_DEBUG_ENABLED
+    //        private void ValidateID(object? otherID)
+    //        {
+    //            if (!EqualityComparer<object?>.Default.Equals(resolvedID, otherID))
+    //                typeof(GlobalService<T>).PrintWarning("Static service ignores other id after resolve. It must be null or the same id");
+    //        }
+    //#endif
+    //    }
 }

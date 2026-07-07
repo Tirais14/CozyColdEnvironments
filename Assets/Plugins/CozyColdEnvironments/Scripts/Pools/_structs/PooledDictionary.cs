@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public readonly struct PooledDictionary<TKey, TValue> 
+    public readonly struct PooledDictionary<TKey, TValue>
         :
         IDictionary<TKey, TValue>,
         IDisposable,
