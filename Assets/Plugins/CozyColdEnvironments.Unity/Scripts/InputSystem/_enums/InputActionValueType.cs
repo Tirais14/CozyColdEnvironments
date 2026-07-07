@@ -4,7 +4,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.InputSystem
 {
-    public enum InputActionValueType : byte
+    public enum InputActionValueType
     {
         None,
 
