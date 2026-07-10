@@ -14,7 +14,7 @@ namespace CCEnvs.Diagnostics
     {
         public static IDebugLogger Instance { get; set; } = new CCDebug();
 
-        internal static readonly List<Action> onEnabledTypesChangedActions = new(0);
+        internal static readonly Dictionary<Type, Action> onEnabledTypesChangedActions = new(0);
 
 #if CC_DEBUG_ENABLED
         private static readonly HashSet<Type> disabledTypes = new();
@@ -62,7 +62,7 @@ namespace CCEnvs.Diagnostics
             enabledTypes.Remove(type);
 #endif
 
-            OnEnabledTypesChanged();
+            OnEnabledTypeChanged(type);
         }
 
         public static void DisableTypes(params Type[] types)
@@ -83,7 +83,7 @@ namespace CCEnvs.Diagnostics
             enabledTypes.Add(type);
 #endif
 
-            OnEnabledTypesChanged();
+            OnEnabledTypeChanged(type);
         }
 
         public static void EnableTypes(params Type[] types)
@@ -229,10 +229,10 @@ namespace CCEnvs.Diagnostics
                 stringBuilder.Append(targetString);
         }
 
-        private static void OnEnabledTypesChanged()
+        private static void OnEnabledTypeChanged(Type type)
         {
-            for (int i = 0; i < onEnabledTypesChangedActions.Count; i++)
-                onEnabledTypesChangedActions[i]();
+            if (onEnabledTypesChangedActions.TryGetValue(type, out Action onEnabledTypeChangedAction))
+                onEnabledTypeChangedAction();
         }
 
         void IDebugLogger.PrintLog(object message, object? context)
@@ -347,7 +347,7 @@ namespace CCEnvs.Diagnostics
 
         static CCDebug()
         {
-            CCDebug.onEnabledTypesChangedActions.Add(() => isEnabled = null);
+            CCDebug.onEnabledTypesChangedActions.Add(typeof(T), () => isEnabled = null);
         }
     }
 }

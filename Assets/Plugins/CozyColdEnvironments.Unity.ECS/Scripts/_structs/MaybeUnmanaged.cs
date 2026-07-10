@@ -1,6 +1,7 @@
 using CCEnvs.FuncLanguage;
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -12,6 +13,7 @@ namespace CCEnvs.UnityX.ECS
     {
         public static MaybeUnmanaged<T> None => new();
 
+        [MarshalAs(UnmanagedType.U1)]
         public readonly bool HasValue;
 
         public T Value;

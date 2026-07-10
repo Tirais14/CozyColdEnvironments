@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Reflection.Caching
 {
-    public struct TypeCacheInfo
+    public class TypeCacheInfo
     {
-        private string? _name;
-        private string? _fullName;
-        private string? _namespace;
+        private string? name;
+        private string? fullName;
+        private string? ns;
 
         private bool? isUnityObject;
         private bool? isUnityComponent;
@@ -83,31 +83,29 @@ namespace CCEnvs.Reflection.Caching
         public string Name {
             get
             {
-                _name ??= Type.Name;
+                name ??= Type.Name;
 
-                return _name;
+                return name;
             }
         }
         public string FullName {
             get
             {
-                _fullName ??= Type.FullName;
+                fullName ??= Type.FullName;
 
-                return _fullName;
+                return fullName;
             }
         }
         public string Namespace {
             get
             {
-                _namespace ??= Type.Namespace;
+                ns ??= Type.Namespace;
 
-                return _namespace;
+                return ns;
             }
         }
 
         public TypeCacheInfo(Type type)
-            :
-            this()
         {
             Type = type;
         }
@@ -163,7 +161,7 @@ namespace CCEnvs.Reflection.Caching
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private readonly bool IsCCBehaviourType(Type type)
+        private bool IsCCBehaviourType(Type type)
         {
             return type.Namespace.ContainsOrdinal(NamepsaceHelper.NAMESPACE_CCENVS_UNITY_COMPONENTS)
                    &&

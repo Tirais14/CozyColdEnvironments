@@ -5,14 +5,14 @@ using Unity.Mathematics;
 
 namespace CCEnvs.UnityX.ECS
 {
-    public readonly struct TupleUnmanaged
+    public readonly struct Tpl
     {
         [BurstCompile]
-        public static TupleUnmanaged<T1, T2> Create<T1, T2>(T1 item1, T2 item2)
+        public static Tpl<T1, T2> Create<T1, T2>(T1 item1, T2 item2)
             where T1 : unmanaged
             where T2 : unmanaged
         {
-            return new TupleUnmanaged<T1, T2>
+            return new Tpl<T1, T2>
             {
                 Item1 = item1,
                 Item2 = item2
@@ -34,9 +34,9 @@ namespace CCEnvs.UnityX.ECS
         }
     }
 
-    public struct TupleUnmanaged<T1, T2>
+    public struct Tpl<T1, T2>
         :
-        IEquatable<TupleUnmanaged<T1, T2>>
+        IEquatable<Tpl<T1, T2>>
 
         where T1 : unmanaged
         where T2 : unmanaged
@@ -52,24 +52,24 @@ namespace CCEnvs.UnityX.ECS
         }
 
         [BurstCompile]
-        public static bool operator ==(TupleUnmanaged<T1, T2> left, TupleUnmanaged<T1, T2> right)
+        public static bool operator ==(Tpl<T1, T2> left, Tpl<T1, T2> right)
         {
             return left.Equals(right);
         }
 
         [BurstCompile]
-        public static bool operator !=(TupleUnmanaged<T1, T2> left, TupleUnmanaged<T1, T2> right)
+        public static bool operator !=(Tpl<T1, T2> left, Tpl<T1, T2> right)
         {
             return !(left == right);
         }
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is TupleUnmanaged<T1, T2> unmanaged && Equals(unmanaged);
+            return obj is Tpl<T1, T2> unmanaged && Equals(unmanaged);
         }
 
         [BurstCompile]
-        public readonly bool Equals(TupleUnmanaged<T1, T2> other)
+        public readonly bool Equals(Tpl<T1, T2> other)
         {
             return Item1.GetHashCode() == other.Item1.GetHashCode()
                    &&
