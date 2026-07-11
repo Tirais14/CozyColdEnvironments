@@ -27,6 +27,12 @@ namespace CCEnvs.UnityX.Items.UI
         [SerializeField, GetByChildren(IsOptional = true)]
         protected ItemContainerViewSelectableController? containerSelectableController;
 
+        [SerializeField, Min(0)]
+        protected int containerCount;
+
+        [SerializeField]
+        protected bool inventoryAutoSize;
+
         public ItemContainerViewSelectableController? ContainerSelectableController => containerSelectableController;
 
         public GameObject ContainerPrefab {
@@ -39,10 +45,34 @@ namespace CCEnvs.UnityX.Items.UI
             set => SetContainersRoot(value);
         }
 
+        public int ContainerCount {
+            get => containerCount;
+            set => SetContainerCount(value);
+        }
+
+        public bool InventoryAutoSize {
+            get => inventoryAutoSize;
+            set => SetInventoryAutoSize(value);
+        }
+
         protected override void Start()
         {
             base.Start();
             SetContainersRoot(containersRoot);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public InventoryView<TViewModel> SetContainerCount(int value)
+        {
+            containerCount = Math.Max(value, 0);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public InventoryView<TViewModel> SetInventoryAutoSize(bool value)
+        {
+            inventoryAutoSize = value;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -69,60 +99,32 @@ namespace CCEnvs.UnityX.Items.UI
             InitItemContainers(vm);
         }
 
-        private void InitItemContainers(TViewModel vm)
+        protected virtual IItemContainer CreateItemContainer() => new ItemContainer();
+
+        protected virtual void InitItemContainers(TViewModel viewModel)
         {
-            var cntViews = containersRoot.Q()
+            var containerViews = containersRoot.Q()
                 .FromChildrens()
                 .ExcludeSelf()
                 .IncludeInactive()
                 .Components<IView>();
 
-            using var cnts = ListPool<IItemContainer>.Shared.Get();
+            using var containers = ListPool<IItemContainer>.Shared.Get();
 
-            foreach (var cntView in cntViews)
+            foreach (var containerView in containerViews)
             {
-                if (!cntView.Model.Is<IItemContainer>(out var cnt))
-                    cnt = new ItemContainer();
+                if (containerView.Model.IsNot<IItemContainer>(out var container))
+                    container = CreateItemContainer();
 
-                cnts.Value.Add(cnt);
+                containers.Value.Add(container);
             }
 
-            foreach (var cnt in cnts.Value)
-                vm.AddContainer(cnt);
+            foreach (var container in containers.Value)
+                viewModel.AddContainer(container);
         }
     }
     public class InventoryView : InventoryView<InventoryViewModel<IInventory>>
     {
-        [SerializeField, Min(0)]
-        protected int containerCount;
-
-        [SerializeField]
-        protected bool inventoryAutoSize;
-
-        public int ContainerCount {
-            get => containerCount;
-            set => SetContainerCount(value);
-        }
-
-        public bool InventoryAutoSize {
-            get => inventoryAutoSize;
-            set => SetInventoryAutoSize(value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public InventoryView SetContainerCount(int value)
-        {
-            containerCount = Math.Max(value, 0);
-            return this;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public InventoryView SetInventoryAutoSize(bool value)
-        {
-            inventoryAutoSize = value;
-            return this;
-        }
-
         protected override InventoryViewModel<IInventory> CreateViewModel()
         {
             var inv = Inventory.CreateWith<ItemContainer>(containerCount);

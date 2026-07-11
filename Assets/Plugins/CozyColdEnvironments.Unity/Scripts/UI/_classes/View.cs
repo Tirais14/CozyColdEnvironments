@@ -175,6 +175,11 @@ namespace CCEnvs.UnityX.UI
             throw new NotImplementedException(nameof(InitViewModel));
         }
 
+        /// <summary>
+        /// Invokes in <see cref="SetViewModel(TViewModel?)"/> with value or in Dispose with null
+        /// </summary>
+        /// <param name="vm"></param>
+        /// <exception cref="NotImplementedException"></exception>
         protected virtual void OnSetViewModel(TViewModel? vm)
         {
             throw new NotImplementedException(nameof(OnSetViewModel));

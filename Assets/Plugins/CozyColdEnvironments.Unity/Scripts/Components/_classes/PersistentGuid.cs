@@ -17,7 +17,6 @@ namespace CCEnvs.UnityX.Components
     {
         public static bool IgnoreWarnings { get; set; }
 
-        [OnInstallResetable]
         private readonly static HashSet<string> guids = new();
 
         private static bool sceneUnloadedSubscribed;
@@ -66,6 +65,12 @@ namespace CCEnvs.UnityX.Components
 
             if (Guid.IsNotNullOrWhiteSpace())
                 guids.Remove(Guid!);
+        }
+
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            guids.Clear();
         }
 
         private static void RemoveGuidByScene(Scene scene)

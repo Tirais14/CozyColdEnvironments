@@ -31,7 +31,11 @@ namespace CCEnvs.UnityX.Items.UI
 
         where TModel : IInventory
     {
-        private readonly ObservableDictionary<IItemContainer, GameObject> containerViews = new();
+        private readonly ObservableDictionary<IItemContainer, GameObject> containerViews = new(4, new ReferenceEqualityComparer<IItemContainer>());
+
+        /// <summary>
+        /// Containers added from view
+        /// </summary>
         private readonly Lazy<HashSet<IItemContainer>> fromViewContainers = new(() => new HashSet<IItemContainer>());
 
         private IDisposable? addContainerBinding;
@@ -90,14 +94,14 @@ namespace CCEnvs.UnityX.Items.UI
 
         private void InitExistingContainers(TModel model)
         {
-            var existsingCnts = model.Containers
+            var existsingContainers = model.Containers
 #if ZLINQ_PLUGIN
                 .AsValueEnumerable()
 #endif
                 .Select(cnt => new InventoryContainerAddEvent { ID = cnt.Key, Container = cnt.Value })
                 .ToArray();
 
-            OnContainersAdd(existsingCnts);
+            OnContainersAdd(existsingContainers);
         }
 
         private void BindContainerAdd(TModel model)
@@ -122,7 +126,7 @@ namespace CCEnvs.UnityX.Items.UI
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var cnts = ListPool<IItemContainer>.Shared.Get(addEvs.Length);
+            using var containers = ListPool<IItemContainer>.Shared.Get(addEvs.Length);
 
             foreach (var addEv in addEvs)
             {
@@ -134,13 +138,13 @@ namespace CCEnvs.UnityX.Items.UI
                     continue;
                 }
 
-                cnts.Value.Add(addEv.Container);
+                containers.Value.Add(addEv.Container);
             }
 
-            var cntViewModels = await InstantiateContainers(cnts.Value.Count, cancellationToken);
+            var containerViewModels = await InstantiateContainers(containers.Value.Count, cancellationToken);
 
-            foreach (var (cnt, cntVM) in cnts.Value.EquiZip(cntViewModels))
-                cntVM.SetModel(cnt);
+            foreach (var (container, containerViewModel) in containers.Value.EquiZip(containerViewModels))
+                containerViewModel.SetModel(container);
         }
 
         private async UniTask<IReadOnlyList<IItemContainerViewModel>> InstantiateContainers(
@@ -165,7 +169,7 @@ namespace CCEnvs.UnityX.Items.UI
                 cancellationToken: cancellationToken
                 );
 
-            var cntViewModels = new List<IItemContainerViewModel>(count);
+            var containerViewModels = new List<IItemContainerViewModel>(count);
 
             try
             {
@@ -178,18 +182,18 @@ namespace CCEnvs.UnityX.Items.UI
                         .Lax()
                         .TryGetValue(out var view)
                         ||
-                        view.ViewModel.IsNot<IItemContainerViewModel>(out var cntViewModel)
+                        view.ViewModel.IsNot<IItemContainerViewModel>(out var containerViewModel)
                         ||
-                        view.Model.IsNot<IItemContainer>(out var cnt))
+                        view.Model.IsNot<IItemContainer>(out var container))
                     {
                         continue;
                     }
 
-                    cntViewModels.Add(cntViewModel);
-                    containerViews.Add(cnt, go);
+                    containerViewModels.Add(containerViewModel);
+                    containerViews.Add(container, go);
                 }
 
-                return cntViewModels;
+                return containerViewModels;
             }
             catch (Exception ex)
             {
@@ -198,7 +202,7 @@ namespace CCEnvs.UnityX.Items.UI
                 foreach (var go in instances)
                     UnityEngine.Object.Destroy(go);
 
-                foreach (var cnt in cntViewModels
+                foreach (var containerViewModel in containerViewModels
 #if ZLINQ_PLUGIN
                     .AsValueEnumerable()
 #endif
@@ -206,7 +210,7 @@ namespace CCEnvs.UnityX.Items.UI
                     .OfType<IItemContainer>()
                     )
                 {
-                    containerViews.Remove(cnt);
+                    containerViews.Remove(containerViewModel);
                 }
             }
 

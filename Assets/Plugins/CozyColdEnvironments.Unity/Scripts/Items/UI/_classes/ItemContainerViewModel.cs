@@ -16,13 +16,16 @@ namespace CCEnvs.UnityX.Items.UI
         where T : IItemContainer
     {
         private readonly ReactiveProperty<Sprite> iconView = new(UCC.TransparentSprite.Value);
+
         private readonly ReactiveProperty<string> counterView = new();
 
         private IDisposable? iconBinding;
         private IDisposable? counterBinding;
 
         public ReadOnlyReactiveProperty<Sprite> Icon => iconView;
-        public ReadOnlyReactiveProperty<string> CounterView => counterView;
+
+        public ReadOnlyReactiveProperty<string> Count => counterView;
+
         public CompareAction<int>? ShowCounterTextPredicate { get; set; }
 
         public ItemContainerViewModel()

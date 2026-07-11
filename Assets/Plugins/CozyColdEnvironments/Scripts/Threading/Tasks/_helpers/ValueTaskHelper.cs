@@ -144,6 +144,15 @@ namespace CCEnvs.Threading.Tasks
             }
         }
 
+        public static async void ForgetByPrintException<TCaller>(
+            this ValueTask task,
+            TCaller? caller,
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(caller, suppresCancellationThrow);
+        }
+
         public static async void Forget<T>(
             this ValueTask<T> task,
             bool suppresCancellationThrow = true
@@ -185,15 +194,6 @@ namespace CCEnvs.Threading.Tasks
                 else
                     caller.PrintException(ex);
             }
-        }
-
-        public static async void ForgetByPrintException<TCaller>(
-            this ValueTask task,
-            TCaller? caller,
-            bool suppresCancellationThrow = true
-            )
-        {
-            task.Forget(caller, suppresCancellationThrow);
         }
 
         public static async void ForgetByPrintException<T>(

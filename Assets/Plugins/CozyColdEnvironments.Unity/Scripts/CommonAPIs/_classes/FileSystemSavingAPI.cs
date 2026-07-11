@@ -1,4 +1,3 @@
-using CCEnvs.Attributes;
 using CCEnvs.Services;
 using CCEnvs.UnityX.Saves;
 using Cysharp.Threading.Tasks;
@@ -10,7 +9,6 @@ namespace CCEnvs.UnityX.CommonAPIs
 {
     public sealed class FileSystemSavingAPI : ISavingAPI
     {
-        [field: OnInstallResetable]
         public static FileSystemSavingAPI? Instance { get; private set; }
 
         public bool IsGameSaving => SavingSystem.Self.IsSaving;
@@ -26,6 +24,12 @@ namespace CCEnvs.UnityX.CommonAPIs
             CCServices.BindInstance(this)
                 .WithInterfaces()
                 .AsSingle();
+        }
+
+        private static void OnInstall()
+        {
+            Instance?.Dispose();
+            Instance = null;
         }
 
         public async UniTask SaveGameAsync(

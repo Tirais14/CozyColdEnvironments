@@ -13,7 +13,6 @@ namespace CCEnvs.UnityX.CSharp.Editor
     {
         private const string NSPACE_KEYS_DEFAULT_TEXT = "first,second...";
 
-        [OnInstallResetable]
         private static bool inProcess;
 
         private TextField folderPath = null!;
@@ -25,6 +24,12 @@ namespace CCEnvs.UnityX.CSharp.Editor
         private void OnDestroy()
         {
             processBtn.clicked -= AddDefines;
+        }
+
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            inProcess = false;
         }
 
         [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/Editor Defines Marker")]

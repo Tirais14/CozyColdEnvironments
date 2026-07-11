@@ -58,7 +58,7 @@ namespace CCEnvs.UnityX.Items.UI
             if (counterMesh == null)
                 return;
 
-            counterBinding = vm.CounterView.Subscribe(OnCounterChanged);
+            counterBinding = vm.Count.Subscribe(OnCounterChanged);
         }
 
         private void OnCounterChanged(string counterView)

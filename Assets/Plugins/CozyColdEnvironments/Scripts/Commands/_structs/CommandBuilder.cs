@@ -1,4 +1,3 @@
-using CCEnvs.Attributes;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
@@ -215,13 +214,21 @@ namespace CCEnvs.Patterns.Commands
 
         public struct Async
         {
-            [OnInstallResetable]
             private static ObjectPool<AnonymousCommandAsync>? pool;
 
             private readonly CommandBuilder builder;
             private readonly Intermediate intermediate;
 
             public Func<CancellationToken, ValueTask>? ExecuteAction;
+
+            static Async()
+            {
+                CCProjectHelper.SubscribeOnInstallIfNot<Async>(
+                    () =>
+                    {
+                        pool?.Dispose();
+                    });
+            }
 
             public Async(CommandBuilder builder, Intermediate intermediate)
                 :
@@ -294,13 +301,21 @@ namespace CCEnvs.Patterns.Commands
 
         public struct Async<TState>
         {
-            [OnInstallResetable]
             private static ObjectPool<AnonymousCommandAsync<TState>>? pool;
 
             private readonly CommandBuilder builder;
             private readonly Intermediate<TState> intermediate;
 
             public Func<TState, CancellationToken, ValueTask>? ExecuteAction;
+
+            static Async()
+            {
+                CCProjectHelper.SubscribeOnInstallIfNot<Async<TState>>(
+                    () =>
+                    {
+                        pool?.Dispose();
+                    });
+            }
 
             public Async(CommandBuilder builder, Intermediate<TState> intermediate)
                 :
@@ -375,13 +390,21 @@ namespace CCEnvs.Patterns.Commands
 
         public struct Sync
         {
-            [OnInstallResetable]
             private static ObjectPool<AnonymousCommand>? pool;
 
             private readonly CommandBuilder builder;
             private readonly Intermediate intermediate;
 
             public Action? ExecuteAction;
+
+            static Sync()
+            {
+                CCProjectHelper.SubscribeOnInstallIfNot<Sync>(
+                    () =>
+                    {
+                        pool?.Dispose();
+                    });
+            }
 
             public Sync(CommandBuilder builder, Intermediate intermediate)
                 :
@@ -455,13 +478,21 @@ namespace CCEnvs.Patterns.Commands
 
         public struct Sync<TState>
         {
-            [OnInstallResetable]
             private static ObjectPool<AnonymousCommand<TState>>? pool;
 
             private readonly CommandBuilder builder;
             private readonly Intermediate<TState> intermediate;
 
             public Action<TState>? ExecuteAction;
+
+            static Sync()
+            {
+                CCProjectHelper.SubscribeOnInstallIfNot<Sync<TState>>(
+                    () =>
+                    {
+                        pool?.Dispose();
+                    });
+            }
 
             public Sync(CommandBuilder builder, Intermediate<TState> intermediate)
                 :

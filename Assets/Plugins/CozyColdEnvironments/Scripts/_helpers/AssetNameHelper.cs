@@ -112,7 +112,6 @@ namespace CCEnvs
 
 #if UNITY_2017_1_OR_NEWER
 
-        [OnInstallResetable]
         private readonly static Cache<string, string> decloniszedNameCache = new()
         {
             ExpirationScanFrequency = 30.Seconds(),
@@ -223,6 +222,12 @@ namespace CCEnvs
             }
 
             return name[prefix.Length..];
+        }
+
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            decloniszedNameCache.Clear();
         }
 #endif
     }

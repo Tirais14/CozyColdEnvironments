@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace CCEnvs.Services
 {
     public class GlobalService<T>
+        where T : class
     {
         private static T? value;
 
@@ -13,6 +14,16 @@ namespace CCEnvs.Services
 #endif
 
         public static bool IsResolved { get; private set; }
+
+        static GlobalService()
+        {
+            CCProjectHelper.SubscribeOnInstallIfNot<GlobalService<T>>(
+                () =>
+                {
+                    value = default;
+                    IsResolved = false;
+                });
+        }
 
         public static T GetValue(object? id = null)
         {

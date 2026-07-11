@@ -8,7 +8,6 @@ namespace CCEnvs.UnityX.CommonAPIs
 {
     public class DefaultGeneralAPI : IGeneralAPI
     {
-        [field: OnInstallResetable]
         public static DefaultGeneralAPI? Instance { get; private set; }
 
         private readonly ReactiveProperty<bool> isInitialized = new();
@@ -43,6 +42,13 @@ namespace CCEnvs.UnityX.CommonAPIs
             CCServices.BindInstance(this)
                 .WithInterfaces()
                 .AsSingle();
+        }
+
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            Instance?.Dispose();
+            Instance = null;
         }
 
         public void GameplayStart()

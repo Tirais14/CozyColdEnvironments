@@ -84,6 +84,10 @@ namespace CCEnvs.UnityX.UI
             }
         }
 
+        /// <summary>
+        /// Invokes on <see cref="SetModel(TModel?)"/> with value or in Dispose with always null
+        /// </summary>
+        /// <param name="model"></param>
         protected virtual void OnSetModel(TModel? model)
         {
             throw new NotImplementedException(nameof(OnSetModel));

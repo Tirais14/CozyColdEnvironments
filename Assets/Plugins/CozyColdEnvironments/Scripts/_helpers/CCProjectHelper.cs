@@ -2,9 +2,11 @@
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
 using CCEnvs.Reflection;
+using CommunityToolkit.Diagnostics;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
@@ -12,7 +14,33 @@ namespace CCEnvs
 {
     public static class CCProjectHelper
     {
+        private static readonly Lazy<Dictionary<Type, Action>> onInstallActions = new(() => new());
+        private static readonly Lazy<Dictionary<Type, Action<ImmutableArray<MemberInfo>>>> onInstallActionsMembered = new(() => new());
+
         public static bool IsInstalling { get; private set; }
+
+        public static void SubscribeOnInstallIfNot(Type type, Action action)
+        {
+            Guard.IsNotNull(type);
+            Guard.IsNotNull(action);
+            onInstallActions.Value.TryAdd(type, action);
+        }
+        public static void SubscribeOnInstallIfNot<T>(Action action)
+        {
+            Guard.IsNotNull(action);
+            onInstallActions.Value.TryAdd(typeof(T), action);
+        }
+        public static void SubscribeOnInstallIfNot(Type type, Action<ImmutableArray<MemberInfo>> action)
+        {
+            Guard.IsNotNull(type);
+            Guard.IsNotNull(action);
+            onInstallActionsMembered.Value.TryAdd(type, action);
+        }
+        public static void SubscribeOnInstallIfNot<T>(Action<ImmutableArray<MemberInfo>> action)
+        {
+            Guard.IsNotNull(action);
+            onInstallActionsMembered.Value.TryAdd(typeof(T), action);
+        }
 
         public static MemberInfo[] GetDomainMembers(
             MemberTypes memberTypes,
@@ -21,7 +49,7 @@ namespace CCEnvs
         {
             memberTypes &= ~MemberTypes.NestedType;
 
-            var assemblyNames = GetDefaultAssemnlyNames().ConcatToArray(additionalAssemblyNames ?? new arr<string>());
+            var assemblyNames = GetDefaultAssemblyNames().ConcatToArray(additionalAssemblyNames ?? new arr<string>());
 
             var assemblyNamesPartial = processAssemblyNames(assemblyNames);
 
@@ -88,15 +116,50 @@ namespace CCEnvs
             try
             {
                 var types = domainMembers.AsParallel().OfType<Type>().ToArray();
+                var members = GetMembers(BindingFlagsDefault.StaticAll, types).ToImmutableArray();
 
-                var members = GetMembers(BindingFlagsDefault.StaticAll, types);
-
-                OnInstallProcessFields(null, members);
+                ExecuteOnInstallActions();
+                ExecuteOnInstallActions(members);
                 OnInstallExecuteMethods(null, members, domainMembers);
             }
             finally
             {
                 IsInstalling = false;
+            }
+        }
+
+        private static void ExecuteOnInstallActions()
+        {
+            if (onInstallActions.IsValueCreated)
+            {
+                foreach (var action in onInstallActions.Value.Values)
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception ex)
+                    {
+                        typeof(CCProjectHelper).PrintException(ex);
+                    }
+                }
+            }
+        }
+        private static void ExecuteOnInstallActions(ImmutableArray<MemberInfo> members)
+        {
+            if (onInstallActionsMembered.IsValueCreated)
+            {
+                foreach (var action in onInstallActionsMembered.Value.Values)
+                {
+                    try
+                    {
+                        action(members);
+                    }
+                    catch (Exception ex)
+                    {
+                        typeof(CCProjectHelper).PrintException(ex);
+                    }
+                }
             }
         }
 
@@ -107,7 +170,7 @@ namespace CCEnvs
 
         private static void OnInstallExecuteMethods(
             object? target,
-            IEnumerable<MemberInfo> members,
+            ImmutableArray<MemberInfo> members,
             MemberInfo[]? domainMembers
             )
         {
@@ -145,105 +208,105 @@ namespace CCEnvs
             }
         }
 
-        private static void OnInstallProcessFields(
-            object? target,
-            IEnumerable<MemberInfo> members)
-        {
-            var fieldInfos = (from member in members
-                              where member.MemberType == MemberTypes.Field
-                              select (FieldInfo)member into field
-                              where !field.FieldType.ContainsGenericParameters
-                              where field.IsDefined<OnInstallAttribute>(inherit: true)
-                              select field)
-                              .ToArray();
+        //private static void OnInstallProcessFields(
+        //    object? target,
+        //    IEnumerable<MemberInfo> members)
+        //{
+        //    var fieldInfos = (from member in members
+        //                      where member.MemberType == MemberTypes.Field
+        //                      select (FieldInfo)member into field
+        //                      where !field.FieldType.ContainsGenericParameters
+        //                      where field.IsDefined<OnInstallAttribute>(inherit: true)
+        //                      select field)
+        //                      .ToArray();
 
-            OnInstallResetFields(target, fieldInfos);
-            OnInstallExecuteFieldMethods(fieldInfos);
-        }
+        //    OnInstallResetFields(target, fieldInfos);
+        //    OnInstallExecuteFieldMethods(fieldInfos);
+        //}
 
-        private static void OnInstallResetFields(
-            object? target,
-            IEnumerable<FieldInfo> fields
-            )
-        {
-            Reflect fieldReflect;
+        //private static void OnInstallResetFields(
+        //    object? target,
+        //    IEnumerable<FieldInfo> fields
+        //    )
+        //{
+        //    Reflect fieldReflect;
 
-            foreach (var (field, fieldValue) in
+        //    foreach (var (field, fieldValue) in
 
-                from field in fields
-                where field.IsDefined<OnInstallResetableAttribute>(inherit: true)
-                select (field, fieldValue: field.GetValue(target)) into fieldInfo
-                where fieldInfo.fieldValue.IsNotDefault()
-                select fieldInfo
-                )
-            {
-                try
-                {
-                    fieldReflect = new Reflect();
+        //        from field in fields
+        //        where field.IsDefined<OnInstallResetableAttribute>(inherit: true)
+        //        select (field, fieldValue: field.GetValue(target)) into fieldInfo
+        //        where fieldInfo.fieldValue.IsNotDefault()
+        //        select fieldInfo
+        //        )
+        //    {
+        //        try
+        //        {
+        //            fieldReflect = new Reflect();
 
-                    fieldReflect.From(field.FieldType)
-                        .IncludeInstance()
-                        .WithName("Clear")
-                        .Method()
-                        .Lax()
-                        .IfSome(method =>
-                        {
-                            method.Invoke(fieldValue, CC.EmptyArguments);
-                        });
+        //            fieldReflect.From(field.FieldType)
+        //                .IncludeInstance()
+        //                .WithName("Clear")
+        //                .Method()
+        //                .Lax()
+        //                .IfSome(method =>
+        //                {
+        //                    method.Invoke(fieldValue, CC.EmptyArguments);
+        //                });
 
-                    fieldReflect.From(field.FieldType)
-                        .IncludeInstance()
-                        .WithName("Reset")
-                        .Method()
-                        .Lax()
-                        .IfSome(method =>
-                        {
-                            method.Invoke(fieldValue, CC.EmptyArguments);
-                        });
+        //            fieldReflect.From(field.FieldType)
+        //                .IncludeInstance()
+        //                .WithName("Reset")
+        //                .Method()
+        //                .Lax()
+        //                .IfSome(method =>
+        //                {
+        //                    method.Invoke(fieldValue, CC.EmptyArguments);
+        //                });
 
-                    if (field.IsInitOnly)
-                        continue;
+        //            if (field.IsInitOnly)
+        //                continue;
 
-                    if (fieldValue is IDisposable disposable)
-                        disposable.Dispose();
+        //            if (fieldValue is IDisposable disposable)
+        //                disposable.Dispose();
 
-                    if (field.FieldType.IsValueType)
-                        field.SetValue(target, Activator.CreateInstance(field.FieldType));
-                    else
-                        field.SetValue(target, null);
-                }
-                catch (Exception ex)
-                {
-                    typeof(CCProjectHelper).PrintException(ex);
-                }
-            }
-        }
+        //            if (field.FieldType.IsValueType)
+        //                field.SetValue(target, Activator.CreateInstance(field.FieldType));
+        //            else
+        //                field.SetValue(target, null);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            typeof(CCProjectHelper).PrintException(ex);
+        //        }
+        //    }
+        //}
 
-        private static void OnInstallExecuteFieldMethods(
-            IEnumerable<FieldInfo> fields
-            )
-        {
-            foreach (var (field, fieldValue) in
+        //private static void OnInstallExecuteFieldMethods(
+        //    IEnumerable<FieldInfo> fields
+        //    )
+        //{
+        //    foreach (var (field, fieldValue) in
 
-                from field in fields
-                select (field, fieldValue: field.GetValue(null)) into fieldInfo
-                where fieldInfo.fieldValue.IsNotDefault()
-                select fieldInfo
-                )
-            {
-                try
-                {
-                    var members = GetMembers(BindingFlagsDefault.InstanceAll, field.FieldType);
-                    OnInstallExecuteMethods(fieldValue, members, null);
-                }
-                catch (Exception ex)
-                {
-                    typeof(CCProjectHelper).PrintException(ex);
-                }
-            }
-        }
+        //        from field in fields
+        //        select (field, fieldValue: field.GetValue(null)) into fieldInfo
+        //        where fieldInfo.fieldValue.IsNotDefault()
+        //        select fieldInfo
+        //        )
+        //    {
+        //        try
+        //        {
+        //            var members = GetMembers(BindingFlagsDefault.InstanceAll, field.FieldType);
+        //            OnInstallExecuteMethods(fieldValue, members, null);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            typeof(CCProjectHelper).PrintException(ex);
+        //        }
+        //    }
+        //}
 
-        private static string[] GetDefaultAssemnlyNames()
+        private static string[] GetDefaultAssemblyNames()
         {
             return new string[]
             {

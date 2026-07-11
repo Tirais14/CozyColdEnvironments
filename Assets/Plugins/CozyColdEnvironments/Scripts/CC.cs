@@ -32,10 +32,8 @@ namespace CCEnvs
 
         public static JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.GetDefault();
 
-        [field: OnInstallResetable]
         public static CommandScheduler CommandScheduler { get; private set; } = null!;
 
-        [field: OnInstallResetable]
         public static int MainThreadID { get; private set; }
 
         public static bool IsDebugMode {
@@ -88,6 +86,9 @@ namespace CCEnvs
         [OnInstallExecutable]
         private static void CreateCommandScheduler()
         {
+            MainThreadID = 0;
+
+            CommandScheduler?.Disable();
             CommandScheduler = CommandScheduler.CreateDefaultRegistered();
         }
         #endregion Install

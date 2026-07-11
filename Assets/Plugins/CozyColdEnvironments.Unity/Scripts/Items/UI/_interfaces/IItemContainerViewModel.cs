@@ -10,7 +10,8 @@ namespace CCEnvs.UnityX.Items
         IViewModel
     {
         ReadOnlyReactiveProperty<Sprite> Icon { get; }
-        ReadOnlyReactiveProperty<string> CounterView { get; }
+
+        ReadOnlyReactiveProperty<string> Count { get; }
 
         CompareAction<int>? ShowCounterTextPredicate { get; set; }
     }

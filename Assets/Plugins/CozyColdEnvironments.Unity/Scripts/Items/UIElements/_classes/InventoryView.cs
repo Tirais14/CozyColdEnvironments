@@ -1,70 +1,124 @@
-//using CCEnvs.UnityX.Items.UI;
-//using CCEnvs.UnityX.UI;
-//using UnityEngine;
-//using UnityEngine.UIElements;
+using CCEnvs.Disposables;
+using CCEnvs.UnityX.Injections;
+using CommunityToolkit.Diagnostics;
+using ObservableCollections;
+using R3;
+using System;
+using UnityEngine;
+using UnityEngine.UIElements;
 
-//#nullable enable
-//namespace CCEnvs.UnityX.Items.UIElements
-//{
-//    public abstract class InventoryView<TViewModel> : View<TViewModel>
-//        where TViewModel : IInventoryViewModel
-//    {
-//        [SerializeField]
-//        protected UIDocument uiDocument;
+#nullable enable
+namespace CCEnvs.UnityX.Items.UIElements
+{
+    [RequireComponent(typeof(PanelRenderer))]
+    public abstract class InventoryView<TViewModel>
+        :
+        UI.InventoryView<TViewModel>,
+        IViewElement
 
-//        [SerializeField]
-//        protected GameObject containerPrefab;
+        where TViewModel : IInventoryViewModel
+    {
+        [GetBySelf]
+        protected PanelRenderer renderer;
 
-//        [SerializeField]
-//        protected Transform containersRoot;
+        private IDisposable? viewModelContainerRootAddBinding;
+        private IDisposable? viewModelContainerRootRemoveBinding;
+        private IDisposable? viewModelContainerRootReplaceBinding;
+        private IDisposable? viewModelContainerRootsClearBinding;
 
-//        public GameObject ContainerPrefab {
-//            get => containerPrefab;
-//            set => containerPrefab = value;
-//        }
+        public PanelRenderer Renderer => renderer;
 
-//        public UIDocument UIDocument {
-//            get => uiDocument;
-//            set => uiDocument = value;
-//        }
+        public VisualElement? RendererRoot { get; private set; }
 
-//        public Transform? ContainersRoot {
-//            get => containersRoot;
-//            set => containersRoot = value.IfNull(transform);
-//        }
+        protected override void OnSetViewModel(TViewModel? vm)
+        {
+            if (vm is null)
+            {
+                renderer.UnregisterUIReloadCallback(OnUIReload);
+                RendererRoot = null;
+            }
+            else
+                renderer.RegisterUIReloadCallback(OnUIReload);
 
-//        protected override void Awake()
-//        {
-//            base.Awake();
-//            containersRoot = containersRoot.IfNull(transform);
-//        }
-//    }
+            CCDisposable.Dispose(ref viewModelContainerRootAddBinding);
+            CCDisposable.Dispose(ref viewModelContainerRootRemoveBinding);
+            CCDisposable.Dispose(ref viewModelContainerRootReplaceBinding);
+            CCDisposable.Dispose(ref viewModelContainerRootsClearBinding);
+        }
 
-//    public class InventoryView : InventoryView<InventoryViewModel<Inventory>>
-//    {
-//        [SerializeField]
-//        protected int containerCount;
+        protected override void InitViewModel(TViewModel vm)
+        {
+            BindViewModelContainerRootAdd();
+            BindViewModelContainerRootRemove();
+            BindViewModelContainerRootReplace();
+            BindViewModelContainerRootsClear();
+        }
 
-//        [SerializeField]
-//        protected bool containerAutoSize;
+        private void OnViewModelContainerRootAdd(
+            DictionaryAddEvent<IItemContainer, VisualElement> addEv
+            )
+        {
+            Guard.IsNotNull(RendererRoot);
+            RendererRoot.Add(addEv.Value);
+        }
 
-//        public int ContainerCount {
-//            get => containerCount;
-//            set => containerCount = value;
-//        }
+        private void BindViewModelContainerRootAdd()
+        {
+            viewModelContainerRootAddBinding = GuardedViewModel.ContainerRendererRoots.ObserveDictionaryAdd(destroyCancellationToken)
+                .Subscribe(OnViewModelContainerRootAdd);
+        }
 
-//        public bool ContainerAutoSize {
-//            get => containerAutoSize;
-//            set => containerAutoSize = value;
-//        }
+        private void OnViewModelContainerRootRemove(
+            DictionaryRemoveEvent<IItemContainer, VisualElement> removeEv
+            )
+        {
+            RendererRoot?.Remove(removeEv.Value);
+        }
 
-//        protected override InventoryViewModel<Inventory>? CreateViewModel()
-//        {
-//            return new InventoryViewModel<Inventory>(
-//                new Inventory(),
-//                containerPrefab,
-//                containersRoot
-//                );
-//        }
-//    }
-//}
+        private void BindViewModelContainerRootRemove()
+        {
+            viewModelContainerRootRemoveBinding = GuardedViewModel.ContainerRendererRoots.ObserveDictionaryRemove(destroyCancellationToken)
+                .Subscribe(OnViewModelContainerRootRemove);
+        }
+
+        private void OnViewModelContainerRootReplace(DictionaryReplaceEvent<IItemContainer, VisualElement> replaceEv)
+        {
+            var removeEv = new DictionaryRemoveEvent<IItemContainer, VisualElement>(replaceEv.Key, replaceEv.OldValue);
+            OnViewModelContainerRootRemove(removeEv);
+
+            var addEv = new DictionaryAddEvent<IItemContainer, VisualElement>(replaceEv.Key, replaceEv.NewValue);
+            OnViewModelContainerRootAdd(addEv);
+        }
+
+        private void OnViewModelContainerRootReplace()
+        {
+            viewModelContainerRootReplaceBinding = GuardedViewModel.ContainerRendererRoots.ObserveDictionaryReplace(destroyCancellationToken)
+                .Subscribe(OnViewModelContainerRootReplace);
+        }
+
+        private void BindViewModelContainerRootReplace()
+        {
+            viewModelContainerRootReplaceBinding = GuardedViewModel.ContainerRendererRoots.ObserveDictionaryReplace(destroyCancellationToken)
+                .Subscribe(OnViewModelContainerRootReplace);
+        }
+
+        private void OnViewModelContainerRootsClear(Unit _)
+        {
+            RendererRoot?.Clear();
+        }
+
+        private void BindViewModelContainerRootsClear()
+        {
+            viewModelContainerRootsClearBinding = GuardedViewModel.ContainerRendererRoots.ObserveClear(destroyCancellationToken)
+                .Subscribe(OnViewModelContainerRootsClear);
+        }
+
+        private void OnUIReload(PanelRenderer renderer, VisualElement root)
+        {
+            RendererRoot = root;
+            var containersView = root.Q<ScrollView>("containers");
+
+            containersView.Clear();
+        }
+    }
+}
