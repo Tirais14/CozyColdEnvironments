@@ -401,7 +401,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 if (entryViews.TryGetValue(entry, out entryView))
                 {
                     entryView.cTransform.SetParent(entryViewsRoot);
-                    entryView.Show();
+                    entryView.Showable.Show();
                 }
             }
 
@@ -419,7 +419,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 }
 
                 entryView.cTransform.SetParent(entryViewsRoot);
-                entryView.Hide();
+                entryView.Showable.Hide();
             }
         }
 
@@ -444,7 +444,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 if (!entryViewsEnumerator.TryMoveNextStruct(out entryView))
                     break;
 
-                entryView.Show();
+                entryView.Showable.Show();
             }
 
             for (int i = keepCount; i < entryViewsCount; i++)
@@ -454,7 +454,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 if (!entryViewsEnumerator.TryMoveNextStruct(out entryView))
                     break;
 
-                entryView.Hide();
+                entryView.Showable.Hide();
             }
         }
     }

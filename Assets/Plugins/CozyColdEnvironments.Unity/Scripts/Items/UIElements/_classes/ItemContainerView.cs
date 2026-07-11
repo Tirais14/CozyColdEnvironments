@@ -15,21 +15,24 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         where TViewModel : IItemContainerViewModel
     {
-        [GetBySelf]
-        protected PanelRenderer renderer = null!;
+        [Header("Container Settings")]
+        [Space(5f)]
 
         [SerializeField]
-        protected string? imageElementName;
+        protected string? iconElementName;
         [SerializeField]
         protected string? counterElementName;
+
+        [GetBySelf]
+        protected PanelRenderer renderer = null!;
 
         public PanelRenderer Renderer => renderer;
 
         public VisualElement? RendererRoot { get; private set; }
 
-        public string? ImageElementName {
-            get => imageElementName;
-            set => SetImageElementName(value);
+        public string? IconElementName {
+            get => iconElementName;
+            set => SetIconElementName(value);
         }
 
         public string? CounterElementName {
@@ -43,9 +46,9 @@ namespace CCEnvs.UnityX.Items.UIElements
             renderer.UnregisterUIReloadCallback(OnUIReload);
         }
 
-        public ItemContainerView<TViewModel> SetImageElementName(string? value)
+        public ItemContainerView<TViewModel> SetIconElementName(string? value)
         {
-            imageElementName = value;
+            iconElementName = value;
             return this;
         }
 
@@ -70,9 +73,9 @@ namespace CCEnvs.UnityX.Items.UIElements
         {
             RendererRoot = root;
 
-            if (imageElementName.IsNotNullOrWhiteSpace())
+            if (iconElementName.IsNotNullOrWhiteSpace())
             {
-                var iconView = root.Q<Image>("icon");
+                var iconView = root.Q<Image>(iconElementName);
 
                 iconView.dataSource = GuardedViewModel;
                 iconView.dataSourcePath = new PropertyPath(nameof(GuardedViewModel.Icon));
@@ -80,7 +83,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
             if (counterElementName.IsNotNullOrWhiteSpace())
             {
-                var counterView = root.Q<Label>("counter");
+                var counterView = root.Q<Label>(counterElementName);
 
                 counterView.dataSource = GuardedViewModel;
                 counterView.dataSourcePath = new PropertyPath(nameof(GuardedViewModel.Count));

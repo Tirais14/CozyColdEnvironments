@@ -2,18 +2,26 @@ using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
+using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using UnityEngine.UI;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.UnityX.UI
 {
-    public abstract class View : Showable
+    public abstract class View : CCBehaviour
     {
+        [field: GetBySelf]
+        public IShowableBase Showable { get; private set; } = null!;
 
+        [field: GetBySelf]
+        public Image? image { get; private set; }
     }
     public abstract class View<TViewModel>
         :

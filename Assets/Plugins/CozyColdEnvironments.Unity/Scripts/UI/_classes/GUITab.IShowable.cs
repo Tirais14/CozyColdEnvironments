@@ -33,7 +33,7 @@ namespace CCEnvs.UnityX.UI
 
         public CanvasGroup? canvasGroup => showable.canvasGroup;
 
-        public Canvas canvas => showable.canvas;
+        public Canvas? canvas => showable.canvas;
 
         public IShowable? root => showable.root;
         public IShowable? parent => showable.parent;
