@@ -18,7 +18,9 @@ namespace CCEnvs.UnityX.Items.UIElements
         [GetBySelf]
         protected PanelRenderer renderer = null!;
 
+        [SerializeField]
         protected string? imageElementName;
+        [SerializeField]
         protected string? counterElementName;
 
         public PanelRenderer Renderer => renderer;
