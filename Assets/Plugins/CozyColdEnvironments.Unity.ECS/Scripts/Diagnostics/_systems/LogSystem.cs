@@ -79,7 +79,7 @@ namespace CCEnvs.UnityX.ECS.Diagnostics
                 messages.Data = new NativeList<Message>();
 
             messages.Data.Add(new Message
-            { 
+            {
                 Value = message,
                 Context = context,
                 LogType = logType
@@ -116,7 +116,7 @@ namespace CCEnvs.UnityX.ECS.Diagnostics
             FixedString4096Bytes context = default
             )
         {
-            if (!messages.Data.IsCreated 
+            if (!messages.Data.IsCreated
                 ||
                 isDestroyed.Data
                 ||

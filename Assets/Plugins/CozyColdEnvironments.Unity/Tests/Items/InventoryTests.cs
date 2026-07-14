@@ -105,7 +105,7 @@ namespace CCEnvs.Unity.Tests
 
             long inventoryItemCount = inventory.GetItemCount(Cigarettes);
             Assert.AreEqual(Cigarettes.MaxItemCount * inventory.ContainerCount, inventoryItemCount);
-        
+
         }
 
         [Test]

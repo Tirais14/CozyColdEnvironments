@@ -1,4 +1,3 @@
-using Unity.Mathematics;
 using Unity.Physics;
 
 #nullable enable

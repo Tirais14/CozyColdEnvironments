@@ -1,6 +1,5 @@
 using Unity.Burst;
 using Unity.Collections;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.UnityX.ECS.Collections

@@ -1,13 +1,13 @@
 #nullable enable
 using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
-using UnityEngine.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace CCEnvs.UnityX.UI.Elements
 {
     [RequireComponent(typeof(PanelRenderer))]
-    public class ShowableElement 
+    public class ShowableElement
         :
         ShowableBase<IShowableElement>,
         IShowableElement

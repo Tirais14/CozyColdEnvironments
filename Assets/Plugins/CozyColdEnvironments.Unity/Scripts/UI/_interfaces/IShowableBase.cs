@@ -44,5 +44,5 @@ namespace CCEnvs.UnityX.UI
         Observable<bool> ObserveShow();
 
         Observable<bool> ObserveHide();
-    }   
+    }
 }

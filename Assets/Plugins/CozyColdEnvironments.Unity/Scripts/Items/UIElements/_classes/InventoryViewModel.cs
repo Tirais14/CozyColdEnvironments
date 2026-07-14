@@ -3,7 +3,6 @@ using CCEnvs.Disposables;
 using CCEnvs.Threading.Tasks;
 using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using ObservableCollections;
 using R3;
 using System;

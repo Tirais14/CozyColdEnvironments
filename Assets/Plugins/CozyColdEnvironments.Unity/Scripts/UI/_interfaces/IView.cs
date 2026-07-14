@@ -1,11 +1,10 @@
 #nullable enable
 #pragma warning disable IDE1006
 using System;
-using UnityEngine.UI;
 
 namespace CCEnvs.UnityX.UI
 {
-    public interface IView 
+    public interface IView
     {
         IShowableBase Showable { get; }
 
