@@ -40,7 +40,7 @@ namespace CCEnvs.UnityX.Items.UI
 
         private void BindItemIcon(TViewModel vm)
         {
-            if (image == null)
+            if (UGUIShowable.image == null)
                 return;
 
             iconBinding = vm.Icon.Subscribe(OnIconChanged);
@@ -48,9 +48,9 @@ namespace CCEnvs.UnityX.Items.UI
 
         private void OnIconChanged(Sprite icon)
         {
-            CC.Guard.IsNotNull(image, nameof(image));
+            CC.Guard.IsNotNull(UGUIShowable.image, nameof(UGUIShowable.image));
 
-            image.sprite = icon;
+            UGUIShowable.image.sprite = icon;
         }
 
         private void BindCounter(TViewModel vm)

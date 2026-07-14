@@ -1,22 +1,15 @@
 using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
-using CCEnvs.Pools;
-using CCEnvs.Snapshots;
 using CCEnvs.Threading;
-using CCEnvs.UnityX.Async;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
-using CCEnvs.UnityX.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using R3;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI
@@ -46,6 +39,8 @@ namespace CCEnvs.UnityX.UI
         private MonoBehaviour? _root;
         private MonoBehaviour? _parent;
 
+        private ReactiveCommand<bool>? onInitedEvent;
+
         public bool ShowOnInited {
             get => showOnInited;
             set => showOnInited = value;
@@ -70,8 +65,6 @@ namespace CCEnvs.UnityX.UI
 
         public TSelf? root => _root.As<TSelf>();
         public TSelf? parent => _parent.As<TSelf>();
-
-        protected ReactiveCommand<bool>? isInitedCmd { get; private set; }
 
         protected override void Awake()
         {
@@ -249,9 +242,9 @@ namespace CCEnvs.UnityX.UI
             if (IsInited)
                 return Observable.Return(true);
 
-            isInitedCmd ??= new ReactiveCommand<bool>();
+            onInitedEvent ??= new ReactiveCommand<bool>();
 
-            return isInitedCmd.Prepend(IsInited);
+            return onInitedEvent.Prepend(IsInited);
         }
 
         public TSelf[] GetDirectChilds()
@@ -293,9 +286,9 @@ namespace CCEnvs.UnityX.UI
         {
         }
 
-        protected virtual void OnInit()
+        protected virtual void ExecuteOnInitedEvent()
         {
-
+            onInitedEvent?.Execute(IsInited);
         }
 
         protected InvalidOperationException GetInitFaultedException()

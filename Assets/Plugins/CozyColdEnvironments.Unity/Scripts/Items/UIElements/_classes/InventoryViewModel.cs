@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Disposables;
 using CCEnvs.Threading.Tasks;
+using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;
 using ObservableCollections;
 using R3;
@@ -69,19 +70,19 @@ namespace CCEnvs.UnityX.Items.UIElements
 
             var (container, containerViewGO) = addEv;
 
-            if (!containerViewGO.Q().Component<IItemContainerView>().Lax().TryGetValue(out var containerView))
+            if (!containerViewGO.Q().Component<IShowableElement>().Lax().TryGetValue(out var containerView))
                 return;
 
-            if (containerView.RendererRoot is null)
+            if (containerView.rendererRoot is null)
             {
                 await UniTask.WaitUntil(
                     containerView,
-                    static containerView => containerView.RendererRoot is not null,
+                    static containerView => containerView.rendererRoot is not null,
                     cancellationToken: cancellationToken
                     );
             }
 
-            containerRendererRoots.Add(container, containerView.RendererRoot!);
+            containerRendererRoots.Add(container, containerView.rendererRoot!);
         }
 
         private void BindContainerViewAdd()

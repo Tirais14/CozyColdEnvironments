@@ -13,8 +13,7 @@ namespace CCEnvs.UnityX.Items.UIElements
     [RequireComponent(typeof(PanelRenderer))]
     public abstract class InventoryView<TViewModel>
         :
-        UI.InventoryView<TViewModel>,
-        IViewElement
+        UI.InventoryView<TViewModel>
 
         where TViewModel : IInventoryViewModel
     {
@@ -26,20 +25,8 @@ namespace CCEnvs.UnityX.Items.UIElements
         private IDisposable? viewModelContainerRootReplaceBinding;
         private IDisposable? viewModelContainerRootsClearBinding;
 
-        public PanelRenderer Renderer => renderer;
-
-        public VisualElement? RendererRoot { get; private set; }
-
         protected override void OnSetViewModel(TViewModel? vm)
         {
-            if (vm is null)
-            {
-                renderer.UnregisterUIReloadCallback(OnUIReload);
-                RendererRoot = null;
-            }
-            else
-                renderer.RegisterUIReloadCallback(OnUIReload);
-
             CCDisposable.Dispose(ref viewModelContainerRootAddBinding);
             CCDisposable.Dispose(ref viewModelContainerRootRemoveBinding);
             CCDisposable.Dispose(ref viewModelContainerRootReplaceBinding);
@@ -58,8 +45,8 @@ namespace CCEnvs.UnityX.Items.UIElements
             DictionaryAddEvent<IItemContainer, VisualElement> addEv
             )
         {
-            Guard.IsNotNull(RendererRoot);
-            RendererRoot.Add(addEv.Value);
+            Guard.IsNotNull(ElementShowable.rendererRoot, nameof(ElementShowable.rendererRoot));
+            ElementShowable.rendererRoot.Add(addEv.Value);
         }
 
         private void BindViewModelContainerRootAdd()
@@ -72,7 +59,7 @@ namespace CCEnvs.UnityX.Items.UIElements
             DictionaryRemoveEvent<IItemContainer, VisualElement> removeEv
             )
         {
-            RendererRoot?.Remove(removeEv.Value);
+            ElementShowable.rendererRoot?.Remove(removeEv.Value);
         }
 
         private void BindViewModelContainerRootRemove()
@@ -104,7 +91,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private void OnViewModelContainerRootsClear(Unit _)
         {
-            RendererRoot?.Clear();
+            ElementShowable.rendererRoot?.Clear();
         }
 
         private void BindViewModelContainerRootsClear()
@@ -113,9 +100,8 @@ namespace CCEnvs.UnityX.Items.UIElements
                 .Subscribe(OnViewModelContainerRootsClear);
         }
 
-        private void OnUIReload(PanelRenderer renderer, VisualElement root)
+        private void OnUIReload(PanelRenderer _, VisualElement root)
         {
-            RendererRoot = root;
             var containersView = root.Q<ScrollView>("containers");
 
             containersView.Clear();

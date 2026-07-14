@@ -10,8 +10,7 @@ namespace CCEnvs.UnityX.Items.UIElements
     [RequireComponent(typeof(PanelRenderer))]
     public abstract class ItemContainerView<TViewModel>
         :
-        View<TViewModel>,
-        IItemContainerView
+        View<TViewModel>
 
         where TViewModel : IItemContainerViewModel
     {

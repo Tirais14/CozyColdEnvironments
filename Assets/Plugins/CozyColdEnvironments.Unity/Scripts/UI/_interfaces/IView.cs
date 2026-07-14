@@ -7,7 +7,7 @@ namespace CCEnvs.UnityX.UI
 {
     public interface IView 
     {
-        Image? image { get; }
+        IShowableBase Showable { get; }
 
         IViewModel? ViewModel { get; }
 

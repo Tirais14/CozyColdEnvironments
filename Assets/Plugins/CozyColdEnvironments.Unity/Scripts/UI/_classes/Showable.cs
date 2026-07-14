@@ -65,7 +65,7 @@ namespace CCEnvs.UnityX.UI
         {
             base.Start();
             SetCanvasController();
-            InitShowableAsync().ForgetByPrintException();
+            InitAsync().Forget(ex => this.PrintException(ex));
         }
 
         protected override void OnDestroy()
@@ -164,9 +164,7 @@ namespace CCEnvs.UnityX.UI
             }
         }
 
-        protected virtual void OnInited()
-        {
-        }
+        protected virtual void OnInited() { }
 
         private async UniTask RebuildControlledLayouts(CancellationToken cancellationToken, bool initCall)
         {
@@ -233,10 +231,11 @@ namespace CCEnvs.UnityX.UI
             transparentGraphics.Dispose();
         }
 
-        private async UniTask InitShowableAsync()
+        private async UniTask InitAsync()
         {
             destroyCancellationToken.ThrowIfCancellationRequested();
 
+            //Search for layout group to rebuild afeter init
             var layoutGroup = this.Q()
                 .FromParents()
                 .ExcludeSelf()
@@ -247,15 +246,10 @@ namespace CCEnvs.UnityX.UI
             try
             {
                 await WaitUntilChildrensInitedAsync();
-
                 UnsetGraphicsTransparent();
-
                 await InitVisibleStateAsync();
-
                 OnInited();
-
-                isInitedCmd?.Execute(true);
-
+                ExecuteOnInitedEvent();
                 commandScheduler.Enable();
             }
             catch (Exception)
@@ -266,7 +260,6 @@ namespace CCEnvs.UnityX.UI
             finally
             {
                 IsInited = true;
-
                 layoutGroup.IfSome(static layout => layout.enabled = true);
             }
         }

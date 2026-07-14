@@ -1,7 +1,7 @@
 #nullable enable
 using UnityEngine.UIElements;
 
-namespace CCEnvs.UnityX.UI
+namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IShowableElement : IShowableBase
     {

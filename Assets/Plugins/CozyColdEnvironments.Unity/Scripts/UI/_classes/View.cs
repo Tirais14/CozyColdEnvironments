@@ -4,24 +4,62 @@ using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using UnityEngine.UI;
+using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
 namespace CCEnvs.UnityX.UI
 {
+    [RequireComponent(typeof(IShowableBase))]
     public abstract class View : CCBehaviour
     {
+        private IShowable? uguiShowable;
+        private IShowableElement? elementShowable;
+
+        private bool? hasUGUIShowable;
+        private bool? hasElementShowable;
+
         [field: GetBySelf]
         public IShowableBase Showable { get; private set; } = null!;
 
-        [field: GetBySelf]
-        public Image? image { get; private set; }
+        protected IShowable UGUIShowable {
+            get
+            {
+                if (hasUGUIShowable.HasValue && hasUGUIShowable.Value)
+                    return uguiShowable!;
+
+                if (Showable.IsNot<IShowable>(out uguiShowable))
+                {
+                    hasUGUIShowable = false;
+                    throw new InvalidOperationException("View showable is not UGUI");
+                }
+
+                hasUGUIShowable = true;
+                return uguiShowable;
+            }
+        }
+
+        protected IShowableElement ElementShowable {
+            get
+            {
+                if (hasElementShowable.HasValue && hasElementShowable.Value)
+                    return elementShowable!;
+
+                if (Showable.IsNot<IShowableElement>(out elementShowable))
+                {
+                    hasElementShowable = false;
+                    throw new InvalidOperationException("View showable is not UIElements");
+                }
+
+                hasElementShowable = true;
+                return elementShowable;
+            }
+        }
     }
     public abstract class View<TViewModel>
         :
