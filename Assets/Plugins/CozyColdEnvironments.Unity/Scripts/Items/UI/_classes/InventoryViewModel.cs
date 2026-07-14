@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #if ZLINQ_PLUGIN
 using ZLinq;
@@ -164,7 +165,7 @@ namespace CCEnvs.UnityX.Items.UI
                 parent = ContainersRoot
             };
 
-            var instances = await UnityEngine.Object.InstantiateAsync(
+            var instances = await Object.InstantiateAsync(
                 ContainerPrefab,
                 count,
                 instParams,
@@ -182,12 +183,7 @@ namespace CCEnvs.UnityX.Items.UI
                         .FromChildrens()
                         .Component<IView>()
                         .Lax()
-                        .TryGetValue(out var view)
-                        ||
-                        view.ViewModel.IsNot<IItemContainerViewModel>(out var containerViewModel)
-                        ||
-                        view.Model.IsNot<IItemContainer>(out var container))
-                    
+                        .TryGetValue(out var view))
                     {
                         this.PrintError(DebugMessageBuilder.CreatePooled()
                             .AddMessage("Container game object view doesn't contains view component")
@@ -195,12 +191,35 @@ namespace CCEnvs.UnityX.Items.UI
                             .AddProperty("Archetype", go.GetComponents<Component>().Select(cmp => cmp.GetType().FullName).SequenceToString())
                             .ToStringAndDispose()
                             );
-                        UnityEngine.Object.Destroy(go);
+                        Object.Destroy(go);
                         continue;
                     }
 
-                    containerViewModels.Add(containerViewModel);
-                    containerViews.Add(container, go);
+                    if (!view.HasViewModel<IItemContainerViewModel>())
+                    {
+                        this.PrintError(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("View doesn't contains view model")
+                            .AddProperty("GameObject", go)
+                            .ToStringAndDispose()
+                            );
+                        Object.Destroy(go);
+                        continue;
+                    }
+
+                    containerViewModels.Add(view.GetViewModel<IItemContainerViewModel>());
+
+                    if (!view.HasModel<IItemContainer>())
+                    {
+                        this.PrintError(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("View doesn't contains model")
+                            .AddProperty("GameObject", go)
+                            .ToStringAndDispose()
+                            );
+                        Object.Destroy(go);
+                        continue;
+                    }
+
+                    containerViews.Add(view.GetModel<IItemContainer>(), go);
                 }
 
                 return containerViewModels;

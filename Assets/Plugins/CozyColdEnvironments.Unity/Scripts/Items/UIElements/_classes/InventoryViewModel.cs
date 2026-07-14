@@ -3,6 +3,7 @@ using CCEnvs.Disposables;
 using CCEnvs.Threading.Tasks;
 using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using ObservableCollections;
 using R3;
 using System;
@@ -77,7 +78,10 @@ namespace CCEnvs.UnityX.Items.UIElements
             {
                 await UniTask.WaitUntil(
                     containerView,
-                    static containerView => containerView.rendererRoot is not null,
+                    static containerView =>
+                    {
+                        return containerView.rendererRoot is not null;
+                    },
                     cancellationToken: cancellationToken
                     );
             }

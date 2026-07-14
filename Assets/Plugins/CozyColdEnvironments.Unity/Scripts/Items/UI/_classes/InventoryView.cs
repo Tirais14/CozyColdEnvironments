@@ -2,6 +2,7 @@ using CCEnvs.Pools;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.Injections;
 using CCEnvs.UnityX.UI;
+using CCEnvs.UnityX.UI.Elements;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace CCEnvs.UnityX.Items.UI
         [Space(8)]
 
         [SerializeField]
+        [Tooltip("Must be contains in childrens of self " + nameof(IView) + " with " + nameof(IItemContainerViewModel) + " and " + nameof(IItemContainer) + " as model. Also " + nameof(ShowableElement.ShowOnInited) + " must be true")]
         protected GameObject containerPrefab;
 
         [SerializeField]
@@ -35,6 +37,9 @@ namespace CCEnvs.UnityX.Items.UI
 
         public ItemContainerViewSelectableController? ContainerSelectableController => containerSelectableController;
 
+        /// <summary>
+        /// Must be contains in childrens or self <see cref="IView"/> with <see cref="IItemContainerViewModel"/> and <see cref="IItemContainer"/> as model. Also <see cref="ShowableBase{TSelf}.ShowOnInited"/> must be true
+        /// </summary>
         public GameObject ContainerPrefab {
             get => containerPrefab;
             set => SetContainerPrefab(value);

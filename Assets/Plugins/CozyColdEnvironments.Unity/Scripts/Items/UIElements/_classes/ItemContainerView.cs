@@ -1,5 +1,6 @@
 using CCEnvs.UnityX.Injections;
 using CCEnvs.UnityX.UI;
+using CommunityToolkit.Diagnostics;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -62,6 +63,8 @@ namespace CCEnvs.UnityX.Items.UIElements
             {
                 var iconView = root.Q<Image>(iconElementName);
 
+                Guard.IsNotNull(iconView, nameof(iconView));
+
                 iconView.dataSource = GuardedViewModel;
                 iconView.dataSourcePath = new PropertyPath(nameof(GuardedViewModel.Icon));
             }
@@ -69,6 +72,8 @@ namespace CCEnvs.UnityX.Items.UIElements
             if (counterElementName.IsNotNullOrWhiteSpace())
             {
                 var counterView = root.Q<Label>(counterElementName);
+
+                Guard.IsNotNull(counterView, nameof(counterView));
 
                 counterView.dataSource = GuardedViewModel;
                 counterView.dataSourcePath = new PropertyPath(nameof(GuardedViewModel.Count));

@@ -17,8 +17,10 @@ namespace CCEnvs.UnityX.Items.UIElements
         where TViewModel : IInventoryViewModel
     {
         [SerializeField]
-        [Tooltip("Element type must be ScrollView")]
+        //[Tooltip("Element type must be ScrollView")]
         protected string? containerElementName = "containers";
+
+        protected VisualElement? containersView;
 
         private IDisposable? viewModelContainerRootAddBinding;
         private IDisposable? viewModelContainerRootRemoveBinding;
@@ -50,8 +52,8 @@ namespace CCEnvs.UnityX.Items.UIElements
             DictionaryAddEvent<IItemContainer, VisualElement> addEv
             )
         {
-            Guard.IsNotNull(ElementShowable.rendererRoot, nameof(ElementShowable.rendererRoot));
-            ElementShowable.rendererRoot.Add(addEv.Value);
+            Guard.IsNotNull(containersView, nameof(containersView));
+            containersView.Add(addEv.Value);
         }
 
         private void BindViewModelContainerRootAdd()
@@ -64,7 +66,7 @@ namespace CCEnvs.UnityX.Items.UIElements
             DictionaryRemoveEvent<IItemContainer, VisualElement> removeEv
             )
         {
-            ElementShowable.rendererRoot?.Remove(removeEv.Value);
+            containersView?.Remove(removeEv.Value);
         }
 
         private void BindViewModelContainerRootRemove()
@@ -90,7 +92,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private void OnViewModelContainerRootsClear(Unit _)
         {
-            ElementShowable.rendererRoot?.Clear();
+            containersView?.Clear();
         }
 
         private void BindViewModelContainerRootsClear()
@@ -101,8 +103,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
-            var containersView = root.Q<ScrollView>(containerElementName);
-
+            containersView = root.Q<VisualElement>(containerElementName);
             containersView.Clear();
         }
     }
