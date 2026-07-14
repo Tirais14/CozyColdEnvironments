@@ -33,12 +33,13 @@ namespace CCEnvs.UnityX.UI
                 if (hasUGUIShowable.HasValue && hasUGUIShowable.Value)
                     return uguiShowable!;
 
-                if (Showable.IsNot<IShowable>(out uguiShowable))
+                if (Showable is not IShowable tUGUIShowable)
                 {
                     hasUGUIShowable = false;
                     throw new InvalidOperationException("View showable is not UGUI");
                 }
 
+                uguiShowable = tUGUIShowable;
                 hasUGUIShowable = true;
                 return uguiShowable;
             }
@@ -50,12 +51,13 @@ namespace CCEnvs.UnityX.UI
                 if (hasElementShowable.HasValue && hasElementShowable.Value)
                     return elementShowable!;
 
-                if (Showable.IsNot<IShowableElement>(out elementShowable))
+                if (Showable is not IShowableElement tElementShowable)
                 {
                     hasElementShowable = false;
                     throw new InvalidOperationException("View showable is not UIElements");
                 }
 
+                elementShowable = tElementShowable;
                 hasElementShowable = true;
                 return elementShowable;
             }

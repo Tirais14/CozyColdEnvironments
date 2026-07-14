@@ -287,10 +287,11 @@ namespace CCEnvs.Pools
 
         public readonly override string ToString()
         {
-            if (this == Default)
-                return StringHelper.EMPTY_OBJECT;
-
-            return $"({nameof(Pool)}: {Pool}; {nameof(Value)}: {Value})";
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(IsValid), IsValid)
+                .AddProperty(nameof(Pool), Pool)
+                .AddProperty(nameof(Value), Value)
+                .ToStringAndDispose();
         }
     }
 }

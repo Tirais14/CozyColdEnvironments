@@ -734,11 +734,16 @@ namespace CCEnvs.UnityX
 
             List<Component>? cmps = null;
 
-            if (target.transform.childCount == 0)
-                return Array.Empty<Component>();
-
             if (!excludeSelf)
                 target.GetComponentsNonAlloc(type, ref cmps);
+
+            if (target.transform.childCount == 0)
+            {
+                if (cmps.IsNullOrEmpty())
+                    return Array.Empty<Component>();
+                else
+                    return cmps;
+            }
 
             using var toProcess = QueuePool<Transform>.Shared.Get();
             enqueueChilds(target.transform, includeInactive, toProcess.Value);
@@ -924,10 +929,16 @@ namespace CCEnvs.UnityX
                 if (!IsInitialized)
                     return false;
 
+#if CC_DEBUG_ENABLED
                 var loopFuse = LoopFuse.Create();
+#endif
 
-                while (++pointer < components.Count && loopFuse.MoveNextThrow())
+                while (++pointer < components.Count)
                 {
+#if CC_DEBUG_ENABLED
+                    loopFuse.MoveNextThrow();
+#endif
+
                     Current = components[pointer];
                     currentGO = Current.gameObject;
 
@@ -1053,14 +1064,18 @@ namespace CCEnvs.UnityX
             {
                 IViewModel? viewModel;
 
+#if CC_DEBUG_ENABLED
                 var loopFuse = LoopFuse.Create();
+#endif
 
                 bool hasViewModelType = viewModelType is not null;
 
-                while (viewsEtor.TryMoveNextStruct<ComponentsEnumerator<IView>, IView>(out var view)
-                       &&
-                       loopFuse.MoveNextThrow())
+                while (viewsEtor.TryMoveNextStruct<ComponentsEnumerator<IView>, IView>(out var view))
                 {
+#if CC_DEBUG_ENABLED
+                    loopFuse.MoveNextThrow();
+#endif
+
                     viewModel = view.ViewModel;
 
                     if (hasViewModelType && viewModel.IsNotInstanceOfType(viewModelType!))
@@ -1190,16 +1205,20 @@ namespace CCEnvs.UnityX
 
             public bool MoveNext()
             {
+#if CC_DEBUG_ENABLED
                 var loopFuse = LoopFuse.Create();
+#endif
 
                 object? model;
-
                 bool hasModelType = modelType is not null;
-
                 Component? cmp = null;
 
-                while (loopFuse.MoveNextThrow())
+                while (true)
                 {
+#if CC_DEBUG_ENABLED
+                    loopFuse.MoveNextThrow();
+#endif
+
                     if (viewModelsEtor.TryMoveNextStruct<ViewModelsEnumerator, IViewModel>(out var viewModel))
                         model = viewModel.Model;
                     else if (componentsEtor.TryMoveNextStruct<ComponentsEnumerator, Component>(out cmp))
@@ -1231,13 +1250,11 @@ namespace CCEnvs.UnityX
 
             public readonly void Dispose()
             {
-                viewModelsEtor.Dispose();
                 componentsEtor.Dispose();
             }
 
             public readonly void Reset()
             {
-                viewModelsEtor.Reset();
                 componentsEtor.Reset();
             }
 
@@ -1343,7 +1360,7 @@ namespace CCEnvs.UnityX
         #endregion Enumerators
     }
 
-    public static class GameObjectSearchExtensions
+    public static class GameObjectQueryExtensions
     {
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

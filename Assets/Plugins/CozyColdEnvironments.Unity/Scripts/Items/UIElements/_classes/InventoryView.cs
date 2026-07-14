@@ -101,7 +101,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
-            var containersView = root.Q<ScrollView>("containers");
+            var containersView = root.Q<ScrollView>(containerElementName);
 
             containersView.Clear();
         }

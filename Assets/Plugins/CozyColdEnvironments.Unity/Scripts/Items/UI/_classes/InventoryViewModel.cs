@@ -1,4 +1,5 @@
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
@@ -12,6 +13,7 @@ using R3;
 using SuperLinq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -185,7 +187,15 @@ namespace CCEnvs.UnityX.Items.UI
                         view.ViewModel.IsNot<IItemContainerViewModel>(out var containerViewModel)
                         ||
                         view.Model.IsNot<IItemContainer>(out var container))
+                    
                     {
+                        this.PrintError(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("Container game object view doesn't contains view component")
+                            .AddProperty("GameObject", go)
+                            .AddProperty("Archetype", go.GetComponents<Component>().Select(cmp => cmp.GetType().FullName).SequenceToString())
+                            .ToStringAndDispose()
+                            );
+                        UnityEngine.Object.Destroy(go);
                         continue;
                     }
 

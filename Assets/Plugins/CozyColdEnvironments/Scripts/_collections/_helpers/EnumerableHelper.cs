@@ -162,20 +162,21 @@ namespace CCEnvs.Collections
             {
                 if (!isFirstItem)
                 {
-                    sb.Value.Append(", \t");
+                    sb.Value.Append('\t');
                     sb.Value.Append(item.IsNull() ? "null" : item.ToString());
+                    sb.Value.Append(',');
                     sb.Value.Append(Environment.NewLine);
                 }
                 else
                 {
                     sb.Value.Append('\t');
                     sb.Value.Append(item.IsNull() ? "null" : item.ToString());
+                    sb.Value.Append(Environment.NewLine);
                 }
 
                 isFirstItem = false;
             }
 
-            sb.Value.Append(Environment.NewLine);
             sb.Value.Append(']');
 
             return sb.Value.ToString();
