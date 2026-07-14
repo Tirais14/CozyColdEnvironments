@@ -18,16 +18,11 @@ namespace CCEnvs.UnityX.Items.UIElements
         [Space(5f)]
 
         [SerializeField]
-        protected string? iconElementName;
+        [Tooltip("Element must be Image type")]
+        protected string? iconElementName = "icon";
         [SerializeField]
-        protected string? counterElementName;
-
-        [GetBySelf]
-        protected PanelRenderer renderer = null!;
-
-        public PanelRenderer Renderer => renderer;
-
-        public VisualElement? RendererRoot { get; private set; }
+        [Tooltip("Element must be Label type")]
+        protected string? counterElementName = "counter";
 
         public string? IconElementName {
             get => iconElementName;
@@ -37,12 +32,6 @@ namespace CCEnvs.UnityX.Items.UIElements
         public string? CounterElementName {
             get => counterElementName;
             set => SetCounterElementName(value);
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            renderer.UnregisterUIReloadCallback(OnUIReload);
         }
 
         public ItemContainerView<TViewModel> SetIconElementName(string? value)
@@ -60,18 +49,15 @@ namespace CCEnvs.UnityX.Items.UIElements
         protected override void OnSetViewModel(TViewModel? vm)
         {
             if (vm.IsNull())
-            {
-                renderer.UnregisterUIReloadCallback(OnUIReload);
-                RendererRoot = null;
-            }
+                ElementShowable.renderer.UnregisterUIReloadCallback(OnUIReload);
             else
-                renderer.RegisterUIReloadCallback(OnUIReload);
+                ElementShowable.renderer.RegisterUIReloadCallback(OnUIReload);
         }
+
+        protected override void InitViewModel(TViewModel vm) { }
 
         private void OnUIReload(PanelRenderer renderer, VisualElement root)
         {
-            RendererRoot = root;
-
             if (iconElementName.IsNotNullOrWhiteSpace())
             {
                 var iconView = root.Q<Image>(iconElementName);

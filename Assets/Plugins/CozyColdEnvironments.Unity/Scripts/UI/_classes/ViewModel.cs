@@ -90,12 +90,12 @@ namespace CCEnvs.UnityX.UI
         /// <param name="model"></param>
         protected virtual void OnSetModel(TModel? model)
         {
-            throw new NotImplementedException(nameof(OnSetModel));
+            throw new NotImplementedException(string.Join('.', GetType().FullName, nameof(OnSetModel)));
         }
 
         protected virtual void InitModel(TModel model)
         {
-            throw new NotImplementedException(nameof(InitModel));
+            throw new NotImplementedException(string.Join('.', GetType().FullName, nameof(InitModel)));
         }
     }
 }

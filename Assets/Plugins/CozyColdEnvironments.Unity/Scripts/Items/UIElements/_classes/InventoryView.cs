@@ -10,15 +10,15 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.Items.UIElements
 {
-    [RequireComponent(typeof(PanelRenderer))]
     public abstract class InventoryView<TViewModel>
         :
         UI.InventoryView<TViewModel>
 
         where TViewModel : IInventoryViewModel
     {
-        [GetBySelf]
-        protected PanelRenderer renderer;
+        [SerializeField]
+        [Tooltip("Element type must be ScrollView")]
+        protected string? containerElementName = "containers";
 
         private IDisposable? viewModelContainerRootAddBinding;
         private IDisposable? viewModelContainerRootRemoveBinding;
@@ -27,6 +27,11 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         protected override void OnSetViewModel(TViewModel? vm)
         {
+            if (vm.IsNull())
+                ElementShowable.renderer.UnregisterUIReloadCallback(OnUIReload);
+            else
+                ElementShowable.renderer.RegisterUIReloadCallback(OnUIReload);
+
             CCDisposable.Dispose(ref viewModelContainerRootAddBinding);
             CCDisposable.Dispose(ref viewModelContainerRootRemoveBinding);
             CCDisposable.Dispose(ref viewModelContainerRootReplaceBinding);
@@ -75,12 +80,6 @@ namespace CCEnvs.UnityX.Items.UIElements
 
             var addEv = new DictionaryAddEvent<IItemContainer, VisualElement>(replaceEv.Key, replaceEv.NewValue);
             OnViewModelContainerRootAdd(addEv);
-        }
-
-        private void OnViewModelContainerRootReplace()
-        {
-            viewModelContainerRootReplaceBinding = GuardedViewModel.ContainerRendererRoots.ObserveDictionaryReplace(destroyCancellationToken)
-                .Subscribe(OnViewModelContainerRootReplace);
         }
 
         private void BindViewModelContainerRootReplace()

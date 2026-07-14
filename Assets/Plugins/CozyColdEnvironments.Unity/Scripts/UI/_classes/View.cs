@@ -148,10 +148,8 @@ namespace CCEnvs.UnityX.UI
             TryDisposeViewModel();
 
             viewModelFactoryReturnsValue = true;
-
-            OnSetViewModel(vm);
-
             viewModel = vm;
+            OnSetViewModel(vm);
 
             if (vm.IsNotNull())
             {
@@ -179,8 +177,8 @@ namespace CCEnvs.UnityX.UI
             viewModelFactory = () =>
             {
                 factory ??= CreateViewModel;
-
                 var vm = factory();
+                viewModel = vm;
 
                 OnSetViewModel(vm);
 

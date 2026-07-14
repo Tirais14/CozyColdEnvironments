@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.UI.Elements
         ShowableBase<IShowableElement>,
         IShowableElement
     {
-        private bool hasUIReloadBingind;
+        private bool isUIReloadBinded;
 
         [field: GetBySelf]
         public PanelRenderer renderer { get; private set; } = null!;
@@ -29,19 +29,19 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.OnEnable();
             renderer.RegisterUIReloadCallback(OnUIReload);
-            hasUIReloadBingind = true;
+            isUIReloadBinded = true;
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
             renderer.UnregisterUIReloadCallback(OnUIReload);
-            hasUIReloadBingind = false;
+            isUIReloadBinded = false;
         }
 
         public override void Redraw()
         {
-            if (!hasUIReloadBingind)
+            if (!isUIReloadBinded)
                 return;
 
             HideCore();
@@ -88,11 +88,6 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 IsInited = true;
             }
-        }
-
-        IShowableElement[] IShowableElement.GetDirectChilds()
-        {
-            return GetDirectChilds();
         }
     }
 }

@@ -291,15 +291,10 @@ namespace CCEnvs.UnityX.UI
             onInitedEvent?.Execute(IsInited);
         }
 
-        protected InvalidOperationException GetInitFaultedException()
-        {
-            return new InvalidOperationException($"{nameof(GUITab)}: {this} is not correctly initialized");
-        }
-
         protected void ThrowIfInitFailured()
         {
             if (isInitFaulted)
-                throw GetInitFaultedException();
+                throw new InvalidOperationException($"{nameof(GUITab)}: {this} is not correctly initialized");
         }
 
 
