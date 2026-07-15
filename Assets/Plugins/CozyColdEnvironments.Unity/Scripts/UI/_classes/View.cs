@@ -257,7 +257,6 @@ namespace CCEnvs.UnityX.UI
         {
             modelBinding = vm.ObserveModel()
                 .Skip(1)
-                .WhereNotNull()
                 .Subscribe(OnModelChanged);
         }
 

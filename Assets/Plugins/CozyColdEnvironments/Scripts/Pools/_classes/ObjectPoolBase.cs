@@ -126,7 +126,8 @@ namespace CCEnvs.Pools
 
             if (disposing)
             {
-                DisposeInactiveItems();
+                inactiveItems.OfType<IDisposable>().DisposeEach();
+                inactiveItems.Clear();
 
                 activeItems.Values.DisposeEach();
                 activeItems.Clear();
@@ -232,17 +233,6 @@ namespace CCEnvs.Pools
             poolable.PoolHandle = Maybe<PooledObject>.None;
 
             poolable.OnDespawned();
-        }
-
-        private void DisposeInactiveItems()
-        {
-            foreach (var item in inactiveItems)
-            {
-                if (item is IDisposable objDispsoable)
-                    objDispsoable.Dispose();
-            }
-
-            inactiveItems.Clear();
         }
     }
 }

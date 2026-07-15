@@ -37,18 +37,18 @@ namespace CCEnvs.Patterns.Commands
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandBuilder WithTag(string? tag = null)
+        public CommandBuilder WithName<T>(string? name, T invocationSource)
         {
-            Tag = tag;
+            Name = $"{invocationSource.GetTypeName(TypeNameConvertingAttributes.IncludeGenericArguments)}.{name ?? "???"}";
 
             return this;
         }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CommandBuilder WithName<T>(string? name, T invocationSource)
+        public CommandBuilder WithTag(string? tag = null)
         {
-            Name = $"{invocationSource.GetTypeName(TypeNameConvertingAttributes.IncludeGenericArguments)}.{name ?? "???"}";
+            Tag = tag;
 
             return this;
         }
@@ -227,6 +227,7 @@ namespace CCEnvs.Patterns.Commands
                     () =>
                     {
                         pool?.Dispose();
+                        pool = null;
                     });
             }
 
@@ -314,6 +315,7 @@ namespace CCEnvs.Patterns.Commands
                     () =>
                     {
                         pool?.Dispose();
+                        pool = null;
                     });
             }
 
@@ -403,6 +405,7 @@ namespace CCEnvs.Patterns.Commands
                     () =>
                     {
                         pool?.Dispose();
+                        pool = null;
                     });
             }
 
@@ -491,6 +494,7 @@ namespace CCEnvs.Patterns.Commands
                     () =>
                     {
                         pool?.Dispose();
+                        pool = null;
                     });
             }
 

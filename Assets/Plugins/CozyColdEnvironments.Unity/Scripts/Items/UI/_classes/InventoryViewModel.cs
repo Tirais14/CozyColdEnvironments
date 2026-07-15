@@ -79,6 +79,7 @@ namespace CCEnvs.UnityX.Items.UI
 
         protected override void OnSetModel(TModel? model)
         {
+            DestroyContainerViews();
             CCDisposable.Dispose(ref addContainerBinding);
             CCDisposable.Dispose(ref removeContainerBinding);
             CCDisposable.Dispose(ref replaceContainerBinding);
@@ -92,6 +93,14 @@ namespace CCEnvs.UnityX.Items.UI
             BindContainerRemove(model);
             BindContainerReplace(model);
             BindContainersClear(model);
+        }
+
+        private void DestroyContainerViews()
+        {
+            foreach (var containerView in containerViews.SelectValue())
+                Object.Destroy(containerView);
+
+            containerViews.Clear();
         }
 
         private void InitExistingContainers(TModel model)

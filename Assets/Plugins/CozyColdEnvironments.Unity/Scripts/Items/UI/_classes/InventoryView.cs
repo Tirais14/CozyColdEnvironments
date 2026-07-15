@@ -20,7 +20,7 @@ namespace CCEnvs.UnityX.Items.UI
         [Space(8)]
 
         [SerializeField]
-        [Tooltip("Must be contains in childrens of self " + nameof(IView) + " with " + nameof(IItemContainerViewModel) + " and " + nameof(IItemContainer) + " as model. Also " + nameof(ShowableElement.ShowOnInited) + " must be true")]
+        [Tooltip("Must be contains in childrens or self " + nameof(IView) + " with " + nameof(IItemContainerViewModel) + " and " + nameof(IItemContainer) + " as model. Also " + nameof(ShowableElement.ShowOnInited) + " must be true")]
         protected GameObject containerPrefab;
 
         [SerializeField]

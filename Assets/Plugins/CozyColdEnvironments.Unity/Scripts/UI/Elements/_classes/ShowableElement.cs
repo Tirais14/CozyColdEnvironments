@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -61,6 +62,15 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             rendererRoot.visible = false;
+
+            if (CCDebug<ShowableElement>.IsEnabled)
+            {
+                this.PrintLog(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Root state changed")
+                    .AddProperty(nameof(rendererRoot.visible), rendererRoot.visible)
+                    .ToStringAndDispose()
+                    );
+            }
         }
 
         protected override void ShowCore()
@@ -69,6 +79,16 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             rendererRoot.visible = true;
+
+
+            if (CCDebug<ShowableElement>.IsEnabled)
+            {
+                this.PrintLog(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Root state changed")
+                    .AddProperty(nameof(rendererRoot.visible), rendererRoot.visible)
+                    .ToStringAndDispose()
+                    );
+            }
         }
 
         protected virtual void OnInited() { }

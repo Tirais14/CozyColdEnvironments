@@ -1,5 +1,10 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
+using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.UI;
 using CommunityToolkit.Diagnostics;
+using R3;
+using System;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,30 +24,37 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         [SerializeField]
         [Tooltip("Element must be Image type")]
-        protected string? iconElementName = "icon";
+        protected string? iconViewName = "icon";
         [SerializeField]
         [Tooltip("Element must be Label type")]
-        protected string? counterElementName = "counter";
+        protected string? counterViewName = "counter";
 
-        public string? IconElementName {
-            get => iconElementName;
+        private IDisposable? iconBinding;
+        private IDisposable? countBinding;
+
+        public string? IconViewName {
+            get => iconViewName;
             set => SetIconElementName(value);
         }
 
-        public string? CounterElementName {
-            get => counterElementName;
+        public string? CounterViewName {
+            get => counterViewName;
             set => SetCounterElementName(value);
         }
 
+        public Image? IconView { get; private set; }
+
+        public Label? CounterView { get; private set; }
+
         public ItemContainerView<TViewModel> SetIconElementName(string? value)
         {
-            iconElementName = value;
+            iconViewName = value;
             return this;
         }
 
         public ItemContainerView<TViewModel> SetCounterElementName(string? value)
         {
-            counterElementName = value;
+            counterViewName = value;
             return this;
         }
 
@@ -52,31 +64,57 @@ namespace CCEnvs.UnityX.Items.UIElements
                 ElementShowable.renderer.UnregisterUIReloadCallback(OnUIReload);
             else
                 ElementShowable.renderer.RegisterUIReloadCallback(OnUIReload);
+
+            CCDisposable.Dispose(ref iconBinding);
+            CCDisposable.Dispose(ref countBinding);
         }
 
         protected override void InitViewModel(TViewModel vm) { }
 
         private void OnUIReload(PanelRenderer renderer, VisualElement root)
         {
-            if (iconElementName.IsNotNullOrWhiteSpace())
+            if (iconViewName.IsNotNullOrWhiteSpace())
             {
-                var iconView = root.Q<Image>(iconElementName);
+                IconView = root.Q<Image>(iconViewName);
 
-                Guard.IsNotNull(iconView, nameof(iconView));
-
-                iconView.dataSource = GuardedViewModel;
-                iconView.dataSourcePath = new PropertyPath(nameof(GuardedViewModel.Icon));
+                if (IconView is not null)
+                    BindIcon(GuardedViewModel);
             }
 
-            if (counterElementName.IsNotNullOrWhiteSpace())
+            if (counterViewName.IsNotNullOrWhiteSpace())
             {
-                var counterView = root.Q<Label>(counterElementName);
+                CounterView = root.Q<Label>(counterViewName);
 
-                Guard.IsNotNull(counterView, nameof(counterView));
-
-                counterView.dataSource = GuardedViewModel;
-                counterView.dataSourcePath = new PropertyPath(nameof(GuardedViewModel.Count));
+                if (CounterView is not null)
+                    BindCount(GuardedViewModel);
             }
         }
+
+        protected virtual void OnIconChanged(Sprite icon)
+        {
+            if (IconView is null)
+                return;
+
+            IconView.sprite = icon;
+        }
+
+        protected virtual void OnCountChanged(string count)
+        {
+            if (CounterView is null)
+                return;
+
+            CounterView.text = count;
+        }
+
+        private void BindIcon(TViewModel viewModel)
+        {
+            iconBinding = viewModel.Icon.Subscribe(OnIconChanged);
+        }
+
+        private void BindCount(TViewModel viewModel)
+        {
+            countBinding = viewModel.Count.Subscribe(OnCountChanged);
+        }
+
     }
 }
