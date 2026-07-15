@@ -113,7 +113,7 @@ namespace CCEnvs.Patterns.Commands
 
         ~CommandScheduler() => Dispose();
 
-        public static CommandScheduler CreateDefaultRegistered(string? name = null)
+        public static CommandScheduler Create(string? name = null)
         {
             return new CommandScheduler(
                 ObservableSystem.DefaultFrameProvider ?? new TimerFrameProvider(1.Milliseconds()),
@@ -121,13 +121,23 @@ namespace CCEnvs.Patterns.Commands
                 );
         }
 
+#if UNITY_2017_1_OR_NEWER
+        public static CommandScheduler Update(string? name = null)
+        {
+            return new CommandScheduler(
+                UnityFrameProvider.Update,
+                name: name
+                );
+        }
+#endif
+
         public void Schedule(ICommandBase cmd)
         {
             CCDisposable.ThrowIfDisposed(this, disposed);
             CC.Guard.IsNotNull(cmd, nameof(cmd));
 
             if (!cmd.IsValid)
-                throw new ArgumentException($"Comman is not valid. Command: {cmd.Signature}", nameof(cmd));
+                throw new ArgumentException($"Command is not valid. Command: {cmd.Signature}", nameof(cmd));
 
             if (cmd.IsDone)
             {
@@ -145,8 +155,14 @@ namespace CCEnvs.Patterns.Commands
 
             AddCommandToSet(cmd.Signature, queueCmd);
 
-            if (CCDebug.IsTypeEnabled<CommandScheduler>())
-                this.PrintLog($"Command: {cmd} scheduled");
+            if (CCDebug<CommandScheduler>.IsEnabled)
+            {
+                this.PrintLog(DebugMessageBuilder.CreatePooled()
+                    .AddMessage($"Command scheduled")
+                    .AddProperty("Command", cmd)
+                    .ToStringAndDispose()
+                    );
+            }
 
             scheduleCommandRxCmd?.Execute(cmd);
         }
@@ -165,8 +181,8 @@ namespace CCEnvs.Patterns.Commands
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            if (CCDebug.IsTypeEnabled<CommandScheduler>())
-                this.PrintLog("Disposing");
+            if (CCDebug<CommandScheduler>.IsEnabled)
+                this.PrintLog("Disposed");
 
             try
             {
@@ -200,13 +216,16 @@ namespace CCEnvs.Patterns.Commands
 
             StartRunningFrame();
 
+#if CC_DEBUG_ENABLED
             var loopFuse = LoopFuse.Create();
+#endif
 
-            while (!CCDisposable.IsDisposed(disposed)
-                   &&
-                   loopFuse.MoveNextThrow()
-                   )
+            while (!CCDisposable.IsDisposed(disposed))
             {
+#if CC_DEBUG_ENABLED
+                loopFuse.MoveNextThrow();
+#endif
+
                 if (IsCurrentCommandUndone())
                     break;
 
@@ -244,7 +263,12 @@ namespace CCEnvs.Patterns.Commands
 
         public override string ToString()
         {
-            return $"({nameof(Name)}: {Name})";
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Name), Name)
+                .AddProperty(nameof(IsEnabled), IsEnabled)
+                .AddProperty(nameof(IsRunning), IsRunning)
+                .AddPredicatedProperty(HasCommands, "CommandCount", commands.Count)
+                .ToStringAndDispose();
         }
 
         public bool HasCommand(CommandSignature cmdSignature)
@@ -295,8 +319,8 @@ namespace CCEnvs.Patterns.Commands
 
         private void OnReset()
         {
-            if (CCDebug.Instance.IsEnabled)
-                this.PrintLog("Resetting");
+            if (CCDebug<CommandScheduler>.IsEnabled)
+                this.PrintLog("Reseted");
 
             EraseCurrentCommand();
 
@@ -346,8 +370,15 @@ namespace CCEnvs.Patterns.Commands
                     continue;
                 }
 
-                if (CCDebug.IsTypeEnabled<CommandScheduler>())
-                    this.PrintLog($"Command: {cmd} cancelling by added command: {newCmd}.");
+                if (CCDebug<CommandScheduler>.IsEnabled)
+                {
+                    this.PrintLog(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("Command canceled")
+                        .AddProperty("Command", cmd)
+                        .AddProperty("ByCommand", newCmd)
+                        .ToStringAndDispose()
+                        );
+                }
 
                 garbageCmdCount++;
 
@@ -398,8 +429,14 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnCommandDone(QueueCommand cmd)
         {
-            if (CCDebug.IsTypeEnabled<CommandScheduler>())
-                this.PrintLog($"Command: {cmd} completion");
+            if (CCDebug<CommandScheduler>.IsEnabled)
+            {
+                this.PrintLog(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Command completed")
+                    .AddProperty("Command", cmd)
+                    .ToStringAndDispose()
+                    );
+            }
 
             if (cmd.Value is null)
             {
@@ -455,8 +492,14 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExecuteCommand()
         {
-            if (CCDebug.IsTypeEnabled<CommandScheduler>())
-                this.PrintLog($"Command: {cmd} will be executed");
+            if (CCDebug<CommandScheduler>.IsEnabled)
+            {
+                this.PrintLog(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Command Executed")
+                    .AddProperty("Command", cmd)
+                    .ToStringAndDispose()
+                    );
+            }
 
             switch (cmd!.Value)
             {
@@ -605,7 +648,7 @@ namespace CCEnvs.Patterns.Commands
 
             int cmdCount = commands.Count;
 
-            if (garbageCollectEveryFrame > 1L
+            if (garbageCollectEveryFrame >= 2L
                 &&
                 cmdCount >= GargabeCommandCountThreshold)
             {
@@ -642,6 +685,11 @@ namespace CCEnvs.Patterns.Commands
                 IsGarbage = true;
 
                 return this;
+            }
+
+            public override string ToString()
+            {
+                return Value?.ToString() ?? string.Empty;
             }
         }
     }

@@ -89,7 +89,7 @@ namespace CCEnvs
             MainThreadID = 0;
 
             CommandScheduler?.Disable();
-            CommandScheduler = CommandScheduler.CreateDefaultRegistered();
+            CommandScheduler = CommandScheduler.Create();
         }
         #endregion Install
 

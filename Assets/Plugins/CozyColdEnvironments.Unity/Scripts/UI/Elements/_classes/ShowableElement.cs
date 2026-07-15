@@ -19,6 +19,11 @@ namespace CCEnvs.UnityX.UI.Elements
 
         public VisualElement? rendererRoot { get; private set; }
 
+        public override bool IsShown {
+            get => base.IsShown && (rendererRoot?.visible ?? false);
+            protected set => base.IsShown = value;
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -52,12 +57,18 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected override void HideCore()
         {
-            gameObject.SetActive(false);
+            if (rendererRoot is null)
+                return;
+
+            rendererRoot.visible = false;
         }
 
         protected override void ShowCore()
         {
-            gameObject.SetActive(true);
+            if (rendererRoot is null)
+                return;
+
+            rendererRoot.visible = true;
         }
 
         protected virtual void OnInited() { }

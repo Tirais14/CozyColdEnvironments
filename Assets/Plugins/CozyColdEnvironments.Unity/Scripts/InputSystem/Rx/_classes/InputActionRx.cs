@@ -6,6 +6,7 @@ using R3;
 using System;
 using System.Threading;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 using static UnityEngine.InputSystem.InputAction;
@@ -18,6 +19,45 @@ namespace CCEnvs.UnityX.InputSystem.Rx
         :
         IInputActionRx
     {
+        protected struct InputValue
+        {
+            private long frame;
+
+            public readonly bool IsSet => frame == Time.frameCount;
+
+            public InputValue Set()
+            {
+                frame = Time.frameCount;
+                return this;
+            }
+        }
+
+        protected struct InputValue<T> where T : struct
+        {
+            private long frame;
+
+            private T value;
+
+            public readonly T Value {
+                get
+                {
+                    if (!IsSet)
+                        return default;
+
+                    return value;
+                }
+            }
+
+            public readonly bool IsSet => frame == Time.frameCount;
+
+            public InputValue<T> Set(T value)
+            {
+                this.value = value;
+                frame = Time.frameCount;
+                return this;
+            }
+        }
+
         private readonly CancellationTokenSource disposeCancellationTokeSource = new();
 
         private readonly ReactiveCommand<CallbackContext> raw = new();
@@ -27,9 +67,9 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         private readonly ReactiveProperty<bool> isEnabled;
 
-        private readonly Observable<Unit> preUpdate;
-
-        private IDisposable? preUpdateBinding;
+        private InputValue wasStartedThisFrame;
+        private InputValue wasPerformedThisFrame;
+        private InputValue wasCanceledThisFrame;
 
         public InputAction Action { get; }
 
@@ -37,9 +77,9 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         public bool IsEnabled => isEnabled.Value && Action.enabled;
         public bool IsHolding { get; private set; }
-        public bool WasStartedOnThisFrame { get; private set; }
-        public bool WasPerformedOnThisFrame { get; private set; }
-        public bool WasCanceledOnThisFrame { get; private set; }
+        public bool WasStartedThisFrame => wasStartedThisFrame.IsSet;
+        public bool WasPerformedThisFrame => wasPerformedThisFrame.IsSet;
+        public bool WasCanceledThisFrame => wasCanceledThisFrame.IsSet;
 
         protected CancellationToken DisposeCancellationToken => disposeCancellationTokeSource.Token;
 
@@ -49,13 +89,10 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             CC.Guard.IsNotNull(inputAction, nameof(inputAction));
 
             isEnabled = new ReactiveProperty<bool>(inputAction.enabled);
-            preUpdate = Observable.EveryUpdate(UnityFrameProvider.Initialization, DisposeCancellationToken)
-                .Where(this, (_, @this) => @this.IsEnabled);
 
             Action = inputAction;
 
             Setup();
-            BindPreUpdate();
 
             CCServices.Bind(GetType())
                 .FromInstance(this)
@@ -147,7 +184,7 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             if (CCDisposable.IsDisposed(disposed))
                 return;
 
-            WasStartedOnThisFrame = true;
+            wasStartedThisFrame.Set();
             IsHolding = true;
 
             started.Execute(context);
@@ -158,7 +195,7 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             if (CCDisposable.IsDisposed(disposed))
                 return;
 
-            WasPerformedOnThisFrame = true;
+            wasPerformedThisFrame.Set();
 
             performed.Execute(context);
         }
@@ -168,17 +205,10 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             if (CCDisposable.IsDisposed(disposed))
                 return;
 
-            WasCanceledOnThisFrame = true;
+            wasCanceledThisFrame.Set();
             IsHolding = false;
 
             canceled.Execute(context);
-        }
-
-        protected virtual void OnPreUpdate(Unit _)
-        {
-            WasStartedOnThisFrame = false;
-            WasPerformedOnThisFrame = false;
-            WasCanceledOnThisFrame = false;
         }
 
         private int disposed;
@@ -205,8 +235,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
                 performed.Dispose();
                 canceled.Dispose();
                 isEnabled.Dispose();
-
-                CCDisposable.Dispose(ref preUpdateBinding);
             }
 
             GC.SuppressFinalize(this);
@@ -222,11 +250,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             Action.performed += OnPerformed;
             Action.canceled += OnCanceled;
         }
-
-        private void BindPreUpdate()
-        {
-            preUpdateBinding = preUpdate.Subscribe(OnPreUpdate);
-        }
     }
     public class InputActionRx<T>
         :
@@ -235,18 +258,19 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         where T : struct
     {
-        private IDisposable? rawValueBinding;
+        private InputValue<T> onStartedValue;
+        private InputValue<T> onPerformedValue;
+        private InputValue<T> onCanceledValue;
 
-        public T OnStartedValue { get; private set; }
-        public T OnPerformedValue { get; private set; }
-        public T OnCanceledValue { get; private set; }
+        public T OnStartedValue => onStartedValue.Value;
+        public T OnPerformedValue => onPerformedValue.Value;
+        public T OnCanceledValue => onCanceledValue.Value;
 
         [Preserve]
         public InputActionRx(InputAction inputAction)
             :
             base(inputAction)
         {
-            BindRawValue();
         }
 
         public T ReadValue() => Action.ReadValue<T>();
@@ -286,50 +310,20 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         protected override void OnStarted(CallbackContext context)
         {
-            OnStartedValue = ReadValue(context);
+            onStartedValue.Set(ReadValue(context));
             base.OnStarted(context);
         }
 
         protected override void OnPerformed(CallbackContext context)
         {
-            OnPerformedValue = ReadValue(context);
+            onPerformedValue.Set(ReadValue(context));
             base.OnPerformed(context);
         }
 
         protected override void OnCanceled(CallbackContext context)
         {
-            OnCanceledValue = ReadValue(context);
+            onCanceledValue.Set(ReadValue(context));
             base.OnCanceled(context);
-        }
-
-        protected override void OnPreUpdate(Unit _)
-        {
-            base.OnPreUpdate(_);
-            OnStartedValue = default;
-            OnPerformedValue = default;
-            OnCanceledValue = default;
-        }
-
-        private int disposed;
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            if (disposing)
-                CCDisposable.Dispose(ref rawValueBinding);
-        }
-
-        private void OnRawValueChanged(T value)
-        {
-            OnPerformedValue = value;
-        }
-
-        private void BindRawValue()
-        {
-            rawValueBinding = ObserveRawValue().Subscribe(OnRawValueChanged);
         }
     }
 }

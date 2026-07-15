@@ -20,7 +20,7 @@ namespace CCEnvs.Saves
         IEnumerable<SaveGroup>,
         IDisposable
     {
-        internal CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveCatalog));
+        internal CommandScheduler commandScheduler = CommandScheduler.Create(nameof(SaveCatalog));
 
         private ObservableDictionary<string, SaveGroup> groups = new();
         private ObservableDictionary<string, SaveGroupIncremental> incrementalGroups = new();

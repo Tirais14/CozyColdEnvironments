@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
 using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using R3;
@@ -45,6 +46,8 @@ namespace CCEnvs.UnityX.UI
 
         public virtual void SetModel(TModel? model)
         {
+            CCDisposable.ThrowIfDisposed(this, disposed);
+
             if (modelDisposables.IsValueCreated)
                 ModelDisposables.DisposeEachAndClear(bufferized: true);
 

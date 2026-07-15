@@ -83,7 +83,7 @@ namespace CCEnvs.UnityX.UI
 
         public TViewModel? ViewModel => GetViewModel();
 
-        public object? Model => ViewModel.Maybe().Map(static vm => vm.Model).GetValue();
+        public object? Model => ViewModel.IfNotNull(vm => vm.Model);
 
         public bool SuppressViewModelCreation { get; set; }
 
@@ -147,7 +147,8 @@ namespace CCEnvs.UnityX.UI
         /// <param name="vm"></param>
         public void SetViewModel(TViewModel? vm)
         {
-            TryDisposeViewModel();
+            if (!EqualityComparer<TViewModel?>.Default.Equals(viewModel, vm))
+                TryDisposeViewModel();
 
             viewModelFactoryReturnsValue = true;
             viewModel = vm;
@@ -244,19 +245,20 @@ namespace CCEnvs.UnityX.UI
             modelBinding?.Dispose();
         }
 
+        private void OnModelChanged(object? model)
+        {
+            CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
+            OnSetViewModel(default);
+            OnSetViewModel(ViewModel);
+            InitViewModel(ViewModel);
+        }
+
         private void BindModel(TViewModel vm)
         {
             modelBinding = vm.ObserveModel()
                 .Skip(1)
                 .WhereNotNull()
                 .Subscribe(OnModelChanged);
-        }
-
-        private void OnModelChanged(object? model)
-        {
-            CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
-
-            SetViewModel(ViewModel);
         }
 
         private async UniTaskVoid InitViewModelCoreAsync(TViewModel vm)

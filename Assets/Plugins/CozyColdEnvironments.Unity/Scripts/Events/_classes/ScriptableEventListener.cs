@@ -6,19 +6,19 @@ using UnityEngine.Events;
 #nullable enable
 namespace CCEnvs.UnityX.Events
 {
-    [CreateAssetMenu(fileName = nameof(ScriptableEventListener), menuName = "Scriptable Objects/ScriptableEventListener")]
+    //[CreateAssetMenu(fileName = nameof(ScriptableEventListener), menuName = "Scriptable Objects/ScriptableEventListener")]
     public sealed class ScriptableEventListener : CCBehaviour
     {
         public Maybe<ScriptableEvent> scriptableEvent;
         public Maybe<UnityEvent> response;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
             if (this.scriptableEvent.TryGetValue(out ScriptableEvent? scriptableEvent))
                 scriptableEvent.RegisterListener(this);
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
             if (this.scriptableEvent.TryGetValue(out ScriptableEvent? scriptableEvent))
                 scriptableEvent.UnregisterListener(this);

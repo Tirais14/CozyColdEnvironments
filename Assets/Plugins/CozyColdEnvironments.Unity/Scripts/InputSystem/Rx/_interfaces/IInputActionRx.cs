@@ -15,9 +15,9 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
         string Name { get; }
 
-        bool WasStartedOnThisFrame { get; }
-        bool WasPerformedOnThisFrame { get; }
-        bool WasCanceledOnThisFrame { get; }
+        bool WasStartedThisFrame { get; }
+        bool WasPerformedThisFrame { get; }
+        bool WasCanceledThisFrame { get; }
 
         bool IsButtonPressed();
 

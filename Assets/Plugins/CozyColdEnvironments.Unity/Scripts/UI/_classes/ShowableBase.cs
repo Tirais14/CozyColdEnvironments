@@ -46,7 +46,7 @@ namespace CCEnvs.UnityX.UI
             set => showOnInited = value;
         }
 
-        public bool IsShown {
+        public virtual bool IsShown {
             get => isShown.Value;
             protected set => isShown.Value = value;
         }
@@ -424,7 +424,7 @@ namespace CCEnvs.UnityX.UI
         {
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(Hide),
+                nameof(Show),
                 expirationTimeRelativeToNow: 5.Minutes()
                 );
 

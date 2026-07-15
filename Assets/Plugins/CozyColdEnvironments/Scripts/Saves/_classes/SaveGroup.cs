@@ -22,7 +22,7 @@ namespace CCEnvs.Saves
         IEnumerable<KeyValuePair<string, object>>,
         IDisposable
     {
-        internal readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveGroup));
+        internal readonly CommandScheduler commandScheduler = CommandScheduler.Create(nameof(SaveGroup));
 
         protected readonly ObservableDictionary<string, object> observableObjects = new();
 

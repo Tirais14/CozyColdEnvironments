@@ -19,7 +19,7 @@ namespace CCEnvs.Saves
     {
         public const string DEFAULT_PATH = "Default";
 
-        internal readonly CommandScheduler commandScheduler = CommandScheduler.CreateDefaultRegistered(nameof(SaveArchive));
+        internal readonly CommandScheduler commandScheduler = CommandScheduler.Create(nameof(SaveArchive));
 
         private ObservableDictionary<string, SaveCatalog> catalogs = new();
 

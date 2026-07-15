@@ -58,7 +58,7 @@ namespace CCEnvs.Saves
 
         internal static SemaphoreSlim SerializingSemaphore { get; } = new(Math.Clamp(Environment.ProcessorCount / 2, 1, int.MaxValue));
 
-        internal static CommandScheduler CommandScheduler { get; } = CommandScheduler.CreateDefaultRegistered();
+        internal static CommandScheduler CommandScheduler { get; } = CommandScheduler.Create();
 
         static SaveSystem()
         {
